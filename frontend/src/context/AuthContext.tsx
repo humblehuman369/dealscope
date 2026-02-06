@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
-import { storeTokens, clearTokens, getAccessToken } from '../lib/api'
+import { storeTokens, clearTokens, getAccessToken, getRefreshToken } from '../lib/api'
 
 // ===========================================
 // Types
@@ -103,10 +103,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Refresh access token using cookie or stored refresh token
   const refreshAccessToken = async (): Promise<boolean> => {
     try {
+      // Send refresh token in body for cross-origin support (cookies may not work)
+      const refreshToken = getRefreshToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: buildAuthHeaders(),
         credentials: 'include',
+        body: refreshToken ? JSON.stringify({ refresh_token: refreshToken }) : undefined,
       })
 
       if (!response.ok) {
@@ -152,6 +155,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const userData = await response.json()
     setUser(userData)
+
+    // If we authenticated via cookies but have no in-memory token,
+    // trigger a token refresh so subsequent API calls (Save, etc.) work
+    if (!accessToken && !getAccessToken()) {
+      refreshAccessToken().catch(() => {
+        // Token refresh failed - user is still authenticated via cookies
+        // but save/export features that need Bearer tokens won't work
+        console.warn('Could not obtain access token for API calls')
+      })
+    }
   }
 
   // Login

@@ -28,27 +28,60 @@ interface RequestOptions {
  *   cookies may not work due to Secure/SameSite restrictions,
  *   so we use Bearer tokens in the Authorization header.
  * 
- * Tokens are lost on page refresh, but the login flow restores them.
+ * Tokens are stored in-memory AND sessionStorage.
+ * In-memory is the primary source (fastest, no DOM access).
+ * sessionStorage is the fallback so tokens survive full page reloads
+ * (e.g. window.location.href navigations) within the same browser tab.
+ * sessionStorage is automatically cleared when the tab is closed.
  */
 let _accessToken: string | null = null
 let _refreshToken: string | null = null
 
+const TOKEN_KEYS = {
+  access: 'iq_access_token',
+  refresh: 'iq_refresh_token',
+} as const
+
+function _readSession(key: string): string | null {
+  if (typeof window === 'undefined') return null
+  try { return sessionStorage.getItem(key) } catch { return null }
+}
+
+function _writeSession(key: string, value: string | null): void {
+  if (typeof window === 'undefined') return
+  try {
+    if (value) sessionStorage.setItem(key, value)
+    else sessionStorage.removeItem(key)
+  } catch { /* ignore quota/security errors */ }
+}
+
 function getAccessToken(): string | null {
+  if (_accessToken) return _accessToken
+  // Fallback: restore from sessionStorage after a page reload
+  const stored = _readSession(TOKEN_KEYS.access)
+  if (stored) _accessToken = stored
   return _accessToken
 }
 
 function getRefreshToken(): string | null {
+  if (_refreshToken) return _refreshToken
+  const stored = _readSession(TOKEN_KEYS.refresh)
+  if (stored) _refreshToken = stored
   return _refreshToken
 }
 
 function storeTokens(accessToken: string, refreshToken: string): void {
   _accessToken = accessToken
   _refreshToken = refreshToken
+  _writeSession(TOKEN_KEYS.access, accessToken)
+  _writeSession(TOKEN_KEYS.refresh, refreshToken)
 }
 
 function clearTokens(): void {
   _accessToken = null
   _refreshToken = null
+  _writeSession(TOKEN_KEYS.access, null)
+  _writeSession(TOKEN_KEYS.refresh, null)
 }
 
 /**
