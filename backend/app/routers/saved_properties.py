@@ -6,6 +6,8 @@ import logging
 from typing import Optional, List
 
 from fastapi import APIRouter, HTTPException, status, Query
+from pydantic import ValidationError as PydanticValidationError
+from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from app.services.saved_property_service import saved_property_service
 from app.services.deal_maker_service import DealMakerService
@@ -192,18 +194,30 @@ async def save_property(
         # Update data with deal_maker_record if we successfully created one
         if deal_maker_record_obj is not None:
             # Create updated data dict with deal_maker_record
-            data_dict = data.model_dump(exclude_unset=True)
-            data_dict['deal_maker_record'] = deal_maker_record_obj
+            # Convert DealMakerRecord to dict first to ensure proper serialization
             try:
-                data = SavedPropertyCreate(**data_dict)
-            except Exception as validation_error:
+                data_dict = data.model_dump(exclude_unset=True)
+                # Convert DealMakerRecord object to dict if needed
+                if hasattr(deal_maker_record_obj, 'model_dump'):
+                    data_dict['deal_maker_record'] = deal_maker_record_obj.model_dump(mode="json")
+                elif isinstance(deal_maker_record_obj, dict):
+                    data_dict['deal_maker_record'] = deal_maker_record_obj
+                else:
+                    # Unexpected type, skip adding it
+                    logger.warning(f"Unexpected deal_maker_record_obj type: {type(deal_maker_record_obj)}")
+                    data_dict = None
+                
+                if data_dict:
+                    data = SavedPropertyCreate(**data_dict)
+            except (PydanticValidationError, Exception) as validation_error:
                 logger.warning(
                     f"Failed to validate SavedPropertyCreate with DealMakerRecord: {validation_error}. "
                     f"Saving without DealMakerRecord."
                 )
+                logger.debug(f"Validation error details: {validation_error}", exc_info=True)
                 # Fall back to original data without deal_maker_record
-                data_dict.pop('deal_maker_record', None)
-                data = SavedPropertyCreate(**data_dict)
+                # Don't modify the original data object, just continue without deal_maker_record
+                # The service will handle None deal_maker_record
         
         saved = await saved_property_service.save_property(
             db=db,
@@ -211,53 +225,73 @@ async def save_property(
             data=data,
         )
         
-        # Reconstruct DealMakerRecord from stored dict
+        # Reconstruct DealMakerRecord from stored dict for response
+        # Note: We return the DealMakerRecord object, but if reconstruction fails,
+        # we can still return the response without it
         deal_maker = None
         if saved.deal_maker_record:
             try:
-                deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
+                # saved.deal_maker_record is already a dict, convert to DealMakerRecord object
+                if isinstance(saved.deal_maker_record, dict):
+                    deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
+                elif hasattr(saved.deal_maker_record, 'model_dump'):
+                    # Already a DealMakerRecord object
+                    deal_maker = saved.deal_maker_record
+                else:
+                    logger.warning(f"Unexpected deal_maker_record type: {type(saved.deal_maker_record)}")
             except Exception as e:
                 logger.warning(f"Failed to reconstruct DealMakerRecord: {str(e)}")
+                logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
         
-        return SavedPropertyResponse(
-            id=str(saved.id),
-            user_id=str(saved.user_id),
-            external_property_id=saved.external_property_id,
-            zpid=saved.zpid,
-            address_street=saved.address_street,
-            address_city=saved.address_city,
-            address_state=saved.address_state,
-            address_zip=saved.address_zip,
-            full_address=saved.full_address,
-            nickname=saved.nickname,
-            status=saved.status,
-            tags=saved.tags,
-            color_label=saved.color_label,
-            priority=saved.priority,
-            property_data_snapshot=saved.property_data_snapshot,
-            custom_purchase_price=saved.custom_purchase_price,
-            custom_rent_estimate=saved.custom_rent_estimate,
-            custom_arv=saved.custom_arv,
-            custom_rehab_budget=saved.custom_rehab_budget,
-            custom_daily_rate=saved.custom_daily_rate,
-            custom_occupancy_rate=saved.custom_occupancy_rate,
-            custom_assumptions=saved.custom_assumptions,
-            worksheet_assumptions=saved.worksheet_assumptions or {},
-            deal_maker_record=deal_maker,
-            notes=saved.notes,
-            best_strategy=None,
-            best_cash_flow=None,
-            best_coc_return=None,
-            last_analytics_result=saved.last_analytics_result,
-            analytics_calculated_at=saved.analytics_calculated_at,
-            data_refreshed_at=saved.data_refreshed_at,
-            saved_at=saved.saved_at,
-            last_viewed_at=saved.last_viewed_at,
-            updated_at=saved.updated_at,
-            document_count=0,
-            adjustment_count=0,
-        )
+        # Build response - wrap in try-catch in case of validation errors
+        try:
+            return SavedPropertyResponse(
+                id=str(saved.id),
+                user_id=str(saved.user_id),
+                external_property_id=saved.external_property_id,
+                zpid=saved.zpid,
+                address_street=saved.address_street,
+                address_city=saved.address_city,
+                address_state=saved.address_state,
+                address_zip=saved.address_zip,
+                full_address=saved.full_address,
+                nickname=saved.nickname,
+                status=saved.status,
+                tags=saved.tags,
+                color_label=saved.color_label,
+                priority=saved.priority,
+                property_data_snapshot=saved.property_data_snapshot,
+                custom_purchase_price=saved.custom_purchase_price,
+                custom_rent_estimate=saved.custom_rent_estimate,
+                custom_arv=saved.custom_arv,
+                custom_rehab_budget=saved.custom_rehab_budget,
+                custom_daily_rate=saved.custom_daily_rate,
+                custom_occupancy_rate=saved.custom_occupancy_rate,
+                custom_assumptions=saved.custom_assumptions,
+                worksheet_assumptions=saved.worksheet_assumptions or {},
+                deal_maker_record=deal_maker,
+                notes=saved.notes,
+                best_strategy=None,
+                best_cash_flow=None,
+                best_coc_return=None,
+                last_analytics_result=saved.last_analytics_result,
+                analytics_calculated_at=saved.analytics_calculated_at,
+                data_refreshed_at=saved.data_refreshed_at,
+                saved_at=saved.saved_at,
+                last_viewed_at=saved.last_viewed_at,
+                updated_at=saved.updated_at,
+                document_count=0,
+                adjustment_count=0,
+            )
+        except Exception as response_error:
+            logger.error(f"Failed to construct SavedPropertyResponse: {str(response_error)}", exc_info=True)
+            # Property was saved successfully, but response construction failed
+            # Return a minimal response to indicate success
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
+            )
         
     except ValueError as e:
         # Check if it's a duplicate property error
@@ -271,12 +305,33 @@ async def save_property(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg
         )
+    except IntegrityError as e:
+        # Database constraint violation (e.g., duplicate key)
+        logger.error(f"Database integrity error saving property: {str(e)}", exc_info=True)
+        error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+        if "duplicate" in error_msg.lower() or "unique" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This property is already in your saved list"
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Database constraint violation. Please check your input." if settings.DEBUG else "Failed to save property. Please try again."
+        )
+    except DatabaseError as e:
+        # Other database errors
+        logger.error(f"Database error saving property: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}" if settings.DEBUG else "Failed to save property. Please try again or contact support."
+        )
     except HTTPException:
         # Re-raise HTTPExceptions as-is (they already have proper format)
         raise
     except Exception as e:
         # Catch all other exceptions and log them properly
         logger.error(f"Unexpected error saving property: {str(e)}", exc_info=True)
+        logger.error(f"Exception type: {type(e).__name__}", exc_info=True)
         # In production, don't expose internal error details
         error_message = str(e) if settings.DEBUG else "Failed to save property. Please try again or contact support."
         raise HTTPException(

@@ -142,13 +142,6 @@ export function InvestmentAnalysis({
                   onPress={() => handleIQSelect(option.id)}
                   activeOpacity={0.7}
                 >
-                  {/* RECOMMENDED badge for Target Buy */}
-                  {isTarget && (
-                    <View style={styles.recommendedBadge}>
-                      <Text style={styles.recommendedText}>RECOMMENDED</Text>
-                    </View>
-                  )}
-
                   <Text style={[
                     styles.iqOptionLabelText,
                     isSelected && styles.iqOptionLabelSelected,
