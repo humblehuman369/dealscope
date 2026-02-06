@@ -590,7 +590,7 @@ function InvestmentAnalysisSection({
     : selectedPriceCard === 'breakeven' ? 'BREAKEVEN' : 'WHOLESALE'
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-4 pt-0 pb-8">
       {/* Gradient Card Container */}
       <div 
         className={tw.investmentCard}

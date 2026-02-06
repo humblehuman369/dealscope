@@ -252,7 +252,8 @@ export function InvestmentAnalysis({
 const styles = StyleSheet.create({
   outerContainer: {
     paddingHorizontal: rs(16),
-    paddingVertical: rs(8),
+    paddingTop: 0,
+    paddingBottom: rs(8),
     backgroundColor: decisionGrade.bgSecondary,
   },
   gradientCard: {
