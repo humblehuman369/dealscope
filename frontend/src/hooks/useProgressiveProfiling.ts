@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { ProfileQuestion } from '../components/profile/ProgressiveProfilingPrompt'
+import { getAccessToken } from '@/lib/api'
 
 const STORAGE_KEY = 'investiq-progressive-profile'
 
@@ -139,7 +140,7 @@ export function useProgressiveProfiling() {
   // Sync answer with backend
   const syncWithBackend = async (answer: any) => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) return
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'

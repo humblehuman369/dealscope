@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import {
   Check,
   X,
@@ -104,7 +105,7 @@ function BillingContent() {
 
         // Fetch subscription & usage if authenticated
         if (isAuthenticated) {
-          const token = localStorage.getItem('access_token')
+          const token = getAccessToken()
           const headers = { 'Authorization': `Bearer ${token}` }
 
           const [subRes, usageRes] = await Promise.all([
@@ -139,7 +140,7 @@ function BillingContent() {
 
     setCheckoutLoading(priceId)
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const res = await fetch(`${API_BASE_URL}/api/v1/billing/checkout`, {
         method: 'POST',
         headers: {
@@ -170,7 +171,7 @@ function BillingContent() {
   const handleManageBilling = async () => {
     setPortalLoading(true)
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const res = await fetch(`${API_BASE_URL}/api/v1/billing/portal`, {
         method: 'POST',
         headers: {

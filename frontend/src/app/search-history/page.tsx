@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
   History, Search, MapPin, Building2, Clock, Trash2, 
@@ -76,7 +77,7 @@ export default function SearchHistoryPage() {
   // Fetch history and stats
   const fetchData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) return
 
       const [historyRes, statsRes] = await Promise.all([
@@ -122,7 +123,7 @@ export default function SearchHistoryPage() {
     if (!confirm('Delete this search from history?')) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/search-history/${entryId}`, {
         method: 'DELETE',
         headers: {
@@ -143,7 +144,7 @@ export default function SearchHistoryPage() {
     if (!confirm('Are you sure you want to clear all search history? This cannot be undone.')) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/search-history`, {
         method: 'DELETE',
         headers: {

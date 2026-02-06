@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { SavedProperty } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
+import { getAccessToken } from '@/lib/api'
 
 // Re-export for backward compatibility
 export type { SavedProperty } from '@/types/savedProperty'
@@ -118,7 +119,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
       console.log('[useWorksheetProperty] Fetching property:', propertyId)
       
       try {
-        const token = localStorage.getItem('access_token')
+        const token = getAccessToken()
         
         if (!token) {
           console.error('[useWorksheetProperty] No access token found')

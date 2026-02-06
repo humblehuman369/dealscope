@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, User,
   TrendingUp, Target, DollarSign, Home, Building2,
@@ -288,7 +289,7 @@ export default function OnboardingPage() {
     setError(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         throw new Error('Not authenticated')
       }

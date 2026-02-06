@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -31,7 +32,7 @@ export default function DownloadReportButton({
     setError(null)
     
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       
       // Build URL based on whether it's a saved property or cached property
       let url: string

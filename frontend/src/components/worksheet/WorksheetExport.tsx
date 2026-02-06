@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { Download, FileText, Table, Loader2, X, Check } from 'lucide-react'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -23,7 +24,7 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
     setError(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         setError('Please login to export reports')
         return

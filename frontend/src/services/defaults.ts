@@ -8,6 +8,7 @@
  */
 
 import type { AllAssumptions } from '@/stores/index'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -45,11 +46,10 @@ export interface UserAssumptionsResponse {
 }
 
 /**
- * Get auth token from localStorage
+ * Get auth token from in-memory store
  */
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('access_token')
+  return getAccessToken()
 }
 
 /**

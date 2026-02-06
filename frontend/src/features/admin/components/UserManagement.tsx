@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UserCog, Search, CheckCircle, XCircle } from 'lucide-react'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -31,7 +32,7 @@ export function UserManagementSection() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('access_token')
+        const token = getAccessToken()
         if (!token) return
 
         const response = await fetch(`${API_BASE_URL}/api/v1/admin/users?limit=20`, {
@@ -54,7 +55,7 @@ export function UserManagementSection() {
 
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/toggle-active`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

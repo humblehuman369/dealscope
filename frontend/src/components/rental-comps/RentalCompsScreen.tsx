@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useCallback } from 'react'
+import { getAccessToken } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 // Note: CompactHeader removed - now using global AppHeader from layout
@@ -243,7 +244,7 @@ export function RentalCompsScreen({
       return
     }
 
-    const token = localStorage.getItem('access_token')
+    const token = getAccessToken()
     if (!token) {
       setShowAuthModal('login')
       return

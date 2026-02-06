@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, Activity, Building2, TrendingUp } from 'lucide-react'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -19,7 +20,7 @@ export function PlatformStatsSection() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('access_token')
+        const token = getAccessToken()
         if (!token) return
 
         const response = await fetch(`${API_BASE_URL}/api/v1/admin/stats`, {

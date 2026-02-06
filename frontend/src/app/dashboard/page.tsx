@@ -1,61 +1,19 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-// Note: useCallback kept for fetchDashboardData
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
-  PortfolioSummary, 
-  QuickActions, 
-  DealPipeline, 
-  MarketAlerts,
-  Watchlist,
-  PortfolioProperties,
-  ActivityFeed,
-  InvestmentGoals,
-  QuickStartChecklist
-} from '@/components/dashboard'
-import { 
-  LayoutDashboard, 
-  Bell, 
-  Settings,
-  Shield
+  Building2, TrendingUp, DollarSign, BarChart3,
+  Search, ArrowRight, Clock, Star, Plus,
+  ChevronRight, Zap, Eye, FileSpreadsheet
 } from 'lucide-react'
-import {
-  PlatformStatsSection,
-  UserManagementSection,
-  AdminAssumptionsSection,
-  MetricsGlossarySection
-} from '@/features/admin'
 
 // ===========================================
 // Types
 // ===========================================
-
-interface SavedProperty {
-  id: string
-  address_street: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  nickname?: string
-  status: string
-  tags?: string[]
-  color_label?: string
-  priority?: number
-  best_strategy?: string
-  best_cash_flow?: number
-  best_coc_return?: number
-  saved_at: string
-  last_viewed_at?: string
-  updated_at: string
-  // Additional fields for portfolio view
-  estimated_value?: number
-  equity?: number
-  monthly_rent?: number
-}
 
 interface PropertyStats {
   total: number
@@ -63,7 +21,6 @@ interface PropertyStats {
   total_estimated_value?: number
   total_monthly_cash_flow?: number
   average_coc_return?: number
-  by_strategy?: Record<string, number>
 }
 
 interface SearchHistoryItem {
@@ -74,198 +31,77 @@ interface SearchHistoryItem {
   was_successful: boolean
   was_saved: boolean
   searched_at: string
+  search_source?: string
 }
 
-// Use environment variable for API URL, fallback to Railway production URL
+interface SavedProperty {
+  id: string
+  address_street: string
+  address_city?: string
+  address_state?: string
+  status: string
+  best_strategy?: string
+  best_cash_flow?: number
+  best_coc_return?: number
+  saved_at: string
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 // ===========================================
-// Formatting Helpers
+// Helpers
 // ===========================================
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+const fmt = (n: number, prefix = '$') => {
+  if (n >= 1_000_000) return `${prefix}${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${prefix}${(n / 1_000).toFixed(0)}K`
+  return `${prefix}${n.toFixed(0)}`
 }
 
-const formatRelativeTime = (dateString: string) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
+const fmtPct = (n: number) => `${n.toFixed(1)}%`
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return formatDate(dateString)
+const timeAgo = (d: string) => {
+  const ms = Date.now() - new Date(d).getTime()
+  const mins = Math.floor(ms / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(ms / 3600000)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(ms / 86400000)
+  if (days < 7) return `${days}d ago`
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 // ===========================================
-// Main Dashboard Component
+// Component
 // ===========================================
 
-export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading: authLoading, needsOnboarding } = useAuth()
-  const router = useRouter()
-  
-  // State for modal
+export default function DashboardOverview() {
+  const { user } = useAuth()
   const [showSearchModal, setShowSearchModal] = useState(false)
-  
-  // State for sample/demo mode
-  const [showSampleData, setShowSampleData] = useState(false)
-  
-  // State for dashboard data
   const [isLoading, setIsLoading] = useState(true)
-  const [portfolioData, setPortfolioData] = useState({
-    portfolioValue: 0,
-    portfolioChange: 0,
-    propertiesTracked: 0,
-    totalEquity: 0,
-    monthlyCashFlow: 0,
-    avgCoC: 0,
-  })
-  const [pipelineData, setPipelineData] = useState({
-    watching: 0,
-    analyzing: 0,
-    negotiating: 0,
-    underContract: 0,
-  })
-  const [watchlistProperties, setWatchlistProperties] = useState<any[]>([])
-  const [portfolioProperties, setPortfolioProperties] = useState<any[]>([])
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
-  const [investmentGoals, setInvestmentGoals] = useState<any[]>([])
-  const [marketAlerts, setMarketAlerts] = useState([
-    { market: 'South Florida', temp: 'Hot' as const, change: '+8.2%', trend: 'up' as const },
-    { market: 'Tampa Bay', temp: 'Warm' as const, change: '+5.1%', trend: 'up' as const },
-    { market: 'Orlando', temp: 'Neutral' as const, change: '+1.8%', trend: 'up' as const },
-  ])
-  
-  // Redirect if not authenticated or needs onboarding
-  // Only redirect AFTER auth has fully loaded to prevent race conditions
-  useEffect(() => {
-    // Wait for auth to fully load before making redirect decisions
-    if (authLoading) return;
-    
-    if (!isAuthenticated) {
-      // Redirect to landing with auth modal open
-      router.push('/?auth=login')
-    } else if (needsOnboarding) {
-      router.push('/onboarding')
-    }
-  }, [authLoading, isAuthenticated, needsOnboarding, router])
+  const [stats, setStats] = useState<PropertyStats | null>(null)
+  const [recentSearches, setRecentSearches] = useState<SearchHistoryItem[]>([])
+  const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([])
 
-  // Fetch dashboard data
-  const fetchDashboardData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
+      const token = getAccessToken()
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers['Authorization'] = `Bearer ${token}`
 
-      // Fetch saved properties and stats in parallel via Next.js API routes
-      const [propertiesRes, statsRes, historyRes] = await Promise.all([
-        fetch(`/api/v1/properties/saved?limit=20`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch(`/api/v1/properties/saved/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch(`/api/v1/search-history/recent?limit=5`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
+      const [statsRes, historyRes, propsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, { headers, credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/v1/search-history/recent?limit=8`, { headers, credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=10`, { headers, credentials: 'include' }),
       ])
 
-      // Process properties data
-      if (propertiesRes.ok) {
-        const data = await propertiesRes.json()
-        const properties: SavedProperty[] = data.items || data || []
-        
-        // Convert to watchlist format
-        const watchlist = properties
-          .filter(p => p.status === 'watching' || p.status === 'analyzing')
-          .slice(0, 5)
-          .map(p => ({
-            id: p.id,
-            address: p.address_street,
-            city: `${p.address_city || ''}, ${p.address_state || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-            price: p.estimated_value || 0,
-            priceChange: 0,
-            daysOnMarket: Math.floor((new Date().getTime() - new Date(p.saved_at).getTime()) / 86400000),
-            beds: 3, // Default values - would come from property data
-            baths: 2,
-            sqft: 1800,
-            score: p.best_coc_return ? Math.round(p.best_coc_return * 10) : 75,
-          }))
-        setWatchlistProperties(watchlist)
-        
-        // Convert to portfolio format (owned properties)
-        const portfolio = properties
-          .filter(p => p.status === 'owned' || p.status === 'under_contract')
-          .slice(0, 5)
-          .map(p => ({
-            id: p.id,
-            address: p.nickname || p.address_street,
-            city: `${p.address_city || ''}, ${p.address_state || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-            value: p.estimated_value || 0,
-            equity: p.equity || 0,
-            monthlyRent: p.monthly_rent || 0,
-            cashFlow: p.best_cash_flow || 0,
-            cocReturn: p.best_coc_return ? (p.best_coc_return * 100).toFixed(1) : 0,
-            status: p.best_cash_flow && p.best_cash_flow > 0 ? 'performing' : 'watch',
-          }))
-        setPortfolioProperties(portfolio)
-        
-        // Calculate pipeline counts
-        const statusCounts = properties.reduce((acc, p) => {
-          acc[p.status] = (acc[p.status] || 0) + 1
-          return acc
-        }, {} as Record<string, number>)
-        
-        setPipelineData({
-          watching: statusCounts.watching || 0,
-          analyzing: statusCounts.analyzing || 0,
-          negotiating: statusCounts.contacted || statusCounts.negotiating || 0,
-          underContract: statusCounts.under_contract || 0,
-        })
+      if (statsRes.ok) setStats(await statsRes.json())
+      if (historyRes.ok) setRecentSearches(await historyRes.json())
+      if (propsRes.ok) {
+        const data = await propsRes.json()
+        setSavedProperties(data.items || data || [])
       }
-
-      // Process stats data
-      if (statsRes.ok) {
-        const statsData: PropertyStats = await statsRes.json()
-        setPortfolioData({
-          portfolioValue: statsData.total_estimated_value || 0,
-          portfolioChange: 8.5, // Would calculate from historical data
-          propertiesTracked: statsData.total || 0,
-          totalEquity: (statsData.total_estimated_value || 0) * 0.25, // Estimate 25% equity
-          monthlyCashFlow: statsData.total_monthly_cash_flow || 0,
-          avgCoC: statsData.average_coc_return ? (statsData.average_coc_return * 100) : 0,
-        })
-      }
-
-      // Process search history as activity
-      if (historyRes.ok) {
-        const historyData: SearchHistoryItem[] = await historyRes.json()
-        const activities = historyData.map((item, i) => ({
-          id: item.id || String(i),
-          type: item.was_saved ? 'analysis' as const : (item.was_successful ? 'new_match' as const : 'alert' as const),
-          property: item.search_query.split(',')[0],
-          detail: item.was_saved ? 'Property saved to watchlist' : (item.was_successful ? 'Search completed' : 'Property not found'),
-          time: formatRelativeTime(item.searched_at),
-        }))
-        setRecentActivity(activities)
-      }
-
-      // Set default investment goals (would come from user profile)
-      setInvestmentGoals([
-        { label: 'Monthly Cash Flow Goal', current: portfolioData.monthlyCashFlow || 5000, target: 15000, unit: '$' },
-        { label: 'Properties Goal', current: portfolioData.propertiesTracked || 2, target: 10, unit: '' },
-        { label: 'Portfolio Value Goal', current: (portfolioData.portfolioValue || 500000) / 1000000, target: 5, unit: 'M' },
-      ])
-
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
     } finally {
@@ -273,170 +109,258 @@ export default function DashboardPage() {
     }
   }, [])
 
-  useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      fetchDashboardData()
-    }
-  }, [isAuthenticated, authLoading, fetchDashboardData])
+  useEffect(() => { fetchData() }, [fetchData])
 
-  // Show loading state while auth is being determined
-  // This prevents premature redirects and flash of content
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
-      </div>
-    )
-  }
-
-  // After auth loading completes, if not authenticated, 
-  // show nothing while redirect happens (redirect is handled in useEffect)
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
-      </div>
-    )
-  }
-
-  const isAdmin = user.is_superuser
-  const firstName = user.full_name?.split(' ')[0] || 'there'
+  const firstName = user?.full_name?.split(' ')[0] || 'Investor'
+  const pipeline = stats?.by_status || {}
+  const pipelineStages = [
+    { label: 'Watching', count: pipeline.watching || 0, color: 'bg-blue-500' },
+    { label: 'Analyzing', count: pipeline.analyzing || 0, color: 'bg-amber-500' },
+    { label: 'Negotiating', count: (pipeline.contacted || 0) + (pipeline.negotiating || 0), color: 'bg-purple-500' },
+    { label: 'Under Contract', count: pipeline.under_contract || 0, color: 'bg-emerald-500' },
+    { label: 'Owned', count: pipeline.owned || 0, color: 'bg-teal-600' },
+  ]
+  const pipelineTotal = pipelineStages.reduce((s, p) => s + p.count, 0)
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-900 transition-colors dashboard-container">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="flex items-center gap-2 mb-6">
-          <LayoutDashboard size={16} className="text-teal-500 dark:text-teal-400" />
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Dashboard</h3>
-        </div>
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
-              Welcome back, {firstName}
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Here's what's happening with your portfolio
-            </p>
-          </div>
-          <div className="flex items-center gap-3 mt-4 sm:mt-0">
-            <button className="relative p-2.5 rounded-lg bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors">
-              <Bell size={18} className="text-slate-600 dark:text-slate-400" />
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                3
-              </span>
-            </button>
-            <Link
-              href="/profile"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors"
-            >
-              <Settings size={16} className="text-slate-600 dark:text-slate-400" />
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Settings</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mb-6">
-          <QuickActions onSearchClick={() => setShowSearchModal(true)} />
-        </div>
-
-        {/* Portfolio Summary */}
-        <div className="mb-6">
-          {showSampleData && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-              <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-amber-400/30 text-amber-700 dark:text-amber-300 rounded">Demo</span>
-              <span className="text-xs text-amber-700 dark:text-amber-300">Viewing sample data — this is not your real portfolio</span>
-              <button 
-                onClick={() => setShowSampleData(false)}
-                className="ml-auto text-xs text-amber-600 dark:text-amber-400 hover:underline"
-              >
-                Exit Demo
-              </button>
-            </div>
-          )}
-          <PortfolioSummary 
-            data={showSampleData ? {
-              portfolioValue: 1250000,
-              portfolioChange: 12.4,
-              propertiesTracked: 3,
-              totalEquity: 425000,
-              monthlyCashFlow: 4200,
-              avgCoC: 9.8,
-            } : portfolioData} 
-            isLoading={isLoading && !showSampleData}
-            onViewSample={() => setShowSampleData(true)}
-          />
-        </div>
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - 8 cols */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Watchlist */}
-            <Watchlist 
-              properties={watchlistProperties} 
-              isLoading={isLoading}
-              onAddClick={() => setShowSearchModal(true)}
-            />
-
-            {/* Portfolio Properties */}
-            <PortfolioProperties 
-              properties={portfolioProperties} 
-              isLoading={isLoading}
-              onAddClick={() => setShowSearchModal(true)}
-            />
-          </div>
-
-          {/* Right Column - 4 cols */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Quick Start Checklist */}
-            <QuickStartChecklist 
-              hasAnalyzedProperty={watchlistProperties.length > 0 || portfolioProperties.length > 0}
-              hasCompletedProfile={!needsOnboarding}
-              hasViewedSample={showSampleData}
-              onViewSample={() => setShowSampleData(true)}
-            />
-
-            {/* Deal Pipeline */}
-            <DealPipeline pipeline={pipelineData} isLoading={isLoading} />
-
-            {/* Market Alerts */}
-            <MarketAlerts alerts={marketAlerts} isLoading={false} />
-
-            {/* Investment Goals */}
-            <InvestmentGoals goals={investmentGoals} isLoading={isLoading} />
-
-            {/* Activity Feed */}
-            <ActivityFeed activities={recentActivity} isLoading={isLoading} />
-          </div>
-        </div>
-
-        {/* Admin Sections */}
-        {isAdmin && (
-          <div className="mt-12 pt-8 border-t border-slate-200 dark:border-navy-700">
-            <div className="flex items-center gap-2 mb-6">
-              <Shield className="w-6 h-6 text-amber-500" />
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Administration</h2>
-            </div>
-            <div className="space-y-8">
-              <PlatformStatsSection />
-              <UserManagementSection />
-              <AdminAssumptionsSection />
-              <MetricsGlossarySection />
-            </div>
-          </div>
-        )}
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+          Welcome back, {firstName}
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Here&apos;s your investment workspace overview
+        </p>
       </div>
 
-      {/* Search Property Modal */}
-      <SearchPropertyModal 
-        isOpen={showSearchModal} 
-        onClose={() => setShowSearchModal(false)} 
-      />
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <button
+          onClick={() => setShowSearchModal(true)}
+          className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20 transition-all group"
+        >
+          <Search size={18} />
+          <span className="text-sm font-semibold">Search Property</span>
+        </button>
+        <Link
+          href="/dashboard/properties"
+          className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 text-slate-700 dark:text-slate-300 transition-all"
+        >
+          <Building2 size={18} className="text-teal-500" />
+          <span className="text-sm font-medium">My Properties</span>
+        </Link>
+        <Link
+          href="/dashboard/tools/compare"
+          className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 text-slate-700 dark:text-slate-300 transition-all"
+        >
+          <BarChart3 size={18} className="text-purple-500" />
+          <span className="text-sm font-medium">Compare Deals</span>
+        </Link>
+        <Link
+          href="/dashboard/reports"
+          className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 text-slate-700 dark:text-slate-300 transition-all"
+        >
+          <FileSpreadsheet size={18} className="text-emerald-500" />
+          <span className="text-sm font-medium">Reports</span>
+        </Link>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: 'Properties Tracked', value: stats?.total || 0, icon: Building2, color: 'text-teal-500', format: (v: number) => String(v) },
+          { label: 'Portfolio Value', value: stats?.total_estimated_value || 0, icon: TrendingUp, color: 'text-blue-500', format: (v: number) => fmt(v) },
+          { label: 'Monthly Cash Flow', value: stats?.total_monthly_cash_flow || 0, icon: DollarSign, color: 'text-emerald-500', format: (v: number) => fmt(v) },
+          { label: 'Avg CoC Return', value: stats?.average_coc_return ? stats.average_coc_return * 100 : 0, icon: BarChart3, color: 'text-purple-500', format: fmtPct },
+        ].map((m) => (
+          <div key={m.label} className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <m.icon size={16} className={m.color} />
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{m.label}</span>
+            </div>
+            {isLoading ? (
+              <div className="h-7 w-20 bg-slate-200 dark:bg-navy-700 rounded animate-pulse" />
+            ) : (
+              <p className="text-xl font-bold text-slate-800 dark:text-white">{m.format(m.value)}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Deal Pipeline - Left 2 cols */}
+        <div className="lg:col-span-2 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+              <Zap size={16} className="text-amber-500" />
+              Deal Pipeline
+            </h2>
+            <Link href="/dashboard/properties" className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1">
+              View all <ChevronRight size={12} />
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-10 bg-slate-100 dark:bg-navy-700 rounded-lg animate-pulse" />)}
+            </div>
+          ) : pipelineTotal === 0 ? (
+            <div className="text-center py-8">
+              <Building2 size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">No deals in your pipeline yet</p>
+              <button
+                onClick={() => setShowSearchModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700"
+              >
+                <Plus size={14} /> Search Your First Property
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Pipeline bar */}
+              <div className="flex rounded-lg overflow-hidden h-8 mb-4">
+                {pipelineStages.filter(s => s.count > 0).map((stage) => (
+                  <div
+                    key={stage.label}
+                    className={`${stage.color} flex items-center justify-center transition-all`}
+                    style={{ width: `${(stage.count / pipelineTotal) * 100}%`, minWidth: '40px' }}
+                  >
+                    <span className="text-[10px] font-bold text-white">{stage.count}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {pipelineStages.map((stage) => (
+                  <div key={stage.label} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                    <div className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
+                    <span>{stage.label}: <strong className="text-slate-800 dark:text-white">{stage.count}</strong></span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent saved properties */}
+              <div className="mt-5 space-y-2">
+                {savedProperties.slice(0, 5).map((prop) => (
+                  <Link
+                    key={prop.id}
+                    href={`/dashboard/properties/${prop.id}`}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-navy-750 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-navy-700 flex items-center justify-center flex-shrink-0">
+                        <Building2 size={14} className="text-slate-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 dark:text-white truncate">{prop.address_street}</p>
+                        <p className="text-xs text-slate-400">{prop.address_city}, {prop.address_state}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${
+                        prop.status === 'watching' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                        prop.status === 'analyzing' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                        prop.status === 'owned' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
+                        'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                      }`}>
+                        {prop.status.replace('_', ' ')}
+                      </span>
+                      <ChevronRight size={14} className="text-slate-300 group-hover:text-teal-500 transition-colors" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Recent Activity - Right col */}
+        <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+              <Clock size={16} className="text-blue-500" />
+              Recent Activity
+            </h2>
+            <Link href="/dashboard/properties" className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1">
+              History <ChevronRight size={12} />
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1,2,3,4].map(i => <div key={i} className="h-12 bg-slate-100 dark:bg-navy-700 rounded-lg animate-pulse" />)}
+            </div>
+          ) : recentSearches.length === 0 ? (
+            <div className="text-center py-8">
+              <Clock size={28} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity</p>
+              <p className="text-xs text-slate-400 mt-1">Search a property to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {recentSearches.map((item) => (
+                <div key={item.id} className="flex items-start gap-3 px-2 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-navy-750 transition-colors">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    item.was_saved ? 'bg-emerald-100 dark:bg-emerald-900/30' : 
+                    item.was_successful ? 'bg-blue-100 dark:bg-blue-900/30' : 
+                    'bg-slate-100 dark:bg-slate-700'
+                  }`}>
+                    {item.was_saved ? <Star size={12} className="text-emerald-600" /> :
+                     item.was_successful ? <Eye size={12} className="text-blue-600" /> :
+                     <Search size={12} className="text-slate-400" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                      {item.search_query.split(',')[0]}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-slate-400">{timeAgo(item.searched_at)}</span>
+                      {item.search_source && (
+                        <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-navy-700 px-1.5 py-0.5 rounded">
+                          {item.search_source}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Getting Started (only show if no properties) */}
+      {!isLoading && (stats?.total || 0) === 0 && (
+        <div className="mt-8 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/10 rounded-2xl border border-teal-200 dark:border-teal-800/30 p-6">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Get Started with DealHubIQ</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-5">Your investor workspace is ready. Here&apos;s how to make the most of it:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { step: '1', title: 'Search a Property', desc: 'Enter any US address to get instant investment analysis', action: () => setShowSearchModal(true), cta: 'Search Now' },
+              { step: '2', title: 'Save to Your Portfolio', desc: 'Save properties to track, compare, and build your deal pipeline', href: '/dashboard/properties', cta: 'View Properties' },
+              { step: '3', title: 'Generate Reports', desc: 'Export Excel proformas, LOIs, and financial statements', href: '/dashboard/reports', cta: 'View Reports' },
+            ].map((item) => (
+              <div key={item.step} className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-teal-100 dark:border-navy-700">
+                <div className="w-7 h-7 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xs font-bold mb-3">{item.step}</div>
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-white mb-1">{item.title}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{item.desc}</p>
+                {item.action ? (
+                  <button onClick={item.action} className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                    {item.cta} <ArrowRight size={12} />
+                  </button>
+                ) : (
+                  <Link href={item.href!} className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                    {item.cta} <ArrowRight size={12} />
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
   )
 }
-

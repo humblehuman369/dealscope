@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { PriceTarget } from '@/lib/priceUtils'
+import { getAccessToken } from '@/lib/api'
 
 /**
  * Deal Maker Store
@@ -330,7 +331,7 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({ isLoading: true, error: null })
     
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         throw new Error('Not authenticated')
       }
@@ -435,7 +436,7 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({ isSaving: true })
     
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         throw new Error('Not authenticated')
       }

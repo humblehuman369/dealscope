@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import { 
   User, Mail, Calendar, Shield, Camera, Edit2, Save, X, 
   TrendingUp, Target, DollarSign, MapPin, Bell, Palette,
@@ -169,7 +170,7 @@ export default function ProfilePage() {
     if (!isAuthenticated) return
     
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) return
 
       // Fetch full user data with business profile
@@ -252,7 +253,7 @@ export default function ProfilePage() {
     setSuccess(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
         method: 'PATCH',
         headers: {
@@ -282,7 +283,7 @@ export default function ProfilePage() {
     setSuccess(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
         method: 'PATCH',
         headers: {
@@ -312,7 +313,7 @@ export default function ProfilePage() {
     setSuccess(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
         method: 'PATCH',
         headers: {

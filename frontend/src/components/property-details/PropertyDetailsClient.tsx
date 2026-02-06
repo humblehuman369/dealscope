@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
@@ -54,7 +55,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
 
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         setShowAuthModal('login')
         setIsSaving(false)

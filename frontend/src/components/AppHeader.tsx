@@ -25,6 +25,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useAuth } from '@/context/AuthContext'
+import { getAccessToken } from '@/lib/api'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -260,7 +261,7 @@ export function AppHeader({
     // Only check if authenticated and has address
     if (!isAuthenticated || !displayAddress) return
     
-    const token = localStorage.getItem('access_token')
+    const token = getAccessToken()
     if (!token) return
     
     // Use AbortController to cancel fetch on unmount
@@ -397,7 +398,7 @@ export function AppHeader({
     if (isSaving || isSaved || !displayAddress) return
 
     // Get auth token
-    const token = localStorage.getItem('access_token')
+    const token = getAccessToken()
     if (!token) {
       setShowAuthModal('login')
       return
@@ -472,7 +473,7 @@ export function AppHeader({
   const handleUnsave = useCallback(async () => {
     if (!isAuthenticated || !savedPropertyId || isSaving) return
 
-    const token = localStorage.getItem('access_token')
+    const token = getAccessToken()
     if (!token) {
       setShowAuthModal('login')
       return

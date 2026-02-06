@@ -5,6 +5,7 @@ import {
   Upload, File, FileText, Image, Trash2, Download, 
   Loader2, X, Check, Folder, Eye
 } from 'lucide-react'
+import { getAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -94,7 +95,7 @@ export default function DocumentUpload({
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) return
 
       let url = `${API_BASE_URL}/api/v1/documents?limit=50`
@@ -125,7 +126,7 @@ export default function DocumentUpload({
     setError(null)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         throw new Error('Please sign in to upload documents')
       }
@@ -182,7 +183,7 @@ export default function DocumentUpload({
   // Download document
   const downloadDocument = async (doc: Document) => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       
       const response = await fetch(`${API_BASE_URL}/api/v1/documents/${doc.id}/download`, {
         headers: {
@@ -211,7 +212,7 @@ export default function DocumentUpload({
     if (!confirm('Delete this document?')) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       
       const response = await fetch(`${API_BASE_URL}/api/v1/documents/${docId}`, {
         method: 'DELETE',

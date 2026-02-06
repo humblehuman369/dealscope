@@ -7,6 +7,7 @@ import {
   ProjectionSummary
 } from '@/lib/projections'
 import { defaultsService } from '@/services/defaults'
+import { getAccessToken } from '@/lib/api'
 
 /**
  * Worksheet Store
@@ -367,7 +368,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     set({ isSaving: true })
     
     try {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (!token) {
         console.warn('No auth token, skipping save')
         return
