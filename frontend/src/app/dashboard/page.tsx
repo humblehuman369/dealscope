@@ -277,7 +277,7 @@ export default function DashboardOverview() {
         <QuickAction icon={Zap} label="Reports" href="/dashboard/reports" />
       </div>
 
-      {showSearch && <SearchPropertyModal onClose={() => setShowSearch(false)} />}
+      <SearchPropertyModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   )
 }
