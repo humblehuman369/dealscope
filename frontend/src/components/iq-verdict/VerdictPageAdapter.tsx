@@ -300,7 +300,9 @@ export function VerdictPageAdapter({
     return {
       noi: { 
         label: 'Net Operating Income (NOI)', 
-        value: `$${Math.round(noi).toLocaleString()}` 
+        value: `$${Math.round(noi).toLocaleString()}`,
+        monthlyLabel: 'Monthly NOI',
+        monthlyValue: `$${Math.round(noi / 12).toLocaleString()}`,
       },
       cashflow: {
         annual: {

@@ -39,7 +39,12 @@ export interface BreakdownGroup {
 interface FinancialBreakdownProps {
   leftColumn: BreakdownGroup[];
   rightColumn: BreakdownGroup[];
-  noi: { label: string; value: string };
+  noi: {
+    label: string;
+    value: string;
+    monthlyLabel: string;
+    monthlyValue: string;
+  };
   cashflow: {
     annual: { label: string; value: string; isNegative: boolean };
     monthly: { label: string; value: string; isNegative: boolean };
@@ -185,8 +190,14 @@ export function FinancialBreakdown({
           {/* NOI Highlight */}
           <View style={styles.noiBox}>
             <View style={styles.noiAccent} />
-            <Text style={styles.noiLabel}>{noi.label}</Text>
-            <Text style={styles.noiValue}>{noi.value}</Text>
+            <View style={styles.noiTopRow}>
+              <Text style={styles.noiLabel}>{noi.label}</Text>
+              <Text style={styles.noiValue}>{noi.value}</Text>
+            </View>
+            <View style={styles.noiBottomRow}>
+              <Text style={styles.noiMonthlyLabel}>{noi.monthlyLabel}</Text>
+              <Text style={styles.noiMonthlyValue}>{noi.monthlyValue}</Text>
+            </View>
           </View>
 
           {/* Cashflow Box */}
@@ -198,19 +209,16 @@ export function FinancialBreakdown({
                 : styles.cashflowBoxNegative,
             ]}
           >
+            <View
+              style={[
+                styles.cashflowAccent,
+                isPositiveCashflow
+                  ? styles.cashflowAccentPositive
+                  : styles.cashflowAccentNegative,
+              ]}
+            />
             <View style={styles.cashflowRow}>
-              <View style={styles.cashflowLabelRow}>
-                <Ionicons
-                  name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
-                  size={14}
-                  color={
-                    isPositiveCashflow
-                      ? decisionGrade.pacificTeal
-                      : decisionGrade.negative
-                  }
-                />
-                <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
-              </View>
+              <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
               <Text
                 style={[
                   styles.cashflowValue,
@@ -405,13 +413,11 @@ const styles = StyleSheet.create({
   noiBox: {
     paddingVertical: rs(10),
     paddingHorizontal: rs(12),
+    paddingLeft: rs(16),
     backgroundColor: 'rgba(8,145,178,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(8,145,178,0.20)',
     borderRadius: rs(10),
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     overflow: 'hidden',
     marginBottom: rs(6),
   },
@@ -425,16 +431,36 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: rs(10),
     borderBottomLeftRadius: rs(10),
   },
+  noiTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: rs(3),
+  },
   noiLabel: {
     fontSize: rf(9),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
     flex: 1,
-    paddingLeft: rs(6),
   },
   noiValue: {
     fontSize: rf(12),
     fontWeight: '800',
+    color: decisionGrade.pacificTeal,
+  },
+  noiBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  noiMonthlyLabel: {
+    fontSize: rf(9),
+    fontWeight: '500',
+    color: decisionGrade.textSecondary,
+  },
+  noiMonthlyValue: {
+    fontSize: rf(10),
+    fontWeight: '600',
     color: decisionGrade.pacificTeal,
   },
 
@@ -442,8 +468,25 @@ const styles = StyleSheet.create({
   cashflowBox: {
     paddingVertical: rs(10),
     paddingHorizontal: rs(12),
+    paddingLeft: rs(16),
     borderRadius: rs(10),
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  cashflowAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: rs(4),
+    borderTopLeftRadius: rs(10),
+    borderBottomLeftRadius: rs(10),
+  },
+  cashflowAccentPositive: {
+    backgroundColor: decisionGrade.pacificTeal,
+  },
+  cashflowAccentNegative: {
+    backgroundColor: decisionGrade.negative,
   },
   cashflowBoxPositive: {
     backgroundColor: 'rgba(8,145,178,0.05)',
@@ -458,11 +501,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: rs(3),
-  },
-  cashflowLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: rs(4),
   },
   cashflowLabel: {
     fontSize: rf(9),

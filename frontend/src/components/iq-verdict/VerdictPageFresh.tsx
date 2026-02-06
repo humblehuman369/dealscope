@@ -99,7 +99,12 @@ interface FinancialColumn {
 }
 
 interface FinancialSummary {
-  noi: { label: string; value: string }
+  noi: {
+    label: string
+    value: string
+    monthlyLabel: string
+    monthlyValue: string
+  }
   cashflow: {
     annual: { label: string; value: string; isNegative: boolean }
     monthly: { label: string; value: string; isNegative: boolean }
@@ -1022,7 +1027,7 @@ function FinancialBreakdownSection({
           <div className="space-y-2">
             {/* NOI Highlight Box */}
             <div 
-              className="flex justify-between items-center rounded-xl px-3.5 py-3 relative overflow-hidden"
+              className="rounded-xl px-3.5 py-3 relative overflow-hidden"
               style={{ 
                 backgroundColor: 'rgba(8,145,178,0.05)',
                 border: '1px solid rgba(8,145,178,0.20)',
@@ -1032,29 +1037,50 @@ function FinancialBreakdownSection({
                 className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
                 style={{ backgroundColor: colors.brand.tealBright }}
               />
-              <span 
-                className="font-bold pl-2"
-                style={{ 
-                  fontSize: typography.caption.size + 2,
-                  color: colors.text.primary,
-                }}
-              >
-                {summary.noi.label}
-              </span>
-              <span 
-                className="font-extrabold tabular-nums"
-                style={{ 
-                  fontSize: typography.body.size + 2,
-                  color: colors.brand.tealBright,
-                }}
-              >
-                {summary.noi.value}
-              </span>
+              <div className="flex justify-between items-center mb-1 pl-2">
+                <span 
+                  className="font-bold"
+                  style={{ 
+                    fontSize: typography.caption.size + 2,
+                    color: colors.text.primary,
+                  }}
+                >
+                  {summary.noi.label}
+                </span>
+                <span 
+                  className="font-extrabold tabular-nums"
+                  style={{ 
+                    fontSize: typography.body.size + 2,
+                    color: colors.brand.tealBright,
+                  }}
+                >
+                  {summary.noi.value}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pl-2">
+                <span 
+                  style={{ 
+                    fontSize: typography.caption.size + 1,
+                    color: colors.text.tertiary,
+                  }}
+                >
+                  {summary.noi.monthlyLabel}
+                </span>
+                <span 
+                  className="font-semibold tabular-nums"
+                  style={{ 
+                    fontSize: typography.caption.size + 2,
+                    color: colors.brand.tealBright,
+                  }}
+                >
+                  {summary.noi.monthlyValue}
+                </span>
+              </div>
             </div>
 
             {/* Cashflow Box */}
             <div 
-              className="rounded-xl px-3.5 py-3"
+              className="rounded-xl px-3.5 py-3 relative overflow-hidden"
               style={{ 
                 backgroundColor: summary.cashflow.annual.isNegative 
                   ? 'rgba(220,38,38,0.05)' 
@@ -1066,33 +1092,24 @@ function FinancialBreakdownSection({
                 }`,
               }}
             >
-              <div className="flex justify-between items-center mb-1">
-                <div className="flex items-center gap-1.5">
-                  <svg 
-                    className="w-3.5 h-3.5" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke={summary.cashflow.annual.isNegative ? colors.status.negative : colors.brand.tealBright} 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    {summary.cashflow.annual.isNegative ? (
-                      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                    ) : (
-                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                    )}
-                  </svg>
-                  <span 
-                    className="font-bold"
-                    style={{ 
-                      fontSize: typography.caption.size + 2,
-                      color: colors.text.primary,
-                    }}
-                  >
-                    {summary.cashflow.annual.label}
-                  </span>
-                </div>
+              <div 
+                className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                style={{ 
+                  backgroundColor: summary.cashflow.annual.isNegative 
+                    ? colors.status.negative 
+                    : colors.brand.tealBright,
+                }}
+              />
+              <div className="flex justify-between items-center mb-1 pl-2">
+                <span 
+                  className="font-bold"
+                  style={{ 
+                    fontSize: typography.caption.size + 2,
+                    color: colors.text.primary,
+                  }}
+                >
+                  {summary.cashflow.annual.label}
+                </span>
                 <span 
                   className="font-extrabold tabular-nums"
                   style={{ 
@@ -1105,7 +1122,7 @@ function FinancialBreakdownSection({
                   {summary.cashflow.annual.value}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center pl-2">
                 <span 
                   style={{ 
                     fontSize: typography.caption.size + 1,

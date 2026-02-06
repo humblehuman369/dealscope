@@ -668,7 +668,12 @@ export default function VerdictIQScreen() {
           <FinancialBreakdown
             leftColumn={leftColumn}
             rightColumn={rightColumn}
-            noi={{ label: 'Net Operating Income (NOI)', value: formatCurrencyCompact(noiValue) }}
+            noi={{
+              label: 'Net Operating Income (NOI)',
+              value: formatCurrencyCompact(noiValue),
+              monthlyLabel: 'Monthly NOI',
+              monthlyValue: formatCurrencyCompact(Math.round(noiValue / 12)),
+            }}
             cashflow={cashFlowValues}
           />
 
