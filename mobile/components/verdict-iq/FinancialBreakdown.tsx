@@ -12,8 +12,11 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { decisionGrade } from '../../theme/colors';
 import { rf, rs } from './responsive';
 
@@ -130,56 +133,107 @@ export function FinancialBreakdown({
         </View>
       </View>
 
-      {/* Full-width NOI Highlight */}
-      <View style={styles.noiBox}>
-        <View style={styles.noiAccent} />
-        <Text style={styles.noiLabel}>{noi.label}</Text>
-        <Text style={styles.noiValue}>{noi.value}</Text>
-      </View>
-
-      {/* Full-width Cashflow Box */}
-      <View
-        style={[
-          styles.cashflowBox,
-          isPositiveCashflow
-            ? styles.cashflowBoxPositive
-            : styles.cashflowBoxNegative,
-        ]}
-      >
-        <View style={styles.cashflowRow}>
-          <View style={styles.cashflowLabelRow}>
-            <Ionicons
-              name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
-              size={16}
-              color={
-                isPositiveCashflow
-                  ? decisionGrade.pacificTeal
-                  : decisionGrade.negative
-              }
-            />
-            <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
+      {/* Bottom Row: Resources (left) + NOI/Cashflow (right) */}
+      <View style={styles.bottomRow}>
+        {/* Left: Resources */}
+        <View style={styles.bottomColumn}>
+          {/* Resources sub-header (same style as FINANCING) */}
+          <View style={styles.subGroupHeader}>
+            <View style={styles.subGroupAccent} />
+            <Text style={styles.subGroupTitle}>Resources</Text>
           </View>
-          <Text
-            style={[
-              styles.cashflowValue,
-              cashflow.annual.isNegative && styles.cashflowValueNeg,
-            ]}
+
+          <TouchableOpacity
+            style={styles.resourceBtn}
+            activeOpacity={0.7}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Alert.alert('Get Funding', 'Funding resources coming soon');
+            }}
           >
-            {cashflow.annual.value}
-          </Text>
+            <Ionicons name="cash-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Text style={styles.resourceBtnText}>GET FUNDING</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.resourceBtn}
+            activeOpacity={0.7}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Alert.alert('Talk to an Agent', 'Agent matching coming soon');
+            }}
+          >
+            <Ionicons name="people-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Text style={styles.resourceBtnText}>TALK TO AN AGENT</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.resourceBtn}
+            activeOpacity={0.7}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Alert.alert('Need a Contractor', 'Contractor matching coming soon');
+            }}
+          >
+            <Ionicons name="construct-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Text style={styles.resourceBtnText}>NEED A CONTRACTOR</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.cashflowRow}>
-          <Text style={styles.cashflowMonthlyLabel}>
-            {cashflow.monthly.label}
-          </Text>
-          <Text
+
+        {/* Right: NOI + Cashflow */}
+        <View style={styles.bottomColumn}>
+          {/* NOI Highlight */}
+          <View style={styles.noiBox}>
+            <View style={styles.noiAccent} />
+            <Text style={styles.noiLabel}>{noi.label}</Text>
+            <Text style={styles.noiValue}>{noi.value}</Text>
+          </View>
+
+          {/* Cashflow Box */}
+          <View
             style={[
-              styles.cashflowMonthlyValue,
-              cashflow.monthly.isNegative && styles.cashflowValueNeg,
+              styles.cashflowBox,
+              isPositiveCashflow
+                ? styles.cashflowBoxPositive
+                : styles.cashflowBoxNegative,
             ]}
           >
-            {cashflow.monthly.value}
-          </Text>
+            <View style={styles.cashflowRow}>
+              <View style={styles.cashflowLabelRow}>
+                <Ionicons
+                  name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
+                  size={14}
+                  color={
+                    isPositiveCashflow
+                      ? decisionGrade.pacificTeal
+                      : decisionGrade.negative
+                  }
+                />
+                <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
+              </View>
+              <Text
+                style={[
+                  styles.cashflowValue,
+                  cashflow.annual.isNegative && styles.cashflowValueNeg,
+                ]}
+              >
+                {cashflow.annual.value}
+              </Text>
+            </View>
+            <View style={styles.cashflowRow}>
+              <Text style={styles.cashflowMonthlyLabel}>
+                {cashflow.monthly.label}
+              </Text>
+              <Text
+                style={[
+                  styles.cashflowMonthlyValue,
+                  cashflow.monthly.isNegative && styles.cashflowValueNeg,
+                ]}
+              >
+                {cashflow.monthly.value}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -317,12 +371,41 @@ const styles = StyleSheet.create({
     color: decisionGrade.pacificTeal,
   },
 
+  /* ── Bottom row (Resources left, NOI/Cash right) ── */
+  bottomRow: {
+    flexDirection: 'row',
+    paddingHorizontal: rs(12),
+    gap: rs(10),
+    marginTop: rs(8),
+  },
+  bottomColumn: {
+    flex: 1,
+  },
+
+  /* ── Resource Buttons ── */
+  resourceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(8),
+    paddingVertical: rs(10),
+    paddingHorizontal: rs(12),
+    backgroundColor: decisionGrade.bgPrimary,
+    borderWidth: 1.5,
+    borderColor: decisionGrade.pacificTeal,
+    borderRadius: rs(8),
+    marginBottom: rs(6),
+  },
+  resourceBtnText: {
+    fontSize: rf(9),
+    fontWeight: '700',
+    color: decisionGrade.pacificTeal,
+    letterSpacing: 0.4,
+  },
+
   /* ── NOI Box ── */
   noiBox: {
-    marginHorizontal: rs(12),
-    marginTop: rs(8),
-    paddingVertical: rs(12),
-    paddingHorizontal: rs(14),
+    paddingVertical: rs(10),
+    paddingHorizontal: rs(12),
     backgroundColor: 'rgba(8,145,178,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(8,145,178,0.20)',
@@ -331,6 +414,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     overflow: 'hidden',
+    marginBottom: rs(6),
   },
   noiAccent: {
     position: 'absolute',
@@ -343,24 +427,22 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: rs(10),
   },
   noiLabel: {
-    fontSize: rf(11),
+    fontSize: rf(9),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
     flex: 1,
     paddingLeft: rs(6),
   },
   noiValue: {
-    fontSize: rf(14),
+    fontSize: rf(12),
     fontWeight: '800',
     color: decisionGrade.pacificTeal,
   },
 
   /* ── Cashflow Box ── */
   cashflowBox: {
-    marginHorizontal: rs(12),
-    marginTop: rs(8),
-    paddingVertical: rs(12),
-    paddingHorizontal: rs(14),
+    paddingVertical: rs(10),
+    paddingHorizontal: rs(12),
     borderRadius: rs(10),
     borderWidth: 1,
   },
@@ -376,20 +458,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: rs(4),
+    marginBottom: rs(3),
   },
   cashflowLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rs(6),
+    gap: rs(4),
   },
   cashflowLabel: {
-    fontSize: rf(11),
+    fontSize: rf(9),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
   },
   cashflowValue: {
-    fontSize: rf(14),
+    fontSize: rf(12),
     fontWeight: '800',
     color: decisionGrade.pacificTeal,
   },
@@ -397,12 +479,12 @@ const styles = StyleSheet.create({
     color: decisionGrade.negative,
   },
   cashflowMonthlyLabel: {
-    fontSize: rf(10),
+    fontSize: rf(9),
     fontWeight: '500',
     color: decisionGrade.textSecondary,
   },
   cashflowMonthlyValue: {
-    fontSize: rf(11),
+    fontSize: rf(10),
     fontWeight: '600',
     color: decisionGrade.pacificTeal,
   },

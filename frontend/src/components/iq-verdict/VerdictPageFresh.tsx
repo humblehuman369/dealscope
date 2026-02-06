@@ -939,114 +939,193 @@ function FinancialBreakdownSection({
         ))}
       </div>
 
-      {/* Full-Width Summary Boxes */}
+      {/* Bottom Row: Resources (left) + NOI/Cashflow (right) */}
       {summary && (
-        <div className="px-5 pb-4 space-y-2">
-          {/* NOI Highlight Box */}
-          <div 
-            className="flex justify-between items-center rounded-xl px-4 py-3 relative overflow-hidden"
-            style={{ 
-              backgroundColor: 'rgba(8,145,178,0.05)',
-              border: '1px solid rgba(8,145,178,0.20)',
-            }}
-          >
+        <div className="grid grid-cols-2 gap-6 px-5 pb-4">
+          {/* Left: Resources */}
+          <div>
+            {/* Resources sub-header (matches FINANCING style) */}
             <div 
-              className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-              style={{ backgroundColor: colors.brand.tealBright }}
-            />
-            <span 
-              className="font-bold pl-2"
-              style={{ 
-                fontSize: typography.body.size,
-                color: colors.text.primary,
-              }}
+              className="flex items-center gap-2 pb-1.5 mb-3"
+              style={{ borderBottom: `2px solid ${colors.brand.tealBright}` }}
             >
-              {summary.noi.label}
-            </span>
-            <span 
-              className="font-extrabold tabular-nums"
-              style={{ 
-                fontSize: typography.body.size + 4,
-                color: colors.brand.tealBright,
-              }}
-            >
-              {summary.noi.value}
-            </span>
-          </div>
+              <div 
+                className="w-[3px] h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: colors.brand.tealBright }}
+              />
+              <span 
+                className="uppercase tracking-wider"
+                style={{ 
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: colors.brand.tealBright,
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Resources
+              </span>
+            </div>
 
-          {/* Cashflow Box */}
-          <div 
-            className="rounded-xl px-4 py-3"
-            style={{ 
-              backgroundColor: summary.cashflow.annual.isNegative 
-                ? 'rgba(220,38,38,0.05)' 
-                : 'rgba(8,145,178,0.05)',
-              border: `1px solid ${
-                summary.cashflow.annual.isNegative 
-                  ? 'rgba(220,38,38,0.20)' 
-                  : 'rgba(8,145,178,0.20)'
-              }`,
-            }}
-          >
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-2">
-                <svg 
-                  className="w-4 h-4" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke={summary.cashflow.annual.isNegative ? colors.status.negative : colors.brand.tealBright} 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  {summary.cashflow.annual.isNegative ? (
-                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                  ) : (
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                  )}
+            <div className="space-y-2">
+              <button
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
+                style={{ borderColor: colors.brand.tealBright }}
+              >
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
                 <span 
-                  className="font-bold"
-                  style={{ 
-                    fontSize: typography.body.size,
-                    color: colors.text.primary,
-                  }}
+                  className="font-bold uppercase tracking-wide"
+                  style={{ fontSize: 10, color: colors.brand.tealBright, letterSpacing: '0.4px' }}
                 >
-                  {summary.cashflow.annual.label}
+                  Get Funding
                 </span>
-              </div>
+              </button>
+
+              <button
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
+                style={{ borderColor: colors.brand.tealBright }}
+              >
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span 
+                  className="font-bold uppercase tracking-wide"
+                  style={{ fontSize: 10, color: colors.brand.tealBright, letterSpacing: '0.4px' }}
+                >
+                  Talk to an Agent
+                </span>
+              </button>
+
+              <button
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
+                style={{ borderColor: colors.brand.tealBright }}
+              >
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+                <span 
+                  className="font-bold uppercase tracking-wide"
+                  style={{ fontSize: 10, color: colors.brand.tealBright, letterSpacing: '0.4px' }}
+                >
+                  Need a Contractor
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right: NOI + Cashflow */}
+          <div className="space-y-2">
+            {/* NOI Highlight Box */}
+            <div 
+              className="flex justify-between items-center rounded-xl px-3.5 py-3 relative overflow-hidden"
+              style={{ 
+                backgroundColor: 'rgba(8,145,178,0.05)',
+                border: '1px solid rgba(8,145,178,0.20)',
+              }}
+            >
+              <div 
+                className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                style={{ backgroundColor: colors.brand.tealBright }}
+              />
+              <span 
+                className="font-bold pl-2"
+                style={{ 
+                  fontSize: typography.caption.size + 2,
+                  color: colors.text.primary,
+                }}
+              >
+                {summary.noi.label}
+              </span>
               <span 
                 className="font-extrabold tabular-nums"
                 style={{ 
-                  fontSize: typography.body.size + 4,
-                  color: summary.cashflow.annual.isNegative 
-                    ? colors.status.negative 
-                    : colors.brand.tealBright,
+                  fontSize: typography.body.size + 2,
+                  color: colors.brand.tealBright,
                 }}
               >
-                {summary.cashflow.annual.value}
+                {summary.noi.value}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span 
-                style={{ 
-                  fontSize: typography.caption.size + 1,
-                  color: colors.text.tertiary,
-                }}
-              >
-                {summary.cashflow.monthly.label}
-              </span>
-              <span 
-                className="font-semibold tabular-nums"
-                style={{ 
-                  fontSize: typography.caption.size + 2,
-                  color: summary.cashflow.monthly.isNegative 
-                    ? colors.status.negative 
-                    : colors.brand.tealBright,
-                }}
-              >
-                {summary.cashflow.monthly.value}
-              </span>
+
+            {/* Cashflow Box */}
+            <div 
+              className="rounded-xl px-3.5 py-3"
+              style={{ 
+                backgroundColor: summary.cashflow.annual.isNegative 
+                  ? 'rgba(220,38,38,0.05)' 
+                  : 'rgba(8,145,178,0.05)',
+                border: `1px solid ${
+                  summary.cashflow.annual.isNegative 
+                    ? 'rgba(220,38,38,0.20)' 
+                    : 'rgba(8,145,178,0.20)'
+                }`,
+              }}
+            >
+              <div className="flex justify-between items-center mb-1">
+                <div className="flex items-center gap-1.5">
+                  <svg 
+                    className="w-3.5 h-3.5" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke={summary.cashflow.annual.isNegative ? colors.status.negative : colors.brand.tealBright} 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    {summary.cashflow.annual.isNegative ? (
+                      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                    ) : (
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    )}
+                  </svg>
+                  <span 
+                    className="font-bold"
+                    style={{ 
+                      fontSize: typography.caption.size + 2,
+                      color: colors.text.primary,
+                    }}
+                  >
+                    {summary.cashflow.annual.label}
+                  </span>
+                </div>
+                <span 
+                  className="font-extrabold tabular-nums"
+                  style={{ 
+                    fontSize: typography.body.size + 2,
+                    color: summary.cashflow.annual.isNegative 
+                      ? colors.status.negative 
+                      : colors.brand.tealBright,
+                  }}
+                >
+                  {summary.cashflow.annual.value}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span 
+                  style={{ 
+                    fontSize: typography.caption.size + 1,
+                    color: colors.text.tertiary,
+                  }}
+                >
+                  {summary.cashflow.monthly.label}
+                </span>
+                <span 
+                  className="font-semibold tabular-nums"
+                  style={{ 
+                    fontSize: typography.caption.size + 2,
+                    color: summary.cashflow.monthly.isNegative 
+                      ? colors.status.negative 
+                      : colors.brand.tealBright,
+                  }}
+                >
+                  {summary.cashflow.monthly.value}
+                </span>
+              </div>
             </div>
           </div>
         </div>
