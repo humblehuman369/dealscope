@@ -107,7 +107,7 @@ class ZillowClient(BaseAPIClient['ZillowAPIResponse']):
         error: Optional[str],
         status_code: Optional[int],
         raw_response: Optional[Dict[str, Any]] = None,
-        endpoint: Optional[ZillowEndpoint] = None,
+        zillow_endpoint: Optional[ZillowEndpoint] = None,
         **kwargs
     ) -> 'ZillowAPIResponse':
         """Create Zillow-specific response."""
@@ -118,7 +118,7 @@ class ZillowClient(BaseAPIClient['ZillowAPIResponse']):
         
         return ZillowAPIResponse(
             success=success,
-            endpoint=endpoint or ZillowEndpoint.PROPERTY_V2,
+            endpoint=zillow_endpoint or ZillowEndpoint.PROPERTY_V2,
             data=data,
             error=error,
             status_code=status_code,
@@ -136,12 +136,12 @@ class ZillowClient(BaseAPIClient['ZillowAPIResponse']):
         params: Dict[str, Any] = None
     ) -> ZillowAPIResponse:
         """Make authenticated request to AXESSO Zillow API."""
-        # Use base class _make_request with endpoint value as path
-        # Pass endpoint enum as response_kwargs for _create_response
+        # Use base class _make_request with endpoint value as URL path.
+        # Pass the ZillowEndpoint enum via response_kwargs so _create_response receives it.
         return await super()._make_request(
             endpoint=endpoint.value,
             params=params,
-            endpoint=endpoint  # This goes to **response_kwargs in _create_response
+            zillow_endpoint=endpoint,
         )
     
     # =========================================================================

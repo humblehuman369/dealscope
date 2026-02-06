@@ -25,7 +25,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useAuth } from '@/context/AuthContext'
-import { getAccessToken } from '@/lib/api'
+import { getAccessToken, refreshAccessToken } from '@/lib/api'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -264,14 +264,19 @@ export function AppHeader({
     // Only check if authenticated and has address
     if (!isAuthenticated || !displayAddress) return
     
-    const token = getAccessToken()
-    if (!token) return
-    
     // Use AbortController to cancel fetch on unmount
     const abortController = new AbortController()
     
     const checkIfSaved = async () => {
       try {
+        // Get token, refreshing if needed
+        let token = getAccessToken()
+        if (!token) {
+          const refreshed = await refreshAccessToken()
+          if (refreshed) token = getAccessToken()
+          if (!token) return // No token available, skip check
+        }
+
         const savedProperty = await fetchExistingSavedProperty(token)
         if (savedProperty) {
           setIsSaved(true)
@@ -400,11 +405,19 @@ export function AppHeader({
 
     if (isSaving || isSaved || !displayAddress) return
 
-    // Get auth token
-    const token = getAccessToken()
+    // Get auth token - try refresh if not available
+    let token = getAccessToken()
     if (!token) {
-      setShowAuthModal('login')
-      return
+      // User is authenticated (via cookies/session) but no in-memory token.
+      // Try to refresh to obtain a Bearer token.
+      const refreshed = await refreshAccessToken()
+      if (refreshed) {
+        token = getAccessToken()
+      }
+      if (!token) {
+        setShowAuthModal('login')
+        return
+      }
     }
 
     setIsSaving(true)
@@ -477,10 +490,14 @@ export function AppHeader({
   const handleUnsave = useCallback(async () => {
     if (!isAuthenticated || !savedPropertyId || isSaving) return
 
-    const token = getAccessToken()
+    let token = getAccessToken()
     if (!token) {
-      setShowAuthModal('login')
-      return
+      const refreshed = await refreshAccessToken()
+      if (refreshed) token = getAccessToken()
+      if (!token) {
+        setShowAuthModal('login')
+        return
+      }
     }
 
     setIsSaving(true)
