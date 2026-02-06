@@ -24,7 +24,6 @@ import {
   Loader2,
 } from 'lucide-react'
 import { 
-  spacing, 
   typography, 
   colors, 
   components, 
@@ -85,9 +84,26 @@ interface KeyMetric {
   label: string
 }
 
+interface FinancialItem {
+  label: string
+  value: string
+  isTotal?: boolean
+  isSubHeader?: boolean
+  isNegative?: boolean
+  isTeal?: boolean
+}
+
 interface FinancialColumn {
   title: string
-  items: { label: string; value: string; isTotal?: boolean }[]
+  items: FinancialItem[]
+}
+
+interface FinancialSummary {
+  noi: { label: string; value: string }
+  cashflow: {
+    annual: { label: string; value: string; isNegative: boolean }
+    monthly: { label: string; value: string; isNegative: boolean }
+  }
 }
 
 interface PerformanceMetric {
@@ -110,6 +126,7 @@ interface VerdictPageFreshProps {
   priceCards: PriceCard[]
   keyMetrics: KeyMetric[]
   financialBreakdown: FinancialColumn[]
+  financialSummary?: FinancialSummary
   performanceMetrics: PerformanceMetric[]
   /** Currently selected price card for metrics calculation */
   selectedPriceCard?: PriceCardVariant
@@ -770,16 +787,16 @@ function InvestmentAnalysisSection({
 }
 
 /**
- * Section E: Financial Breakdown (Polished)
- * Icon header, accent bars on column titles, gradient totals
+ * Section E: Financial Breakdown (Two-Column Mini Financial Statement)
+ * Always expanded, sub-group headers with teal accents, full-width NOI/Cashflow summary
  */
 function FinancialBreakdownSection({
   columns,
+  summary,
 }: {
   columns: FinancialColumn[]
+  summary?: FinancialSummary
 }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-
   return (
     <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
       {/* Header with Icon */}
@@ -807,70 +824,96 @@ function FinancialBreakdownSection({
               Financial Breakdown
             </h3>
             <span style={{ fontSize: typography.caption.size, color: colors.text.tertiary }}>
-              Detailed proforma
+              Mini proforma statement
             </span>
           </div>
         </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1 text-sm transition-colors hover:opacity-75"
-          style={{ color: colors.brand.tealBright }}
-        >
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {isExpanded ? 'Collapse' : 'Expand All'}
-        </button>
       </div>
 
-      {/* Column Headers with teal accent */}
-      <div 
-        className="grid grid-cols-3 gap-2 px-4 py-2 border-b"
-        style={{ borderColor: colors.ui.border }}
-      >
-        {columns.map((column) => (
-          <div key={column.title} className="flex items-center gap-2">
-            <div 
-              className="w-[3px] h-3.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: colors.brand.tealBright }}
-            />
-            <span 
-              className="uppercase tracking-wide"
-              style={{ 
-                fontSize: typography.caption.size,
-                fontWeight: typography.heading.weight,
-                color: colors.brand.tealBright,
-              }}
-            >
-              {column.title}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Column Content */}
-      <div className="grid grid-cols-3 gap-2 px-4 py-3">
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-2 gap-6 px-5 py-4">
         {columns.map((column) => (
           <div key={column.title}>
-            <div className="space-y-2">
-              {column.items
-                .slice(0, isExpanded ? undefined : 3)
-                .map((item, idx) => (
+            {/* Column items */}
+            <div className="space-y-0">
+              {column.items.map((item, idx) => {
+                // Sub-header rendering
+                if (item.isSubHeader) {
+                  return (
+                    <div 
+                      key={idx} 
+                      className="flex items-center gap-2 pb-1.5 mb-1"
+                      style={{ 
+                        borderBottom: `2px solid ${colors.brand.tealBright}`,
+                        marginTop: idx > 0 ? 16 : 0,
+                      }}
+                    >
+                      <div 
+                        className="w-[3px] h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: colors.brand.tealBright }}
+                      />
+                      <span 
+                        className="uppercase tracking-wider"
+                        style={{ 
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: colors.brand.tealBright,
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                    </div>
+                  )
+                }
+
+                // Total row rendering
+                if (item.isTotal) {
+                  return (
+                    <div 
+                      key={idx}
+                      className="flex justify-between items-center py-1.5 mt-1"
+                      style={{
+                        borderTop: `1.5px solid ${colors.brand.tealBright}`,
+                      }}
+                    >
+                      <span 
+                        style={{ 
+                          fontSize: typography.caption.size + 1,
+                          color: colors.text.primary,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                      <span 
+                        style={{ 
+                          fontSize: typography.caption.size + 1,
+                          color: colors.brand.tealBright,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.value}
+                      </span>
+                    </div>
+                  )
+                }
+
+                // Normal row
+                return (
                   <div 
                     key={idx}
-                    className={`flex justify-between items-center ${
-                      item.isTotal 
-                        ? 'bg-teal-500/5 -mx-1 px-1 py-1 rounded border-t border-teal-200/50' 
-                        : ''
-                    }`}
+                    className="flex justify-between items-center"
                     style={{
-                      paddingTop: item.isTotal ? spacing.xs : undefined,
-                      marginTop: item.isTotal ? spacing.xs : undefined,
+                      padding: '5px 0',
+                      borderBottom: `1px solid ${colors.ui.border}40`,
                     }}
                   >
                     <span 
                       style={{ 
                         fontSize: typography.caption.size + 1,
-                        color: item.isTotal ? colors.text.primary : colors.text.secondary,
-                        fontWeight: item.isTotal ? 600 : 400,
+                        color: colors.text.secondary,
+                        fontWeight: 500,
                       }}
                     >
                       {item.label}
@@ -878,18 +921,136 @@ function FinancialBreakdownSection({
                     <span 
                       style={{ 
                         fontSize: typography.caption.size + 1,
-                        color: item.isTotal ? colors.brand.tealBright : colors.text.primary,
-                        fontWeight: item.isTotal ? 700 : 500,
+                        color: item.isNegative 
+                          ? colors.status.negative 
+                          : item.isTeal 
+                            ? colors.brand.tealBright 
+                            : colors.text.primary,
+                        fontWeight: 600,
                       }}
                     >
                       {item.value}
                     </span>
                   </div>
-                ))}
+                )
+              })}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Full-Width Summary Boxes */}
+      {summary && (
+        <div className="px-5 pb-4 space-y-2">
+          {/* NOI Highlight Box */}
+          <div 
+            className="flex justify-between items-center rounded-xl px-4 py-3 relative overflow-hidden"
+            style={{ 
+              backgroundColor: 'rgba(8,145,178,0.05)',
+              border: '1px solid rgba(8,145,178,0.20)',
+            }}
+          >
+            <div 
+              className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+              style={{ backgroundColor: colors.brand.tealBright }}
+            />
+            <span 
+              className="font-bold pl-2"
+              style={{ 
+                fontSize: typography.body.size,
+                color: colors.text.primary,
+              }}
+            >
+              {summary.noi.label}
+            </span>
+            <span 
+              className="font-extrabold tabular-nums"
+              style={{ 
+                fontSize: typography.body.size + 4,
+                color: colors.brand.tealBright,
+              }}
+            >
+              {summary.noi.value}
+            </span>
+          </div>
+
+          {/* Cashflow Box */}
+          <div 
+            className="rounded-xl px-4 py-3"
+            style={{ 
+              backgroundColor: summary.cashflow.annual.isNegative 
+                ? 'rgba(220,38,38,0.05)' 
+                : 'rgba(8,145,178,0.05)',
+              border: `1px solid ${
+                summary.cashflow.annual.isNegative 
+                  ? 'rgba(220,38,38,0.20)' 
+                  : 'rgba(8,145,178,0.20)'
+              }`,
+            }}
+          >
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-2">
+                <svg 
+                  className="w-4 h-4" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke={summary.cashflow.annual.isNegative ? colors.status.negative : colors.brand.tealBright} 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  {summary.cashflow.annual.isNegative ? (
+                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                  ) : (
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                  )}
+                </svg>
+                <span 
+                  className="font-bold"
+                  style={{ 
+                    fontSize: typography.body.size,
+                    color: colors.text.primary,
+                  }}
+                >
+                  {summary.cashflow.annual.label}
+                </span>
+              </div>
+              <span 
+                className="font-extrabold tabular-nums"
+                style={{ 
+                  fontSize: typography.body.size + 4,
+                  color: summary.cashflow.annual.isNegative 
+                    ? colors.status.negative 
+                    : colors.brand.tealBright,
+                }}
+              >
+                {summary.cashflow.annual.value}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span 
+                style={{ 
+                  fontSize: typography.caption.size + 1,
+                  color: colors.text.tertiary,
+                }}
+              >
+                {summary.cashflow.monthly.label}
+              </span>
+              <span 
+                className="font-semibold tabular-nums"
+                style={{ 
+                  fontSize: typography.caption.size + 2,
+                  color: summary.cashflow.monthly.isNegative 
+                    ? colors.status.negative 
+                    : colors.brand.tealBright,
+                }}
+              >
+                {summary.cashflow.monthly.value}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1067,6 +1228,7 @@ export function VerdictPageFresh({
   priceCards,
   keyMetrics,
   financialBreakdown,
+  financialSummary,
   performanceMetrics,
   selectedPriceCard = 'target',
   onDealMakerClick,
@@ -1127,7 +1289,7 @@ export function VerdictPageFresh({
         <div className="h-1" style={{ backgroundColor: colors.background.light }} />
 
         {/* Section E: Financial Breakdown */}
-        <FinancialBreakdownSection columns={financialBreakdown} />
+        <FinancialBreakdownSection columns={financialBreakdown} summary={financialSummary} />
 
         {/* Subtle divider */}
         <div className="h-px mx-4" style={{ backgroundColor: colors.ui.border }} />

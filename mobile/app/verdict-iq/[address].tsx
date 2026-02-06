@@ -149,7 +149,29 @@ function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: s
   ];
 }
 
-function buildPurchaseTerms(
+function buildPurchaseGroup(
+  listPrice: number,
+  targetPrice: number,
+  downPaymentPct: number = 0.20,
+  closingCostsPct: number = 0.03
+): BreakdownGroup {
+  const downPayment = targetPrice * downPaymentPct;
+  const closingCosts = targetPrice * closingCostsPct;
+  const loanAmount = targetPrice - downPayment;
+
+  return {
+    title: 'Purchase',
+    rows: [
+      { label: 'List Price', value: formatCurrencyCompact(listPrice) },
+      { label: 'Target Buy Price', value: formatCurrencyCompact(targetPrice), isTeal: true },
+      { label: `Down Payment (${Math.round(downPaymentPct * 100)}%)`, value: formatCurrencyCompact(downPayment) },
+      { label: `Closing Costs (${Math.round(closingCostsPct * 100)}%)`, value: formatCurrencyCompact(closingCosts) },
+      { label: 'Loan Amount', value: formatCurrencyCompact(loanAmount) },
+    ],
+  };
+}
+
+function buildFinancingGroup(
   targetPrice: number,
   downPaymentPct: number = 0.20,
   interestRate: number = 0.073,
@@ -160,71 +182,61 @@ function buildPurchaseTerms(
   const monthlyRate = interestRate / 12;
   const numPayments = loanTermYears * 12;
   const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
-  
+  const annualDebtService = monthlyPI * 12;
+
   return {
-    title: 'Purchase Terms',
-    adjustLabel: 'Adjust Terms',
+    title: 'Financing',
     rows: [
-      { label: 'Down Payment', value: formatCurrencyCompact(downPayment) },
-      { label: 'Down Payment %', value: formatPercent(downPaymentPct) },
-      { label: 'Loan Amount', value: formatCurrencyCompact(loanAmount) },
       { label: 'Interest Rate', value: formatPercent(interestRate) },
-      { label: 'Loan Term (Years)', value: String(loanTermYears) },
-      { label: 'Monthly Payment (P&I)', value: formatCurrencyCompact(monthlyPI) },
+      { label: 'Loan Term', value: `${loanTermYears} years` },
+      { label: 'Monthly P&I', value: formatCurrencyCompact(monthlyPI) },
     ],
+    totalRow: { label: 'Annual Debt Service', value: formatCurrencyCompact(annualDebtService) },
   };
 }
 
-function buildIncomeSection(monthlyRent: number, vacancyRate: number = 0.05): BreakdownGroup {
+function buildIncomeGroup(monthlyRent: number, vacancyRate: number = 0.05): BreakdownGroup {
   const annualRent = monthlyRent * 12;
   const vacancyLoss = annualRent * vacancyRate;
   const effectiveIncome = annualRent - vacancyLoss;
-  
+
   return {
     title: 'Income',
-    adjustLabel: 'Adjust Income',
     rows: [
-      { label: 'Gross Scheduled Rent', value: formatCurrencyCompact(annualRent) },
-      { label: 'Less: Vacancy Allowance', value: `(${formatCurrencyCompact(vacancyLoss)})`, isNegative: true },
-      { label: 'Other Income', value: '$0' },
+      { label: 'Monthly Rent', value: formatCurrencyCompact(monthlyRent) },
+      { label: 'Annual Gross', value: formatCurrencyCompact(annualRent) },
+      { label: `Vacancy (${Math.round(vacancyRate * 100)}%)`, value: `(${formatCurrencyCompact(vacancyLoss)})`, isNegative: true },
     ],
-    totalRow: { label: 'Effective Gross Income', value: formatCurrencyCompact(effectiveIncome) },
+    totalRow: { label: 'Eff. Gross Income', value: formatCurrencyCompact(effectiveIncome) },
   };
 }
 
-function buildOperatingExpenses(
+function buildExpensesGroup(
   propertyTaxes: number,
   insurance: number,
   monthlyRent: number,
+  managementPct: number = 0.08,
   maintenancePct: number = 0.05,
+  capexPct: number = 0.05,
   hoa: number = 0
 ): BreakdownGroup {
-  const maintenance = monthlyRent * 12 * maintenancePct;
-  const capex = monthlyRent * 12 * maintenancePct;
-  const totalExpenses = propertyTaxes + insurance + hoa + maintenance + capex;
-  
-  return {
-    title: 'Operating Expenses',
-    adjustLabel: 'Adjust Expenses',
-    rows: [
-      { label: 'Property Taxes', value: formatCurrencyCompact(propertyTaxes) },
-      { label: 'Insurance', value: formatCurrencyCompact(insurance) },
-      { label: 'HOA Fees', value: hoa > 0 ? formatCurrencyCompact(hoa) : '—' },
-      { label: 'Property Management', value: '—' },
-      { label: 'Maintenance & Repairs', value: formatCurrencyCompact(maintenance) },
-      { label: 'Utilities', value: '$0' },
-      { label: 'Capex Reserve', value: formatCurrencyCompact(capex) },
-    ],
-    totalRow: { label: 'Total Operating Expenses', value: formatCurrencyCompact(totalExpenses) },
-  };
-}
+  const annualRent = monthlyRent * 12;
+  const management = annualRent * managementPct;
+  const maintenance = annualRent * maintenancePct;
+  const capex = annualRent * capexPct;
+  const totalExpenses = propertyTaxes + insurance + management + maintenance + capex + hoa;
 
-function buildDebtService(monthlyPI: number): BreakdownGroup {
   return {
-    title: 'Debt Service',
+    title: 'Expenses',
     rows: [
-      { label: 'Annual Mortgage (P&I)', value: formatCurrencyCompact(monthlyPI * 12) },
+      { label: 'Property Tax', value: `${formatCurrencyCompact(propertyTaxes)}/yr` },
+      { label: 'Insurance', value: `${formatCurrencyCompact(insurance)}/yr` },
+      { label: `Mgmt (${Math.round(managementPct * 100)}%)`, value: `${formatCurrencyCompact(management)}/yr` },
+      { label: `Maintenance (${Math.round(maintenancePct * 100)}%)`, value: `${formatCurrencyCompact(maintenance)}/yr` },
+      { label: `CapEx (${Math.round(capexPct * 100)}%)`, value: `${formatCurrencyCompact(capex)}/yr` },
+      ...(hoa > 0 ? [{ label: 'HOA', value: `${formatCurrencyCompact(hoa)}/yr` }] : []),
     ],
+    totalRow: { label: 'Total Expenses', value: `${formatCurrencyCompact(totalExpenses)}/yr` },
   };
 }
 
@@ -348,7 +360,6 @@ export default function VerdictIQScreen() {
   const [activeTab, setActiveTab] = useState<NavTabId>('analyze');
   const [currentStrategy, setCurrentStrategy] = useState('Long-term Rental');
   const [selectedIQPrice, setSelectedIQPrice] = useState<IQPriceId>('target');
-  const [financialBreakdownOpen, setFinancialBreakdownOpen] = useState(true);
   const [glanceOpen, setGlanceOpen] = useState(true);
 
   const decodedAddress = decodeURIComponent(address || '');
@@ -406,16 +417,14 @@ export default function VerdictIQScreen() {
   const iqPrices = useMemo(() => buildIQPrices(breakevenPrice, targetPrice, listPrice), [breakevenPrice, targetPrice, listPrice]);
   const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
   const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
-  const purchaseTerms = useMemo(() => buildPurchaseTerms(targetPrice), [targetPrice]);
-  const incomeSection = useMemo(() => buildIncomeSection(monthlyRent), [monthlyRent]);
-  const operatingExpenses = useMemo(() => buildOperatingExpenses(propertyTaxes, insurance, monthlyRent), [propertyTaxes, insurance, monthlyRent]);
-  const debtService = useMemo(() => {
-    const loanAmount = targetPrice * 0.80;
-    const monthlyRate = 0.073 / 12;
-    const numPayments = 360;
-    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
-    return buildDebtService(monthlyPI);
-  }, [targetPrice]);
+  const leftColumn = useMemo(() => [
+    buildPurchaseGroup(listPrice, targetPrice),
+    buildFinancingGroup(targetPrice),
+  ], [listPrice, targetPrice]);
+  const rightColumn = useMemo(() => [
+    buildIncomeGroup(monthlyRent),
+    buildExpensesGroup(propertyTaxes, insurance, monthlyRent),
+  ], [monthlyRent, propertyTaxes, insurance]);
   const glanceMetrics = useMemo(() => buildGlanceMetrics(raw), [raw]);
   const benchmarkGroups = useMemo(() => buildBenchmarkGroups(raw), [raw]);
   
@@ -529,20 +538,6 @@ export default function VerdictIQScreen() {
     );
   }, []);
 
-  const handleAdjustTerms = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Adjust Purchase Terms', 'Opens purchase terms adjustment modal');
-  }, []);
-
-  const handleAdjustIncome = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Adjust Income', 'Opens income adjustment modal');
-  }, []);
-
-  const handleAdjustExpenses = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Adjust Expenses', 'Opens expenses adjustment modal');
-  }, []);
 
   const handleGotoDealMaker = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -669,15 +664,11 @@ export default function VerdictIQScreen() {
           {/* Spacer */}
           <View style={styles.sectionSpacer} />
 
-          {/* Financial Breakdown - Uses calculated data */}
+          {/* Financial Breakdown - Two-column mini financial statement */}
           <FinancialBreakdown
-            isOpen={financialBreakdownOpen}
-            onToggle={() => setFinancialBreakdownOpen(!financialBreakdownOpen)}
-            purchaseTerms={{ ...purchaseTerms, onAdjust: handleAdjustTerms }}
-            income={{ ...incomeSection, onAdjust: handleAdjustIncome }}
-            operatingExpenses={{ ...operatingExpenses, onAdjust: handleAdjustExpenses }}
+            leftColumn={leftColumn}
+            rightColumn={rightColumn}
             noi={{ label: 'Net Operating Income (NOI)', value: formatCurrencyCompact(noiValue) }}
-            debtService={debtService}
             cashflow={cashFlowValues}
           />
 

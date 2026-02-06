@@ -1,18 +1,19 @@
 /**
- * FinancialBreakdown Component - Decision-Grade UI (Polished)
- * Expandable financial tables with icon header, accent bars,
- * gradient NOI/cashflow highlight boxes
+ * FinancialBreakdown Component - Decision-Grade UI
+ * Two-column mini financial statement layout:
+ *   Left:  Purchase & Financing
+ *   Right: Income & Expenses
+ * Always fully expanded. Assumption variables inline.
+ * Full-width NOI and Cashflow summary boxes below.
  */
 
 import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { decisionGrade } from '../../theme/colors';
 import { rf, rs } from './responsive';
 
@@ -21,6 +22,7 @@ export interface BreakdownRow {
   value: string;
   isNegative?: boolean;
   isTeal?: boolean;
+  isSubHeader?: boolean;
 }
 
 export interface BreakdownGroup {
@@ -32,51 +34,56 @@ export interface BreakdownGroup {
 }
 
 interface FinancialBreakdownProps {
-  isOpen?: boolean;
-  onToggle?: () => void;
-  purchaseTerms: BreakdownGroup;
-  income: BreakdownGroup;
-  operatingExpenses: BreakdownGroup;
+  leftColumn: BreakdownGroup[];
+  rightColumn: BreakdownGroup[];
   noi: { label: string; value: string };
-  debtService: BreakdownGroup;
   cashflow: {
     annual: { label: string; value: string; isNegative: boolean };
     monthly: { label: string; value: string; isNegative: boolean };
   };
 }
 
-function TableGroup({ group }: { group: BreakdownGroup }) {
+function ColumnGroup({ group }: { group: BreakdownGroup }) {
   return (
-    <View style={styles.tableGroup}>
-      <View style={styles.tableGroupHeader}>
-        {/* Left accent bar */}
-        <View style={styles.groupAccentBar} />
-        <Text style={styles.tableGroupTitle}>{group.title}</Text>
-        {group.adjustLabel && (
-          <TouchableOpacity
-            style={styles.adjustBtn}
-            onPress={group.onAdjust}
-          >
-            <Text style={styles.adjustBtnText}>{group.adjustLabel}</Text>
-          </TouchableOpacity>
-        )}
+    <View style={styles.columnGroup}>
+      {/* Sub-group header */}
+      <View style={styles.subGroupHeader}>
+        <View style={styles.subGroupAccent} />
+        <Text style={styles.subGroupTitle}>{group.title}</Text>
       </View>
+
+      {/* Rows */}
       {group.rows.map((row, index) => (
-        <View key={index} style={styles.tableRow}>
-          <Text style={styles.rowLabel}>{row.label}</Text>
-          <Text style={[
-            styles.rowValue,
-            row.isNegative && styles.rowValueNegative,
-            row.isTeal && styles.rowValueTeal,
-          ]}>
-            {row.value}
+        <View key={index} style={styles.row}>
+          <Text
+            style={[
+              styles.rowLabel,
+              row.isSubHeader && styles.rowLabelSubHeader,
+            ]}
+            numberOfLines={1}
+          >
+            {row.label}
           </Text>
+          {!row.isSubHeader && (
+            <Text
+              style={[
+                styles.rowValue,
+                row.isNegative && styles.rowValueNegative,
+                row.isTeal && styles.rowValueTeal,
+              ]}
+              numberOfLines={1}
+            >
+              {row.value}
+            </Text>
+          )}
         </View>
       ))}
+
+      {/* Total row */}
       {group.totalRow && (
         <View style={styles.totalRow}>
-          <Text style={styles.totalRowLabel}>{group.totalRow.label}</Text>
-          <Text style={styles.totalRowValue}>{group.totalRow.value}</Text>
+          <Text style={styles.totalLabel}>{group.totalRow.label}</Text>
+          <Text style={styles.totalValue}>{group.totalRow.value}</Text>
         </View>
       )}
     </View>
@@ -84,100 +91,97 @@ function TableGroup({ group }: { group: BreakdownGroup }) {
 }
 
 export function FinancialBreakdown({
-  isOpen = true,
-  onToggle,
-  purchaseTerms,
-  income,
-  operatingExpenses,
+  leftColumn,
+  rightColumn,
   noi,
-  debtService,
   cashflow,
 }: FinancialBreakdownProps) {
-  const handleToggle = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onToggle?.();
-  };
-
   const isPositiveCashflow = !cashflow.annual.isNegative;
 
   return (
     <View style={styles.container}>
-      {/* Section Header with Icon */}
-      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle}>
+      {/* Section Header */}
+      <View style={styles.sectionHeader}>
         <View style={styles.sectionHeaderLeft}>
           <View style={styles.sectionIcon}>
             <Ionicons name="calculator" size={16} color="white" />
           </View>
           <View>
             <Text style={styles.sectionTitle}>Financial Breakdown</Text>
-            <Text style={styles.sectionSubtitle}>Detailed proforma</Text>
+            <Text style={styles.sectionSubtitle}>Mini proforma statement</Text>
           </View>
         </View>
-        <Ionicons
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
-          size={16}
-          color={decisionGrade.textSecondary}
-        />
-      </TouchableOpacity>
+      </View>
 
-      {isOpen && (
-        <View style={styles.content}>
-          {/* Purchase Terms */}
-          <TableGroup group={purchaseTerms} />
-          
-          <View style={styles.spacer} />
-
-          {/* Income */}
-          <TableGroup group={income} />
-          
-          <View style={styles.spacer} />
-
-          {/* Operating Expenses */}
-          <TableGroup group={operatingExpenses} />
-
-          {/* NOI Highlight Box - Gradient */}
-          <View style={styles.highlightBox}>
-            <View style={styles.highlightAccent} />
-            <Text style={styles.highlightLabel}>{noi.label}</Text>
-            <Text style={styles.highlightValue}>{noi.value}</Text>
-          </View>
-
-          {/* Debt Service */}
-          <TableGroup group={debtService} />
-
-          {/* Cashflow Box - Color-coded */}
-          <View style={[
-            styles.cashflowBox,
-            isPositiveCashflow ? styles.cashflowBoxPositive : styles.cashflowBoxNegative,
-          ]}>
-            <View style={styles.cashflowHeader}>
-              <View style={styles.cashflowLabelRow}>
-                <Ionicons
-                  name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
-                  size={16}
-                  color={isPositiveCashflow ? decisionGrade.pacificTeal : decisionGrade.negative}
-                />
-                <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
-              </View>
-              <Text style={[
-                styles.cashflowValue,
-                cashflow.annual.isNegative && styles.cashflowValueNegative,
-              ]}>
-                {cashflow.annual.value}
-              </Text>
-            </View>
-            <View style={styles.cashflowDetail}>
-              <Text style={styles.cashflowDetailLabel}>{cashflow.monthly.label}</Text>
-              <Text style={[
-                styles.cashflowDetailValue,
-                cashflow.monthly.isNegative && styles.cashflowDetailValueNegative,
-              ]}>
-                {cashflow.monthly.value}
-              </Text>
-            </View>
-          </View>
+      {/* Two-Column Layout */}
+      <View style={styles.columnsRow}>
+        {/* Left Column: Purchase & Financing */}
+        <View style={styles.column}>
+          {leftColumn.map((group, idx) => (
+            <ColumnGroup key={idx} group={group} />
+          ))}
         </View>
-      )}
+
+        {/* Right Column: Income & Expenses */}
+        <View style={styles.column}>
+          {rightColumn.map((group, idx) => (
+            <ColumnGroup key={idx} group={group} />
+          ))}
+        </View>
+      </View>
+
+      {/* Full-width NOI Highlight */}
+      <View style={styles.noiBox}>
+        <View style={styles.noiAccent} />
+        <Text style={styles.noiLabel}>{noi.label}</Text>
+        <Text style={styles.noiValue}>{noi.value}</Text>
+      </View>
+
+      {/* Full-width Cashflow Box */}
+      <View
+        style={[
+          styles.cashflowBox,
+          isPositiveCashflow
+            ? styles.cashflowBoxPositive
+            : styles.cashflowBoxNegative,
+        ]}
+      >
+        <View style={styles.cashflowRow}>
+          <View style={styles.cashflowLabelRow}>
+            <Ionicons
+              name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
+              size={16}
+              color={
+                isPositiveCashflow
+                  ? decisionGrade.pacificTeal
+                  : decisionGrade.negative
+              }
+            />
+            <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
+          </View>
+          <Text
+            style={[
+              styles.cashflowValue,
+              cashflow.annual.isNegative && styles.cashflowValueNeg,
+            ]}
+          >
+            {cashflow.annual.value}
+          </Text>
+        </View>
+        <View style={styles.cashflowRow}>
+          <Text style={styles.cashflowMonthlyLabel}>
+            {cashflow.monthly.label}
+          </Text>
+          <Text
+            style={[
+              styles.cashflowMonthlyValue,
+              cashflow.monthly.isNegative && styles.cashflowValueNeg,
+            ]}
+          >
+            {cashflow.monthly.value}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -185,11 +189,14 @@ export function FinancialBreakdown({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: decisionGrade.bgPrimary,
+    paddingBottom: rs(12),
   },
+
+  /* ── Header ── */
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: rs(14),
     paddingHorizontal: rs(16),
   },
@@ -216,60 +223,67 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: decisionGrade.textSecondary,
   },
-  content: {
-    paddingBottom: rs(20),
+
+  /* ── Two-column area ── */
+  columnsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: rs(12),
+    gap: rs(10),
   },
-  tableGroup: {
-    paddingHorizontal: rs(16),
+  column: {
+    flex: 1,
   },
-  tableGroupHeader: {
+
+  /* ── Sub-group inside a column ── */
+  columnGroup: {
+    marginBottom: rs(10),
+  },
+  subGroupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: rs(10),
+    paddingBottom: rs(6),
     borderBottomWidth: 2,
     borderBottomColor: decisionGrade.pacificTeal,
+    marginBottom: rs(4),
   },
-  groupAccentBar: {
-    width: rs(4),
-    height: rs(16),
+  subGroupAccent: {
+    width: rs(3),
+    height: rs(12),
     backgroundColor: decisionGrade.pacificTeal,
-    borderRadius: rs(2),
-    marginRight: rs(8),
+    borderRadius: rs(1.5),
+    marginRight: rs(6),
   },
-  tableGroupTitle: {
-    fontSize: rf(10),
+  subGroupTitle: {
+    fontSize: rf(9),
     fontWeight: '700',
     color: decisionGrade.pacificTeal,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    flex: 1,
   },
-  adjustBtn: {
-    paddingVertical: rs(5),
-    paddingHorizontal: rs(12),
-    backgroundColor: decisionGrade.pacificTeal,
-    borderRadius: rs(4),
-  },
-  adjustBtnText: {
-    fontSize: rf(9),
-    fontWeight: '600',
-    color: 'white',
-  },
-  tableRow: {
+
+  /* ── Rows ── */
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: rs(10),
-    borderBottomWidth: 1,
+    paddingVertical: rs(5),
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: decisionGrade.borderLight,
   },
   rowLabel: {
-    fontSize: rf(12),
+    fontSize: rf(10),
     fontWeight: '500',
     color: decisionGrade.textSecondary,
+    flex: 1,
+    marginRight: rs(4),
+  },
+  rowLabelSubHeader: {
+    fontWeight: '700',
+    color: decisionGrade.textPrimary,
+    fontSize: rf(10),
   },
   rowValue: {
-    fontSize: rf(12),
+    fontSize: rf(10),
     fontWeight: '600',
     color: decisionGrade.textPrimary,
   },
@@ -279,33 +293,36 @@ const styles = StyleSheet.create({
   rowValueTeal: {
     color: decisionGrade.pacificTeal,
   },
+
+  /* ── Total row ── */
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: rs(12),
-    marginTop: rs(4),
-    borderTopWidth: 2,
+    paddingVertical: rs(6),
+    borderTopWidth: 1.5,
     borderTopColor: decisionGrade.pacificTeal,
+    marginTop: rs(2),
   },
-  totalRowLabel: {
-    fontSize: rf(12),
+  totalLabel: {
+    fontSize: rf(10),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
+    flex: 1,
+    marginRight: rs(4),
   },
-  totalRowValue: {
-    fontSize: rf(12),
+  totalValue: {
+    fontSize: rf(10),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: decisionGrade.pacificTeal,
   },
-  spacer: {
-    height: rs(16),
-  },
-  highlightBox: {
-    marginHorizontal: rs(16),
-    marginVertical: rs(12),
-    paddingVertical: rs(14),
-    paddingHorizontal: rs(16),
+
+  /* ── NOI Box ── */
+  noiBox: {
+    marginHorizontal: rs(12),
+    marginTop: rs(8),
+    paddingVertical: rs(12),
+    paddingHorizontal: rs(14),
     backgroundColor: 'rgba(8,145,178,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(8,145,178,0.20)',
@@ -314,13 +331,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: decisionGrade.pacificTeal,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  highlightAccent: {
+  noiAccent: {
     position: 'absolute',
     left: 0,
     top: 0,
@@ -330,24 +342,25 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: rs(10),
     borderBottomLeftRadius: rs(10),
   },
-  highlightLabel: {
-    fontSize: rf(12),
+  noiLabel: {
+    fontSize: rf(11),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
     flex: 1,
-    paddingLeft: rs(8),
+    paddingLeft: rs(6),
   },
-  highlightValue: {
-    fontSize: rf(16),
+  noiValue: {
+    fontSize: rf(14),
     fontWeight: '800',
     color: decisionGrade.pacificTeal,
   },
+
+  /* ── Cashflow Box ── */
   cashflowBox: {
-    marginHorizontal: rs(16),
-    marginTop: rs(12),
-    marginBottom: rs(20),
-    paddingVertical: rs(14),
-    paddingHorizontal: rs(16),
+    marginHorizontal: rs(12),
+    marginTop: rs(8),
+    paddingVertical: rs(12),
+    paddingHorizontal: rs(14),
     borderRadius: rs(10),
     borderWidth: 1,
   },
@@ -359,11 +372,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(220,38,38,0.05)',
     borderColor: 'rgba(220,38,38,0.20)',
   },
-  cashflowHeader: {
+  cashflowRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: rs(6),
+    marginBottom: rs(4),
   },
   cashflowLabelRow: {
     flexDirection: 'row',
@@ -371,35 +384,27 @@ const styles = StyleSheet.create({
     gap: rs(6),
   },
   cashflowLabel: {
-    fontSize: rf(12),
+    fontSize: rf(11),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
   },
   cashflowValue: {
-    fontSize: rf(16),
+    fontSize: rf(14),
     fontWeight: '800',
     color: decisionGrade.pacificTeal,
   },
-  cashflowValueNegative: {
+  cashflowValueNeg: {
     color: decisionGrade.negative,
   },
-  cashflowDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cashflowDetailLabel: {
-    fontSize: rf(11),
+  cashflowMonthlyLabel: {
+    fontSize: rf(10),
     fontWeight: '500',
     color: decisionGrade.textSecondary,
   },
-  cashflowDetailValue: {
-    fontSize: rf(12),
+  cashflowMonthlyValue: {
+    fontSize: rf(11),
     fontWeight: '600',
     color: decisionGrade.pacificTeal,
-  },
-  cashflowDetailValueNegative: {
-    color: decisionGrade.negative,
   },
 });
 

@@ -207,42 +207,115 @@ export function VerdictPageAdapter({
     ]
   }, [selectedPriceCard, breakevenPrice, purchasePrice, wholesalePrice, property])
 
-  // Financial breakdown columns
+  // Financial breakdown columns - Two-column mini financial statement
   const financialBreakdown = useMemo(() => {
     const rent = property.monthlyRent || (property.price * 0.007)
     const taxes = property.propertyTaxes || (property.price * 0.012)
     const insurance = property.insurance || (property.price * 0.01)
 
+    const downPaymentPct = 0.20
+    const closingCostsPct = 0.03
+    const interestRate = 0.06
+    const loanTermYears = 30
+
+    const downPayment = purchasePrice * downPaymentPct
+    const closingCosts = purchasePrice * closingCostsPct
+    const loanAmount = purchasePrice - downPayment
+    const monthlyRate = interestRate / 12
+    const numPayments = loanTermYears * 12
+    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+    const annualDebtService = monthlyPI * 12
+
+    const vacancyRate = 0.05
+    const managementPct = 0.08
+    const maintenancePct = 0.05
+    const capexPct = 0.05
+
+    const annualRent = rent * 12
+    const vacancyLoss = annualRent * vacancyRate
+    const effectiveGross = annualRent - vacancyLoss
+    const management = annualRent * managementPct
+    const maintenance = annualRent * maintenancePct
+    const capex = annualRent * capexPct
+    const totalExpenses = taxes + insurance + management + maintenance + capex
+
     return [
       {
-        title: 'Purchase',
+        title: 'Purchase & Financing',
         items: [
+          { label: 'PURCHASE', value: '', isSubHeader: true },
           { label: 'List Price', value: `$${listPrice.toLocaleString()}` },
-          { label: 'Target Price', value: `$${purchasePrice.toLocaleString()}` },
-          { label: 'Down Payment (20%)', value: `$${Math.round(purchasePrice * 0.2).toLocaleString()}` },
-          { label: 'Closing Costs', value: `$${Math.round(purchasePrice * 0.03).toLocaleString()}` },
+          { label: 'Target Buy Price', value: `$${purchasePrice.toLocaleString()}`, isTeal: true },
+          { label: `Down Payment (${Math.round(downPaymentPct * 100)}%)`, value: `$${Math.round(downPayment).toLocaleString()}` },
+          { label: `Closing Costs (${Math.round(closingCostsPct * 100)}%)`, value: `$${Math.round(closingCosts).toLocaleString()}` },
+          { label: 'Loan Amount', value: `$${Math.round(loanAmount).toLocaleString()}` },
+          { label: 'FINANCING', value: '', isSubHeader: true },
+          { label: 'Interest Rate', value: `${(interestRate * 100).toFixed(1)}%` },
+          { label: 'Loan Term', value: `${loanTermYears} years` },
+          { label: 'Monthly P&I', value: `$${Math.round(monthlyPI).toLocaleString()}` },
+          { label: 'Annual Debt Service', value: `$${Math.round(annualDebtService).toLocaleString()}`, isTotal: true },
         ],
       },
       {
-        title: 'Income',
+        title: 'Income & Expenses',
         items: [
+          { label: 'INCOME', value: '', isSubHeader: true },
           { label: 'Monthly Rent', value: `$${Math.round(rent).toLocaleString()}` },
-          { label: 'Annual Gross', value: `$${Math.round(rent * 12).toLocaleString()}` },
-          { label: 'Vacancy (5%)', value: `-$${Math.round(rent * 12 * 0.05).toLocaleString()}` },
-          { label: 'Effective Gross', value: `$${Math.round(rent * 12 * 0.95).toLocaleString()}` },
-        ],
-      },
-      {
-        title: 'Expenses',
-        items: [
+          { label: 'Annual Gross', value: `$${Math.round(annualRent).toLocaleString()}` },
+          { label: `Vacancy (${Math.round(vacancyRate * 100)}%)`, value: `($${Math.round(vacancyLoss).toLocaleString()})`, isNegative: true },
+          { label: 'Eff. Gross Income', value: `$${Math.round(effectiveGross).toLocaleString()}`, isTotal: true },
+          { label: 'EXPENSES', value: '', isSubHeader: true },
           { label: 'Property Tax', value: `$${Math.round(taxes).toLocaleString()}/yr` },
           { label: 'Insurance', value: `$${Math.round(insurance).toLocaleString()}/yr` },
-          { label: 'Management (8%)', value: `$${Math.round(rent * 12 * 0.08).toLocaleString()}/yr` },
-          { label: 'Maintenance (5%)', value: `$${Math.round(rent * 12 * 0.05).toLocaleString()}/yr` },
+          { label: `Mgmt (${Math.round(managementPct * 100)}%)`, value: `$${Math.round(management).toLocaleString()}/yr` },
+          { label: `Maintenance (${Math.round(maintenancePct * 100)}%)`, value: `$${Math.round(maintenance).toLocaleString()}/yr` },
+          { label: `CapEx (${Math.round(capexPct * 100)}%)`, value: `$${Math.round(capex).toLocaleString()}/yr` },
+          { label: 'Total Expenses', value: `$${Math.round(totalExpenses).toLocaleString()}/yr`, isTotal: true },
         ],
       },
     ]
-  }, [property, analysis])
+  }, [property, analysis, listPrice, purchasePrice])
+
+  // Financial summary (NOI & Cashflow) for full-width boxes
+  const financialSummary = useMemo(() => {
+    const rent = property.monthlyRent || (property.price * 0.007)
+    const taxes = property.propertyTaxes || (property.price * 0.012)
+    const insurance = property.insurance || (property.price * 0.01)
+
+    const annualRent = rent * 12
+    const effectiveGross = annualRent * 0.95
+    const totalExpenses = taxes + insurance + (annualRent * 0.08) + (annualRent * 0.05) + (annualRent * 0.05)
+    const noi = effectiveGross - totalExpenses
+
+    const loanAmount = purchasePrice * 0.80
+    const monthlyRate = 0.06 / 12
+    const numPayments = 360
+    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+    const annualDebtService = monthlyPI * 12
+    const annualCashFlow = noi - annualDebtService
+    const monthlyCashFlow = annualCashFlow / 12
+
+    const fmtCurrency = (v: number) => `$${Math.round(Math.abs(v)).toLocaleString()}`
+
+    return {
+      noi: { 
+        label: 'Net Operating Income (NOI)', 
+        value: `$${Math.round(noi).toLocaleString()}` 
+      },
+      cashflow: {
+        annual: {
+          label: 'Pre-Tax Cash Flow',
+          value: annualCashFlow >= 0 ? fmtCurrency(annualCashFlow) : `(${fmtCurrency(annualCashFlow)})`,
+          isNegative: annualCashFlow < 0,
+        },
+        monthly: {
+          label: 'Monthly Cash Flow',
+          value: monthlyCashFlow >= 0 ? fmtCurrency(monthlyCashFlow) : `(${fmtCurrency(monthlyCashFlow)})`,
+          isNegative: monthlyCashFlow < 0,
+        },
+      },
+    }
+  }, [property, purchasePrice])
 
   // Performance metrics
   const performanceMetrics = useMemo(() => {
@@ -322,6 +395,7 @@ export function VerdictPageAdapter({
         priceCards={priceCards}
         keyMetrics={keyMetrics}
         financialBreakdown={financialBreakdown}
+        financialSummary={financialSummary}
         performanceMetrics={performanceMetrics}
         selectedPriceCard={selectedPriceCard}
         onPriceCardSelect={handlePriceCardSelect}
