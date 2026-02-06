@@ -116,7 +116,14 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         setSaveMessage('Already saved!')
         setTimeout(() => setSaveMessage(null), 3000)
       } else if (response.status === 400) {
-        const errorData = await response.json().catch(() => ({ detail: await response.text() }))
+        // Check if it's a duplicate error (backend may return 400 for duplicates)
+        let errorData: { detail?: string }
+        try {
+          errorData = await response.json()
+        } catch {
+          const errorText = await response.text()
+          errorData = { detail: errorText }
+        }
         const errorText = errorData.detail || JSON.stringify(errorData)
         if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
           setIsSaved(true)
@@ -132,7 +139,12 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         setShowAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        let errorData: { detail?: string } = { detail: 'Unknown error' }
+        try {
+          errorData = await response.json()
+        } catch {
+          // Response is not JSON, use default error
+        }
         toast.error(errorData.detail || 'Failed to save property. Please try again.')
         setSaveMessage('Failed to save')
         setTimeout(() => setSaveMessage(null), 3000)
