@@ -19,33 +19,41 @@ interface RequestOptions {
 }
 
 /**
- * DEPRECATED: localStorage token storage removed for security.
- * Tokens are now stored in httpOnly cookies (inaccessible to JavaScript).
- * These functions are kept for backward compatibility during migration.
+ * In-memory token storage.
+ * 
+ * Tokens are stored in memory (not localStorage) for XSS safety.
+ * This works alongside httpOnly cookies as a fallback:
+ * - Same-origin deployments: cookies handle auth automatically
+ * - Cross-origin deployments (e.g. localhost:3000 → localhost:8000):
+ *   cookies may not work due to Secure/SameSite restrictions,
+ *   so we use Bearer tokens in the Authorization header.
+ * 
+ * Tokens are lost on page refresh, but the login flow restores them.
  */
+let _accessToken: string | null = null
+let _refreshToken: string | null = null
+
 function getAccessToken(): string | null {
-  // httpOnly cookies are not accessible via JavaScript
-  // This is by design - tokens are sent automatically with requests
-  return null
+  return _accessToken
 }
 
 function getRefreshToken(): string | null {
-  // httpOnly cookies are not accessible via JavaScript
-  return null
+  return _refreshToken
 }
 
-function storeTokens(_accessToken: string, _refreshToken: string): void {
-  // No-op: tokens are stored in httpOnly cookies by the server
-  // This function is kept for backward compatibility
+function storeTokens(accessToken: string, refreshToken: string): void {
+  _accessToken = accessToken
+  _refreshToken = refreshToken
 }
 
 function clearTokens(): void {
-  // Tokens are cleared by calling the logout endpoint
-  // which clears the httpOnly cookies on the server side
+  _accessToken = null
+  _refreshToken = null
 }
 
 /**
- * Attempt to refresh the access token using httpOnly cookie
+ * Attempt to refresh the access token.
+ * Sends refresh token via both cookie and request body for cross-origin support.
  */
 let refreshPromise: Promise<boolean> | null = null
 
@@ -54,21 +62,32 @@ async function refreshAccessToken(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
-      // Refresh token is sent automatically via httpOnly cookie
+      const currentRefreshToken = getRefreshToken()
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Send cookies
+        credentials: 'include', // Send cookies (works for same-origin)
+        // Also send refresh token in body for cross-origin scenarios
+        body: JSON.stringify(
+          currentRefreshToken ? { refresh_token: currentRefreshToken } : {}
+        ),
       })
 
       if (!response.ok) {
+        clearTokens()
         return false
       }
 
-      // New tokens are set as httpOnly cookies by the server
+      // Store new tokens from response body
+      const data = await response.json()
+      if (data.access_token && data.refresh_token) {
+        storeTokens(data.access_token, data.refresh_token)
+      }
+
       return true
     } catch (error) {
       console.error('Token refresh failed:', error)
+      clearTokens()
       return false
     } finally {
       refreshPromise = null
@@ -90,22 +109,29 @@ function redirectToLogin(): void {
 /**
  * Main API request function with auth handling
  * 
- * Uses httpOnly cookies for authentication (XSS-safe).
- * Tokens are sent automatically via cookies, not Authorization headers.
+ * Uses both httpOnly cookies AND Authorization header for authentication:
+ * - Same-origin: cookies are sent automatically (XSS-safe)
+ * - Cross-origin: Bearer token in Authorization header (fallback)
+ * The backend accepts both (cookies take precedence on server side).
  */
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, skipAuth = false } = options
 
-  // Build headers
+  // Build headers - include Authorization if we have a token
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers,
   }
 
+  const token = getAccessToken()
+  if (token && !skipAuth) {
+    requestHeaders['Authorization'] = `Bearer ${token}`
+  }
+
   const config: RequestInit = {
     method,
     headers: requestHeaders,
-    credentials: 'include', // Always send cookies for auth
+    credentials: 'include', // Also send cookies for same-origin
   }
 
   if (body) {
@@ -119,7 +145,11 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
     const refreshSuccess = await refreshAccessToken()
     
     if (refreshSuccess) {
-      // Retry the request - new tokens are in cookies
+      // Retry the request with new token
+      const retryToken = getAccessToken()
+      if (retryToken) {
+        (config.headers as Record<string, string>)['Authorization'] = `Bearer ${retryToken}`
+      }
       response = await fetch(`${API_BASE_URL}${endpoint}`, config)
     } else {
       // Token refresh failed - redirect to login

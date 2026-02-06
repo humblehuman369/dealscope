@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
+import { storeTokens, clearTokens, getAccessToken } from '../lib/api'
 
 // ===========================================
 // Types
@@ -87,24 +88,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth()
   }, [])
 
-  // Refresh access token using httpOnly cookie
+  // Build headers with Authorization token if available
+  const buildAuthHeaders = (token?: string): Record<string, string> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    const authToken = token || getAccessToken()
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`
+    }
+    return headers
+  }
+
+  // Refresh access token using cookie or stored refresh token
   const refreshAccessToken = async (): Promise<boolean> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Send httpOnly cookies
+        headers: buildAuthHeaders(),
+        credentials: 'include',
       })
 
       if (!response.ok) {
-        // Refresh token is invalid
         setUser(null)
+        clearTokens()
         return false
       }
 
-      // New tokens are set as httpOnly cookies by the server
+      // Store new tokens from response body
+      const data = await response.json()
+      if (data.access_token && data.refresh_token) {
+        storeTokens(data.access_token, data.refresh_token)
+      }
+
       return true
     } catch (error) {
       console.error('Token refresh failed:', error)
@@ -113,12 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // Fetch current user from API with automatic token refresh on 401
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async (accessToken?: string) => {
     let response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Send httpOnly cookies
+      headers: buildAuthHeaders(accessToken),
+      credentials: 'include',
     })
 
     // If 401, try to refresh token and retry
@@ -126,9 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const refreshed = await refreshAccessToken()
       if (refreshed) {
         response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: buildAuthHeaders(),
           credentials: 'include',
         })
       }
@@ -160,11 +172,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.detail || 'Login failed')
       }
 
-      // Tokens are now stored in httpOnly cookies by the server
-      // No need to store in localStorage
+      // Store tokens from response body for Authorization header fallback
+      // (httpOnly cookies may not work cross-origin in development)
+      const tokens: AuthTokens = await response.json()
+      storeTokens(tokens.access_token, tokens.refresh_token)
 
-      // Fetch user data
-      await fetchCurrentUser()
+      // Fetch user data using the access token
+      await fetchCurrentUser(tokens.access_token)
       
       // Note: Modal closing is handled by the component after redirect
     } finally {
@@ -214,9 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: buildAuthHeaders(),
         credentials: 'include', // Send cookies for auth, server will clear them
       })
     } catch (error) {
@@ -224,7 +236,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout API call failed:', error)
     }
     
-    // Clear user state
+    // Clear tokens and user state
+    clearTokens()
     setUser(null)
   }, [])
 
