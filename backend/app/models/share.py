@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List, TYPE_CHECKING
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 import secrets
 
@@ -104,7 +104,7 @@ class SharedLink(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
     last_accessed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     
@@ -116,7 +116,7 @@ class SharedLink(Base):
         """Check if the link has expired."""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
     
     def check_is_view_limit_reached(self) -> bool:
         """Check if max views have been reached."""
@@ -135,5 +135,5 @@ class SharedLink(Base):
     def increment_view_count(self) -> None:
         """Increment view count and update last accessed time."""
         self.view_count += 1
-        self.last_accessed_at = datetime.utcnow()
+        self.last_accessed_at = datetime.now(timezone.utc)
 

@@ -3,7 +3,7 @@ SavedProperty service for CRUD operations on user's saved properties.
 """
 
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import uuid
 
@@ -280,7 +280,7 @@ class SavedPropertyService:
             
             setattr(saved_property, field, value)
         
-        saved_property.updated_at = datetime.utcnow()
+        saved_property.updated_at = datetime.now(timezone.utc)
         
         await db.flush()
         await db.refresh(saved_property)
@@ -333,7 +333,7 @@ class SavedPropertyService:
             )
             .values(
                 status=status,
-                updated_at=datetime.utcnow()
+                updated_at=datetime.now(timezone.utc)
             )
         )
         

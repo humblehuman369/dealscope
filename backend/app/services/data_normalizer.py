@@ -17,7 +17,7 @@ DATA QUALITY PRINCIPLES:
 - Completeness scores help prioritize data gaps
 """
 from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 from enum import Enum
 import logging
@@ -204,7 +204,7 @@ class NormalizedProperty:
     page_view_count: Optional[int] = None         # Property page views
     
     # Metadata
-    data_fetched_at: datetime = field(default_factory=datetime.utcnow)
+    data_fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     provenance: Dict[str, FieldProvenance] = field(default_factory=dict)
     data_quality_score: float = 0.0
     missing_fields: List[str] = field(default_factory=list)
@@ -249,7 +249,7 @@ class InvestIQNormalizer:
     }
     
     def __init__(self):
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
     
     def normalize(
         self,

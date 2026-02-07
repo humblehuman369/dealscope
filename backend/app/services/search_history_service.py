@@ -4,7 +4,7 @@ Search History Service for tracking and retrieving user searches.
 
 import logging
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy import select, func, desc, and_
@@ -153,7 +153,7 @@ class SearchHistoryService:
         Returns counts, top markets, and recent activity.
         """
         user_uuid = UUID(user_id)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
         

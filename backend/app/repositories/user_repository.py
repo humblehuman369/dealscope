@@ -99,13 +99,25 @@ class UserRepository:
     # ------------------------------------------------------------------
 
     async def increment_failed_logins(self, db: AsyncSession, user_id: uuid.UUID) -> int:
-        """Increment failed_login_attempts and return the new count."""
-        user = await self.get_by_id(db, user_id)
-        if user is None:
-            return 0
-        new_count = user.failed_login_attempts + 1
-        await self.update(db, user_id, failed_login_attempts=new_count)
-        return new_count
+        """Atomically increment failed_login_attempts and return the new count.
+
+        Uses a single UPDATE … RETURNING to avoid race conditions where
+        concurrent requests could both read the same count and write
+        the same incremented value, potentially bypassing lockout.
+        """
+        from sqlalchemy import text
+
+        result = await db.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(
+                failed_login_attempts=User.failed_login_attempts + 1,
+                updated_at=datetime.now(timezone.utc),
+            )
+            .returning(User.failed_login_attempts)
+        )
+        row = result.scalar_one_or_none()
+        return row if row is not None else 0
 
     async def reset_failed_logins(self, db: AsyncSession, user_id: uuid.UUID) -> None:
         await self.update(db, user_id, failed_login_attempts=0, locked_until=None)

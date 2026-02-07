@@ -7,7 +7,7 @@ import os
 import shutil
 from abc import ABC, abstractmethod
 from typing import Optional, BinaryIO
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import uuid
 
@@ -80,7 +80,7 @@ class LocalStorage(StorageBackend):
         unique_name = f"{uuid.uuid4().hex}{ext}"
         
         # Build path with date-based organization
-        date_prefix = datetime.utcnow().strftime("%Y/%m")
+        date_prefix = datetime.now(timezone.utc).strftime("%Y/%m")
         if path_prefix:
             full_prefix = f"{path_prefix}/{date_prefix}"
         else:
@@ -186,7 +186,7 @@ class S3Storage(StorageBackend):
         unique_name = f"{uuid.uuid4().hex}{ext}"
         
         # Build key with date-based organization
-        date_prefix = datetime.utcnow().strftime("%Y/%m")
+        date_prefix = datetime.now(timezone.utc).strftime("%Y/%m")
         if path_prefix:
             key = f"{path_prefix}/{date_prefix}/{unique_name}"
         else:

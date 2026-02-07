@@ -96,6 +96,10 @@ class AuthService:
 
         Returns ``(user, raw_verification_token_or_None)``.
         Raises ``AuthError`` on duplicate email.
+
+        All mutations (user, profile, role, token, audit) are performed
+        inside a single SAVEPOINT so they either all succeed or all
+        roll back, preventing orphaned records.
         """
         email = email.lower().strip()
 
@@ -106,39 +110,40 @@ class AuthService:
         hashed = self.hash_password(password)
         requires_verification = settings.FEATURE_EMAIL_VERIFICATION_REQUIRED
 
-        user = await user_repo.create(
-            db,
-            email=email,
-            hashed_password=hashed,
-            full_name=full_name.strip(),
-            is_active=True,
-            is_verified=not requires_verification,
-        )
-
-        # Create profile
-        await user_repo.create_profile(db, user.id)
-
-        # Assign default member role
-        member_role = await role_repo.get_role_by_name(db, "member")
-        if member_role:
-            await role_repo.assign_role(db, user.id, member_role.id)
-
-        # Verification token
-        raw_token: Optional[str] = None
-        if requires_verification:
-            raw_token = await token_service.create_verification_token(
-                db, user.id, TokenType.EMAIL_VERIFICATION
+        async with db.begin_nested():
+            user = await user_repo.create(
+                db,
+                email=email,
+                hashed_password=hashed,
+                full_name=full_name.strip(),
+                is_active=True,
+                is_verified=not requires_verification,
             )
 
-        # Audit
-        await audit_repo.log(
-            db,
-            action=AuditAction.REGISTER,
-            user_id=user.id,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            metadata={"email": email},
-        )
+            # Create profile
+            await user_repo.create_profile(db, user.id)
+
+            # Assign default member role
+            member_role = await role_repo.get_role_by_name(db, "member")
+            if member_role:
+                await role_repo.assign_role(db, user.id, member_role.id)
+
+            # Verification token
+            raw_token: Optional[str] = None
+            if requires_verification:
+                raw_token = await token_service.create_verification_token(
+                    db, user.id, TokenType.EMAIL_VERIFICATION
+                )
+
+            # Audit
+            await audit_repo.log(
+                db,
+                action=AuditAction.REGISTER,
+                user_id=user.id,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                metadata={"email": email},
+            )
 
         logger.info("User registered: %s", email)
         return user, raw_token
@@ -452,27 +457,29 @@ class AuthService:
         if user_id is None:
             raise AuthError("Invalid or expired reset token", status_code=400)
 
-        hashed = self.hash_password(new_password)
-        await user_repo.update(
-            db,
-            user_id,
-            hashed_password=hashed,
-            password_changed_at=datetime.now(timezone.utc),
-        )
+        async with db.begin_nested():
+            hashed = self.hash_password(new_password)
+            await user_repo.update(
+                db,
+                user_id,
+                hashed_password=hashed,
+                password_changed_at=datetime.now(timezone.utc),
+            )
 
-        # Revoke all existing sessions
-        await session_service.revoke_all_sessions(db, user_id)
+            # Revoke all existing sessions
+            await session_service.revoke_all_sessions(db, user_id)
+
+            await audit_repo.log(
+                db,
+                action=AuditAction.PASSWORD_RESET_COMPLETE,
+                user_id=user_id,
+                ip_address=ip_address,
+            )
 
         user = await user_repo.get_by_id(db, user_id)
         if user is None:
             raise AuthError("User not found", status_code=404)
 
-        await audit_repo.log(
-            db,
-            action=AuditAction.PASSWORD_RESET_COMPLETE,
-            user_id=user_id,
-            ip_address=ip_address,
-        )
         return user
 
     # ------------------------------------------------------------------
@@ -496,25 +503,26 @@ class AuthService:
         if not self.verify_password(current_password, user.hashed_password):
             raise AuthError("Current password is incorrect", status_code=400)
 
-        hashed = self.hash_password(new_password)
-        await user_repo.update(
-            db,
-            user_id,
-            hashed_password=hashed,
-            password_changed_at=datetime.now(timezone.utc),
-        )
+        async with db.begin_nested():
+            hashed = self.hash_password(new_password)
+            await user_repo.update(
+                db,
+                user_id,
+                hashed_password=hashed,
+                password_changed_at=datetime.now(timezone.utc),
+            )
 
-        # Revoke all sessions except the current one
-        await session_service.revoke_all_sessions(
-            db, user_id, except_session_id=current_session_id
-        )
+            # Revoke all sessions except the current one
+            await session_service.revoke_all_sessions(
+                db, user_id, except_session_id=current_session_id
+            )
 
-        await audit_repo.log(
-            db,
-            action=AuditAction.PASSWORD_CHANGE,
-            user_id=user_id,
-            ip_address=ip_address,
-        )
+            await audit_repo.log(
+                db,
+                action=AuditAction.PASSWORD_CHANGE,
+                user_id=user_id,
+                ip_address=ip_address,
+            )
         return True
 
     # ------------------------------------------------------------------

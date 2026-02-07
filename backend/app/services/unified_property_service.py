@@ -11,7 +11,7 @@ import json
 import csv
 import logging
 from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import asdict
 from pathlib import Path
 
@@ -67,7 +67,7 @@ class UnifiedPropertyService:
             - investment_metrics: Calculated investment metrics
             - data_quality: Quality assessment
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Fetch from both sources in parallel
         rentcast_task = self._fetch_all_rentcast(address)
@@ -95,7 +95,7 @@ class UnifiedPropertyService:
         seller_motivation = self._calculate_seller_motivation(normalized)
         
         # Build response
-        elapsed_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+        elapsed_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
         
         return {
             "normalized": self._property_to_dict(normalized),
@@ -125,7 +125,7 @@ class UnifiedPropertyService:
         results = {
             "api": "RentCast",
             "address": address,
-            "fetched_at": datetime.utcnow().isoformat(),
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
             "endpoints": {}
         }
         
@@ -444,7 +444,7 @@ class UnifiedPropertyService:
         
         # Header section
         rows.append(["INVESTIQ PROPERTY ANALYSIS REPORT", "", ""])
-        rows.append(["Generated", datetime.utcnow().isoformat(), ""])
+        rows.append(["Generated", datetime.now(timezone.utc).isoformat(), ""])
         rows.append(["Address", address, ""])
         rows.append(["Data Quality Score", f"{quality['score']}%", ""])
         rows.append(["", "", ""])

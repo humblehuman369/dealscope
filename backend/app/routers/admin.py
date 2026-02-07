@@ -7,13 +7,15 @@ import logging
 from typing import Optional, List, Any
 from pathlib import Path
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, EmailStr
+from sqlalchemy import select, func
 
 from app.core.deps import SuperUser, DbSession
 from app.models.user import User
+from app.models.saved_property import SavedProperty
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import (
     get_assumptions_record,
@@ -330,7 +332,7 @@ async def update_user(
     for field, value in update_data.items():
         setattr(user, field, value)
     
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     
     await db.commit()
     await db.refresh(user)

@@ -2,7 +2,7 @@
 Property service - orchestrates data fetching, normalization, and calculations.
 """
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 import uuid
@@ -76,7 +76,7 @@ class PropertyService:
         Uses Redis cache with 24h TTL when available.
         """
         property_id = self._generate_property_id(address)
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         
         # Check Redis cache first
         cached_data = await self._cache.get_property(address)
@@ -451,7 +451,7 @@ class PropertyService:
         results = AnalyticsResponse(
             property_id=property_id,
             assumptions_hash=assumptions_hash,
-            calculated_at=datetime.utcnow()
+            calculated_at=datetime.now(timezone.utc)
         )
         
         # Calculate each strategy
@@ -731,7 +731,7 @@ class PropertyService:
                     "url": url,
                     "photos": normalized_photos,
                     "total_count": len(normalized_photos),
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
             else:
                 logger.warning(f"Photo fetch failed: {result.error}")
@@ -742,7 +742,7 @@ class PropertyService:
                     "error": result.error or "Failed to fetch photos from AXESSO API",
                     "photos": [],
                     "total_count": 0,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
         except Exception as e:
             logger.error(f"Error fetching photos: {e}")
@@ -753,7 +753,7 @@ class PropertyService:
                 "error": str(e),
                 "photos": [],
                 "total_count": 0,
-                "fetched_at": datetime.utcnow().isoformat()
+                "fetched_at": datetime.now(timezone.utc).isoformat()
             }
     
     async def get_market_data(self, location: str) -> Dict[str, Any]:
@@ -785,7 +785,7 @@ class PropertyService:
                     "success": True,
                     "location": candidate,
                     "data": result.data,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
 
             last_error = result.error or "Failed to fetch market data from AXESSO API"
@@ -798,7 +798,7 @@ class PropertyService:
             "location": location,
             "error": last_error,
             "data": None,
-            "fetched_at": datetime.utcnow().isoformat()
+            "fetched_at": datetime.now(timezone.utc).isoformat()
         }
     
     async def get_similar_rent(
@@ -872,7 +872,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": (offset + limit) < total_available,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
             else:
                 logger.warning(f"Similar rent fetch failed: {result.error}")
@@ -885,7 +885,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": False,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
         except Exception as e:
             logger.error(f"Error fetching similar rentals: {e}")
@@ -898,7 +898,7 @@ class PropertyService:
                 "offset": offset,
                 "limit": limit,
                 "has_more": False,
-                "fetched_at": datetime.utcnow().isoformat()
+                "fetched_at": datetime.now(timezone.utc).isoformat()
             }
     
     async def get_similar_sold(
@@ -972,7 +972,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": (offset + limit) < total_available,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
             else:
                 logger.warning(f"Similar sold fetch failed: {result.error}")
@@ -985,7 +985,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": False,
-                    "fetched_at": datetime.utcnow().isoformat()
+                    "fetched_at": datetime.now(timezone.utc).isoformat()
                 }
         except Exception as e:
             logger.error(f"Error fetching similar sold: {e}")
@@ -998,7 +998,7 @@ class PropertyService:
                 "offset": offset,
                 "limit": limit,
                 "has_more": False,
-                "fetched_at": datetime.utcnow().isoformat()
+                "fetched_at": datetime.now(timezone.utc).isoformat()
             }
     
     def get_mock_property(self) -> PropertyResponse:
@@ -1006,7 +1006,7 @@ class PropertyService:
         Return mock property data for testing/demo.
         Based on the Excel sample property.
         """
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         property_id = "demo-fl-12345"
         
         response = PropertyResponse(

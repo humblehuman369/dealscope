@@ -15,7 +15,7 @@ This is the single source of truth for all analysis data used by:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 import uuid
 
@@ -78,7 +78,7 @@ class DealMakerService:
             appreciation_rate=GROWTH.appreciation_rate,
             rent_growth_rate=GROWTH.rent_growth_rate,
             expense_growth_rate=GROWTH.expense_growth_rate,
-            resolved_at=datetime.utcnow(),
+            resolved_at=datetime.now(timezone.utc),
             zip_code=zip_code,
         )
         
@@ -228,7 +228,7 @@ class DealMakerService:
             breakeven_price=breakeven,
             
             # Metadata
-            calculated_at=datetime.utcnow(),
+            calculated_at=datetime.now(timezone.utc),
         )
     
     @classmethod
@@ -286,8 +286,8 @@ class DealMakerService:
             monthly_utilities=0,
             
             # Metadata
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             version=1,
         )
         
@@ -318,7 +318,7 @@ class DealMakerService:
                 record_dict[key] = value
         
         # Update timestamp
-        record_dict["updated_at"] = datetime.utcnow()
+        record_dict["updated_at"] = datetime.now(timezone.utc)
         
         # Reconstruct record
         updated_record = DealMakerRecord(**record_dict)

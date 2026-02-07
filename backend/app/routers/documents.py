@@ -111,6 +111,24 @@ async def upload_document(
     except ValueError:
         doc_type = DocumentType.OTHER
     
+    # Verify the user owns this property if property_id is provided
+    if property_id:
+        from sqlalchemy import select
+        from app.models.saved_property import SavedProperty
+        from uuid import UUID as _UUID
+
+        result = await db.execute(
+            select(SavedProperty.id).where(
+                SavedProperty.id == _UUID(property_id),
+                SavedProperty.user_id == current_user.id,
+            )
+        )
+        if result.scalar_one_or_none() is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not own this property"
+            )
+
     # Upload
     try:
         document = await document_service.upload_document(

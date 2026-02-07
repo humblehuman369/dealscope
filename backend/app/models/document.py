@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List, TYPE_CHECKING
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 
 from app.db.base import Base
@@ -146,12 +146,12 @@ class Document(Base):
     # Timestamps
     uploaded_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow, 
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc), 
+        onupdate=lambda: datetime.now(timezone.utc)
     )
     
     # Relationships

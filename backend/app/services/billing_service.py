@@ -5,7 +5,7 @@ Billing service for Stripe integration.
 import logging
 import os
 from typing import Optional, Dict, Any, Tuple, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -183,7 +183,7 @@ class BillingService:
             subscription.properties_limit = TIER_LIMITS[SubscriptionTier.FREE]["properties_limit"]
             subscription.searches_per_month = TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"]
             subscription.api_calls_per_month = TIER_LIMITS[SubscriptionTier.FREE]["api_calls_per_month"]
-            subscription.usage_reset_date = datetime.utcnow()
+            subscription.usage_reset_date = datetime.now(timezone.utc)
             
             db.add(subscription)
             await db.commit()
@@ -233,7 +233,7 @@ class BillingService:
         days_until_reset = None
         if subscription.usage_reset_date:
             next_reset = subscription.usage_reset_date + timedelta(days=30)
-            days_until_reset = max(0, (next_reset - datetime.utcnow()).days)
+            days_until_reset = max(0, (next_reset - datetime.now(timezone.utc)).days)
         
         return UsageResponse(
             tier=subscription.tier,
@@ -371,7 +371,7 @@ class BillingService:
         if not self.is_configured:
             # Dev mode
             subscription.cancel_at_period_end = True
-            subscription.canceled_at = datetime.utcnow()
+            subscription.canceled_at = datetime.now(timezone.utc)
             await db.commit()
             return True, "Subscription will be canceled at period end (dev mode)"
         
@@ -379,7 +379,7 @@ class BillingService:
             if cancel_immediately:
                 stripe.Subscription.delete(subscription.stripe_subscription_id)
                 subscription.status = SubscriptionStatus.CANCELED
-                subscription.canceled_at = datetime.utcnow()
+                subscription.canceled_at = datetime.now(timezone.utc)
             else:
                 stripe.Subscription.modify(
                     subscription.stripe_subscription_id,

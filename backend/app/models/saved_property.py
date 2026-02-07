@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List, TYPE_CHECKING
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 
 from app.db.base import Base
@@ -139,13 +139,13 @@ class SavedProperty(Base):
     # Timestamps
     saved_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
     last_viewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow, 
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc), 
+        onupdate=lambda: datetime.now(timezone.utc)
     )
     data_refreshed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     
@@ -211,7 +211,7 @@ class PropertyAdjustment(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
     
     # Relationships

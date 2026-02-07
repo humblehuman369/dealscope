@@ -1594,7 +1594,7 @@ def calculate_seller_motivation(
     Returns a score from 0-100 with individual indicator breakdown.
     Higher score = more motivated seller = better negotiation leverage.
     """
-    from datetime import datetime
+    from datetime import datetime, timezone
     
     indicators = []
     
@@ -2038,7 +2038,7 @@ def calculate_seller_motivation(
         "dom_vs_market_avg": (days_on_market / market_median_dom) if days_on_market and market_median_dom else None,
         "market_temperature": market_temperature,
         "data_completeness": round(data_completeness, 1),
-        "calculated_at": datetime.utcnow().isoformat()
+        "calculated_at": datetime.now(timezone.utc).isoformat()
     }
 
 

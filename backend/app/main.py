@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
 import sys
@@ -511,7 +511,7 @@ async def health_check():
     return {
         "status": overall_status,
         "version": settings.APP_VERSION,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "dependencies": {
             "database": db_status,
             "redis": redis_status,
