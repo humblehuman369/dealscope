@@ -1,158 +1,66 @@
 /**
- * InvestIQ API Client
- * Handles all communication with the backend API
- * 
- * Features:
- * - httpOnly cookie-based authentication (XSS-safe)
- * - Automatic 401 interceptor with token refresh
- * - Centralized error handling
- * - credentials: 'include' for cookie transmission
+ * InvestIQ Domain API
+ *
+ * Domain-specific API methods (properties, analytics, proforma, LOI, etc.)
+ * built on top of the core client in `api-client.ts`.
+ *
+ * The core client handles:
+ * - httpOnly cookie authentication
+ * - CSRF double-submit pattern
+ * - 401 automatic refresh & retry
+ * - credentials: 'include' on every request
+ *
+ * Import from this file for domain methods and types.
+ * Import from `api-client.ts` for auth methods and the generic CRUD client.
  */
 
+import { apiRequest } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
 
-interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  body?: any
-  headers?: Record<string, string>
-  skipAuth?: boolean // For public endpoints that don't need auth
-}
+// ------------------------------------------------------------------
+// Deprecated token stubs — kept only for backward compatibility.
+//
+// Auth is handled entirely via httpOnly cookies. These functions do
+// nothing.  Callers that check `if (!token) return` are silently
+// skipping work — they should use `credentials: 'include'` instead.
+//
+// TODO: Remove these exports once all callers are migrated.
+// ------------------------------------------------------------------
 
-/**
- * Token management — now cookie-only for web.
- *
- * These functions are kept as no-ops for backward compatibility with
- * code that imports them.  Tokens are managed exclusively via httpOnly
- * cookies set by the server — no JS-accessible token storage.
- */
-
+/** @deprecated Cookie-only auth — this always returns null. */
 function getAccessToken(): string | null {
-  return null  // Cookie-only — no JS access
+  return null
 }
 
+/** @deprecated Cookie-only auth — this always returns null. */
 function getRefreshToken(): string | null {
-  return null  // Cookie-only — no JS access
+  return null
 }
 
-function storeTokens(_accessToken: string, _refreshToken: string): void {
-  // No-op — tokens are now in httpOnly cookies
-}
+/** @deprecated No-op — tokens are in httpOnly cookies. */
+function storeTokens(_accessToken: string, _refreshToken: string): void {}
 
-function clearTokens(): void {
-  // No-op — cookies are cleared by the server on logout
-}
+/** @deprecated No-op — cookies are cleared by the server on logout. */
+function clearTokens(): void {}
 
-/**
- * Attempt to refresh the access token.
- * Sends refresh token via both cookie and request body for cross-origin support.
- */
-let refreshPromise: Promise<boolean> | null = null
-
+/** @deprecated Use api-client.ts refresh. */
 async function refreshAccessToken(): Promise<boolean> {
-  if (refreshPromise) return refreshPromise
-
-  refreshPromise = (async () => {
-    try {
-      const currentRefreshToken = getRefreshToken()
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Send cookies (works for same-origin)
-        // Also send refresh token in body for cross-origin scenarios
-        body: JSON.stringify(
-          currentRefreshToken ? { refresh_token: currentRefreshToken } : {}
-        ),
-      })
-
-      if (!response.ok) {
-        clearTokens()
-        return false
-      }
-
-      // Store new tokens from response body
-      const data = await response.json()
-      if (data.access_token && data.refresh_token) {
-        storeTokens(data.access_token, data.refresh_token)
-      }
-
-      return true
-    } catch (error) {
-      console.error('Token refresh failed:', error)
-      clearTokens()
-      return false
-    } finally {
-      refreshPromise = null
-    }
-  })()
-
-  return refreshPromise
+  const { authApi } = await import('@/lib/api-client')
+  return authApi.refresh()
 }
 
-/**
- * Redirect to login page (for use when auth fails)
- */
-function redirectToLogin(): void {
-  if (typeof window === 'undefined') return
-  const currentPath = window.location.pathname
-  window.location.href = `/?redirect=${encodeURIComponent(currentPath)}&auth=required`
+/** @deprecated Use apiRequest from api-client.ts directly. */
+async function authenticatedRequest<T>(
+  endpoint: string,
+  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {},
+): Promise<T> {
+  return apiRequest<T>(endpoint, options as Parameters<typeof apiRequest>[1])
 }
 
-/**
- * Main API request function with cookie-only auth.
- *
- * Auth is handled entirely via httpOnly cookies — no JS token storage.
- * credentials: 'include' ensures cookies are sent on every request.
- */
-async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, headers = {}, skipAuth = false } = options
-
-  const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...headers,
-  }
-
-  const config: RequestInit = {
-    method,
-    headers: requestHeaders,
-    credentials: 'include',
-  }
-
-  if (body) {
-    config.body = JSON.stringify(body)
-  }
-
-  let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-
-  // Handle 401 — try refresh once
-  if (response.status === 401 && !skipAuth) {
-    const refreshSuccess = await refreshAccessToken()
-    if (refreshSuccess) {
-      response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-    } else {
-      redirectToLogin()
-      throw new Error('Session expired. Please log in again.')
-    }
-  }
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
-    throw new Error(error.detail || `API Error: ${response.status}`)
-  }
-
-  return response.json()
-}
-
-/**
- * Create an authenticated API request (convenience wrapper)
- * 
- * Note: With httpOnly cookies, we can't check if user is authenticated client-side.
- * The server will return 401 if not authenticated, which triggers redirect.
- */
-async function authenticatedRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  return apiRequest<T>(endpoint, options)
-}
-
+// ------------------------------------------------------------------
 // Types
+// ------------------------------------------------------------------
+
 export interface PropertySearchRequest {
   address: string
   city?: string
@@ -266,7 +174,7 @@ export interface LTRResults {
   dscr: number
   grm: number
   total_cash_required: number
-  [key: string]: any
+  [key: string]: number
 }
 
 export interface STRResults {
@@ -275,7 +183,7 @@ export interface STRResults {
   cash_on_cash_return: number
   break_even_occupancy: number
   total_gross_revenue: number
-  [key: string]: any
+  [key: string]: number
 }
 
 export interface BRRRRResults {
@@ -283,7 +191,7 @@ export interface BRRRRResults {
   infinite_roi_achieved: boolean
   post_refi_cash_on_cash: number
   equity_position: number
-  [key: string]: any
+  [key: string]: number | boolean
 }
 
 export interface FlipResults {
@@ -291,24 +199,24 @@ export interface FlipResults {
   roi: number
   annualized_roi: number
   meets_70_rule: boolean
-  [key: string]: any
+  [key: string]: number | boolean
 }
 
 export interface HouseHackResults {
   net_housing_cost_scenario_a: number
   savings_vs_renting_a: number
   housing_cost_offset_pct: number
-  [key: string]: any
+  [key: string]: number
 }
 
 export interface WholesaleResults {
   net_profit: number
   roi: number
   deal_viability: string
-  [key: string]: any
+  [key: string]: number | string
 }
 
-// LOI (Letter of Intent) Types
+// LOI Types
 export interface LOIBuyerInfo {
   name: string
   company?: string
@@ -387,7 +295,10 @@ export interface LOIDocument {
   format_generated: string
 }
 
-// API Functions
+// ------------------------------------------------------------------
+// Domain API methods — all delegate to apiRequest from api-client.ts
+// ------------------------------------------------------------------
+
 export const api = {
   // Health check
   health: () => apiRequest<{ status: string }>('/health'),
@@ -415,23 +326,37 @@ export const api = {
         body: data,
       }),
 
-    quick: (propertyId: string, params?: { purchase_price?: number; down_payment_pct?: number; interest_rate?: number }) => {
+    quick: (
+      propertyId: string,
+      params?: {
+        purchase_price?: number
+        down_payment_pct?: number
+        interest_rate?: number
+      },
+    ) => {
       const searchParams = new URLSearchParams()
-      if (params?.purchase_price) searchParams.set('purchase_price', String(params.purchase_price))
-      if (params?.down_payment_pct) searchParams.set('down_payment_pct', String(params.down_payment_pct))
-      if (params?.interest_rate) searchParams.set('interest_rate', String(params.interest_rate))
-      return apiRequest<any>(`/api/v1/analytics/${propertyId}/quick?${searchParams}`)
+      if (params?.purchase_price)
+        searchParams.set('purchase_price', String(params.purchase_price))
+      if (params?.down_payment_pct)
+        searchParams.set('down_payment_pct', String(params.down_payment_pct))
+      if (params?.interest_rate)
+        searchParams.set('interest_rate', String(params.interest_rate))
+      return apiRequest<Record<string, unknown>>(
+        `/api/v1/analytics/${propertyId}/quick?${searchParams}`,
+      )
     },
   },
 
   // Assumptions
   assumptions: {
-    defaults: () => apiRequest<{ assumptions: AllAssumptions }>('/api/v1/assumptions/defaults'),
+    defaults: () =>
+      apiRequest<{ assumptions: AllAssumptions }>('/api/v1/assumptions/defaults'),
   },
 
   // Comparison
   comparison: {
-    get: (propertyId: string) => apiRequest<any>(`/api/v1/comparison/${propertyId}`),
+    get: (propertyId: string) =>
+      apiRequest<Record<string, unknown>>(`/api/v1/comparison/${propertyId}`),
   },
 
   // Sensitivity analysis
@@ -442,7 +367,7 @@ export const api = {
       variable: string
       range_pct?: number[]
     }) =>
-      apiRequest<any>('/api/v1/sensitivity/analyze', {
+      apiRequest<Record<string, unknown>>('/api/v1/sensitivity/analyze', {
         method: 'POST',
         body: data,
       }),
@@ -450,12 +375,9 @@ export const api = {
 
   // Proforma export endpoints
   proforma: {
-    /**
-     * Download Excel proforma
-     */
     downloadExcel: async (params: {
       propertyId: string
-      address: string  // Required for property lookup
+      address: string
       strategy?: string
       holdPeriodYears?: number
       landValuePercent?: number
@@ -463,30 +385,33 @@ export const api = {
       capitalGainsTaxRate?: number
     }) => {
       const searchParams = new URLSearchParams()
-      searchParams.set('address', params.address)  // Required
+      searchParams.set('address', params.address)
       if (params.strategy) searchParams.set('strategy', params.strategy)
-      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
-      if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
-      if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
-      if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
-      
+      if (params.holdPeriodYears)
+        searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      if (params.landValuePercent)
+        searchParams.set('land_value_percent', String(params.landValuePercent))
+      if (params.marginalTaxRate)
+        searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
+      if (params.capitalGainsTaxRate)
+        searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
+
       const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
       const response = await fetch(url, { credentials: 'include' })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
+        throw new Error(
+          `Failed to download proforma: ${response.status} - ${errorText}`,
+        )
       }
-      
+
       return response.blob()
     },
 
-    /**
-     * Download PDF proforma
-     */
     downloadPdf: async (params: {
       propertyId: string
-      address: string  // Required for property lookup
+      address: string
       strategy?: string
       holdPeriodYears?: number
       landValuePercent?: number
@@ -494,29 +419,32 @@ export const api = {
       capitalGainsTaxRate?: number
     }) => {
       const searchParams = new URLSearchParams()
-      searchParams.set('address', params.address)  // Required
+      searchParams.set('address', params.address)
       if (params.strategy) searchParams.set('strategy', params.strategy)
-      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
-      if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
-      if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
-      if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
-      
+      if (params.holdPeriodYears)
+        searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      if (params.landValuePercent)
+        searchParams.set('land_value_percent', String(params.landValuePercent))
+      if (params.marginalTaxRate)
+        searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
+      if (params.capitalGainsTaxRate)
+        searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
+
       const response = await fetch(
         `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/pdf?${searchParams}`,
-        { credentials: 'include' }
+        { credentials: 'include' },
       )
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
+        throw new Error(
+          `Failed to download proforma: ${response.status} - ${errorText}`,
+        )
       }
-      
+
       return response.blob()
     },
 
-    /**
-     * Get proforma data as JSON
-     */
     getData: (params: {
       propertyId: string
       strategy?: string
@@ -524,8 +452,11 @@ export const api = {
     }) => {
       const searchParams = new URLSearchParams()
       if (params.strategy) searchParams.set('strategy', params.strategy)
-      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
-      return apiRequest<any>(`/api/v1/proforma/property/${params.propertyId}?${searchParams}`)
+      if (params.holdPeriodYears)
+        searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      return apiRequest<Record<string, unknown>>(
+        `/api/v1/proforma/property/${params.propertyId}?${searchParams}`,
+      )
     },
   },
 
@@ -557,26 +488,36 @@ export const api = {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined) searchParams.set(key, String(value))
       })
-      return apiRequest<LOIDocument>(`/api/v1/loi/quick-generate?${searchParams}`, {
-        method: 'POST',
-      })
+      return apiRequest<LOIDocument>(
+        `/api/v1/loi/quick-generate?${searchParams}`,
+        { method: 'POST' },
+      )
     },
 
     templates: () =>
-      apiRequest<Array<{ id: string; name: string; description: string; is_default: boolean }>>('/api/v1/loi/templates'),
+      apiRequest<
+        Array<{
+          id: string
+          name: string
+          description: string
+          is_default: boolean
+        }>
+      >('/api/v1/loi/templates'),
 
     preferences: () =>
-      apiRequest<any>('/api/v1/loi/preferences'),
+      apiRequest<Record<string, unknown>>('/api/v1/loi/preferences'),
 
-    savePreferences: (prefs: any) =>
-      apiRequest<any>('/api/v1/loi/preferences', {
+    savePreferences: (prefs: Record<string, unknown>) =>
+      apiRequest<Record<string, unknown>>('/api/v1/loi/preferences', {
         method: 'POST',
         body: prefs,
       }),
   },
 }
 
-// Auth utility exports
+// ------------------------------------------------------------------
+// Deprecated exports — backward compatibility only
+// ------------------------------------------------------------------
 export {
   getAccessToken,
   getRefreshToken,

@@ -284,5 +284,5 @@ export interface MFASetupResponse {
   provisioning_uri: string
 }
 
-export { ApiError }
+export { ApiError, apiRequest }
 export default api
