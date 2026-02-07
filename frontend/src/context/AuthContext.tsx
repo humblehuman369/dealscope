@@ -51,8 +51,6 @@ interface AuthContextType {
   refreshUser: () => void
   showAuthModal: 'login' | 'register' | null
   setShowAuthModal: (modal: 'login' | 'register' | null) => void
-  // Legacy compat
-  isLoading: boolean
   error: string | null
   clearError: () => void
   loginMfa: (challengeToken: string, totpCode: string, rememberMe?: boolean) => Promise<any>
