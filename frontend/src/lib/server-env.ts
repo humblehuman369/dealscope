@@ -2,38 +2,49 @@
  * Server-side environment variable access.
  *
  * API route handlers (app/api/) should import `BACKEND_URL` from here
- * instead of reading `process.env.BACKEND_URL` directly. This ensures
- * a loud failure when the variable is missing rather than silently
- * falling back to a hardcoded production URL.
+ * instead of reading `process.env.BACKEND_URL` directly.
  *
  * This file should ONLY be imported from server-side code (API routes,
  * server components). It uses non-NEXT_PUBLIC_ variables that are not
  * available in the browser.
+ *
+ * Resolution order for BACKEND_URL:
+ * 1. BACKEND_URL environment variable (preferred)
+ * 2. NEXT_PUBLIC_API_URL as fallback (same host in most deployments)
+ * 3. Empty string — fetch will fail with a clear network error
+ *
+ * This module NEVER throws at import time so the app can always start.
  */
 
-function requireServerEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(
-      `Missing required server environment variable: ${name}. ` +
-        'Add it to your .env.local file (see .env.example).',
-    )
+function resolveBackendUrl(): string {
+  const backendUrl = process.env.BACKEND_URL
+  const publicApiUrl = process.env.NEXT_PUBLIC_API_URL
+
+  if (backendUrl) {
+    if (backendUrl.includes('vercel.app')) {
+      console.warn(
+        `[server-env] BACKEND_URL is set to a Vercel URL (${backendUrl}). ` +
+          'It should point to the Railway backend, not a Vercel deployment.',
+      )
+    }
+    return backendUrl
   }
-  return value
+
+  if (publicApiUrl) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(
+        '[server-env] BACKEND_URL is not set, falling back to NEXT_PUBLIC_API_URL.',
+      )
+    }
+    return publicApiUrl
+  }
+
+  console.error(
+    '[server-env] Neither BACKEND_URL nor NEXT_PUBLIC_API_URL is set. ' +
+      'API proxy routes will fail. Add these to your Vercel environment settings or .env.local.',
+  )
+  return ''
 }
 
 /** Backend URL for server-side API route proxying */
-const rawBackendUrl = requireServerEnv('BACKEND_URL')
-
-/**
- * Guard: if BACKEND_URL is accidentally set to a Vercel deployment URL,
- * fail loudly instead of routing traffic to the wrong host.
- */
-if (rawBackendUrl.includes('vercel.app')) {
-  throw new Error(
-    `BACKEND_URL is set to a Vercel URL (${rawBackendUrl}). ` +
-      'It must point to the Railway backend, not a Vercel deployment.',
-  )
-}
-
-export const BACKEND_URL = rawBackendUrl
+export const BACKEND_URL = resolveBackendUrl()
