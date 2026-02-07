@@ -1,7 +1,7 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { ThemeProvider } from '@/context/ThemeContext'
 import AuthModal from '@/components/auth/AuthModal'
 
@@ -22,7 +22,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         {children}
-        <AuthModal />
+        <Suspense fallback={null}>
+          <AuthModal />
+        </Suspense>
       </ThemeProvider>
     </QueryClientProvider>
   )
