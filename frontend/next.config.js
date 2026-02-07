@@ -54,6 +54,18 @@ const nextConfig = {
     ]
   },
 
+  async redirects() {
+    return [
+      // Deprecated routes — server-side 301 redirects (no client-side flash)
+      { source: '/landing', destination: '/', permanent: true },
+      { source: '/landing2', destination: '/', permanent: true },
+      { source: '/analysis-iq', destination: '/verdict', permanent: true },
+      { source: '/verdict-iq', destination: '/verdict', permanent: true },
+      { source: '/compare', destination: '/price-intel?view=sale', permanent: true },
+      { source: '/rental-comps', destination: '/price-intel?view=rent', permanent: true },
+    ]
+  },
+
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
     if (apiUrl) return []

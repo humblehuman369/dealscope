@@ -38,8 +38,6 @@ const authRoutes = [
 // Public routes that don't need any protection
 const publicRoutes = [
   '/',
-  '/landing',
-  '/landing2',
   '/strategies',
   '/onboarding',
 ]
