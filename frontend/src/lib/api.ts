@@ -9,7 +9,12 @@
  * - credentials: 'include' for cookie transmission
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+if (!API_BASE_URL) {
+  throw new Error(
+    'NEXT_PUBLIC_API_URL is not set. Add it to your .env.local file.',
+  )
+}
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
