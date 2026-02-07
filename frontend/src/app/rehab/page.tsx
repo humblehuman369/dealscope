@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { API_BASE_URL } from '@/lib/env'
 
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { 
   loading: () => (
@@ -66,9 +67,8 @@ function RehabPageContent() {
       // Fetch property data if address is provided but no params
       const fetchPropertyData = async () => {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
           const response = await fetch(
-            `${apiUrl}/api/v1/property/search?address=${encodeURIComponent(address)}`
+            `${API_BASE_URL}/api/v1/property/search?address=${encodeURIComponent(address)}`
           )
           
           if (response.ok) {
