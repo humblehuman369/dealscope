@@ -144,7 +144,7 @@ async function apiRequest<T>(
 // ------------------------------------------------------------------
 
 export const authApi = {
-  me: () => apiRequest<UserResponse>('/api/v1/auth/me'),
+  me: () => apiRequest<UserResponse>('/api/v1/auth/me', { skipAuth: true }),
 
   login: (email: string, password: string, rememberMe = false) =>
     apiRequest<LoginResponse | MFAChallengeResponse>('/api/v1/auth/login', {
