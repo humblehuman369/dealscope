@@ -1221,3 +1221,141 @@ export function isWholesaleState(state: AnyDealMakerState | BRRRRDealMakerState 
 export function isWholesaleMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics | WholesaleMetrics): metrics is WholesaleMetrics {
   return 'endBuyerPrice' in metrics && 'meets70PercentRule' in metrics && 'dealViability' in metrics
 }
+
+// =============================================================================
+// LTR-SPECIFIC TYPES (used by DealMakerScreen for unsaved property mode)
+// =============================================================================
+
+export interface LTRDealMakerState {
+  buyPrice: number
+  downPaymentPercent: number
+  closingCostsPercent: number
+  loanType?: '15-year' | '30-year' | 'arm'
+  interestRate: number
+  loanTermYears: number
+  rehabBudget: number
+  arv: number
+  monthlyRent: number
+  otherIncome: number
+  vacancyRate: number
+  maintenanceRate: number
+  managementRate: number
+  annualPropertyTax: number
+  annualInsurance: number
+  monthlyHoa: number
+}
+
+export interface LTRDealMakerMetrics {
+  cashNeeded: number
+  dealGap: number
+  annualProfit: number
+  capRate: number
+  cocReturn: number
+  monthlyPayment: number
+  loanAmount: number
+  equityCreated: number
+  grossMonthlyIncome: number
+  totalMonthlyExpenses: number
+}
+
+// Union type for any strategy state (used in DealMakerScreen)
+export type AnyStrategyState =
+  | LTRDealMakerState
+  | STRDealMakerState
+  | BRRRRDealMakerState
+  | FlipDealMakerState
+  | HouseHackDealMakerState
+  | WholesaleDealMakerState
+
+// Union type for any strategy metrics (used in DealMakerScreen)
+export type AnyStrategyMetrics =
+  | LTRDealMakerMetrics
+  | STRMetrics
+  | BRRRRMetrics
+  | FlipMetrics
+  | HouseHackMetrics
+  | WholesaleMetrics
+
+// =============================================================================
+// PROPERTY DATA (DealMakerScreen input)
+// =============================================================================
+
+export interface DealMakerPropertyData {
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  beds: number
+  baths: number
+  sqft: number
+  yearBuilt?: number
+  price: number
+  rent?: number
+  zpid?: string
+  image?: string
+  propertyTax?: number
+  insurance?: number
+}
+
+export type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
+
+// =============================================================================
+// STRATEGY HELPERS
+// =============================================================================
+
+/** Map display strategy names to internal strategy types */
+export function getStrategyType(displayName: string): StrategyType {
+  const map: Record<string, StrategyType> = {
+    'Long-term': 'ltr',
+    'Long-term Rental': 'ltr',
+    'Short-term': 'str',
+    'Short-term Rental': 'str',
+    'BRRRR': 'brrrr',
+    'Fix & Flip': 'flip',
+    'House Hack': 'house_hack',
+    'Wholesale': 'wholesale',
+  }
+  return map[displayName] || 'ltr'
+}
+
+// Type guards for AnyStrategyState are defined above as isSTRState, isBRRRRState, etc.
+// They accept AnyDealMakerState which is compatible with AnyStrategyState.
+
+// =============================================================================
+// FORMATTING HELPERS
+// =============================================================================
+
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(price)
+}
+
+export function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(1)}%`
+}
+
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('en-US').format(num)
+}
+
+export function calculateMortgagePayment(principal: number, annualRate: number, years: number): number {
+  if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
+  const monthlyRate = annualRate / 12
+  const numPayments = years * 12
+  const payment =
+    principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+    (Math.pow(1 + monthlyRate, numPayments) - 1)
+  return isFinite(payment) ? payment : 0
+}
+
+export function getValueColor(color: string): string {
+  switch (color) {
+    case 'cyan': return '#00D4FF'
+    case 'teal': return '#06B6D4'
+    case 'rose': return '#F43F5E'
+    default: return '#FFFFFF'
+  }
+}

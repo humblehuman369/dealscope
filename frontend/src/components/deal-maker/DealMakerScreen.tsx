@@ -21,25 +21,22 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-// Note: CompactHeader removed - now using global AppHeader from layout
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
-import { 
+import {
+  // Strategy types & defaults
   StrategyType,
-  STRDealMakerState,
-  STRMetrics,
-  DEFAULT_STR_DEAL_MAKER_STATE,
-  BRRRRDealMakerState,
-  BRRRRMetrics,
-  DEFAULT_BRRRR_DEAL_MAKER_STATE,
-  FlipDealMakerState,
-  FlipMetrics,
-  DEFAULT_FLIP_DEAL_MAKER_STATE,
-  HouseHackDealMakerState,
-  HouseHackMetrics,
-  DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
-  WholesaleDealMakerState,
-  WholesaleMetrics,
-  DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+  STRDealMakerState, STRMetrics, DEFAULT_STR_DEAL_MAKER_STATE,
+  BRRRRDealMakerState, BRRRRMetrics, DEFAULT_BRRRR_DEAL_MAKER_STATE,
+  FlipDealMakerState, FlipMetrics, DEFAULT_FLIP_DEAL_MAKER_STATE,
+  HouseHackDealMakerState, HouseHackMetrics, DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
+  WholesaleDealMakerState, WholesaleMetrics, DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+  // LTR types (extracted)
+  LTRDealMakerState, LTRDealMakerMetrics,
+  AnyStrategyState, AnyStrategyMetrics,
+  DealMakerPropertyData, AccordionSection,
+  // Helpers (extracted)
+  getStrategyType, isSTRState, isBRRRRState, isFlipState, isHouseHackState, isWholesaleState,
+  formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
 import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
@@ -47,137 +44,14 @@ import { calculateFlipMetrics } from './calculations/flipCalculations'
 import { calculateHouseHackMetrics } from './calculations/houseHackCalculations'
 import { calculateWholesaleMetrics, getViabilityDisplay } from './calculations/wholesaleCalculations'
 
-// Types
-export interface DealMakerPropertyData {
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  beds: number
-  baths: number
-  sqft: number
-  yearBuilt?: number
-  price: number
-  rent?: number
-  zpid?: string
-  image?: string
-  propertyTax?: number
-  insurance?: number
-}
+// Re-export for consumers that import from this file
+export type { DealMakerPropertyData }
 
 interface DealMakerScreenProps {
   property: DealMakerPropertyData
   listPrice?: number
   initialStrategy?: string
-  // If propertyId is provided, load from backend (saved property mode)
-  // If not provided, use local state (unsaved property mode)
   savedPropertyId?: string
-}
-
-interface LTRDealMakerState {
-  buyPrice: number
-  downPaymentPercent: number
-  closingCostsPercent: number
-  loanType?: '15-year' | '30-year' | 'arm'
-  interestRate: number
-  loanTermYears: number
-  rehabBudget: number
-  arv: number
-  monthlyRent: number
-  otherIncome: number
-  vacancyRate: number
-  maintenanceRate: number
-  managementRate: number
-  annualPropertyTax: number
-  annualInsurance: number
-  monthlyHoa: number
-}
-
-// Union type for any strategy state
-type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState | WholesaleDealMakerState
-
-// Local type guard for STR state
-function isSTRState(state: DealMakerState): state is STRDealMakerState {
-  return 'averageDailyRate' in state && 'occupancyRate' in state
-}
-
-// Local type guard for BRRRR state
-function isBRRRRState(state: DealMakerState): state is BRRRRDealMakerState {
-  return 'refinanceLtv' in state && 'holdingPeriodMonths' in state
-}
-
-// Local type guard for Flip state
-function isFlipState(state: DealMakerState): state is FlipDealMakerState {
-  return 'financingType' in state && 'sellingCostsPct' in state && 'daysOnMarket' in state
-}
-
-// Local type guard for HouseHack state
-function isHouseHackState(state: DealMakerState): state is HouseHackDealMakerState {
-  return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
-}
-
-// Local type guard for Wholesale state
-function isWholesaleState(state: DealMakerState): state is WholesaleDealMakerState {
-  return 'assignmentFee' in state && 'earnestMoney' in state && 'contractPrice' in state && !('sellingCostsPct' in state)
-}
-
-interface LTRDealMakerMetrics {
-  cashNeeded: number
-  dealGap: number
-  annualProfit: number
-  capRate: number
-  cocReturn: number
-  monthlyPayment: number
-  loanAmount: number
-  equityCreated: number
-  grossMonthlyIncome: number
-  totalMonthlyExpenses: number
-}
-
-// Union type for any strategy metrics
-type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics | WholesaleMetrics
-
-type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
-
-// Map display strategy names to internal strategy types
-function getStrategyType(displayName: string): StrategyType {
-  const map: Record<string, StrategyType> = {
-    'Long-term': 'ltr',
-    'Long-term Rental': 'ltr',
-    'Short-term': 'str',
-    'Short-term Rental': 'str',
-    'BRRRR': 'brrrr',
-    'Fix & Flip': 'flip',
-    'House Hack': 'house_hack',
-    'Wholesale': 'wholesale',
-  }
-  return map[displayName] || 'ltr'
-}
-
-// Helper functions
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(price)
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num)
-}
-
-function calculateMortgagePayment(principal: number, annualRate: number, years: number): number {
-  if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
-  const monthlyRate = annualRate / 12
-  const numPayments = years * 12
-  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-    (Math.pow(1 + monthlyRate, numPayments) - 1)
-  return isFinite(payment) ? payment : 0
 }
 
 // Accordion section definitions
@@ -385,7 +259,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }
 
   // Get initial state based on strategy
-  const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
+  const getInitialLocalState = (strategy: StrategyType): AnyStrategyState => {
     if (strategy === 'str') {
       return getInitialSTRState()
     }
@@ -428,7 +302,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
   
   // Get the current state (from store for saved properties, local for unsaved)
-  const state: DealMakerState = useMemo(() => {
+  const state: AnyStrategyState = useMemo(() => {
     if (isSavedPropertyMode && hasRecord) {
       const record = dealMakerStore.record!
       
@@ -884,7 +758,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const isCalculating = isSavedPropertyMode ? dealMakerStore.isSaving : false
   
   // Calculate metrics - prefer store values for saved properties
-  const metrics = useMemo<DealMakerMetrics>(() => {
+  const metrics = useMemo<AnyStrategyMetrics>(() => {
     // For STR strategy, use STR calculations
     if (strategyType === 'str' && isSTRState(state)) {
       return calculateSTRMetrics(state)
@@ -1108,14 +982,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
-  const getValueColor = (color: string) => {
-    switch (color) {
-      case 'cyan': return '#00D4FF'
-      case 'teal': return '#06B6D4'
-      case 'rose': return '#F43F5E'
-      default: return '#FFFFFF'
-    }
-  }
+  // getValueColor imported from ./types
 
   // Key metrics for header - varies by strategy
   const headerMetrics = useMemo(() => {
