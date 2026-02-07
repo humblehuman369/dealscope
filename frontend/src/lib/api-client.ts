@@ -93,7 +93,7 @@ async function apiRequest<T>(
   }
 
   // Attach CSRF token on mutating requests
-  if (method !== 'GET' && method !== 'DELETE') {
+  if (method !== 'GET') {
     const csrf = getCsrfToken()
     if (csrf) {
       requestHeaders['X-CSRF-Token'] = csrf
