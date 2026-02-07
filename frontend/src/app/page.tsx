@@ -14,7 +14,8 @@ import {
   User,
   Compass
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession, useLogout } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { usePropertyScan } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
@@ -66,7 +67,9 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       setIsSearching(false);
     }
   };
-  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
+  const logoutMutation = useLogout();
 
   // Handle "Use your current location" for desktop users without camera
   const handleUseCurrentLocation = async () => {
@@ -359,7 +362,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                   <span className="text-white text-xs font-medium">Dashboard</span>
                 </button>
                 <button
-                  onClick={logout}
+                  onClick={() => logoutMutation.mutate()}
                   className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full"
                 >
                   <User className="w-3 h-3 text-white" />
@@ -368,7 +371,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               </>
             ) : (
               <button
-                onClick={() => setShowAuthModal('login')}
+                onClick={() => openAuthModal('login')}
                 className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full"
               >
                 <span className="text-white text-xs font-medium">Sign In</span>

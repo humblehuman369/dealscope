@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession, useRefreshUser } from '@/hooks/useSession'
 import { getAccessToken } from '@/lib/api'
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, User,
@@ -128,7 +128,8 @@ interface OnboardingData {
 // ===========================================
 
 export default function OnboardingPage() {
-  const { user, isAuthenticated, isLoading, refreshUser } = useAuth()
+  const { user, isAuthenticated, isLoading } = useSession()
+  const refreshUser = useRefreshUser()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSaving, setIsSaving] = useState(false)

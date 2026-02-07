@@ -3,11 +3,14 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { DollarSign, ArrowLeft, LayoutGrid } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession, useLogout } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 
 export default function BRRRRPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
+  const logoutMutation = useLogout();
 
   const steps = [
     { num: 1, title: 'Buy', desc: 'Purchase a distressed property below market value' },
@@ -39,12 +42,12 @@ export default function BRRRRPage() {
                 <button onClick={() => router.push('/dashboard')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> Dashboard
                 </button>
-                <button onClick={logout} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
+                <button onClick={() => logoutMutation.mutate()} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
               </>
             ) : (
               <>
-                <button onClick={() => setShowAuthModal('login')} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign In</button>
-                <button onClick={() => setShowAuthModal('register')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all">Get Started</button>
+                <button onClick={() => openAuthModal('login')} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign In</button>
+                <button onClick={() => openAuthModal('register')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all">Get Started</button>
               </>
             )}
           </nav>

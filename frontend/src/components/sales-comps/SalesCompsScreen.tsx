@@ -15,7 +15,8 @@
 import React, { useState, useCallback } from 'react'
 import { getAccessToken } from '@/lib/api'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { toast } from '@/components/feedback'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
@@ -175,7 +176,8 @@ export function SalesCompsScreen({
   initialStrategy 
 }: SalesCompsScreenProps) {
   const router = useRouter()
-  const { isAuthenticated, setShowAuthModal } = useAuth()
+  const { isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
@@ -240,13 +242,13 @@ export function SalesCompsScreen({
   // Handle save - saves property to user's saved list via API
   const handleSave = useCallback(async () => {
     if (!isAuthenticated) {
-      setShowAuthModal('login')
+      openAuthModal('login')
       return
     }
 
     const token = getAccessToken()
     if (!token) {
-      setShowAuthModal('login')
+      openAuthModal('login')
       return
     }
 
@@ -312,7 +314,7 @@ export function SalesCompsScreen({
           console.error('Failed to save property:', response.status, errorText)
         }
       } else if (response.status === 401) {
-        setShowAuthModal('login')
+        openAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
         let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
@@ -330,7 +332,7 @@ export function SalesCompsScreen({
       toast.error('Network error. Please check your connection and try again.')
       console.error('Failed to save property:', error)
     }
-  }, [isAuthenticated, setShowAuthModal, property, fullAddress])
+  }, [isAuthenticated, openAuthModal, property, fullAddress])
 
   // Handle share
   const handleShare = async () => {

@@ -3,11 +3,14 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, ArrowLeft, LayoutGrid, LogOut } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession, useLogout } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 
 export default function LongTermRentalPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
+  const logoutMutation = useLogout();
 
   return (
     <div className="min-h-screen bg-[#e8eef3]" style={{ fontFamily: 'Poppins, sans-serif' }}>
@@ -39,7 +42,7 @@ export default function LongTermRentalPage() {
                   Dashboard
                 </button>
                 <button
-                  onClick={logout}
+                  onClick={() => logoutMutation.mutate()}
                   className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all"
                 >
                   Sign Out
@@ -48,13 +51,13 @@ export default function LongTermRentalPage() {
             ) : (
               <>
                 <button
-                  onClick={() => setShowAuthModal('login')}
+                  onClick={() => openAuthModal('login')}
                   className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all"
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => setShowAuthModal('register')}
+                  onClick={() => openAuthModal('register')}
                   className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all"
                 >
                   Get Started

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession, useRefreshUser } from '@/hooks/useSession'
 import { getAccessToken } from '@/lib/api'
 import { 
   User, Mail, Calendar, Shield, Camera, Edit2, Save, X, 
@@ -116,7 +116,8 @@ const US_STATES = [
 // ===========================================
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading, refreshUser } = useAuth()
+  const { user, isAuthenticated, isLoading } = useSession()
+  const refreshUser = useRefreshUser()
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [fullUserData, setFullUserData] = useState<UserData | null>(null)

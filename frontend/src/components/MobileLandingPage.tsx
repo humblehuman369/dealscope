@@ -9,7 +9,8 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession, useLogout } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
 import { PhoneScannerMockup } from './PhoneScannerMockup';
 
@@ -29,7 +30,9 @@ const strategies = [
 
 export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
   const router = useRouter();
-  const { user, isAuthenticated, setShowAuthModal, logout } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
+  const logoutMutation = useLogout();
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -90,7 +93,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 Dashboard
               </button>
               <button
-                onClick={logout}
+                onClick={() => logoutMutation.mutate()}
                 className={`hidden lg:block text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/50 hover:text-white/70' 
@@ -103,7 +106,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
           ) : (
             <>
               <button
-                onClick={() => setShowAuthModal('login')}
+                onClick={() => openAuthModal('login')}
                 className={`text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/70 hover:text-white' 
@@ -113,7 +116,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 Sign In
               </button>
               <button
-                onClick={() => setShowAuthModal('register')}
+                onClick={() => openAuthModal('register')}
                 className="hidden lg:block px-5 py-2.5 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors"
               >
                 Get Started

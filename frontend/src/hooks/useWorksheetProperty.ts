@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 import { SavedProperty } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { getAccessToken } from '@/lib/api'
@@ -30,7 +30,7 @@ function extractAddressFromTempId(id: string): string {
 export function useWorksheetProperty(propertyId: string, options: UseWorksheetPropertyOptions = {}) {
   const { onLoaded } = options
   const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading } = useSession()
   const worksheetStore = useWorksheetStore()
 
   const [property, setProperty] = useState<SavedProperty | null>(null)

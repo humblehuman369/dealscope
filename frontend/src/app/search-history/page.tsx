@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 import { getAccessToken } from '@/lib/api'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
@@ -58,7 +58,7 @@ interface SearchStats {
 // ===========================================
 
 export default function SearchHistoryPage() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useSession()
   const router = useRouter()
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [stats, setStats] = useState<SearchStats | null>(null)

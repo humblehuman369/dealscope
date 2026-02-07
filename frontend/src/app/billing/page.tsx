@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 import { getAccessToken } from '@/lib/api'
 import {
   Check,
@@ -71,7 +71,7 @@ interface Usage {
 function BillingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useSession()
   
   const [plans, setPlans] = useState<PricingPlan[]>([])
   const [subscription, setSubscription] = useState<Subscription | null>(null)

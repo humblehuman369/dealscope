@@ -9,7 +9,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTheme } from '@/context/ThemeContext'
-import { useAuth } from '@/context/AuthContext'
+import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { usePropertyStore, useUIStore } from '@/stores'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
@@ -35,7 +36,9 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
+  const logoutMutation = useLogout()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
@@ -275,7 +278,7 @@ export default function Header() {
                   <div className="py-1.5 border-t border-slate-100 dark:border-white/[0.06]">
                     <button
                       onClick={() => {
-                        logout()
+                        logoutMutation.mutate()
                         setShowUserMenu(false)
                       }}
                       className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors text-left"
@@ -290,13 +293,13 @@ export default function Header() {
           ) : (
             <div className="hidden sm:flex items-center gap-2">
               <button 
-                onClick={() => setShowAuthModal('login')}
+                onClick={() => openAuthModal('login')}
                 className="px-3 py-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
               >
                 Sign In
               </button>
               <button 
-                onClick={() => setShowAuthModal('register')}
+                onClick={() => openAuthModal('register')}
                 className="px-3.5 py-1.5 text-[13px] font-semibold text-white bg-gradient-to-br from-teal to-teal-600 rounded-lg hover:translate-y-[-1px] hover:shadow-[0_4px_12px_rgba(8,145,178,0.3)] transition-all"
               >
                 Get Started
@@ -400,13 +403,13 @@ export default function Header() {
             {!isAuthenticated && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/[0.06] flex flex-col gap-2">
                 <button 
-                  onClick={() => setShowAuthModal('login')}
+                  onClick={() => openAuthModal('login')}
                   className="w-full py-3 text-[15px] font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-[10px] transition-colors"
                 >
                   Sign In
                 </button>
                 <button 
-                  onClick={() => setShowAuthModal('register')}
+                  onClick={() => openAuthModal('register')}
                   className="w-full py-3 text-[15px] font-semibold text-white bg-gradient-to-br from-teal to-teal-600 rounded-[10px] text-center"
                 >
                   Get Started

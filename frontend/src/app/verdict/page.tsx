@@ -25,7 +25,7 @@ import {
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
@@ -75,7 +75,7 @@ function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   // Auth context available for future use
-  useAuth()
+  useSession()
 
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')

@@ -2,7 +2,8 @@
 
 import React from 'react'
 import { useTheme } from '@/context/ThemeContext'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import Link from 'next/link'
 
 interface DesktopHeaderProps {
@@ -20,7 +21,8 @@ interface DesktopHeaderProps {
  */
 export function DesktopHeader({ onBack, showBackButton = true }: DesktopHeaderProps) {
   const { theme, toggleTheme } = useTheme()
-  const { user, isAuthenticated, setShowAuthModal } = useAuth()
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
   const isDark = theme === 'dark'
 
   return (
@@ -76,13 +78,13 @@ export function DesktopHeader({ onBack, showBackButton = true }: DesktopHeaderPr
         ) : (
           <>
             <button 
-              onClick={() => setShowAuthModal('login')}
+              onClick={() => openAuthModal('login')}
               className="desktop-auth-btn desktop-auth-ghost"
             >
               Sign In
             </button>
             <button 
-              onClick={() => setShowAuthModal('register')}
+              onClick={() => openAuthModal('register')}
               className="desktop-auth-btn desktop-auth-primary"
             >
               Get Started

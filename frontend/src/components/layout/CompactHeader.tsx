@@ -15,7 +15,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { getToolbarRoute, isValidNavContext, type ToolbarNavId, type NavContext } from '@/lib/navigation';
 
 // Types
@@ -132,7 +133,8 @@ export function CompactHeader({
   savedPropertyId,
 }: CompactHeaderProps) {
   const router = useRouter();
-  const { user, isAuthenticated, setShowAuthModal } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
   const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
   const [hasAutoClosedOnce, setHasAutoClosedOnce] = useState(false);
 
@@ -190,7 +192,7 @@ export function CompactHeader({
     if (isAuthenticated) {
       router.push('/dashboard');
     } else {
-      setShowAuthModal('login');
+      openAuthModal('login');
     }
   };
 
@@ -230,7 +232,7 @@ export function CompactHeader({
               </div>
             ) : (
               <button
-                onClick={() => setShowAuthModal('login')}
+                onClick={() => openAuthModal('login')}
                 className="w-9 h-9 bg-[#F1F5F9] rounded-lg flex items-center justify-center text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0A1628] cursor-pointer transition-all"
                 aria-label="Sign in"
               >

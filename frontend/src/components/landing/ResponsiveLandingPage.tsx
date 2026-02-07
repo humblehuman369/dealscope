@@ -3,7 +3,8 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from '@/hooks/useSession';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { Footer } from './Footer';
 import { TryItNowModal } from './TryItNowModal';
 import { 
@@ -24,7 +25,7 @@ interface ResponsiveLandingPageProps {
 
 // Separate component to handle search params (must be wrapped in Suspense)
 function AuthParamHandler() {
-  const { setShowAuthModal } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const searchParams = useSearchParams();
 
   React.useEffect(() => {
@@ -32,11 +33,11 @@ function AuthParamHandler() {
     // Handle all auth-related query params
     // 'required' is set by the proxy when accessing protected routes
     if (authParam === 'login' || authParam === 'required') {
-      setShowAuthModal('login');
+      openAuthModal('login');
     } else if (authParam === 'register') {
-      setShowAuthModal('register');
+      openAuthModal('register');
     }
-  }, [searchParams, setShowAuthModal]);
+  }, [searchParams, openAuthModal]);
 
   return null;
 }
@@ -49,7 +50,8 @@ const formatCurrency = (value: number) => {
 };
 
 export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
-  const { user, isAuthenticated, setShowAuthModal } = useAuth();
+  const { user, isAuthenticated } = useSession();
+  const { openAuthModal } = useAuthModal();
   const [showTryItNowModal, setShowTryItNowModal] = useState(false);
   
   // ModelIQ State

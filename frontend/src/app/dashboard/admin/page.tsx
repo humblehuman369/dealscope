@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Shield } from 'lucide-react'
@@ -12,7 +12,7 @@ import {
 } from '@/features/admin'
 
 export default function AdminPage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading } = useSession()
   const router = useRouter()
 
   useEffect(() => {

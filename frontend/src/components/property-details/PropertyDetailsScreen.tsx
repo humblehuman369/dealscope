@@ -15,7 +15,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
 // Note: CompactHeader removed - now using global AppHeader from layout
 import { PropertyData } from './types'
 
@@ -40,7 +40,7 @@ interface PropertyDetailsScreenProps {
 export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDetailsScreenProps) {
   const router = useRouter()
   // Auth context is used in global AppHeader for save functionality
-  useAuth()
+  useSession()
   
   // Image gallery state
   const [currentImageIndex, setCurrentImageIndex] = useState(0)

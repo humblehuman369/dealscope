@@ -17,7 +17,8 @@ import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Search, User, LogOut, ChevronDown } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
+import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 // Pages that use CompactHeader and should not show DealMakerHeader
@@ -37,7 +38,9 @@ interface DealMakerHeaderProps {
 }
 
 export function DealMakerHeader({ hideSearch = false, className = '' }: DealMakerHeaderProps) {
-  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
+  const logoutMutation = useLogout()
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -67,7 +70,7 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
 
   const handleLogout = () => {
     setShowUserDropdown(false)
-    logout()
+    logoutMutation.mutate()
   }
 
   return (
@@ -149,13 +152,13 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
             ) : (
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowAuthModal('login')}
+                  onClick={() => openAuthModal('login')}
                   className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => setShowAuthModal('register')}
+                  onClick={() => openAuthModal('register')}
                   className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-full hover:opacity-90 transition-all"
                 >
                   Register

@@ -24,7 +24,8 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { getAccessToken, refreshAccessToken } from '@/lib/api'
 import { toast } from '@/components/feedback'
 
@@ -189,7 +190,8 @@ export function AppHeader({
   const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
   
   // Auth context for save functionality
-  const { isAuthenticated, setShowAuthModal } = useAuth()
+  const { isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
 
   // Helper to fully decode a URL-encoded string (handles double/triple encoding)
   const fullyDecode = (str: string): string => {
@@ -443,7 +445,7 @@ export function AppHeader({
   // Handle save property
   const handleSave = useCallback(async () => {
     if (!isAuthenticated) {
-      setShowAuthModal('login')
+      openAuthModal('login')
       return
     }
 
@@ -459,7 +461,7 @@ export function AppHeader({
         token = getAccessToken()
       }
       if (!token) {
-        setShowAuthModal('login')
+        openAuthModal('login')
         return
       }
     }
@@ -532,7 +534,7 @@ export function AppHeader({
         }
       } else if (response.status === 401) {
         // Token expired - prompt login
-        setShowAuthModal('login')
+        openAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
         let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
@@ -552,21 +554,21 @@ export function AppHeader({
     } finally {
       setIsSaving(false)
     }
-  }, [displayAddress, property, isAuthenticated, setShowAuthModal, isSaving, isSaved, fetchExistingSavedProperty])
+  }, [displayAddress, property, isAuthenticated, openAuthModal, isSaving, isSaved, fetchExistingSavedProperty])
 
   // Handle unsave property
   const handleUnsave = useCallback(async () => {
     if (!isAuthenticated || !savedPropertyId || isSaving) return
 
     let token = getAccessToken()
-    if (!token) {
-      const refreshed = await refreshAccessToken()
-      if (refreshed) token = getAccessToken()
       if (!token) {
-        setShowAuthModal('login')
-        return
+        const refreshed = await refreshAccessToken()
+        if (refreshed) token = getAccessToken()
+        if (!token) {
+          openAuthModal('login')
+          return
+        }
       }
-    }
 
     setIsSaving(true)
     try {
@@ -584,7 +586,7 @@ export function AppHeader({
         setSavedPropertyId(null)
         toast.success('Property removed from your portfolio')
       } else if (response.status === 401) {
-        setShowAuthModal('login')
+        openAuthModal('login')
         toast.error('Please log in to manage saved properties')
       } else if (response.status === 404) {
         // Property already deleted or doesn't exist
@@ -609,7 +611,7 @@ export function AppHeader({
     } finally {
       setIsSaving(false)
     }
-  }, [savedPropertyId, isAuthenticated, setShowAuthModal, isSaving])
+  }, [savedPropertyId, isAuthenticated, openAuthModal, isSaving])
 
   // Determine if header should be hidden
   // Moved here to ensure all hooks (useCallback) are called before return

@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useSession } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { getAccessToken } from '@/lib/api'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
@@ -37,7 +38,8 @@ interface PropertyDetailsClientProps {
  */
 export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
-  const { isAuthenticated, setShowAuthModal } = useAuth()
+  const { isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
@@ -48,7 +50,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
   // Handle save property
   const handleSave = useCallback(async () => {
     if (!isAuthenticated) {
-      setShowAuthModal('login')
+      openAuthModal('login')
       return
     }
 
@@ -58,7 +60,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
     try {
       const token = getAccessToken()
       if (!token) {
-        setShowAuthModal('login')
+        openAuthModal('login')
         setIsSaving(false)
         return
       }
@@ -136,7 +138,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           setTimeout(() => setSaveMessage(null), 3000)
         }
       } else if (response.status === 401) {
-        setShowAuthModal('login')
+        openAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
         let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
@@ -158,7 +160,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
     } finally {
       setIsSaving(false)
     }
-  }, [property, isAuthenticated, setShowAuthModal, isSaving, isSaved, fullAddress])
+  }, [property, isAuthenticated, openAuthModal, isSaving, isSaved, fullAddress])
 
   // Handle share
   const handleShare = async () => {
