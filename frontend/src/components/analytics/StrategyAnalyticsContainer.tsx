@@ -548,7 +548,7 @@ function LTRMetricsContent({
         id: 'coc',
         label: 'Cash-on-Cash Return',
         value: coc,
-        formattedValue: formatPercent(coc),
+        formattedValue: formatPercent(coc * 100),
         status: coc >= 0.12 ? 'high' : coc >= 0.08 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, coc * 500)),
         zones: {
@@ -561,7 +561,7 @@ function LTRMetricsContent({
         id: 'cap',
         label: 'Cap Rate',
         value: cap,
-        formattedValue: formatPercent(cap),
+        formattedValue: formatPercent(cap * 100),
         status: cap >= 0.055 ? 'high' : cap >= 0.04 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, cap * 1000)),
         zones: {
@@ -599,7 +599,7 @@ function LTRMetricsContent({
           0.05,
           0.50,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         ),
         createSliderConfig(
           'interestRate',
@@ -608,7 +608,7 @@ function LTRMetricsContent({
           0.04,
           0.12,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     },
@@ -632,7 +632,7 @@ function LTRMetricsContent({
           0,
           0.15,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     }
@@ -773,7 +773,7 @@ function FundingTabContent({ purchasePrice, assumptions }: FundingTabContentProp
       
       <InsightCard
         data={createIQInsight(
-          `With ${formatPercent(assumptions.downPaymentPct, 0)} down, you'll need ${formatCurrency(downPayment + closingCosts)} cash to close.`,
+          `With ${formatPercent(assumptions.downPaymentPct * 100, { decimals: 0 })} down, you'll need ${formatCurrency(downPayment + closingCosts)} cash to close.`,
           'info'
         )}
       />
@@ -926,7 +926,7 @@ function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption
           0,
           0.08,
           0.005,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         ),
         createSliderConfig(
           'appreciationRate',
@@ -935,7 +935,7 @@ function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption
           0,
           0.08,
           0.005,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         ),
         createSliderConfig(
           'expenseGrowth',
@@ -944,7 +944,7 @@ function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption
           0,
           0.06,
           0.005,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     }
@@ -992,7 +992,7 @@ function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption
       
       <InsightCard
         data={createIQInsight(
-          `With ${formatPercent(rentGrowth)} annual rent increases and ${formatPercent(appreciationRate)} appreciation, your equity could grow to ${formatCurrency(projections[9].totalEquity)} in 10 years.`,
+          `With ${formatPercent(rentGrowth * 100)} annual rent increases and ${formatPercent(appreciationRate * 100)} appreciation, your equity could grow to ${formatCurrency(projections[9].totalEquity)} in 10 years.`,
           'success'
         )}
       />
@@ -1036,7 +1036,7 @@ function WhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: 
           0.05,
           0.50,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         ),
         createSliderConfig(
           'interestRate',
@@ -1045,7 +1045,7 @@ function WhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: 
           0.04,
           0.12,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         ),
         createSliderConfig(
           'loanTermYears',
@@ -1078,7 +1078,7 @@ function WhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: 
           0,
           0.20,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     },
@@ -1111,7 +1111,7 @@ function WhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: 
           0,
           0.15,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     }

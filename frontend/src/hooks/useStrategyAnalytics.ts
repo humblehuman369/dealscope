@@ -233,34 +233,5 @@ export function getTabsForStrategy(strategyId: StrategyId): SubTabId[] {
   }
 }
 
-/**
- * Format currency for display
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
-    currency: 'USD', 
-    minimumFractionDigits: 0, 
-    maximumFractionDigits: 0 
-  }).format(value)
-}
-
-/**
- * Format compact currency (K/M notation)
- */
-export function formatCompact(value: number): string {
-  if (Math.abs(value) >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (Math.abs(value) >= 1000) {
-    return `$${Math.round(value / 1000)}K`
-  }
-  return formatCurrency(value)
-}
-
-/**
- * Format percentage
- */
-export function formatPercent(value: number, decimals: number = 1): string {
-  return `${(value * 100).toFixed(decimals)}%`
-}
+// Re-export canonical formatters (previously defined locally)
+export { formatCurrency, formatCompactCurrency, formatPercent } from '@/utils/formatters'

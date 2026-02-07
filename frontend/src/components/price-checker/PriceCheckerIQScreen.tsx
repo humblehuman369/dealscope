@@ -27,14 +27,13 @@ import {
   calculateSimilarityScore,
   calculateSaleAdjustments,
   calculateRentAdjustments,
-  formatCurrency,
-  formatCompactCurrency,
   type SubjectProperty,
   type CompProperty,
   type AppraisalResult,
   type RentAppraisalResult,
   type CompAdjustment,
 } from '@/utils/appraisalCalculations'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // TYPES

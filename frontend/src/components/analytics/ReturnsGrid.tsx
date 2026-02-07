@@ -3,6 +3,7 @@
 import React from 'react'
 import { CheckCircle } from 'lucide-react'
 import { ReturnsData, ReturnMetric } from './types'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * ReturnsGrid Component
@@ -101,13 +102,6 @@ export function createLTRReturns(
   capRate: number,
   dscr: number
 ): ReturnsData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   return {
     badge: 'PROFITABLE',
@@ -130,13 +124,6 @@ export function createSTRReturns(
   annualRevenue: number,
   occupancy: number
 ): ReturnsData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   return {
     badge: 'PROFITABLE',
@@ -159,18 +146,7 @@ export function createBRRRRReturns(
   monthlyCashFlow: number,
   isInfiniteCOC: boolean = false
 ): ReturnsData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
-  const formatCompact = (value: number) => 
-    Math.abs(value) >= 1000 
-      ? `$${Math.round(value / 1000)}K` 
-      : formatCurrency(value)
 
   return {
     badge: isInfiniteCOC ? 'INFINITE CoC' : 'PROFITABLE',
@@ -178,7 +154,7 @@ export function createBRRRRReturns(
     metrics: [
       { value: formatCurrency(cashLeftInDeal), label: 'Cash Left in Deal' },
       { value: isInfiniteCOC ? '∞' : 'High', label: 'Cash-on-Cash' },
-      { value: formatCompact(equityCreated), label: 'Equity Created' },
+      { value: formatCompactCurrency(equityCreated), label: 'Equity Created' },
       { value: formatCurrency(monthlyCashFlow), label: 'Monthly Cash Flow' }
     ]
   }
@@ -193,13 +169,6 @@ export function createWholesaleReturns(
   cashAtRisk: number,
   timelineDays: number
 ): ReturnsData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   return {
     badge: 'ASSIGNABLE',
@@ -222,13 +191,6 @@ export function createHouseHackReturns(
   rentalIncome: number,
   housingOffset: number
 ): ReturnsData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const isFreeHousing = effectiveHousingCost <= 0
 

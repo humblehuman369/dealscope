@@ -9,6 +9,7 @@
  */
 
 import React, { useMemo } from 'react'
+import { formatCurrency, formatCompactCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
 // TYPES
@@ -42,26 +43,6 @@ export interface ProfitZoneDashboardProps {
 // HELPER FUNCTIONS
 // ============================================
 
-const formatCurrency = (value: number): string =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-
-const formatCompact = (value: number): string => {
-  const absValue = Math.abs(value)
-  if (absValue >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (absValue >= 1000) {
-    return `$${Math.round(value / 1000).toLocaleString()}K`
-  }
-  return formatCurrency(value)
-}
-
-const formatPercent = (value: number): string => `${value.toFixed(1)}%`
 
 const getDealScoreLabel = (score: number): string => {
   if (score >= 80) return 'Excellent'
@@ -164,7 +145,7 @@ function ProfitZoneVisualizer({ projectedProfit, breakevenPrice, listPrice }: Pr
             style={{ top: `${Math.max(10, 100 - profitPosition)}%`, transform: 'translate(-50%, -50%)' }}
           >
             <span className="text-white text-xs font-bold whitespace-nowrap">
-              {formatCompact(projectedProfit)}
+              {formatCompactCurrency(projectedProfit)}
             </span>
           </div>
         </div>
@@ -175,7 +156,7 @@ function ProfitZoneVisualizer({ projectedProfit, breakevenPrice, listPrice }: Pr
         </div>
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
           <span className="text-[8px] font-medium text-slate-400 dark:text-white/50">
-            BREAKEVEN {formatCompact(breakevenPrice)}
+            BREAKEVEN {formatCompactCurrency(breakevenPrice)}
           </span>
         </div>
       </div>
@@ -267,17 +248,17 @@ export function ProfitZoneDashboard({
         <div className="grid grid-cols-2 gap-1.5">
           <MetricBox 
             label="BUY PRICE" 
-            value={formatCompact(buyPrice)} 
+            value={formatCompactCurrency(buyPrice)} 
             sublabel="Target" 
           />
           <MetricBox 
             label="CASH NEEDED" 
-            value={formatCompact(cashNeeded)} 
+            value={formatCompactCurrency(cashNeeded)} 
             sublabel="Negotiated" 
           />
           <MetricBox 
             label="CASH FLOW" 
-            value={formatCompact(monthlyCashFlow)} 
+            value={formatCompactCurrency(monthlyCashFlow)} 
             sublabel="Est. Monthly" 
             valueColorClass={monthlyCashFlow >= 0 ? 'text-green-500' : 'text-red-500'}
           />

@@ -226,7 +226,7 @@ function ProjectionTable({ data }: { data: YearlyProjection[] }) {
                 {formatCompactCurrency(row.cumulativeCashFlow)}
               </td>
               <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompactCurrency(row.totalWealth)}</td>
-              <td className="py-2 px-1.5 text-right">{formatPercent(row.cashOnCash)}</td>
+              <td className="py-2 px-1.5 text-right">{formatPercent(row.cashOnCash * 100)}</td>
             </tr>
           ))}
         </tbody>
@@ -281,7 +281,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         <SummaryCard
           label="Total Wealth (Year 10)"
           value={formatCompactCurrency(year10.totalWealth)}
-          subValue={`${formatPercent(summary.equityMultiple - 1)} growth`}
+          subValue={`${formatPercent((summary.equityMultiple - 1) * 100)} growth`}
           icon={Award}
           highlight
           trend="up"
@@ -301,7 +301,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         />
         <SummaryCard
           label="Est. IRR"
-          value={formatPercent(summary.irr)}
+          value={formatPercent(summary.irr * 100)}
           subValue="Internal Rate of Return"
           icon={Target}
           highlight={summary.irr > 0.15}
@@ -368,19 +368,19 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white">Annual Appreciation</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualAppreciation)}</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualAppreciation * 100)}</div>
           </div>
           <div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white">Rent Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualRentGrowth)}</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualRentGrowth * 100)}</div>
           </div>
           <div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white">Property Tax Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.propertyTaxGrowth)}</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.propertyTaxGrowth * 100)}</div>
           </div>
           <div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white">Insurance Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.insuranceGrowth)}</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.insuranceGrowth * 100)}</div>
           </div>
         </div>
       </div>

@@ -4,26 +4,11 @@
  * Formatting and helper functions for property data display.
  */
 
-/**
- * Format a number as currency (USD)
- */
-export function formatCurrency(value: number | null | undefined): string {
-  if (value === null || value === undefined) return 'N/A'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
-}
+import { formatCurrencySafe, formatNumberSafe } from '@/utils/formatters'
 
-/**
- * Format a number with thousands separators
- */
-export function formatNumber(value: number | null | undefined): string {
-  if (value === null || value === undefined) return 'N/A'
-  return new Intl.NumberFormat('en-US').format(value)
-}
+// Re-export canonical formatters (previously defined locally)
+export const formatCurrency = formatCurrencySafe
+export const formatNumber = formatNumberSafe
 
 /**
  * Format a date string to readable format

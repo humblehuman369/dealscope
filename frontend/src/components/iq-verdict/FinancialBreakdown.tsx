@@ -359,55 +359,55 @@ export function FinancialBreakdown({
             <>
               {/* PURCHASE TERMS */}
               <SectionHeader title="Purchase Terms" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
-              <HighlightRow label="Target Buy Price" value={`$${formatCurrency(calculations.targetBuyPrice)}`} />
-              <Row label="Down Payment" value={`$${formatCurrency(calculations.downPayment)}`} />
+              <HighlightRow label="Target Buy Price" value={`${formatCurrency(calculations.targetBuyPrice)}`} />
+              <Row label="Down Payment" value={`${formatCurrency(calculations.downPayment)}`} />
               <Row label="Down Payment %" value={formatPercent(calculations.downPaymentPct)} />
-              <Row label="Loan Amount" value={`$${formatCurrency(calculations.loanAmount)}`} />
+              <Row label="Loan Amount" value={`${formatCurrency(calculations.loanAmount)}`} />
               <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
               <Row label="Loan Term (Years)" value={calculations.loanTermYears.toString()} />
-              <Row label="Monthly Payment (P&I)" value={`$${formatCurrency(calculations.monthlyPI)}`} />
+              <Row label="Monthly Payment (P&I)" value={`${formatCurrency(calculations.monthlyPI)}`} />
               
               {/* INCOME */}
               <SectionHeader title="Income" linkText="Adjust Income" onLinkClick={onAdjustIncome} />
-              <Row label="Gross Scheduled Rent" value={`$${formatCurrency(calculations.annualGrossRent)}`} />
+              <Row label="Gross Scheduled Rent" value={`${formatCurrency(calculations.annualGrossRent)}`} />
               <Row 
                 label="Less: Vacancy Allowance" 
-                value={`$(${formatCurrency(calculations.vacancyAllowance)})`} 
+                value={`(${formatCurrency(calculations.vacancyAllowance)})`} 
                 isNegative 
               />
-              <Row label="Other Income" value={`$${formatCurrency(calculations.otherIncome)}`} />
-              <SummaryRow label="Effective Gross Income" value={`$${formatCurrency(calculations.effectiveGrossIncome)}`} />
+              <Row label="Other Income" value={`${formatCurrency(calculations.otherIncome)}`} />
+              <SummaryRow label="Effective Gross Income" value={`${formatCurrency(calculations.effectiveGrossIncome)}`} />
               
               {/* OPERATING EXPENSES */}
               <SectionHeader title="Operating Expenses" linkText="Adjust Expenses" onLinkClick={onAdjustExpenses} />
-              <Row label="Property Taxes" value={`$${formatCurrency(calculations.propertyTaxes)}`} />
-              <Row label="Insurance" value={`$${formatCurrency(calculations.insurance)}`} />
-              <Row label="HOA Fees" value={calculations.hoaFees > 0 ? `$${formatCurrency(calculations.hoaFees)}` : '$-'} />
+              <Row label="Property Taxes" value={`${formatCurrency(calculations.propertyTaxes)}`} />
+              <Row label="Insurance" value={`${formatCurrency(calculations.insurance)}`} />
+              <Row label="HOA Fees" value={calculations.hoaFees > 0 ? `${formatCurrency(calculations.hoaFees)}` : '$-'} />
               <Row 
                 label="Property Management" 
-                value={calculations.annualManagement > 0 ? `$${formatCurrency(calculations.annualManagement)}` : '$-'} 
+                value={calculations.annualManagement > 0 ? `${formatCurrency(calculations.annualManagement)}` : '$-'} 
               />
-              <Row label="Maintenance & Repairs" value={`$${formatCurrency(calculations.annualMaintenance)}`} />
-              <Row label="Utilities" value={calculations.annualUtilities > 0 ? `$${formatCurrency(calculations.annualUtilities)}` : '$-'} />
-              <Row label="Landscaping" value={calculations.annualLandscaping > 0 ? `$${formatCurrency(calculations.annualLandscaping)}` : '$-'} />
-              <Row label="Pest Control" value={calculations.annualPestControl > 0 ? `$${formatCurrency(calculations.annualPestControl)}` : '$-'} />
-              <Row label="CapEx Reserve" value={`$${formatCurrency(calculations.annualCapex)}`} />
-              <Row label="Other Expenses" value={calculations.annualOther > 0 ? `$${formatCurrency(calculations.annualOther)}` : '$-'} />
-              <SummaryRow label="Total Operating Expenses" value={`$${formatCurrency(calculations.totalOperatingExpenses)}`} />
+              <Row label="Maintenance & Repairs" value={`${formatCurrency(calculations.annualMaintenance)}`} />
+              <Row label="Utilities" value={calculations.annualUtilities > 0 ? `${formatCurrency(calculations.annualUtilities)}` : '$-'} />
+              <Row label="Landscaping" value={calculations.annualLandscaping > 0 ? `${formatCurrency(calculations.annualLandscaping)}` : '$-'} />
+              <Row label="Pest Control" value={calculations.annualPestControl > 0 ? `${formatCurrency(calculations.annualPestControl)}` : '$-'} />
+              <Row label="CapEx Reserve" value={`${formatCurrency(calculations.annualCapex)}`} />
+              <Row label="Other Expenses" value={calculations.annualOther > 0 ? `${formatCurrency(calculations.annualOther)}` : '$-'} />
+              <SummaryRow label="Total Operating Expenses" value={`${formatCurrency(calculations.totalOperatingExpenses)}`} />
               
               {/* NET OPERATING INCOME */}
-              <TealHighlightRow label="Net Operating Income (NOI)" value={`$${formatCurrency(calculations.noi)}`} />
+              <TealHighlightRow label="Net Operating Income (NOI)" value={`${formatCurrency(calculations.noi)}`} />
               
               {/* DEBT SERVICE */}
               <SectionHeader title="Debt Service" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
-              <Row label="Annual Mortgage (P&I)" value={`$${formatCurrency(calculations.annualDebtService)}`} />
+              <Row label="Annual Mortgage (P&I)" value={`${formatCurrency(calculations.annualDebtService)}`} />
               
               {/* PRE-TAX CASH FLOW */}
               <TealHighlightRow 
                 label="Pre-Tax Cash Flow" 
                 value={calculations.annualCashFlow < 0 
-                  ? `$(${formatCurrency(Math.abs(calculations.annualCashFlow))})` 
-                  : `$${formatCurrency(calculations.annualCashFlow)}`
+                  ? `(${formatCurrency(Math.abs(calculations.annualCashFlow))})` 
+                  : `${formatCurrency(calculations.annualCashFlow)}`
                 }
                 isNegative={calculations.annualCashFlow < 0}
               />
@@ -419,32 +419,32 @@ export function FinancialBreakdown({
             <>
               {/* PHASE 1: BUY */}
               <SectionHeader title="Phase 1: Buy" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
-              <HighlightRow label="Purchase Price" value={`$${formatCurrency(calculations.targetBuyPrice)}`} />
-              <Row label="Hard Money Down (10%)" value={`$${formatCurrency(calculations.targetBuyPrice * 0.10)}`} />
-              <Row label="Closing Costs" value={`$${formatCurrency(calculations.targetBuyPrice * 0.03)}`} />
+              <HighlightRow label="Purchase Price" value={`${formatCurrency(calculations.targetBuyPrice)}`} />
+              <Row label="Hard Money Down (10%)" value={`${formatCurrency(calculations.targetBuyPrice * 0.10)}`} />
+              <Row label="Closing Costs" value={`${formatCurrency(calculations.targetBuyPrice * 0.03)}`} />
               
               {/* PHASE 2: REHAB */}
               <SectionHeader title="Phase 2: Rehab" linkText="Adjust Rehab" onLinkClick={onAdjustExpenses} />
-              <Row label="Rehab Budget" value={`$${formatCurrency(rehabBudget)}`} />
-              <Row label="Contingency" value={`$${formatCurrency(rehabBudget * (contingencyPct / 100))}`} />
+              <Row label="Rehab Budget" value={`${formatCurrency(rehabBudget)}`} />
+              <Row label="Contingency" value={`${formatCurrency(rehabBudget * (contingencyPct / 100))}`} />
               <Row label="Holding Period" value={`${holdingPeriodMonths} months`} />
-              <Row label="Monthly Holding Costs" value={`$${formatCurrency(holdingCostsMonthly)}`} />
-              <SummaryRow label="Total Rehab Cost" value={`$${formatCurrency(rehabBudget * (1 + contingencyPct / 100) + holdingCostsMonthly * holdingPeriodMonths)}`} />
+              <Row label="Monthly Holding Costs" value={`${formatCurrency(holdingCostsMonthly)}`} />
+              <SummaryRow label="Total Rehab Cost" value={`${formatCurrency(rehabBudget * (1 + contingencyPct / 100) + holdingCostsMonthly * holdingPeriodMonths)}`} />
               
               {/* PHASE 3: RENT */}
               <SectionHeader title="Phase 3: Rent" linkText="Adjust Income" onLinkClick={onAdjustIncome} />
-              <Row label="ARV" value={`$${formatCurrency(arv || calculations.targetBuyPrice * 1.2)}`} />
-              <Row label="Post-Rehab Rent" value={`$${formatCurrency((postRehabMonthlyRent || monthlyRent) * 12)}/yr`} />
+              <Row label="ARV" value={`${formatCurrency(arv || calculations.targetBuyPrice * 1.2)}`} />
+              <Row label="Post-Rehab Rent" value={`${formatCurrency((postRehabMonthlyRent || monthlyRent) * 12)}/yr`} />
               
               {/* PHASE 4: REFINANCE */}
               <SectionHeader title="Phase 4: Refinance" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
               <Row label="Refinance LTV" value={`${refinanceLtv}%`} />
-              <Row label="New Loan Amount" value={`$${formatCurrency((arv || calculations.targetBuyPrice * 1.2) * (refinanceLtv / 100))}`} />
+              <Row label="New Loan Amount" value={`${formatCurrency((arv || calculations.targetBuyPrice * 1.2) * (refinanceLtv / 100))}`} />
               <Row label="Refinance Rate" value={formatPercent(refinanceInterestRate || interestRate)} />
               
               <TealHighlightRow 
                 label="Cash Left in Deal" 
-                value={`$${formatCurrency(Math.max(0, 
+                value={`${formatCurrency(Math.max(0, 
                   (calculations.targetBuyPrice * 0.10) + 
                   (rehabBudget * (1 + contingencyPct / 100)) + 
                   (holdingCostsMonthly * holdingPeriodMonths) - 
@@ -459,33 +459,33 @@ export function FinancialBreakdown({
             <>
               {/* PHASE 1: ACQUISITION */}
               <SectionHeader title="Phase 1: Acquisition" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
-              <HighlightRow label="Purchase Price" value={`$${formatCurrency(calculations.targetBuyPrice)}`} />
-              <Row label="Closing Costs" value={`$${formatCurrency(calculations.targetBuyPrice * 0.03)}`} />
+              <HighlightRow label="Purchase Price" value={`${formatCurrency(calculations.targetBuyPrice)}`} />
+              <Row label="Closing Costs" value={`${formatCurrency(calculations.targetBuyPrice * 0.03)}`} />
               <Row label="Hard Money LTV" value={`${hardMoneyLtv}%`} />
-              <Row label="Loan Points" value={`$${formatCurrency(calculations.targetBuyPrice * (hardMoneyLtv / 100) * (loanPoints / 100))}`} />
+              <Row label="Loan Points" value={`${formatCurrency(calculations.targetBuyPrice * (hardMoneyLtv / 100) * (loanPoints / 100))}`} />
               
               {/* PHASE 2: REHAB */}
               <SectionHeader title="Phase 2: Rehab" linkText="Adjust Rehab" onLinkClick={onAdjustExpenses} />
-              <Row label="Rehab Budget" value={`$${formatCurrency(rehabBudget)}`} />
-              <Row label="Contingency" value={`$${formatCurrency(rehabBudget * (contingencyPct / 100))}`} />
+              <Row label="Rehab Budget" value={`${formatCurrency(rehabBudget)}`} />
+              <Row label="Contingency" value={`${formatCurrency(rehabBudget * (contingencyPct / 100))}`} />
               <Row label="Rehab Timeline" value={`${rehabTimeMonths} months`} />
-              <SummaryRow label="Total Rehab Cost" value={`$${formatCurrency(rehabBudget * (1 + contingencyPct / 100))}`} />
+              <SummaryRow label="Total Rehab Cost" value={`${formatCurrency(rehabBudget * (1 + contingencyPct / 100))}`} />
               
               {/* PHASE 3: HOLDING */}
               <SectionHeader title="Phase 3: Holding Costs" />
-              <Row label="Hard Money Interest" value={`$${formatCurrency(calculations.targetBuyPrice * (hardMoneyLtv / 100) * (hardMoneyRate / 100) / 12 * (rehabTimeMonths + daysOnMarket / 30))}`} />
-              <Row label="Taxes & Insurance" value={`$${formatCurrency((calculations.propertyTaxes + calculations.insurance) / 12 * (rehabTimeMonths + daysOnMarket / 30))}`} />
+              <Row label="Hard Money Interest" value={`${formatCurrency(calculations.targetBuyPrice * (hardMoneyLtv / 100) * (hardMoneyRate / 100) / 12 * (rehabTimeMonths + daysOnMarket / 30))}`} />
+              <Row label="Taxes & Insurance" value={`${formatCurrency((calculations.propertyTaxes + calculations.insurance) / 12 * (rehabTimeMonths + daysOnMarket / 30))}`} />
               <Row label="Days on Market" value={`${daysOnMarket} days`} />
               
               {/* PHASE 4: SALE */}
               <SectionHeader title="Phase 4: Sale" />
-              <Row label="ARV" value={`$${formatCurrency(arv || calculations.targetBuyPrice * 1.35)}`} />
-              <Row label="Selling Costs" value={`$${formatCurrency((arv || calculations.targetBuyPrice * 1.35) * (sellingCostsPct / 100))}`} />
+              <Row label="ARV" value={`${formatCurrency(arv || calculations.targetBuyPrice * 1.35)}`} />
+              <Row label="Selling Costs" value={`${formatCurrency((arv || calculations.targetBuyPrice * 1.35) * (sellingCostsPct / 100))}`} />
               <Row label="Capital Gains Tax" value={`${capitalGainsRate}%`} />
               
               <TealHighlightRow 
                 label="Estimated Net Profit" 
-                value={`$${formatCurrency(
+                value={`${formatCurrency(
                   (arv || calculations.targetBuyPrice * 1.35) * (1 - sellingCostsPct / 100) -
                   calculations.targetBuyPrice * 1.03 -
                   rehabBudget * (1 + contingencyPct / 100) -
@@ -501,30 +501,30 @@ export function FinancialBreakdown({
             <>
               {/* PROPERTY */}
               <SectionHeader title="Property" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
-              <HighlightRow label="Purchase Price" value={`$${formatCurrency(calculations.targetBuyPrice)}`} />
+              <HighlightRow label="Purchase Price" value={`${formatCurrency(calculations.targetBuyPrice)}`} />
               <Row label="Total Units" value={totalUnits.toString()} />
               <Row label="Owner Occupied" value={ownerOccupiedUnits.toString()} />
               <Row label="Rental Units" value={(totalUnits - ownerOccupiedUnits).toString()} />
               
               {/* FINANCING */}
               <SectionHeader title="Financing (FHA)" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
-              <Row label="Down Payment (3.5%)" value={`$${formatCurrency(calculations.targetBuyPrice * 0.035)}`} />
-              <Row label="Loan Amount" value={`$${formatCurrency(calculations.targetBuyPrice * 0.965)}`} />
+              <Row label="Down Payment (3.5%)" value={`${formatCurrency(calculations.targetBuyPrice * 0.035)}`} />
+              <Row label="Loan Amount" value={`${formatCurrency(calculations.targetBuyPrice * 0.965)}`} />
               <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
               <Row label="PMI Rate" value={`${pmiRate}%`} />
-              <Row label="Monthly PITI + PMI" value={`$${formatCurrency(calculations.monthlyPI + calculations.propertyTaxes / 12 + calculations.insurance / 12 + calculations.targetBuyPrice * 0.965 * (pmiRate / 100) / 12)}`} />
+              <Row label="Monthly PITI + PMI" value={`${formatCurrency(calculations.monthlyPI + calculations.propertyTaxes / 12 + calculations.insurance / 12 + calculations.targetBuyPrice * 0.965 * (pmiRate / 100) / 12)}`} />
               
               {/* RENTAL INCOME */}
               <SectionHeader title="Rental Income" linkText="Adjust Income" onLinkClick={onAdjustIncome} />
-              <Row label="Avg Rent Per Unit" value={`$${formatCurrency(avgRentPerUnit || monthlyRent / totalUnits)}`} />
-              <Row label="Gross Rental Income" value={`$${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits))}/mo`} />
-              <Row label="Less: Vacancy" value={`$(${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits) * (vacancyRate / 100))})`} isNegative />
-              <SummaryRow label="Net Rental Income" value={`$${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits) * (1 - vacancyRate / 100))}/mo`} />
+              <Row label="Avg Rent Per Unit" value={`${formatCurrency(avgRentPerUnit || monthlyRent / totalUnits)}`} />
+              <Row label="Gross Rental Income" value={`${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits))}/mo`} />
+              <Row label="Less: Vacancy" value={`(${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits) * (vacancyRate / 100))})`} isNegative />
+              <SummaryRow label="Net Rental Income" value={`${formatCurrency((avgRentPerUnit || monthlyRent / totalUnits) * (totalUnits - ownerOccupiedUnits) * (1 - vacancyRate / 100))}/mo`} />
               
               {/* HOUSING COST */}
               <TealHighlightRow 
                 label="Your Net Housing Cost" 
-                value={`$${formatCurrency(
+                value={`${formatCurrency(
                   calculations.monthlyPI + 
                   calculations.propertyTaxes / 12 + 
                   calculations.insurance / 12 + 
@@ -540,25 +540,25 @@ export function FinancialBreakdown({
             <>
               {/* PROPERTY ANALYSIS */}
               <SectionHeader title="Property Analysis" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
-              <Row label="ARV" value={`$${formatCurrency(arv || calculations.targetBuyPrice * 1.4)}`} />
-              <Row label="Estimated Repairs" value={`$${formatCurrency(estimatedRepairs)}`} />
-              <HighlightRow label="70% Rule MAO" value={`$${formatCurrency((arv || calculations.targetBuyPrice * 1.4) * 0.70 - estimatedRepairs)}`} />
+              <Row label="ARV" value={`${formatCurrency(arv || calculations.targetBuyPrice * 1.4)}`} />
+              <Row label="Estimated Repairs" value={`${formatCurrency(estimatedRepairs)}`} />
+              <HighlightRow label="70% Rule MAO" value={`${formatCurrency((arv || calculations.targetBuyPrice * 1.4) * 0.70 - estimatedRepairs)}`} />
               
               {/* CONTRACT TERMS */}
               <SectionHeader title="Contract Terms" />
-              <Row label="Contract Price" value={`$${formatCurrency(contractPrice || calculations.targetBuyPrice * 0.85)}`} />
-              <Row label="Earnest Money" value={`$${formatCurrency(earnestMoney)}`} />
+              <Row label="Contract Price" value={`${formatCurrency(contractPrice || calculations.targetBuyPrice * 0.85)}`} />
+              <Row label="Earnest Money" value={`${formatCurrency(earnestMoney)}`} />
               
               {/* ASSIGNMENT ANALYSIS */}
               <SectionHeader title="Assignment Analysis" />
-              <Row label="Assignment Fee" value={`$${formatCurrency(assignmentFee)}`} />
-              <Row label="Marketing Costs" value={`$${formatCurrency(marketingCosts)}`} />
-              <Row label="Closing Costs" value={`$${formatCurrency(wholesaleClosingCosts)}`} />
-              <SummaryRow label="Total Cash at Risk" value={`$${formatCurrency(earnestMoney + marketingCosts + wholesaleClosingCosts)}`} />
+              <Row label="Assignment Fee" value={`${formatCurrency(assignmentFee)}`} />
+              <Row label="Marketing Costs" value={`${formatCurrency(marketingCosts)}`} />
+              <Row label="Closing Costs" value={`${formatCurrency(wholesaleClosingCosts)}`} />
+              <SummaryRow label="Total Cash at Risk" value={`${formatCurrency(earnestMoney + marketingCosts + wholesaleClosingCosts)}`} />
               
               <TealHighlightRow 
                 label="Net Profit" 
-                value={`$${formatCurrency(assignmentFee - marketingCosts - wholesaleClosingCosts)}`}
+                value={`${formatCurrency(assignmentFee - marketingCosts - wholesaleClosingCosts)}`}
               />
             </>
           )}

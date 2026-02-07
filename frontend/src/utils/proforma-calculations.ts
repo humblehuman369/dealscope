@@ -606,24 +606,8 @@ export function generateSensitivityScenarios(
 // UTILITY FUNCTIONS
 // ============================================
 
-/**
- * Format currency for display
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-/**
- * Format percentage for display
- */
-export function formatPercent(value: number, decimals: number = 2): string {
-  return `${value.toFixed(decimals)}%`;
-}
+// Re-export canonical formatters (previously defined locally)
+export { formatCurrency, formatPercent } from '@/utils/formatters'
 
 /**
  * Round to nearest dollar

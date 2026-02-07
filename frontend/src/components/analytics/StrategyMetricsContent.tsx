@@ -119,7 +119,7 @@ export function STRMetricsContent({
         id: 'coc',
         label: 'Cash-on-Cash Return',
         value: coc,
-        formattedValue: formatPercent(coc),
+        formattedValue: formatPercent(coc * 100),
         status: coc >= 0.15 ? 'high' : coc >= 0.10 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, coc * 400)),
         zones: {
@@ -132,7 +132,7 @@ export function STRMetricsContent({
         id: 'occupancy',
         label: 'Occupancy Rate',
         value: occ,
-        formattedValue: formatPercent(occ, 0),
+        formattedValue: formatPercent(occ * 100, { decimals: 0 }),
         status: occ >= 0.80 ? 'high' : occ >= 0.65 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, occ * 100)),
         zones: {
@@ -178,7 +178,7 @@ export function STRMetricsContent({
           0.30,
           0.95,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     },
@@ -193,7 +193,7 @@ export function STRMetricsContent({
           0.10,
           0.50,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         ),
         createSliderConfig(
           'interestRate',
@@ -202,7 +202,7 @@ export function STRMetricsContent({
           0.04,
           0.12,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     }
@@ -404,7 +404,7 @@ export function BRRRRMetricsContent({
           0,
           0.15,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     }
@@ -567,7 +567,7 @@ export function FlipMetricsContent({
           0.02,
           0.05,
           0.005,
-          (v) => formatPercent(v, 1)
+          (v: number) => formatPercent(v * 100)
         ),
         createSliderConfig(
           'sellingCostsPct',
@@ -576,7 +576,7 @@ export function FlipMetricsContent({
           0.06,
           0.10,
           0.005,
-          (v) => formatPercent(v, 1)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     }
@@ -705,7 +705,7 @@ export function HouseHackMetricsContent({
           0.05,
           0.10,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     }
@@ -848,7 +848,7 @@ export function WholesaleMetricsContent({
           0.003,
           0.015,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     }

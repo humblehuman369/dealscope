@@ -457,34 +457,8 @@ export function calculateRentAppraisalValues(
   }
 }
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-/**
- * Format currency for display.
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-/**
- * Format compact currency (e.g., $425K).
- */
-export function formatCompactCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}K`
-  }
-  return formatCurrency(value)
-}
+// Re-export canonical formatters (previously defined locally)
+export { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * Parse comp data from API response into CompProperty format.

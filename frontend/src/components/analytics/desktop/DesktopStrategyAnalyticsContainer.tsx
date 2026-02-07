@@ -502,7 +502,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         id: 'coc',
         label: 'Cash-on-Cash Return',
         value: coc,
-        formattedValue: formatPercent(coc),
+        formattedValue: formatPercent(coc * 100),
         status: coc >= 0.12 ? 'high' : coc >= 0.08 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, coc * 500)),
         zones: {
@@ -515,7 +515,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         id: 'cap',
         label: 'Cap Rate',
         value: cap,
-        formattedValue: formatPercent(cap),
+        formattedValue: formatPercent(cap * 100),
         status: cap >= 0.055 ? 'high' : cap >= 0.04 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, cap * 1000)),
         zones: {
@@ -553,7 +553,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           0.05,
           0.50,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         ),
         createSliderConfig(
           'interestRate',
@@ -562,7 +562,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           0.04,
           0.12,
           0.001,
-          (v) => formatPercent(v)
+          (v: number) => formatPercent(v * 100)
         )
       ]
     },
@@ -586,7 +586,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           0,
           0.15,
           0.01,
-          (v) => formatPercent(v, 0)
+          (v: number) => formatPercent(v * 100, { decimals: 0 })
         )
       ]
     }
@@ -715,7 +715,7 @@ function DesktopFundingTabContent({ purchasePrice, assumptions }: DesktopFunding
       
       <InsightCard
         data={createIQInsight(
-          `With ${formatPercent(assumptions.downPaymentPct, 0)} down, you'll need ${formatCurrency(downPayment + closingCosts)} cash to close.`,
+          `With ${formatPercent(assumptions.downPaymentPct * 100, { decimals: 0 })} down, you'll need ${formatCurrency(downPayment + closingCosts)} cash to close.`,
           'info'
         )}
       />
@@ -843,9 +843,9 @@ function DesktopGrowthTabContent({ projections, iqTarget, assumptions, updateAss
       title: 'Growth Assumptions',
       isOpen: true,
       sliders: [
-        createSliderConfig('rentGrowth', 'Annual Rent Increase', assumptions.rentGrowth || 0.03, 0, 0.08, 0.005, (v) => formatPercent(v)),
-        createSliderConfig('appreciationRate', 'Property Appreciation', assumptions.appreciationRate || 0.03, 0, 0.08, 0.005, (v) => formatPercent(v)),
-        createSliderConfig('expenseGrowth', 'Expense Growth', assumptions.expenseGrowth || 0.02, 0, 0.06, 0.005, (v) => formatPercent(v))
+        createSliderConfig('rentGrowth', 'Annual Rent Increase', assumptions.rentGrowth || 0.03, 0, 0.08, 0.005, (v: number) => formatPercent(v * 100)),
+        createSliderConfig('appreciationRate', 'Property Appreciation', assumptions.appreciationRate || 0.03, 0, 0.08, 0.005, (v: number) => formatPercent(v * 100)),
+        createSliderConfig('expenseGrowth', 'Expense Growth', assumptions.expenseGrowth || 0.02, 0, 0.06, 0.005, (v: number) => formatPercent(v * 100))
       ]
     }
   ]
@@ -901,8 +901,8 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
       id: 'financing',
       title: 'Financing Scenarios',
       sliders: [
-        createSliderConfig('downPaymentPct', 'Down Payment', assumptions.downPaymentPct, 0.05, 0.50, 0.01, (v) => formatPercent(v, 0)),
-        createSliderConfig('interestRate', 'Interest Rate', assumptions.interestRate, 0.04, 0.12, 0.001, (v) => formatPercent(v)),
+        createSliderConfig('downPaymentPct', 'Down Payment', assumptions.downPaymentPct, 0.05, 0.50, 0.01, (v: number) => formatPercent(v * 100, { decimals: 0 })),
+        createSliderConfig('interestRate', 'Interest Rate', assumptions.interestRate, 0.04, 0.12, 0.001, (v: number) => formatPercent(v * 100)),
         createSliderConfig('loanTermYears', 'Loan Term', assumptions.loanTermYears, 15, 30, 5, (v) => `${v} years`)
       ]
     },
@@ -911,7 +911,7 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
       title: 'Income Scenarios',
       sliders: [
         createSliderConfig('monthlyRent', 'Monthly Rent', assumptions.monthlyRent, 500, 10000, 50, formatCurrency),
-        createSliderConfig('vacancyRate', 'Vacancy Rate', assumptions.vacancyRate, 0, 0.20, 0.01, (v) => formatPercent(v, 0))
+        createSliderConfig('vacancyRate', 'Vacancy Rate', assumptions.vacancyRate, 0, 0.20, 0.01, (v: number) => formatPercent(v * 100, { decimals: 0 }))
       ]
     }
   ]

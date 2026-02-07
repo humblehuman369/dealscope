@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { FormulaCardData, FormulaRow } from './types'
+import { formatCurrency } from '@/utils/formatters'
 
 /**
  * FormulaCard Component
@@ -82,13 +83,6 @@ export function createCapitalStackFormula(
   rehabCost: number,
   closingCosts: number
 ): FormulaCardData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const allInCost = purchasePrice + rehabCost + closingCosts
 
@@ -111,13 +105,6 @@ export function createRefinanceFormula(
   ltv: number,
   allInCost: number
 ): FormulaCardData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const refiAmount = arv * ltv
   const cashOutSurplus = refiAmount - allInCost
@@ -147,13 +134,6 @@ export function create70PercentRuleFormula(
   rehabCost: number,
   investorProfit: number
 ): FormulaCardData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const arvMultiple = arv * 0.70
   const mao = arvMultiple - rehabCost - investorProfit
@@ -176,13 +156,6 @@ export function createWholesaleMathFormula(
   mao: number,
   contractPrice: number
 ): FormulaCardData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const assignmentFee = mao - contractPrice
 
@@ -211,13 +184,6 @@ export function createFlipPLFormula(
   holdingCosts: number,
   sellingCosts: number
 ): FormulaCardData {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const totalCosts = purchasePrice + rehabCost + holdingCosts + sellingCosts
   const netProfit = arv - totalCosts

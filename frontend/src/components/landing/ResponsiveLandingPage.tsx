@@ -18,6 +18,7 @@ import {
   strategies
 } from './types';
 import { Play, Check } from 'lucide-react';
+import { formatCompactCurrency } from '@/utils/formatters';
 
 interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void;
@@ -42,12 +43,6 @@ function AuthParamHandler() {
   return null;
 }
 
-// Format helpers
-const formatCurrency = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `$${Math.round(value / 1000)}K`;
-  return `$${value.toLocaleString()}`;
-};
 
 export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
   const { user, isAuthenticated } = useSession();
@@ -373,7 +368,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 </div>
                 <div className="result-card featured">
                   <p className="result-label">Target</p>
-                  <p className="result-value font-display">{formatCurrency(sliderValues.askingPrice)}</p>
+                  <p className="result-value font-display">{formatCompactCurrency(sliderValues.askingPrice)}</p>
                 </div>
                 <div className="result-card">
                   <p className="result-label">Wholesale</p>

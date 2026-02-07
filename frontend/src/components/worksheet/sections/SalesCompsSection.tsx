@@ -11,13 +11,12 @@ import {
   calculateAppraisalValues,
   calculateSimilarityScore,
   calculateSaleAdjustments,
-  formatCurrency,
-  formatCompactCurrency,
   type SubjectProperty,
   type CompProperty,
   type AppraisalResult,
   type CompAdjustment
 } from '@/utils/appraisalCalculations'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // API SERVICE - Uses Next.js proxy to avoid CORS
