@@ -361,9 +361,9 @@ export function FinancialBreakdown({
               <SectionHeader title="Purchase Terms" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
               <HighlightRow label="Target Buy Price" value={`${formatCurrency(calculations.targetBuyPrice)}`} />
               <Row label="Down Payment" value={`${formatCurrency(calculations.downPayment)}`} />
-              <Row label="Down Payment %" value={formatPercent(calculations.downPaymentPct)} />
+              <Row label="Down Payment %" value={formatPercent(calculations.downPaymentPct, { decimals: 2 })} />
               <Row label="Loan Amount" value={`${formatCurrency(calculations.loanAmount)}`} />
-              <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
+              <Row label="Interest Rate" value={formatPercent(calculations.interestRate, { decimals: 2 })} />
               <Row label="Loan Term (Years)" value={calculations.loanTermYears.toString()} />
               <Row label="Monthly Payment (P&I)" value={`${formatCurrency(calculations.monthlyPI)}`} />
               
@@ -440,7 +440,7 @@ export function FinancialBreakdown({
               <SectionHeader title="Phase 4: Refinance" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
               <Row label="Refinance LTV" value={`${refinanceLtv}%`} />
               <Row label="New Loan Amount" value={`${formatCurrency((arv || calculations.targetBuyPrice * 1.2) * (refinanceLtv / 100))}`} />
-              <Row label="Refinance Rate" value={formatPercent(refinanceInterestRate || interestRate)} />
+              <Row label="Refinance Rate" value={formatPercent(refinanceInterestRate || interestRate, { decimals: 2 })} />
               
               <TealHighlightRow 
                 label="Cash Left in Deal" 
@@ -510,7 +510,7 @@ export function FinancialBreakdown({
               <SectionHeader title="Financing (FHA)" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
               <Row label="Down Payment (3.5%)" value={`${formatCurrency(calculations.targetBuyPrice * 0.035)}`} />
               <Row label="Loan Amount" value={`${formatCurrency(calculations.targetBuyPrice * 0.965)}`} />
-              <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
+              <Row label="Interest Rate" value={formatPercent(calculations.interestRate, { decimals: 2 })} />
               <Row label="PMI Rate" value={`${pmiRate}%`} />
               <Row label="Monthly PITI + PMI" value={`${formatCurrency(calculations.monthlyPI + calculations.propertyTaxes / 12 + calculations.insurance / 12 + calculations.targetBuyPrice * 0.965 * (pmiRate / 100) / 12)}`} />
               

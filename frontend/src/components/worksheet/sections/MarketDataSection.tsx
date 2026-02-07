@@ -134,7 +134,7 @@ const SummaryStats = ({ summary }: { summary: MarketPageData['summary'] | undefi
   const stats = [
     { label: 'Median Rent', value: formatCurrency(summary.medianRent ?? 0), sub: '/mo', icon: DollarSign, color: 'teal' },
     { label: 'Monthly Change', value: formatCurrency(summary.monthlyChange ?? 0), icon: (summary.monthlyChange ?? 0) >= 0 ? TrendingUp : TrendingDown, color: (summary.monthlyChange ?? 0) >= 0 ? 'teal' : 'red' },
-    { label: 'Yearly Change', value: formatPercent(summary.yearlyChange ?? 0), icon: (summary.yearlyChange ?? 0) >= 0 ? ArrowUpRight : ArrowDownRight, color: (summary.yearlyChange ?? 0) >= 0 ? 'teal' : 'red' },
+    { label: 'Yearly Change', value: formatPercent(summary.yearlyChange ?? 0, { showSign: true }), icon: (summary.yearlyChange ?? 0) >= 0 ? ArrowUpRight : ArrowDownRight, color: (summary.yearlyChange ?? 0) >= 0 ? 'teal' : 'red' },
     { label: 'Available', value: formatNumber(summary.availableRentals ?? 0), sub: 'listings', icon: Home, color: 'slate' },
   ]
 
@@ -244,7 +244,7 @@ const RentTrendChart = ({ currentYear, prevYear }: { currentYear: MarketPageData
         <span className="text-xs text-slate-500">Year-over-Year</span>
         <div className={`flex items-center gap-1 ${yoyChange >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
           {yoyChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-          <span className="text-sm font-bold tabular-nums">{formatPercent(yoyChange)}</span>
+          <span className="text-sm font-bold tabular-nums">{formatPercent(yoyChange, { showSign: true })}</span>
         </div>
       </div>
     </div>
@@ -417,7 +417,7 @@ const IQMarketScore = ({ summary, temperature }: { summary: MarketPageData['summ
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-500">YoY Growth</span>
-              <span className="font-semibold text-teal-600 tabular-nums">{formatPercent(yearlyChange)}</span>
+              <span className="font-semibold text-teal-600 tabular-nums">{formatPercent(yearlyChange, { showSign: true })}</span>
             </div>
             <div className="flex justify-between py-1">
               <span className="text-slate-500">Supply</span>

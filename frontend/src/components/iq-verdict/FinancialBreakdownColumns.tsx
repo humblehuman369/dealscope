@@ -111,7 +111,7 @@ export function FinancialBreakdownColumns({
               <>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#475569]">Down Payment %</span>
-                  <span className="text-sm font-medium text-[#0A1628]">{formatPercent(downPaymentPct)}</span>
+                  <span className="text-sm font-medium text-[#0A1628]">{formatPercent(downPaymentPct, { decimals: downPaymentPct % 1 === 0 ? 0 : 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#475569]">Loan Amount</span>
@@ -119,7 +119,7 @@ export function FinancialBreakdownColumns({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#475569]">Interest Rate</span>
-                  <span className="text-sm font-medium text-[#0A1628]">{formatPercent(interestRate)}</span>
+                  <span className="text-sm font-medium text-[#0A1628]">{formatPercent(interestRate, { decimals: interestRate % 1 === 0 ? 0 : 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#475569]">Loan Term</span>
