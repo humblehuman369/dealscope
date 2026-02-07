@@ -21,12 +21,13 @@ class InvestIQError(Exception):
         self.details = details or {}
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert exception to API response format."""
+        """Convert exception to canonical API error response format."""
         return {
-            "error": True,
-            "code": self.code,
-            "message": self.message,
-            "details": self.details
+            "error": {
+                "code": self.code,
+                "message": self.message,
+                "details": self.details,
+            }
         }
 
 

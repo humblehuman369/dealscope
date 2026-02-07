@@ -11,11 +11,9 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import select, func
-
 from app.core.deps import SuperUser, DbSession
 from app.models.user import User
-from app.models.saved_property import SavedProperty
+from app.services.admin_service import admin_service
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import (
     get_assumptions_record,
@@ -249,34 +247,24 @@ async def get_user(
     
     Requires superuser privileges.
     """
-    result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
-    user = result.scalar_one_or_none()
-    
+    from uuid import UUID as _UUID
+
+    user = await admin_service.get_user_by_id(db, _UUID(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
-    # Get saved property count
-    count_result = await db.execute(
-        select(func.count(SavedProperty.id)).where(SavedProperty.user_id == user.id)
-    )
-    saved_count = count_result.scalar() or 0
-    
+
+    counts = await admin_service._get_user_property_counts(db, [user.id])
+    saved_count = counts.get(user.id, 0)
+
     return AdminUserResponse(
-        id=str(user.id),
-        email=user.email,
-        full_name=user.full_name,
-        avatar_url=user.avatar_url,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
-        is_superuser=user.is_superuser,
-        created_at=user.created_at,
-        last_login=user.last_login,
-        saved_properties_count=saved_count
+        id=str(user.id), email=user.email, full_name=user.full_name,
+        avatar_url=user.avatar_url, is_active=user.is_active,
+        is_verified=user.is_verified, is_superuser=user.is_superuser,
+        created_at=user.created_at, last_login=user.last_login,
+        saved_properties_count=saved_count,
     )
 
 
@@ -295,67 +283,35 @@ async def update_user(
     Update a user's information or status.
     
     Requires superuser privileges.
-    
-    Can update:
-    - full_name
-    - is_active (enable/disable account)
-    - is_verified (verify email)
-    - is_superuser (grant/revoke admin)
     """
-    result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
-    user = result.scalar_one_or_none()
-    
+    from uuid import UUID as _UUID
+
+    user = await admin_service.get_user_by_id(db, _UUID(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
-    # Prevent admin from removing their own admin status
+
     if str(user.id) == str(admin_user.id) and data.is_superuser is False:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot remove your own admin privileges"
-        )
-    
-    # Prevent admin from disabling their own account
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot remove your own admin privileges")
     if str(user.id) == str(admin_user.id) and data.is_active is False:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot disable your own account"
-        )
-    
-    # Apply updates
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot disable your own account")
+
     update_data = data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(user, field, value)
-    
-    user.updated_at = datetime.now(timezone.utc)
-    
-    await db.commit()
-    await db.refresh(user)
-    
+    updated_user = await admin_service.update_user(db, user.id, update_data)
+
     logger.info(f"Admin {admin_user.email} updated user {user.email}: {update_data}")
-    
-    # Get saved property count
-    count_result = await db.execute(
-        select(func.count(SavedProperty.id)).where(SavedProperty.user_id == user.id)
-    )
-    saved_count = count_result.scalar() or 0
-    
+
+    counts = await admin_service._get_user_property_counts(db, [user.id])
+    saved_count = counts.get(user.id, 0)
+
     return AdminUserResponse(
-        id=str(user.id),
-        email=user.email,
-        full_name=user.full_name,
-        avatar_url=user.avatar_url,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
-        is_superuser=user.is_superuser,
-        created_at=user.created_at,
-        last_login=user.last_login,
-        saved_properties_count=saved_count
+        id=str(updated_user.id), email=updated_user.email, full_name=updated_user.full_name,
+        avatar_url=updated_user.avatar_url, is_active=updated_user.is_active,
+        is_verified=updated_user.is_verified, is_superuser=updated_user.is_superuser,
+        created_at=updated_user.created_at, last_login=updated_user.last_login,
+        saved_properties_count=saved_count,
     )
 
 
@@ -373,29 +329,17 @@ async def delete_user(
     Delete a user and all their data.
     
     Requires superuser privileges.
-    
-    ⚠️ This action is irreversible!
     """
-    result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
-    user = result.scalar_one_or_none()
-    
+    from uuid import UUID as _UUID
+
+    user = await admin_service.get_user_by_id(db, _UUID(user_id))
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    # Prevent admin from deleting themselves
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     if str(user.id) == str(admin_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete your own account"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account")
+
     logger.warning(f"Admin {admin_user.email} deleting user {user.email}")
-    
-    await db.delete(user)
-    await db.commit()
+
+    await admin_service.delete_user(db, user.id)
 

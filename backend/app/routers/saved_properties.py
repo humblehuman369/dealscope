@@ -33,6 +33,62 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _build_saved_property_response(
+    saved,
+    *,
+    deal_maker=None,
+    best_strategy=None,
+    best_cash_flow=None,
+    best_coc_return=None,
+    document_count: int = 0,
+    adjustment_count: int = 0,
+) -> SavedPropertyResponse:
+    """Build a SavedPropertyResponse from a SavedProperty model instance.
+    
+    Centralises the 30-field constructor so every endpoint returns the
+    same shape without field-list duplication.
+    """
+    return SavedPropertyResponse(
+        id=str(saved.id),
+        user_id=str(saved.user_id),
+        external_property_id=saved.external_property_id,
+        zpid=saved.zpid,
+        address_street=saved.address_street,
+        address_city=saved.address_city,
+        address_state=saved.address_state,
+        address_zip=saved.address_zip,
+        full_address=saved.full_address,
+        nickname=saved.nickname,
+        status=saved.status,
+        tags=saved.tags or [],
+        color_label=saved.color_label,
+        priority=saved.priority,
+        property_data_snapshot=saved.property_data_snapshot or {},
+        custom_purchase_price=saved.custom_purchase_price,
+        custom_rent_estimate=saved.custom_rent_estimate,
+        custom_arv=saved.custom_arv,
+        custom_rehab_budget=saved.custom_rehab_budget,
+        custom_daily_rate=saved.custom_daily_rate,
+        custom_occupancy_rate=saved.custom_occupancy_rate,
+        custom_assumptions=saved.custom_assumptions or {},
+        worksheet_assumptions=saved.worksheet_assumptions or {},
+        deal_maker_record=deal_maker,
+        notes=saved.notes,
+        best_strategy=best_strategy,
+        best_cash_flow=best_cash_flow,
+        best_coc_return=best_coc_return,
+        last_analytics_result=saved.last_analytics_result,
+        analytics_calculated_at=saved.analytics_calculated_at,
+        data_refreshed_at=saved.data_refreshed_at,
+        saved_at=saved.saved_at,
+        last_viewed_at=saved.last_viewed_at,
+        updated_at=saved.updated_at,
+        document_count=document_count,
+        adjustment_count=adjustment_count,
+    )
+
+
 router = APIRouter(prefix="/api/v1/properties/saved", tags=["Saved Properties"])
 
 
@@ -249,60 +305,18 @@ async def save_property(
                 logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
         
-        # Build response - wrap in try-catch in case of validation errors
+        # Build response
         try:
-            response = SavedPropertyResponse(
-                id=str(saved.id),
-                user_id=str(saved.user_id),
-                external_property_id=saved.external_property_id,
-                zpid=saved.zpid,
-                address_street=saved.address_street,
-                address_city=saved.address_city,
-                address_state=saved.address_state,
-                address_zip=saved.address_zip,
-                full_address=saved.full_address,
-                nickname=saved.nickname,
-                status=saved.status,
-                tags=saved.tags or [],
-                color_label=saved.color_label,
-                priority=saved.priority,
-                property_data_snapshot=saved.property_data_snapshot or {},
-                custom_purchase_price=saved.custom_purchase_price,
-                custom_rent_estimate=saved.custom_rent_estimate,
-                custom_arv=saved.custom_arv,
-                custom_rehab_budget=saved.custom_rehab_budget,
-                custom_daily_rate=saved.custom_daily_rate,
-                custom_occupancy_rate=saved.custom_occupancy_rate,
-                custom_assumptions=saved.custom_assumptions or {},
-                worksheet_assumptions=saved.worksheet_assumptions or {},
-                deal_maker_record=deal_maker,
-                notes=saved.notes,
-                best_strategy=None,
-                best_cash_flow=None,
-                best_coc_return=None,
-                last_analytics_result=saved.last_analytics_result,
-                analytics_calculated_at=saved.analytics_calculated_at,
-                data_refreshed_at=saved.data_refreshed_at,
-                saved_at=saved.saved_at,
-                last_viewed_at=saved.last_viewed_at,
-                updated_at=saved.updated_at,
-                document_count=0,
-                adjustment_count=0,
-            )
-            return response
+            return _build_saved_property_response(saved, deal_maker=deal_maker)
         except (PydanticValidationError, ValueError, TypeError) as response_error:
-            logger.error(f"Failed to construct SavedPropertyResponse: {str(response_error)}", exc_info=True)
-            # Property was saved successfully, but response construction failed
-            # Log the saved property ID so we can debug
+            logger.error(f"Failed to construct SavedPropertyResponse: {response_error}", exc_info=True)
             logger.error(f"Saved property ID: {saved.id}, User ID: {saved.user_id}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
             )
         except Exception as response_error:
-            logger.error(f"Unexpected error constructing SavedPropertyResponse: {str(response_error)}", exc_info=True)
-            logger.error(f"Exception type: {type(response_error).__name__}")
-            # Property was saved successfully, but response construction failed
+            logger.error(f"Unexpected error constructing SavedPropertyResponse: {response_error}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
@@ -398,43 +412,13 @@ async def get_saved_property(
     if saved.deal_maker_record:
         deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
     
-    return SavedPropertyResponse(
-        id=str(saved.id),
-        user_id=str(saved.user_id),
-        external_property_id=saved.external_property_id,
-        zpid=saved.zpid,
-        address_street=saved.address_street,
-        address_city=saved.address_city,
-        address_state=saved.address_state,
-        address_zip=saved.address_zip,
-        full_address=saved.full_address,
-        nickname=saved.nickname,
-        status=saved.status,
-        tags=saved.tags,
-        color_label=saved.color_label,
-        priority=saved.priority,
-        property_data_snapshot=saved.property_data_snapshot,
-        custom_purchase_price=saved.custom_purchase_price,
-        custom_rent_estimate=saved.custom_rent_estimate,
-        custom_arv=saved.custom_arv,
-        custom_rehab_budget=saved.custom_rehab_budget,
-        custom_daily_rate=saved.custom_daily_rate,
-        custom_occupancy_rate=saved.custom_occupancy_rate,
-        custom_assumptions=saved.custom_assumptions,
-        worksheet_assumptions=saved.worksheet_assumptions or {},
-        deal_maker_record=deal_maker,
-        notes=saved.notes,
+    return _build_saved_property_response(
+        saved,
+        deal_maker=deal_maker,
         best_strategy=saved.last_analytics_result.get("best_strategy") if saved.last_analytics_result else None,
         best_cash_flow=saved.last_analytics_result.get("best_cash_flow") if saved.last_analytics_result else None,
         best_coc_return=saved.last_analytics_result.get("best_coc_return") if saved.last_analytics_result else None,
-        last_analytics_result=saved.last_analytics_result,
-        analytics_calculated_at=saved.analytics_calculated_at,
-        data_refreshed_at=saved.data_refreshed_at,
-        saved_at=saved.saved_at,
-        last_viewed_at=saved.last_viewed_at,
-        updated_at=saved.updated_at,
         document_count=doc_count,
-        adjustment_count=0,  # TODO: Add adjustment count
     )
 
 
@@ -468,44 +452,7 @@ async def update_saved_property(
     if saved.deal_maker_record:
         deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
     
-    return SavedPropertyResponse(
-        id=str(saved.id),
-        user_id=str(saved.user_id),
-        external_property_id=saved.external_property_id,
-        zpid=saved.zpid,
-        address_street=saved.address_street,
-        address_city=saved.address_city,
-        address_state=saved.address_state,
-        address_zip=saved.address_zip,
-        full_address=saved.full_address,
-        nickname=saved.nickname,
-        status=saved.status,
-        tags=saved.tags,
-        color_label=saved.color_label,
-        priority=saved.priority,
-        property_data_snapshot=saved.property_data_snapshot,
-        custom_purchase_price=saved.custom_purchase_price,
-        custom_rent_estimate=saved.custom_rent_estimate,
-        custom_arv=saved.custom_arv,
-        custom_rehab_budget=saved.custom_rehab_budget,
-        custom_daily_rate=saved.custom_daily_rate,
-        custom_occupancy_rate=saved.custom_occupancy_rate,
-        custom_assumptions=saved.custom_assumptions,
-        worksheet_assumptions=saved.worksheet_assumptions or {},
-        deal_maker_record=deal_maker,
-        notes=saved.notes,
-        best_strategy=None,
-        best_cash_flow=None,
-        best_coc_return=None,
-        last_analytics_result=saved.last_analytics_result,
-        analytics_calculated_at=saved.analytics_calculated_at,
-        data_refreshed_at=saved.data_refreshed_at,
-        saved_at=saved.saved_at,
-        last_viewed_at=saved.last_viewed_at,
-        updated_at=saved.updated_at,
-        document_count=0,
-        adjustment_count=0,
-    )
+    return _build_saved_property_response(saved, deal_maker=deal_maker)
 
 
 @router.patch(

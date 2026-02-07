@@ -204,9 +204,23 @@ class AdminService:
             if value is not None and hasattr(user, field):
                 setattr(user, field, value)
         
+        user.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(user)
         return user
+
+    async def delete_user(self, db: AsyncSession, user_id: UUID) -> bool:
+        """
+        Delete a user by ID.
+
+        Returns True if deleted, False if not found.
+        """
+        user = await self.get_user_by_id(db, user_id)
+        if not user:
+            return False
+        await db.delete(user)
+        await db.commit()
+        return True
 
 
 # Singleton instance
