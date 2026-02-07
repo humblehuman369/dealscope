@@ -57,6 +57,12 @@ export function VerdictPageAdapter({
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+
+  // Handle strategy change from popup
+  const handleStrategyChange = useCallback((strategy: PopupStrategyType) => {
+    setCurrentStrategy(strategy)
+  }, [])
 
   // Handle opening the DealMaker popup for editing terms
   const handleOpenTermsPopup = useCallback(() => {
@@ -415,7 +421,8 @@ export function VerdictPageAdapter({
         isOpen={showDealMakerPopup}
         onClose={() => setShowDealMakerPopup(false)}
         onApply={handleApplyDealMakerValues}
-        strategyType="ltr"
+        strategyType={currentStrategy}
+        onStrategyChange={handleStrategyChange}
         initialValues={dealMakerInitialValues}
       />
     </>
