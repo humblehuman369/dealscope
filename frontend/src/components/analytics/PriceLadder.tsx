@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { Target } from 'lucide-react'
 import { PriceRung, PriceRungType } from './types'
 import { getPriceLabel } from '@/lib/priceUtils'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * PriceLadder Component
@@ -19,14 +20,6 @@ interface PriceLadderProps {
   isOffMarket?: boolean
   listingStatus?: string
 }
-
-const formatCurrency = (value: number) => 
-  new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
-    currency: 'USD', 
-    minimumFractionDigits: 0, 
-    maximumFractionDigits: 0 
-  }).format(value)
 
 export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = false, listingStatus }: PriceLadderProps) {
   const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
@@ -153,28 +146,24 @@ interface PriceLadderCompactProps {
 }
 
 export function PriceLadderCompact({ listPrice, targetPrice, openingOffer }: PriceLadderCompactProps) {
-  const formatCompact = (value: number) => 
-    Math.abs(value) >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` :
-    Math.abs(value) >= 1000 ? `$${Math.round(value / 1000)}K` : `$${value}`
-
   const targetPercent = Math.round((targetPrice / listPrice) * 100)
 
   return (
     <div className="flex items-center gap-2 text-xs">
       <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-red-500" />
-        <span className="text-gray-600 dark:text-white/60">{formatCompact(listPrice)}</span>
+        <span className="text-gray-600 dark:text-white/60">{formatCompactCurrency(listPrice)}</span>
       </div>
       <span className="text-gray-400 dark:text-white/30">→</span>
       <div className="flex items-center gap-1">
         <Target className="w-3 h-3 text-green-500" />
-        <span className="text-green-500 font-semibold">{formatCompact(targetPrice)}</span>
+        <span className="text-green-500 font-semibold">{formatCompactCurrency(targetPrice)}</span>
         <span className="text-gray-500 dark:text-white/40">({targetPercent}%)</span>
       </div>
       <span className="text-gray-400 dark:text-white/30">→</span>
       <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-teal" />
-        <span className="text-gray-600 dark:text-white/60">{formatCompact(openingOffer)}</span>
+        <span className="text-gray-600 dark:text-white/60">{formatCompactCurrency(openingOffer)}</span>
       </div>
     </div>
   )

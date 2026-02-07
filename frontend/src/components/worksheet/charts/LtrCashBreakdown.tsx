@@ -1,24 +1,12 @@
 'use client'
 
+import { formatCompactCurrency } from '@/utils/formatters'
+
 interface LtrCashBreakdownProps {
   downPayment: number
   closingCosts: number
   rehabCosts: number
   ltvPercent: number
-}
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-
-const formatCompact = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${Math.round(value / 1000)}K`
-  return `$${Math.round(value)}`
 }
 
 export function LtrCashBreakdown({
@@ -39,7 +27,7 @@ export function LtrCashBreakdown({
       <div className="cash-breakdown-main">
         <div className="mini-donut" style={{ background: gradient }}>
           <div className="mini-donut-center">
-            <span className="mini-donut-value">{formatCompact(totalCash)}</span>
+            <span className="mini-donut-value">{formatCompactCurrency(totalCash)}</span>
             <span className="mini-donut-label">Total Cash</span>
           </div>
         </div>
@@ -47,17 +35,17 @@ export function LtrCashBreakdown({
           <div className="cash-breakdown-row">
             <span className="cash-breakdown-swatch down"></span>
             <span className="cash-breakdown-label">Down Payment</span>
-            <span className="cash-breakdown-value">{formatCompact(downPayment)}</span>
+            <span className="cash-breakdown-value">{formatCompactCurrency(downPayment)}</span>
           </div>
           <div className="cash-breakdown-row">
             <span className="cash-breakdown-swatch costs"></span>
             <span className="cash-breakdown-label">Closing Costs</span>
-            <span className="cash-breakdown-value">{formatCompact(closingCosts)}</span>
+            <span className="cash-breakdown-value">{formatCompactCurrency(closingCosts)}</span>
           </div>
           <div className="cash-breakdown-row">
             <span className="cash-breakdown-swatch rehab"></span>
             <span className="cash-breakdown-label">Rehab</span>
-            <span className="cash-breakdown-value">{formatCompact(rehabCosts)}</span>
+            <span className="cash-breakdown-value">{formatCompactCurrency(rehabCosts)}</span>
           </div>
         </div>
       </div>

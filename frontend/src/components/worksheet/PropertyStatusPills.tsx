@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { ListingStatus, SellerType } from '@/types/savedProperty'
+import { formatCurrency } from '@/utils/formatters'
 
 interface PropertyStatusPillsProps {
   listingStatus?: ListingStatus
@@ -38,16 +39,6 @@ export function PropertyStatusPills({
   daysOnMarket,
   className = '',
 }: PropertyStatusPillsProps) {
-  // Format currency
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
   // Determine status display
   const getStatusDisplay = () => {
     if (listingStatus === 'FOR_SALE') return 'For Sale'

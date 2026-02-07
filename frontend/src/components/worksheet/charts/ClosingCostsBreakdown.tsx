@@ -1,14 +1,11 @@
 'use client'
 
+import { formatCompactCurrency } from '@/utils/formatters'
+
 interface ClosingCostsBreakdownProps {
   titleEscrow: number
   transferTax: number
   other: number
-}
-
-const formatCompact = (value: number) => {
-  if (value >= 1000) return `$${Math.round(value / 100) / 10}K`
-  return `$${Math.round(value)}`
 }
 
 export function ClosingCostsBreakdown({ titleEscrow, transferTax, other }: ClosingCostsBreakdownProps) {
@@ -22,7 +19,7 @@ export function ClosingCostsBreakdown({ titleEscrow, transferTax, other }: Closi
     <div className="closing-costs">
       <div className="mini-donut" style={{ background: gradient }}>
         <div className="mini-donut-center">
-          <span className="mini-donut-value">{formatCompact(total)}</span>
+          <span className="mini-donut-value">{formatCompactCurrency(total)}</span>
           <span className="mini-donut-label">Total</span>
         </div>
       </div>
@@ -30,17 +27,17 @@ export function ClosingCostsBreakdown({ titleEscrow, transferTax, other }: Closi
         <div className="closing-costs-row">
           <span className="closing-costs-swatch accent"></span>
           <span className="closing-costs-label">Title & Escrow</span>
-          <span className="closing-costs-value">{formatCompact(titleEscrow)}</span>
+          <span className="closing-costs-value">{formatCompactCurrency(titleEscrow)}</span>
         </div>
         <div className="closing-costs-row">
           <span className="closing-costs-swatch transfer"></span>
           <span className="closing-costs-label">Transfer Tax</span>
-          <span className="closing-costs-value">{formatCompact(transferTax)}</span>
+          <span className="closing-costs-value">{formatCompactCurrency(transferTax)}</span>
         </div>
         <div className="closing-costs-row">
           <span className="closing-costs-swatch other"></span>
           <span className="closing-costs-label">Other</span>
-          <span className="closing-costs-value">{formatCompact(other)}</span>
+          <span className="closing-costs-value">{formatCompactCurrency(other)}</span>
         </div>
       </div>
     </div>

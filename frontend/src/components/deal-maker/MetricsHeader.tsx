@@ -17,6 +17,7 @@
 'use client'
 
 import React from 'react'
+import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 interface MetricsHeaderProps {
   state: {
@@ -31,24 +32,6 @@ interface MetricsHeaderProps {
   }
   listPrice?: number
   propertyAddress?: string
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`
-}
-
-function formatPercentWithSign(value: number): string {
-  const sign = value >= 0 ? '+' : ''
-  return `${sign}${(value * 100).toFixed(0)}%`
 }
 
 export function MetricsHeader({ 
@@ -108,7 +91,7 @@ export function MetricsHeader({
               color: metrics.dealGap < 0 ? '#E11D48' : '#00D4FF' 
             }}
           >
-            {formatPercentWithSign(metrics.dealGap)}
+            {formatPercent(metrics.dealGap * 100, { decimals: 0, showSign: true })}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
@@ -129,13 +112,13 @@ export function MetricsHeader({
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>CAP Rate</span>
           <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
-            {formatPercent(metrics.capRate)}
+            {formatPercent(metrics.capRate * 100)}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>COC Return</span>
           <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
-            {formatPercent(metrics.cocReturn)}
+            {formatPercent(metrics.cocReturn * 100)}
           </span>
         </div>
       </div>

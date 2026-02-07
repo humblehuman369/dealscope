@@ -3,6 +3,7 @@
 import React from 'react'
 import { Target, Award, TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react'
 import { ScoreItem, DealScoreData, GradeLevel, OpportunityGrade } from './types'
+import { formatCurrency } from '@/utils/formatters'
 
 /**
  * DealScoreDisplay Component
@@ -24,14 +25,6 @@ interface DealScoreDisplayProps {
 }
 
 export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: DealScoreDisplayProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
   return (
     <div className="space-y-4">
       {/* Score Ring */}

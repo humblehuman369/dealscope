@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { PropertyStatusPills } from './PropertyStatusPills'
+import { formatCurrency } from '@/utils/formatters'
 
 interface WorksheetHeaderProps {
   property: SavedProperty
@@ -46,16 +47,6 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
     if (diff < 60000) return 'Saved just now'
     if (diff < 3600000) return `Saved ${Math.floor(diff / 60000)}m ago`
     return `Saved ${lastSaved.toLocaleTimeString()}`
-  }
-
-  // Format currency
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
   }
 
   // Calculate key metrics

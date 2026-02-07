@@ -7,17 +7,7 @@ import {
 } from 'lucide-react'
 import { calculateDealScore, DealScoreBreakdown, DealMetrics, OpportunityGrade } from '@/lib/analytics'
 import { getPriceLabel } from '@/lib/priceUtils'
-
-// ============================================
-// FORMATTING
-// ============================================
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value)
-}
+import { formatCurrency } from '@/utils/formatters'
 
 // ============================================
 // SCORE RING

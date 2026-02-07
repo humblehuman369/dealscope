@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { NegotiationPlanData, OfferCard, LeveragePoint } from './types'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * NegotiationPlan Component
@@ -53,14 +54,6 @@ interface OfferCardComponentProps {
 }
 
 function OfferCardComponent({ offer, isRecommended = false }: OfferCardComponentProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
   const baseClasses = "flex-1 rounded-xl p-2.5 text-center"
   const cardClasses = isRecommended
     ? `${baseClasses} bg-green-500/10 border border-green-500/30`
@@ -210,28 +203,23 @@ export function NegotiationPlanCompact({
   walkAway, 
   listPrice 
 }: NegotiationPlanCompactProps) {
-  const formatCompact = (value: number) => 
-    Math.abs(value) >= 1000 
-      ? `$${Math.round(value / 1000)}K` 
-      : `$${value}`
-
   return (
     <div className="flex items-center justify-between bg-blue-500/[0.06] border border-blue-500/15 rounded-xl p-3">
       <div className="text-center">
         <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Open</div>
-        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompact(openingOffer)}</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompactCurrency(openingOffer)}</div>
         <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((openingOffer / listPrice) * 100)}%</div>
       </div>
       <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
         <div className="text-[0.6rem] text-green-500 uppercase font-semibold">Target</div>
-        <div className="text-sm font-bold text-green-500">{formatCompact(targetPrice)}</div>
+        <div className="text-sm font-bold text-green-500">{formatCompactCurrency(targetPrice)}</div>
         <div className="text-[0.55rem] text-green-500/70">{Math.round((targetPrice / listPrice) * 100)}%</div>
       </div>
       <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
         <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Walk</div>
-        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompact(walkAway)}</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompactCurrency(walkAway)}</div>
         <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((walkAway / listPrice) * 100)}%</div>
       </div>
     </div>

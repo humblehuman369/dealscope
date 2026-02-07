@@ -7,23 +7,7 @@ import {
   ChevronLeft, ChevronRight, Play, Pause, RotateCcw
 } from 'lucide-react'
 import { YearlyProjection } from '@/lib/projections'
-
-// ============================================
-// FORMATTING
-// ============================================
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value)
-}
-
-const formatCompact = (value: number): string => {
-  if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return formatCurrency(value)
-}
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // 1. CASH FLOW - INTERACTIVE RADIAL + BAR CHART

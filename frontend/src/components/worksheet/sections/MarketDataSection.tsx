@@ -8,6 +8,7 @@ import {
   ArrowDownRight, Home, Map, Zap, Target, RefreshCw, AlertCircle,
   Flame, Snowflake, Sun
 } from 'lucide-react'
+import { formatCurrency, formatPercent, formatNumber } from '@/utils/formatters'
 
 // ============================================
 // API SERVICE - Uses Next.js proxy to avoid CORS
@@ -57,27 +58,6 @@ interface MarketPageData {
   rentHistogram: { minPrice: number; maxPrice: number; priceAndCount: { price: number; count: number }[] }
   summary: { availableRentals: number; medianRent: number; monthlyChange: number; yearlyChange: number }
   zipcodesInCity: { areaId: number; name: string; city: string; state: string }[]
-}
-
-// ============================================
-// UTILITIES
-// ============================================
-const formatCurrency = (value: number) => {
-  if (!value && value !== 0) return 'N/A'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0
-  }).format(value)
-}
-
-const formatPercent = (value: number) => {
-  if (!value && value !== 0) return 'N/A'
-  const sign = value > 0 ? '+' : ''
-  return `${sign}${value.toFixed(1)}%`
-}
-
-const formatNumber = (value: number) => {
-  if (!value && value !== 0) return 'N/A'
-  return new Intl.NumberFormat('en-US').format(value)
 }
 
 // ============================================

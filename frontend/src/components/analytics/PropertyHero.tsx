@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { Camera, ChevronLeft, ChevronRight, Heart, Share2 } from 'lucide-react'
 import { ListingStatusBadge, ListingStatus, SellerType } from './ListingStatusBadge'
+import { formatCurrency } from '@/utils/formatters'
 
 interface PropertyHeroProps {
   address: string
@@ -63,14 +64,6 @@ export function PropertyHero({
   const photoList = photos.length > 0 ? photos : (thumbnailUrl ? [thumbnailUrl] : [])
   const totalPhotos = photoCount || photoList.length
   
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
   const scrollToPhoto = (index: number) => {
     if (scrollRef.current) {
       const scrollWidth = scrollRef.current.scrollWidth

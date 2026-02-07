@@ -14,6 +14,7 @@ import {
   Database
 } from 'lucide-react'
 import Link from 'next/link'
+import { formatCurrency } from '@/utils/formatters'
 
 interface PortfolioData {
   portfolioValue: number
@@ -28,19 +29,6 @@ interface PortfolioSummaryProps {
   data: PortfolioData
   isLoading?: boolean
   onViewSample?: () => void
-}
-
-const formatCurrency = (value: number): string => {
-  if (!value && value !== 0) return '$0'
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
 }
 
 export function PortfolioSummary({ data, isLoading, onViewSample }: PortfolioSummaryProps) {

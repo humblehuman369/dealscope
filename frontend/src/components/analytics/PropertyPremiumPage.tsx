@@ -20,6 +20,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { StrategyId } from './types'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import './property-premium.css'
+import { formatCurrency } from '@/utils/formatters'
 
 interface PropertyData {
   zpid?: string | number
@@ -155,14 +156,6 @@ export function PropertyPremiumPage({
     ? property.photos 
     : (property.thumbnailUrl ? [property.thumbnailUrl, ...SAMPLE_PHOTOS.slice(1)] : SAMPLE_PHOTOS)
   const totalPhotos = property.photoCount || photos.length
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value)
 
   const handleBack = () => {
     if (onBack) {

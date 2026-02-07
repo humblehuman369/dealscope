@@ -10,6 +10,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { Home } from 'lucide-react'
+import { formatPrice } from '@/utils/formatters'
 
 interface PropertyContextBarProps {
   address: string
@@ -36,14 +37,6 @@ export function PropertyContextBar({
   status = 'off-market',
   imageUrl,
 }: PropertyContextBarProps) {
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-  
   const cityStateZip = [city, [state, zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   
   const statusLabel = {

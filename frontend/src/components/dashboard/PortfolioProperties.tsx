@@ -2,6 +2,7 @@
 
 import { Building2, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { formatCurrency } from '@/utils/formatters'
 
 interface PortfolioProperty {
   id: string
@@ -19,19 +20,6 @@ interface PortfolioPropertiesProps {
   properties: PortfolioProperty[]
   isLoading?: boolean
   onAddClick?: () => void
-}
-
-const formatCurrency = (value: number): string => {
-  if (!value && value !== 0) return '$0'
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
 }
 
 export function PortfolioProperties({ properties, isLoading, onAddClick }: PortfolioPropertiesProps) {

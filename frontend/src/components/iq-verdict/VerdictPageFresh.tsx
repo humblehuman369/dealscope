@@ -38,6 +38,7 @@ import {
   type PriceCardVariant,
 } from './verdict-design-tokens'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
+import { formatPrice } from '@/utils/formatters'
 // Note: VerdictHeader and PropertySummaryBar are now handled by the global AppHeader in layout
 
 // ===================
@@ -151,13 +152,6 @@ interface VerdictPageFreshProps {
 // ===================
 // HELPER FUNCTIONS
 // ===================
-
-function formatPrice(price: number): string {
-  if (price >= 1000000) {
-    return `$${(price / 1000000).toFixed(2)}M`
-  }
-  return `$${price.toLocaleString()}`
-}
 
 function formatShortPrice(price: number): string {
   if (price >= 1000000) {

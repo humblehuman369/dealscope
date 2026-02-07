@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Target, Pencil, X, Check } from 'lucide-react'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * IQTargetHero Component
@@ -61,19 +62,6 @@ export function IQTargetHero({
   const [editedDownPayment, setEditedDownPayment] = useState(downPaymentPct * 100)
   const [editedInterestRate, setEditedInterestRate] = useState(interestRate * 100)
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
-  const formatCompact = (value: number) => 
-    Math.abs(value) >= 1000 
-      ? `$${Math.round(value / 1000).toLocaleString()}K` 
-      : formatCurrency(value)
-
   const handleSave = () => {
     if (onAssumptionsChange) {
       onAssumptionsChange('monthlyRent', editedRent)
@@ -117,7 +105,7 @@ export function IQTargetHero({
 
           {/* Discount Info */}
           <div className="text-sm font-semibold text-emerald-600 dark:text-[#00D4AA] mb-4">
-            ↓ {formatCompact(discountAmount)} below list ({Math.round(discountPercent)}%)
+            ↓ {formatCompactCurrency(discountAmount)} below list ({Math.round(discountPercent)}%)
           </div>
 
           {/* Rationale / Insight Text */}
@@ -262,14 +250,6 @@ export function IQTargetHeroCompact({
   primaryMetric,
   primaryLabel
 }: IQTargetHeroCompactProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
   return (
     <div className="relative overflow-hidden rounded-xl p-4 text-center border border-[rgba(0,212,255,0.25)] bg-white/[0.02]">
       <div className="flex items-center justify-center gap-1.5 mb-2">

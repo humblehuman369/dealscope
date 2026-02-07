@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { getPriceLabel, getAtPriceLabel } from '@/lib/priceUtils'
+import { formatCurrency } from '@/utils/formatters'
 
 /**
  * CompareToggle Component
@@ -143,14 +144,6 @@ export function PriceComparisonHeader({
   activeView,
   onChange
 }: PriceComparisonHeaderProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
   return (
     <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 mb-4">
       <button

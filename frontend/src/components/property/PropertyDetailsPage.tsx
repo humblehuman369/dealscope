@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { formatPrice, formatNumber } from '@/utils/formatters';
 
 // Types
 export interface PropertyDetailsData {
@@ -91,19 +92,6 @@ const NAV_ITEMS = [
   { id: 'reports', label: 'Reports' },
   { id: 'deals', label: 'Deals' },
 ];
-
-// Format helpers
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(price);
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num);
-}
 
 // Icon components
 const NavIcons: Record<string, (isActive: boolean) => JSX.Element> = {

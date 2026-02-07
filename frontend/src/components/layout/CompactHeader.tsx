@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { getToolbarRoute, isValidNavContext, type ToolbarNavId, type NavContext } from '@/lib/navigation';
+import { formatPrice, formatNumber } from '@/utils/formatters';
 
 // Types
 export interface PropertyData {
@@ -164,19 +165,6 @@ export function CompactHeader({
 
   // Get user initial for avatar
   const userInitial = user?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U';
-
-  // Format helpers
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
-  };
 
   const handlePropertyToggle = () => {
     const newState = !isPropertyOpen;

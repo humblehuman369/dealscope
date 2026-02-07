@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { toast } from '@/components/feedback'
+import { formatPrice, formatNumber } from '@/utils/formatters'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
 // Types
@@ -62,19 +63,6 @@ interface RentalCompsScreenProps {
   rentConfidence?: number
   estCapRate?: number
   initialStrategy?: string
-}
-
-// Helper functions
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(price)
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num)
 }
 
 // Default comps for demo

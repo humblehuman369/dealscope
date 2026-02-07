@@ -13,6 +13,7 @@
 
 import React, { useState } from 'react'
 import { ChevronDown, HelpCircle, Info } from 'lucide-react'
+import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 interface Strategy {
   short: string
@@ -42,22 +43,6 @@ interface InvestmentAnalysisNewProps {
   strategies?: Strategy[]
   onStrategyChange?: (strategy: string) => void
   onChangeTerms?: () => void
-}
-
-// Format currency
-function formatCurrency(value: number): string {
-  return '$' + Math.round(value).toLocaleString()
-}
-
-// Format currency compact
-function formatCurrencyCompact(value: number): string {
-  if (Math.abs(value) >= 1000000) {
-    return '$' + (value / 1000000).toFixed(2) + 'M'
-  }
-  if (Math.abs(value) >= 1000) {
-    return '$' + (value / 1000).toFixed(1) + 'K'
-  }
-  return '$' + Math.round(value).toLocaleString()
 }
 
 const DEFAULT_STRATEGIES: Strategy[] = [
@@ -114,7 +99,7 @@ function MetricCard({
   isCurrency?: boolean
 }) {
   const displayValue = typeof value === 'number' 
-    ? (isCurrency ? formatCurrencyCompact(value) : value.toFixed(1) + '%')
+    ? (isCurrency ? formatCompactCurrency(value) : value.toFixed(1) + '%')
     : value
 
   return (
@@ -267,17 +252,17 @@ export function InvestmentAnalysisNew({
         {/* Secondary Metrics Row */}
         <div className="grid grid-cols-3 gap-4 py-3 border-t border-[#E2E8F0]">
           <MetricCard 
-            value={`${formatCurrencyCompact(monthlyCashFlow)}/mo`} 
+            value={`${formatCompactCurrency(monthlyCashFlow)}/mo`} 
             label="Cash Flow" 
             isPositive={monthlyCashFlow >= 0} 
           />
           <MetricCard 
-            value={formatCurrencyCompact(annualNoi)} 
+            value={formatCompactCurrency(annualNoi)} 
             label="Annual NOI" 
             isPositive={annualNoi > 0} 
           />
           <MetricCard 
-            value={formatCurrencyCompact(cashNeeded)} 
+            value={formatCompactCurrency(cashNeeded)} 
             label="Cash Needed" 
             isPositive={true} 
           />

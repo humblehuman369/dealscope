@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { ChevronRight, ChevronLeft, Camera, Home } from 'lucide-react'
 import { ListingStatusBadgeCompact } from '../ListingStatusBadge'
+import { formatCurrency } from '@/utils/formatters'
 
 // Listing status types
 type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
@@ -53,14 +54,6 @@ export function DesktopPropertyMiniCard({
   const photoList = photos.length > 0 ? photos : (thumbnailUrl ? [thumbnailUrl] : [])
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const totalPhotos = photoCount || photoList.length
-
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
 
   const handlePrevPhoto = (e: React.MouseEvent) => {
     e.stopPropagation()

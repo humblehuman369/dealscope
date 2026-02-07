@@ -12,25 +12,7 @@ import {
   calculate10YearProjections,
   calculateProjectionSummary
 } from '@/lib/projections'
-
-// ============================================
-// FORMATTING
-// ============================================
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', 
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value)
-}
-
-const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
-
-const formatCompact = (value: number): string => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return formatCurrency(value)
-}
+import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // MINI BAR CHART

@@ -18,6 +18,7 @@ import React, { useState, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { StrategyType } from '@/config/strategyMetrics'
 import { PriceTarget } from '@/lib/priceUtils'
+import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 interface FinancialBreakdownProps {
   // Purchase Terms
@@ -88,19 +89,6 @@ interface FinancialBreakdownProps {
   marketingCosts?: number
   wholesaleClosingCosts?: number
   estimatedRepairs?: number
-}
-
-// Format currency
-function formatCurrency(value: number, showCents = false): string {
-  if (showCents) {
-    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
-  return Math.round(value).toLocaleString('en-US')
-}
-
-// Format percentage
-function formatPercent(value: number): string {
-  return `${value.toFixed(2)}%`
 }
 
 // Section Header with Link

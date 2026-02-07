@@ -1,15 +1,11 @@
 'use client'
 
+import { formatCompactCurrency } from '@/utils/formatters'
+
 interface LtrCashFlowBreakdownProps {
   annualDebtService: number
   annualExpenses: number
   annualCashFlow: number
-}
-
-const formatCompact = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${Math.round(value / 1000)}K`
-  return `$${Math.round(value)}`
 }
 
 export function LtrCashFlowBreakdown({
@@ -36,15 +32,15 @@ export function LtrCashFlowBreakdown({
       <div className="stacked-legend">
         <div className="stacked-legend-item">
           <span className="stacked-legend-dot loan"></span>
-          Loan {formatCompact(loan)}
+          Loan {formatCompactCurrency(loan)}
         </div>
         <div className="stacked-legend-item">
           <span className="stacked-legend-dot expenses"></span>
-          Expenses {formatCompact(expenses)}
+          Expenses {formatCompactCurrency(expenses)}
         </div>
         <div className="stacked-legend-item">
           <span className="stacked-legend-dot cashflow"></span>
-          Cash Flow {formatCompact(cashFlow)}
+          Cash Flow {formatCompactCurrency(cashFlow)}
         </div>
       </div>
     </div>

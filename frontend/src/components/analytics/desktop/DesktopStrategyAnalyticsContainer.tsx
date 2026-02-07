@@ -57,6 +57,7 @@ import {
 
 // Import desktop styles
 import './desktop-analytics.css'
+import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
 // TYPES
@@ -141,17 +142,6 @@ function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
     wholesaleFeePct: 0.007
   }
 }
-
-const formatCurrency = (value: number): string => 
-  new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
-    currency: 'USD', 
-    minimumFractionDigits: 0, 
-    maximumFractionDigits: 0 
-  }).format(value)
-
-const formatPercent = (value: number, decimals: number = 1): string => 
-  `${(value * 100).toFixed(decimals)}%`
 
 // ============================================
 // MAIN DESKTOP COMPONENT

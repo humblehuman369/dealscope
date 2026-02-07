@@ -11,24 +11,7 @@ import {
   SensitivityPoint,
   BaseAssumptions
 } from '@/lib/analytics'
-
-// ============================================
-// FORMATTING
-// ============================================
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value)
-}
-
-const formatPercent = (value: number): string => `${(value * 100).toFixed(2)}%`
-
-const formatCompact = (value: number): string => {
-  if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return formatCurrency(value)
-}
+import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // MINI LINE CHART
@@ -134,7 +117,7 @@ function SensitivityCard({
   
   const formatMetric = (v: number) => {
     if (currentMetric === 'cashFlow') return formatCurrency(v)
-    return formatPercent(v)
+    return formatPercent(v * 100, { decimals: 2 })
   }
   
   const deltaMin = minValue - baseValue
@@ -156,7 +139,7 @@ function SensitivityCard({
         <div className="text-left">
           <div className="font-bold text-gray-600 dark:text-white">{formatX(data[0].value)}</div>
           <div className={deltaMin < 0 ? 'text-red-600 font-bold' : 'text-emerald-600 font-bold'}>
-            {deltaMin >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompact(deltaMin) : formatPercent(deltaMin)}
+            {deltaMin >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompactCurrency(deltaMin) : formatPercent(deltaMin * 100, { decimals: 2 })}
           </div>
         </div>
         <div className="text-center">
@@ -166,7 +149,7 @@ function SensitivityCard({
         <div className="text-right">
           <div className="font-bold text-gray-600 dark:text-white">{formatX(data[data.length - 1].value)}</div>
           <div className={deltaMax >= 0 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}>
-            {deltaMax >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompact(deltaMax) : formatPercent(deltaMax)}
+            {deltaMax >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompactCurrency(deltaMax) : formatPercent(deltaMax * 100, { decimals: 2 })}
           </div>
         </div>
       </div>

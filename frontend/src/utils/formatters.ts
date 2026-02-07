@@ -1,9 +1,15 @@
 // ============================================
-// InvestIQ Property Analytics - Formatters
+// InvestIQ Property Analytics — Canonical Formatters
 // ============================================
+//
+// THIS IS THE SINGLE SOURCE OF TRUTH for all formatting.
+// Do NOT define local formatPrice / formatCurrency / formatPercent /
+// formatCompact / formatNumber functions in components.
+// Import from '@/utils/formatters' instead.
+//
 
 /**
- * Format number as currency
+ * Format number as currency (e.g., 350000 → "$350,000")
  */
 export const formatCurrency = (
   value: number,
@@ -378,4 +384,60 @@ export const getValueColor = (
     default:
       return 'neutral';
   }
+};
+
+// ============================================
+// Convenience Aliases
+// ============================================
+// These match the most common local function names found
+// across the codebase. Import these instead of redefining.
+
+/**
+ * Alias for formatCurrency — matches the common `formatPrice` name
+ * used in 40+ components.
+ */
+export const formatPrice = (value: number, decimals = 0): string =>
+  formatCurrency(value, { decimals });
+
+/**
+ * Compact currency (e.g., 1500000 → "$1.5M", 250000 → "$250K")
+ * Matches the common `formatCompact` / `formatCompactCurrency` pattern.
+ */
+export const formatCompactCurrency = (value: number): string =>
+  formatCurrency(value, { compact: true });
+
+/**
+ * Format a decimal ratio as a percentage.
+ * Many components pass a ratio (0.085) and expect "8.5%".
+ * The base `formatPercent` expects a value already in percentage form (8.5).
+ * Use this when your value is a ratio (0–1 scale).
+ */
+export const formatRatioAsPercent = (
+  ratio: number,
+  options?: { decimals?: number; showSign?: boolean }
+): string => {
+  const { decimals = 1, showSign = false } = options || {};
+  return formatPercent(ratio * 100, { decimals, showSign });
+};
+
+/**
+ * Safe currency formatter that handles null/undefined (returns "—")
+ */
+export const formatCurrencySafe = (
+  value: number | null | undefined,
+  options?: { decimals?: number; compact?: boolean }
+): string => {
+  if (value == null) return '—';
+  return formatCurrency(value, options);
+};
+
+/**
+ * Safe number formatter that handles null/undefined (returns "—")
+ */
+export const formatNumberSafe = (
+  value: number | null | undefined,
+  options?: { decimals?: number }
+): string => {
+  if (value == null) return '—';
+  return formatNumber(value, options);
 };

@@ -14,25 +14,7 @@ import {
   loadScenarios,
   getDefaultProjectionAssumptions
 } from '@/lib/projections'
-
-// ============================================
-// FORMATTING
-// ============================================
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', 
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value)
-}
-
-const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
-
-const formatCompact = (value: number): string => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return formatCurrency(value)
-}
+import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters'
 
 // ============================================
 // COMPARISON TABLE ROW
@@ -55,8 +37,8 @@ function ComparisonRow({
     if (v === null) return '—'
     switch (format) {
       case 'currency': return formatCurrency(v)
-      case 'percent': return formatPercent(v)
-      case 'compact': return formatCompact(v)
+      case 'percent': return formatPercent(v * 100)
+      case 'compact': return formatCompactCurrency(v)
       case 'multiple': return `${v.toFixed(1)}x`
       default: return v.toLocaleString()
     }
@@ -424,7 +406,7 @@ export default function ScenarioComparison({
             </span>
             {' '}generates the highest returns with{' '}
             <span className="font-bold text-gray-900 dark:text-white">
-              {formatCompact([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
+              {formatCompactCurrency([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
             </span>
             {' '}in total wealth.
           </p>

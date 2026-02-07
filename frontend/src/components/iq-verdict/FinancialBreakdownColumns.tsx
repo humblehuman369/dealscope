@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 interface FinancialBreakdownColumnsProps {
   // Purchase Terms
@@ -39,16 +40,6 @@ interface FinancialBreakdownColumnsProps {
   onAdjustPurchase?: () => void
   onAdjustIncome?: () => void
   onAdjustExpenses?: () => void
-}
-
-// Format currency
-function formatCurrency(value: number): string {
-  return '$' + Math.round(value).toLocaleString()
-}
-
-// Format percentage
-function formatPercent(value: number): string {
-  return value.toFixed(value % 1 === 0 ? 0 : 2) + '%'
 }
 
 export function FinancialBreakdownColumns({

@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCompactCurrency } from '@/utils/formatters'
+
 interface CostItem {
   label: string
   value: number
@@ -10,12 +12,6 @@ interface CostBreakdownDonutProps {
   items: CostItem[]
   total: number
   totalLabel: string
-}
-
-const formatCompact = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${Math.round(value / 1000)}K`
-  return `$${value}`
 }
 
 export function CostBreakdownDonut({ items, total, totalLabel }: CostBreakdownDonutProps) {
@@ -35,7 +31,7 @@ export function CostBreakdownDonut({ items, total, totalLabel }: CostBreakdownDo
         style={{ background: `conic-gradient(${gradientStops})` }}
       >
         <div className="mini-donut-center">
-          <span className="mini-donut-value">{formatCompact(total)}</span>
+          <span className="mini-donut-value">{formatCompactCurrency(total)}</span>
           <span className="mini-donut-label">{totalLabel}</span>
         </div>
       </div>
@@ -47,7 +43,7 @@ export function CostBreakdownDonut({ items, total, totalLabel }: CostBreakdownDo
               style={{ backgroundColor: item.color }}
             ></span>
             <span className="cost-breakdown-label">{item.label}</span>
-            <span className="cost-breakdown-value">{formatCompact(item.value)}</span>
+            <span className="cost-breakdown-value">{formatCompactCurrency(item.value)}</span>
           </div>
         ))}
       </div>

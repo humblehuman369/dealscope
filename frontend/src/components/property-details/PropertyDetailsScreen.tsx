@@ -18,19 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 // Note: CompactHeader removed - now using global AppHeader from layout
 import { PropertyData } from './types'
-
-// Helper functions
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(price)
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num)
-}
+import { formatPrice, formatNumber } from '@/utils/formatters'
 
 interface PropertyDetailsScreenProps {
   property: PropertyData
