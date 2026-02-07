@@ -29,31 +29,32 @@ export default function AuthModal() {
     }
   }, [searchParams, isAuthenticated])
 
-  // Close when authenticated
+  // Auto-close + redirect when auth state changes while modal is open
+  // (e.g. session restored from another tab, or cookie-based auth detected)
   useEffect(() => {
     if (isAuthenticated && isOpen) {
+      const redirect = searchParams.get('redirect') || '/dashboard'
       setIsOpen(false)
-      const redirect = searchParams.get('redirect')
-      if (redirect) {
-        router.push(redirect)
-      }
+      router.replace(redirect)
     }
   }, [isAuthenticated, isOpen, searchParams, router])
 
+  // Dismiss modal (X button or backdrop click) — stay on current page
   const close = useCallback(() => {
     setIsOpen(false)
-    // Clean up URL params
-    const url = new URL(window.location.href)
-    url.searchParams.delete('auth')
-    url.searchParams.delete('redirect')
-    window.history.replaceState({}, '', url.toString())
-  }, [])
+    // Use the Next.js router to clean URL params instead of raw
+    // window.history.replaceState, which wipes the router's internal
+    // state and breaks pending navigations.
+    router.replace(pathname, { scroll: false })
+  }, [router, pathname])
 
+  // Post-login redirect — navigate to the intended destination
   const onLoginSuccess = useCallback(() => {
     const redirect = searchParams.get('redirect') || '/dashboard'
-    router.push(redirect)
-    close()
-  }, [searchParams, router, close])
+    setIsOpen(false)
+    // Use replace to avoid a back-button loop through the login URL
+    router.replace(redirect)
+  }, [searchParams, router])
 
   if (!isOpen) return null
 
@@ -108,14 +109,3 @@ export default function AuthModal() {
   )
 }
 
-// Export a hook for programmatic control
-export function useAuthModal() {
-  const open = useCallback((view: 'login' | 'register' = 'login') => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('auth', view)
-    window.history.pushState({}, '', url.toString())
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }, [])
-
-  return { open }
-}
