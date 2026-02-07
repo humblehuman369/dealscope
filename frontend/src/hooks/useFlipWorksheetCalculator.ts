@@ -1,20 +1,30 @@
-import { useEffect, useRef, useState } from 'react'
-import { SavedProperty } from './useWorksheetProperty'
+/**
+ * Fix & Flip Worksheet Calculator Hook
+ *
+ * Thin wrapper around the unified useWorksheetCalculator.
+ * All shared logic (debouncing, API calls, error handling) lives there.
+ * This file defines the Flip-specific configuration only.
+ */
 
-const WORKSHEET_API_URL = '/api/v1/worksheet/flip/calculate'
-const CALC_DEBOUNCE_MS = 150
+import { SavedProperty } from '@/types/savedProperty'
+import {
+  useWorksheetCalculator,
+  WorksheetStrategyConfig,
+} from './useWorksheetCalculator'
 
 // =============================================================================
-// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
-// Components using this hook should ideally pass defaults from useDefaults()
-// These values are used only when API-provided defaults are not available
+// FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
 // =============================================================================
-const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
-const FALLBACK_REHAB_BUDGET_PCT = 0.05     // REHAB.renovation_budget_pct
-const FALLBACK_BUY_DISCOUNT_PCT = 0.05     // BRRRR.buy_discount_pct
-const FALLBACK_SELLING_COSTS_PCT = 0.06    // FLIP.selling_costs_pct
-const FALLBACK_DOWN_PAYMENT_PCT = 0.20     // FINANCING.down_payment_pct
-const FALLBACK_CONTINGENCY_PCT = 0.05      // REHAB.contingency_pct
+const FALLBACK_INSURANCE_PCT = 0.01
+const FALLBACK_REHAB_BUDGET_PCT = 0.05
+const FALLBACK_BUY_DISCOUNT_PCT = 0.05
+const FALLBACK_SELLING_COSTS_PCT = 0.06
+const FALLBACK_DOWN_PAYMENT_PCT = 0.20
+const FALLBACK_CONTINGENCY_PCT = 0.05
+
+// =============================================================================
+// Types
+// =============================================================================
 
 export interface FlipWorksheetInputs {
   purchase_price: number
@@ -68,13 +78,17 @@ export interface FlipWorksheetResult {
   target_fifteen_all_in: number
 }
 
+// =============================================================================
+// Default inputs
+// =============================================================================
+
 const defaultInputs: FlipWorksheetInputs = {
   purchase_price: 24000,
   purchase_costs: 1225,
   rehab_costs: 75000 * FALLBACK_REHAB_BUDGET_PCT,
   arv: 75000,
   down_payment_pct: FALLBACK_DOWN_PAYMENT_PCT,
-  interest_rate: 0.12,                 // 12% hard money
+  interest_rate: 0.12,
   points: 2,
   holding_months: 6,
   property_taxes_annual: 792,
@@ -88,88 +102,48 @@ const defaultInputs: FlipWorksheetInputs = {
   loan_type: 'interest_only',
 }
 
-export function useFlipWorksheetCalculator(property: SavedProperty | null) {
-  const [inputs, setInputs] = useState<FlipWorksheetInputs>(defaultInputs)
-  const [result, setResult] = useState<FlipWorksheetResult | null>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const hasInitialized = useRef(false)
+// =============================================================================
+// Strategy configuration
+// =============================================================================
 
-  useEffect(() => {
-    if (!property || hasInitialized.current) return
+const flipConfig: WorksheetStrategyConfig<FlipWorksheetInputs, FlipWorksheetResult> = {
+  apiUrl: '/api/v1/worksheet/flip/calculate',
+  strategyName: 'Fix & Flip',
+  defaultInputs,
+
+  initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
-    const listPrice = data.listPrice ?? defaultInputs.purchase_price
+    const listPrice = data.listPrice ?? defaults.purchase_price
     const arv = data.arv ?? listPrice
-    
-    // Calculate percentage-based fields using fallback defaults
-    const insurance = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
+    const insurance = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
     const rehabCosts = arv * FALLBACK_REHAB_BUDGET_PCT
-    
-    // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
-    // Then buy price = MAO * (1 - Buy Discount %)
-    const mao = (arv * 0.70) - rehabCosts
+
+    // 70% rule: MAO = ARV × 0.70 − Rehab
+    const mao = arv * 0.70 - rehabCosts
     const initialPurchasePrice = Math.max(
       Math.round(mao * (1 - FALLBACK_BUY_DISCOUNT_PCT)),
-      listPrice * 0.50  // Floor at 50% of list to avoid unrealistic values
+      listPrice * 0.50,
     )
 
-    setInputs((prev) => ({
-      ...prev,
+    return {
       purchase_price: Math.min(initialPurchasePrice, listPrice),
       purchase_costs: initialPurchasePrice * 0.03,
-      arv: arv,
+      arv,
       rehab_costs: rehabCosts,
-      property_taxes_annual: data.propertyTaxes ?? prev.property_taxes_annual,
+      property_taxes_annual: data.propertyTaxes ?? defaults.property_taxes_annual,
       insurance_annual: insurance,
-    }))
-    hasInitialized.current = true
-  }, [property])
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    const payload = {
-      ...inputs,
     }
+  },
 
-    timer = setTimeout(async () => {
-      setIsCalculating(true)
-      setError(null)
-      try {
-        const response = await fetch(WORKSHEET_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate Fix & Flip worksheet metrics')
-        }
-        setResult(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to calculate Fix & Flip worksheet metrics'
-        setError(message)
-      } finally {
-        setIsCalculating(false)
-      }
-    }, CALC_DEBOUNCE_MS)
+  buildPayload(inputs) {
+    return { ...inputs }
+  },
+}
 
-    return () => clearTimeout(timer)
-  }, [inputs])
+// =============================================================================
+// Hook
+// =============================================================================
 
-  const updateInput = <K extends keyof FlipWorksheetInputs>(key: K, value: FlipWorksheetInputs[K]) => {
-    setInputs((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
-  }
-
-  return {
-    inputs,
-    updateInput,
-    result,
-    isCalculating,
-    error,
-  }
+export function useFlipWorksheetCalculator(property: SavedProperty | null) {
+  return useWorksheetCalculator(property, flipConfig)
 }

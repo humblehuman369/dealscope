@@ -1,24 +1,36 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { SavedProperty } from './useWorksheetProperty'
+/**
+ * STR Worksheet Calculator Hook
+ *
+ * Thin wrapper around the unified useWorksheetCalculator.
+ * All shared logic (debouncing, API calls, error handling) lives there.
+ * This file defines the STR-specific configuration only.
+ */
+
+import { useMemo } from 'react'
+import { SavedProperty } from '@/types/savedProperty'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
-
-const WORKSHEET_API_URL = '/api/v1/worksheet/str/calculate'
-const CALC_DEBOUNCE_MS = 150
+import {
+  useWorksheetCalculator,
+  WorksheetStrategyConfig,
+} from './useWorksheetCalculator'
 
 // =============================================================================
-// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
+// FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
 // Components using this hook should ideally pass defaults from useDefaults()
-// These values are used only when API-provided defaults are not available
 // =============================================================================
-const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
-const FALLBACK_DOWN_PAYMENT_PCT = 0.20     // FINANCING.down_payment_pct
-const FALLBACK_INTEREST_RATE = 0.06        // FINANCING.interest_rate
-const FALLBACK_VACANCY_RATE = 0.01         // OPERATING.vacancy_rate
-const FALLBACK_MAINTENANCE_PCT = 0.05      // OPERATING.maintenance_pct
-const FALLBACK_MANAGEMENT_PCT = 0.00       // OPERATING.property_management_pct
-const FALLBACK_PLATFORM_FEES_PCT = 0.15    // STR.platform_fees_pct
-const FALLBACK_STR_MANAGEMENT_PCT = 0.10   // STR.str_management_pct
-const FALLBACK_FURNISHING = 6000           // STR.furniture_setup_cost
+const FALLBACK_INSURANCE_PCT = 0.01
+const FALLBACK_DOWN_PAYMENT_PCT = 0.20
+const FALLBACK_INTEREST_RATE = 0.06
+const FALLBACK_VACANCY_RATE = 0.01
+const FALLBACK_MAINTENANCE_PCT = 0.05
+const FALLBACK_MANAGEMENT_PCT = 0.00
+const FALLBACK_PLATFORM_FEES_PCT = 0.15
+const FALLBACK_STR_MANAGEMENT_PCT = 0.10
+const FALLBACK_FURNISHING = 6000
+
+// =============================================================================
+// Types (unchanged — consumers may import these)
+// =============================================================================
 
 export interface StrWorksheetInputs {
   purchase_price: number
@@ -85,6 +97,10 @@ export interface StrWorksheetResult {
   }
 }
 
+// =============================================================================
+// Default inputs
+// =============================================================================
+
 const defaultInputs: StrWorksheetInputs = {
   purchase_price: 485000,
   purchase_costs: 14550,
@@ -107,43 +123,38 @@ const defaultInputs: StrWorksheetInputs = {
   capex_pct: 0.05,
 }
 
-export function useStrWorksheetCalculator(property: SavedProperty | null) {
-  const [inputs, setInputs] = useState<StrWorksheetInputs>(defaultInputs)
-  const [result, setResult] = useState<StrWorksheetResult | null>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const hasInitialized = useRef(false)
+// =============================================================================
+// Strategy configuration (module-level constant — stable reference)
+// =============================================================================
 
-  useEffect(() => {
-    if (!property || hasInitialized.current) return
+const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult> = {
+  apiUrl: '/api/v1/worksheet/str/calculate',
+  strategyName: 'STR',
+  defaultInputs,
 
+  initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
-    const listPrice = data.listPrice ?? defaultInputs.purchase_price
-    const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
-    // Calculate insurance using fallback default if not provided
-    const insurance = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
-    
-    const adr = data.averageDailyRate ?? defaultInputs.average_daily_rate
-    const occupancy = data.occupancyRate ?? defaultInputs.occupancy_rate
-    // Estimate monthly rent from STR revenue (ADR * occupancy * 30 days)
+    const listPrice = data.listPrice ?? defaults.purchase_price
+    const propertyTaxes = data.propertyTaxes ?? defaults.property_taxes_annual
+    const insurance = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
+    const adr = data.averageDailyRate ?? defaults.average_daily_rate
+    const occupancy = data.occupancyRate ?? defaults.occupancy_rate
     const estimatedMonthlyRent = adr * occupancy * 30
-    
-    // Calculate initial purchase price as 95% of estimated breakeven
+
     const initialPurchasePrice = calculateInitialPurchasePrice({
       monthlyRent: estimatedMonthlyRent,
-      propertyTaxes: propertyTaxes,
-      insurance: insurance,
-      listPrice: listPrice,
-      vacancyRate: 0.01,
-      maintenancePct: 0.05,
-      managementPct: 0.10,
-      downPaymentPct: 0.20,
-      interestRate: 0.06,
+      propertyTaxes,
+      insurance,
+      listPrice,
+      vacancyRate: FALLBACK_VACANCY_RATE,
+      maintenancePct: FALLBACK_MAINTENANCE_PCT,
+      managementPct: FALLBACK_MANAGEMENT_PCT,
+      downPaymentPct: FALLBACK_DOWN_PAYMENT_PCT,
+      interestRate: FALLBACK_INTEREST_RATE,
       loanTermYears: 30,
     })
 
-    setInputs((prev) => ({
-      ...prev,
+    return {
       purchase_price: initialPurchasePrice,
       list_price: listPrice,
       purchase_costs: initialPurchasePrice * 0.03,
@@ -151,14 +162,11 @@ export function useStrWorksheetCalculator(property: SavedProperty | null) {
       occupancy_rate: occupancy,
       property_taxes_annual: propertyTaxes,
       insurance_annual: insurance,
-    }))
+    }
+  },
 
-    hasInitialized.current = true
-  }, [property])
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    const payload = {
+  buildPayload(inputs) {
+    return {
       purchase_price: inputs.purchase_price,
       list_price: inputs.list_price,
       average_daily_rate: inputs.average_daily_rate,
@@ -180,60 +188,24 @@ export function useStrWorksheetCalculator(property: SavedProperty | null) {
       maintenance_pct: inputs.maintenance_pct,
       capex_pct: inputs.capex_pct,
     }
+  },
+}
 
-    timer = setTimeout(async () => {
-      setIsCalculating(true)
-      setError(null)
-      try {
-        const response = await fetch(WORKSHEET_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate STR worksheet metrics')
-        }
-        setResult(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to calculate STR worksheet metrics'
-        setError(message)
-      } finally {
-        setIsCalculating(false)
-      }
-    }, CALC_DEBOUNCE_MS)
+// =============================================================================
+// Hook (preserves exact same return shape as before)
+// =============================================================================
 
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [inputs])
+export function useStrWorksheetCalculator(property: SavedProperty | null) {
+  const { inputs, updateInput, result, isCalculating, error } =
+    useWorksheetCalculator(property, strConfig)
 
-  const updateInput = <K extends keyof StrWorksheetInputs>(key: K, value: StrWorksheetInputs[K]) => {
-    setInputs((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
-  }
+  // STR previously exposed a `derived` object — preserve for backward compat
+  const derived = useMemo(
+    () => ({
+      annualDebtService: result?.annual_debt_service ?? 0,
+    }),
+    [result],
+  )
 
-  const derived = useMemo(() => {
-    if (!result) {
-      return {
-        annualDebtService: 0,
-      }
-    }
-    return {
-      annualDebtService: result.annual_debt_service,
-    }
-  }, [result])
-
-  return {
-    inputs,
-    updateInput,
-    result,
-    derived,
-    isCalculating,
-    error,
-  }
+  return { inputs, updateInput, result, derived, isCalculating, error }
 }

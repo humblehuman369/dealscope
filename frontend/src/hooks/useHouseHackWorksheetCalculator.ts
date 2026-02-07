@@ -1,21 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
-import { SavedProperty } from './useWorksheetProperty'
+/**
+ * House Hack Worksheet Calculator Hook
+ *
+ * Thin wrapper around the unified useWorksheetCalculator.
+ * All shared logic (debouncing, API calls, error handling) lives there.
+ * This file defines the HouseHack-specific configuration only.
+ */
+
+import { SavedProperty } from '@/types/savedProperty'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
-
-const WORKSHEET_API_URL = '/api/v1/worksheet/househack/calculate'
-const CALC_DEBOUNCE_MS = 150
+import {
+  useWorksheetCalculator,
+  WorksheetStrategyConfig,
+} from './useWorksheetCalculator'
 
 // =============================================================================
-// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
-// Components using this hook should ideally pass defaults from useDefaults()
-// These values are used only when API-provided defaults are not available
+// FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
 // =============================================================================
-const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
-const FALLBACK_FHA_DOWN_PAYMENT_PCT = 0.035 // HOUSE_HACK.fha_down_payment_pct
-const FALLBACK_FHA_MIP_RATE = 0.0085       // HOUSE_HACK.fha_mip_rate
-const FALLBACK_INTEREST_RATE = 0.06        // FINANCING.interest_rate
-const FALLBACK_VACANCY_RATE = 0.01         // OPERATING.vacancy_rate
-const FALLBACK_MAINTENANCE_PCT = 0.05      // OPERATING.maintenance_pct
+const FALLBACK_INSURANCE_PCT = 0.01
+const FALLBACK_FHA_DOWN_PAYMENT_PCT = 0.035
+const FALLBACK_FHA_MIP_RATE = 0.0085
+const FALLBACK_INTEREST_RATE = 0.06
+const FALLBACK_VACANCY_RATE = 0.01
+const FALLBACK_MAINTENANCE_PCT = 0.05
+
+// =============================================================================
+// Types
+// =============================================================================
 
 export type PropertyTypeOption = '2' | '3' | '4' | '1' | 'rooms'
 
@@ -73,6 +83,19 @@ export interface HouseHackResult {
   fha_max_price: number
 }
 
+// =============================================================================
+// Helpers
+// =============================================================================
+
+const getUnitsCount = (propertyType: PropertyTypeOption) => {
+  if (propertyType === 'rooms') return 2
+  return Number.parseInt(propertyType, 10)
+}
+
+// =============================================================================
+// Default inputs
+// =============================================================================
+
 const defaultInputs: HouseHackInputs = {
   property_type: '2',
   purchase_price: 425000,
@@ -96,71 +119,53 @@ const defaultInputs: HouseHackInputs = {
   loan_type: 'fha',
 }
 
-const getUnitsCount = (propertyType: PropertyTypeOption) => {
-  if (propertyType === 'rooms') return 2
-  return Number.parseInt(propertyType, 10)
-}
+// =============================================================================
+// Strategy configuration
+// =============================================================================
 
-export function useHouseHackWorksheetCalculator(property: SavedProperty | null) {
-  const [inputs, setInputs] = useState<HouseHackInputs>(defaultInputs)
-  const [result, setResult] = useState<HouseHackResult | null>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const hasInitialized = useRef(false)
+const houseHackConfig: WorksheetStrategyConfig<HouseHackInputs, HouseHackResult> = {
+  apiUrl: '/api/v1/worksheet/househack/calculate',
+  strategyName: 'House Hack',
+  defaultInputs,
 
-  useEffect(() => {
-    if (!property || hasInitialized.current) return
-
+  initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
-    const listPrice = data.listPrice ?? defaultInputs.purchase_price
-    const bedrooms = data.bedrooms ?? 3 // Default to 3 bedrooms if not provided
-    const monthlyRent = data.monthlyRent ?? defaultInputs.unit2_rent
-    const propertyTaxes = data.propertyTaxes ?? (defaultInputs.property_taxes_monthly * 12)
-    
-    // Calculate insurance as 1% of purchase price annually
-    const insuranceAnnual = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
+    const listPrice = data.listPrice ?? defaults.purchase_price
+    const bedrooms = data.bedrooms ?? 3
+    const monthlyRent = data.monthlyRent ?? defaults.unit2_rent
+    const propertyTaxes = data.propertyTaxes ?? defaults.property_taxes_monthly * 12
+    const insuranceAnnual = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
     const insuranceMonthly = insuranceAnnual / 12
-    
-    // Calculate room rent: (monthlyRent / bedrooms) * units_rented_out
-    // Default units_rented_out = 2
     const rentPerRoom = monthlyRent / bedrooms
-    const roomRentMonthly = rentPerRoom * 2 // 2 units rented out by default
-    
-    // Owner unit market rent = monthlyRent / bedrooms (rent per room)
+    const roomRentMonthly = rentPerRoom * 2
     const ownerUnitMarketRent = rentPerRoom
-    
-    // Calculate initial purchase price as 95% of estimated breakeven
+
     const initialPurchasePrice = calculateInitialPurchasePrice({
-      monthlyRent: roomRentMonthly,  // Use rental income from rented units
-      propertyTaxes: propertyTaxes,
+      monthlyRent: roomRentMonthly,
+      propertyTaxes,
       insurance: insuranceAnnual,
-      listPrice: listPrice,
-      vacancyRate: 0.01,
-      maintenancePct: 0.05,
+      listPrice,
+      vacancyRate: FALLBACK_VACANCY_RATE,
+      maintenancePct: FALLBACK_MAINTENANCE_PCT,
       managementPct: 0,
-      downPaymentPct: 0.035,   // FHA down payment
-      interestRate: 0.06,
+      downPaymentPct: FALLBACK_FHA_DOWN_PAYMENT_PCT,
+      interestRate: FALLBACK_INTEREST_RATE,
       loanTermYears: 30,
     })
 
-    setInputs((prev) => ({
-      ...prev,
+    return {
       purchase_price: initialPurchasePrice,
       list_price: listPrice * 1.056,
       property_taxes_monthly: propertyTaxes / 12,
       insurance_monthly: insuranceMonthly,
       unit2_rent: roomRentMonthly,
       owner_market_rent: ownerUnitMarketRent,
-    }))
+    }
+  },
 
-    hasInitialized.current = true
-  }, [property])
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
+  buildPayload(inputs) {
     const unitCount = getUnitsCount(inputs.property_type)
-
-    const payload = {
+    return {
       purchase_price: inputs.purchase_price,
       unit_rents: [
         inputs.unit2_rent,
@@ -185,56 +190,26 @@ export function useHouseHackWorksheetCalculator(property: SavedProperty | null) 
       utilities_monthly: inputs.utilities_monthly,
       loan_type: inputs.loan_type,
     }
+  },
 
-    timer = setTimeout(async () => {
-      setIsCalculating(true)
-      setError(null)
-      try {
-        const response = await fetch(WORKSHEET_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate House Hack worksheet metrics')
-        }
-        setResult(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to calculate House Hack worksheet metrics'
-        setError(message)
-      } finally {
-        setIsCalculating(false)
-      }
-    }, CALC_DEBOUNCE_MS)
-
-    return () => clearTimeout(timer)
-  }, [inputs])
-
-  const updateInput = <K extends keyof HouseHackInputs>(key: K, value: HouseHackInputs[K]) => {
-    setInputs((prev) => {
-      if (key === 'loan_type') {
-        const minDown = value === 'fha' ? 0.035 : value === 'va' ? 0 : 0.05
-        return {
-          ...prev,
-          loan_type: value as HouseHackInputs['loan_type'],
-          down_payment_pct: Math.max(minDown, prev.down_payment_pct),
-        }
-      }
+  onUpdateInput(key, value, prev) {
+    // Sync loan_type → minimum down_payment_pct
+    if (key === 'loan_type') {
+      const minDown = value === 'fha' ? 0.035 : value === 'va' ? 0 : 0.05
       return {
         ...prev,
-        [key]: value,
+        loan_type: value as HouseHackInputs['loan_type'],
+        down_payment_pct: Math.max(minDown, prev.down_payment_pct),
       }
-    })
-  }
+    }
+    return null
+  },
+}
 
-  return {
-    inputs,
-    updateInput,
-    result,
-    isCalculating,
-    error,
-  }
+// =============================================================================
+// Hook
+// =============================================================================
+
+export function useHouseHackWorksheetCalculator(property: SavedProperty | null) {
+  return useWorksheetCalculator(property, houseHackConfig)
 }

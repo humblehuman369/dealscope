@@ -3,8 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { SavedProperty } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { apiRequest } from '@/lib/api-client'
 
 // Re-export for backward compatibility
 export type { SavedProperty } from '@/types/savedProperty'
@@ -118,47 +117,27 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
       console.log('[useWorksheetProperty] Fetching property:', propertyId)
       
       try {
-        const token = getAccessToken()
-        
-        if (!token) {
-          console.error('[useWorksheetProperty] No access token found')
-          setError('Authentication required')
-          router.push('/')
-          return
-        }
-        
-        const fetchUrl = `${API_BASE_URL}/api/v1/properties/saved/${propertyId}`
-        const response = await fetch(fetchUrl, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        })
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.error('[useWorksheetProperty] Unauthorized - token may be expired')
-            setError('Session expired. Please log in again.')
-            router.push('/')
-            return
-          }
-          if (response.status === 404) {
-            setError('Property not found')
-          } else {
-            const errorData = await response.json().catch(() => ({}))
-            console.error('[useWorksheetProperty] API error:', response.status, errorData)
-            setError(errorData.detail || 'Failed to load property')
-          }
-          return
-        }
-
-        const data = await response.json()
+        const data = await apiRequest<SavedProperty>(
+          `/api/v1/properties/saved/${propertyId}`
+        )
         console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
         
         setProperty(data)
         onLoadedRef.current?.(data)
       } catch (err) {
         console.error('[useWorksheetProperty] Error fetching property:', err)
-        setError('Failed to load property. Please try again.')
+        
+        // apiRequest handles 401 → refresh automatically.
+        // If we still get an error, it's a real failure.
+        const message = err instanceof Error ? err.message : 'Failed to load property'
+        
+        if (message.includes('401') || message.includes('Unauthorized')) {
+          setError('Session expired. Please log in again.')
+          router.push('/')
+          return
+        }
+        
+        setError(message || 'Failed to load property. Please try again.')
       } finally {
         setIsLoading(false)
       }

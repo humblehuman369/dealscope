@@ -1,9 +1,33 @@
-import { useEffect, useRef, useState } from 'react'
-import { SavedProperty } from './useWorksheetProperty'
-import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
+/**
+ * BRRRR Worksheet Calculator Hook
+ *
+ * Thin wrapper around the unified useWorksheetCalculator.
+ * All shared logic (debouncing, API calls, error handling) lives there.
+ * This file defines the BRRRR-specific configuration only.
+ */
 
-const WORKSHEET_API_URL = '/api/v1/worksheet/brrrr/calculate'
-const CALC_DEBOUNCE_MS = 150
+import { SavedProperty } from '@/types/savedProperty'
+import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
+import {
+  useWorksheetCalculator,
+  WorksheetStrategyConfig,
+} from './useWorksheetCalculator'
+
+// =============================================================================
+// FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
+// =============================================================================
+const FALLBACK_INSURANCE_PCT = 0.01
+const FALLBACK_REHAB_BUDGET_PCT = 0.05
+const FALLBACK_REFI_CLOSING_COSTS_PCT = 0.03
+const FALLBACK_VACANCY_RATE = 0.01
+const FALLBACK_MANAGEMENT_PCT = 0.00
+const FALLBACK_MAINTENANCE_PCT = 0.05
+const FALLBACK_REFI_INTEREST_RATE = 0.06
+const FALLBACK_REFI_LTV = 0.75
+
+// =============================================================================
+// Types
+// =============================================================================
 
 export interface BrrrrWorksheetInputs {
   purchase_price: number
@@ -79,18 +103,8 @@ export interface BrrrrWorksheetResult {
 }
 
 // =============================================================================
-// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
-// Components using this hook should ideally pass defaults from useDefaults()
-// These values are used only when API-provided defaults are not available
+// Default inputs
 // =============================================================================
-const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
-const FALLBACK_REHAB_BUDGET_PCT = 0.05     // REHAB.renovation_budget_pct
-const FALLBACK_REFI_CLOSING_COSTS_PCT = 0.03 // BRRRR.refinance_closing_costs_pct
-const FALLBACK_VACANCY_RATE = 0.01         // OPERATING.vacancy_rate
-const FALLBACK_MANAGEMENT_PCT = 0.00       // OPERATING.property_management_pct
-const FALLBACK_MAINTENANCE_PCT = 0.05      // OPERATING.maintenance_pct
-const FALLBACK_REFI_INTEREST_RATE = 0.06   // BRRRR.refinance_interest_rate
-const FALLBACK_REFI_LTV = 0.75             // BRRRR.refinance_ltv
 
 const defaultInputs: BrrrrWorksheetInputs = {
   purchase_price: 285000,
@@ -103,7 +117,7 @@ const defaultInputs: BrrrrWorksheetInputs = {
   utilities_monthly: 100,
   down_payment_pct: 0.1,
   loan_to_cost_pct: 90,
-  interest_rate: 0.12,                     // Hard money rate
+  interest_rate: 0.12,
   points: 2,
   holding_months: 4,
   refi_ltv: FALLBACK_REFI_LTV,
@@ -116,62 +130,54 @@ const defaultInputs: BrrrrWorksheetInputs = {
   capex_pct: 0.05,
 }
 
-export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
-  const [inputs, setInputs] = useState<BrrrrWorksheetInputs>(defaultInputs)
-  const [result, setResult] = useState<BrrrrWorksheetResult | null>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const hasInitialized = useRef(false)
+// =============================================================================
+// Strategy configuration
+// =============================================================================
 
-  useEffect(() => {
-    if (!property || hasInitialized.current) return
+const brrrrConfig: WorksheetStrategyConfig<BrrrrWorksheetInputs, BrrrrWorksheetResult> = {
+  apiUrl: '/api/v1/worksheet/brrrr/calculate',
+  strategyName: 'BRRRR',
+  defaultInputs,
 
+  initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
-    const listPrice = data.listPrice ?? defaultInputs.purchase_price
+    const listPrice = data.listPrice ?? defaults.purchase_price
     const arv = data.arv ?? listPrice
-    const monthlyRent = data.monthlyRent ?? defaultInputs.monthly_rent
-    const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
-    
-    // Calculate percentage-based fields using fallback defaults
-    const insurance = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
+    const monthlyRent = data.monthlyRent ?? defaults.monthly_rent
+    const propertyTaxes = data.propertyTaxes ?? defaults.property_taxes_annual
+    const insurance = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
     const rehabCosts = arv * FALLBACK_REHAB_BUDGET_PCT
     const refiLoanAmount = arv * FALLBACK_REFI_LTV
     const refiClosingCosts = refiLoanAmount * FALLBACK_REFI_CLOSING_COSTS_PCT
-    
-    // Calculate initial purchase price as 95% of estimated breakeven
-    // Using fallback defaults - ideally should come from useDefaults() hook
+
     const initialPurchasePrice = calculateInitialPurchasePrice({
-      monthlyRent: monthlyRent,
-      propertyTaxes: propertyTaxes,
-      insurance: insurance,
-      listPrice: listPrice,
+      monthlyRent,
+      propertyTaxes,
+      insurance,
+      listPrice,
       vacancyRate: FALLBACK_VACANCY_RATE,
       maintenancePct: FALLBACK_MAINTENANCE_PCT,
       managementPct: FALLBACK_MANAGEMENT_PCT,
-      downPaymentPct: 0.10,   // BRRRR typically uses hard money
+      downPaymentPct: 0.10,
       interestRate: FALLBACK_REFI_INTEREST_RATE,
       loanTermYears: 30,
     })
 
-    setInputs((prev) => ({
-      ...prev,
+    return {
       purchase_price: initialPurchasePrice,
       purchase_costs: initialPurchasePrice * 0.03,
-      arv: arv,
+      arv,
       rehab_costs: rehabCosts,
       monthly_rent: monthlyRent,
       property_taxes_annual: propertyTaxes,
       insurance_annual: insurance,
       refi_closing_costs: refiClosingCosts,
-      sqft: data.sqft ?? prev.sqft,
-    }))
+      sqft: data.sqft ?? defaults.sqft,
+    }
+  },
 
-    hasInitialized.current = true
-  }, [property])
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    const payload = {
+  buildPayload(inputs) {
+    return {
       purchase_price: inputs.purchase_price,
       purchase_costs: inputs.purchase_costs,
       rehab_costs: inputs.rehab_costs,
@@ -195,58 +201,26 @@ export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
       maintenance_pct: inputs.maintenance_pct,
       capex_pct: inputs.capex_pct,
     }
+  },
 
-    timer = setTimeout(async () => {
-      setIsCalculating(true)
-      setError(null)
-      try {
-        const response = await fetch(WORKSHEET_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate BRRRR worksheet metrics')
-        }
-        setResult(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to calculate BRRRR worksheet metrics'
-        setError(message)
-      } finally {
-        setIsCalculating(false)
-      }
-    }, CALC_DEBOUNCE_MS)
-
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [inputs])
-
-  const updateInput = <K extends keyof BrrrrWorksheetInputs>(key: K, value: BrrrrWorksheetInputs[K]) => {
-    setInputs((prev) => {
-      if (key === 'loan_to_cost_pct') {
-        const ltc = Number(value)
-        return {
-          ...prev,
-          loan_to_cost_pct: ltc,
-          down_payment_pct: Math.max(0, 1 - ltc / 100),
-        }
-      }
+  onUpdateInput(key, value, prev) {
+    // Sync loan_to_cost_pct ↔ down_payment_pct
+    if (key === 'loan_to_cost_pct') {
+      const ltc = Number(value)
       return {
         ...prev,
-        [key]: value,
+        loan_to_cost_pct: ltc,
+        down_payment_pct: Math.max(0, 1 - ltc / 100),
       }
-    })
-  }
+    }
+    return null // fall through to default
+  },
+}
 
-  return {
-    inputs,
-    updateInput,
-    result,
-    isCalculating,
-    error,
-  }
+// =============================================================================
+// Hook
+// =============================================================================
+
+export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
+  return useWorksheetCalculator(property, brrrrConfig)
 }

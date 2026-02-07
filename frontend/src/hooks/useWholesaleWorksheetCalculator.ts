@@ -1,8 +1,20 @@
-import { useEffect, useRef, useState } from 'react'
-import { SavedProperty } from './useWorksheetProperty'
+/**
+ * Wholesale Worksheet Calculator Hook
+ *
+ * Thin wrapper around the unified useWorksheetCalculator.
+ * All shared logic (debouncing, API calls, error handling) lives there.
+ * This file defines the Wholesale-specific configuration only.
+ */
 
-const WORKSHEET_API_URL = '/api/v1/worksheet/wholesale/calculate'
-const CALC_DEBOUNCE_MS = 150
+import { SavedProperty } from '@/types/savedProperty'
+import {
+  useWorksheetCalculator,
+  WorksheetStrategyConfig,
+} from './useWorksheetCalculator'
+
+// =============================================================================
+// Types
+// =============================================================================
 
 export interface WholesaleInputs {
   investor_price: number
@@ -43,6 +55,10 @@ export interface WholesaleResult {
   deal_score: number
 }
 
+// =============================================================================
+// Default inputs
+// =============================================================================
+
 const defaultInputs: WholesaleInputs = {
   investor_price: 24000,
   contract_price: 12000,
@@ -56,31 +72,29 @@ const defaultInputs: WholesaleInputs = {
   tax_rate: 0.2,
 }
 
-export function useWholesaleWorksheetCalculator(property: SavedProperty | null) {
-  const [inputs, setInputs] = useState<WholesaleInputs>(defaultInputs)
-  const [result, setResult] = useState<WholesaleResult | null>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const hasInitialized = useRef(false)
+// =============================================================================
+// Strategy configuration
+// =============================================================================
 
-  useEffect(() => {
-    if (!property || hasInitialized.current) return
+const wholesaleConfig: WorksheetStrategyConfig<WholesaleInputs, WholesaleResult> = {
+  apiUrl: '/api/v1/worksheet/wholesale/calculate',
+  strategyName: 'Wholesale',
+  defaultInputs,
+
+  initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
-    const listPrice = data.listPrice ?? defaultInputs.investor_price
+    const listPrice = data.listPrice ?? defaults.investor_price
 
-    setInputs((prev) => ({
-      ...prev,
+    return {
       investor_price: listPrice,
       contract_price: listPrice * 0.5,
       arv: data.arv ?? listPrice,
-      earnest_money: (listPrice * 0.5) * 0.01,
-    }))
-    hasInitialized.current = true
-  }, [property])
+      earnest_money: listPrice * 0.5 * 0.01,
+    }
+  },
 
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    const payload = {
+  buildPayload(inputs) {
+    return {
       arv: inputs.arv,
       contract_price: inputs.contract_price,
       investor_price: inputs.investor_price,
@@ -93,56 +107,26 @@ export function useWholesaleWorksheetCalculator(property: SavedProperty | null) 
       investor_purchase_costs_pct: inputs.investor_purchase_costs_pct,
       tax_rate: inputs.tax_rate,
     }
+  },
 
-    timer = setTimeout(async () => {
-      setIsCalculating(true)
-      setError(null)
-      try {
-        const response = await fetch(WORKSHEET_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate Wholesale worksheet metrics')
-        }
-        setResult(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to calculate Wholesale worksheet metrics'
-        setError(message)
-      } finally {
-        setIsCalculating(false)
-      }
-    }, CALC_DEBOUNCE_MS)
-
-    return () => clearTimeout(timer)
-  }, [inputs])
-
-  const updateInput = <K extends keyof WholesaleInputs>(key: K, value: WholesaleInputs[K]) => {
-    setInputs((prev) => {
-      if (key === 'contract_price') {
-        const earnestMoney = Number(value) * 0.01
-        return {
-          ...prev,
-          contract_price: value as WholesaleInputs['contract_price'],
-          earnest_money: earnestMoney,
-        }
-      }
+  onUpdateInput(key, value, prev) {
+    // Sync contract_price → earnest_money (1% of contract)
+    if (key === 'contract_price') {
+      const earnestMoney = Number(value) * 0.01
       return {
         ...prev,
-        [key]: value,
+        contract_price: value as WholesaleInputs['contract_price'],
+        earnest_money: earnestMoney,
       }
-    })
-  }
+    }
+    return null
+  },
+}
 
-  return {
-    inputs,
-    updateInput,
-    result,
-    isCalculating,
-    error,
-  }
+// =============================================================================
+// Hook
+// =============================================================================
+
+export function useWholesaleWorksheetCalculator(property: SavedProperty | null) {
+  return useWorksheetCalculator(property, wholesaleConfig)
 }
