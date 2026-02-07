@@ -5,7 +5,7 @@ import type { AccountFormData } from './types'
 import { formatDate } from './types'
 
 interface AccountTabProps {
-  user: { email: string; created_at?: string; last_login?: string | null; is_active?: boolean; is_verified?: boolean; full_name?: string } | null
+  user: { email: string; created_at?: string; last_login?: string | null; is_active?: boolean; is_verified?: boolean; full_name?: string | null } | null
   accountForm: AccountFormData
   setAccountForm: React.Dispatch<React.SetStateAction<AccountFormData>>
   isSaving: boolean

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+// Provide required env var so @/lib/env doesn't throw during import
+process.env.NEXT_PUBLIC_API_URL = 'https://test.example.com'
+
 describe('API Client', () => {
   beforeEach(() => {
     vi.clearAllMocks()

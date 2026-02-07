@@ -35,7 +35,7 @@ import {
   AnyStrategyState, AnyStrategyMetrics,
   DealMakerPropertyData, AccordionSection,
   // Helpers (extracted)
-  getStrategyType, isSTRState, isBRRRRState, isFlipState, isHouseHackState, isWholesaleState,
+  getStrategyType,
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
@@ -46,6 +46,23 @@ import { calculateWholesaleMetrics, getViabilityDisplay } from './calculations/w
 
 // Re-export for consumers that import from this file
 export type { DealMakerPropertyData }
+
+// Local type guards — narrower than the ones in types.ts, scoped to this component's union
+function isSTRState(state: AnyStrategyState): state is STRDealMakerState {
+  return 'averageDailyRate' in state && 'occupancyRate' in state
+}
+function isBRRRRState(state: AnyStrategyState): state is BRRRRDealMakerState {
+  return 'refinanceLtv' in state && 'holdingPeriodMonths' in state
+}
+function isFlipState(state: AnyStrategyState): state is FlipDealMakerState {
+  return 'financingType' in state && 'sellingCostsPct' in state && 'daysOnMarket' in state
+}
+function isHouseHackState(state: AnyStrategyState): state is HouseHackDealMakerState {
+  return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
+}
+function isWholesaleState(state: AnyStrategyState): state is WholesaleDealMakerState {
+  return 'assignmentFee' in state && 'earnestMoney' in state && 'contractPrice' in state && !('sellingCostsPct' in state)
+}
 
 interface DealMakerScreenProps {
   property: DealMakerPropertyData
