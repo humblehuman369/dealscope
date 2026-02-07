@@ -124,25 +124,62 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         }
         overall_status = "degraded"
     
-    # 2. External APIs check (optional - just check if configured)
-    checks["external_apis"] = {
-        "rentcast": {
-            "configured": bool(settings.RENTCAST_API_KEY),
-            "url": settings.RENTCAST_URL,
-        },
-        "axesso": {
-            "configured": bool(settings.AXESSO_API_KEY),
-            "url": settings.AXESSO_URL,
-        },
-        "stripe": {
-            "configured": bool(settings.STRIPE_SECRET_KEY),
-            "webhook_configured": bool(settings.STRIPE_WEBHOOK_SECRET),
-        },
-        "email": {
-            "configured": bool(settings.RESEND_API_KEY),
-            "from_address": settings.EMAIL_FROM,
-        },
-    }
+    # 2. External APIs — reachability probes (non-blocking, short timeout)
+    import httpx
+
+    async def _probe(name: str, url: str, timeout: float = 3.0) -> Dict[str, Any]:
+        """HEAD/GET probe with timeout. Returns status dict."""
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.head(url)
+                return {"status": "reachable", "http_status": resp.status_code}
+        except httpx.ConnectError:
+            return {"status": "unreachable", "error": "connection refused"}
+        except httpx.TimeoutException:
+            return {"status": "unreachable", "error": "timeout"}
+        except Exception as e:
+            return {"status": "unknown", "error": str(e)}
+
+    external_checks: Dict[str, Any] = {}
+
+    # RentCast
+    if settings.RENTCAST_API_KEY:
+        external_checks["rentcast"] = await _probe("rentcast", settings.RENTCAST_URL)
+    else:
+        external_checks["rentcast"] = {"status": "not_configured"}
+
+    # AXESSO / Zillow
+    if settings.AXESSO_API_KEY:
+        external_checks["axesso"] = await _probe("axesso", settings.AXESSO_URL)
+    else:
+        external_checks["axesso"] = {"status": "not_configured"}
+
+    # Stripe
+    if settings.STRIPE_SECRET_KEY:
+        external_checks["stripe"] = await _probe("stripe", "https://api.stripe.com/v1")
+    else:
+        external_checks["stripe"] = {"status": "not_configured"}
+
+    # Redis
+    if settings.REDIS_URL:
+        try:
+            import redis.asyncio as aioredis
+            rc = aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
+            await rc.ping()
+            await rc.close()
+            external_checks["redis"] = {"status": "connected"}
+        except Exception as e:
+            external_checks["redis"] = {"status": "unreachable", "error": str(e)}
+    else:
+        external_checks["redis"] = {"status": "not_configured"}
+
+    checks["external_services"] = external_checks
+
+    # Flag overall as degraded if any critical service is unreachable
+    for svc in ("rentcast", "axesso"):
+        info = external_checks.get(svc, {})
+        if info.get("status") == "unreachable":
+            overall_status = "degraded"
     
     # 3. Configuration check
     config_issues = []

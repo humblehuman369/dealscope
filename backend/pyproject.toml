@@ -1,0 +1,80 @@
+[project]
+name = "investiq-backend"
+version = "1.0.0"
+description = "InvestIQ Real Estate Investment Analytics API"
+requires-python = ">=3.11"
+
+# ─────────────────────────────────────
+# Ruff — linter & formatter
+# ─────────────────────────────────────
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "S",     # flake8-bandit
+    "RUF",   # ruff-specific
+]
+ignore = [
+    "S101",  # assert usage (fine in tests)
+    "S104",  # binding to 0.0.0.0 (intentional for containers)
+    "S603",  # subprocess calls (not used)
+    "B008",  # function calls in defaults (FastAPI uses Depends())
+    "E501",  # line length (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S"]  # don't flag security issues in tests
+
+# ─────────────────────────────────────
+# Pytest
+# ─────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests",
+]
+
+# ─────────────────────────────────────
+# Coverage
+# ─────────────────────────────────────
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/data/*", "tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ ==",
+    "raise NotImplementedError",
+]
+fail_under = 40
+show_missing = true
+
+# ─────────────────────────────────────
+# Bandit — security scanner
+# ─────────────────────────────────────
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # assert OK
+
+# ─────────────────────────────────────
+# Mypy — type checking
+# ─────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true

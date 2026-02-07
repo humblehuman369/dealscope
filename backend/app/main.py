@@ -12,12 +12,29 @@ import logging
 import os
 import sys
 
-# Configure logging FIRST - output to stdout for Railway
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout  # Force stdout instead of stderr
-)
+# Configure structured JSON logging for production, human-readable for dev
+_log_level = logging.INFO
+
+try:
+    from pythonjsonlogger import jsonlogger
+
+    _json_handler = logging.StreamHandler(sys.stdout)
+    _json_handler.setFormatter(
+        jsonlogger.JsonFormatter(
+            fmt="%(asctime)s %(name)s %(levelname)s %(message)s",
+            rename_fields={"asctime": "timestamp", "levelname": "level"},
+        )
+    )
+    logging.root.handlers = [_json_handler]
+    logging.root.setLevel(_log_level)
+except ImportError:
+    # Fallback to plain text if python-json-logger is not installed
+    logging.basicConfig(
+        level=_log_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        stream=sys.stdout,
+    )
+
 logger = logging.getLogger(__name__)
 
 # Log startup immediately
@@ -158,6 +175,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ===========================================
+# Prometheus Metrics
+# ===========================================
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator(
+        should_group_status_codes=True,
+        should_ignore_untemplated=True,
+        excluded_handlers=["/health", "/health/ready", "/health/deep", "/metrics"],
+    ).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+    logger.info("Prometheus metrics enabled at /metrics")
+except ImportError:
+    logger.info("prometheus-fastapi-instrumentator not installed, metrics disabled")
+except Exception as e:
+    logger.warning(f"Failed to initialize Prometheus metrics: {e}")
 
 # Security and performance middleware
 try:
