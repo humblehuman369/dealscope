@@ -44,6 +44,10 @@ class AuditAction(str, enum.Enum):
     ACCOUNT_UNLOCKED = "account_unlocked"
     ROLE_GRANTED = "role_granted"
     ROLE_REVOKED = "role_revoked"
+    # Admin actions
+    ADMIN_UPDATE_USER = "admin:update_user"
+    ADMIN_DELETE_USER = "admin:delete_user"
+    ADMIN_UPDATE_ASSUMPTIONS = "admin:update_assumptions"
 
 
 class AuditLog(Base):

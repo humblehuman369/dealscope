@@ -106,6 +106,7 @@ class Settings(BaseSettings):
     # MFA
     # ===========================================
     MFA_ISSUER_NAME: str = "InvestIQ"
+    MFA_ENCRYPTION_KEY: str = ""  # Optional Fernet key override for MFA secret encryption
     
     # Password Reset
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1  # 1 hour for security
@@ -254,11 +255,31 @@ def validate_settings(settings: Settings) -> None:
     if settings.is_production:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
             errors.append("DATABASE_URL must be set to a production database in production mode")
-        
+
+        # Required API keys in production
+        if not settings.RENTCAST_API_KEY:
+            errors.append("RENTCAST_API_KEY must be set in production")
+        if not settings.AXESSO_API_KEY:
+            errors.append("AXESSO_API_KEY must be set in production")
+        if not settings.STRIPE_SECRET_KEY:
+            errors.append("STRIPE_SECRET_KEY must be set in production")
+        if not settings.RESEND_API_KEY:
+            errors.append("RESEND_API_KEY must be set in production (email delivery)")
+
         if not settings.STRIPE_WEBHOOK_SECRET:
             # Warning only - Stripe webhooks will fail but app will start
             warnings.warn("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work")
-    
+    else:
+        # Non-production: warn about missing keys without blocking startup
+        _optional_keys = [
+            ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY),
+            ("AXESSO_API_KEY", settings.AXESSO_API_KEY),
+            ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY),
+        ]
+        for key_name, key_value in _optional_keys:
+            if not key_value:
+                warnings.warn(f"{key_name} not set — related features will be unavailable")
+
     if errors:
         error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
         raise RuntimeError(error_msg)

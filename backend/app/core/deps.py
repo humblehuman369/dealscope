@@ -91,8 +91,12 @@ async def get_current_session_optional(
         return None
     try:
         return await session_service.validate_session_from_jwt(db, token)
-    except Exception:
+    except (ValueError, KeyError):
+        # Expected JWT validation failures
         return None
+    except Exception:
+        logger.exception("Unexpected error in get_current_session_optional")
+        raise
 
 
 # ------------------------------------------------------------------
@@ -131,8 +135,14 @@ async def get_current_user_optional(
         user = await user_repo.get_by_id(db, session_obj.user_id, load_profile=True)
         if user and user.is_active:
             return user
+    except (ValueError, KeyError) as exc:
+        # Expected JWT validation failures — treat as unauthenticated
+        logger.debug("Optional auth token invalid: %s", exc)
     except Exception:
-        pass
+        # Unexpected errors (e.g. database outage) must propagate so they
+        # don't silently degrade all users to anonymous.
+        logger.exception("Unexpected error in get_current_user_optional")
+        raise
     return None
 
 

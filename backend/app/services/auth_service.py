@@ -21,6 +21,7 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.encryption import encrypt_value, decrypt_value
 from app.models.audit_log import AuditAction
 from app.models.session import UserSession
 from app.models.user import User, UserProfile
@@ -280,7 +281,9 @@ class AuthService:
         if user is None or not user.mfa_enabled or not user.mfa_secret:
             raise AuthError("MFA not configured", status_code=400)
 
-        totp = pyotp.TOTP(user.mfa_secret)
+        # Decrypt MFA secret before TOTP verification
+        plaintext_secret = decrypt_value(user.mfa_secret)
+        totp = pyotp.TOTP(plaintext_secret)
         if not totp.verify(totp_code, valid_window=1):
             await audit_repo.log(
                 db,
@@ -329,8 +332,9 @@ class AuthService:
         totp = pyotp.TOTP(secret)
         uri = totp.provisioning_uri(name=user.email, issuer_name=settings.APP_NAME)
 
-        # Store the secret temporarily — not yet enabled
-        await user_repo.update(db, user_id, mfa_secret=secret)
+        # Encrypt the secret before storing at rest
+        encrypted_secret = encrypt_value(secret)
+        await user_repo.update(db, user_id, mfa_secret=encrypted_secret)
         return secret, uri
 
     async def confirm_mfa(
@@ -346,7 +350,9 @@ class AuthService:
         if user is None or not user.mfa_secret:
             raise AuthError("MFA setup not started", status_code=400)
 
-        totp = pyotp.TOTP(user.mfa_secret)
+        # Decrypt MFA secret before TOTP verification
+        plaintext_secret = decrypt_value(user.mfa_secret)
+        totp = pyotp.TOTP(plaintext_secret)
         if not totp.verify(totp_code, valid_window=1):
             raise AuthError("Invalid MFA code", status_code=400)
 

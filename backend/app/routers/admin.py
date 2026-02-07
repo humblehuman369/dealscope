@@ -1,6 +1,8 @@
 """
 Admin router for platform administration.
-Requires superuser privileges for all endpoints.
+
+Access is controlled by RBAC permissions via ``require_permission``.
+The legacy ``SuperUser`` dependency is no longer used here.
 """
 
 import logging
@@ -9,10 +11,12 @@ from pathlib import Path
 import json
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from pydantic import BaseModel, EmailStr
-from app.core.deps import SuperUser, DbSession
+from app.core.deps import DbSession, require_permission
 from app.models.user import User
+from app.models.audit_log import AuditAction
+from app.repositories.audit_repository import audit_repo
 from app.services.admin_service import admin_service
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import (
@@ -20,7 +24,6 @@ from app.services.assumptions_service import (
     get_default_assumptions,
     upsert_default_assumptions,
 )
-from app.services.admin_service import admin_service
 
 logger = logging.getLogger(__name__)
 
@@ -86,17 +89,13 @@ class MetricsGlossaryResponse(BaseModel):
 @router.get(
     "/stats",
     response_model=PlatformStats,
-    summary="Get platform statistics"
+    summary="Get platform statistics",
+    dependencies=[Depends(require_permission("admin:stats"))],
 )
 async def get_platform_stats(
-    admin_user: SuperUser,
-    db: DbSession
+    db: DbSession,
 ):
-    """
-    Get overall platform statistics.
-    
-    Requires superuser privileges.
-    """
+    """Get overall platform statistics. Requires ``admin:stats`` permission."""
     stats = await admin_service.get_platform_stats(db)
     return PlatformStats(**stats)
 
@@ -108,23 +107,19 @@ async def get_platform_stats(
 @router.get(
     "/users",
     response_model=List[AdminUserResponse],
-    summary="List all users"
+    summary="List all users",
+    dependencies=[Depends(require_permission("admin:users"))],
 )
 async def list_users(
-    admin_user: SuperUser,
     db: DbSession,
     search: Optional[str] = Query(None, description="Search by email or name"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     is_superuser: Optional[bool] = Query(None, description="Filter by admin status"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    order_by: str = Query("created_at_desc", description="Order by field")
+    order_by: str = Query("created_at_desc", description="Order by field"),
 ):
-    """
-    List all users with optional filtering.
-    
-    Requires superuser privileges.
-    """
+    """List all users with optional filtering. Requires ``admin:users`` permission."""
     users = await admin_service.list_users(
         db=db,
         search=search,
@@ -132,7 +127,7 @@ async def list_users(
         is_superuser=is_superuser,
         limit=limit,
         offset=offset,
-        order_by=order_by
+        order_by=order_by,
     )
     return [AdminUserResponse(**user) for user in users]
 
@@ -144,11 +139,11 @@ async def list_users(
 @router.get(
     "/assumptions",
     response_model=AdminAssumptionsResponse,
-    summary="Get admin default assumptions"
+    summary="Get admin default assumptions",
+    dependencies=[Depends(require_permission("admin:assumptions"))],
 )
 async def get_admin_assumptions(
-    admin_user: SuperUser,
-    db: DbSession
+    db: DbSession,
 ):
     """Get the current default assumptions for calculations."""
     record = await get_assumptions_record(db)
@@ -177,15 +172,25 @@ async def get_admin_assumptions(
 @router.put(
     "/assumptions",
     response_model=AdminAssumptionsResponse,
-    summary="Update admin default assumptions"
+    summary="Update admin default assumptions",
 )
 async def update_admin_assumptions(
     payload: AllAssumptions,
-    admin_user: SuperUser,
-    db: DbSession
+    request: Request,
+    db: DbSession,
+    admin_user: User = Depends(require_permission("admin:assumptions")),
 ):
     """Update default assumptions used in calculations."""
     record = await upsert_default_assumptions(db, payload, admin_user.id)
+
+    # Audit trail for assumption changes
+    await audit_repo.log(
+        db,
+        action=AuditAction.ADMIN_UPDATE_ASSUMPTIONS,
+        user_id=admin_user.id,
+        ip_address=request.client.host if request.client else None,
+        metadata={"changed_fields": list(payload.model_dump(exclude_unset=True).keys())},
+    )
 
     updated_by = admin_user.full_name or str(admin_user.id)
     updated_by_email = admin_user.email
@@ -194,18 +199,17 @@ async def update_admin_assumptions(
         assumptions=payload,
         updated_at=record.updated_at,
         updated_by=updated_by,
-        updated_by_email=updated_by_email
+        updated_by_email=updated_by_email,
     )
 
 
 @router.get(
     "/metrics-glossary",
     response_model=MetricsGlossaryResponse,
-    summary="Get metrics glossary"
+    summary="Get metrics glossary",
+    dependencies=[Depends(require_permission("admin:metrics"))],
 )
-async def get_metrics_glossary(
-    admin_user: SuperUser
-):
+async def get_metrics_glossary():
     """Return a formula glossary for admin display."""
     # Try multiple path resolution strategies
     possible_paths = [
@@ -235,18 +239,14 @@ async def get_metrics_glossary(
 @router.get(
     "/users/{user_id}",
     response_model=AdminUserResponse,
-    summary="Get user details"
+    summary="Get user details",
+    dependencies=[Depends(require_permission("admin:users"))],
 )
 async def get_user(
     user_id: str,
-    admin_user: SuperUser,
-    db: DbSession
+    db: DbSession,
 ):
-    """
-    Get detailed information about a specific user.
-    
-    Requires superuser privileges.
-    """
+    """Get detailed information about a specific user."""
     from uuid import UUID as _UUID
 
     user = await admin_service.get_user_by_id(db, _UUID(user_id))
@@ -271,26 +271,23 @@ async def get_user(
 @router.patch(
     "/users/{user_id}",
     response_model=AdminUserResponse,
-    summary="Update user"
+    summary="Update user",
 )
 async def update_user(
     user_id: str,
     data: AdminUserUpdate,
-    admin_user: SuperUser,
-    db: DbSession
+    request: Request,
+    db: DbSession,
+    admin_user: User = Depends(require_permission("admin:users")),
 ):
-    """
-    Update a user's information or status.
-    
-    Requires superuser privileges.
-    """
+    """Update a user's information or status."""
     from uuid import UUID as _UUID
 
     user = await admin_service.get_user_by_id(db, _UUID(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="User not found",
         )
 
     if str(user.id) == str(admin_user.id) and data.is_superuser is False:
@@ -300,6 +297,19 @@ async def update_user(
 
     update_data = data.model_dump(exclude_unset=True)
     updated_user = await admin_service.update_user(db, user.id, update_data)
+
+    # Audit trail
+    await audit_repo.log(
+        db,
+        action=AuditAction.ADMIN_UPDATE_USER,
+        user_id=admin_user.id,
+        ip_address=request.client.host if request.client else None,
+        metadata={
+            "target_user_id": str(user.id),
+            "target_email": user.email,
+            "changes": update_data,
+        },
+    )
 
     logger.info(f"Admin {admin_user.email} updated user {user.email}: {update_data}")
 
@@ -318,18 +328,15 @@ async def update_user(
 @router.delete(
     "/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete user"
+    summary="Delete user",
 )
 async def delete_user(
     user_id: str,
-    admin_user: SuperUser,
-    db: DbSession
+    request: Request,
+    db: DbSession,
+    admin_user: User = Depends(require_permission("admin:users")),
 ):
-    """
-    Delete a user and all their data.
-    
-    Requires superuser privileges.
-    """
+    """Delete a user and all their data."""
     from uuid import UUID as _UUID
 
     user = await admin_service.get_user_by_id(db, _UUID(user_id))
@@ -340,6 +347,18 @@ async def delete_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account")
 
     logger.warning(f"Admin {admin_user.email} deleting user {user.email}")
+
+    # Audit trail — log BEFORE delete so the target user data is captured
+    await audit_repo.log(
+        db,
+        action=AuditAction.ADMIN_DELETE_USER,
+        user_id=admin_user.id,
+        ip_address=request.client.host if request.client else None,
+        metadata={
+            "target_user_id": str(user.id),
+            "target_email": user.email,
+        },
+    )
 
     await admin_service.delete_user(db, user.id)
 
