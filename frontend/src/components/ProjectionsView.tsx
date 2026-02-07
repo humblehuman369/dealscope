@@ -216,16 +216,16 @@ function ProjectionTable({ data }: { data: YearlyProjection[] }) {
           {data.map((row) => (
             <tr key={row.year} className="border-b border-gray-100 hover:bg-gray-50">
               <td className="py-2 px-1.5 font-medium">Y{row.year}</td>
-              <td className="py-2 px-1.5 text-right">{formatCompact(row.propertyValue)}</td>
-              <td className="py-2 px-1.5 text-right text-gray-500">{formatCompact(row.loanBalance)}</td>
-              <td className="py-2 px-1.5 text-right text-blue-600 font-medium">{formatCompact(row.totalEquity)}</td>
+              <td className="py-2 px-1.5 text-right">{formatCompactCurrency(row.propertyValue)}</td>
+              <td className="py-2 px-1.5 text-right text-gray-500">{formatCompactCurrency(row.loanBalance)}</td>
+              <td className="py-2 px-1.5 text-right text-blue-600 font-medium">{formatCompactCurrency(row.totalEquity)}</td>
               <td className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                {formatCompact(row.cashFlow)}
+                {formatCompactCurrency(row.cashFlow)}
               </td>
               <td className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                {formatCompact(row.cumulativeCashFlow)}
+                {formatCompactCurrency(row.cumulativeCashFlow)}
               </td>
-              <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompact(row.totalWealth)}</td>
+              <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompactCurrency(row.totalWealth)}</td>
               <td className="py-2 px-1.5 text-right">{formatPercent(row.cashOnCash)}</td>
             </tr>
           ))}
@@ -264,9 +264,9 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-emerald-100 text-[10px] sm:text-xs uppercase tracking-wide">10-Year Net Gain</div>
-            <div className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">+{formatCompact(year10.totalWealth - totalCashInvested)}</div>
+            <div className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">+{formatCompactCurrency(year10.totalWealth - totalCashInvested)}</div>
             <div className="text-emerald-200 text-xs sm:text-sm mt-0.5 sm:mt-1">
-              {formatCompact(totalCashInvested)} → {formatCompact(year10.totalWealth)}
+              {formatCompactCurrency(totalCashInvested)} → {formatCompactCurrency(year10.totalWealth)}
             </div>
           </div>
           <div className="text-right">
@@ -280,7 +280,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard
           label="Total Wealth (Year 10)"
-          value={formatCompact(year10.totalWealth)}
+          value={formatCompactCurrency(year10.totalWealth)}
           subValue={`${formatPercent(summary.equityMultiple - 1)} growth`}
           icon={Award}
           highlight
@@ -288,15 +288,15 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         />
         <SummaryCard
           label="Total Cash Flow"
-          value={formatCompact(summary.totalCashFlow)}
+          value={formatCompactCurrency(summary.totalCashFlow)}
           subValue="10-year cumulative"
           icon={Wallet}
           trend={summary.totalCashFlow > 0 ? 'up' : 'down'}
         />
         <SummaryCard
           label="Total Equity"
-          value={formatCompact(year10.totalEquity)}
-          subValue={`From ${formatCompact(totalCashInvested)} invested`}
+          value={formatCompactCurrency(year10.totalEquity)}
+          subValue={`From ${formatCompactCurrency(totalCashInvested)} invested`}
           icon={Building2}
         />
         <SummaryCard
@@ -315,15 +315,15 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
         
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100 dark:border-navy-700">
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-purple-600">{formatCompact(year10.cumulativeCashFlow)}</div>
+            <div className="text-[14px] sm:text-lg font-bold text-purple-600">{formatCompactCurrency(year10.cumulativeCashFlow)}</div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Cash Flow</div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompact(year10.equityFromPaydown)}</div>
+            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompactCurrency(year10.equityFromPaydown)}</div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Principal Paydown</div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-emerald-600">{formatCompact(year10.equityFromAppreciation)}</div>
+            <div className="text-[14px] sm:text-lg font-bold text-emerald-600">{formatCompactCurrency(year10.equityFromAppreciation)}</div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Appreciation</div>
           </div>
         </div>
@@ -356,7 +356,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
           <div className="mt-2 sm:mt-3 text-center">
             <span className="text-[13px] font-bold text-gray-600 dark:text-white">Year 10: </span>
             <span className="text-[13px] sm:text-[14px] font-bold text-blue-600">
-              {formatCompact(year10.totalEquity)}
+              {formatCompactCurrency(year10.totalEquity)}
             </span>
           </div>
         </div>

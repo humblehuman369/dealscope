@@ -51,16 +51,16 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Annual Cash Flow</div>
-            <div className="text-lg sm:text-xl font-bold">{formatCompact(yearData.cashFlow)}</div>
+            <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(yearData.cashFlow)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
             <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Cumulative</div>
-            <div className="text-xl sm:text-2xl font-bold">{formatCompact(currentCumulative)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(currentCumulative)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
             <div className="text-emerald-200 text-[10px] uppercase tracking-wide">10-Year Total</div>
-            <div className="text-lg sm:text-xl font-bold text-cyan-300">{formatCompact(totalCF)}</div>
+            <div className="text-lg sm:text-xl font-bold text-cyan-300">{formatCompactCurrency(totalCF)}</div>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 className="text-xl font-bold fill-gray-900"
                 fontSize="16"
               >
-                {formatCompact(currentCumulative)}
+                {formatCompactCurrency(currentCumulative)}
               </text>
               <text
                 x={radius + strokeWidth + 8}
@@ -286,17 +286,17 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Equity</div>
-            <div className="text-xl sm:text-2xl font-bold">{formatCompact(totalEquity)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(totalEquity)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
             <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year 10 Equity</div>
-            <div className="text-lg sm:text-xl font-bold">{formatCompact(maxEquity)}</div>
+            <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(maxEquity)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
             <div className="text-blue-200 text-[10px] uppercase tracking-wide">Equity Gain</div>
             <div className="text-lg sm:text-xl font-bold text-emerald-300">
-              +{formatCompact(totalEquity - totalCashInvested)}
+              +{formatCompactCurrency(totalEquity - totalCashInvested)}
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 className="text-lg font-bold fill-gray-900"
                 fontSize="16"
               >
-                {formatCompact(totalEquity)}
+                {formatCompactCurrency(totalEquity)}
               </text>
               <text
                 x={radius + strokeWidth + 8}
@@ -398,7 +398,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-sm text-gray-700 truncate">{seg.label}</span>
                       <span className="text-sm font-bold flex-shrink-0" style={{ color: seg.color }}>
-                        {formatCompact(seg.value)}
+                        {formatCompactCurrency(seg.value)}
                       </span>
                     </div>
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -440,7 +440,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
                 style={{ width: `${(totalEquity / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
               >
-                <span className="text-xs font-bold text-white">{formatCompact(totalEquity)}</span>
+                <span className="text-xs font-bold text-white">{formatCompactCurrency(totalEquity)}</span>
               </div>
             </div>
           </div>
@@ -453,7 +453,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
                 style={{ width: `${(yearData.loanBalance / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
               >
-                <span className="text-xs font-bold text-white">{formatCompact(yearData.loanBalance)}</span>
+                <span className="text-xs font-bold text-white">{formatCompactCurrency(yearData.loanBalance)}</span>
               </div>
             </div>
           </div>
@@ -579,12 +579,12 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-purple-200 text-[10px] uppercase tracking-wide">Initial Investment</div>
-            <div className="text-lg sm:text-xl font-bold">{formatCompact(totalCashInvested)}</div>
+            <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(totalCashInvested)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
             <div className="text-purple-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Wealth</div>
-            <div className="text-xl sm:text-2xl font-bold">{formatCompact(yearData.totalWealth)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(yearData.totalWealth)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
             <div className="text-purple-200 text-[10px] uppercase tracking-wide">Return</div>
@@ -661,9 +661,9 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="text-[9px] text-gray-400 uppercase tracking-wide">Total Wealth</div>
-              <div className="text-xl font-bold text-gray-900">{formatCompact(yearData.totalWealth)}</div>
+              <div className="text-xl font-bold text-gray-900">{formatCompactCurrency(yearData.totalWealth)}</div>
               <div className="mt-0.5 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium">
-                +{formatCompact(yearData.totalWealth - totalCashInvested)}
+                +{formatCompactCurrency(yearData.totalWealth - totalCashInvested)}
               </div>
             </div>
           </div>
@@ -685,7 +685,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                       <span className="text-[13px] text-gray-600 dark:text-white">{percent.toFixed(0)}%</span>
                     </div>
                     <div className="text-[13px] font-semibold flex-shrink-0" style={{ color: seg.color }}>
-                      {formatCompact(seg.value)}
+                      {formatCompactCurrency(seg.value)}
                     </div>
                   </div>
                   <div className="h-1 bg-gray-200 dark:bg-navy-600 rounded-full overflow-hidden">
@@ -805,7 +805,7 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
               <span className={`text-[11px] sm:text-[13px] px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap ${
                 isActive ? 'bg-gray-100 dark:bg-navy-500 text-gray-700 dark:text-white' : 'text-gray-600 dark:text-white'
               }`}>
-                {formatCompact(tab.value)}
+                {formatCompactCurrency(tab.value)}
               </span>
             </button>
           )
