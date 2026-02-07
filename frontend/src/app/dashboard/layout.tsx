@@ -24,9 +24,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (isLoading) return
     if (!isAuthenticated) {
-      router.push('/?auth=login&redirect=/dashboard')
+      // Use replace to avoid a /dashboard skeleton entry in history.
+      // After login, AuthModal's onLoginSuccess will router.replace back here.
+      router.replace('/?auth=login&redirect=/dashboard')
     } else if (needsOnboarding) {
-      router.push('/onboarding')
+      router.replace('/onboarding')
     }
   }, [isLoading, isAuthenticated, needsOnboarding, router])
 

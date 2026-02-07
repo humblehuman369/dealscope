@@ -61,6 +61,9 @@ export function VerdictPageAdapter({
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
 
+  // Override values applied from DealMaker popup — drives recalculation
+  const [overrideValues, setOverrideValues] = useState<Partial<DealMakerValues> | null>(null)
+
   // Handle strategy change from popup
   const handleStrategyChange = useCallback((strategy: PopupStrategyType) => {
     setCurrentStrategy(strategy)
@@ -118,12 +121,24 @@ export function VerdictPageAdapter({
     }
   }, [property])
 
-  // Handle applying values from DealMaker popup
+  // Handle applying values from DealMaker popup — persists overrides
   const handleApplyDealMakerValues = useCallback((values: DealMakerValues) => {
+    setOverrideValues(values)
     setShowDealMakerPopup(false)
-    // In a full implementation, this would recalculate metrics based on new values
-    console.log('Applied DealMaker values:', values)
   }, [])
+
+  // --- Effective values: override > analysis > property fallback ---
+  // DealMakerValues stores percentages as whole numbers (20 = 20%)
+  const effectiveBuyPrice = overrideValues?.buyPrice ?? analysis.purchasePrice ?? Math.round(property.price * 0.95)
+  const effectiveDownPaymentPct = (overrideValues?.downPayment ?? 20) / 100
+  const effectiveClosingCostsPct = (overrideValues?.closingCosts ?? 3) / 100
+  const effectiveInterestRate = (overrideValues?.interestRate ?? 6) / 100
+  const effectiveLoanTerm = overrideValues?.loanTerm ?? 30
+  const effectiveRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(property.price * 0.007)
+  const effectiveVacancyRate = (overrideValues?.vacancyRate ?? 5) / 100
+  const effectiveManagementPct = (overrideValues?.managementRate ?? 8) / 100
+  const effectiveTaxes = overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(property.price * 0.012)
+  const effectiveInsurance = overrideValues?.insurance ?? property.insurance ?? Math.round(property.price * 0.01)
 
   // Calculate wholesale price (typically 70% of ARV or list price)
   const wholesalePrice = useMemo(() => {
@@ -164,9 +179,9 @@ export function VerdictPageAdapter({
     priceConfidence: analysis.dealScore >= 65 ? 82 : 65,
   }), [analysis])
 
-  // Price cards with fallbacks
+  // Price cards with fallbacks — override buy price feeds through
   const breakevenPrice = analysis.breakevenPrice || property.price
-  const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
+  const purchasePrice = effectiveBuyPrice
   const listPrice = analysis.listPrice || property.price
 
   const priceCards = useMemo(() => [
@@ -187,22 +202,29 @@ export function VerdictPageAdapter({
     },
   ], [breakevenPrice, purchasePrice, wholesalePrice])
 
-  // Key metrics based on selected price card
+  // Key metrics based on selected price card — uses effective override values
   const keyMetrics = useMemo(() => {
-    const rent = property.monthlyRent || (property.price * 0.007)
     const selectedPrice = selectedPriceCard === 'breakeven' 
       ? breakevenPrice 
       : selectedPriceCard === 'target' 
         ? purchasePrice 
         : wholesalePrice
 
-    const annualRent = rent * 12
-    const expenses = (property.propertyTaxes || property.price * 0.012) + 
-                     (property.insurance || property.price * 0.01) + 
-                     (rent * 12 * 0.08) // 8% management
+    const annualRent = effectiveRent * 12
+    const expenses = effectiveTaxes + effectiveInsurance + (annualRent * effectiveManagementPct)
     const noi = annualRent - expenses
     const capRate = selectedPrice > 0 ? (noi / selectedPrice) * 100 : 0
-    const cashOnCash = selectedPrice > 0 ? ((noi - (selectedPrice * 0.8 * 0.07)) / (selectedPrice * 0.2)) * 100 : 0
+
+    // Cash-on-cash uses effective financing terms
+    const downPayment = selectedPrice * effectiveDownPaymentPct
+    const loanAmount = selectedPrice - downPayment
+    const monthlyRate = effectiveInterestRate / 12
+    const numPayments = effectiveLoanTerm * 12
+    const monthlyPI = loanAmount > 0 && monthlyRate > 0
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : 0
+    const annualDebtService = monthlyPI * 12
+    const cashOnCash = downPayment > 0 ? ((noi - annualDebtService) / downPayment) * 100 : 0
 
     if (selectedPriceCard === 'wholesale') {
       const assignmentFee = Math.round((property.price || 0) * 0.10)
@@ -216,41 +238,34 @@ export function VerdictPageAdapter({
     return [
       { value: `${capRate.toFixed(1)}%`, label: 'Cap Rate' },
       { value: `${Math.max(0, cashOnCash).toFixed(1)}%`, label: 'Cash-on-Cash' },
-      { value: `$${Math.round(rent).toLocaleString()}`, label: 'Monthly Rent' },
+      { value: `$${Math.round(effectiveRent).toLocaleString()}`, label: 'Monthly Rent' },
     ]
-  }, [selectedPriceCard, breakevenPrice, purchasePrice, wholesalePrice, property])
+  }, [selectedPriceCard, breakevenPrice, purchasePrice, wholesalePrice, property.price,
+      effectiveRent, effectiveTaxes, effectiveInsurance, effectiveManagementPct,
+      effectiveDownPaymentPct, effectiveInterestRate, effectiveLoanTerm])
 
-  // Financial breakdown columns - Two-column mini financial statement
+  // Financial breakdown columns — recalculates when overrides are applied
   const financialBreakdown = useMemo(() => {
-    const rent = property.monthlyRent || (property.price * 0.007)
-    const taxes = property.propertyTaxes || (property.price * 0.012)
-    const insurance = property.insurance || (property.price * 0.01)
-
-    const downPaymentPct = 0.20
-    const closingCostsPct = 0.03
-    const interestRate = 0.06
-    const loanTermYears = 30
-
-    const downPayment = purchasePrice * downPaymentPct
-    const closingCosts = purchasePrice * closingCostsPct
+    const downPayment = purchasePrice * effectiveDownPaymentPct
+    const closingCosts = purchasePrice * effectiveClosingCostsPct
     const loanAmount = purchasePrice - downPayment
-    const monthlyRate = interestRate / 12
-    const numPayments = loanTermYears * 12
-    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+    const monthlyRate = effectiveInterestRate / 12
+    const numPayments = effectiveLoanTerm * 12
+    const monthlyPI = loanAmount > 0 && monthlyRate > 0
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : 0
     const annualDebtService = monthlyPI * 12
 
-    const vacancyRate = 0.05
-    const managementPct = 0.08
     const maintenancePct = 0.05
     const capexPct = 0.05
 
-    const annualRent = rent * 12
-    const vacancyLoss = annualRent * vacancyRate
+    const annualRent = effectiveRent * 12
+    const vacancyLoss = annualRent * effectiveVacancyRate
     const effectiveGross = annualRent - vacancyLoss
-    const management = annualRent * managementPct
+    const management = annualRent * effectiveManagementPct
     const maintenance = annualRent * maintenancePct
     const capex = annualRent * capexPct
-    const totalExpenses = taxes + insurance + management + maintenance + capex
+    const totalExpenses = effectiveTaxes + effectiveInsurance + management + maintenance + capex
 
     return [
       {
@@ -259,12 +274,12 @@ export function VerdictPageAdapter({
           { label: 'PURCHASE', value: '', isSubHeader: true },
           { label: 'List Price', value: `$${listPrice.toLocaleString()}` },
           { label: 'Target Buy Price', value: `$${purchasePrice.toLocaleString()}`, isTeal: true },
-          { label: `Down Payment (${Math.round(downPaymentPct * 100)}%)`, value: `$${Math.round(downPayment).toLocaleString()}` },
-          { label: `Closing Costs (${Math.round(closingCostsPct * 100)}%)`, value: `$${Math.round(closingCosts).toLocaleString()}` },
+          { label: `Down Payment (${Math.round(effectiveDownPaymentPct * 100)}%)`, value: `$${Math.round(downPayment).toLocaleString()}` },
+          { label: `Closing Costs (${Math.round(effectiveClosingCostsPct * 100)}%)`, value: `$${Math.round(closingCosts).toLocaleString()}` },
           { label: 'Loan Amount', value: `$${Math.round(loanAmount).toLocaleString()}` },
           { label: 'FINANCING', value: '', isSubHeader: true },
-          { label: 'Interest Rate', value: `${(interestRate * 100).toFixed(1)}%` },
-          { label: 'Loan Term', value: `${loanTermYears} years` },
+          { label: 'Interest Rate', value: `${(effectiveInterestRate * 100).toFixed(1)}%` },
+          { label: 'Loan Term', value: `${effectiveLoanTerm} years` },
           { label: 'Monthly P&I', value: `$${Math.round(monthlyPI).toLocaleString()}` },
           { label: 'Annual Debt Service', value: `$${Math.round(annualDebtService).toLocaleString()}`, isTotal: true },
         ],
@@ -273,37 +288,40 @@ export function VerdictPageAdapter({
         title: 'Income & Expenses',
         items: [
           { label: 'INCOME', value: '', isSubHeader: true },
-          { label: 'Monthly Rent', value: `$${Math.round(rent).toLocaleString()}` },
+          { label: 'Monthly Rent', value: `$${Math.round(effectiveRent).toLocaleString()}` },
           { label: 'Annual Gross', value: `$${Math.round(annualRent).toLocaleString()}` },
-          { label: `Vacancy (${Math.round(vacancyRate * 100)}%)`, value: `($${Math.round(vacancyLoss).toLocaleString()})`, isNegative: true },
+          { label: `Vacancy (${Math.round(effectiveVacancyRate * 100)}%)`, value: `($${Math.round(vacancyLoss).toLocaleString()})`, isNegative: true },
           { label: 'Eff. Gross Income', value: `$${Math.round(effectiveGross).toLocaleString()}`, isTotal: true },
           { label: 'EXPENSES', value: '', isSubHeader: true },
-          { label: 'Property Tax', value: `$${Math.round(taxes).toLocaleString()}/yr` },
-          { label: 'Insurance', value: `$${Math.round(insurance).toLocaleString()}/yr` },
-          { label: `Mgmt (${Math.round(managementPct * 100)}%)`, value: `$${Math.round(management).toLocaleString()}/yr` },
+          { label: 'Property Tax', value: `$${Math.round(effectiveTaxes).toLocaleString()}/yr` },
+          { label: 'Insurance', value: `$${Math.round(effectiveInsurance).toLocaleString()}/yr` },
+          { label: `Mgmt (${Math.round(effectiveManagementPct * 100)}%)`, value: `$${Math.round(management).toLocaleString()}/yr` },
           { label: `Maintenance (${Math.round(maintenancePct * 100)}%)`, value: `$${Math.round(maintenance).toLocaleString()}/yr` },
           { label: `CapEx (${Math.round(capexPct * 100)}%)`, value: `$${Math.round(capex).toLocaleString()}/yr` },
           { label: 'Total Expenses', value: `$${Math.round(totalExpenses).toLocaleString()}/yr`, isTotal: true },
         ],
       },
     ]
-  }, [property, analysis, listPrice, purchasePrice])
+  }, [listPrice, purchasePrice, effectiveRent, effectiveTaxes, effectiveInsurance,
+      effectiveDownPaymentPct, effectiveClosingCostsPct, effectiveInterestRate,
+      effectiveLoanTerm, effectiveVacancyRate, effectiveManagementPct])
 
-  // Financial summary (NOI & Cashflow) for full-width boxes
+  // Financial summary (NOI & Cashflow) — uses effective override values
   const financialSummary = useMemo(() => {
-    const rent = property.monthlyRent || (property.price * 0.007)
-    const taxes = property.propertyTaxes || (property.price * 0.012)
-    const insurance = property.insurance || (property.price * 0.01)
-
-    const annualRent = rent * 12
-    const effectiveGross = annualRent * 0.95
-    const totalExpenses = taxes + insurance + (annualRent * 0.08) + (annualRent * 0.05) + (annualRent * 0.05)
+    const annualRent = effectiveRent * 12
+    const effectiveGross = annualRent * (1 - effectiveVacancyRate)
+    const maintenancePct = 0.05
+    const capexPct = 0.05
+    const totalExpenses = effectiveTaxes + effectiveInsurance +
+      (annualRent * effectiveManagementPct) + (annualRent * maintenancePct) + (annualRent * capexPct)
     const noi = effectiveGross - totalExpenses
 
-    const loanAmount = purchasePrice * 0.80
-    const monthlyRate = 0.06 / 12
-    const numPayments = 360
-    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+    const loanAmount = purchasePrice * (1 - effectiveDownPaymentPct)
+    const monthlyRate = effectiveInterestRate / 12
+    const numPayments = effectiveLoanTerm * 12
+    const monthlyPI = loanAmount > 0 && monthlyRate > 0
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : 0
     const annualDebtService = monthlyPI * 12
     const annualCashFlow = noi - annualDebtService
     const monthlyCashFlow = annualCashFlow / 12
@@ -330,15 +348,32 @@ export function VerdictPageAdapter({
         },
       },
     }
-  }, [property, purchasePrice])
+  }, [purchasePrice, effectiveRent, effectiveTaxes, effectiveInsurance,
+      effectiveDownPaymentPct, effectiveInterestRate, effectiveLoanTerm,
+      effectiveVacancyRate, effectiveManagementPct])
 
-  // Performance metrics
+  // Performance metrics — recalculated from effective values when overrides present
   const performanceMetrics = useMemo(() => {
-    const capRate = analysis.returnFactors?.capRate || 5.5
-    const cashOnCash = analysis.returnFactors?.cashOnCash || 8.0
-    // Calculate monthly net from annualProfit or annualRoi, fallback to estimate
-    const annualProfit = analysis.returnFactors?.annualProfit || analysis.returnFactors?.annualRoi || 5400
-    const monthlyNet = Math.round(annualProfit / 12)
+    const annualRent = effectiveRent * 12
+    const totalExpenses = effectiveTaxes + effectiveInsurance +
+      (annualRent * effectiveManagementPct) + (annualRent * 0.05) + (annualRent * 0.05)
+    const noi = (annualRent * (1 - effectiveVacancyRate)) - totalExpenses
+
+    const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0
+    const downPayment = purchasePrice * effectiveDownPaymentPct
+    const loanAmount = purchasePrice - downPayment
+    const monthlyRate = effectiveInterestRate / 12
+    const numPayments = effectiveLoanTerm * 12
+    const monthlyPI = loanAmount > 0 && monthlyRate > 0
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : 0
+    const annualDebtService = monthlyPI * 12
+    const annualCashFlow = noi - annualDebtService
+    const monthlyCashFlow = Math.round(annualCashFlow / 12)
+    const cashOnCash = downPayment > 0 ? ((noi - annualDebtService) / downPayment) * 100 : 0
+    const paybackYears = downPayment > 0 && annualCashFlow > 0
+      ? downPayment / annualCashFlow
+      : 99
 
     return [
       {
@@ -359,43 +394,47 @@ export function VerdictPageAdapter({
       },
       {
         name: 'Monthly Cash Flow',
-        value: `$${monthlyNet.toLocaleString()}`,
+        value: `$${monthlyCashFlow.toLocaleString()}`,
         benchmark: '$300',
-        numValue: monthlyNet,
+        numValue: monthlyCashFlow,
         benchmarkNum: 300,
         higherIsBetter: true,
       },
       {
         name: 'Payback Period',
-        value: '8.2 yrs',
+        value: `${paybackYears.toFixed(1)} yrs`,
         benchmark: '10 yrs',
-        numValue: 8.2,
+        numValue: paybackYears,
         benchmarkNum: 10,
         higherIsBetter: false,
       },
     ]
-  }, [analysis])
+  }, [purchasePrice, effectiveRent, effectiveTaxes, effectiveInsurance,
+      effectiveDownPaymentPct, effectiveInterestRate, effectiveLoanTerm,
+      effectiveVacancyRate, effectiveManagementPct])
 
   // Handle price card selection
   const handlePriceCardSelect = useCallback((variant: PriceCardVariant) => {
     setSelectedPriceCard(variant)
   }, [])
 
-  // Get initial values for DealMaker popup from analysis data
+  // Initial values for DealMaker popup — reflects current overrides so the
+  // popup opens where the user left off, not the original defaults
   const dealMakerInitialValues = useMemo(() => ({
-    buyPrice: analysis.purchasePrice || property.price,
-    downPayment: 20,
-    closingCosts: 3,
-    interestRate: 6,
-    loanTerm: 30,
-    rehabBudget: 0,
-    arv: analysis.listPrice || property.price,
-    propertyTaxes: property.propertyTaxes || 4200,
-    insurance: 1800,
-    monthlyRent: property.monthlyRent || 2800,
-    vacancyRate: 5,
-    managementRate: 8,
-  }), [analysis, property])
+    buyPrice: effectiveBuyPrice,
+    downPayment: overrideValues?.downPayment ?? 20,
+    closingCosts: overrideValues?.closingCosts ?? 3,
+    interestRate: overrideValues?.interestRate ?? 6,
+    loanTerm: effectiveLoanTerm,
+    rehabBudget: overrideValues?.rehabBudget ?? 0,
+    arv: overrideValues?.arv ?? analysis.listPrice ?? property.price,
+    propertyTaxes: effectiveTaxes,
+    insurance: effectiveInsurance,
+    monthlyRent: effectiveRent,
+    vacancyRate: overrideValues?.vacancyRate ?? 5,
+    managementRate: overrideValues?.managementRate ?? 8,
+  }), [effectiveBuyPrice, effectiveLoanTerm, effectiveRent, effectiveTaxes,
+       effectiveInsurance, overrideValues, analysis.listPrice, property.price])
 
   return (
     <>
@@ -406,7 +445,7 @@ export function VerdictPageAdapter({
         verdictSubtitle={getVerdictSubtitle(analysis.dealScore, analysis.discountPercent || 0)}
         quickStats={quickStats}
         confidenceMetrics={confidenceMetrics}
-        financingTerms="20% down, 6.0%"
+        financingTerms={`${Math.round(effectiveDownPaymentPct * 100)}% down, ${(effectiveInterestRate * 100).toFixed(1)}%`}
         priceCards={priceCards}
         keyMetrics={keyMetrics}
         financialBreakdown={financialBreakdown}
