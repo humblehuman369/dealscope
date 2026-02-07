@@ -11,6 +11,7 @@ import { useState, useCallback } from 'react'
 import { VerdictPageFresh } from '@/components/iq-verdict/VerdictPageFresh'
 import type { PriceCardVariant } from '@/components/iq-verdict/verdict-design-tokens'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
+import { PriceTarget } from '@/lib/priceUtils'
 
 // ===================
 // SAMPLE DATA
@@ -143,10 +144,16 @@ export default function VerdictFreshPage() {
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
 
   // Handle strategy change from popup
   const handleStrategyChange = useCallback((strategy: PopupStrategyType) => {
     setCurrentStrategy(strategy)
+  }, [])
+
+  // Handle price target change from popup
+  const handlePriceTargetChange = useCallback((target: PriceTarget) => {
+    setActivePriceTarget(target)
   }, [])
 
   // Handle opening the DealMaker popup
@@ -290,6 +297,8 @@ export default function VerdictFreshPage() {
         onApply={handleApplyDealMakerValues}
         strategyType={currentStrategy}
         onStrategyChange={handleStrategyChange}
+        activePriceTarget={activePriceTarget}
+        onPriceTargetChange={handlePriceTargetChange}
         initialValues={dealMakerInitialValues}
       />
     </>

@@ -25,6 +25,7 @@ import { FinancialBreakdownColumns } from './FinancialBreakdownColumns'
 import { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMetricsTable'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
+import { PriceTarget } from '@/lib/priceUtils'
 
 // Types
 import { IQProperty, IQAnalysisResult, formatPrice } from './types'
@@ -79,6 +80,12 @@ export function VerdictIQPageNew({
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [overrideValues, setOverrideValues] = useState<Partial<DealMakerValues> | null>(null)
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
+
+  // Handle price target change from popup
+  const handlePriceTargetChange = useCallback((target: PriceTarget) => {
+    setActivePriceTarget(target)
+  }, [])
 
   // Defaults for financing/operating
   const defaults = useMemo(() => ({
@@ -381,6 +388,8 @@ export function VerdictIQPageNew({
           }
           setCurrentStrategy(map[s])
         }}
+        activePriceTarget={activePriceTarget}
+        onPriceTargetChange={handlePriceTargetChange}
         initialValues={{
           buyPrice: pricing.buyPrice,
           downPayment: pricing.downPaymentPct,

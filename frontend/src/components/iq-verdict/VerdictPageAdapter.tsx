@@ -12,6 +12,7 @@ import { VerdictPageFresh } from './VerdictPageFresh'
 import { type PriceCardVariant } from './verdict-design-tokens'
 import { type IQProperty, type IQAnalysisResult } from './types'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
+import { PriceTarget } from '@/lib/priceUtils'
 import api from '@/lib/api'
 
 // Re-export types for convenience
@@ -58,10 +59,16 @@ export function VerdictPageAdapter({
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
 
   // Handle strategy change from popup
   const handleStrategyChange = useCallback((strategy: PopupStrategyType) => {
     setCurrentStrategy(strategy)
+  }, [])
+
+  // Handle price target change from popup
+  const handlePriceTargetChange = useCallback((target: PriceTarget) => {
+    setActivePriceTarget(target)
   }, [])
 
   // Handle opening the DealMaker popup for editing terms
@@ -423,6 +430,8 @@ export function VerdictPageAdapter({
         onApply={handleApplyDealMakerValues}
         strategyType={currentStrategy}
         onStrategyChange={handleStrategyChange}
+        activePriceTarget={activePriceTarget}
+        onPriceTargetChange={handlePriceTargetChange}
         initialValues={dealMakerInitialValues}
       />
     </>
