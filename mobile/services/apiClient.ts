@@ -1,21 +1,25 @@
 /**
  * API Client - Centralized API request handler
  *
- * Uses the authenticated axios instance from authService for all API calls.
+ * Token management is delegated to authService.ts (single source of truth).
+ * The access token lives in memory; the refresh token is in SecureStore
+ * under keys managed by authService.
+ *
  * Provides typed request methods with consistent error handling.
  */
 
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import * as SecureStore from 'expo-secure-store';
 import { APIError } from '../types';
+import {
+  getAccessToken,
+  getRefreshToken,
+  storeTokens,
+  clearTokens,
+} from './authService';
 
 // API Configuration
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
-
-// Secure storage keys
-const ACCESS_TOKEN_KEY = 'investiq_access_token';
-const REFRESH_TOKEN_KEY = 'investiq_refresh_token';
 
 /**
  * API request error with typed response
@@ -44,16 +48,16 @@ export const apiClient = axios.create({
   },
 });
 
-// Add auth token to requests
+// Add auth token to requests — reads the in-memory access token from authService
 apiClient.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Handle token refresh on 401 errors
+// Handle token refresh on 401 errors — delegates to authService for token storage
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -63,7 +67,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+        const refreshToken = await getRefreshToken();
         if (refreshToken) {
           // Try to refresh the token
           const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
@@ -72,20 +76,18 @@ apiClient.interceptors.response.use(
 
           const { access_token, refresh_token } = response.data;
 
-          // Store new tokens
-          await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, access_token);
-          await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refresh_token);
+          // Store new tokens via authService (single source of truth)
+          await storeTokens(access_token, refresh_token);
 
-          // Retry original request
+          // Retry original request with the new access token
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
           }
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, clear tokens
-        await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+        // Refresh failed, clear tokens via authService
+        await clearTokens();
       }
     }
 

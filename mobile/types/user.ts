@@ -23,6 +23,11 @@ export interface UserResponse {
   created_at: string; // ISO datetime
   last_login: string | null;
 
+  // Security / RBAC
+  mfa_enabled: boolean;
+  roles: string[];
+  permissions: string[];
+
   // Business Profile
   business_name: string | null;
   business_type: string | null;

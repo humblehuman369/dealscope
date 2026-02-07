@@ -137,10 +137,12 @@ async def register(body: UserRegister, request: Request, db: DbSession):
         except Exception as exc:
             logger.warning("Verification email failed: %s", exc)
 
-    msg = "Registration successful."
     if verification_token:
-        msg += " Please check your email to verify your account."
-    return AuthMessage(message=msg)
+        return AuthMessage(
+            message="Registration successful. Please check your email to verify your account.",
+            requires_verification=True,
+        )
+    return AuthMessage(message="Registration successful. You can now sign in.")
 
 
 # ------------------------------------------------------------------

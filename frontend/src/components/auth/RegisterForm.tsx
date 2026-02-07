@@ -32,6 +32,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [requiresVerification, setRequiresVerification] = useState(true)
   const registerMutation = useRegister()
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
@@ -45,34 +46,39 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const onSubmit = async (data: RegisterFormData) => {
     setError('')
     try {
-      await registerMutation.mutateAsync({
+      const result = await registerMutation.mutateAsync({
         email: data.email,
         password: data.password,
         fullName: data.fullName,
       })
+      setRequiresVerification((result as any).requires_verification ?? true)
       setSuccess(true)
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     }
   }
 
-  // Success — show verification prompt
+  // Success — show appropriate message based on whether verification is required
   if (success) {
     return (
       <div className="text-center space-y-4 py-4">
         <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Check your email</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {requiresVerification ? 'Check your email' : 'Account created'}
+        </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          We&apos;ve sent a verification link to your email address. Please verify your account to sign in.
+          {requiresVerification
+            ? "We've sent a verification link to your email address. Please verify your account to sign in."
+            : 'Your account has been created successfully. You can now sign in.'}
         </p>
         {onSwitchToLogin && (
           <button
             onClick={onSwitchToLogin}
             className="text-blue-600 hover:underline font-medium text-sm"
           >
-            Back to sign in
+            {requiresVerification ? 'Back to sign in' : 'Sign in now'}
           </button>
         )}
       </div>

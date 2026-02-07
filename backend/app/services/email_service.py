@@ -7,6 +7,8 @@ import os
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
 
 # Try to import resend, fall back gracefully if not available
@@ -205,7 +207,7 @@ class EmailService:
     If you didn't create an account with InvestIQ, you can safely ignore this email.
 </p>
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
-    This link will expire in 24 hours.
+    This link will expire in {settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours.
 </p>
 
 <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
@@ -250,7 +252,7 @@ class EmailService:
     If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
 </p>
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
-    This link will expire in 1 hour for security reasons.
+    This link will expire in {settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS} hour(s) for security reasons.
 </p>
 
 <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">

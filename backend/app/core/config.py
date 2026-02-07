@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # ===========================================
     APP_NAME: str = "InvestIQ"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
     ENVIRONMENT: str = "development"  # development, staging, production
     
     # ===========================================
@@ -286,6 +286,16 @@ def validate_settings(settings: Settings) -> None:
         for key_name, key_value in _optional_keys:
             if not key_value:
                 warnings.warn(f"{key_name} not set — related features will be unavailable")
+
+    # COOKIE_SECURE must be False for local dev (HTTP) — browsers refuse to
+    # send Secure cookies over plain HTTP, silently breaking auth.
+    if not settings.is_production and settings.COOKIE_SECURE:
+        warnings.warn(
+            "COOKIE_SECURE forced to False for non-production environment (no HTTPS). "
+            "Set ENVIRONMENT=production to enable Secure cookies.",
+            UserWarning,
+        )
+        object.__setattr__(settings, "COOKIE_SECURE", False)
 
     if errors:
         error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)

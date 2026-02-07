@@ -89,20 +89,31 @@ class TokenService:
         token_type: str | TokenType,
         *,
         expires_hours: int | None = None,
+        expires_minutes: int | None = None,
     ) -> str:
         """Generate a verification token and persist its hash.
 
         Returns the **raw** token (to send to the user).
+
+        Expiry priority:
+          1. ``expires_minutes`` (if given)
+          2. ``expires_hours`` (if given)
+          3. Type-specific default
         """
         if isinstance(token_type, TokenType):
             token_type = token_type.value
 
-        # Decide expiry based on type
-        if expires_hours is None:
-            if token_type == TokenType.PASSWORD_RESET.value:
-                expires_hours = settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
-            else:
-                expires_hours = settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS
+        # Decide expiry based on explicit args, then type-specific defaults
+        if expires_minutes is not None:
+            expires_delta = timedelta(minutes=expires_minutes)
+        elif expires_hours is not None:
+            expires_delta = timedelta(hours=expires_hours)
+        elif token_type == TokenType.PASSWORD_RESET.value:
+            expires_delta = timedelta(hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS)
+        elif token_type == TokenType.MFA_CHALLENGE.value:
+            expires_delta = timedelta(minutes=5)
+        else:
+            expires_delta = timedelta(hours=settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS)
 
         # Invalidate previous unused tokens of the same type
         await token_repo.invalidate_for_user(db, user_id, token_type)
@@ -115,7 +126,7 @@ class TokenService:
             user_id=user_id,
             token_hash=token_hash,
             token_type=token_type,
-            expires_at=datetime.now(timezone.utc) + timedelta(hours=expires_hours),
+            expires_at=datetime.now(timezone.utc) + expires_delta,
         )
         return raw_token
 

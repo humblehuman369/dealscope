@@ -10,8 +10,12 @@
  */
 
 import * as SecureStore from 'expo-secure-store';
+import { UserResponse } from '../types/user';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+
+// Re-export so other modules can import from authService if they already do
+export type { UserResponse };
 
 // Secure storage keys
 const REFRESH_TOKEN_KEY = 'iq_refresh_token';
@@ -20,27 +24,6 @@ const BIOMETRIC_ENABLED_KEY = 'iq_biometric_enabled';
 
 // In-memory access token — never persisted to disk
 let _accessToken: string | null = null;
-
-// ------------------------------------------------------------------
-// Types
-// ------------------------------------------------------------------
-
-export interface UserResponse {
-  id: string;
-  email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_active: boolean;
-  is_verified: boolean;
-  is_superuser: boolean;
-  mfa_enabled: boolean;
-  created_at: string;
-  last_login: string | null;
-  has_profile: boolean;
-  onboarding_completed: boolean;
-  roles: string[];
-  permissions: string[];
-}
 
 export interface LoginResponse {
   user: UserResponse;
@@ -348,6 +331,7 @@ export function validatePassword(password: string): {
   if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
   if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
   if (!/[0-9]/.test(password)) errors.push('One digit');
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) errors.push('One special character');
   return { valid: errors.length === 0, errors };
 }
 

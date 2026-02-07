@@ -21,7 +21,9 @@ function ResetPasswordContent() {
     const errors: string[] = []
     if (pwd.length < 8) errors.push('At least 8 characters')
     if (!/[A-Z]/.test(pwd)) errors.push('One uppercase letter')
+    if (!/[a-z]/.test(pwd)) errors.push('One lowercase letter')
     if (!/[0-9]/.test(pwd)) errors.push('One number')
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pwd)) errors.push('One special character')
     return errors
   }
 
@@ -43,6 +45,7 @@ function ResetPasswordContent() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           token,
           new_password: password,
@@ -162,7 +165,7 @@ function ResetPasswordContent() {
                   {/* Password requirements */}
                   {password && (
                     <div className="mt-2 space-y-1">
-                      {['At least 8 characters', 'One uppercase letter', 'One number'].map((req, i) => {
+                      {['At least 8 characters', 'One uppercase letter', 'One lowercase letter', 'One number', 'One special character'].map((req, i) => {
                         const passed = !passwordErrors.includes(req)
                         return (
                           <p key={i} className={`text-xs flex items-center gap-1 ${passed ? 'text-green-500' : 'text-gray-400'}`}>

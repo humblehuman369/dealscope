@@ -29,6 +29,7 @@ class TokenType(str, enum.Enum):
     EMAIL_VERIFICATION = "email_verification"
     PASSWORD_RESET = "password_reset"
     MFA_SETUP = "mfa_setup"
+    MFA_CHALLENGE = "mfa_challenge"
 
 
 class VerificationToken(Base):

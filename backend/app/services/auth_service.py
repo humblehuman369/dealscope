@@ -222,12 +222,10 @@ class AuthService:
 
         # MFA check
         if user.mfa_enabled and user.mfa_secret:
-            # Create a short-lived MFA challenge token
+            # Create a short-lived MFA challenge token (5 minutes)
             challenge_token = await token_service.create_verification_token(
-                db, user.id, TokenType.MFA_SETUP, expires_hours=0  # will override below
+                db, user.id, TokenType.MFA_CHALLENGE, expires_minutes=5
             )
-            # Override — MFA challenge valid for 5 minutes only
-            # (the token_service already created a record; we're reusing it here)
             raise MFARequired(challenge_token=challenge_token, user_id=user.id)
 
         # Success — reset lockout and create session
@@ -272,7 +270,7 @@ class AuthService:
     ) -> Tuple[User, UserSession, str]:
         """Complete MFA login after a successful password check."""
         user_id = await token_service.validate_verification_token(
-            db, challenge_token, TokenType.MFA_SETUP
+            db, challenge_token, TokenType.MFA_CHALLENGE
         )
         if user_id is None:
             raise AuthError("Invalid or expired MFA challenge", status_code=401)

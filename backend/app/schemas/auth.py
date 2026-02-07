@@ -206,6 +206,7 @@ class UserResponse(BaseModel):
 class AuthMessage(BaseModel):
     message: str
     success: bool = True
+    requires_verification: bool = False
 
 
 # Resolve forward reference

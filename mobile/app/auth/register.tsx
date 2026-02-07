@@ -30,6 +30,7 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [requiresVerification, setRequiresVerification] = useState(true);
 
   const passwordValidation = password.length > 0 ? validatePassword(password) : null;
 
@@ -57,8 +58,9 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      await registerUser(email, password, fullName.trim());
+      const result = await registerUser(email, password, fullName.trim());
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setRequiresVerification((result as any).requires_verification ?? true);
       setSuccess(true);
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -76,23 +78,27 @@ export default function RegisterScreen() {
   const borderColor = isDark ? '#334155' : '#e2e8f0';
   const accentColor = '#0d9488';
 
-  // Success screen
+  // Success screen — conditional based on whether email verification is required
   if (success) {
     return (
       <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
         <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 32, borderWidth: 1, borderColor, alignItems: 'center', width: '100%' }}>
           <Ionicons name="checkmark-circle" size={56} color="#22c55e" />
           <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, marginTop: 16, textAlign: 'center' }}>
-            Check your email
+            {requiresVerification ? 'Check your email' : 'Account created'}
           </Text>
           <Text style={{ fontSize: 14, color: mutedColor, marginTop: 8, textAlign: 'center', lineHeight: 20 }}>
-            We've sent a verification link to your email. Please verify your account before signing in.
+            {requiresVerification
+              ? "We've sent a verification link to your email. Please verify your account before signing in."
+              : 'Your account has been created successfully. You can now sign in.'}
           </Text>
           <TouchableOpacity
             onPress={() => router.replace('/auth/login')}
             style={{ marginTop: 24, backgroundColor: accentColor, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
           >
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Go to Sign In</Text>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+              {requiresVerification ? 'Go to Sign In' : 'Sign In Now'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
