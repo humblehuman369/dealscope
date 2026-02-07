@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { SlidersHorizontal, RefreshCw, Save } from 'lucide-react'
 import { getAccessToken } from '@/lib/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 interface AdminAssumptionsResponse {
   assumptions: Record<string, any>

@@ -15,8 +15,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 function PropertyRedirector() {
   const router = useRouter()

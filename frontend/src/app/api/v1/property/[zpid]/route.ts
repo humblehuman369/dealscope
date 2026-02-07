@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BACKEND_URL } from '@/lib/server-env'
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
@@ -11,8 +12,6 @@ export const dynamic = 'force-dynamic'
  * 
  * GET /api/v1/property/[zpid]?address=...
  */
-
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 interface RouteContext {
   params: Promise<{ zpid: string }>

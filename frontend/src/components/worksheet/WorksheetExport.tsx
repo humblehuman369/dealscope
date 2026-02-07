@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { Download, FileText, Table, Loader2, X, Check } from 'lucide-react'
 import { getAccessToken } from '@/lib/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 interface WorksheetExportProps {
   propertyId: string

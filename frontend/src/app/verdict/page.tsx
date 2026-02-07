@@ -29,8 +29,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {

@@ -9,8 +9,7 @@ import {
   Trash2, Plus, Eye, MoreVertical, MapPin, TrendingUp,
   Grid3X3, List, ChevronDown, X, ArrowUpDown
 } from 'lucide-react'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 // ===========================================
 // Types

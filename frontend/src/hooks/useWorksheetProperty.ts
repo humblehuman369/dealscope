@@ -4,11 +4,10 @@ import { useAuth } from '@/context/AuthContext'
 import { SavedProperty } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { getAccessToken } from '@/lib/api'
+import { API_BASE_URL } from '@/lib/env'
 
 // Re-export for backward compatibility
 export type { SavedProperty } from '@/types/savedProperty'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 interface UseWorksheetPropertyOptions {
   onLoaded?: (property: SavedProperty) => void

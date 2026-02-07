@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ProfileQuestion } from '../components/profile/ProgressiveProfilingPrompt'
 import { getAccessToken } from '@/lib/api'
+import { API_BASE_URL } from '@/lib/env'
 
 const STORAGE_KEY = 'investiq-progressive-profile'
 
@@ -142,8 +143,6 @@ export function useProgressiveProfiling() {
     try {
       const token = getAccessToken()
       if (!token) return
-
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
       
       await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
         method: 'PATCH',

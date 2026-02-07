@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BACKEND_URL } from '@/lib/server-env'
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
-
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 // POST /api/v1/users/me/onboarding - Update onboarding data
 export async function POST(request: NextRequest) {

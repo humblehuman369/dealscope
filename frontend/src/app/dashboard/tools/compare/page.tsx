@@ -7,8 +7,7 @@ import {
   TrendingUp, DollarSign, ArrowLeft
 } from 'lucide-react'
 import Link from 'next/link'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 interface SavedProperty {
   id: string

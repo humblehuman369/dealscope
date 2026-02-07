@@ -8,6 +8,7 @@ import {
 } from '@/lib/projections'
 import { defaultsService } from '@/services/defaults'
 import { getAccessToken } from '@/lib/api'
+import { API_BASE_URL } from '@/lib/env'
 
 /**
  * Worksheet Store
@@ -18,7 +19,6 @@ import { getAccessToken } from '@/lib/api'
  */
 
 // Use relative paths for API calls to go through Next.js API routes
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate'
 const CALC_DEBOUNCE_MS = 150
 

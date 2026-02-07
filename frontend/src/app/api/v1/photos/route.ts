@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BACKEND_URL } from '@/lib/server-env'
 
 // Force dynamic rendering since this route uses searchParams
 export const dynamic = 'force-dynamic'
-
-// Backend API URL - defaults to production Railway URL
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 export async function GET(request: NextRequest) {
   try {

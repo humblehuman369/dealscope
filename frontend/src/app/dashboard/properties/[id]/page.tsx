@@ -11,8 +11,7 @@ import {
   FileSpreadsheet, ClipboardList, Clock, StickyNote, FolderOpen,
   ChevronRight, Loader2, AlertCircle
 } from 'lucide-react'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 // ===========================================
 // Types

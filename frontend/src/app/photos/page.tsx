@@ -7,8 +7,7 @@ import {
   LayoutGrid, X, ChevronLeft, ChevronRight, Loader2,
   ExternalLink, AlertCircle, Camera
 } from 'lucide-react'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 interface Photo {
   url: string

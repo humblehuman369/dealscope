@@ -9,8 +9,7 @@
 
 import type { AllAssumptions } from '@/stores/index'
 import { getAccessToken } from '@/lib/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 // Cache for defaults to avoid repeated API calls
 let defaultsCache: AllAssumptions | null = null

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
+import { BACKEND_URL } from '@/lib/server-env'
 
 // GET /api/v1/billing/plans - Get available plans
 export async function GET(request: NextRequest) {

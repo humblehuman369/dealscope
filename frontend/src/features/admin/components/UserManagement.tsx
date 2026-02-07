@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { UserCog, Search, CheckCircle, XCircle } from 'lucide-react'
 import { getAccessToken } from '@/lib/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { API_BASE_URL } from '@/lib/env'
 
 interface AdminUser {
   id: string

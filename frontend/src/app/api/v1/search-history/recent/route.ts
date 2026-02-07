@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BACKEND_URL } from '@/lib/server-env'
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
-
-// Backend API URL
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 // GET /api/v1/search-history/recent - Get recent search history
 export async function GET(request: NextRequest) {

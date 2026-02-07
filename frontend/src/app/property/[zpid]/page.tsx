@@ -24,14 +24,7 @@ interface PageProps {
 // Enable dynamic rendering
 export const dynamic = 'force-dynamic'
 
-// Backend URL - MUST be the Railway backend, not Vercel
-// This is hardcoded as a fallback to ensure we never accidentally hit Vercel's API
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
-
-// Ensure we're hitting the correct backend (not Vercel)
-const VERIFIED_BACKEND_URL = BACKEND_URL.includes('vercel.app') 
-  ? 'https://dealscope-production.up.railway.app'  // Override if accidentally set to Vercel
-  : BACKEND_URL
+import { BACKEND_URL } from '@/lib/server-env'
 
 /**
  * Fetch property data directly from backend
@@ -43,7 +36,7 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
   console.log('[Property Details Page] ZPID:', zpid)
   console.log('[Property Details Page] Address:', address)
   console.log('[Property Details Page] Raw BACKEND_URL env:', process.env.BACKEND_URL || '(not set)')
-  console.log('[Property Details Page] Using Backend URL:', VERIFIED_BACKEND_URL)
+  console.log('[Property Details Page] Using Backend URL:', BACKEND_URL)
   
   // Validate inputs
   if (!address) {
@@ -56,13 +49,13 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
     console.log('[Property Details Page] Fetching from backend...')
     
     const [propertyRes, photosRes] = await Promise.allSettled([
-      fetch(`${VERIFIED_BACKEND_URL}/api/v1/properties/search`, {
+      fetch(`${BACKEND_URL}/api/v1/properties/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address }),
         cache: 'no-store'
       }),
-      fetch(`${VERIFIED_BACKEND_URL}/api/v1/photos?zpid=${zpid}`, {
+      fetch(`${BACKEND_URL}/api/v1/photos?zpid=${zpid}`, {
         cache: 'no-store'
       })
     ])
