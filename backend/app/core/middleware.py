@@ -48,8 +48,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if self._redis_available is None:
             if settings.REDIS_URL:
                 try:
-                    import redis.asyncio as redis
-                    self._redis_client = redis.from_url(
+                    import redis.asyncio as aioredis
+                    self._redis_client = aioredis.from_url(
                         settings.REDIS_URL,
                         encoding="utf-8",
                         decode_responses=True,
@@ -58,11 +58,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     )
                     await self._redis_client.ping()
                     self._redis_available = True
-                    logger.info("Rate limiting using Redis")
+                    logger.info(
+                        "Rate limiter using Redis (shared across workers): %s",
+                        settings.REDIS_URL.split("@")[-1] if "@" in settings.REDIS_URL else "localhost",
+                    )
                 except Exception as e:
-                    logger.warning("Redis not available for rate limiting: %s", e)
+                    logger.warning(
+                        "Redis not available for rate limiting, falling back to "
+                        "in-memory (per-worker) counters: %s", e,
+                    )
                     self._redis_available = False
             else:
+                logger.info("REDIS_URL not set; rate limiter using in-memory counters (per-worker)")
                 self._redis_available = False
         return self._redis_client if self._redis_available else None
 

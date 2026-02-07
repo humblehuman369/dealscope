@@ -62,8 +62,16 @@ async def cleanup_expired_tokens() -> int:
             return 0
 
 
-async def archive_old_audit_logs(days: int = 90) -> int:
-    """Delete audit log entries older than ``days``."""
+async def archive_old_audit_logs(days: int | None = None) -> int:
+    """Delete audit log entries older than ``days``.
+
+    When *days* is ``None`` the value is read from
+    ``settings.AUDIT_LOG_RETENTION_DAYS`` (default 90).
+    """
+    if days is None:
+        from app.core.config import settings
+        days = getattr(settings, "AUDIT_LOG_RETENTION_DAYS", 90)
+
     factory = get_session_factory()
     async with factory() as db:
         try:

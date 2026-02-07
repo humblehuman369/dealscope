@@ -88,13 +88,14 @@ async def get_property(property_id: str):
     Get cached property data by ID.
     """
     try:
-        if property_id not in property_service._property_cache:
+        cached = await property_service.get_cached_property(property_id)
+        if not cached:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Property not found in cache. Please search for the property first."
             )
         
-        return property_service._property_cache[property_id]["data"]
+        return cached
         
     except HTTPException:
         raise

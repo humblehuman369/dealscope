@@ -47,8 +47,10 @@ class Settings(BaseSettings):
         return url
     
     # Database pool settings
-    DB_POOL_SIZE: int = 5
-    DB_MAX_OVERFLOW: int = 10
+    # Production: 10 pool + 20 overflow = 30 concurrent connections
+    # Development: 5 pool + 10 overflow = 15 concurrent connections
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
     
     # ===========================================
@@ -166,6 +168,11 @@ class Settings(BaseSettings):
     STRIPE_PRICE_ENTERPRISE_MONTHLY: str = ""
     STRIPE_PRICE_ENTERPRISE_YEARLY: str = ""
     
+    # ===========================================
+    # Data Retention
+    # ===========================================
+    AUDIT_LOG_RETENTION_DAYS: int = 90  # Delete audit logs older than this
+
     # ===========================================
     # Rate Limiting
     # ===========================================

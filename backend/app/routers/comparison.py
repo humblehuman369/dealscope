@@ -27,10 +27,9 @@ router = APIRouter(tags=["Comparison"])
 async def run_sensitivity_analysis(request: SensitivityRequest):
     """Run sensitivity analysis on a key variable."""
     try:
-        if request.property_id not in property_service._property_cache:
+        property_data = await property_service.get_cached_property(request.property_id)
+        if not property_data:
             raise HTTPException(status_code=404, detail="Property not found")
-
-        property_data = property_service._property_cache[request.property_id]["data"]
 
         variable_mapping = {
             "purchase_price": request.assumptions.financing.purchase_price or property_data.valuations.current_value_avm or 425000,

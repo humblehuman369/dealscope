@@ -54,10 +54,6 @@ class PropertyService:
         
         # Redis cache with in-memory fallback (24h TTL)
         self._cache: CacheService = get_cache_service()
-        
-        # Legacy in-memory cache for backwards compatibility during transition
-        self._property_cache: Dict[str, Dict] = {}
-        self._calculation_cache: Dict[str, Dict] = {}
     
     def _generate_property_id(self, address: str) -> str:
         """Generate consistent property ID from address."""
@@ -69,6 +65,20 @@ class PropertyService:
         assumptions_json = json.dumps(assumptions.model_dump(), sort_keys=True)
         return hashlib.md5(assumptions_json.encode()).hexdigest()[:12]
     
+    async def get_cached_property(self, property_id: str) -> Optional[PropertyResponse]:
+        """Retrieve a property from cache by its property_id.
+
+        Uses the ``prop_id:<id>`` key set during ``search_property``.
+        Returns ``None`` if not found or deserialization fails.
+        """
+        cached = await self._cache.get(f"prop_id:{property_id}")
+        if cached:
+            try:
+                return PropertyResponse(**cached)
+            except Exception as e:
+                logger.warning("Failed to deserialize cached property %s: %s", property_id, e)
+        return None
+
     async def search_property(self, address: str) -> PropertyResponse:
         """
         Search for property by address.
@@ -78,7 +88,7 @@ class PropertyService:
         property_id = self._generate_property_id(address)
         timestamp = datetime.now(timezone.utc)
         
-        # Check Redis cache first
+        # Check Redis/in-memory cache first
         cached_data = await self._cache.get_property(address)
         if cached_data:
             logger.info(f"Cache hit for property: {address}")
@@ -87,13 +97,6 @@ class PropertyService:
             except Exception as e:
                 logger.warning(f"Failed to deserialize cached property: {e}")
                 # Continue to fetch fresh data
-        
-        # Legacy in-memory cache check (for backwards compatibility)
-        if property_id in self._property_cache:
-            cached = self._property_cache[property_id]
-            cache_age = (timestamp - cached["fetched_at"]).total_seconds()
-            if cache_age < 86400:  # 24 hour cache
-                return cached["data"]
         
         # Fetch from RentCast
         rc_property = await self.rentcast.get_property(address)
@@ -283,18 +286,15 @@ class PropertyService:
             fetched_at=timestamp
         )
         
-        # Cache result in Redis (24h TTL)
+        # Cache result (Redis with in-memory fallback, 24h TTL)
         try:
-            await self._cache.set_property(address, response.model_dump())
-            logger.info(f"Cached property in Redis: {address}")
+            serialized = response.model_dump()
+            await self._cache.set_property(address, serialized)
+            # Secondary index by property_id so callers can retrieve by id
+            await self._cache.set(f"prop_id:{property_id}", serialized)
+            logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")
         except Exception as e:
-            logger.warning(f"Failed to cache property in Redis: {e}")
-        
-        # Also cache in memory for backwards compatibility
-        self._property_cache[property_id] = {
-            "data": response,
-            "fetched_at": timestamp
-        }
+            logger.warning(f"Failed to cache property: {e}")
         
         return response
     
@@ -415,17 +415,20 @@ class PropertyService:
         """
         Calculate investment analytics for all or specified strategies.
         """
-        # Get property data from cache
-        if property_id not in self._property_cache:
-            raise ValueError(f"Property {property_id} not found. Search first.")
-        
-        property_data = self._property_cache[property_id]["data"]
         assumptions_hash = self._generate_assumptions_hash(assumptions)
         
-        # Check calculation cache
-        cache_key = f"{property_id}:{assumptions_hash}"
-        if cache_key in self._calculation_cache:
-            return self._calculation_cache[cache_key]
+        # Check calculation cache (Redis-backed)
+        cached_calc = await self._cache.get_calculation(property_id, assumptions_hash)
+        if cached_calc:
+            try:
+                return AnalyticsResponse(**cached_calc)
+            except Exception as e:
+                logger.warning(f"Failed to deserialize cached calculation: {e}")
+
+        # Get property data from cache (by property_id)
+        property_data = await self.get_cached_property(property_id)
+        if not property_data:
+            raise ValueError(f"Property {property_id} not found. Search first.")
         
         # Determine which strategies to calculate
         all_strategies = [
@@ -586,8 +589,13 @@ class PropertyService:
             )
             results.wholesale = WholesaleResults(**wholesale_result)
         
-        # Cache results
-        self._calculation_cache[cache_key] = results
+        # Cache results in Redis (1 hour TTL — assumptions may change)
+        try:
+            await self._cache.set_calculation(
+                property_id, assumptions_hash, results.model_dump(), ttl_seconds=3600
+            )
+        except Exception as e:
+            logger.warning(f"Failed to cache calculation: {e}")
         
         return results
     
@@ -1084,12 +1092,6 @@ class PropertyService:
             ),
             fetched_at=timestamp
         )
-        
-        # Cache it
-        self._property_cache[property_id] = {
-            "data": response,
-            "fetched_at": timestamp
-        }
         
         return response
 

@@ -105,6 +105,16 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to create database tables: {e}")
     
+    # Run cleanup tasks (expired sessions, tokens, old audit logs) once at startup.
+    # In production, wire these into a cron schedule (e.g. Railway cron, APScheduler).
+    try:
+        from app.tasks.cleanup import run_all_cleanup
+        import asyncio
+        cleanup_result = await run_all_cleanup()
+        logger.info(f"Startup cleanup completed: {cleanup_result}")
+    except Exception as e:
+        logger.warning(f"Startup cleanup failed (non-fatal): {e}")
+
     logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here

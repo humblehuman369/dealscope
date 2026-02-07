@@ -55,13 +55,12 @@ async def generate_excel_report(
     Returns an Excel file download.
     """
     # Get property data from cache
-    if property_id not in property_service._property_cache:
+    property_data = await property_service.get_cached_property(property_id)
+    if not property_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Property not found. Please search for the property first."
         )
-    
-    property_data = property_service._property_cache[property_id]["data"]
     
     # Calculate analytics
     try:
@@ -137,13 +136,12 @@ async def generate_financial_statements_report(
     - Due diligence documentation
     """
     # Get property data from cache
-    if property_id not in property_service._property_cache:
+    property_data = await property_service.get_cached_property(property_id)
+    if not property_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Property not found. Please search for the property first."
         )
-    
-    property_data = property_service._property_cache[property_id]["data"]
     
     # Calculate analytics
     try:
@@ -206,13 +204,12 @@ async def generate_csv_report(
     Useful for importing into spreadsheets or other tools.
     """
     # Get property data from cache
-    if property_id not in property_service._property_cache:
+    property_data = await property_service.get_cached_property(property_id)
+    if not property_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Property not found"
         )
-    
-    property_data = property_service._property_cache[property_id]["data"]
     
     # Calculate analytics
     try:

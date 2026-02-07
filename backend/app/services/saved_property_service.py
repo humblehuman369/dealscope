@@ -9,7 +9,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, defer
 
 from app.models.saved_property import SavedProperty, PropertyAdjustment, PropertyStatus
 from app.schemas.saved_property import (
@@ -153,7 +153,15 @@ class SavedPropertyService:
         """
         List saved properties with filtering and pagination.
         """
-        query = select(SavedProperty).where(SavedProperty.user_id == uuid.UUID(user_id))
+        # Defer large JSON columns to avoid loading 50KB+ blobs per row on list
+        query = (
+            select(SavedProperty)
+            .options(
+                defer(SavedProperty.property_data_snapshot),
+                defer(SavedProperty.last_analytics_result),
+            )
+            .where(SavedProperty.user_id == uuid.UUID(user_id))
+        )
         
         # Apply filters
         if status:
