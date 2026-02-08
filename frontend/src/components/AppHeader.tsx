@@ -36,7 +36,8 @@ import { toast } from '@/components/feedback'
 const colors = {
   background: {
     deepNavy: '#0f1031',
-    white: '#FFFFFF',
+    surface: '#0F172A',
+    elevated: '#1E293B',
   },
   brand: {
     teal: '#0891B2',
@@ -44,11 +45,12 @@ const colors = {
   },
   text: {
     white: '#FFFFFF',
-    primary: '#171717',
-    secondary: '#525252',
+    primary: '#F1F5F9',
+    secondary: '#94A3B8',
+    tertiary: '#64748B',
   },
   ui: {
-    border: '#E5E5E5',
+    border: '#1E293B',
   },
 }
 
@@ -679,12 +681,12 @@ export function AppHeader({
           </div>
         </div>
 
-        {/* Tab Bar - White, rectangular tabs touching side by side */}
+        {/* Tab Bar - Dark surface, rectangular tabs touching side by side */}
         {showTabs && (
           <div 
             className="flex items-stretch overflow-x-auto scrollbar-hide"
             style={{ 
-              backgroundColor: colors.background.white,
+              backgroundColor: colors.background.surface,
               borderBottom: `1px solid ${colors.ui.border}`,
             }}
           >
@@ -714,8 +716,8 @@ export function AppHeader({
         {/* Property Address Bar - Optional */}
         {shouldShowPropertyBar && displayAddress && (
           <div 
-            className="bg-white border-b"
-            style={{ borderColor: colors.ui.border }}
+            className="border-b"
+            style={{ backgroundColor: colors.background.surface, borderColor: colors.ui.border }}
           >
             {/* Collapsed Header */}
             <div className="flex items-center justify-between px-4 py-3">
@@ -748,9 +750,10 @@ export function AppHeader({
                   disabled={isSaving}
                   className={`p-1.5 rounded transition-colors flex items-center gap-1 ${
                     isSaved 
-                      ? 'text-[#0891B2] hover:text-red-500 hover:bg-red-50' 
-                      : 'text-neutral-400 hover:text-[#0891B2] hover:bg-neutral-100'
+                      ? 'text-[#0891B2] hover:text-red-400 hover:bg-red-500/10' 
+                      : 'hover:text-[#0891B2] hover:bg-white/5'
                   } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{ color: isSaved ? colors.brand.teal : colors.text.tertiary }}
                   aria-label={isSaved ? 'Unsave property' : 'Save property'}
                   title={isSaved ? 'Click to unsave' : 'Save property'}
                 >
@@ -768,13 +771,13 @@ export function AppHeader({
                 {property && (
                   <button
                     onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
-                    className="p-1 hover:bg-neutral-100 rounded transition-colors"
+                    className="p-1 hover:bg-white/5 rounded transition-colors"
                     aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
                   >
                     {isPropertyExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-neutral-400" />
+                      <ChevronUp className="w-4 h-4" style={{ color: colors.text.tertiary }} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-neutral-400" />
+                      <ChevronDown className="w-4 h-4" style={{ color: colors.text.tertiary }} />
                     )}
                   </button>
                 )}
@@ -789,26 +792,26 @@ export function AppHeader({
               >
                 {property.beds !== undefined && (
                   <div className="text-center pt-3">
-                    <div className="text-xs text-neutral-500 mb-0.5">Beds</div>
-                    <div className="font-semibold text-neutral-800">{property.beds}</div>
+                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Beds</div>
+                    <div className="font-semibold" style={{ color: colors.text.primary }}>{property.beds}</div>
                   </div>
                 )}
                 {property.baths !== undefined && (
                   <div className="text-center pt-3">
-                    <div className="text-xs text-neutral-500 mb-0.5">Baths</div>
-                    <div className="font-semibold text-neutral-800">{property.baths}</div>
+                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Baths</div>
+                    <div className="font-semibold" style={{ color: colors.text.primary }}>{property.baths}</div>
                   </div>
                 )}
                 {property.sqft !== undefined && (
                   <div className="text-center pt-3">
-                    <div className="text-xs text-neutral-500 mb-0.5">Sqft</div>
-                    <div className="font-semibold text-neutral-800">{property.sqft.toLocaleString()}</div>
+                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Sqft</div>
+                    <div className="font-semibold" style={{ color: colors.text.primary }}>{property.sqft.toLocaleString()}</div>
                   </div>
                 )}
                 {property.price !== undefined && (
                   <div className="text-center pt-3">
-                    <div className="text-xs text-neutral-500 mb-0.5">Price</div>
-                    <div className="font-semibold text-neutral-800">{formatShortPrice(property.price)}</div>
+                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Price</div>
+                    <div className="font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(property.price)}</div>
                   </div>
                 )}
               </div>
