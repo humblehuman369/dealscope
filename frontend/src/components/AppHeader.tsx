@@ -753,7 +753,7 @@ export function AppHeader({
                       ? 'text-[#0891B2] hover:text-red-400 hover:bg-red-500/10' 
                       : 'hover:text-[#0891B2] hover:bg-white/5'
                   } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  style={{ color: isSaved ? colors.brand.teal : colors.text.tertiary }}
+                  style={{ color: isSaved ? colors.brand.teal : '#FFFFFF' }}
                   aria-label={isSaved ? 'Unsave property' : 'Save property'}
                   title={isSaved ? 'Click to unsave' : 'Save property'}
                 >

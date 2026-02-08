@@ -418,7 +418,7 @@ function ScoreHero({
           </div>
           <p
             className="text-center mb-2"
-            style={{ fontSize: typography.body.size - 1, color: colors.text.tertiary }}
+            style={{ fontSize: typography.body.size - 1, color: '#FFFFFF' }}
           >
             {verdictSubtitle}
           </p>
@@ -520,7 +520,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
           style={{ 
             fontSize: typography.label.size,
             fontWeight: typography.heading.weight,
-            color: colors.text.secondary,
+            color: '#FFFFFF',
             letterSpacing: '0.8px',
           }}
         >
@@ -536,7 +536,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
                   className="w-32"
                   style={{ 
                     fontSize: typography.body.size,
-                    color: colors.text.secondary,
+                    color: '#FFFFFF',
                   }}
                 >
                   {item.label}
@@ -560,7 +560,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
                   className="w-12 text-right font-bold tabular-nums"
                   style={{ 
                     fontSize: typography.body.size,
-                    color: barColor,
+                    color: '#FFFFFF',
                   }}
                 >
                   {item.value}%
@@ -645,7 +645,7 @@ function InvestmentAnalysisSection({
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontSize: typography.caption.size + 1,
-                color: colors.text.secondary,
+                color: '#FFFFFF',
                 borderColor: colors.ui.borderDark,
                 backgroundColor: colors.background.subtle,
               }}
@@ -667,7 +667,7 @@ function InvestmentAnalysisSection({
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5"
               style={{ 
                 fontSize: typography.caption.size + 1,
-                color: colors.text.secondary,
+                color: '#FFFFFF',
                 borderColor: colors.ui.borderDark,
                 backgroundColor: colors.background.subtle,
               }}
