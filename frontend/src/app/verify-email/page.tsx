@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail, ArrowRight } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { authApi } from '@/lib/api-client'
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -23,27 +23,16 @@ function VerifyEmailContent() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ token }),
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          setStatus('success')
-          setMessage(data.message || 'Email verified successfully!')
-        } else {
-          setStatus('error')
-          setMessage(data.detail || 'Verification failed')
-        }
+        const data = await authApi.verifyEmail(token)
+        setStatus('success')
+        setMessage(data.message || 'Email verified successfully!')
       } catch (err) {
         setStatus('error')
-        setMessage('Network error. Please try again.')
+        if (err instanceof Error && 'status' in err) {
+          setMessage((err as any).message || 'Verification failed')
+        } else {
+          setMessage('Network error. Please try again.')
+        }
       }
     }
 

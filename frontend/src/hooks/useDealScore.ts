@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 export interface DealScoreInput {
   listPrice: number
@@ -139,13 +139,9 @@ export function useDealScore(
     setError(null)
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/worksheet/deal-score`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const data = await api.post<Record<string, any>>(
+        '/api/v1/worksheet/deal-score',
+        {
           list_price: input.listPrice,
           purchase_price: input.purchasePrice,
           monthly_rent: input.monthlyRent,
@@ -166,16 +162,9 @@ export function useDealScore(
           is_auction: input.isAuction,
           price_reductions: input.priceReductions,
           days_on_market: input.daysOnMarket,
-        }),
-        signal: abortControllerRef.current.signal,
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to calculate deal score')
-      }
-      
-      const data = await response.json()
+        },
+        { signal: abortControllerRef.current.signal },
+      )
       
       setResult({
         dealScore: data.deal_score,

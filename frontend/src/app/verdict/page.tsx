@@ -29,7 +29,7 @@ import { useSession } from '@/hooks/useSession'
 import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -197,39 +197,23 @@ function VerdictContent() {
         setIsLoading(true)
         setError(null)
 
-        // Fetch property data from Next.js API route which proxies to backend
-        const response = await fetch(`${API_BASE_URL}/api/v1/properties/search`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          // Note: addressParam from searchParams is already decoded, so use as-is
-          body: JSON.stringify({ address: addressParam })
+        // Fetch property data via api-client (handles CSRF + auth automatically)
+        const data = await api.post<Record<string, any>>('/api/v1/properties/search', {
+          address: addressParam,
         })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch property data')
-        }
-
-        const data = await response.json()
 
         // Fetch photos if zpid is available
         let photoUrl: string | undefined = SAMPLE_PHOTOS[0]
         
         if (data.zpid) {
           try {
-            const photosResponse = await fetch(`${API_BASE_URL}/api/v1/photos?zpid=${data.zpid}`, {
-              credentials: 'include',
-            })
-            if (photosResponse.ok) {
-              const photosData = await photosResponse.json()
-              if (photosData.success && photosData.photos && photosData.photos.length > 0) {
-                // Get first photo URL
-                const firstPhoto = photosData.photos[0]
-                if (firstPhoto?.url) {
-                  photoUrl = firstPhoto.url
-                }
+            const photosData = await api.get<{ success: boolean; photos: Array<{ url: string }> }>(
+              `/api/v1/photos?zpid=${data.zpid}`,
+            )
+            if (photosData.success && photosData.photos && photosData.photos.length > 0) {
+              const firstPhoto = photosData.photos[0]
+              if (firstPhoto?.url) {
+                photoUrl = firstPhoto.url
               }
             }
           } catch (photoErr) {
@@ -367,13 +351,9 @@ function VerdictContent() {
         }
         
         try {
-          const analysisResponse = await fetch(`${API_BASE_URL}/api/v1/analysis/verdict`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+          const analysisData = await api.post<BackendAnalysisResponse & Record<string, any>>(
+            '/api/v1/analysis/verdict',
+            {
               list_price: listPriceForCalc,
               monthly_rent: rentForCalc,
               property_taxes: taxesForCalc,
@@ -384,50 +364,44 @@ function VerdictContent() {
               arv: arvForCalc,
               average_daily_rate: propertyData.averageDailyRate,
               occupancy_rate: propertyData.occupancyRate,
-            }),
-          })
+            },
+          )
           
-          if (analysisResponse.ok) {
-            const analysisData = await analysisResponse.json()
-            
-            // Log the full response for debugging
-            console.log('[IQ Verdict] Backend response:', analysisData)
-            
-            // Convert backend response to frontend IQAnalysisResult format
-            // Backend now returns camelCase for new fields via Pydantic alias_generator
-            const analysisResult: IQAnalysisResult = {
-              propertyId: data?.property_id || propertyData?.id, // Include property ID for exports
-              analyzedAt: new Date().toISOString(),
-              dealScore: analysisData.deal_score ?? analysisData.dealScore,
-              dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
-              verdictDescription: analysisData.verdict_description ?? analysisData.verdictDescription,
-              discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
-              purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
-              breakevenPrice: analysisData.breakeven_price ?? analysisData.breakevenPrice,
-              listPrice: analysisData.list_price ?? analysisData.listPrice,
-              // Include inputs used for transparency
-              inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
-              strategies: analysisData.strategies.map((s: BackendAnalysisResponse['strategies'][0]) => ({
-                id: s.id as IQStrategy['id'],
-                name: s.name,
-                icon: getStrategyIcon(s.id),
-                metric: s.metric,
-                metricLabel: s.metric_label,
-                metricValue: s.metric_value,
-                score: s.score,
-                rank: s.rank,
-                badge: s.badge as IQStrategy['badge'],
-              })),
-              // NEW: Grade-based display fields (backend returns camelCase)
-              opportunity: analysisData.opportunity,
-              opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
-              returnRating: analysisData.return_rating ?? analysisData.returnRating,
-              returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            }
-            setAnalysis(analysisResult)
-          } else {
-            console.error('Failed to fetch analysis from backend')
+          // Log the full response for debugging
+          console.log('[IQ Verdict] Backend response:', analysisData)
+          
+          // Convert backend response to frontend IQAnalysisResult format
+          // Backend now returns camelCase for new fields via Pydantic alias_generator
+          const analysisResult: IQAnalysisResult = {
+            propertyId: data?.property_id || propertyData?.id, // Include property ID for exports
+            analyzedAt: new Date().toISOString(),
+            dealScore: analysisData.deal_score ?? analysisData.dealScore,
+            dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
+            verdictDescription: analysisData.verdict_description ?? analysisData.verdictDescription,
+            discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
+            purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
+            breakevenPrice: analysisData.breakeven_price ?? analysisData.breakevenPrice,
+            listPrice: analysisData.list_price ?? analysisData.listPrice,
+            // Include inputs used for transparency
+            inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
+            strategies: analysisData.strategies.map((s: BackendAnalysisResponse['strategies'][0]) => ({
+              id: s.id as IQStrategy['id'],
+              name: s.name,
+              icon: getStrategyIcon(s.id),
+              metric: s.metric,
+              metricLabel: s.metric_label,
+              metricValue: s.metric_value,
+              score: s.score,
+              rank: s.rank,
+              badge: s.badge as IQStrategy['badge'],
+            })),
+            // NEW: Grade-based display fields (backend returns camelCase)
+            opportunity: analysisData.opportunity,
+            opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
+            returnRating: analysisData.return_rating ?? analysisData.returnRating,
+            returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
           }
+          setAnalysis(analysisResult)
         } catch (analysisErr) {
           console.error('Error fetching analysis:', analysisErr)
         }

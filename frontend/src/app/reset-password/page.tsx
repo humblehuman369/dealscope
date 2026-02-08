@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, Eye, EyeOff, CheckCircle, XCircle, Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { authApi } from '@/lib/api-client'
 
 function ResetPasswordContent() {
   const router = useRouter()
@@ -40,30 +40,16 @@ function ResetPasswordContent() {
     setMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          token,
-          new_password: password,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setStatus('success')
-        setMessage(data.message || 'Password reset successfully!')
-      } else {
-        setStatus('error')
-        setMessage(data.detail || 'Reset failed. The link may have expired.')
-      }
+      const data = await authApi.resetPassword(token, password)
+      setStatus('success')
+      setMessage(data.message || 'Password reset successfully!')
     } catch (err) {
       setStatus('error')
-      setMessage('Network error. Please try again.')
+      if (err instanceof Error && 'status' in err) {
+        setMessage((err as any).message || 'Reset failed. The link may have expired.')
+      } else {
+        setMessage('Network error. Please try again.')
+      }
     }
   }
 

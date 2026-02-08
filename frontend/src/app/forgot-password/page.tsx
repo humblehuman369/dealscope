@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Mail, ArrowLeft, Send, CheckCircle, Loader2 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { authApi, ApiError } from '@/lib/api-client'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -19,23 +19,19 @@ export default function ForgotPasswordPage() {
     setMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim() }),
-      })
-
-      const data = await response.json()
-
+      const data = await authApi.forgotPassword(email.trim())
       // Always show success to prevent email enumeration
       setStatus('success')
       setMessage(data.message || 'If an account exists with that email, a reset link has been sent.')
     } catch (err) {
-      setStatus('error')
-      setMessage('Network error. Please try again.')
+      // Even on error, show success to prevent email enumeration
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        setStatus('success')
+        setMessage('If an account exists with that email, a reset link has been sent.')
+      } else {
+        setStatus('error')
+        setMessage('Network error. Please try again.')
+      }
     }
   }
 

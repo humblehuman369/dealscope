@@ -7,7 +7,7 @@ import {
   LayoutGrid, X, ChevronLeft, ChevronRight, Loader2,
   ExternalLink, AlertCircle, Camera
 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 interface Photo {
   url: string
@@ -62,13 +62,7 @@ export default function PhotosPage() {
     setIsMock(false)
 
     try {
-      const params = new URLSearchParams()
-      params.append('zpid', zpidToFetch)
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/photos?${params.toString()}`, {
-        credentials: 'include',
-      })
-      const data: PhotosResponse = await response.json()
+      const data = await api.get<PhotosResponse>(`/api/v1/photos?zpid=${zpidToFetch}`)
 
       if (data.success) {
         setPhotos(data.photos || [])
@@ -104,10 +98,7 @@ export default function PhotosPage() {
       if (zpid) params.append('zpid', zpid)
       if (propertyUrl) params.append('url', propertyUrl)
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/photos?${params.toString()}`, {
-        credentials: 'include',
-      })
-      const data: PhotosResponse = await response.json()
+      const data = await api.get<PhotosResponse>(`/api/v1/photos?${params.toString()}`)
 
       if (data.success) {
         setPhotos(data.photos || [])

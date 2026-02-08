@@ -15,7 +15,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 function PropertyRedirector() {
   const router = useRouter()
@@ -33,19 +33,10 @@ function PropertyRedirector() {
       }
 
       try {
-        // Fetch property data to get zpid
-        const response = await fetch(`${API_BASE_URL}/api/v1/properties/search`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: addressParam })
+        // Fetch property data to get zpid via api-client (handles CSRF + auth)
+        const data = await api.post<Record<string, any>>('/api/v1/properties/search', {
+          address: addressParam,
         })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch property data')
-        }
-
-        const data = await response.json()
         const zpid = data.zpid || data.property_id || 'unknown'
 
         // Build redirect URL

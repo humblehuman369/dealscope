@@ -24,6 +24,8 @@ interface RequestOptions {
   skipAuth?: boolean
   /** Try token refresh on 401 but don't hard-redirect if refresh fails. */
   softAuth?: boolean
+  /** AbortSignal for request cancellation (e.g. debounced hooks). */
+  signal?: AbortSignal
 }
 
 class ApiError extends Error {
@@ -120,7 +122,7 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false } = options
+  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false, signal } = options
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -146,6 +148,7 @@ async function apiRequest<T>(
     method,
     headers: requestHeaders,
     credentials: 'include',
+    ...(signal && { signal }),
   }
 
   if (body !== undefined) {
@@ -277,15 +280,16 @@ export const authApi = {
 // ------------------------------------------------------------------
 
 export const api = {
-  get: <T>(endpoint: string) => apiRequest<T>(endpoint),
-  post: <T>(endpoint: string, body?: unknown) =>
-    apiRequest<T>(endpoint, { method: 'POST', body }),
-  put: <T>(endpoint: string, body?: unknown) =>
-    apiRequest<T>(endpoint, { method: 'PUT', body }),
-  patch: <T>(endpoint: string, body?: unknown) =>
-    apiRequest<T>(endpoint, { method: 'PATCH', body }),
-  delete: <T>(endpoint: string) =>
-    apiRequest<T>(endpoint, { method: 'DELETE' }),
+  get: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+    apiRequest<T>(endpoint, opts),
+  post: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+    apiRequest<T>(endpoint, { method: 'POST', body, ...opts }),
+  put: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+    apiRequest<T>(endpoint, { method: 'PUT', body, ...opts }),
+  patch: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+    apiRequest<T>(endpoint, { method: 'PATCH', body, ...opts }),
+  delete: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+    apiRequest<T>(endpoint, { method: 'DELETE', ...opts }),
 }
 
 // ------------------------------------------------------------------
