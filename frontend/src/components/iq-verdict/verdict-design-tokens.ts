@@ -279,20 +279,20 @@ export function getAssessment(
     return { 
       color: colors.status.positive, 
       label: 'GOOD',
-      bgClass: 'bg-emerald-500/10 text-emerald-600',
+      bgClass: 'bg-emerald-500/15 text-emerald-400',
     }
   }
   if (isFair) {
     return { 
       color: colors.status.warning, 
       label: 'FAIR',
-      bgClass: 'bg-amber-500/10 text-amber-600',
+      bgClass: 'bg-amber-500/15 text-amber-400',
     }
   }
   return { 
     color: colors.status.negative, 
     label: 'POOR',
-    bgClass: 'bg-rose-500/10 text-rose-600',
+    bgClass: 'bg-rose-500/15 text-rose-400',
   }
 }
 
