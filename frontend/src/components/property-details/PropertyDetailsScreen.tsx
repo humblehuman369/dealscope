@@ -135,13 +135,13 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
   const currentFeatures = getCurrentFeatures()
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto relative font-['Inter',sans-serif]">
+    <div className="min-h-screen max-w-[480px] mx-auto relative font-['Inter',sans-serif]" style={{ backgroundColor: '#0A1628' }}>
       {/* Header is now handled by global AppHeader in layout */}
 
       {/* Main Content */}
       <main className="pb-6">
         {/* Image Gallery */}
-        <section className="bg-white border-b border-[#CBD5E1]">
+        <section style={{ backgroundColor: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           {/* Main Image */}
           <div className="relative w-full h-60 overflow-hidden">
             {images.length > 0 ? (
@@ -151,8 +151,8 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 alt={`Property view ${currentImageIndex + 1}`}
               />
             ) : (
-              <div className="w-full h-full bg-slate-200 flex items-center justify-center">
-                <span className="text-slate-400">No images available</span>
+              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#1E293B' }}>
+                <span style={{ color: '#64748B' }}>No images available</span>
               </div>
             )}
             
@@ -160,7 +160,8 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
             {images.length > 1 && (
               <>
                 <button
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-colors"
+                  style={{ backgroundColor: 'rgba(15,23,42,0.85)', color: '#F1F5F9' }}
                   onClick={() => setCurrentImageIndex(i => Math.max(0, i - 1))}
                   disabled={currentImageIndex === 0}
                 >
@@ -169,7 +170,8 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                   </svg>
                 </button>
                 <button
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-colors"
+                  style={{ backgroundColor: 'rgba(15,23,42,0.85)', color: '#F1F5F9' }}
                   onClick={() => setCurrentImageIndex(i => Math.min(images.length - 1, i + 1))}
                   disabled={currentImageIndex === images.length - 1}
                 >
@@ -210,17 +212,18 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </section>
 
         {/* Property Facts Accordion */}
-        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
+        <div className="overflow-hidden" style={{ backgroundColor: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           <div 
-            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => toggleSection('facts')}
           >
             <svg className="w-6 h-6 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Property Facts</span>
+            <span className="flex-1 text-sm font-semibold uppercase tracking-wide" style={{ color: '#F1F5F9' }}>Property Facts</span>
             <svg 
-              className={`w-5 h-5 text-[#94A3B8] transition-transform ${expandedSections.facts ? 'rotate-180' : ''}`} 
+              className={`w-5 h-5 transition-transform ${expandedSections.facts ? 'rotate-180' : ''}`} 
+              style={{ color: '#64748B' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -234,7 +237,8 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 {keySpecs.map((spec, idx) => (
                   <div 
                     key={idx} 
-                    className="bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-[10px] px-2 py-2.5 flex flex-col items-center gap-0.5"
+                    className="rounded-[10px] px-2 py-2.5 flex flex-col items-center gap-0.5"
+                    style={{ backgroundColor: '#1E293B', border: '1px solid #334155' }}
                   >
                     <div className="text-lg font-bold text-white tabular-nums">{spec.value}</div>
                     <div className="text-[10px] font-medium text-[#00D4FF] uppercase tracking-wide">{spec.label}</div>
@@ -243,26 +247,27 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-[#E2E8F0] mb-3" />
+              <div className="h-px mb-3" style={{ backgroundColor: '#1E293B' }} />
 
               {/* Property Details List */}
               <div className="flex flex-col">
                 {propertyFacts.map((fact, idx) => (
                   <div 
                     key={idx} 
-                    className={`flex items-center justify-between py-2.5 ${idx < propertyFacts.length - 1 ? 'border-b border-[#F1F5F9]' : ''}`}
+                    className="flex items-center justify-between py-2.5"
+                    style={idx < propertyFacts.length - 1 ? { borderBottom: '1px solid #1E293B' } : undefined}
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 bg-[#F1F5F9] rounded-md flex items-center justify-center text-[#64748B]">
+                      <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: '#1E293B', color: '#94A3B8' }}>
                         {renderFactIcon(fact.icon)}
                       </div>
-                      <span className="text-[13px] font-medium text-[#64748B]">{fact.label}</span>
+                      <span className="text-[13px] font-medium" style={{ color: '#94A3B8' }}>{fact.label}</span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className={`text-sm font-semibold tabular-nums ${fact.highlight ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
+                      <span className="text-sm font-semibold tabular-nums" style={{ color: fact.highlight ? '#0891B2' : '#F1F5F9' }}>
                         {fact.value}
                       </span>
-                      {fact.subValue && <span className="text-[11px] text-[#94A3B8]">{fact.subValue}</span>}
+                      {fact.subValue && <span className="text-[11px]" style={{ color: '#64748B' }}>{fact.subValue}</span>}
                     </div>
                   </div>
                 ))}
@@ -272,17 +277,18 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </div>
 
         {/* Features & Amenities Accordion */}
-        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
+        <div className="overflow-hidden" style={{ backgroundColor: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           <div 
-            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => toggleSection('features')}
           >
             <svg className="w-6 h-6 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Features & Amenities</span>
+            <span className="flex-1 text-sm font-semibold uppercase tracking-wide" style={{ color: '#F1F5F9' }}>Features & Amenities</span>
             <svg 
-              className={`w-5 h-5 text-[#94A3B8] transition-transform ${expandedSections.features ? 'rotate-180' : ''}`} 
+              className={`w-5 h-5 transition-transform ${expandedSections.features ? 'rotate-180' : ''}`} 
+              style={{ color: '#64748B' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -296,11 +302,11 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 {(['interior', 'exterior', 'appliances'] as const).map((tab) => (
                   <button
                     key={tab}
-                    className={`px-3.5 py-2 rounded-full text-[13px] font-medium transition-all border-none cursor-pointer ${
-                      activeFeatureTab === tab 
-                        ? 'bg-[#0891B2] text-white' 
-                        : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
-                    }`}
+                    className="px-3.5 py-2 rounded-full text-[13px] font-medium transition-all border-none cursor-pointer"
+                    style={{
+                      backgroundColor: activeFeatureTab === tab ? '#0891B2' : '#1E293B',
+                      color: activeFeatureTab === tab ? '#FFFFFF' : '#94A3B8',
+                    }}
                     onClick={() => setActiveFeatureTab(tab)}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -309,18 +315,18 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
               </div>
               
               {/* Features Content */}
-              <div className="p-4 bg-[#F8FAFC] rounded-lg">
+              <div className="p-4 rounded-lg" style={{ backgroundColor: '#1E293B' }}>
                 {currentFeatures.length > 0 ? (
                   <ul className="grid grid-cols-2 gap-2">
                     {currentFeatures.map((feature, idx) => (
-                      <li key={idx} className="text-[13px] text-[#64748B] flex items-center gap-2">
+                      <li key={idx} className="text-[13px] flex items-center gap-2" style={{ color: '#CBD5E1' }}>
                         <span className="w-1.5 h-1.5 rounded-full bg-[#0891B2]" />
                         {feature}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-center text-[13px] text-[#94A3B8]">
+                  <p className="text-center text-[13px]" style={{ color: '#64748B' }}>
                     No {activeFeatureTab} features listed
                   </p>
                 )}
@@ -330,18 +336,19 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </div>
 
         {/* Location Accordion */}
-        <div className="bg-white overflow-hidden">
+        <div className="overflow-hidden" style={{ backgroundColor: '#0F172A' }}>
           <div 
-            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => toggleSection('location')}
           >
             <svg className="w-6 h-6 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Location</span>
+            <span className="flex-1 text-sm font-semibold uppercase tracking-wide" style={{ color: '#F1F5F9' }}>Location</span>
             <svg 
-              className={`w-5 h-5 text-[#94A3B8] transition-transform ${expandedSections.location ? 'rotate-180' : ''}`} 
+              className={`w-5 h-5 transition-transform ${expandedSections.location ? 'rotate-180' : ''}`} 
+              style={{ color: '#64748B' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -350,12 +357,12 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
           
           {expandedSections.location && (
             <div className="px-4 pb-4">
-              <div className="h-36 bg-gradient-to-br from-[#E2E8F0] to-[#CBD5E1] rounded-lg flex flex-col items-center justify-center gap-2">
+              <div className="h-36 rounded-lg flex flex-col items-center justify-center gap-2" style={{ backgroundColor: '#1E293B', border: '1px solid #334155' }}>
                 <svg className="w-8 h-8 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
                 </svg>
-                <div className="text-xs text-[#64748B] text-center px-4">{fullAddress}</div>
+                <div className="text-xs text-center px-4" style={{ color: '#94A3B8' }}>{fullAddress}</div>
               </div>
             </div>
           )}
