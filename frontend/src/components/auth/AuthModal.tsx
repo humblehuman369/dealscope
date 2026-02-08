@@ -29,15 +29,17 @@ export default function AuthModal() {
     }
   }, [searchParams, isAuthenticated])
 
-  // Auto-close + redirect when auth state changes while modal is open
-  // (e.g. session restored from another tab, or cookie-based auth detected)
+  // Auto-close when auth state changes while modal is open
+  // (e.g. session restored from another tab, or cookie-based auth detected).
+  //
+  // IMPORTANT: We only close the modal here — we do NOT navigate.
+  // Navigation is handled exclusively by onLoginSuccess to avoid
+  // two competing router.replace() calls racing each other.
   useEffect(() => {
     if (isAuthenticated && isOpen) {
-      const redirect = searchParams.get('redirect') || '/dashboard'
       setIsOpen(false)
-      router.replace(redirect)
     }
-  }, [isAuthenticated, isOpen, searchParams, router])
+  }, [isAuthenticated, isOpen])
 
   // Dismiss modal (X button or backdrop click) — stay on current page
   const close = useCallback(() => {

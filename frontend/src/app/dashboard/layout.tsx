@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, Suspense } from 'react'
+import { useEffect, useRef, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from '@/hooks/useSession'
+import { useSession, getLastKnownUser } from '@/hooks/useSession'
 import { DealHubSidebar } from '@/components/dashboard/DealHubSidebar'
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary'
 
@@ -21,19 +21,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, isAuthenticated, isLoading, isAdmin } = useSession()
   const router = useRouter()
 
+  // Guard: prevent multiple redirects (breaks the loop).
+  const hasRedirected = useRef(false)
+
   useEffect(() => {
     if (isLoading) return
     if (!isAuthenticated) {
-      // Use replace to avoid a /dashboard skeleton entry in history.
-      // After login, AuthModal's onLoginSuccess will router.replace back here.
+      // Check in-memory fallback: if the user JUST logged in, the
+      // React Query cache might not have caught up yet.  Give it a
+      // grace period instead of redirecting immediately.
+      const fallbackUser = getLastKnownUser()
+      if (fallbackUser) {
+        // User exists in memory — skip redirect.  React Query will
+        // catch up on the next tick.
+        return
+      }
+
+      // Only redirect once per mount to break redirect loops.
+      if (hasRedirected.current) return
+      hasRedirected.current = true
+
       router.replace('/?auth=login&redirect=/dashboard')
+    } else {
+      // User is authenticated — reset the guard so future logouts
+      // can redirect correctly.
+      hasRedirected.current = false
     }
-    // Note: onboarding is optional — show a prompt in the dashboard instead
-    // of hard-gating access. Users should be able to use the dashboard
-    // immediately after signup.
   }, [isLoading, isAuthenticated, router])
 
-  if (isLoading || !isAuthenticated || !user) {
+  // Determine displayed user: prefer React Query cache, fall back
+  // to in-memory snapshot to avoid a flicker.
+  const displayUser = user ?? getLastKnownUser()
+  const showDashboard = isAuthenticated || !!displayUser
+
+  if (isLoading || !showDashboard || !displayUser) {
     return <DashboardSkeleton />
   }
 
@@ -41,8 +62,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-slate-50 dark:bg-navy-950 overflow-hidden">
       <DealHubSidebar
         isAdmin={isAdmin}
-        userName={user.full_name}
-        userEmail={user.email}
+        userName={displayUser.full_name}
+        userEmail={displayUser.email}
       />
       <main className="flex-1 overflow-y-auto">
         <ErrorBoundary>

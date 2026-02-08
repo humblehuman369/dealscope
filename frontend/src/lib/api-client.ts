@@ -39,6 +39,40 @@ class ApiError extends Error {
 }
 
 // ------------------------------------------------------------------
+// In-memory token fallback
+//
+// Browsers sometimes delay persisting httpOnly cookies (especially
+// through reverse-proxy rewrites).  We keep a short-lived copy of
+// the access token in memory so that the first /me call right after
+// login can fall back to the Authorization header.
+// ------------------------------------------------------------------
+
+let _memoryToken: string | null = null
+let _memoryTokenSetAt = 0
+const MEMORY_TOKEN_TTL_MS = 60_000 // 60 seconds — plenty for the first /me check
+
+/** Store the access token in memory (called right after login). */
+export function setMemoryToken(token: string) {
+  _memoryToken = token
+  _memoryTokenSetAt = Date.now()
+}
+
+/** Read the in-memory access token (returns null after TTL expires). */
+function getMemoryToken(): string | null {
+  if (!_memoryToken) return null
+  if (Date.now() - _memoryTokenSetAt > MEMORY_TOKEN_TTL_MS) {
+    _memoryToken = null
+    return null
+  }
+  return _memoryToken
+}
+
+/** Clear the in-memory token (called on logout). */
+export function clearMemoryToken() {
+  _memoryToken = null
+}
+
+// ------------------------------------------------------------------
 // CSRF helper
 // ------------------------------------------------------------------
 
@@ -91,6 +125,13 @@ async function apiRequest<T>(
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers,
+  }
+
+  // Fall back to in-memory token if available (covers the window
+  // between login and cookie propagation).
+  const memToken = getMemoryToken()
+  if (memToken && !requestHeaders['Authorization']) {
+    requestHeaders['Authorization'] = `Bearer ${memToken}`
   }
 
   // Attach CSRF token on mutating requests
@@ -148,11 +189,18 @@ async function apiRequest<T>(
 export const authApi = {
   me: () => apiRequest<UserResponse>('/api/v1/auth/me', { softAuth: true }),
 
-  login: (email: string, password: string, rememberMe = false) =>
-    apiRequest<LoginResponse | MFAChallengeResponse>('/api/v1/auth/login', {
+  login: async (email: string, password: string, rememberMe = false) => {
+    const result = await apiRequest<LoginResponse | MFAChallengeResponse>('/api/v1/auth/login', {
       method: 'POST',
       body: { email, password, remember_me: rememberMe },
-    }),
+    })
+    // Store access token in memory so the very next /me call
+    // can use the Authorization header if cookies haven't propagated yet.
+    if ('access_token' in result && result.access_token) {
+      setMemoryToken(result.access_token)
+    }
+    return result
+  },
 
   loginMfa: (challengeToken: string, totpCode: string, rememberMe = false) =>
     apiRequest<LoginResponse>('/api/v1/auth/login/mfa', {
@@ -167,8 +215,10 @@ export const authApi = {
       skipAuth: true,
     }),
 
-  logout: () =>
-    apiRequest<{ message: string }>('/api/v1/auth/logout', { method: 'POST' }),
+  logout: () => {
+    clearMemoryToken()
+    return apiRequest<{ message: string }>('/api/v1/auth/logout', { method: 'POST' })
+  },
 
   refresh: () => refreshTokens(),
 

@@ -6,6 +6,10 @@
  * Replaces AuthContext.  React Query cache is the single source of truth
  * for the current user.  No Context Provider is needed.
  *
+ * An in-memory fallback (`_lastKnownUser`) prevents a brief cache miss
+ * from triggering a redirect loop after login.  The value is set on
+ * login success and cleared on logout.
+ *
  * Usage:
  *   const { user, isLoading, isAuthenticated } = useSession()
  *   const login = useLogin()
@@ -28,6 +32,24 @@ import {
 export const SESSION_QUERY_KEY = ['session', 'me'] as const
 
 // ------------------------------------------------------------------
+// In-memory fallback for user data.
+//
+// Survives React Query cache misses / refetch races that happen
+// immediately after login (before cookies fully propagate).
+// ------------------------------------------------------------------
+let _lastKnownUser: UserResponse | null = null
+
+/** Set the in-memory user fallback (called after login). */
+export function setLastKnownUser(user: UserResponse | null) {
+  _lastKnownUser = user
+}
+
+/** Read the in-memory user fallback. */
+export function getLastKnownUser(): UserResponse | null {
+  return _lastKnownUser
+}
+
+// ------------------------------------------------------------------
 // useSession — reads current user from cache / API
 // ------------------------------------------------------------------
 
@@ -36,12 +58,19 @@ export function useSession() {
     queryKey: SESSION_QUERY_KEY,
     queryFn: async () => {
       try {
-        return await authApi.me()
+        const me = await authApi.me()
+        if (me) {
+          _lastKnownUser = me
+        }
+        return me
       } catch {
+        // Don't clear _lastKnownUser on transient failures —
+        // the dashboard layout uses it as a grace-period fallback.
         return null
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes — keep cache longer to survive navigations
     retry: false,
     refetchOnWindowFocus: true,
   })
@@ -84,8 +113,9 @@ export function useLogin() {
       if ('mfa_required' in data && data.mfa_required) {
         return
       }
-      // Login success — set user in cache
+      // Login success — set user in cache AND in-memory fallback
       const loginData = data as LoginResponse
+      _lastKnownUser = loginData.user
       queryClient.setQueryData(SESSION_QUERY_KEY, loginData.user)
     },
   })
@@ -153,6 +183,7 @@ export function useLogout() {
       }
     },
     onSettled: () => {
+      _lastKnownUser = null
       queryClient.setQueryData(SESSION_QUERY_KEY, null)
       queryClient.clear()
       router.push('/')
