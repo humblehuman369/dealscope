@@ -164,9 +164,9 @@ export const colors = {
     /** #C45B5B - Soft coral for concern/negative (replaces red in score context) */
     softCoral: '#C45B5B',
     /** Teal-tinted confidence bar track */
-    confidenceTrack: 'rgba(8,145,178,0.06)',
+    confidenceTrack: 'rgba(8,145,178,0.15)',
     /** Card border matching investment card */
-    verdictCardBorder: 'rgba(8,145,178,0.12)',
+    verdictCardBorder: 'rgba(8,145,178,0.25)',
     /** Signal indicator card background */
     signalCardBg: '#1E293B',
   },
@@ -178,10 +178,10 @@ export const colors = {
     tealEnd: 'rgba(8,145,178,0.10)',
   },
   shadow: {
-    card: '0 2px 8px rgba(0,0,0,0.06)',
-    glow: '0 0 20px rgba(8,145,178,0.15)',
-    metricCard: '0 1px 4px rgba(0,0,0,0.06)',
-    verdictCard: '0 2px 8px rgba(0,0,0,0.04)',
+    card: '0 2px 8px rgba(0,0,0,0.3)',
+    glow: '0 0 20px rgba(8,145,178,0.20)',
+    metricCard: '0 1px 4px rgba(0,0,0,0.3)',
+    verdictCard: '0 2px 8px rgba(0,0,0,0.25)',
   },
 } as const
 
