@@ -14,7 +14,7 @@ import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { useState } from 'react'
 import {
   Building2, TrendingUp, DollarSign, BarChart3,
-  Search, Clock, ChevronRight, FileText, StickyNote, PieChart
+  Search, Clock, ChevronRight, FileText, StickyNote, PieChart, AlertCircle
 } from 'lucide-react'
 
 // ------------------------------------------------------------------
@@ -77,22 +77,25 @@ export default function DashboardOverview() {
   const [showSearch, setShowSearch] = useState(false)
 
   // Parallel data fetching
-  const { data: stats, isLoading: statsLoading } = useQuery<PropertyStats>({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<PropertyStats>({
     queryKey: ['dashboard', 'stats'],
     queryFn: () => api.get('/api/v1/properties/saved/stats'),
     staleTime: 2 * 60 * 1000,
+    retry: 1,
   })
 
-  const { data: recentSearches, isLoading: searchesLoading } = useQuery<SearchHistoryData[]>({
+  const { data: recentSearches, isLoading: searchesLoading, error: searchesError } = useQuery<SearchHistoryData[]>({
     queryKey: ['dashboard', 'recentSearches'],
     queryFn: () => api.get('/api/v1/search-history/recent?limit=5'),
     staleTime: 60 * 1000,
+    retry: 1,
   })
 
-  const { data: savedProperties, isLoading: propsLoading } = useQuery<SavedPropertyData[]>({
+  const { data: savedProperties, isLoading: propsLoading, error: propsError } = useQuery<SavedPropertyData[]>({
     queryKey: ['dashboard', 'savedProperties'],
     queryFn: () => api.get('/api/v1/properties/saved?limit=5'),
     staleTime: 2 * 60 * 1000,
+    retry: 1,
   })
 
   const firstName = user?.full_name?.split(' ')[0] || 'Investor'
@@ -191,6 +194,12 @@ export default function DashboardOverview() {
             <div className="p-3 flex-1">
               {propsLoading ? (
                 <ListSkeleton />
+              ) : propsError ? (
+                <div className="text-center py-10 text-sm text-slate-400">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                  <p className="text-slate-600 dark:text-slate-400">Unable to load properties</p>
+                  <p className="text-xs text-slate-400 mt-1">{(propsError as any)?.message || 'Please try refreshing'}</p>
+                </div>
               ) : savedProperties && savedProperties.length > 0 ? (
                 <div className="space-y-0.5">
                   {savedProperties.map((p) => (
@@ -225,6 +234,12 @@ export default function DashboardOverview() {
             <div className="p-3 flex-1">
               {searchesLoading ? (
                 <ListSkeleton rows={4} />
+              ) : searchesError ? (
+                <div className="text-center py-10 text-sm text-slate-400">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                  <p className="text-slate-600 dark:text-slate-400">Unable to load activity</p>
+                  <p className="text-xs text-slate-400 mt-1">{(searchesError as any)?.message || 'Please try refreshing'}</p>
+                </div>
               ) : recentSearches && recentSearches.length > 0 ? (
                 <div className="space-y-0.5">
                   {recentSearches.map((s) => (
