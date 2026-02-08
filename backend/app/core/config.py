@@ -266,15 +266,17 @@ def validate_settings(settings: Settings) -> None:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
             errors.append("DATABASE_URL must be set to a production database in production mode")
 
-        # Required API keys in production
-        if not settings.RENTCAST_API_KEY:
-            errors.append("RENTCAST_API_KEY must be set in production")
-        if not settings.AXESSO_API_KEY:
-            errors.append("AXESSO_API_KEY must be set in production")
-        if not settings.STRIPE_SECRET_KEY:
-            errors.append("STRIPE_SECRET_KEY must be set in production")
-        if not settings.RESEND_API_KEY:
-            errors.append("RESEND_API_KEY must be set in production (email delivery)")
+        # Warn about missing API keys — app starts without them but
+        # related features (property data, billing, email) will be unavailable.
+        _prod_keys = [
+            ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY, "property data"),
+            ("AXESSO_API_KEY", settings.AXESSO_API_KEY, "Zillow data"),
+            ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY, "billing"),
+            ("RESEND_API_KEY", settings.RESEND_API_KEY, "email delivery"),
+        ]
+        for key_name, key_value, feature in _prod_keys:
+            if not key_value:
+                warnings.warn(f"{key_name} not set — {feature} will be unavailable")
 
         if not settings.STRIPE_WEBHOOK_SECRET:
             # Warning only - Stripe webhooks will fail but app will start
