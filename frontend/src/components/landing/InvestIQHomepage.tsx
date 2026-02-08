@@ -342,10 +342,11 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             </div>
             <div className="iq-avatar-wrap">
               <div className="iq-avatar-box">
-                <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M 40 88 Q 18 88 18 58 Q 18 16 58 16 Q 86 16 91 38 Q 93 47 91 54 L 91 58 C 91 64 86 64 86 70 L 86 88" />
-                  <path d="M 33 56 L 55 33 L 77 56 V 77 H 33 Z" strokeWidth="3" />
-                </svg>
+                <img
+                  src="/images/iq-brain-dark.png"
+                  alt="InvestIQ"
+                  style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative' }}
+                />
               </div>
             </div>
           </div>

@@ -407,7 +407,8 @@
   content: ''; position: absolute; inset: 0;
   background: radial-gradient(circle at center, rgba(14, 165, 233, 0.08) 0%, transparent 70%);
 }
-.iq-landing .iq-avatar-box svg {
+.iq-landing .iq-avatar-box svg,
+.iq-landing .iq-avatar-box img {
   width: 140px; height: 140px; color: var(--blue); position: relative;
   filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.3));
   animation: iqGlow 4s ease-in-out infinite;
