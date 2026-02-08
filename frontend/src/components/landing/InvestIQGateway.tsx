@@ -97,9 +97,9 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
 
           {/* Step 1: Start */}
           <div className={stepClass('start')}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
               <div className="gw-start-icon gw-iq-icon">
-                <IQIcon size={64} />
+                <IQIcon size={56} />
               </div>
               <h2 className="gw-start-title">How would you like to start?</h2>
               <p className="gw-start-subtitle">Choose your preferred method to feed data to IQ.</p>
@@ -142,11 +142,11 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
               </div>
               <div>
                 <h3>I&apos;m IQ, your analyst.</h3>
-                <p>Enter the address below. Help me improve accuracy by setting the physical variables.</p>
+                <p>Enter the address and adjust the property details below to sharpen my analysis.</p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="gw-address-input-wrap">
                 <div className="gw-search-icon">
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,11 +226,11 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
               </div>
               <div>
                 <h3>I&apos;m IQ, your analyst.</h3>
-                <p>Before you scan. Help me improve accuracy by setting the physical variables.</p>
+                <p>Adjust the property details below so I can give you a more accurate valuation.</p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingTop: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Property Condition</label>
