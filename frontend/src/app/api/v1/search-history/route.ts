@@ -4,11 +4,23 @@ import { BACKEND_URL } from '@/lib/server-env'
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
 
+function buildProxyHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader) headers['Authorization'] = authHeader
+  const cookieHeader = request.headers.get('Cookie')
+  if (cookieHeader) headers['Cookie'] = cookieHeader
+  return headers
+}
+
+function hasAuth(request: NextRequest): boolean {
+  return !!(request.headers.get('Authorization') || request.headers.get('Cookie'))
+}
+
 // GET /api/v1/search-history - Get search history
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
@@ -18,10 +30,7 @@ export async function GET(request: NextRequest) {
 
     const backendResponse = await fetch(backendUrl, {
       method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-      },
+      headers: buildProxyHeaders(request),
     })
 
     const data = await backendResponse.json()
@@ -35,17 +44,13 @@ export async function GET(request: NextRequest) {
 // DELETE /api/v1/search-history - Clear all search history
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
     const backendResponse = await fetch(`${BACKEND_URL}/api/v1/search-history`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-      },
+      headers: buildProxyHeaders(request),
     })
 
     if (backendResponse.status === 204) {

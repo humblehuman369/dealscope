@@ -26,7 +26,6 @@ import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
-import { getAccessToken, refreshAccessToken } from '@/lib/api'
 import { toast } from '@/components/feedback'
 
 // ===================
@@ -223,21 +222,17 @@ export function AppHeader({
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
 
-  const fetchExistingSavedProperty = useCallback(async (token: string) => {
+  const fetchExistingSavedProperty = useCallback(async () => {
     if (!displayAddress) return null
     const { streetAddress, city, state } = parseDisplayAddress(displayAddress)
     if (!streetAddress) return null
 
     try {
-      // First, try to fetch all saved properties and filter by zpid if available
-      // This is more reliable than search which may miss exact matches
+      // Fetch all saved properties and filter by address match
       const response = await fetch(
         `/api/v1/properties/saved?limit=100`, 
         {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         }
       )
@@ -312,20 +307,12 @@ export function AppHeader({
     // Only check if authenticated and has address
     if (!isAuthenticated || !displayAddress) return
     
-    // Use AbortController to cancel fetch on unmount
-    const abortController = new AbortController()
+    let cancelled = false
     
     const checkIfSaved = async () => {
       try {
-        // Get token, refreshing if needed
-        let token = getAccessToken()
-        if (!token) {
-          const refreshed = await refreshAccessToken()
-          if (refreshed) token = getAccessToken()
-          if (!token) return // No token available, skip check
-        }
-
-        const savedProperty = await fetchExistingSavedProperty(token)
+        const savedProperty = await fetchExistingSavedProperty()
+        if (cancelled) return
         if (savedProperty) {
           setIsSaved(true)
           setSavedPropertyId(savedProperty.id || null)
@@ -334,18 +321,14 @@ export function AppHeader({
           setSavedPropertyId(null)
         }
       } catch (error) {
-        // Ignore abort errors (expected on cleanup)
-        if (error instanceof Error && error.name === 'AbortError') return
+        if (cancelled) return
         console.error('Error checking saved status:', error)
       }
     }
     
     checkIfSaved()
     
-    // Cleanup: abort fetch request on unmount
-    return () => {
-      abortController.abort()
-    }
+    return () => { cancelled = true }
   }, [displayAddress, isAuthenticated, fetchExistingSavedProperty])
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
@@ -453,21 +436,6 @@ export function AppHeader({
 
     if (isSaving || isSaved || !displayAddress) return
 
-    // Get auth token - try refresh if not available
-    let token = getAccessToken()
-    if (!token) {
-      // User is authenticated (via cookies/session) but no in-memory token.
-      // Try to refresh to obtain a Bearer token.
-      const refreshed = await refreshAccessToken()
-      if (refreshed) {
-        token = getAccessToken()
-      }
-      if (!token) {
-        openAuthModal('login')
-        return
-      }
-    }
-
     setIsSaving(true)
     try {
       // Parse address for API
@@ -475,10 +443,7 @@ export function AppHeader({
 
       const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           address_street: streetAddress,
@@ -487,7 +452,7 @@ export function AppHeader({
           address_zip: zipCode || '',
           full_address: displayAddress,
           zpid: property?.zpid || null,
-          external_property_id: property?.zpid || null, // Use zpid as external ID if available
+          external_property_id: property?.zpid || null,
           status: 'watching',
           property_data_snapshot: {
             zpid: property?.zpid || null,
@@ -504,19 +469,16 @@ export function AppHeader({
       })
 
       if (response.ok) {
-        // 201 = created - capture the property ID from response
         const data = await response.json()
         setIsSaved(true)
         setSavedPropertyId(data.id || null)
         toast.success('Property saved to your portfolio')
       } else if (response.status === 409) {
-        // Already exists - fetch existing ID for correct unsave behavior
-        const existing = await fetchExistingSavedProperty(token)
+        const existing = await fetchExistingSavedProperty()
         setIsSaved(true)
         setSavedPropertyId(existing?.id || null)
         toast.info('Property is already in your portfolio')
       } else if (response.status === 400) {
-        // Check if it's a duplicate error (backend may return 400 for duplicates)
         let errorData: { detail?: string }
         try {
           errorData = await response.json()
@@ -526,7 +488,7 @@ export function AppHeader({
         }
         const errorText = errorData.detail || JSON.stringify(errorData)
         if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
-          const existing = await fetchExistingSavedProperty(token)
+          const existing = await fetchExistingSavedProperty()
           setIsSaved(true)
           setSavedPropertyId(existing?.id || null)
           toast.info('Property is already in your portfolio')
@@ -535,7 +497,6 @@ export function AppHeader({
           console.error('Failed to save property:', response.status, errorText)
         }
       } else if (response.status === 401) {
-        // Token expired - prompt login
         openAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
@@ -545,7 +506,6 @@ export function AppHeader({
         } catch {
           // Response is not JSON, use default error
         }
-        // Handle both FastAPI format (detail) and custom InvestIQ format (message)
         const errorMessage = errorData.detail || errorData.message || 'Failed to save property. Please try again.'
         toast.error(errorMessage)
         console.error('Failed to save property:', response.status, errorData)
@@ -562,24 +522,11 @@ export function AppHeader({
   const handleUnsave = useCallback(async () => {
     if (!isAuthenticated || !savedPropertyId || isSaving) return
 
-    let token = getAccessToken()
-      if (!token) {
-        const refreshed = await refreshAccessToken()
-        if (refreshed) token = getAccessToken()
-        if (!token) {
-          openAuthModal('login')
-          return
-        }
-      }
-
     setIsSaving(true)
     try {
       const response = await fetch(`/api/v1/properties/saved/${savedPropertyId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       })
 

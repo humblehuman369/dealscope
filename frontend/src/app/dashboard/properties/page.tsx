@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { getAccessToken } from '@/lib/api'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import {
   Building2, Search, Clock, Star, Filter, ChevronRight,
   Trash2, Plus, Eye, MoreVertical, MapPin, TrendingUp,
   Grid3X3, List, ChevronDown, X, ArrowUpDown
 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
 
 // ===========================================
 // Types
@@ -102,43 +100,38 @@ export default function PropertiesHub() {
 
   const [searchQuery, setSearchQuery] = useState('')
 
-  const fetchHeaders = useCallback(() => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    const token = getAccessToken()
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    return headers
-  }, [])
-
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
-      const headers = fetchHeaders()
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       const [propsRes, historyRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=50`, { headers, credentials: 'include' }),
-        fetch(`${API_BASE_URL}/api/v1/search-history?limit=50`, { headers, credentials: 'include' }),
+        fetch('/api/v1/properties/saved?limit=50', { headers, credentials: 'include' }),
+        fetch('/api/v1/search-history?limit=50', { headers, credentials: 'include' }),
       ])
 
       if (propsRes.ok) {
         const data = await propsRes.json()
-        setSavedProperties(data.items || data || [])
+        setSavedProperties(Array.isArray(data) ? data : (data.items || []))
       }
       if (historyRes.ok) {
         const data = await historyRes.json()
-        setSearchHistory(data.items || data || [])
+        setSearchHistory(Array.isArray(data) ? data : (data.items || []))
       }
     } catch (err) {
       console.error('Failed to fetch properties:', err)
     } finally {
       setIsLoading(false)
     }
-  }, [fetchHeaders])
+  }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 
   const handleDeleteHistory = async (id: string) => {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/search-history/${id}`, {
-        method: 'DELETE', headers: fetchHeaders(), credentials: 'include'
+      await fetch(`/api/v1/search-history/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       })
       setSearchHistory(prev => prev.filter(h => h.id !== id))
     } catch (err) {
@@ -149,8 +142,10 @@ export default function PropertiesHub() {
   const handleDeleteSaved = async (id: string) => {
     if (!confirm('Remove this property from your portfolio?')) return
     try {
-      await fetch(`${API_BASE_URL}/api/v1/properties/saved/${id}`, {
-        method: 'DELETE', headers: fetchHeaders(), credentials: 'include'
+      await fetch(`/api/v1/properties/saved/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       })
       setSavedProperties(prev => prev.filter(p => p.id !== id))
     } catch (err) {

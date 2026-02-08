@@ -12,18 +12,20 @@ export async function DELETE(
   const { entryId } = await params
   try {
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    const cookieHeader = request.headers.get('Cookie')
+    if (!authHeader && !cookieHeader) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (authHeader) headers['Authorization'] = authHeader
+    if (cookieHeader) headers['Cookie'] = cookieHeader
 
     const backendResponse = await fetch(
       `${BACKEND_URL}/api/v1/search-history/${entryId}`,
       {
         method: 'DELETE',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers,
       }
     )
 

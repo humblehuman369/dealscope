@@ -4,12 +4,42 @@ import { BACKEND_URL } from '@/lib/server-env'
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
 
+/**
+ * Build headers for proxying to the backend.
+ * Forwards Authorization header (Bearer token) AND/OR Cookie header
+ * to support both token-based and cookie-based authentication.
+ */
+function buildProxyHeaders(request: NextRequest, extraHeaders?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+  }
+
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader) {
+    headers['Authorization'] = authHeader
+  }
+
+  // Forward cookies for cookie-based auth (httpOnly access_token cookie)
+  const cookieHeader = request.headers.get('Cookie')
+  if (cookieHeader) {
+    headers['Cookie'] = cookieHeader
+  }
+
+  return headers
+}
+
+/**
+ * Check if the request has any form of authentication.
+ */
+function hasAuth(request: NextRequest): boolean {
+  return !!(request.headers.get('Authorization') || request.headers.get('Cookie'))
+}
+
 // GET /api/v1/properties/saved - List saved properties
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
-      console.log('[Saved Properties GET] No auth header')
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
@@ -17,14 +47,9 @@ export async function GET(request: NextRequest) {
     const queryString = url.searchParams.toString()
     const backendUrl = `${BACKEND_URL}/api/v1/properties/saved${queryString ? `?${queryString}` : ''}`
 
-    console.log('[Saved Properties GET] Fetching from:', backendUrl)
-
     const backendResponse = await fetch(backendUrl, {
       method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-      },
+      headers: buildProxyHeaders(request),
     })
 
     if (!backendResponse.ok) {
@@ -48,33 +73,17 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/properties/saved - Save a new property
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
-      console.log('[Saved Properties POST] No auth header')
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
     const body = await request.json()
-    
-    console.log('[Saved Properties POST] Request body:', {
-      address_street: body.address_street,
-      address_city: body.address_city,
-      address_state: body.address_state,
-      address_zip: body.address_zip,
-      full_address: body.full_address,
-      status: body.status,
-      has_snapshot: !!body.property_data_snapshot,
-    })
 
     const backendUrl = `${BACKEND_URL}/api/v1/properties/saved`
-    console.log('[Saved Properties POST] Posting to:', backendUrl)
 
     const backendResponse = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-      },
+      headers: buildProxyHeaders(request),
       body: JSON.stringify(body),
     })
 
@@ -86,16 +95,14 @@ export async function POST(request: NextRequest) {
       try {
         if (contentType?.includes('application/json')) {
           const errorData = await backendResponse.json()
-          // Handle both FastAPI format (detail) and custom InvestIQ format (message)
           errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData)
         } else {
           errorDetail = await backendResponse.text()
         }
-      } catch (parseError) {
+      } catch {
         errorDetail = `Backend returned ${backendResponse.status} but response could not be parsed`
       }
       console.error('[Saved Properties POST] Backend error:', backendResponse.status, errorDetail)
-      // Return the backend's status code, but ensure we have a valid response
       return NextResponse.json(
         { detail: errorDetail || `Backend error: ${backendResponse.status}` }, 
         { status: backendResponse.status }
@@ -103,8 +110,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await backendResponse.json()
-    console.log('[Saved Properties POST] Success - id:', data.id)
-    
     return NextResponse.json(data, { status: backendResponse.status })
   } catch (error) {
     console.error('[Saved Properties POST] Error:', error)

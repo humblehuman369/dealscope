@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useCallback } from 'react'
-import { getAccessToken } from '@/lib/api'
+// Auth handled via httpOnly cookies (credentials: 'include')
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -234,20 +234,11 @@ export function SalesCompsScreen({
       return
     }
 
-    const token = getAccessToken()
-    if (!token) {
-      openAuthModal('login')
-      return
-    }
-
     try {
       const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           address_street: property.address,
           address_city: property.city,

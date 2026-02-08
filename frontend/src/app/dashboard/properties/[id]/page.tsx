@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getAccessToken } from '@/lib/api'
 import {
   Building2, ArrowLeft, MapPin, Calendar, Tag, Edit2, Save, X,
   FileText, Download, Upload, Trash2, ExternalLink, ChevronDown,
@@ -11,7 +10,6 @@ import {
   FileSpreadsheet, ClipboardList, Clock, StickyNote, FolderOpen,
   ChevronRight, Loader2, AlertCircle
 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
 
 // ===========================================
 // Types
@@ -86,36 +84,31 @@ export default function PropertyFilePage() {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const headers = useCallback(() => {
-    const h: Record<string, string> = { 'Content-Type': 'application/json' }
-    const token = getAccessToken()
-    if (token) h['Authorization'] = `Bearer ${token}`
-    return h
-  }, [])
+  const jsonHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
 
   const fetchProperty = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${id}`, { headers: headers(), credentials: 'include' })
+      const res = await fetch(`/api/v1/properties/saved/${id}`, { headers: jsonHeaders, credentials: 'include' })
       if (!res.ok) throw new Error('Property not found')
       const data = await res.json()
       setProperty(data)
       setNotes(data.notes || '')
-    } catch (err) {
+    } catch {
       setError('Property not found or you don\'t have access')
     }
-  }, [id, headers])
+  }, [id])
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/documents?property_id=${id}`, { headers: headers(), credentials: 'include' })
+      const res = await fetch(`/api/v1/documents?property_id=${id}`, { headers: jsonHeaders, credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
-        setDocuments(data.items || data || [])
+        setDocuments(Array.isArray(data) ? data : (data.items || []))
       }
-    } catch (err) {
+    } catch {
       console.warn('Could not fetch documents')
     }
-  }, [id, headers])
+  }, [id])
 
   useEffect(() => {
     Promise.all([fetchProperty(), fetchDocuments()]).finally(() => setIsLoading(false))
@@ -123,23 +116,23 @@ export default function PropertyFilePage() {
 
   const updateStatus = async (newStatus: string) => {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/properties/saved/${id}`, {
-        method: 'PATCH', headers: headers(), credentials: 'include',
+      await fetch(`/api/v1/properties/saved/${id}`, {
+        method: 'PATCH', headers: jsonHeaders, credentials: 'include',
         body: JSON.stringify({ status: newStatus })
       })
       setProperty(prev => prev ? { ...prev, status: newStatus } : null)
       setEditingStatus(false)
-    } catch (err) { console.error('Failed to update status') }
+    } catch { console.error('Failed to update status') }
   }
 
   const saveNotes = async () => {
     setIsSavingNotes(true)
     try {
-      await fetch(`${API_BASE_URL}/api/v1/properties/saved/${id}`, {
-        method: 'PATCH', headers: headers(), credentials: 'include',
+      await fetch(`/api/v1/properties/saved/${id}`, {
+        method: 'PATCH', headers: jsonHeaders, credentials: 'include',
         body: JSON.stringify({ notes })
       })
-    } catch (err) { console.error('Failed to save notes') }
+    } catch { console.error('Failed to save notes') }
     finally { setIsSavingNotes(false) }
   }
 
@@ -148,36 +141,30 @@ export default function PropertyFilePage() {
     if (!file) return
     setIsUploading(true)
     try {
-      const token = getAccessToken()
       const formData = new FormData()
       formData.append('file', file)
       formData.append('property_id', id)
       formData.append('document_type', 'other')
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/documents`, {
+      const res = await fetch('/api/v1/documents', {
         method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         credentials: 'include',
         body: formData
       })
       if (res.ok) await fetchDocuments()
-    } catch (err) { console.error('Upload failed') }
+    } catch { console.error('Upload failed') }
     finally { setIsUploading(false) }
   }
 
   const downloadReport = async (format: 'excel' | 'pdf') => {
-    const token = getAccessToken()
     const propId = property?.external_property_id || property?.zpid || id
     const address = property?.address_street || ''
     const endpoint = format === 'excel'
-      ? `${API_BASE_URL}/api/v1/proforma/property/${propId}/excel?address=${encodeURIComponent(address)}`
-      : `${API_BASE_URL}/api/v1/proforma/property/${propId}/pdf?address=${encodeURIComponent(address)}`
+      ? `/api/v1/proforma/property/${propId}/excel?address=${encodeURIComponent(address)}`
+      : `/api/v1/proforma/property/${propId}/pdf?address=${encodeURIComponent(address)}`
 
     try {
-      const res = await fetch(endpoint, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        credentials: 'include'
-      })
+      const res = await fetch(endpoint, { credentials: 'include' })
       if (!res.ok) throw new Error('Download failed')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -460,7 +447,7 @@ export default function PropertyFilePage() {
                       </div>
                     </div>
                     <a
-                      href={`${API_BASE_URL}/api/v1/documents/${doc.id}/download`}
+                      href={`/api/v1/documents/${doc.id}/download`}
                       className="p-2 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
                     >
                       <Download size={14} />

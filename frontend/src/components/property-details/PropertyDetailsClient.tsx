@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
-import { getAccessToken } from '@/lib/api'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
@@ -58,20 +57,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
 
     setIsSaving(true)
     try {
-      const token = getAccessToken()
-      if (!token) {
-        openAuthModal('login')
-        setIsSaving(false)
-        return
-      }
-
       const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           address_street: property.address.streetAddress,
           address_city: property.address.city,

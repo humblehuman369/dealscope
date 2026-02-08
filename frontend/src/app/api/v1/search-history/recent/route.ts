@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    const cookieHeader = request.headers.get('Cookie')
+    if (!authHeader && !cookieHeader) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
@@ -16,12 +17,13 @@ export async function GET(request: NextRequest) {
     const queryString = url.searchParams.toString()
     const backendUrl = `${BACKEND_URL}/api/v1/search-history/recent${queryString ? `?${queryString}` : ''}`
 
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (authHeader) headers['Authorization'] = authHeader
+    if (cookieHeader) headers['Cookie'] = cookieHeader
+
     const backendResponse = await fetch(backendUrl, {
       method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-      },
+      headers,
     })
 
     const data = await backendResponse.json()

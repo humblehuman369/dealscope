@@ -4,6 +4,28 @@ import { BACKEND_URL } from '@/lib/server-env'
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
 
+/**
+ * Build headers for proxying to the backend.
+ * Forwards Authorization header AND/OR Cookie header for auth.
+ */
+function buildProxyHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader) headers['Authorization'] = authHeader
+
+  const cookieHeader = request.headers.get('Cookie')
+  if (cookieHeader) headers['Cookie'] = cookieHeader
+
+  return headers
+}
+
+function hasAuth(request: NextRequest): boolean {
+  return !!(request.headers.get('Authorization') || request.headers.get('Cookie'))
+}
+
 // GET /api/v1/properties/saved/[propertyId] - Get a saved property
 export async function GET(
   request: NextRequest,
@@ -11,8 +33,7 @@ export async function GET(
 ) {
   const { propertyId } = await params
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
@@ -20,10 +41,7 @@ export async function GET(
       `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'GET',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildProxyHeaders(request),
       }
     )
 
@@ -42,34 +60,22 @@ export async function PATCH(
 ) {
   const { propertyId } = await params
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
     const body = await request.json()
-    console.log('[Saved Property PATCH] Updating property:', propertyId)
 
     const backendResponse = await fetch(
       `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'PATCH',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildProxyHeaders(request),
         body: JSON.stringify(body),
       }
     )
 
     const data = await backendResponse.json()
-    
-    if (backendResponse.ok) {
-      console.log('[Saved Property PATCH] Success')
-    } else {
-      console.error('[Saved Property PATCH] Backend error:', backendResponse.status, data)
-    }
-
     return NextResponse.json(data, { status: backendResponse.status })
   } catch (error) {
     console.error('[Saved Property PATCH] Error:', error)
@@ -84,26 +90,19 @@ export async function DELETE(
 ) {
   const { propertyId } = await params
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    if (!hasAuth(request)) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
-
-    console.log('[Saved Property DELETE] Deleting property:', propertyId)
 
     const backendResponse = await fetch(
       `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'DELETE',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildProxyHeaders(request),
       }
     )
 
     if (backendResponse.status === 204) {
-      console.log('[Saved Property DELETE] Success')
       return new NextResponse(null, { status: 204 })
     }
 
