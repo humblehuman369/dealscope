@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import './investiq-gateway.css';
 
@@ -31,8 +31,13 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
   const [condition, setCondition] = useState(30);
   const [locationPremium, setLocationPremium] = useState(70);
 
+  // Sync internal step when initialStep prop changes (e.g. reopening to a different step)
+  useEffect(() => {
+    setActiveStep(initialStep);
+  }, [initialStep]);
+
   const stepClass = (step: Step): string =>
-    `gw-step-transition w-full ${activeStep === step ? 'gw-active-step' : 'gw-hidden-step'}`;
+    `gw-step-transition ${activeStep === step ? 'gw-active-step' : 'gw-hidden-step'}`;
 
   const getConditionLabel = useCallback((): string => {
     if (condition < 33) return 'Needs Rehab (-$85k)';

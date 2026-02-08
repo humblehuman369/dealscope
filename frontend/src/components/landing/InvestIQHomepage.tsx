@@ -448,6 +448,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       {/* Gateway Modal */}
       {gatewayOpen && (
         <InvestIQGateway
+          key={gatewayStep}
           initialStep={gatewayStep}
           onClose={() => setGatewayOpen(false)}
           onScanProperty={onPointAndScan}
