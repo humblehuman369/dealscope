@@ -107,28 +107,28 @@ export const colors = {
     cyan: '#00D4FF',
   },
   
-  // Text Colors - Neutral grays (no blue undertone)
+  // Text Colors - Light text for dark backgrounds
   text: {
-    /** #171717 - Primary dark text (neutral-900) */
-    primary: '#171717',
-    /** #525252 - Secondary text (neutral-600) */
-    secondary: '#525252',
-    /** #737373 - Tertiary/muted text (neutral-500) */
-    tertiary: '#737373',
-    /** #A3A3A3 - Placeholder text (neutral-400) */
-    muted: '#A3A3A3',
+    /** #F1F5F9 - Primary light text (slate-100) */
+    primary: '#F1F5F9',
+    /** #94A3B8 - Secondary text (slate-400) */
+    secondary: '#94A3B8',
+    /** #64748B - Tertiary/muted text (slate-500) */
+    tertiary: '#64748B',
+    /** #475569 - Placeholder text (slate-600) */
+    muted: '#475569',
     /** #FFFFFF - White text */
     white: '#FFFFFF',
   },
   
-  // Backgrounds - Pure whites and neutral grays (no blue undertone)
+  // Backgrounds - Dark navy palette
   background: {
-    /** #FFFFFF - Pure white background */
-    white: '#FFFFFF',
-    /** #FAFAFA - Near-white for subtle contrast */
-    light: '#FAFAFA',
-    /** #F5F5F5 - Light neutral gray */
-    subtle: '#F5F5F5',
+    /** #0F172A - Card/surface background */
+    white: '#0F172A',
+    /** #0A1628 - Page background */
+    light: '#0A1628',
+    /** #1E293B - Elevated/subtle background */
+    subtle: '#1E293B',
     /** #0A1628 - Dark navy background */
     dark: '#0A1628',
     /** #07172E - Deep navy background */
@@ -147,14 +147,14 @@ export const colors = {
     amber: '#D97706',
   },
   
-  // UI Elements - Neutral grays (no blue undertone)
+  // UI Elements - Dark borders and muted icons
   ui: {
-    /** #E5E5E5 - Border color, dividers (neutral gray) */
-    border: '#E5E5E5',
-    /** #D4D4D4 - Darker border (neutral gray) */
-    borderDark: '#D4D4D4',
-    /** #A3A3A3 - Medium gray for icons */
-    iconMuted: '#A3A3A3',
+    /** #1E293B - Border color, dividers (slate-800) */
+    border: '#1E293B',
+    /** #334155 - Darker border (slate-700) */
+    borderDark: '#334155',
+    /** #64748B - Medium gray for icons */
+    iconMuted: '#64748B',
   },
 
   // Harmonized Metric Colors (VerdictIQ palette)
@@ -168,7 +168,7 @@ export const colors = {
     /** Card border matching investment card */
     verdictCardBorder: 'rgba(8,145,178,0.12)',
     /** Signal indicator card background */
-    signalCardBg: '#F8FAFB',
+    signalCardBg: '#1E293B',
   },
 
   // Gradients & Shadows (VerdictIQ visual polish)
@@ -331,30 +331,30 @@ export function getMarketTempColor(temp: string): string {
  */
 export const tw = {
   // Cards
-  card: 'bg-white rounded-xl shadow-sm border border-neutral-200',
+  card: 'bg-slate-900 rounded-xl shadow-sm border border-slate-700',
   cardHover: 'hover:shadow-md transition-shadow',
   
   // Section headers
-  sectionHeader: 'text-xs font-semibold text-neutral-500 uppercase tracking-wide',
+  sectionHeader: 'text-xs font-semibold text-slate-400 uppercase tracking-wide',
   
   // Labels
-  label: 'text-[11px] font-medium text-neutral-500 uppercase tracking-wide',
+  label: 'text-[11px] font-medium text-slate-400 uppercase tracking-wide',
   
   // Values
-  valueLg: 'text-2xl font-bold text-neutral-800',
-  valueMd: 'text-lg font-semibold text-neutral-800',
+  valueLg: 'text-2xl font-bold text-slate-100',
+  valueMd: 'text-lg font-semibold text-slate-100',
   
   // Buttons
   buttonPrimary: 'h-12 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors',
-  buttonSecondary: 'h-10 px-4 border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-colors',
-  buttonGhost: 'text-cyan-600 hover:text-cyan-700 font-medium transition-colors',
+  buttonSecondary: 'h-10 px-4 border border-slate-600 hover:bg-slate-800 text-slate-300 font-medium rounded-lg transition-colors',
+  buttonGhost: 'text-cyan-500 hover:text-cyan-400 font-medium transition-colors',
   
   // Dividers
-  divider: 'border-t border-neutral-200',
+  divider: 'border-t border-slate-700',
 
   // VerdictIQ Visual Polish
-  investmentCard: 'bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl border border-teal-200/50 p-5',
-  metricCard: 'bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center',
+  investmentCard: 'bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl border border-teal-400/20 p-5',
+  metricCard: 'bg-slate-900 rounded-lg shadow-sm border border-slate-700 p-4 text-center',
   pillBadge: 'px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide',
   glowRing: 'drop-shadow-[0_0_12px_rgba(8,145,178,0.25)]',
   
@@ -384,21 +384,21 @@ export const priceCardStyles: Record<PriceCardVariant, {
   valueClass: string
 }> = {
   breakeven: {
-    bgClass: 'bg-slate-50',
-    borderClass: 'border-slate-200',
-    labelClass: 'text-slate-600',
-    valueClass: 'text-slate-800',
+    bgClass: 'bg-slate-800/50',
+    borderClass: 'border-slate-600',
+    labelClass: 'text-slate-400',
+    valueClass: 'text-slate-200',
   },
   target: {
-    bgClass: 'bg-cyan-50',
-    borderClass: 'border-cyan-200',
-    labelClass: 'text-cyan-700',
-    valueClass: 'text-cyan-900',
+    bgClass: 'bg-cyan-900/30',
+    borderClass: 'border-cyan-700',
+    labelClass: 'text-cyan-400',
+    valueClass: 'text-cyan-200',
   },
   wholesale: {
-    bgClass: 'bg-emerald-50',
-    borderClass: 'border-emerald-200',
-    labelClass: 'text-emerald-700',
-    valueClass: 'text-emerald-900',
+    bgClass: 'bg-emerald-900/30',
+    borderClass: 'border-emerald-700',
+    labelClass: 'text-emerald-400',
+    valueClass: 'text-emerald-200',
   },
 }
