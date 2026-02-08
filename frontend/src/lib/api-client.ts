@@ -22,6 +22,8 @@ interface RequestOptions {
   body?: unknown
   headers?: Record<string, string>
   skipAuth?: boolean
+  /** Try token refresh on 401 but don't hard-redirect if refresh fails. */
+  softAuth?: boolean
 }
 
 class ApiError extends Error {
@@ -84,7 +86,7 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, skipAuth = false } = options
+  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false } = options
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -116,14 +118,15 @@ async function apiRequest<T>(
     const refreshed = await refreshTokens()
     if (refreshed) {
       response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-    } else {
-      // Redirect to login
+    } else if (!softAuth) {
+      // Hard redirect to login (skip for softAuth callers like session checks)
       if (typeof window !== 'undefined') {
         const path = window.location.pathname
         window.location.href = `/?auth=login&redirect=${encodeURIComponent(path)}`
       }
       throw new ApiError('Session expired', 401)
     }
+    // softAuth: just let the 401 fall through to the error handling below
   }
 
   if (!response.ok) {
@@ -143,7 +146,7 @@ async function apiRequest<T>(
 // ------------------------------------------------------------------
 
 export const authApi = {
-  me: () => apiRequest<UserResponse>('/api/v1/auth/me', { skipAuth: true }),
+  me: () => apiRequest<UserResponse>('/api/v1/auth/me', { softAuth: true }),
 
   login: (email: string, password: string, rememberMe = false) =>
     apiRequest<LoginResponse | MFAChallengeResponse>('/api/v1/auth/login', {

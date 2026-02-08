@@ -18,7 +18,7 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading, needsOnboarding, isAdmin } = useSession()
+  const { user, isAuthenticated, isLoading, isAdmin } = useSession()
   const router = useRouter()
 
   useEffect(() => {
@@ -27,10 +27,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Use replace to avoid a /dashboard skeleton entry in history.
       // After login, AuthModal's onLoginSuccess will router.replace back here.
       router.replace('/?auth=login&redirect=/dashboard')
-    } else if (needsOnboarding) {
-      router.replace('/onboarding')
     }
-  }, [isLoading, isAuthenticated, needsOnboarding, router])
+    // Note: onboarding is optional — show a prompt in the dashboard instead
+    // of hard-gating access. Users should be able to use the dashboard
+    // immediately after signup.
+  }, [isLoading, isAuthenticated, router])
 
   if (isLoading || !isAuthenticated || !user) {
     return <DashboardSkeleton />

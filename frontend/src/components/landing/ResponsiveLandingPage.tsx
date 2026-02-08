@@ -95,7 +95,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           </div>
           <div className="nav-actions">
             {isAuthenticated ? (
-              <a href="/dashboard" className="btn btn-sm btn-outline">Dashboard</a>
+              <Link href="/dashboard" className="btn btn-sm btn-outline">Dashboard</Link>
             ) : (
               <>
                 <button onClick={() => openAuthModal('login')} className="btn btn-sm btn-ghost">
