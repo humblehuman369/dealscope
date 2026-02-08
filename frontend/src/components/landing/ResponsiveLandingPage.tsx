@@ -86,6 +86,30 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
         <AuthParamHandler />
       </Suspense>
 
+      {/* Navigation Bar */}
+      <nav className="landing-nav">
+        <div className="container nav-inner">
+          <div className="nav-brand font-display">
+            DealMaker<span className="iq-cyan">IQ</span>
+            <span className="nav-sub">by InvestIQ</span>
+          </div>
+          <div className="nav-actions">
+            {isAuthenticated ? (
+              <a href="/dashboard" className="btn btn-sm btn-outline">Dashboard</a>
+            ) : (
+              <>
+                <button onClick={() => openAuthModal('login')} className="btn btn-sm btn-ghost">
+                  Sign In
+                </button>
+                <button onClick={() => openAuthModal('register')} className="btn btn-sm btn-glow">
+                  Get Started
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="hero">
         <div className="container">
