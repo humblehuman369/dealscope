@@ -343,7 +343,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             <div className="iq-avatar-wrap">
               <div className="iq-avatar-box">
                 <img
-                  src="/images/iq-brain-dark.png"
+                  src="/images/iq-icon-blue.png"
                   alt="InvestIQ"
                   style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative' }}
                 />

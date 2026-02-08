@@ -13,34 +13,15 @@ interface InvestIQGatewayProps {
   onScanProperty?: () => void;
 }
 
-const IQBrainIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    viewBox="0 0 100 100"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="4"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => (
+  <img
+    src="/images/iq-icon-blue.png"
+    alt="IQ"
+    width={size}
+    height={size}
     className={className}
-  >
-    <path d="M 40 85 Q 20 85 20 60 Q 20 20 60 20 Q 85 20 90 40 Q 92 48 90 55 L 90 60 C 90 65 85 65 85 70 L 85 85" />
-    <path d="M 35 55 L 55 35 L 75 55 V 75 H 35 Z" strokeWidth="3.5" />
-  </svg>
-);
-
-const IQBrainIconSmall: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    viewBox="0 0 100 100"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M 40 85 Q 20 85 20 60 Q 20 20 60 20 Q 85 20 90 40 Q 92 48 90 55 L 90 60 C 90 65 85 65 85 70 L 85 85" />
-    <path d="M 35 55 L 55 35 L 75 55 V 75 H 35 Z" strokeWidth="4" />
-  </svg>
+    style={{ objectFit: 'contain' }}
+  />
 );
 
 export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty }: InvestIQGatewayProps) {
@@ -113,7 +94,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
           <div className={stepClass('start')}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
               <div className="gw-start-icon gw-iq-icon">
-                <IQBrainIcon />
+                <IQIcon size={64} />
               </div>
               <h2 className="gw-start-title">How would you like to start?</h2>
               <p className="gw-start-subtitle">Choose your preferred method to feed data to IQ.</p>
@@ -152,7 +133,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
           <div className={stepClass('address')}>
             <div className="gw-assistant-box">
               <div className="gw-iq-icon">
-                <IQBrainIconSmall />
+                <IQIcon size={40} />
               </div>
               <div>
                 <h3>I&apos;m IQ, your analyst.</h3>
@@ -236,7 +217,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
           <div className={stepClass('scan')}>
             <div className="gw-assistant-box">
               <div className="gw-iq-icon">
-                <IQBrainIconSmall />
+                <IQIcon size={40} />
               </div>
               <div>
                 <h3>I&apos;m IQ, your analyst.</h3>
