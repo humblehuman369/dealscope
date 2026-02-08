@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { Download, FileText, Table, Loader2, X, Check } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
 import { API_BASE_URL } from '@/lib/env'
 
 interface WorksheetExportProps {
@@ -23,12 +22,6 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
     setError(null)
 
     try {
-      const token = getAccessToken()
-      if (!token) {
-        setError('Please login to export reports')
-        return
-      }
-
       // Build report data from worksheet state
       const reportData = {
         address: propertyAddress,
@@ -77,12 +70,16 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
 
       const endpoint = format === 'excel' ? 'excel' : 'csv' // Using CSV as PDF is more complex
       
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
       const response = await fetch(`${API_BASE_URL}/api/v1/reports/${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify(reportData),
       })
 

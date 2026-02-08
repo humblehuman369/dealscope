@@ -12,12 +12,9 @@
  * Uses InvestIQ Universal Style Guide colors
  */
 
-import React, { useState, useCallback } from 'react'
-// Auth handled via httpOnly cookies (credentials: 'include')
+import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from '@/hooks/useSession'
-import { useAuthModal } from '@/hooks/useAuthModal'
-import { toast } from '@/components/feedback'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { formatPrice, formatNumber } from '@/utils/formatters'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
@@ -160,8 +157,6 @@ export function RentalCompsScreen({
   initialStrategy 
 }: RentalCompsScreenProps) {
   const router = useRouter()
-  const { isAuthenticated } = useSession()
-  const { openAuthModal } = useAuthModal()
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
@@ -169,11 +164,34 @@ export function RentalCompsScreen({
   const [expandedComp, setExpandedComp] = useState<number | null>(null)
   const [rentEstimate, setRentEstimate] = useState(initialRentEstimate || property.rent || 3200)
   const [isEditingRent, setIsEditingRent] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   const comps = propsComps || DEFAULT_COMPS
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
+
+  const saveInput = useMemo(() => ({
+    addressStreet: property.address,
+    addressCity: property.city,
+    addressState: property.state,
+    addressZip: property.zipCode,
+    fullAddress,
+    zpid: property.zpid || undefined,
+    snapshot: {
+      zpid: property.zpid || undefined,
+      street: property.address,
+      city: property.city,
+      state: property.state,
+      zipCode: property.zipCode,
+      listPrice: property.price || undefined,
+      bedrooms: property.beds || undefined,
+      bathrooms: property.baths || undefined,
+      sqft: property.sqft || undefined,
+      monthlyRent: property.rent || rentEstimate || undefined,
+    },
+  }), [property, fullAddress, rentEstimate])
+
+  const { isSaved, saveMessage, save: handleSave } = useSaveProperty(saveInput)
+  const [shareMessage, setShareMessage] = useState<string | null>(null)
+  const displayMessage = saveMessage || shareMessage
 
   // Calculated metrics
   const rentPerSqft = property.sqft > 0 ? (rentEstimate / property.sqft).toFixed(2) : '0.00'
@@ -228,93 +246,6 @@ export function RentalCompsScreen({
     console.log('Refreshing rental comps...')
   }
 
-  // Handle save - saves property to user's saved list via API
-  const handleSave = useCallback(async () => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
-
-    try {
-      const response = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address_street: property.address,
-          address_city: property.city,
-          address_state: property.state,
-          address_zip: property.zipCode,
-          full_address: fullAddress,
-          zpid: property.zpid || null,
-          external_property_id: property.zpid || null, // Use zpid as external ID if available
-          status: 'watching',
-          property_data_snapshot: {
-            zpid: property.zpid || null,
-            street: property.address,
-            city: property.city,
-            state: property.state,
-            zipCode: property.zipCode,
-            listPrice: property.price || null,
-            bedrooms: property.beds || null,
-            bathrooms: property.baths || null,
-            sqft: property.sqft || null,
-            yearBuilt: property.yearBuilt || null,
-            rent: property.rent || rentEstimate || null,
-          },
-        }),
-      })
-
-      if (response.ok) {
-        setIsSaved(true)
-        toast.success('Property saved to your portfolio')
-        setSaveMessage('Saved!')
-        setTimeout(() => setSaveMessage(null), 2000)
-      } else if (response.status === 409) {
-        setIsSaved(true)
-        toast.info('Property is already in your portfolio')
-        setSaveMessage('Already saved!')
-        setTimeout(() => setSaveMessage(null), 2000)
-      } else if (response.status === 400) {
-        // Check if it's a duplicate error (backend may return 400 for duplicates)
-        let errorData: { detail?: string }
-        try {
-          errorData = await response.json()
-        } catch {
-          const errorText = await response.text()
-          errorData = { detail: errorText }
-        }
-        const errorText = errorData.detail || JSON.stringify(errorData)
-        if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
-          setIsSaved(true)
-          toast.info('Property is already in your portfolio')
-          setSaveMessage('Already saved!')
-          setTimeout(() => setSaveMessage(null), 2000)
-        } else {
-          toast.error(errorText || 'Failed to save property. Please try again.')
-          console.error('Failed to save property:', response.status, errorText)
-        }
-      } else if (response.status === 401) {
-        openAuthModal('login')
-        toast.error('Please log in to save properties')
-      } else {
-        let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
-        try {
-          errorData = await response.json()
-        } catch {
-          // Response is not JSON, use default error
-        }
-        // Handle both FastAPI format (detail) and custom InvestIQ format (message)
-        const errorMessage = errorData.detail || errorData.message || 'Failed to save property. Please try again.'
-        toast.error(errorMessage)
-        console.error('Failed to save property:', response.status, errorData)
-      }
-    } catch (error) {
-      toast.error('Network error. Please check your connection and try again.')
-      console.error('Failed to save property:', error)
-    }
-  }, [isAuthenticated, openAuthModal, property, fullAddress, rentEstimate])
-
   // Handle share
   const handleShare = async () => {
     if (navigator.share) {
@@ -329,8 +260,8 @@ export function RentalCompsScreen({
       }
     } else {
       await navigator.clipboard.writeText(window.location.href)
-      setSaveMessage('Link copied!')
-      setTimeout(() => setSaveMessage(null), 2000)
+      setShareMessage('Link copied!')
+      setTimeout(() => setShareMessage(null), 2000)
     }
   }
 
@@ -558,9 +489,9 @@ export function RentalCompsScreen({
       </main>
 
       {/* Toast Message */}
-      {saveMessage && (
+      {displayMessage && (
         <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
-          {saveMessage}
+          {displayMessage}
         </div>
       )}
 

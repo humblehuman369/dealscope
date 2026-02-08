@@ -8,8 +8,7 @@
  */
 
 import type { AllAssumptions } from '@/stores/index'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 // Cache for defaults to avoid repeated API calls
 let defaultsCache: AllAssumptions | null = null
@@ -44,55 +43,6 @@ export interface UserAssumptionsResponse {
   updated_at: string | null
 }
 
-/**
- * Get auth token from in-memory store
- */
-function getAuthToken(): string | null {
-  return getAccessToken()
-}
-
-/**
- * Make authenticated API request
- */
-async function apiRequest<T>(
-  endpoint: string,
-  options: {
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-    body?: unknown
-    requireAuth?: boolean
-  } = {}
-): Promise<T> {
-  const { method = 'GET', body, requireAuth = false } = options
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-  
-  const token = getAuthToken()
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  } else if (requireAuth) {
-    throw new Error('Authentication required')
-  }
-  
-  const config: RequestInit = {
-    method,
-    headers,
-  }
-  
-  if (body) {
-    config.body = JSON.stringify(body)
-  }
-  
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
-    throw new Error(error.detail || `API Error: ${response.status}`)
-  }
-  
-  return response.json()
-}
 
 /**
  * Defaults Service
@@ -111,7 +61,7 @@ export const defaultsService = {
     }
     
     try {
-      const response = await apiRequest<AllAssumptions>('/api/v1/defaults')
+      const response = await api.get<AllAssumptions>('/api/v1/defaults')
       
       // Update cache
       defaultsCache = response
@@ -146,23 +96,21 @@ export const defaultsService = {
     if (zipCode) params.set('zip_code', zipCode)
     
     const endpoint = `/api/v1/defaults/resolved${params.toString() ? `?${params}` : ''}`
-    return apiRequest<ResolvedDefaultsResponse>(endpoint)
+    return api.get<ResolvedDefaultsResponse>(endpoint)
   },
   
   /**
    * Get market-specific adjustments for a ZIP code.
    */
   async getMarketAdjustments(zipCode: string): Promise<MarketAdjustments> {
-    return apiRequest<MarketAdjustments>(`/api/v1/defaults/market/${zipCode}`)
+    return api.get<MarketAdjustments>(`/api/v1/defaults/market/${zipCode}`)
   },
   
   /**
    * Get user's saved default assumptions (requires auth).
    */
   async getUserAssumptions(): Promise<UserAssumptionsResponse> {
-    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
-      requireAuth: true,
-    })
+    return api.get<UserAssumptionsResponse>('/api/v1/users/me/assumptions')
   },
   
   /**
@@ -172,21 +120,14 @@ export const defaultsService = {
   async updateUserAssumptions(
     assumptions: Partial<AllAssumptions>
   ): Promise<UserAssumptionsResponse> {
-    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
-      method: 'PUT',
-      body: { assumptions },
-      requireAuth: true,
-    })
+    return api.put<UserAssumptionsResponse>('/api/v1/users/me/assumptions', { assumptions })
   },
   
   /**
    * Reset user's default assumptions to system defaults (requires auth).
    */
   async resetUserAssumptions(): Promise<UserAssumptionsResponse> {
-    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
-      method: 'DELETE',
-      requireAuth: true,
-    })
+    return api.delete<UserAssumptionsResponse>('/api/v1/users/me/assumptions')
   },
   
   /**
@@ -203,9 +144,11 @@ export const defaultsService = {
   
   /**
    * Check if user is authenticated.
+   * Note: Auth is handled automatically by api-client (401 redirects to login).
+   * This method is kept for backward compatibility but always returns true.
    */
   isAuthenticated(): boolean {
-    return !!getAuthToken()
+    return true
   },
 }
 

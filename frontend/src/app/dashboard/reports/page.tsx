@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { getAccessToken } from '@/lib/api'
+import { api } from '@/lib/api-client'
 import {
   FileBarChart, FileSpreadsheet, FileText, Building2,
   Download, ChevronRight, Clock, Loader2, Plus
@@ -27,14 +27,8 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const token = getAccessToken()
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (token) headers['Authorization'] = `Bearer ${token}`
-        const res = await fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=50`, { headers, credentials: 'include' })
-        if (res.ok) {
-          const data = await res.json()
-          setProperties(data.items || data || [])
-        }
+        const data = await api.get<{ items?: SavedProperty[] }>('/api/v1/properties/saved?limit=50')
+        setProperties(data.items || [])
       } catch (err) { console.error(err) }
       finally { setIsLoading(false) }
     }
@@ -45,13 +39,16 @@ export default function ReportsPage() {
     const key = `${propId}-${format}`
     setGenerating(key)
     try {
-      const token = getAccessToken()
       const endpoint = format === 'excel'
         ? `${API_BASE_URL}/api/v1/proforma/property/${propId}/excel?address=${encodeURIComponent(address)}`
         : `${API_BASE_URL}/api/v1/proforma/property/${propId}/pdf?address=${encodeURIComponent(address)}`
 
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
       const res = await fetch(endpoint, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        headers,
         credentials: 'include',
       })
       if (!res.ok) throw new Error('Failed')

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
-import { getAccessToken } from '@/lib/api'
+import { api } from '@/lib/api-client'
 import {
   Check,
   X,
@@ -19,7 +19,6 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
 
 // Use relative URLs to go through Next.js API routes (which proxy to backend)
 
@@ -97,27 +96,24 @@ function BillingContent() {
       setLoading(true)
       try {
         // Fetch plans (public)
-        const plansRes = await fetch(`${API_BASE_URL}/api/v1/billing/plans`)
-        if (plansRes.ok) {
-          const plansData = await plansRes.json()
+        try {
+          const plansData = await api.get<{ plans: PricingPlan[] }>('/api/v1/billing/plans')
           setPlans(plansData.plans || [])
+        } catch (err) {
+          console.error('Error fetching plans:', err)
         }
 
         // Fetch subscription & usage if authenticated
         if (isAuthenticated) {
-          const token = getAccessToken()
-          const headers = { 'Authorization': `Bearer ${token}` }
-
-          const [subRes, usageRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/api/v1/billing/subscription`, { headers }),
-            fetch(`${API_BASE_URL}/api/v1/billing/usage`, { headers }),
-          ])
-
-          if (subRes.ok) {
-            setSubscription(await subRes.json())
-          }
-          if (usageRes.ok) {
-            setUsage(await usageRes.json())
+          try {
+            const [subData, usageData] = await Promise.all([
+              api.get<Subscription>('/api/v1/billing/subscription'),
+              api.get<Usage>('/api/v1/billing/usage'),
+            ])
+            setSubscription(subData)
+            setUsage(usageData)
+          } catch (err) {
+            console.error('Error fetching subscription/usage:', err)
           }
         }
       } catch (err) {
@@ -140,29 +136,17 @@ function BillingContent() {
 
     setCheckoutLoading(priceId)
     try {
-      const token = getAccessToken()
-      const res = await fetch(`${API_BASE_URL}/api/v1/billing/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          price_id: priceId,
-          success_url: `${window.location.origin}/billing?success=true`,
-          cancel_url: `${window.location.origin}/billing?canceled=true`,
-        }),
+      const data = await api.post<{ checkout_url: string }>('/api/v1/billing/checkout', {
+        price_id: priceId,
+        success_url: `${window.location.origin}/billing?success=true`,
+        cancel_url: `${window.location.origin}/billing?canceled=true`,
       })
-
-      if (res.ok) {
-        const data = await res.json()
-        window.location.href = data.checkout_url
-      } else {
-        const error = await res.json()
-        setMessage({ type: 'error', text: error.detail || 'Failed to create checkout session' })
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' })
+      window.location.href = data.checkout_url
+    } catch (err: any) {
+      setMessage({ 
+        type: 'error', 
+        text: err?.message || 'Failed to create checkout session' 
+      })
     } finally {
       setCheckoutLoading(null)
     }
@@ -171,23 +155,13 @@ function BillingContent() {
   const handleManageBilling = async () => {
     setPortalLoading(true)
     try {
-      const token = getAccessToken()
-      const res = await fetch(`${API_BASE_URL}/api/v1/billing/portal`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const data = await api.post<{ portal_url: string }>('/api/v1/billing/portal')
+      window.location.href = data.portal_url
+    } catch (err: any) {
+      setMessage({ 
+        type: 'error', 
+        text: err?.message || 'Failed to open billing portal' 
       })
-
-      if (res.ok) {
-        const data = await res.json()
-        window.location.href = data.portal_url
-      } else {
-        const error = await res.json()
-        setMessage({ type: 'error', text: error.detail || 'Failed to open billing portal' })
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' })
     } finally {
       setPortalLoading(false)
     }

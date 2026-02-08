@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { BookOpen } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 interface MetricsGlossary {
   version?: string
@@ -29,18 +28,7 @@ export function MetricsGlossarySection() {
       try {
         setIsLoading(true)
         setError(null)
-        const token = getAccessToken()
-        if (!token) return
-
-        const response = await fetch(`${API_BASE_URL}/api/v1/admin/metrics-glossary`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to load glossary')
-        }
-
-        const data = await response.json()
+        const data = await api.get<{ data: MetricsGlossary }>('/api/v1/admin/metrics-glossary')
         setGlossary(data.data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load glossary')

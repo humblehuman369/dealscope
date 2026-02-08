@@ -7,8 +7,7 @@ import {
   ProjectionSummary
 } from '@/lib/projections'
 import { defaultsService } from '@/services/defaults'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { apiRequest } from '@/lib/api-client'
 
 /**
  * Worksheet Store
@@ -368,29 +367,12 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     set({ isSaving: true })
     
     try {
-      const token = getAccessToken()
-      if (!token) {
-        console.warn('No auth token, skipping save')
-        return
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
+      await apiRequest(`/api/v1/properties/saved/${propertyId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          worksheet_assumptions: assumptions,
-        }),
+        body: { worksheet_assumptions: assumptions },
       })
       
-      if (response.ok) {
-        set({ isDirty: false, isSaving: false, lastSaved: new Date() })
-      } else {
-        console.error('Failed to save worksheet:', await response.text())
-        set({ isSaving: false })
-      }
+      set({ isDirty: false, isSaving: false, lastSaved: new Date() })
     } catch (error) {
       console.error('Error saving worksheet:', error)
       set({ isSaving: false })

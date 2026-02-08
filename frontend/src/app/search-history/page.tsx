@@ -4,14 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
-import { getAccessToken } from '@/lib/api'
+import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
   History, Search, MapPin, Building2, Clock, Trash2, 
   ExternalLink, ChevronRight, TrendingUp, Filter,
   Calendar, BarChart3, Star, AlertCircle, X
 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
 
 // Use relative URLs to go through Next.js API routes (which proxy to backend)
 
@@ -77,33 +76,13 @@ export default function SearchHistoryPage() {
   // Fetch history and stats
   const fetchData = useCallback(async () => {
     try {
-      const token = getAccessToken()
-      if (!token) return
-
-      const [historyRes, statsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/search-history?limit=50&successful_only=${filterSuccessful}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${API_BASE_URL}/api/v1/search-history/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+      const [historyData, statsData] = await Promise.all([
+        api.get<{ items: SearchHistoryItem[] }>(`/api/v1/search-history?limit=50&successful_only=${filterSuccessful}`),
+        api.get<SearchStats>('/api/v1/search-history/stats')
       ])
 
-      if (historyRes.ok) {
-        const data = await historyRes.json()
-        setHistory(data.items || [])
-      }
-
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        setStats(statsData)
-      }
+      setHistory(historyData.items || [])
+      setStats(statsData)
     } catch (err) {
       console.error('Failed to fetch search history:', err)
       setError('Failed to load search history')
@@ -123,17 +102,8 @@ export default function SearchHistoryPage() {
     if (!confirm('Delete this search from history?')) return
 
     try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE_URL}/api/v1/search-history/${entryId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        setHistory(prev => prev.filter(h => h.id !== entryId))
-      }
+      await api.delete(`/api/v1/search-history/${entryId}`)
+      setHistory(prev => prev.filter(h => h.id !== entryId))
     } catch (err) {
       console.error('Failed to delete entry:', err)
     }
@@ -144,18 +114,9 @@ export default function SearchHistoryPage() {
     if (!confirm('Are you sure you want to clear all search history? This cannot be undone.')) return
 
     try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE_URL}/api/v1/search-history`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        setHistory([])
-        await fetchData()
-      }
+      await api.delete('/api/v1/search-history')
+      setHistory([])
+      await fetchData()
     } catch (err) {
       console.error('Failed to clear history:', err)
     }

@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { getAccessToken } from '@/lib/api'
+import { api } from '@/lib/api-client'
 import {
   BarChart3, Building2, Plus, X, ChevronDown,
   TrendingUp, DollarSign, ArrowLeft
 } from 'lucide-react'
 import Link from 'next/link'
-import { API_BASE_URL } from '@/lib/env'
 
 interface SavedProperty {
   id: string
@@ -32,14 +31,8 @@ export default function ComparePage() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const token = getAccessToken()
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (token) headers['Authorization'] = `Bearer ${token}`
-        const res = await fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=50`, { headers, credentials: 'include' })
-        if (res.ok) {
-          const data = await res.json()
-          setSavedProperties(data.items || data || [])
-        }
+        const data = await api.get<{ items?: SavedProperty[] }>('/api/v1/properties/saved?limit=50')
+        setSavedProperties(data.items || [])
       } catch (err) { console.error(err) }
       finally { setIsLoading(false) }
     }

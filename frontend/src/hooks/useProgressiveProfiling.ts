@@ -9,8 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { ProfileQuestion } from '../components/profile/ProgressiveProfilingPrompt'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 const STORAGE_KEY = 'investiq-progressive-profile'
 
@@ -141,17 +140,7 @@ export function useProgressiveProfiling() {
   // Sync answer with backend
   const syncWithBackend = async (answer: any) => {
     try {
-      const token = getAccessToken()
-      if (!token) return
-      
-      await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(answer),
-      })
+      await api.patch('/api/v1/users/me/profile', answer)
     } catch (e) {
       // Silent fail - profile is saved locally regardless
       console.warn('Failed to sync profile with backend:', e)

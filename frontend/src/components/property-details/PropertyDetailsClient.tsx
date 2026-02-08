@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from '@/hooks/useSession'
-import { useAuthModal } from '@/hooks/useAuthModal'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
@@ -21,7 +20,6 @@ import {
 import { Heart, FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
-import { toast } from '@/components/feedback'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
@@ -37,119 +35,44 @@ interface PropertyDetailsClientProps {
  */
 export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
-  const { isAuthenticated } = useSession()
-  const { openAuthModal } = useAuthModal()
-  const [isSaved, setIsSaved] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [showSearchModal, setShowSearchModal] = useState(false)
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
-  // Handle save property
-  const handleSave = useCallback(async () => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
+  const saveInput = useMemo(() => ({
+    addressStreet: property.address.streetAddress,
+    addressCity: property.address.city,
+    addressState: property.address.state,
+    addressZip: property.address.zipcode,
+    fullAddress,
+    zpid: property.zpid || null,
+    snapshot: {
+      zpid: property.zpid,
+      street: property.address.streetAddress,
+      city: property.address.city,
+      state: property.address.state,
+      zipCode: property.address.zipcode,
+      listPrice: property.price,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      sqft: property.livingArea,
+      photos: property.images,
+      listingStatus: property.listingStatus,
+      isOffMarket: property.isOffMarket,
+      sellerType: property.sellerType,
+      isForeclosure: property.isForeclosure,
+      isBankOwned: property.isBankOwned,
+      isAuction: property.isAuction,
+      isNewConstruction: property.isNewConstruction,
+      daysOnMarket: property.daysOnMarket,
+      zestimate: property.zestimate,
+    },
+  }), [property, fullAddress])
 
-    if (isSaving || isSaved) return
+  const { isSaved, isSaving, saveMessage, save: handleSave } = useSaveProperty(saveInput)
+  const [shareMessage, setShareMessage] = useState<string | null>(null)
 
-    setIsSaving(true)
-    try {
-      const response = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address_street: property.address.streetAddress,
-          address_city: property.address.city,
-          address_state: property.address.state,
-          address_zip: property.address.zipcode,
-          full_address: fullAddress,
-          zpid: property.zpid || null,
-          external_property_id: property.zpid || null, // Use zpid as external ID if available
-          status: 'watching',
-          property_data_snapshot: {
-            zpid: property.zpid,
-            street: property.address.streetAddress,
-            city: property.address.city,
-            state: property.address.state,
-            zipCode: property.address.zipcode,
-            listPrice: property.price,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            sqft: property.livingArea,
-            yearBuilt: property.yearBuilt,
-            photos: property.images,
-            // Listing status data for header display
-            listingStatus: property.listingStatus,
-            isOffMarket: property.isOffMarket,
-            sellerType: property.sellerType,
-            isForeclosure: property.isForeclosure,
-            isBankOwned: property.isBankOwned,
-            isAuction: property.isAuction,
-            isNewConstruction: property.isNewConstruction,
-            daysOnMarket: property.daysOnMarket,
-            zestimate: property.zestimate,
-          },
-        }),
-      })
-
-      if (response.ok) {
-        setIsSaved(true)
-        toast.success('Property saved to your portfolio')
-        setSaveMessage('Saved!')
-        setTimeout(() => setSaveMessage(null), 3000)
-      } else if (response.status === 409) {
-        setIsSaved(true)
-        toast.info('Property is already in your portfolio')
-        setSaveMessage('Already saved!')
-        setTimeout(() => setSaveMessage(null), 3000)
-      } else if (response.status === 400) {
-        // Check if it's a duplicate error (backend may return 400 for duplicates)
-        let errorData: { detail?: string }
-        try {
-          errorData = await response.json()
-        } catch {
-          const errorText = await response.text()
-          errorData = { detail: errorText }
-        }
-        const errorText = errorData.detail || JSON.stringify(errorData)
-        if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
-          setIsSaved(true)
-          toast.info('Property is already in your portfolio')
-          setSaveMessage('Already saved!')
-          setTimeout(() => setSaveMessage(null), 3000)
-        } else {
-          toast.error(errorText || 'Failed to save property. Please try again.')
-          setSaveMessage('Failed to save')
-          setTimeout(() => setSaveMessage(null), 3000)
-        }
-      } else if (response.status === 401) {
-        openAuthModal('login')
-        toast.error('Please log in to save properties')
-      } else {
-        let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
-        try {
-          errorData = await response.json()
-        } catch {
-          // Response is not JSON, use default error
-        }
-        // Handle both FastAPI format (detail) and custom InvestIQ format (message)
-        const errorMessage = errorData.detail || errorData.message || 'Failed to save property. Please try again.'
-        toast.error(errorMessage)
-        setSaveMessage('Failed to save')
-        setTimeout(() => setSaveMessage(null), 3000)
-      }
-    } catch (error) {
-      toast.error('Network error. Please check your connection and try again.')
-      setSaveMessage('Error saving property')
-      setTimeout(() => setSaveMessage(null), 3000)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [property, isAuthenticated, openAuthModal, isSaving, isSaved, fullAddress])
+  const displayMessage = saveMessage || shareMessage
 
   // Handle share
   const handleShare = async () => {
@@ -165,8 +88,8 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
       }
     } else {
       await navigator.clipboard.writeText(window.location.href)
-      setSaveMessage('Link copied!')
-      setTimeout(() => setSaveMessage(null), 2000)
+      setShareMessage('Link copied!')
+      setTimeout(() => setShareMessage(null), 2000)
     }
   }
 
@@ -248,9 +171,9 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
       </div>
 
       {/* Toast Message */}
-      {saveMessage && (
+      {displayMessage && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-medium rounded-lg shadow-lg z-50 animate-fade-in">
-          {saveMessage}
+          {displayMessage}
         </div>
       )}
 

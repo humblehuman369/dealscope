@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { PriceTarget } from '@/lib/priceUtils'
-import { getAccessToken } from '@/lib/api'
+import { apiRequest } from '@/lib/api-client'
 
 /**
  * Deal Maker Store
@@ -18,7 +18,6 @@ import { getAccessToken } from '@/lib/api'
  * - Metrics are recalculated on every update (backend-driven)
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 const SAVE_DEBOUNCE_MS = 300
 
 // Debounce helper
@@ -331,28 +330,9 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({ isLoading: true, error: null })
     
     try {
-      const token = getAccessToken()
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-      
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/properties/saved/${propertyId}/deal-maker`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
+      const data = await apiRequest<DealMakerResponse>(
+        `/api/v1/properties/saved/${propertyId}/deal-maker`
       )
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Failed to load Deal Maker record')
-      }
-      
-      const data: DealMakerResponse = await response.json()
       
       set({
         propertyId,
@@ -436,29 +416,13 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({ isSaving: true })
     
     try {
-      const token = getAccessToken()
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-      
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/properties/saved/${propertyId}/deal-maker`,
+      const data = await apiRequest<DealMakerResponse>(
+        `/api/v1/properties/saved/${propertyId}/deal-maker`,
         {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(pendingUpdates),
+          body: pendingUpdates,
         }
       )
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Failed to save Deal Maker record')
-      }
-      
-      const data: DealMakerResponse = await response.json()
       
       // Update with server response (includes recalculated metrics)
       set({

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { SlidersHorizontal, RefreshCw, Save } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 interface AdminAssumptionsResponse {
   assumptions: Record<string, any>
@@ -43,18 +42,7 @@ export function AdminAssumptionsSection() {
     try {
       setIsLoading(true)
       setError(null)
-      const token = getAccessToken()
-      if (!token) return
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/admin/assumptions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to load assumptions')
-      }
-
-      const data: AdminAssumptionsResponse = await response.json()
+      const data = await api.get<AdminAssumptionsResponse>('/api/v1/admin/assumptions')
       setAssumptions(data.assumptions)
       setDraft(data.assumptions)
       setMeta({
@@ -101,23 +89,7 @@ export function AdminAssumptionsSection() {
     try {
       setIsSaving(true)
       setError(null)
-      const token = getAccessToken()
-      if (!token) return
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/admin/assumptions`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(draft),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save assumptions')
-      }
-
-      const data: AdminAssumptionsResponse = await response.json()
+      const data = await api.put<AdminAssumptionsResponse>('/api/v1/admin/assumptions', draft)
       setAssumptions(data.assumptions)
       setDraft(data.assumptions)
       setMeta({

@@ -18,46 +18,6 @@ import { apiRequest } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
 
 // ------------------------------------------------------------------
-// Deprecated token stubs — kept only for backward compatibility.
-//
-// Auth is handled entirely via httpOnly cookies. These functions do
-// nothing.  Callers that check `if (!token) return` are silently
-// skipping work — they should use `credentials: 'include'` instead.
-//
-// TODO: Remove these exports once all callers are migrated.
-// ------------------------------------------------------------------
-
-/** @deprecated Cookie-only auth — this always returns null. */
-function getAccessToken(): string | null {
-  return null
-}
-
-/** @deprecated Cookie-only auth — this always returns null. */
-function getRefreshToken(): string | null {
-  return null
-}
-
-/** @deprecated No-op — tokens are in httpOnly cookies. */
-function storeTokens(_accessToken: string, _refreshToken: string): void {}
-
-/** @deprecated No-op — cookies are cleared by the server on logout. */
-function clearTokens(): void {}
-
-/** @deprecated Use api-client.ts refresh. */
-async function refreshAccessToken(): Promise<boolean> {
-  const { authApi } = await import('@/lib/api-client')
-  return authApi.refresh()
-}
-
-/** @deprecated Use apiRequest from api-client.ts directly. */
-async function authenticatedRequest<T>(
-  endpoint: string,
-  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {},
-): Promise<T> {
-  return apiRequest<T>(endpoint, options as Parameters<typeof apiRequest>[1])
-}
-
-// ------------------------------------------------------------------
 // Types
 // ------------------------------------------------------------------
 
@@ -513,18 +473,6 @@ export const api = {
         body: prefs,
       }),
   },
-}
-
-// ------------------------------------------------------------------
-// Deprecated exports — backward compatibility only
-// ------------------------------------------------------------------
-export {
-  getAccessToken,
-  getRefreshToken,
-  storeTokens,
-  clearTokens,
-  refreshAccessToken,
-  authenticatedRequest,
 }
 
 export default api

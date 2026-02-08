@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { api } from '@/lib/api-client'
 import {
   Building2, ArrowLeft, MapPin, Calendar, Tag, Edit2, Save, X,
   FileText, Download, Upload, Trash2, ExternalLink, ChevronDown,
@@ -84,13 +85,9 @@ export default function PropertyFilePage() {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const jsonHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
-
   const fetchProperty = useCallback(async () => {
     try {
-      const res = await fetch(`/api/v1/properties/saved/${id}`, { headers: jsonHeaders, credentials: 'include' })
-      if (!res.ok) throw new Error('Property not found')
-      const data = await res.json()
+      const data = await api.get<PropertyFile>(`/api/v1/properties/saved/${id}`)
       setProperty(data)
       setNotes(data.notes || '')
     } catch {
@@ -100,11 +97,8 @@ export default function PropertyFilePage() {
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const res = await fetch(`/api/v1/documents?property_id=${id}`, { headers: jsonHeaders, credentials: 'include' })
-      if (res.ok) {
-        const data = await res.json()
-        setDocuments(Array.isArray(data) ? data : (data.items || []))
-      }
+      const data = await api.get<Document[] | { items: Document[] }>(`/api/v1/documents?property_id=${id}`)
+      setDocuments(Array.isArray(data) ? data : ((data as { items: Document[] }).items || []))
     } catch {
       console.warn('Could not fetch documents')
     }
@@ -116,10 +110,7 @@ export default function PropertyFilePage() {
 
   const updateStatus = async (newStatus: string) => {
     try {
-      await fetch(`/api/v1/properties/saved/${id}`, {
-        method: 'PATCH', headers: jsonHeaders, credentials: 'include',
-        body: JSON.stringify({ status: newStatus })
-      })
+      await api.patch(`/api/v1/properties/saved/${id}`, { status: newStatus })
       setProperty(prev => prev ? { ...prev, status: newStatus } : null)
       setEditingStatus(false)
     } catch { console.error('Failed to update status') }
@@ -128,14 +119,13 @@ export default function PropertyFilePage() {
   const saveNotes = async () => {
     setIsSavingNotes(true)
     try {
-      await fetch(`/api/v1/properties/saved/${id}`, {
-        method: 'PATCH', headers: jsonHeaders, credentials: 'include',
-        body: JSON.stringify({ notes })
-      })
+      await api.patch(`/api/v1/properties/saved/${id}`, { notes })
     } catch { console.error('Failed to save notes') }
     finally { setIsSavingNotes(false) }
   }
 
+  // File upload needs multipart/form-data — can't use api.post() which sends JSON.
+  // CSRF token is read from the cookie and sent as a header manually.
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -146,16 +136,22 @@ export default function PropertyFilePage() {
       formData.append('property_id', id)
       formData.append('document_type', 'other')
 
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
       const res = await fetch('/api/v1/documents', {
         method: 'POST',
         credentials: 'include',
-        body: formData
+        headers,
+        body: formData,
       })
       if (res.ok) await fetchDocuments()
     } catch { console.error('Upload failed') }
     finally { setIsUploading(false) }
   }
 
+  // Blob download — can't use api.get() which returns JSON.
   const downloadReport = async (format: 'excel' | 'pdf') => {
     const propId = property?.external_property_id || property?.zpid || id
     const address = property?.address_street || ''

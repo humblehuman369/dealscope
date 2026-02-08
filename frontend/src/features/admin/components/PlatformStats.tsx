@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, Activity, Building2, TrendingUp } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 interface PlatformStats {
   total_users: number
@@ -19,17 +18,8 @@ export function PlatformStatsSection() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = getAccessToken()
-        if (!token) return
-
-        const response = await fetch(`${API_BASE_URL}/api/v1/admin/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
-        }
+        const data = await api.get<PlatformStats>('/api/v1/admin/stats')
+        setStats(data)
       } catch (err) {
         console.error('Failed to fetch platform stats:', err)
       } finally {

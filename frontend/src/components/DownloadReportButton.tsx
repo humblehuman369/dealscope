@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
 import { API_BASE_URL } from '@/lib/env'
 
 interface DownloadReportButtonProps {
@@ -31,8 +30,6 @@ export default function DownloadReportButton({
     setError(null)
     
     try {
-      const token = getAccessToken()
-      
       // Build URL based on whether it's a saved property or cached property
       let url: string
       if (savedPropertyId) {
@@ -41,8 +38,13 @@ export default function DownloadReportButton({
         url = `${API_BASE_URL}/api/v1/reports/property/${propertyId}/${format}`
       }
       
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+      
       const response = await fetch(url, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        headers,
+        credentials: 'include',
       })
       
       if (!response.ok) {

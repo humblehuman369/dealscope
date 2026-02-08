@@ -5,7 +5,7 @@ import {
   Upload, File, FileText, Image, Trash2, Download, 
   Loader2, X, Check, Folder, Eye
 } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
+import { api } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
 
 // ===========================================
@@ -94,24 +94,13 @@ export default function DocumentUpload({
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true)
     try {
-      const token = getAccessToken()
-      if (!token) return
-
-      let url = `${API_BASE_URL}/api/v1/documents?limit=50`
+      let url = `/api/v1/documents?limit=50`
       if (propertyId) {
         url += `&property_id=${propertyId}`
       }
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setDocuments(data.items || [])
-      }
+      const data = await api.get<{ items: Document[] }>(url)
+      setDocuments(data.items || [])
     } catch (err) {
       console.error('Failed to fetch documents:', err)
     } finally {
@@ -125,11 +114,6 @@ export default function DocumentUpload({
     setError(null)
 
     try {
-      const token = getAccessToken()
-      if (!token) {
-        throw new Error('Please sign in to upload documents')
-      }
-
       // Validate file size
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
         throw new Error(`File size exceeds ${MAX_FILE_SIZE_MB} MB limit`)
@@ -152,11 +136,14 @@ export default function DocumentUpload({
         formData.append('description', description)
       }
 
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
       const response = await fetch(`${API_BASE_URL}/api/v1/documents`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
+        credentials: 'include',
         body: formData,
       })
 
@@ -165,12 +152,12 @@ export default function DocumentUpload({
         throw new Error(errorData.detail || 'Upload failed')
       }
 
-      const document = await response.json()
-      setDocuments(prev => [document, ...prev])
+      const uploadedDoc = await response.json()
+      setDocuments(prev => [uploadedDoc, ...prev])
       setDescription('')
       
       if (onUploadComplete) {
-        onUploadComplete(document)
+        onUploadComplete(uploadedDoc)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
@@ -182,12 +169,13 @@ export default function DocumentUpload({
   // Download document
   const downloadDocument = async (doc: Document) => {
     try {
-      const token = getAccessToken()
-      
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
       const response = await fetch(`${API_BASE_URL}/api/v1/documents/${doc.id}/download`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
+        credentials: 'include',
       })
 
       if (!response.ok) throw new Error('Download failed')
@@ -211,18 +199,8 @@ export default function DocumentUpload({
     if (!confirm('Delete this document?')) return
 
     try {
-      const token = getAccessToken()
-      
-      const response = await fetch(`${API_BASE_URL}/api/v1/documents/${docId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        setDocuments(prev => prev.filter(d => d.id !== docId))
-      }
+      await api.delete(`/api/v1/documents/${docId}`)
+      setDocuments(prev => prev.filter(d => d.id !== docId))
     } catch (err) {
       console.error('Delete failed:', err)
     }

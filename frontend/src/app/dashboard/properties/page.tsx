@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { api } from '@/lib/api-client'
 import {
   Building2, Search, Clock, Star, Filter, ChevronRight,
   Trash2, Plus, Eye, MoreVertical, MapPin, TrendingUp,
@@ -103,20 +104,13 @@ export default function PropertiesHub() {
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      const [propsRes, historyRes] = await Promise.all([
-        fetch('/api/v1/properties/saved?limit=50', { headers, credentials: 'include' }),
-        fetch('/api/v1/search-history?limit=50', { headers, credentials: 'include' }),
+      const [propsData, historyData] = await Promise.all([
+        api.get<SavedProperty[] | { items: SavedProperty[] }>('/api/v1/properties/saved?limit=50'),
+        api.get<SearchHistoryItem[] | { items: SearchHistoryItem[] }>('/api/v1/search-history?limit=50'),
       ])
 
-      if (propsRes.ok) {
-        const data = await propsRes.json()
-        setSavedProperties(Array.isArray(data) ? data : (data.items || []))
-      }
-      if (historyRes.ok) {
-        const data = await historyRes.json()
-        setSearchHistory(Array.isArray(data) ? data : (data.items || []))
-      }
+      setSavedProperties(Array.isArray(propsData) ? propsData : ((propsData as { items: SavedProperty[] }).items || []))
+      setSearchHistory(Array.isArray(historyData) ? historyData : ((historyData as { items: SearchHistoryItem[] }).items || []))
     } catch (err) {
       console.error('Failed to fetch properties:', err)
     } finally {
@@ -128,11 +122,7 @@ export default function PropertiesHub() {
 
   const handleDeleteHistory = async (id: string) => {
     try {
-      await fetch(`/api/v1/search-history/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      })
+      await api.delete(`/api/v1/search-history/${id}`)
       setSearchHistory(prev => prev.filter(h => h.id !== id))
     } catch (err) {
       console.error('Failed to delete:', err)
@@ -142,11 +132,7 @@ export default function PropertiesHub() {
   const handleDeleteSaved = async (id: string) => {
     if (!confirm('Remove this property from your portfolio?')) return
     try {
-      await fetch(`/api/v1/properties/saved/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      })
+      await api.delete(`/api/v1/properties/saved/${id}`)
       setSavedProperties(prev => prev.filter(p => p.id !== id))
     } catch (err) {
       console.error('Failed to delete:', err)

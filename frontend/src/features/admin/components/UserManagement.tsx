@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UserCog, Search, CheckCircle, XCircle } from 'lucide-react'
-import { getAccessToken } from '@/lib/api'
-import { API_BASE_URL } from '@/lib/env'
+import { api } from '@/lib/api-client'
 
 interface AdminUser {
   id: string
@@ -31,17 +30,8 @@ export function UserManagementSection() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = getAccessToken()
-        if (!token) return
-
-        const response = await fetch(`${API_BASE_URL}/api/v1/admin/users?limit=20`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setUsers(data.items || data || [])
-        }
+        const data = await api.get<{ items?: AdminUser[] }>('/api/v1/admin/users?limit=20')
+        setUsers(data.items || [])
       } catch (err) {
         console.error('Failed to fetch users:', err)
       } finally {
@@ -54,17 +44,10 @@ export function UserManagementSection() {
 
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/toggle-active`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
-
-      if (response.ok) {
-        setUsers(prev => prev.map(u => 
-          u.id === userId ? { ...u, is_active: !currentStatus } : u
-        ))
-      }
+      await api.post(`/api/v1/admin/users/${userId}/toggle-active`)
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, is_active: !currentStatus } : u
+      ))
     } catch (err) {
       console.error('Failed to toggle user:', err)
     }
