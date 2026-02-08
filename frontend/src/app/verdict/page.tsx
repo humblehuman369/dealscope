@@ -578,10 +578,10 @@ function VerdictContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0A1628' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 dark:text-gray-400">Analyzing property...</p>
+          <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: '#94A3B8' }}>Analyzing property...</p>
         </div>
       </div>
     )
@@ -590,22 +590,22 @@ function VerdictContent() {
   // Error state with no property fallback
   if (!property || !analysis) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0A1628' }}>
         <div className="flex flex-col items-center gap-4 text-center px-4">
-          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(239,68,68,0.15)' }}>
             <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold" style={{ color: '#F1F5F9' }}>
             {error || 'Unable to load property'}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md">
+          <p className="max-w-md" style={{ color: '#94A3B8' }}>
             We couldn&apos;t fetch the property data. Please try again or search for a different address.
           </p>
           <button
             onClick={handleBack}
-            className="mt-4 px-6 py-2 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 transition-colors"
+            className="mt-4 px-6 py-2 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors"
           >
             Go Back
           </button>
@@ -640,10 +640,10 @@ function VerdictContent() {
 export default function VerdictPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0A1628' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 dark:text-gray-400">Loading verdict...</p>
+          <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: '#94A3B8' }}>Loading verdict...</p>
         </div>
       </div>
     }>

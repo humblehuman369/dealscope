@@ -128,7 +128,7 @@ export function VerdictHeader({
         <div 
           className="flex items-stretch overflow-x-auto scrollbar-hide"
           style={{ 
-            backgroundColor: colors.background.white,
+            backgroundColor: colors.background.dark,
             borderBottom: `1px solid ${colors.ui.border}`,
           }}
         >

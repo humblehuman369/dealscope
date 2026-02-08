@@ -16,21 +16,21 @@ import { X, Info, TrendingUp, Shield, Target, BarChart3, Percent, Home, Database
 // BRAND COLORS (synced with verdict-design-tokens.ts)
 // =============================================================================
 const COLORS = {
-  navy: '#0A1628',
+  navy: '#F1F5F9',       // Inverted: light text on dark bg
   teal: '#0891B2',
-  tealLight: '#0891B2', // Synced with design tokens - was #06B6D4
+  tealLight: '#0891B2',
   cyan: '#00D4FF',
   rose: '#E11D48',
   warning: '#F59E0B',
   green: '#10B981',
-  surface50: '#F8FAFC',
-  surface100: '#F1F5F9',
-  surface200: '#E2E8F0',
-  surface300: '#CBD5E1',
-  surface400: '#94A3B8',
-  surface500: '#64748B',
-  surface600: '#475569',
-  surface700: '#334155',
+  surface50: '#0A1628',   // Deep dark page bg
+  surface100: '#0F172A',  // Card bg
+  surface200: '#1E293B',  // Border
+  surface300: '#334155',  // Darker border
+  surface400: '#64748B',  // Muted text
+  surface500: '#94A3B8',  // Secondary text
+  surface600: '#CBD5E1',  // Body text (inverted)
+  surface700: '#E2E8F0',  // Emphasized text (inverted)
 }
 
 // =============================================================================
@@ -163,7 +163,7 @@ export function ScoreMethodologySheet({
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: `${COLORS.teal}15` }}
+              style={{ backgroundColor: `${COLORS.teal}20` }}
             >
               <Info className="w-5 h-5" style={{ color: COLORS.teal }} />
             </div>
@@ -181,7 +181,7 @@ export function ScoreMethodologySheet({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" style={{ color: COLORS.surface500 }} />
           </button>
@@ -211,7 +211,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="flex items-start gap-3 mb-3">
                 <div 
@@ -281,7 +281,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="flex items-start gap-3 mb-3">
                 <div 
@@ -323,7 +323,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="flex items-start gap-3 mb-3">
                 <div 
@@ -380,7 +380,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="space-y-2 mb-3">
                 {SCORE_FORMULA.steps.map((step, idx) => (
@@ -414,7 +414,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="grid grid-cols-3 gap-2">
                 {GRADE_TIERS.map((tier) => (
@@ -448,7 +448,7 @@ export function ScoreMethodologySheet({
             </h3>
             <div 
               className="p-4 rounded-xl"
-              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
             >
               <div className="grid grid-cols-2 gap-3">
                 {DATA_SOURCES.map((source) => {

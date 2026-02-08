@@ -187,8 +187,8 @@ function PropertySummaryBar({
 
   return (
     <div 
-      className="bg-white border-b"
-      style={{ borderColor: colors.ui.border }}
+      className="border-b"
+      style={{ backgroundColor: colors.background.white, borderColor: colors.ui.border }}
     >
       {/* Collapsed Header */}
       <div className="flex items-center justify-between px-4 py-3">
@@ -214,13 +214,13 @@ function PropertySummaryBar({
         </div>
         <button
           onClick={onToggle}
-          className="p-1 hover:bg-neutral-100 rounded transition-colors flex-shrink-0 ml-2"
+          className="p-1 hover:bg-white/5 rounded transition-colors flex-shrink-0 ml-2"
           aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
         >
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-neutral-400" />
+            <ChevronUp className="w-4 h-4" style={{ color: colors.text.tertiary }} />
           ) : (
-            <ChevronDown className="w-4 h-4 text-neutral-400" />
+            <ChevronDown className="w-4 h-4" style={{ color: colors.text.tertiary }} />
           )}
         </button>
       </div>
@@ -232,20 +232,20 @@ function PropertySummaryBar({
           style={{ borderColor: colors.ui.border }}
         >
           <div className="text-center pt-3">
-            <div className="text-xs text-neutral-500 mb-0.5">Beds</div>
-            <div className="font-semibold text-neutral-800">{property.beds}</div>
+            <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Beds</div>
+            <div className="font-semibold" style={{ color: colors.text.primary }}>{property.beds}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-neutral-500 mb-0.5">Baths</div>
-            <div className="font-semibold text-neutral-800">{property.baths}</div>
+            <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Baths</div>
+            <div className="font-semibold" style={{ color: colors.text.primary }}>{property.baths}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-neutral-500 mb-0.5">Sqft</div>
-            <div className="font-semibold text-neutral-800">{property.sqft.toLocaleString()}</div>
+            <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Sqft</div>
+            <div className="font-semibold" style={{ color: colors.text.primary }}>{property.sqft.toLocaleString()}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-neutral-500 mb-0.5">{priceLabel}</div>
-            <div className="font-semibold text-neutral-800">{formatShortPrice(property.price)}</div>
+            <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>{priceLabel}</div>
+            <div className="font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(property.price)}</div>
           </div>
         </div>
       )}
@@ -340,8 +340,9 @@ function ScoreHero({
   return (
     <div className="px-4 py-2">
       <div
-        className="bg-white rounded-xl overflow-hidden"
+        className="rounded-xl overflow-hidden"
         style={{
+          backgroundColor: colors.background.white,
           border: `1px solid ${colors.harmonized.verdictCardBorder}`,
           boxShadow: colors.shadow.verdictCard,
         }}
@@ -366,7 +367,7 @@ function ScoreHero({
                 cy="60"
                 r={radius}
                 fill="none"
-                stroke="rgba(229,229,229,0.4)"
+                stroke="rgba(148,163,184,0.2)"
                 strokeWidth="9"
                 strokeLinecap="round"
                 strokeDasharray={`${arcLength} ${gapLength}`}
@@ -507,8 +508,9 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
   return (
     <div className="px-4 pb-2">
       <div
-        className="bg-white rounded-xl overflow-hidden px-5 py-4"
+        className="rounded-xl overflow-hidden px-5 py-4"
         style={{
+          backgroundColor: colors.background.white,
           border: `1px solid ${colors.harmonized.verdictCardBorder}`,
           boxShadow: colors.shadow.verdictCard,
         }}
@@ -608,7 +610,7 @@ function InvestmentAnalysisSection({
         {/* Section Header with Icon */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-full shadow-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: colors.background.subtle }}>
               <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="20" x2="12" y2="10" />
                 <line x1="18" y1="20" x2="18" y2="4" />
@@ -640,11 +642,12 @@ function InvestmentAnalysisSection({
             <button 
               onClick={onExportClick}
               disabled={isExporting}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border bg-white transition-colors hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
-                borderColor: colors.ui.border,
+                borderColor: colors.ui.borderDark,
+                backgroundColor: colors.background.subtle,
               }}
             >
               {isExporting ? (
@@ -661,11 +664,12 @@ function InvestmentAnalysisSection({
             </button>
             <button 
               onClick={onChangeTerms}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border bg-white transition-colors hover:bg-neutral-50"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
-                borderColor: colors.ui.border,
+                borderColor: colors.ui.borderDark,
+                backgroundColor: colors.background.subtle,
               }}
             >
               <Settings2 className="w-3.5 h-3.5" />
@@ -675,20 +679,20 @@ function InvestmentAnalysisSection({
         </div>
 
         {/* Price Selector - Pill Style with RECOMMENDED badge */}
-        <div className="bg-neutral-100 rounded-xl p-1 mb-5">
+        <div className="rounded-xl p-1 mb-5" style={{ backgroundColor: colors.background.subtle }}>
           <div className="grid grid-cols-3 gap-1">
             {priceCards.map((card) => {
               const isSelected = card.variant === selectedPriceCard
-              const isTarget = card.variant === 'target'
               return (
                 <button 
                   key={card.label}
                   onClick={() => onPriceCardSelect?.(card.variant)}
                   className={`relative py-3.5 px-2 rounded-lg transition-all ${
                     isSelected 
-                      ? 'bg-white shadow-md' 
-                      : 'hover:bg-neutral-50/60'
+                      ? 'shadow-md' 
+                      : 'hover:bg-white/5'
                   }`}
+                  style={isSelected ? { backgroundColor: colors.background.white } : undefined}
                 >
                   <div 
                     className="uppercase tracking-wide text-center mb-1"
@@ -698,7 +702,7 @@ function InvestmentAnalysisSection({
                       letterSpacing: '0.5px',
                     }}
                   >
-                    <span className={isSelected ? 'text-neutral-800 font-bold' : 'text-neutral-500'}>
+                    <span style={{ color: isSelected ? colors.text.primary : colors.text.tertiary, fontWeight: isSelected ? 700 : 600 }}>
                       {card.label}
                     </span>
                   </div>
@@ -717,13 +721,13 @@ function InvestmentAnalysisSection({
           </div>
         </div>
 
-        {/* Metrics Cards - Individual white cards with teal accent */}
+        {/* Metrics Cards - Individual cards with teal accent */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           {keyMetrics.map((metric) => (
             <div 
               key={metric.label} 
-              className="bg-white rounded-lg p-4 text-center relative overflow-hidden border border-neutral-200/60"
-              style={{ boxShadow: colors.shadow.metricCard }}
+              className="rounded-lg p-4 text-center relative overflow-hidden"
+              style={{ backgroundColor: colors.background.white, border: `1px solid ${colors.ui.border}`, boxShadow: colors.shadow.metricCard }}
             >
               {/* Teal top accent */}
               <div 
@@ -731,8 +735,8 @@ function InvestmentAnalysisSection({
                 style={{ backgroundColor: colors.brand.tealBright }}
               />
               <div 
-                className="text-neutral-500 uppercase tracking-wide mb-1.5"
-                style={{ fontSize: 9, fontWeight: 600 }}
+                className="uppercase tracking-wide mb-1.5"
+                style={{ fontSize: 9, fontWeight: 600, color: colors.text.tertiary }}
               >
                 {metric.label}
               </div>
@@ -751,7 +755,7 @@ function InvestmentAnalysisSection({
 
         {/* Dynamic Context Label */}
         <div className="flex items-center justify-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-neutral-400" />
+          <Info className="w-3.5 h-3.5" style={{ color: colors.text.muted }} />
           <span 
             style={{ 
               fontSize: typography.caption.size + 1,
@@ -778,15 +782,15 @@ function FinancialBreakdownSection({
   summary?: FinancialSummary
 }) {
   return (
-    <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
+    <div className="border-b" style={{ backgroundColor: colors.background.white, borderColor: colors.ui.border }}>
       {/* Header with Icon */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: colors.ui.border }}>
         <div className="flex items-center gap-3">
           <div 
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: colors.background.deepNavy }}
+            style={{ backgroundColor: colors.background.subtle }}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="2" width="16" height="20" rx="2" />
               <line x1="8" y1="6" x2="16" y2="6" />
               <line x1="8" y1="10" x2="16" y2="10" />
@@ -948,8 +952,8 @@ function FinancialBreakdownSection({
 
             <div className="space-y-2">
               <button
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
-                style={{ borderColor: colors.brand.tealBright }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] transition-colors hover:bg-teal-500/10"
+                style={{ borderColor: colors.brand.tealBright, backgroundColor: 'transparent' }}
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="1" x2="12" y2="23" />
@@ -964,8 +968,8 @@ function FinancialBreakdownSection({
               </button>
 
               <button
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
-                style={{ borderColor: colors.brand.tealBright }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] transition-colors hover:bg-teal-500/10"
+                style={{ borderColor: colors.brand.tealBright, backgroundColor: 'transparent' }}
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -982,8 +986,8 @@ function FinancialBreakdownSection({
               </button>
 
               <button
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] bg-white transition-colors hover:bg-teal-50/40"
-                style={{ borderColor: colors.brand.tealBright }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-[1.5px] transition-colors hover:bg-teal-500/10"
+                style={{ borderColor: colors.brand.tealBright, backgroundColor: 'transparent' }}
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
@@ -1136,15 +1140,15 @@ function PerformanceMetricsSection({
   metrics: PerformanceMetric[]
 }) {
   return (
-    <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
+    <div className="border-b" style={{ backgroundColor: colors.background.white, borderColor: colors.ui.border }}>
       {/* Header with Icon */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: colors.ui.border }}>
         <div className="flex items-center gap-3">
           <div 
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: colors.background.deepNavy }}
+            style={{ backgroundColor: colors.background.subtle }}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="20" x2="18" y2="10" />
               <line x1="12" y1="20" x2="12" y2="4" />
               <line x1="6" y1="20" x2="6" y2="14" />

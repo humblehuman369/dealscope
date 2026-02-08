@@ -86,7 +86,7 @@ export function VerdictScoreHero({
   const strokeDashoffset = circumference - (score / 100) * circumference
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0]">
+    <div className="border-b" style={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}>
       {/* Score Circle Section - Centered */}
       <div className="flex flex-col items-center py-8 px-5">
         {/* Score Circle with Progress Ring */}
@@ -98,7 +98,7 @@ export function VerdictScoreHero({
               cy="60"
               r="54"
               fill="none"
-              stroke="#E2E8F0"
+              stroke="rgba(148,163,184,0.2)"
               strokeWidth="8"
             />
             {/* Progress circle */}
@@ -120,23 +120,24 @@ export function VerdictScoreHero({
             <span className="text-4xl font-bold" style={{ color: scoreColor }}>
               {score}
             </span>
-            <span className="text-xs text-[#94A3B8] font-medium">/100</span>
+            <span className="text-xs font-medium" style={{ color: '#64748B' }}>/100</span>
           </div>
         </div>
 
         {/* Verdict Label */}
-        <h2 className="text-xl font-bold text-[#0A1628] mb-1">
+        <h2 className="text-xl font-bold mb-1" style={{ color: '#F1F5F9' }}>
           {verdictLabel}
         </h2>
         
         {/* Verdict Subtitle */}
-        <p className="text-sm text-[#64748B] text-center mb-3">
+        <p className="text-sm text-center mb-3" style={{ color: '#94A3B8' }}>
           {verdictSubtitle}
         </p>
 
         {/* How it works link */}
         <button 
-          className="flex items-center gap-1.5 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+          className="flex items-center gap-1.5 text-xs font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+          style={{ color: '#0891B2' }}
           onClick={onShowMethodology}
         >
           <Info className="w-3.5 h-3.5" />
@@ -145,71 +146,71 @@ export function VerdictScoreHero({
       </div>
 
       {/* Quick Stats Row - 4 columns */}
-      <div className="grid grid-cols-4 border-t border-[#E2E8F0]">
+      <div className="grid grid-cols-4 border-t" style={{ borderColor: '#1E293B' }}>
         {/* Deal Gap */}
-        <div className="flex flex-col items-center py-4 border-r border-[#E2E8F0]">
-          <span className="text-[10px] text-[#64748B] uppercase tracking-wide font-medium mb-1">
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#64748B' }}>
             Deal Gap
           </span>
           <span className={`text-base font-bold ${dealGap <= 0 ? 'text-[#10B981]' : 'text-[#D97706]'}`}>
             {dealGap > 0 ? '-' : '+'}{Math.abs(dealGap).toFixed(1)}%
           </span>
-          <span className="text-[10px] text-[#94A3B8]">
+          <span className="text-[10px]" style={{ color: '#475569' }}>
             {dealGap <= 10 ? 'Achievable' : dealGap <= 20 ? 'Stretch' : 'Difficult'}
           </span>
         </div>
 
         {/* Seller Urgency */}
-        <div className="flex flex-col items-center py-4 border-r border-[#E2E8F0]">
-          <span className="text-[10px] text-[#64748B] uppercase tracking-wide font-medium mb-1">
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#64748B' }}>
             Seller Urgency
           </span>
           <span className="text-base font-bold" style={{ color: getUrgencyColor(sellerUrgency) }}>
             {sellerUrgency}
           </span>
-          <span className="text-[10px] text-[#94A3B8]">
+          <span className="text-[10px]" style={{ color: '#475569' }}>
             {sellerUrgencyScore}/100
           </span>
         </div>
 
         {/* Market Temp */}
-        <div className="flex flex-col items-center py-4 border-r border-[#E2E8F0]">
-          <span className="text-[10px] text-[#64748B] uppercase tracking-wide font-medium mb-1">
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#64748B' }}>
             Market Temp
           </span>
           <span className="text-base font-bold" style={{ color: getMarketTempColor(marketTemp) }}>
             {marketTemp}
           </span>
-          <span className="text-[10px] text-[#94A3B8]">
+          <span className="text-[10px]" style={{ color: '#475569' }}>
             {marketTemp === 'Cold' ? "Buyer's" : marketTemp === 'Hot' ? "Seller's" : 'Balanced'}
           </span>
         </div>
 
         {/* Vacancy */}
         <div className="flex flex-col items-center py-4">
-          <span className="text-[10px] text-[#64748B] uppercase tracking-wide font-medium mb-1">
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#64748B' }}>
             Vacancy
           </span>
           <span className={`text-base font-bold ${vacancy <= 5 ? 'text-[#10B981]' : vacancy <= 10 ? 'text-[#D97706]' : 'text-[#E11D48]'}`}>
             {'<'}{vacancy}%
           </span>
-          <span className="text-[10px] text-[#94A3B8]">
+          <span className="text-[10px]" style={{ color: '#475569' }}>
             {vacancy <= 5 ? 'Healthy' : vacancy <= 10 ? 'Moderate' : 'High'}
           </span>
         </div>
       </div>
 
       {/* Confidence Metrics Section */}
-      <div className="px-5 py-4 border-t border-[#E2E8F0]">
-        <h3 className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-3">
+      <div className="px-5 py-4 border-t" style={{ borderColor: '#1E293B' }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#64748B' }}>
           Confidence Metrics
         </h3>
         
         <div className="space-y-3">
           {/* Deal Probability */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[#475569] w-32">Deal Probability</span>
-            <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
+            <span className="text-sm w-32" style={{ color: '#94A3B8' }}>Deal Probability</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
@@ -225,8 +226,8 @@ export function VerdictScoreHero({
 
           {/* Market Alignment */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[#475569] w-32">Market Alignment</span>
-            <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
+            <span className="text-sm w-32" style={{ color: '#94A3B8' }}>Market Alignment</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
@@ -242,8 +243,8 @@ export function VerdictScoreHero({
 
           {/* Price Confidence */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[#475569] w-32">Price Confidence</span>
-            <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
+            <span className="text-sm w-32" style={{ color: '#94A3B8' }}>Price Confidence</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
