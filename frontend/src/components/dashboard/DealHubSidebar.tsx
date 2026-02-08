@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Settings, Shield, ChevronLeft, ChevronRight, X, LogOut
+  LayoutDashboard, Building2, History, Settings, Shield,
+  ChevronLeft, ChevronRight, X, LogOut
 } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import { useSession, useLogout } from '@/hooks/useSession'
@@ -16,6 +17,8 @@ interface SidebarProps {
 
 const navItems = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard, exact: true },
+  { label: 'My Properties', href: '/dashboard/properties', icon: Building2, description: 'Saved deals & pipeline' },
+  { label: 'Activity Log', href: '/dashboard/activity', icon: History, description: 'Search history & analytics' },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings, description: 'Profile & preferences' },
 ]
 

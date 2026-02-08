@@ -6,10 +6,15 @@ import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { WidgetErrorBoundary } from '@/components/dashboard/ErrorBoundary'
+import { PropertyCard, type SavedPropertyData } from '@/components/dashboard/PropertyCard'
+import { ActivityItem, type SearchHistoryData } from '@/components/dashboard/ActivityItem'
+import { DealVaultCard } from '@/components/dashboard/DealVaultCard'
+import { PortfolioPreviewChart } from '@/components/dashboard/PortfolioPreviewChart'
+import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { useState } from 'react'
 import {
   Building2, TrendingUp, DollarSign, BarChart3,
-  Search, Clock, Settings, Eye
+  Search, Clock, ChevronRight, FileText, StickyNote, PieChart
 } from 'lucide-react'
 
 // ------------------------------------------------------------------
@@ -24,29 +29,6 @@ interface PropertyStats {
   average_coc_return?: number
 }
 
-interface SearchHistoryItem {
-  id: string
-  search_query: string
-  address_city?: string
-  address_state?: string
-  was_successful: boolean
-  was_saved: boolean
-  searched_at: string
-  search_source?: string
-}
-
-interface SavedProperty {
-  id: string
-  address_street: string
-  address_city?: string
-  address_state?: string
-  status: string
-  best_strategy?: string
-  best_cash_flow?: number
-  best_coc_return?: number
-  saved_at: string
-}
-
 // ------------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------------
@@ -58,18 +40,6 @@ const fmt = (n: number, prefix = '$') => {
 }
 
 const fmtPct = (n: number) => `${n.toFixed(1)}%`
-
-const timeAgo = (d: string) => {
-  const ms = Date.now() - new Date(d).getTime()
-  const mins = Math.floor(ms / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(ms / 3600000)
-  if (hrs < 24) return `${hrs}h ago`
-  const days = Math.floor(ms / 86400000)
-  if (days < 7) return `${days}d ago`
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
 
 // ------------------------------------------------------------------
 // Skeleton loaders
@@ -106,20 +76,20 @@ export default function DashboardOverview() {
   const { user } = useSession()
   const [showSearch, setShowSearch] = useState(false)
 
-  // Parallel data fetching with React Query
+  // Parallel data fetching
   const { data: stats, isLoading: statsLoading } = useQuery<PropertyStats>({
     queryKey: ['dashboard', 'stats'],
     queryFn: () => api.get('/api/v1/properties/saved/stats'),
     staleTime: 2 * 60 * 1000,
   })
 
-  const { data: recentSearches, isLoading: searchesLoading } = useQuery<SearchHistoryItem[]>({
+  const { data: recentSearches, isLoading: searchesLoading } = useQuery<SearchHistoryData[]>({
     queryKey: ['dashboard', 'recentSearches'],
-    queryFn: () => api.get('/api/v1/search-history/recent?limit=8'),
+    queryFn: () => api.get('/api/v1/search-history/recent?limit=5'),
     staleTime: 60 * 1000,
   })
 
-  const { data: savedProperties, isLoading: propsLoading } = useQuery<SavedProperty[]>({
+  const { data: savedProperties, isLoading: propsLoading } = useQuery<SavedPropertyData[]>({
     queryKey: ['dashboard', 'savedProperties'],
     queryFn: () => api.get('/api/v1/properties/saved?limit=5'),
     staleTime: 2 * 60 * 1000,
@@ -138,26 +108,30 @@ export default function DashboardOverview() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Header                                                           */}
+      {/* ---------------------------------------------------------------- */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Welcome back, {firstName}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Here&apos;s your investment portfolio overview.
+            Your DealVault overview &mdash; track, analyze, and manage your investment pipeline.
           </p>
         </div>
         <button
           onClick={() => setShowSearch(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium text-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium text-sm shadow-sm"
         >
           <Search className="w-4 h-4" />
           Analyze Property
         </button>
       </div>
 
-      {/* Metrics cards */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Portfolio Snapshot — Metric Cards                                 */}
+      {/* ---------------------------------------------------------------- */}
       <WidgetErrorBoundary>
         {statsLoading ? (
           <MetricsSkeleton />
@@ -171,11 +145,18 @@ export default function DashboardOverview() {
         )}
       </WidgetErrorBoundary>
 
-      {/* Pipeline */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Deal Pipeline                                                    */}
+      {/* ---------------------------------------------------------------- */}
       {total > 0 && (
         <WidgetErrorBoundary>
           <div className="bg-white dark:bg-navy-900 rounded-xl p-5 border border-slate-200 dark:border-navy-700">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Deal Pipeline</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Deal Pipeline</h2>
+              <Link href="/dashboard/properties" className="text-xs text-teal-600 hover:underline flex items-center gap-1">
+                Manage <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
             <div className="flex items-center gap-1 h-3 rounded-full overflow-hidden bg-slate-100 dark:bg-navy-800">
               {watching > 0 && <div className="h-full bg-slate-400" style={{ width: `${(watching / total) * 100}%` }} />}
               {analyzing > 0 && <div className="h-full bg-blue-500" style={{ width: `${(analyzing / total) * 100}%` }} />}
@@ -184,91 +165,121 @@ export default function DashboardOverview() {
               {owned > 0 && <div className="h-full bg-green-500" style={{ width: `${(owned / total) * 100}%` }} />}
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-500 dark:text-slate-400">
-              <span>Watching: {watching}</span>
-              <span>Analyzing: {analyzing}</span>
-              <span>Negotiating: {negotiating}</span>
-              <span>Under Contract: {underContract}</span>
-              <span>Owned: {owned}</span>
+              {watching > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400" /> Watching: {watching}</span>}
+              {analyzing > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Analyzing: {analyzing}</span>}
+              {negotiating > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Negotiating: {negotiating}</span>}
+              {underContract > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500" /> Under Contract: {underContract}</span>}
+              {owned > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Owned: {owned}</span>}
             </div>
           </div>
         </WidgetErrorBoundary>
       )}
 
+      {/* ---------------------------------------------------------------- */}
+      {/* Two-column: Recent Properties + Recent Activity                  */}
+      {/* ---------------------------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Saved properties */}
+        {/* Recent Properties */}
         <WidgetErrorBoundary>
-          <div className="bg-white dark:bg-navy-900 rounded-xl p-5 border border-slate-200 dark:border-navy-700">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-700 flex flex-col">
+            <div className="flex items-center justify-between p-5 pb-0">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Recent Properties</h2>
+              <Link href="/dashboard/properties" className="text-xs text-teal-600 hover:underline flex items-center gap-1">
+                View all <ChevronRight className="w-3 h-3" />
+              </Link>
             </div>
-            {propsLoading ? (
-              <ListSkeleton />
-            ) : savedProperties && savedProperties.length > 0 ? (
-              <div className="space-y-2">
-                {savedProperties.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-navy-800"
+            <div className="p-3 flex-1">
+              {propsLoading ? (
+                <ListSkeleton />
+              ) : savedProperties && savedProperties.length > 0 ? (
+                <div className="space-y-0.5">
+                  {savedProperties.map((p) => (
+                    <PropertyCard key={p.id} property={p} compact />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-sm text-slate-400">
+                  <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No properties saved yet.</p>
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    className="mt-3 text-teal-600 hover:underline text-xs font-medium"
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{p.address_street}</p>
-                      <p className="text-xs text-slate-500">{p.address_city}, {p.address_state}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-3">
-                      {p.best_cash_flow != null && (
-                        <p className="text-sm font-medium text-green-600">{fmt(p.best_cash_flow)}/mo</p>
-                      )}
-                      {p.best_coc_return != null && (
-                        <p className="text-xs text-slate-500">{fmtPct(p.best_coc_return * 100)} CoC</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-sm text-slate-400">
-                <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                No properties saved yet. Start by analyzing a property.
-              </div>
-            )}
+                    Analyze your first property
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </WidgetErrorBoundary>
 
-        {/* Recent activity */}
+        {/* Recent Activity */}
         <WidgetErrorBoundary>
-          <div className="bg-white dark:bg-navy-900 rounded-xl p-5 border border-slate-200 dark:border-navy-700">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-700 flex flex-col">
+            <div className="flex items-center justify-between p-5 pb-0">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Recent Activity</h2>
+              <Link href="/dashboard/activity" className="text-xs text-teal-600 hover:underline flex items-center gap-1">
+                View all <ChevronRight className="w-3 h-3" />
+              </Link>
             </div>
-            {searchesLoading ? (
-              <ListSkeleton rows={4} />
-            ) : recentSearches && recentSearches.length > 0 ? (
-              <div className="space-y-2">
-                {recentSearches.slice(0, 5).map((s) => (
-                  <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.was_successful ? 'bg-green-500' : 'bg-red-400'}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{s.search_query}</p>
-                      <p className="text-xs text-slate-400">{timeAgo(s.searched_at)}</p>
-                    </div>
-                    {s.was_saved && <Eye className="w-3.5 h-3.5 text-teal-500 flex-shrink-0" />}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-sm text-slate-400">
-                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                No recent searches.
-              </div>
-            )}
+            <div className="p-3 flex-1">
+              {searchesLoading ? (
+                <ListSkeleton rows={4} />
+              ) : recentSearches && recentSearches.length > 0 ? (
+                <div className="space-y-0.5">
+                  {recentSearches.map((s) => (
+                    <ActivityItem key={s.id} item={s} compact />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-sm text-slate-400">
+                  <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No recent searches.</p>
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    className="mt-3 text-teal-600 hover:underline text-xs font-medium"
+                  >
+                    Search for a property
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </WidgetErrorBoundary>
       </div>
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <QuickAction icon={Search} label="Analyze Property" onClick={() => setShowSearch(true)} />
-        <QuickAction icon={Settings} label="Settings" href="/dashboard/settings" />
+      {/* ---------------------------------------------------------------- */}
+      {/* Portfolio Performance Chart (Coming Soon)                        */}
+      {/* ---------------------------------------------------------------- */}
+      <WidgetErrorBoundary>
+        <PortfolioPreviewChart />
+      </WidgetErrorBoundary>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* DealVault Feature Teasers                                        */}
+      {/* ---------------------------------------------------------------- */}
+      <div>
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">DealVault</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <DealVaultCard
+            icon={FileText}
+            title="Documents"
+            description="Store contracts, inspections, appraisals, and closing docs for every deal."
+            color="teal"
+          />
+          <DealVaultCard
+            icon={StickyNote}
+            title="Notes"
+            description="Track deal notes, observations, seller conversations, and follow-ups."
+            color="blue"
+          />
+          <DealVaultCard
+            icon={PieChart}
+            title="Financial Reports"
+            description="Portfolio P&L, tax summaries, expense tracking, and return projections."
+            color="purple"
+          />
+        </div>
       </div>
 
       <SearchPropertyModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
@@ -297,23 +308,5 @@ function MetricCard({ icon: Icon, label, value, color }: { icon: any; label: str
       </div>
       <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
     </div>
-  )
-}
-
-function QuickAction({ icon: Icon, label, href, onClick }: { icon: any; label: string; href?: string; onClick?: () => void }) {
-  const cls = "flex flex-col items-center gap-2 p-4 bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 transition-colors cursor-pointer"
-  if (href) {
-    return (
-      <Link href={href} className={cls}>
-        <Icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
-      </Link>
-    )
-  }
-  return (
-    <button onClick={onClick} className={cls}>
-      <Icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
-    </button>
   )
 }
