@@ -1,0 +1,9 @@
+backend
+mobile
+docs
+dos
+image
+.git
+node_modules
+frontend/node_modules
+frontend/.next
