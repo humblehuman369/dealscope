@@ -1,0 +1,204 @@
+/* InvestIQ Gateway Modal — Scoped under .gw- prefix */
+
+/* Overlay */
+.gw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: gwFadeIn 0.2s ease-out;
+}
+
+@keyframes gwFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gw-grid-bg {
+  position: absolute; inset: 0; z-index: 0; opacity: 0.15; pointer-events: none;
+  background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Fonts */
+.gw-font-logo { font-family: 'Source Sans 3', sans-serif; }
+
+/* Card */
+.gw-card {
+  position: relative; z-index: 10; width: 100%; max-width: 32rem;
+  background: #0B1221; border: 1px solid #334155;
+  border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  overflow: hidden;
+  animation: gwSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gwSlideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.gw-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem; border-bottom: 1px solid #334155;
+  background: #0F172A;
+}
+
+.gw-logo-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; color: #fff; }
+.gw-logo-text .gw-brand { color: #0EA5E9; }
+
+.gw-close-btn {
+  color: #6b7280; background: none; border: none; cursor: pointer;
+  transition: color 0.2s; padding: 0.25rem;
+}
+.gw-close-btn:hover { color: white; }
+
+/* Body */
+.gw-body {
+  padding: 2rem; min-height: 440px; position: relative;
+  font-family: 'Inter', system-ui, sans-serif; color: #fff;
+}
+
+/* Step transitions */
+.gw-step-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.gw-hidden-step { opacity: 0; transform: translateX(20px); pointer-events: none; position: absolute; }
+.gw-active-step { opacity: 1; transform: translateX(0); position: relative; }
+
+/* Step 1 - Start */
+.gw-start-icon { width: 4rem; height: 4rem; margin: 0 auto 1rem; color: #0EA5E9; }
+.gw-start-title { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+.gw-start-subtitle { color: #9ca3af; font-size: 0.875rem; }
+
+/* IQ icon glow */
+@keyframes gwThoughtPulse {
+  0% { filter: drop-shadow(0 0 2px rgba(14, 165, 233, 0.3)); }
+  50% { filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.6)); }
+  100% { filter: drop-shadow(0 0 2px rgba(14, 165, 233, 0.3)); }
+}
+.gw-iq-icon svg { animation: gwThoughtPulse 4s infinite ease-in-out; }
+
+/* Method buttons */
+.gw-method-btn {
+  width: 100%; background: #1E293B; border: 1px solid #334155;
+  padding: 1rem; border-radius: 0.75rem; display: flex; align-items: center;
+  gap: 1rem; cursor: pointer; transition: all 0.3s;
+  font-family: 'Inter', system-ui, sans-serif; text-align: left; color: white;
+}
+.gw-method-btn:hover { background: rgba(255,255,255,0.03); border-color: #0EA5E9; }
+.gw-icon-circle {
+  width: 3rem; height: 3rem; border-radius: 50%;
+  background: rgba(14, 165, 233, 0.1); color: #0EA5E9;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.3s;
+}
+.gw-method-btn:hover .gw-icon-circle { background: #0EA5E9; color: white; }
+.gw-label { font-weight: 700; color: white; font-size: 0.875rem; }
+.gw-sublabel { font-size: 0.75rem; color: #6b7280; margin-top: 1px; }
+.gw-arrow { margin-left: auto; color: #4b5563; transition: color 0.2s; font-size: 1.125rem; }
+.gw-method-btn:hover .gw-arrow { color: #0EA5E9; }
+
+/* IQ Assistant Box */
+.gw-assistant-box {
+  display: flex; align-items: flex-start; gap: 1rem;
+  background: rgba(30, 41, 59, 0.5); padding: 1rem; border-radius: 0.75rem;
+  border: 1px solid #334155; margin-bottom: 2rem;
+}
+.gw-assistant-box .gw-iq-icon { width: 2.5rem; height: 2.5rem; color: #0EA5E9; flex-shrink: 0; }
+.gw-assistant-box h3 { font-size: 0.875rem; font-weight: 700; color: white; margin-bottom: 0.25rem; }
+.gw-assistant-box p { font-size: 0.75rem; color: white; line-height: 1.625; }
+
+/* Address Input */
+.gw-address-input-wrap { position: relative; }
+.gw-search-icon {
+  position: absolute; top: 50%; left: 0.75rem; transform: translateY(-50%);
+  color: #6b7280; pointer-events: none;
+}
+.gw-address-input {
+  width: 100%; background: #0F172A; border: 1px solid #334155;
+  color: white; border-radius: 0.5rem; padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-size: 0.875rem; font-family: 'Inter', system-ui, sans-serif;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.gw-address-input::placeholder { color: #4b5563; }
+.gw-address-input:focus { border-color: #0EA5E9; box-shadow: 0 0 0 1px #0EA5E9; }
+
+/* Slider Controls */
+.gw-slider-group { margin-bottom: 0; }
+.gw-slider-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.75rem; }
+.gw-slider-header label { font-size: 0.75rem; font-weight: 700; color: #d1d5db; }
+.gw-slider-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700;
+  padding: 0.125rem 0.5rem; border-radius: 0.25rem;
+}
+.gw-slider-badge.gw-warning {
+  color: #F59E0B; background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.gw-slider-badge.gw-brand-badge {
+  color: #0EA5E9; background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+.gw-slider-scale {
+  display: flex; justify-content: space-between; margin-top: 0.5rem;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+/* Range slider styling */
+.gw-body input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+.gw-body input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px; width: 20px;
+  border-radius: 50%;
+  background: white;
+  margin-top: -8px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  border: 2px solid #0F172A;
+}
+.gw-body input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 6px;
+  cursor: pointer;
+  background: #334155;
+  border-radius: 3px;
+}
+.gw-body input[type=range]::-moz-range-thumb {
+  height: 20px; width: 20px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  border: 2px solid #0F172A;
+}
+.gw-body input[type=range]::-moz-range-track {
+  width: 100%; height: 6px;
+  cursor: pointer;
+  background: #334155;
+  border-radius: 3px;
+}
+
+/* Action Buttons */
+.gw-btn-row { display: flex; gap: 0.75rem; margin-top: 2rem; }
+.gw-btn-back {
+  padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: 1px solid #334155;
+  color: #9ca3af; background: none; cursor: pointer; font-weight: 500;
+  font-size: 0.875rem; font-family: 'Inter', system-ui, sans-serif; transition: all 0.2s;
+}
+.gw-btn-back:hover { color: white; background: rgba(255,255,255,0.03); }
+.gw-btn-primary {
+  flex: 1; background: #0EA5E9; color: white; font-weight: 700;
+  padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer;
+  font-size: 0.875rem; font-family: 'Inter', system-ui, sans-serif;
+  box-shadow: 0 0 40px rgba(14, 165, 233, 0.15);
+  transition: background 0.2s; display: flex; justify-content: center;
+  align-items: center; gap: 0.5rem;
+}
+.gw-btn-primary:hover { background: #38bdf8; }
+.gw-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.gw-btn-primary:disabled:hover { background: #0EA5E9; }

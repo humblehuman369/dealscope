@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { InvestIQGateway } from './InvestIQGateway';
 import './investiq-homepage.css';
 
 interface InvestIQHomepageProps {
@@ -33,6 +34,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
   const { openAuthModal } = useAuthModal();
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
   const sectionRefs = useRef<(HTMLDivElement | HTMLElement | null)[]>([]);
+  const [gatewayOpen, setGatewayOpen] = useState(false);
+  const [gatewayStep, setGatewayStep] = useState<'start' | 'address' | 'scan'>('start');
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -54,13 +57,13 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
     `fade-in ${visibleSections.has(String(idx)) ? 'visible' : ''}`;
 
   const handleEnterAddress = () => {
-    router.push('/analyzing');
+    setGatewayStep('address');
+    setGatewayOpen(true);
   };
 
   const handleScanProperty = () => {
-    if (onPointAndScan) {
-      onPointAndScan();
-    }
+    setGatewayStep('scan');
+    setGatewayOpen(true);
   };
 
   const handleLoginRegister = () => {
@@ -68,11 +71,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
   };
 
   const handleStartAnalysis = () => {
-    if (isAuthenticated) {
-      router.push('/analyzing');
-    } else {
-      openAuthModal('register');
-    }
+    setGatewayStep('start');
+    setGatewayOpen(true);
   };
 
   return (
@@ -444,6 +444,15 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         <p className="footer-tagline">Professional Real Estate Intelligence for Everyone.</p>
         <p className="footer-copy">&copy; 2026 InvestIQ. All rights reserved.<br />Professional use only. Not a lender.</p>
       </footer>
+
+      {/* Gateway Modal */}
+      {gatewayOpen && (
+        <InvestIQGateway
+          initialStep={gatewayStep}
+          onClose={() => setGatewayOpen(false)}
+          onScanProperty={onPointAndScan}
+        />
+      )}
     </div>
   );
 }
