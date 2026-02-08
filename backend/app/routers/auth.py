@@ -89,6 +89,15 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
     perms = await role_repo.get_user_permissions(db, user.id)
     user_roles = await role_repo.get_user_roles(db, user.id)
     role_names = [ur.role.name for ur in user_roles]
+    # Check profile without triggering lazy-load (which breaks async).
+    # If the relationship was eagerly loaded, it's in __dict__; otherwise query.
+    profile = user.__dict__.get("profile")
+    if profile is None and "profile" not in user.__dict__:
+        # Not loaded — query separately
+        from app.repositories.user_repository import user_repo
+        profile_user = await user_repo.get_by_id(db, user.id, load_profile=True)
+        profile = profile_user.profile if profile_user else None
+
     return UserResponse(
         id=str(user.id),
         email=user.email,
@@ -100,8 +109,8 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
         mfa_enabled=user.mfa_enabled,
         created_at=user.created_at,
         last_login=user.last_login,
-        has_profile=user.profile is not None if hasattr(user, "profile") else False,
-        onboarding_completed=user.profile.onboarding_completed if (hasattr(user, "profile") and user.profile) else False,
+        has_profile=profile is not None,
+        onboarding_completed=profile.onboarding_completed if profile else False,
         roles=role_names,
         permissions=sorted(perms),
     )
