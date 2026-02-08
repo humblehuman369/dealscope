@@ -33,14 +33,10 @@ export default function AdminPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8">
         <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-          <Shield size={20} className="text-amber-500" />
-          Administration
+          <Shield size={20} className="text-amber-500" /> Administration
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Platform management and configuration
-        </p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Platform management and configuration</p>
       </div>
-
       <div className="space-y-8">
         <PlatformStatsSection />
         <UserManagementSection />

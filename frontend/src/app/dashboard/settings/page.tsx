@@ -2,10 +2,7 @@
 
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
-import {
-  Settings, User, CreditCard, SlidersHorizontal,
-  Bell, Palette, ChevronRight, ExternalLink
-} from 'lucide-react'
+import { Settings, User, CreditCard, SlidersHorizontal, ChevronRight } from 'lucide-react'
 
 const settingsLinks = [
   {
@@ -38,12 +35,9 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8">
         <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-          <Settings size={20} className="text-teal-500" />
-          Settings
+          <Settings size={20} className="text-teal-500" /> Settings
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Manage your account, preferences, and investment defaults
-        </p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account, preferences, and investment defaults</p>
       </div>
 
       {/* User card */}
@@ -59,18 +53,13 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Settings Links */}
+      {/* Settings links */}
       <div className="space-y-3">
         {settingsLinks.map((link) => (
-          <Link
-            key={link.title}
-            href={link.href}
-            className="flex items-center justify-between px-5 py-4 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 transition-all group"
-          >
+          <Link key={link.title} href={link.href}
+            className="flex items-center justify-between px-5 py-4 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 hover:border-teal-300 dark:hover:border-teal-700 transition-all group">
             <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl ${link.color} flex items-center justify-center flex-shrink-0`}>
-                <link.icon size={18} />
-              </div>
+              <div className={`w-10 h-10 rounded-xl ${link.color} flex items-center justify-center flex-shrink-0`}><link.icon size={18} /></div>
               <div>
                 <h3 className="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-teal-600 transition-colors">{link.title}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{link.description}</p>
