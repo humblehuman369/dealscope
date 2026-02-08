@@ -1,4 +1,5 @@
 export { ResponsiveLandingPage } from './ResponsiveLandingPage';
+export { InvestIQHomepage } from './InvestIQHomepage';
 export { AnimatedPhoneMockup } from './AnimatedPhoneMockup';
 export { FloatingDataCards } from './FloatingDataCards';
 export { StrategyCard } from './StrategyCard';

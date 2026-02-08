@@ -22,7 +22,7 @@ import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
-import { ResponsiveLandingPage } from '@/components/landing';
+import { InvestIQHomepage } from '@/components/landing';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -32,8 +32,8 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // Use the new responsive landing page
-  return <ResponsiveLandingPage onPointAndScan={() => setMode('camera')} />;
+  // Use the new InvestIQ homepage
+  return <InvestIQHomepage onPointAndScan={() => setMode('camera')} />;
 }
 
 /**
