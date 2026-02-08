@@ -174,7 +174,7 @@ def _apply_auth_columns_sql(url: str) -> bool:
                     ]:
                         rid = str(uuid.uuid4())
                         cur.execute(
-                            "INSERT INTO roles (id, name, description) VALUES (%s, %s, %s)",
+                            "INSERT INTO roles (id, name, description, created_at) VALUES (%s, %s, %s, NOW())",
                             (rid, name, desc),
                         )
                         role_ids[name] = rid
@@ -191,7 +191,7 @@ def _apply_auth_columns_sql(url: str) -> bool:
                     for codename in perms:
                         pid = str(uuid.uuid4())
                         cur.execute(
-                            "INSERT INTO permissions (id, codename) VALUES (%s, %s)",
+                            "INSERT INTO permissions (id, codename, created_at) VALUES (%s, %s, NOW())",
                             (pid, codename),
                         )
                         perm_ids[codename] = pid
