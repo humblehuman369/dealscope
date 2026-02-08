@@ -97,11 +97,13 @@ async function refreshTokens(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
+      // No body — backend reads the refresh_token from the httpOnly cookie.
+      // Sending `body: '{}'` previously caused a 422 because FastAPI tried
+      // to validate the empty object against RefreshTokenRequest (which
+      // requires a `refresh_token` string field).
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: '{}',
       })
       return res.ok
     } catch {

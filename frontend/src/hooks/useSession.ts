@@ -71,8 +71,14 @@ export function useSession() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes — keep cache longer to survive navigations
-    retry: false,
+    // Retry once on transient failures so a single network hiccup
+    // doesn't immediately drop the session.
+    retry: 1,
+    retryDelay: 1000,
     refetchOnWindowFocus: true,
+    // Proactively refresh 1 minute before the 5-minute access token
+    // expires, so the user never hits a stale-token gap.
+    refetchInterval: 4 * 60 * 1000, // 4 minutes
   })
 
   return {

@@ -100,14 +100,46 @@ export function useSaveProperty(
   // ----------------------------------------------------------------
 
   const save = useCallback(async () => {
+    // --- Guard: auth ---
     if (!isAuthenticated) {
+      console.warn('[useSaveProperty] save() blocked — user not authenticated')
+      toast.error('Please log in to save properties')
       openAuthModal('login')
       return
     }
-    if (isSaving || isSaved || !input) return
+
+    // --- Guard: already saving ---
+    if (isSaving) {
+      console.warn('[useSaveProperty] save() blocked — already saving')
+      return
+    }
+
+    // --- Guard: already saved ---
+    if (isSaved) {
+      console.warn('[useSaveProperty] save() blocked — property already saved')
+      toast.info('Property is already saved')
+      return
+    }
+
+    // --- Guard: missing input data ---
+    if (!input) {
+      console.warn('[useSaveProperty] save() blocked — input is null (property data not loaded)')
+      toast.error('Unable to save — property data not loaded yet')
+      return
+    }
+
+    // --- CSRF preflight check ---
+    const csrfCookie = typeof document !== 'undefined'
+      ? document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
+      : null
+    if (!csrfCookie) {
+      console.warn('[useSaveProperty] No csrf_token cookie found — save may fail with 403')
+    }
 
     setIsSaving(true)
     setSaveMessage(null)
+
+    console.log('[useSaveProperty] Saving property:', input.fullAddress)
 
     try {
       const result = await api.post<SavedProperty>('/api/v1/properties/saved', {
@@ -122,15 +154,25 @@ export function useSaveProperty(
         property_data_snapshot: input.snapshot ?? {},
       })
 
+      console.log('[useSaveProperty] Save successful, id:', result.id)
       setIsSaved(true)
       setSavedPropertyId(result.id || null)
       setSaveMessage('Saved!')
       toast.success('Property saved to your portfolio')
     } catch (err) {
       if (err instanceof ApiError) {
+        console.error('[useSaveProperty] ApiError:', err.status, err.message)
+
         if (err.status === 401) {
           openAuthModal('login')
           toast.error('Please log in to save properties')
+          return
+        }
+
+        if (err.status === 403) {
+          console.error('[useSaveProperty] CSRF 403 — csrf_token cookie may be missing or mismatched')
+          toast.error('Security token expired. Please refresh the page and try again.')
+          setSaveMessage('Security error')
           return
         }
 
@@ -150,6 +192,7 @@ export function useSaveProperty(
         toast.error(err.message || 'Failed to save property. Please try again.')
         setSaveMessage('Failed to save')
       } else {
+        console.error('[useSaveProperty] Network/unknown error:', err)
         toast.error('Network error. Please check your connection and try again.')
         setSaveMessage('Error saving property')
       }
@@ -165,7 +208,20 @@ export function useSaveProperty(
   // ----------------------------------------------------------------
 
   const unsave = useCallback(async () => {
-    if (!isAuthenticated || !savedPropertyId || isSaving) return
+    if (!isAuthenticated) {
+      console.warn('[useSaveProperty] unsave() blocked — user not authenticated')
+      toast.error('Please log in to manage saved properties')
+      openAuthModal('login')
+      return
+    }
+    if (!savedPropertyId) {
+      console.warn('[useSaveProperty] unsave() blocked — no savedPropertyId')
+      return
+    }
+    if (isSaving) {
+      console.warn('[useSaveProperty] unsave() blocked — already saving')
+      return
+    }
 
     setIsSaving(true)
     setSaveMessage(null)

@@ -7,7 +7,7 @@ import { api } from '@/lib/api-client'
 import {
   Building2, Search, Clock, Star, Filter, ChevronRight,
   Trash2, Plus, Eye, MoreVertical, MapPin, TrendingUp,
-  Grid3X3, List, ChevronDown, X, ArrowUpDown
+  Grid3X3, List, ChevronDown, X, ArrowUpDown, AlertTriangle
 } from 'lucide-react'
 
 // ===========================================
@@ -100,9 +100,11 @@ export default function PropertiesHub() {
   const [historyFilter, setHistoryFilter] = useState<'all' | 'successful' | 'saved'>('all')
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
+    setFetchError(null)
     try {
       const [propsData, historyData] = await Promise.all([
         api.get<SavedProperty[] | { items: SavedProperty[] }>('/api/v1/properties/saved?limit=50'),
@@ -111,8 +113,13 @@ export default function PropertiesHub() {
 
       setSavedProperties(Array.isArray(propsData) ? propsData : ((propsData as { items: SavedProperty[] }).items || []))
       setSearchHistory(Array.isArray(historyData) ? historyData : ((historyData as { items: SearchHistoryItem[] }).items || []))
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch properties:', err)
+      if (err?.status === 401) {
+        setFetchError('Please log in to view your saved properties.')
+      } else {
+        setFetchError('Failed to load properties. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -265,6 +272,21 @@ export default function PropertiesHub() {
         )}
       </div>
 
+      {/* Error State */}
+      {fetchError && !isLoading && (
+        <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 mb-5">
+          <AlertTriangle size={40} className="text-amber-400 mb-4" />
+          <h3 className="text-lg font-semibold text-slate-700 dark:text-white mb-2">Unable to Load</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{fetchError}</p>
+          <button
+            onClick={fetchData}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
       {/* Content */}
       {isLoading ? (
         <div className="space-y-3">
@@ -272,7 +294,7 @@ export default function PropertiesHub() {
             <div key={i} className="h-20 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 animate-pulse" />
           ))}
         </div>
-      ) : activeTab === 'saved' ? (
+      ) : fetchError ? null : activeTab === 'saved' ? (
         /* Saved Properties */
         filteredSaved.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700">
