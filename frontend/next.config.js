@@ -67,9 +67,19 @@ const nextConfig = {
   },
 
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (apiUrl) return []
-    return [{ source: '/api/:path*', destination: 'http://localhost:8000/api/:path*' }]
+    // Proxy all /api/* requests to the backend.
+    //
+    // This is CRITICAL for cookie-based auth: when the browser sends
+    // requests to investiq.guru/api/*, cookies are first-party.
+    // Without this, cookies set by the Railway backend are third-party
+    // and get blocked by modern browsers.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ]
   },
 }
 
