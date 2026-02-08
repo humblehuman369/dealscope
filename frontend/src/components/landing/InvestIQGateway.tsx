@@ -93,7 +93,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
         </div>
 
         {/* Body */}
-        <div className="gw-body">
+        <div className="gw-body" style={{ padding: '1.25rem' }}>
 
           {/* Step 1: Start */}
           <div className={stepClass('start')}>
