@@ -464,7 +464,7 @@ function ScoreHero({
               />
               <span
                 className="uppercase tracking-wider font-bold mb-1"
-                style={{ fontSize: 8, color: colors.text.tertiary, letterSpacing: '0.5px' }}
+                style={{ fontSize: 8, color: '#FFFFFF', letterSpacing: '0.5px' }}
               >
                 {signal.label}
               </span>
@@ -736,7 +736,7 @@ function InvestmentAnalysisSection({
               />
               <div 
                 className="uppercase tracking-wide mb-1.5"
-                style={{ fontSize: 9, fontWeight: 600, color: colors.text.tertiary }}
+                style={{ fontSize: 9, fontWeight: 600, color: '#FFFFFF' }}
               >
                 {metric.label}
               </div>
