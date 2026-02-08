@@ -116,7 +116,7 @@ async def lifespan(app: FastAPI):
             from app.db.session import get_engine
             engine = get_engine()
             async with engine.begin() as conn:
-                from app.models import User, UserProfile, SavedProperty, PropertyAdjustment, Document, SharedLink
+                import app.models  # noqa: F401 — register ALL models with SQLAlchemy
                 await conn.run_sync(Base.metadata.create_all)
                 logger.info("Database tables created/verified successfully")
         except Exception as e:

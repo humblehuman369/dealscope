@@ -89,7 +89,10 @@ class Settings(BaseSettings):
     # Cookie Settings (for httpOnly auth cookies)
     # ===========================================
     COOKIE_SECURE: bool = True  # Set to False for local dev without HTTPS
-    COOKIE_SAMESITE: str = "lax"  # lax, strict, or none
+    # SameSite=none is required when frontend and backend are on different
+    # domains (e.g. investiq.guru + dealscope-production.up.railway.app).
+    # CSRF middleware provides equivalent protection.
+    COOKIE_SAMESITE: str = "none"  # lax, strict, or none
     COOKIE_DOMAIN: Optional[str] = None  # Set for cross-subdomain cookies
     
     # ===========================================
@@ -296,6 +299,15 @@ def validate_settings(settings: Settings) -> None:
             UserWarning,
         )
         object.__setattr__(settings, "COOKIE_SECURE", False)
+
+        # SameSite=none requires Secure=True. Downgrade to lax in dev.
+        if settings.COOKIE_SAMESITE.lower() == "none":
+            warnings.warn(
+                "COOKIE_SAMESITE forced from 'none' to 'lax' in non-production "
+                "(SameSite=None requires Secure cookies).",
+                UserWarning,
+            )
+            object.__setattr__(settings, "COOKIE_SAMESITE", "lax")
 
     if errors:
         error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
