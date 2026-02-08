@@ -9,7 +9,7 @@ import { WidgetErrorBoundary } from '@/components/dashboard/ErrorBoundary'
 import { useState } from 'react'
 import {
   Building2, TrendingUp, DollarSign, BarChart3,
-  Search, ArrowRight, Clock, Plus, ChevronRight, Zap, Eye
+  Search, Clock, Settings, Eye
 } from 'lucide-react'
 
 // ------------------------------------------------------------------
@@ -200,19 +200,15 @@ export default function DashboardOverview() {
           <div className="bg-white dark:bg-navy-900 rounded-xl p-5 border border-slate-200 dark:border-navy-700">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Recent Properties</h2>
-              <Link href="/dashboard/properties" className="text-xs text-teal-600 hover:underline flex items-center gap-1">
-                View all <ChevronRight className="w-3 h-3" />
-              </Link>
             </div>
             {propsLoading ? (
               <ListSkeleton />
             ) : savedProperties && savedProperties.length > 0 ? (
               <div className="space-y-2">
                 {savedProperties.map((p) => (
-                  <Link
+                  <div
                     key={p.id}
-                    href={`/dashboard/properties/${p.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-navy-800"
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{p.address_street}</p>
@@ -226,7 +222,7 @@ export default function DashboardOverview() {
                         <p className="text-xs text-slate-500">{fmtPct(p.best_coc_return * 100)} CoC</p>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -270,11 +266,9 @@ export default function DashboardOverview() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <QuickAction icon={Search} label="Search Property" onClick={() => setShowSearch(true)} />
-        <QuickAction icon={Building2} label="My Properties" href="/dashboard/properties" />
-        <QuickAction icon={BarChart3} label="Compare Deals" href="/dashboard/tools/compare" />
-        <QuickAction icon={Zap} label="Reports" href="/dashboard/reports" />
+      <div className="grid grid-cols-2 gap-3">
+        <QuickAction icon={Search} label="Analyze Property" onClick={() => setShowSearch(true)} />
+        <QuickAction icon={Settings} label="Settings" href="/dashboard/settings" />
       </div>
 
       <SearchPropertyModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
