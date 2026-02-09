@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,162 +16,57 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path } from 'react-native-svg';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  Easing,
-} from 'react-native-reanimated';
+import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop, Path } from 'react-native-svg';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import Slider from '@react-native-community/slider';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Strategy data matching web
-const strategies = [
+// Toolkit features matching new web design
+const toolkitFeatures = [
   {
-    id: 'long',
-    name: 'Long-Term Rental',
-    tagline: 'Steady income & build equity over time',
-    statValue: '8-12%',
-    statLabel: 'Cash-on-Cash',
-    color: '#0465f2',
+    icon: 'bar-chart-outline' as const,
+    title: 'StrategyIQ',
+    description: 'Run Flip, BRRRR, Wholesale, and Long-Term Rental models simultaneously.',
+    color: '#38bdf8',
+    bgColor: 'rgba(56,189,248,0.10)',
   },
   {
-    id: 'short',
-    name: 'Short-Term Rental',
-    tagline: 'Maximize income via Airbnb/VRBO',
-    statValue: '15-25%',
-    statLabel: 'Cash-on-Cash',
-    color: '#8b5cf6',
+    icon: 'checkmark-circle-outline' as const,
+    title: 'VerdictIQ',
+    description: 'Input your "Buy Box" criteria. The system flags properties as PASS, MARGINAL, or BUY.',
+    color: '#34d399',
+    bgColor: 'rgba(52,211,153,0.10)',
   },
   {
-    id: 'brrrr',
-    name: 'BRRRR',
-    tagline: 'Buy-Rehab-Rent-Refi-Repeat',
-    statValue: '∞',
-    statLabel: 'Scale',
-    color: '#f97316',
-    isScale: true,
+    icon: 'camera-outline' as const,
+    title: 'ScanIQ',
+    description: 'Snap a photo of any property or For Sale sign to pull data instantly.',
+    color: '#a78bfa',
+    bgColor: 'rgba(167,139,250,0.10)',
   },
   {
-    id: 'flip',
-    name: 'Fix & Flip',
-    tagline: 'Buy low, renovate, sell high',
-    statValue: '$50K+',
-    statLabel: 'Profit',
-    color: '#ec4899',
+    icon: 'locate-outline' as const,
+    title: 'PriceIQ',
+    description: 'Three numbers that define your deal: Breakeven, Target, and Wholesale — in 60 seconds.',
+    color: '#38bdf8',
+    bgColor: 'rgba(56,189,248,0.10)',
   },
   {
-    id: 'hack',
-    name: 'House Hack',
-    tagline: 'Live free by renting extra units',
-    statValue: '75%',
-    statLabel: 'Cost Savings',
-    color: '#14b8a6',
+    icon: 'document-text-outline' as const,
+    title: 'ReportIQ',
+    description: 'Generate lender-ready PDF reports. Share with partners, lenders, or your team.',
+    color: '#fbbf24',
+    bgColor: 'rgba(251,191,36,0.10)',
   },
   {
-    id: 'wholesale',
-    name: 'Wholesale',
-    tagline: 'Find deals & assign contracts',
-    statValue: '$10K+',
-    statLabel: 'Per Deal',
-    color: '#84cc16',
+    icon: 'folder-outline' as const,
+    title: 'PipelineIQ',
+    description: 'Save deals, track offers, and compare opportunities side-by-side.',
+    color: '#38bdf8',
+    bgColor: 'rgba(56,189,248,0.10)',
   },
 ];
-
-// Features data matching new web design
-const features = [
-  {
-    icon: 'scan-outline',
-    title: "Know if it's a deal in 60 seconds",
-    description: 'Point your camera at any property and get instant analysis without spreadsheets.',
-  },
-  {
-    icon: 'checkmark-circle-outline',
-    title: 'Find the strategy that fits YOUR goals',
-    description: 'See how every property performs across all 6 investment strategies instantly.',
-  },
-  {
-    icon: 'home-outline',
-    title: 'See what similar properties sold for',
-    description: 'Access real market comps to validate your analysis and make confident offers.',
-  },
-  {
-    icon: 'cash-outline',
-    title: 'Model your exact profit before offering',
-    description: 'Adjust every variable and watch returns update in real-time with DealMakerIQ.',
-  },
-  {
-    icon: 'document-text-outline',
-    title: 'Professional PDF reports',
-    description: 'Generate lender-ready reports to share with partners or your investment team.',
-  },
-  {
-    icon: 'git-compare-outline',
-    title: 'Save & compare deals',
-    description: 'Build a pipeline of investments and compare them side-by-side.',
-  },
-];
-
-// Capability stats (replaces social proof for launch)
-const capabilityStats = [
-  { value: '60s', label: 'Analysis Time' },
-  { value: '6', label: 'Strategies' },
-  { value: '15+', label: 'Variables' },
-  { value: '100%', label: 'Free to Start' },
-];
-
-// Format helpers
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-const formatCurrencyShort = (value: number) => {
-  if (Math.abs(value) >= 1000) {
-    return '$' + (value / 1000).toFixed(1) + 'K';
-  }
-  return formatCurrency(value);
-};
-
-// DealMakerIQ calculation
-function calculateMetrics(buyPrice: number, downPaymentPct: number, monthlyRent: number) {
-  const downPayment = buyPrice * (downPaymentPct / 100);
-  const closingCosts = buyPrice * 0.03;
-  const cashNeeded = downPayment + closingCosts;
-
-  const loanAmount = buyPrice - downPayment;
-  const monthlyRate = 0.07 / 12;
-  const numPayments = 360;
-  const mortgagePayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-    (Math.pow(1 + monthlyRate, numPayments) - 1);
-
-  const totalMonthlyExpenses = mortgagePayment +
-    (buyPrice * 0.012) / 12 +
-    150 +
-    monthlyRent * 0.05 +
-    monthlyRent * 0.05;
-
-  const monthlyFlow = monthlyRent - totalMonthlyExpenses;
-  const annualFlow = monthlyFlow * 12;
-  const cocReturn = (annualFlow / cashNeeded) * 100;
-
-  let verdict: string;
-  if (cocReturn >= 8) verdict = 'Great Deal';
-  else if (cocReturn >= 4) verdict = 'Good Deal';
-  else if (cocReturn >= 0) verdict = 'Marginal';
-  else verdict = 'Risky';
-
-  return { cashNeeded, monthlyFlow, cocReturn, verdict };
-}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -183,13 +78,6 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // DealMakerIQ state
-  const [buyPrice, setBuyPrice] = useState(350000);
-  const [downPaymentPct, setDownPaymentPct] = useState(20);
-  const [monthlyRent, setMonthlyRent] = useState(2800);
-  
-  const metrics = calculateMetrics(buyPrice, downPaymentPct, monthlyRent);
-
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
@@ -200,21 +88,58 @@ export default function HomeScreen() {
     router.push('/(tabs)/scan');
   };
 
-  const handleTryItNow = () => {
+  const handleEnterAddress = () => {
     setShowSearchBar(true);
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  // Theme-aware colors
-  const accentColor = isDark ? '#4dd0e1' : '#0891b2';
-  const buttonGradientStart = isDark ? '#0097a7' : '#007ea7';
-  const buttonGradientEnd = isDark ? '#4dd0e1' : '#0097a7';
+  const handleStartAnalysis = () => {
+    setShowSearchBar(true);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  // Colors from new design
+  const colors = {
+    black: '#000000',
+    surface: '#0C1220',
+    panel: '#101828',
+    panelHover: '#152238',
+    white: '#F1F5F9',
+    text: '#CBD5E1',
+    textDim: '#94A3B8',
+    textFaint: '#64748B',
+    blue: '#38bdf8',
+    blueDeep: '#0EA5E9',
+    blueDim: 'rgba(56,189,248,0.10)',
+    cyan: '#38bdf8',
+    teal: '#2dd4bf',
+    gold: '#fbbf24',
+    goldDim: 'rgba(251,191,36,0.10)',
+    green: '#34d399',
+    greenDim: 'rgba(52,211,153,0.10)',
+    purple: '#a78bfa',
+    purpleDim: 'rgba(167,139,250,0.10)',
+    border: 'rgba(255,255,255,0.07)',
+    borderLight: 'rgba(255,255,255,0.12)',
+  };
+
+  // Light mode overrides
+  const c = isDark ? colors : {
+    ...colors,
+    black: '#f8fafc',
+    surface: '#ffffff',
+    panel: '#f1f5f9',
+    panelHover: '#e2e8f0',
+    white: '#0f172a',
+    text: '#475569',
+    textDim: '#64748b',
+    textFaint: '#94a3b8',
+    border: 'rgba(0,0,0,0.08)',
+    borderLight: 'rgba(0,0,0,0.12)',
+  };
 
   return (
-    <View style={[
-      styles.container, 
-      { backgroundColor: isDark ? '#0a0a12' : '#f8fafc', paddingTop: insets.top }
-    ]}>
+    <View style={[styles.container, { backgroundColor: c.black, paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -225,39 +150,29 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
-          <View style={[
-            styles.header,
-            { 
-              backgroundColor: isDark ? 'rgba(10,10,18,0.85)' : 'rgba(255,255,255,0.9)',
-              borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-            }
-          ]}>
-            <Text style={[styles.logoText, { color: isDark ? '#fff' : '#0f172a' }]}>
-              Invest<Text style={{ color: accentColor }}>IQ</Text>
+          {/* NAV HEADER */}
+          <View style={[styles.header, { backgroundColor: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)', borderBottomColor: c.border }]}>
+            <Text style={[styles.logoText, { color: c.white }]}>
+              Invest<Text style={{ color: colors.blue }}>IQ</Text>
             </Text>
-            
             <View style={styles.headerRight}>
               {isAuthenticated && user ? (
-                <TouchableOpacity 
-                  style={[styles.headerBtn, { backgroundColor: accentColor }]}
+                <TouchableOpacity
+                  style={[styles.headerBtn, { backgroundColor: colors.blue }]}
                   onPress={() => router.push('/(tabs)/dashboard')}
                 >
-                  <Text style={styles.headerBtnText}>Dashboard</Text>
+                  <Text style={styles.headerBtnText}>Search</Text>
                 </TouchableOpacity>
               ) : (
-                <TouchableOpacity 
-                  style={[styles.headerBtn, { backgroundColor: accentColor }]}
+                <TouchableOpacity
+                  style={styles.loginBtn}
                   onPress={() => router.push('/auth/login')}
                 >
-                  <Text style={styles.headerBtnText}>Sign In</Text>
+                  <Text style={[styles.loginBtnText, { color: c.text }]}>Login/Register</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity 
-                style={[
-                  styles.themeToggle,
-                  { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }
-                ]}
+              <TouchableOpacity
+                style={[styles.themeToggle, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}
                 onPress={toggleTheme}
               >
                 <Text style={{ fontSize: 16 }}>{isDark ? '☀️' : '🌙'}</Text>
@@ -265,88 +180,73 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Hero Section */}
-          <View style={styles.heroSection}>
-            {/* Eyebrow Badge */}
-            <View style={[
-              styles.heroEyebrow,
-              { backgroundColor: isDark ? 'rgba(77,208,225,0.15)' : 'rgba(8,145,178,0.1)' }
-            ]}>
-              <Text style={styles.heroEyebrowIcon}>🚀</Text>
-              <Text style={[styles.heroEyebrowText, { color: accentColor }]}>
-                Early Access — Limited Beta
-              </Text>
+          {/* HERO SECTION */}
+          <View style={[styles.heroSection, { backgroundColor: c.black }]}>
+            {/* Badge */}
+            <View style={[styles.heroBadge, { backgroundColor: c.panel, borderColor: c.border }]}>
+              <View style={styles.badgeDot} />
+              <Text style={[styles.heroBadgeText, { color: colors.green }]}>Platform 1.0 Live</Text>
             </View>
-            
-            <Text style={[styles.heroTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-              Point. Scan.
+
+            <Text style={[styles.heroTitle, { color: c.white }]}>
+              Don't Just Analyze.
             </Text>
-            <Text style={[styles.heroTitleAccent, { color: accentColor }]}>
-              Invest Smarter.
+            <Text style={styles.heroTitleGrad}>
+              Engineer Your Deal.
             </Text>
-            
-            <Text style={[styles.heroSubtitle, { color: isDark ? '#9ca3af' : '#475569' }]}>
-              Point your phone at any property and get professional-grade investment analysis across 6 strategies in 60 seconds. No spreadsheets. No guesswork.
+
+            <Text style={[styles.heroDesc, { color: c.text }]}>
+              The first platform that combines automated speed with{' '}
+              <Text style={{ fontWeight: '600', color: c.white }}>appraisal autonomy</Text>. Select your own comps. Weight your assumptions. Manage your pipeline.
             </Text>
-            
-            {/* Hero CTA Buttons */}
-            <View style={styles.heroCta}>
-              <TouchableOpacity onPress={handleTryItNow}>
-                <LinearGradient
-                  colors={[buttonGradientStart, buttonGradientEnd]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.primaryBtn}
-                >
-                  <Text style={styles.primaryBtnText}>Scan Your First Property Free</Text>
-                </LinearGradient>
+
+            {/* Action Cards */}
+            <View style={styles.heroActions}>
+              <TouchableOpacity
+                style={[styles.actionCard, { backgroundColor: c.panel, borderColor: c.border }]}
+                onPress={handleEnterAddress}
+              >
+                <View style={[styles.actionIcon, { backgroundColor: colors.blueDim }]}>
+                  <Ionicons name="search" size={18} color={colors.blue} />
+                </View>
+                <View style={styles.actionTextWrap}>
+                  <Text style={[styles.actionLabel, { color: c.white }]}>Enter Address</Text>
+                  <Text style={[styles.actionSub, { color: c.textDim }]}>Search MLS Nationwide</Text>
+                </View>
+                <Text style={[styles.actionArrow, { color: c.textFaint }]}>→</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[
-                  styles.ghostBtn,
-                  { borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }
-                ]}
+
+              <TouchableOpacity
+                style={[styles.actionCard, { backgroundColor: c.panel, borderColor: c.border }]}
                 onPress={handleScanPress}
               >
-                <Ionicons name="play" size={16} color={isDark ? '#fff' : '#0f172a'} />
-                <Text style={[styles.ghostBtnText, { color: isDark ? '#fff' : '#0f172a' }]}>
-                  Watch Demo
-                </Text>
+                <View style={[styles.actionIcon, { backgroundColor: colors.blueDim }]}>
+                  <Ionicons name="camera" size={18} color={colors.blue} />
+                </View>
+                <View style={styles.actionTextWrap}>
+                  <Text style={[styles.actionLabel, { color: c.white }]}>Scan Property</Text>
+                  <Text style={[styles.actionSub, { color: c.textDim }]}>Snap a Photo</Text>
+                </View>
+                <Text style={[styles.actionArrow, { color: c.textFaint }]}>→</Text>
               </TouchableOpacity>
             </View>
-            
-            {/* Trust Signals */}
-            <View style={styles.trustSignals}>
-              <Text style={[styles.trustText, { color: isDark ? '#6b7280' : '#64748b' }]}>
-                ✓ No credit card required
-              </Text>
-              <Text style={[styles.trustText, { color: isDark ? '#6b7280' : '#64748b' }]}>
-                ✓ 3 free property scans
-              </Text>
+
+            {/* Ticker */}
+            <View style={[styles.heroTicker, { borderTopColor: c.border }]}>
+              <Text style={[styles.heroTickerStrong, { color: c.text }]}>Institutional Data Intelligence</Text>
+              <Text style={[styles.heroTickerSub, { color: c.textDim }]}>Analyze 50 deals in the time it takes to do 1.</Text>
             </View>
           </View>
 
           {/* Address Search (when visible) */}
           {showSearchBar && (
-            <View style={[
-              styles.searchSection,
-              { 
-                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-              }
-            ]}>
-              <View style={[
-                styles.searchInputContainer,
-                { 
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9',
-                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                }
-              ]}>
-                <Ionicons name="location" size={20} color={accentColor} />
+            <View style={[styles.searchSection, { backgroundColor: c.surface, borderColor: c.border }]}>
+              <View style={[styles.searchInputContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9', borderColor: c.border }]}>
+                <Ionicons name="location" size={20} color={colors.blue} />
                 <TextInput
-                  style={[styles.searchInput, { color: isDark ? '#fff' : '#0f172a' }]}
+                  style={[styles.searchInput, { color: c.white }]}
                   placeholder="Enter property address..."
-                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.4)' : '#94a3b8'}
+                  placeholderTextColor={c.textFaint}
                   value={searchAddress}
                   onChangeText={setSearchAddress}
                   onSubmitEditing={handleAnalyze}
@@ -355,10 +255,7 @@ export default function HomeScreen() {
                 />
               </View>
               <TouchableOpacity
-                style={[
-                  styles.analyzeButton,
-                  !searchAddress.trim() && styles.analyzeButtonDisabled
-                ]}
+                style={[styles.analyzeButton, { backgroundColor: colors.blue }, !searchAddress.trim() && styles.analyzeButtonDisabled]}
                 onPress={handleAnalyze}
                 disabled={!searchAddress.trim() || isSearching}
               >
@@ -374,330 +271,273 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Capability Stats Bar */}
-          <View style={[
-            styles.capabilityBar,
-            { 
-              backgroundColor: isDark ? '#07172e' : '#fff',
-              borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-            }
-          ]}>
-            {capabilityStats.map((stat, idx) => (
-              <View key={idx} style={styles.capabilityItem}>
-                <Text style={[styles.capabilityValue, { color: accentColor }]}>
-                  {stat.value}
-                </Text>
-                <Text style={[styles.capabilityLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>
-                  {stat.label}
-                </Text>
+          {/* VERDICT IQ CARD */}
+          <View style={[styles.verdictSection, { backgroundColor: c.black }]}>
+            <View style={[styles.verdictCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+              <Text style={[styles.verdictQuestion, { color: c.white }]}>
+                Is this worth your time as an{'\n'}
+                <Text style={{ color: colors.blue, fontStyle: 'normal' }}>investment?</Text>
+              </Text>
+
+              <View style={{ height: 16 }} />
+
+              {/* Score Ring */}
+              <View style={styles.verdictScoreRing}>
+                <Svg width={130} height={130} viewBox="0 0 140 140">
+                  <Circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
+                  <Circle
+                    cx="70" cy="70" r="60" fill="none"
+                    stroke="#fbbf24"
+                    strokeWidth={10}
+                    strokeLinecap="round"
+                    strokeDasharray="377"
+                    strokeDashoffset="177"
+                    rotation={-90}
+                    origin="70, 70"
+                  />
+                </Svg>
+                <View style={styles.verdictScoreOverlay}>
+                  <Text style={styles.verdictScoreNum}>53</Text>
+                  <Text style={[styles.verdictScoreDen, { color: c.textDim }]}>/ 100</Text>
+                </View>
+              </View>
+
+              {/* Badge */}
+              <View style={[styles.verdictBadge, { backgroundColor: colors.goldDim, borderColor: 'rgba(245,158,11,0.25)' }]}>
+                <Ionicons name="warning" size={14} color={colors.gold} />
+                <Text style={[styles.verdictBadgeText, { color: colors.gold }]}>Marginal Deal</Text>
+              </View>
+
+              <Text style={[styles.verdictDesc, { color: c.text }]}>
+                This property <Text style={{ fontWeight: '600', color: c.white }}>could work as an investment</Text> — but only at a significant discount. The income potential is there, but the numbers don't add up at the asking price.
+              </Text>
+            </View>
+          </View>
+
+          {/* FOUNDER BAR */}
+          <View style={[styles.founderBar, { backgroundColor: c.surface, borderTopColor: c.border, borderBottomColor: c.border }]}>
+            <View style={[styles.founderInfo, { borderBottomColor: c.border }]}>
+              <Text style={[styles.founderMeta, { color: c.textDim }]}>Architecture By</Text>
+              <Text style={[styles.founderName, { color: c.white }]}>Brad Geisen</Text>
+              <Text style={[styles.founderRole, { color: c.textDim }]}>Founder, Foreclosure.com</Text>
+            </View>
+            <Text style={[styles.founderQuoteText, { color: c.text }]}>
+              "I built the infrastructure behind <Text style={{ fontWeight: '600', color: c.white, fontStyle: 'normal' }}>HomePath.com</Text> (Fannie Mae) and <Text style={{ fontWeight: '600', color: c.white, fontStyle: 'normal' }}>HomeSteps.com</Text> (Freddie Mac). InvestIQ isn't a calculator; it's 35 years of institutional intelligence, now in your hands."
+            </Text>
+          </View>
+
+          {/* VALUATION CONTROLS */}
+          <View style={[styles.valPanel, { backgroundColor: c.panel, borderColor: c.border }]}>
+            <View style={[styles.valHeader, { borderBottomColor: c.border }]}>
+              <Text style={[styles.valHeaderTitle, { color: c.white }]}>Valuation Controls</Text>
+              <Text style={[styles.valHeaderBadge, { color: colors.blue }]}>Edit Mode: On</Text>
+            </View>
+            <View style={styles.valBody}>
+              {/* Condition Slider */}
+              <View style={styles.sliderRow}>
+                <View style={styles.sliderTop}>
+                  <Text style={[styles.sliderLabel, { color: c.text }]}>Property Condition</Text>
+                  <View style={[styles.sliderBadge, { backgroundColor: colors.goldDim }]}>
+                    <Text style={{ color: colors.gold, fontSize: 11, fontWeight: '600' }}>Needs Rehab (-$85k)</Text>
+                  </View>
+                </View>
+                <View style={[styles.sliderTrack, { backgroundColor: c.border }]}>
+                  <LinearGradient colors={[colors.gold, '#fbbf24']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.sliderFill, { width: '42%' }]} />
+                  <View style={[styles.sliderThumb, { left: '39%', borderColor: c.black }]} />
+                </View>
+                <View style={styles.sliderScale}>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Distressed</Text>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Average</Text>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Turnkey</Text>
+                </View>
+              </View>
+              {/* Location Slider */}
+              <View style={styles.sliderRow}>
+                <View style={styles.sliderTop}>
+                  <Text style={[styles.sliderLabel, { color: c.text }]}>Location Premium</Text>
+                  <View style={[styles.sliderBadge, { backgroundColor: colors.goldDim }]}>
+                    <Text style={{ color: colors.gold, fontSize: 11, fontWeight: '600' }}>High Demand (+5%)</Text>
+                  </View>
+                </View>
+                <View style={[styles.sliderTrack, { backgroundColor: c.border }]}>
+                  <LinearGradient colors={[colors.gold, '#fbbf24']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.sliderFill, { width: '58%' }]} />
+                  <View style={[styles.sliderThumb, { left: '55%', borderColor: c.black }]} />
+                </View>
+                <View style={styles.sliderScale}>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Poor</Text>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Standard</Text>
+                  <Text style={[styles.sliderScaleText, { color: c.textDim }]}>Premium</Text>
+                </View>
+              </View>
+              {/* Result */}
+              <View style={[styles.valResult, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)', borderColor: c.border }]}>
+                <View>
+                  <Text style={[styles.valResultLabel, { color: c.textDim }]}>Adjusted Value</Text>
+                  <Text style={[styles.valResultValue, { color: c.white }]}>$766,733</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={[styles.valResultLabel, { color: c.textDim }]}>Impact</Text>
+                  <Text style={styles.valResultImpact}>+ $12,400</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* BLACK BOX + PIPELINE SECTION */}
+          <View style={[styles.section, { backgroundColor: c.black }]}>
+            <Text style={[styles.bbLabel, { color: colors.blue }]}>01 — Appraisal Autonomy</Text>
+            <Text style={[styles.bbTitle, { color: c.white }]}>The End of the{'\n'}"Black Box" Estimate.</Text>
+            <Text style={[styles.bbDesc, { color: c.text }]}>
+              Traditional AVMs give you a number but hide the math. <Text style={{ fontWeight: '600', color: c.white }}>PriceCheckerIQ</Text> is transparent. The AI gathers the data, but you act as the Appraiser.
+            </Text>
+
+            {/* Features */}
+            <View style={styles.bbFeature}>
+              <View style={[styles.bbFeatureIcon, { backgroundColor: c.panel, borderColor: c.border }]}>
+                <Ionicons name="grid-outline" size={18} color={colors.blue} />
+              </View>
+              <View style={styles.bbFeatureText}>
+                <Text style={[styles.bbFeatureTitle, { color: c.white }]}>Curate Your Comps</Text>
+                <Text style={[styles.bbFeatureDesc, { color: c.text }]}>Don't like a comp? Uncheck it. See the valuation update instantly.</Text>
+              </View>
+            </View>
+            <View style={styles.bbFeature}>
+              <View style={[styles.bbFeatureIcon, { backgroundColor: c.panel, borderColor: c.border }]}>
+                <Ionicons name="options-outline" size={18} color={colors.blue} />
+              </View>
+              <View style={styles.bbFeatureText}>
+                <Text style={[styles.bbFeatureTitle, { color: c.white }]}>Weighted Adjustments</Text>
+                <Text style={[styles.bbFeatureDesc, { color: c.text }]}>Apply appraiser-style adjustments for pools, renovations, and square footage.</Text>
+              </View>
+            </View>
+
+            {/* Pipeline Panel */}
+            <View style={[styles.pipelinePanel, { backgroundColor: c.panel, borderColor: c.border }]}>
+              <View style={[styles.pipelineHeader, { borderBottomColor: c.border }]}>
+                <Text style={[styles.pipelineTitle, { color: c.white }]}>Deal Pipeline</Text>
+                <View style={[styles.pipelineBadge, { backgroundColor: colors.greenDim, borderColor: 'rgba(52,211,153,0.2)' }]}>
+                  <Text style={{ color: colors.green, fontSize: 11, fontWeight: '700' }}>4 Active Offers</Text>
+                </View>
+              </View>
+              <View style={styles.pipelineBody}>
+                <Text style={[styles.pipelineColLabel, { color: c.textDim }]}>Underwriting <Text style={[styles.pipelineCnt, { color: c.textDim }]}>2</Text></Text>
+                <View style={[styles.pCard, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.03)', borderColor: c.border }]}>
+                  <Text style={[styles.pCardTitle, { color: c.white }]}>12 Oak Street</Text>
+                  <View style={styles.pCardMeta}>
+                    <View style={[styles.pTag, { backgroundColor: colors.blueDim }]}>
+                      <Text style={{ color: colors.blue, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' }}>Flip</Text>
+                    </View>
+                    <Text style={[styles.pRoi, { color: c.textDim }]}>ROI: 18%</Text>
+                  </View>
+                </View>
+                <View style={[styles.pCard, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.03)', borderColor: c.border }]}>
+                  <Text style={[styles.pCardTitle, { color: c.white }]}>550 Main Ave</Text>
+                  <View style={styles.pCardMeta}>
+                    <View style={[styles.pTag, { backgroundColor: colors.purpleDim }]}>
+                      <Text style={{ color: colors.purple, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' }}>BRRRR</Text>
+                    </View>
+                    <Text style={{ color: colors.blue, fontSize: 11, fontWeight: '600' }}>Analysis Req</Text>
+                  </View>
+                </View>
+
+                <Text style={[styles.pipelineColLabel, { color: colors.green, marginTop: 16 }]}>Offer Sent</Text>
+                <View style={[styles.pCard, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.03)', borderColor: 'rgba(52,211,153,0.2)' }]}>
+                  <Text style={[styles.pCardTitle, { color: c.white }]}>953 Banyan Dr</Text>
+                  <Text style={[styles.pOffer, { color: c.text }]}>$536k Offer</Text>
+                  <View style={[styles.pCardMeta, { marginTop: 6 }]}>
+                    <View />
+                    <Text style={{ color: colors.gold, fontSize: 11, fontWeight: '600' }}>Pending</Text>
+                  </View>
+                  <Text style={[styles.pNote, { color: c.textFaint }]}>Counter-offer expected today</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* INVESTMENT OS SECTION */}
+          <View style={[styles.section, { backgroundColor: isDark ? c.surface : '#f8fafc', borderTopColor: c.border, borderTopWidth: 1, borderBottomColor: c.border, borderBottomWidth: 1 }]}>
+            <Text style={[styles.bbLabel, { color: colors.blue }]}>02 — Workflow OS</Text>
+            <Text style={[styles.bbTitle, { color: c.white }]}>Your Investment{'\n'}Operating System.</Text>
+            <Text style={[styles.bbDesc, { color: c.text }]}>
+              Stop managing millions of dollars in spreadsheets and text messages. <Text style={{ fontWeight: '600', color: c.white }}>DealVaultIQ</Text> centralizes your entire workflow from lead to close.
+            </Text>
+
+            <View style={styles.osBullet}>
+              <View style={[styles.osDot, { backgroundColor: colors.blue }]} />
+              <Text style={[styles.osBulletText, { color: c.text }]}>
+                <Text style={{ fontWeight: '700', color: c.white }}>DealVaultIQ:</Text> Saves every photo, comp, and underwriting assumption forever.
+              </Text>
+            </View>
+            <View style={styles.osBullet}>
+              <View style={[styles.osDot, { backgroundColor: colors.green }]} />
+              <Text style={[styles.osBulletText, { color: c.text }]}>
+                <Text style={{ fontWeight: '700', color: c.white }}>Side-by-Side:</Text> Compare Rental Cashflow vs. Flip Profit instantly for the same address.
+              </Text>
+            </View>
+            <View style={styles.osBullet}>
+              <View style={[styles.osDot, { backgroundColor: colors.gold }]} />
+              <Text style={[styles.osBulletText, { color: c.text }]}>
+                <Text style={{ fontWeight: '700', color: c.white }}>Export:</Text> Generate PDF lender packages in one click.
+              </Text>
+            </View>
+          </View>
+
+          {/* TOOLKIT */}
+          <View style={[styles.section, { backgroundColor: c.black }]}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: c.white }]}>The Complete Toolkit</Text>
+              <Text style={[styles.sectionDesc, { color: c.text }]}>Everything you need to underwrite with confidence.</Text>
+            </View>
+            {toolkitFeatures.map((feature, idx) => (
+              <View key={idx} style={[styles.toolkitCard, { backgroundColor: c.panel, borderColor: c.border }]}>
+                <View style={[styles.tkIcon, { backgroundColor: feature.bgColor }]}>
+                  <Ionicons name={feature.icon} size={20} color={feature.color} />
+                </View>
+                <View style={styles.tkContent}>
+                  <Text style={[styles.tkTitle, { color: c.white }]}>
+                    {feature.title.replace('IQ', '')}
+                    <Text style={{ color: colors.blue }}>IQ</Text>
+                  </Text>
+                  <Text style={[styles.tkText, { color: c.text }]}>{feature.description}</Text>
+                </View>
               </View>
             ))}
           </View>
 
-          {/* DealMakerIQ Section */}
-          <View style={[
-            styles.dealmakerSection,
-            { backgroundColor: isDark ? '#0a0a12' : '#f0f9ff' }
-          ]}>
-            <View style={styles.dealmakerHeader}>
-              <View style={styles.dealmakerBadge}>
-                <Text style={styles.dealmakerBadgeText}>
-                  Deal<Text style={styles.dealmakerBadgeAccent}>Maker</Text>IQ
-                </Text>
-              </View>
-              <Text style={[styles.dealmakerTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-                Dial In Your Perfect Deal
-              </Text>
-              <Text style={[styles.dealmakerSubtitle, { color: isDark ? '#9ca3af' : '#475569' }]}>
-                Adjust the numbers and watch your returns update in real time.
-              </Text>
-            </View>
-
-            <View style={[
-              styles.dealmakerCard,
-              { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#fff' }
-            ]}>
-              {/* Property Header */}
-              <View style={[
-                styles.dealmakerProperty,
-                { borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)' }
-              ]}>
-                <View style={[styles.dealmakerPropertyIcon, { backgroundColor: isDark ? 'rgba(77,208,225,0.15)' : 'rgba(8,145,178,0.1)' }]}>
-                  <Ionicons name="home" size={20} color={accentColor} />
-                </View>
-                <View style={styles.dealmakerPropertyInfo}>
-                  <Text style={[styles.dealmakerPropertyAddress, { color: isDark ? '#fff' : '#0f172a' }]}>
-                    3742 Lighthouse Circle, Boca Raton
-                  </Text>
-                  <Text style={[styles.dealmakerPropertySpecs, { color: isDark ? '#6b7280' : '#64748b' }]}>
-                    4 bed · 2 bath · 1,850 sqft
-                  </Text>
-                </View>
-                <View style={[styles.dealmakerSampleBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9' }]}>
-                  <Text style={[styles.dealmakerSampleText, { color: isDark ? '#9ca3af' : '#64748b' }]}>Sample</Text>
-                </View>
-              </View>
-
-              {/* Sliders */}
-              <View style={styles.dealmakerSliders}>
-                <SliderInput
-                  label="Buy Price"
-                  value={formatCurrency(buyPrice)}
-                  min={200000}
-                  max={600000}
-                  step={5000}
-                  sliderValue={buyPrice}
-                  onChange={setBuyPrice}
-                  minLabel="$200K"
-                  maxLabel="$600K"
-                  isDark={isDark}
-                  accentColor={accentColor}
-                />
-                <SliderInput
-                  label="Down Payment"
-                  value={`${downPaymentPct}%`}
-                  min={5}
-                  max={50}
-                  step={1}
-                  sliderValue={downPaymentPct}
-                  onChange={setDownPaymentPct}
-                  minLabel="5%"
-                  maxLabel="50%"
-                  isDark={isDark}
-                  accentColor={accentColor}
-                />
-                <SliderInput
-                  label="Monthly Rent"
-                  value={formatCurrency(monthlyRent)}
-                  min={1500}
-                  max={5000}
-                  step={50}
-                  sliderValue={monthlyRent}
-                  onChange={setMonthlyRent}
-                  minLabel="$1,500"
-                  maxLabel="$5,000"
-                  isDark={isDark}
-                  accentColor={accentColor}
-                />
-              </View>
-
-              {/* Metrics Grid */}
-              <View style={styles.dealmakerMetrics}>
-                <View style={[styles.dealmakerMetric, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }]}>
-                  <Text style={[styles.dealmakerMetricLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>Cash Needed</Text>
-                  <Text style={[styles.dealmakerMetricValue, { color: isDark ? '#fff' : '#0f172a' }]}>
-                    {formatCurrencyShort(metrics.cashNeeded)}
-                  </Text>
-                </View>
-                <View style={[styles.dealmakerMetric, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }]}>
-                  <Text style={[styles.dealmakerMetricLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>Monthly Flow</Text>
-                  <Text style={[
-                    styles.dealmakerMetricValue, 
-                    { color: metrics.monthlyFlow >= 0 ? accentColor : '#ef4444' }
-                  ]}>
-                    {metrics.monthlyFlow >= 0 ? '+' : ''}{formatCurrency(Math.round(metrics.monthlyFlow))}
-                  </Text>
-                </View>
-                <View style={[styles.dealmakerMetric, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }]}>
-                  <Text style={[styles.dealmakerMetricLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>COC Return</Text>
-                  <Text style={[
-                    styles.dealmakerMetricValue, 
-                    { color: metrics.cocReturn >= 4 ? accentColor : isDark ? '#fff' : '#0f172a' }
-                  ]}>
-                    {metrics.cocReturn.toFixed(1)}%
-                  </Text>
-                </View>
-                <View style={[
-                  styles.dealmakerMetric, 
-                  styles.dealmakerMetricVerdict,
-                  { borderColor: accentColor, backgroundColor: isDark ? 'rgba(77,208,225,0.1)' : 'rgba(8,145,178,0.08)' }
-                ]}>
-                  <Text style={[styles.dealmakerMetricLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>IQ Verdict</Text>
-                  <Text style={[styles.dealmakerMetricValueVerdict, { color: accentColor }]}>
-                    {metrics.verdict}
-                  </Text>
-                </View>
-              </View>
-
-              {/* CTA Button */}
-              <TouchableOpacity onPress={handleTryItNow}>
-                <LinearGradient
-                  colors={[buttonGradientStart, buttonGradientEnd]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.dealmakerCta}
-                >
-                  <Text style={styles.dealmakerCtaText}>Try DealMakerIQ Free</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#fff" />
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-
-            {/* Feature Pills */}
-            <View style={styles.dealmakerPills}>
-              {['15+ Variables', '6 Strategies', 'Instant Updates', 'PDF Reports'].map((pill) => (
-                <View key={pill} style={[
-                  styles.dealmakerPill,
-                  { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }
-                ]}>
-                  <Ionicons name="checkmark" size={14} color={accentColor} />
-                  <Text style={[styles.dealmakerPillText, { color: isDark ? '#fff' : '#0f172a' }]}>{pill}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Founder Quote Section */}
-          <View style={[
-            styles.founderQuoteSection,
-            { 
-              backgroundColor: isDark ? '#07172e' : '#fff',
-              borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-              borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-            }
-          ]}>
-            <View style={[styles.founderQuoteIcon, { backgroundColor: isDark ? 'rgba(77,208,225,0.15)' : 'rgba(8,145,178,0.1)' }]}>
-              <Ionicons name="chatbubble-ellipses" size={20} color={accentColor} />
-            </View>
-            <Text style={[styles.founderQuoteText, { color: isDark ? '#fff' : '#0f172a' }]}>
-              "I analyzed 200+ properties manually before my first purchase—each taking 30+ minutes in spreadsheets. InvestIQ is the tool I wish existed. Now you can screen deals in seconds, not hours."
+          {/* CTA */}
+          <View style={[styles.ctaSection, { backgroundColor: c.black, borderTopColor: c.border }]}>
+            <Text style={[styles.ctaTitle, { color: c.white }]}>
+              Stop wondering. Start knowing.
             </Text>
-            <View style={styles.founderQuoteAuthor}>
-              <View style={[styles.founderAvatar, { backgroundColor: accentColor }]}>
-                <Text style={styles.founderAvatarText}>H</Text>
-              </View>
-              <View>
-                <Text style={[styles.founderName, { color: isDark ? '#fff' : '#0f172a' }]}>Humble</Text>
-                <Text style={[styles.founderTitle, { color: isDark ? '#6b7280' : '#64748b' }]}>Founder, InvestIQ</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Strategies Section */}
-          <View style={[
-            styles.section,
-            { backgroundColor: isDark ? '#0a0a12' : '#f8fafc' }
-          ]}>
-            <View style={styles.sectionHeader}>
-              <View style={[
-                styles.sectionLabel,
-                { backgroundColor: isDark ? 'rgba(77,208,225,0.1)' : 'rgba(8,145,178,0.1)' }
-              ]}>
-                <Text style={[styles.sectionLabelText, { color: accentColor }]}>
-                  6 Investment Strategies
-                </Text>
-              </View>
-              <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-                One Property, Multiple Opportunities
-              </Text>
-              <Text style={[styles.sectionSubtitle, { color: isDark ? '#9ca3af' : '#475569' }]}>
-                See how any property performs across all major real estate investment strategies—instantly.
-              </Text>
-            </View>
-
-            <View style={styles.strategyGrid}>
-              {strategies.map((strategy) => (
-                <StrategyCard 
-                  key={strategy.id} 
-                  strategy={strategy} 
-                  isDark={isDark}
-                />
-              ))}
-            </View>
-          </View>
-
-          {/* Features Section */}
-          <View style={[
-            styles.section,
-            { backgroundColor: isDark ? '#07172e' : '#fff' }
-          ]}>
-            <View style={styles.sectionHeader}>
-              <View style={[
-                styles.sectionLabel,
-                { backgroundColor: isDark ? 'rgba(77,208,225,0.1)' : 'rgba(8,145,178,0.1)' }
-              ]}>
-                <Text style={[styles.sectionLabelText, { color: accentColor }]}>
-                  Everything You Need
-                </Text>
-              </View>
-              <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-                What You Get with <Text style={{ color: accentColor }}>InvestIQ</Text>
-              </Text>
-            </View>
-
-            <View style={styles.featuresGrid}>
-              {features.map((feature, idx) => (
-                <FeatureCard 
-                  key={idx} 
-                  feature={feature} 
-                  isDark={isDark}
-                  accentColor={accentColor}
-                />
-              ))}
-            </View>
-          </View>
-
-          {/* CTA Section */}
-          <View style={[
-            styles.ctaSection,
-            { backgroundColor: isDark ? '#0a0a12' : '#f8fafc' }
-          ]}>
-            <View style={[
-              styles.sectionLabel,
-              { backgroundColor: isDark ? 'rgba(77,208,225,0.1)' : 'rgba(8,145,178,0.1)' }
-            ]}>
-              <Text style={[styles.sectionLabelText, { color: accentColor }]}>
-                Get Started Today
-              </Text>
-            </View>
-            <Text style={[styles.ctaTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-              Analyze Your First Property{' '}
-              <Text style={{ color: accentColor }}>Free</Text>
+            <Text style={[styles.ctaDesc, { color: c.text }]}>
+              Join thousands of serious investors using InvestIQ to uncover value others miss.
             </Text>
-            <Text style={[styles.ctaSubtitle, { color: isDark ? '#9ca3af' : '#475569' }]}>
-              Point your camera at any property and get genius-level analysis across 6 strategies. No credit card required.
-            </Text>
-            <TouchableOpacity onPress={handleTryItNow} style={styles.ctaButtonWrapper}>
-              <LinearGradient
-                colors={[buttonGradientStart, buttonGradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.ctaButton}
-              >
-                <Text style={styles.ctaButtonText}>Start Your Free Analysis</Text>
-              </LinearGradient>
+            <TouchableOpacity style={[styles.ctaButton, { backgroundColor: colors.blue }]} onPress={handleStartAnalysis}>
+              <Text style={styles.ctaButtonText}>Start Free Analysis</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Footer */}
-          <View style={[
-            styles.footer,
-            { 
-              backgroundColor: isDark ? '#07172e' : '#0f172a',
-              borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)',
-            }
-          ]}>
+          {/* FOOTER */}
+          <View style={[styles.footer, { backgroundColor: isDark ? '#000000' : '#0f172a', borderTopColor: c.border }]}>
             <Text style={styles.footerLogo}>
-              Invest<Text style={{ color: accentColor }}>IQ</Text>
+              Invest<Text style={{ color: colors.blue }}>IQ</Text>
             </Text>
             <Text style={styles.footerTagline}>
-              The fastest path from address to investable decision.
+              Professional Real Estate Intelligence for Everyone.
             </Text>
-            
             <View style={styles.footerLinks}>
-              <TouchableOpacity onPress={() => router.push('/privacy')}>
+              <TouchableOpacity onPress={() => router.push('/privacy' as any)}>
                 <Text style={styles.footerLink}>Privacy</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/terms')}>
+              <TouchableOpacity onPress={() => router.push('/terms' as any)}>
                 <Text style={styles.footerLink}>Terms</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => Linking.openURL('mailto:support@investiq.com')}>
                 <Text style={styles.footerLink}>Contact</Text>
               </TouchableOpacity>
             </View>
-            
             <Text style={styles.footerCopyright}>
-              © 2026 InvestIQ. All rights reserved.
+              © 2026 InvestIQ. All rights reserved.{'\n'}Professional use only. Not a lender.
             </Text>
           </View>
 
@@ -709,141 +549,13 @@ export default function HomeScreen() {
 }
 
 // =============================================================================
-// SLIDER INPUT COMPONENT
-// =============================================================================
-
-interface SliderInputProps {
-  label: string;
-  value: string;
-  min: number;
-  max: number;
-  step: number;
-  sliderValue: number;
-  onChange: (value: number) => void;
-  minLabel: string;
-  maxLabel: string;
-  isDark: boolean;
-  accentColor: string;
-}
-
-function SliderInput({ label, value, min, max, step, sliderValue, onChange, minLabel, maxLabel, isDark, accentColor }: SliderInputProps) {
-  return (
-    <View style={styles.sliderGroup}>
-      <View style={styles.sliderHeader}>
-        <Text style={[styles.sliderLabel, { color: isDark ? '#9ca3af' : '#64748b' }]}>{label}</Text>
-        <Text style={[styles.sliderValue, { color: isDark ? '#fff' : '#0f172a' }]}>{value}</Text>
-      </View>
-      <Slider
-        style={styles.slider}
-        minimumValue={min}
-        maximumValue={max}
-        step={step}
-        value={sliderValue}
-        onValueChange={onChange}
-        minimumTrackTintColor={accentColor}
-        maximumTrackTintColor={isDark ? 'rgba(255,255,255,0.15)' : '#e2e8f0'}
-        thumbTintColor={accentColor}
-      />
-      <View style={styles.sliderRange}>
-        <Text style={[styles.sliderRangeText, { color: isDark ? '#6b7280' : '#94a3b8' }]}>{minLabel}</Text>
-        <Text style={[styles.sliderRangeText, { color: isDark ? '#6b7280' : '#94a3b8' }]}>{maxLabel}</Text>
-      </View>
-    </View>
-  );
-}
-
-// =============================================================================
-// STRATEGY CARD COMPONENT
-// =============================================================================
-
-function StrategyCard({ 
-  strategy, 
-  isDark 
-}: { 
-  strategy: typeof strategies[0]; 
-  isDark: boolean;
-}) {
-  return (
-    <View style={[
-      styles.strategyCard,
-      { 
-        backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#fff',
-        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-      }
-    ]}>
-      <View style={styles.strategyCardHeader}>
-        <Text style={[styles.strategyName, { color: isDark ? '#fff' : '#0f172a' }]}>
-          {strategy.name}
-        </Text>
-        <View style={styles.strategyStat}>
-          {strategy.isScale ? (
-            <Ionicons name="trending-up" size={20} color={strategy.color} />
-          ) : (
-            <Text style={[styles.strategyStatValue, { color: strategy.color }]}>
-              {strategy.statValue}
-            </Text>
-          )}
-          <Text style={[styles.strategyStatLabel, { color: isDark ? '#6b7280' : '#64748b' }]}>
-            {strategy.statLabel}
-          </Text>
-        </View>
-      </View>
-      <Text style={[styles.strategyTagline, { color: isDark ? '#9ca3af' : '#475569' }]}>
-        {strategy.tagline}
-      </Text>
-      <View style={[styles.strategyIndicator, { backgroundColor: strategy.color }]} />
-    </View>
-  );
-}
-
-// =============================================================================
-// FEATURE CARD COMPONENT
-// =============================================================================
-
-function FeatureCard({ 
-  feature, 
-  isDark,
-  accentColor,
-}: { 
-  feature: typeof features[0]; 
-  isDark: boolean;
-  accentColor: string;
-}) {
-  return (
-    <View style={[
-      styles.featureCard,
-      { 
-        backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc',
-        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-      }
-    ]}>
-      <View style={[styles.featureIcon, { backgroundColor: isDark ? 'rgba(77,208,225,0.1)' : 'rgba(8,145,178,0.1)' }]}>
-        <Ionicons name={feature.icon as any} size={22} color={accentColor} />
-      </View>
-      <Text style={[styles.featureTitle, { color: isDark ? '#fff' : '#0f172a' }]}>
-        {feature.title}
-      </Text>
-      <Text style={[styles.featureDescription, { color: isDark ? '#9ca3af' : '#475569' }]}>
-        {feature.description}
-      </Text>
-    </View>
-  );
-}
-
-// =============================================================================
 // STYLES
 // =============================================================================
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
+  container: { flex: 1 },
+  keyboardView: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
 
   // Header
   header: {
@@ -855,9 +567,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   logoText: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   headerRight: {
     flexDirection: 'row',
@@ -867,12 +579,20 @@ const styles = StyleSheet.create({
   headerBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 7,
   },
   headerBtnText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  loginBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  loginBtnText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   themeToggle: {
     width: 36,
@@ -882,108 +602,121 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Hero Section
+  // Hero
   heroSection: {
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 32,
-    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    paddingBottom: 24,
   },
-  heroEyebrow: {
+  heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginBottom: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+    borderWidth: 1,
+    marginBottom: 20,
   },
-  heroEyebrowIcon: {
-    fontSize: 14,
+  badgeDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#34d399',
   },
-  heroEyebrowText: {
-    fontSize: 13,
+  heroBadgeText: {
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   heroTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 42,
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 36,
+    letterSpacing: -1.2,
   },
-  heroTitleAccent: {
-    fontSize: 36,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 42,
+  heroTitleGrad: {
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 36,
+    letterSpacing: -1.2,
+    color: '#2dd4bf',
     marginBottom: 16,
   },
-  heroSubtitle: {
+  heroDesc: {
     fontSize: 15,
-    textAlign: 'center',
     lineHeight: 24,
-    marginTop: 8,
-    marginBottom: 28,
-    paddingHorizontal: 8,
+    marginBottom: 24,
   },
-  heroCta: {
-    gap: 12,
-    marginBottom: 20,
-    width: '100%',
+  heroActions: {
+    gap: 10,
+    marginBottom: 24,
   },
-  primaryBtn: {
-    paddingHorizontal: 28,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  ghostBtn: {
+  actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    gap: 12,
+    padding: 14,
     borderRadius: 12,
     borderWidth: 1,
   },
-  ghostBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  trustSignals: {
-    flexDirection: 'row',
-    gap: 20,
-    flexWrap: 'wrap',
+  actionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  trustText: {
+  actionTextWrap: {
+    flex: 1,
+  },
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  actionSub: {
     fontSize: 12,
-    fontWeight: '500',
+    marginTop: 1,
+  },
+  actionArrow: {
+    fontSize: 16,
+  },
+  heroTicker: {
+    paddingTop: 16,
+    borderTopWidth: 1,
+  },
+  heroTickerStrong: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroTickerSub: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 
-  // Search Section
+  // Search
   searchSection: {
     marginHorizontal: 20,
     marginBottom: 24,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 10,
+    paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    gap: 12,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
@@ -995,12 +728,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 12,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#0891b2',
+    borderRadius: 10,
     gap: 8,
   },
   analyzeButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    opacity: 0.4,
   },
   analyzeButtonText: {
     color: '#fff',
@@ -1008,386 +740,421 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Capability Bar
-  capabilityBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 20,
-    marginHorizontal: 20,
-    marginBottom: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  capabilityItem: {
-    alignItems: 'center',
-  },
-  capabilityValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  capabilityLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-  },
-
-  // DealMaker Section
-  dealmakerSection: {
-    paddingVertical: 40,
+  // Verdict Card
+  verdictSection: {
     paddingHorizontal: 20,
+    paddingBottom: 32,
   },
-  dealmakerHeader: {
+  verdictCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 24,
     alignItems: 'center',
-    marginBottom: 24,
   },
-  dealmakerBadge: {
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  verdictQuestion: {
+    fontSize: 17,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  verdictScoreRing: {
+    width: 130,
+    height: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
-  dealmakerBadgeText: {
-    color: '#fff',
-    fontSize: 12,
+  verdictScoreOverlay: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  verdictScoreNum: {
+    fontSize: 40,
     fontWeight: '700',
+    color: '#fbbf24',
+    marginTop: -4,
   },
-  dealmakerBadgeAccent: {
-    color: '#00D4FF',
+  verdictScoreDen: {
+    fontSize: 13,
+    marginTop: -2,
   },
-  dealmakerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  dealmakerSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  dealmakerCard: {
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-  },
-  dealmakerProperty: {
+  verdictBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    marginBottom: 20,
-  },
-  dealmakerPropertyIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dealmakerPropertyInfo: {
-    flex: 1,
-  },
-  dealmakerPropertyAddress: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  dealmakerPropertySpecs: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  dealmakerSampleBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  dealmakerSampleText: {
-    fontSize: 9,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  dealmakerSliders: {
-    gap: 20,
-    marginBottom: 24,
-  },
-  sliderGroup: {
     gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 100,
+    borderWidth: 1,
+    marginBottom: 16,
   },
-  sliderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sliderLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  sliderValue: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  sliderRange: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  sliderRangeText: {
-    fontSize: 11,
-  },
-  dealmakerMetrics: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 20,
-  },
-  dealmakerMetric: {
-    flex: 1,
-    minWidth: '45%',
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-  },
-  dealmakerMetricVerdict: {
-    borderWidth: 2,
-  },
-  dealmakerMetricLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  dealmakerMetricValue: {
-    fontSize: 18,
+  verdictBadgeText: {
+    fontSize: 14,
     fontWeight: '700',
   },
-  dealmakerMetricValueVerdict: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  dealmakerCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  dealmakerCtaText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dealmakerPills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  dealmakerPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  dealmakerPillText: {
-    fontSize: 12,
-    fontWeight: '500',
+  verdictDesc: {
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
+    maxWidth: 280,
   },
 
-  // Founder Quote Section
-  founderQuoteSection: {
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    alignItems: 'center',
+  // Founder Bar
+  founderBar: {
+    paddingVertical: 28,
+    paddingHorizontal: 20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
   },
-  founderQuoteIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  founderInfo: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    marginBottom: 16,
   },
-  founderQuoteText: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    lineHeight: 26,
-    marginBottom: 20,
-  },
-  founderQuoteAuthor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  founderAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  founderAvatarText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
+  founderMeta: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
   },
   founderName: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
   },
-  founderTitle: {
+  founderRole: {
     fontSize: 12,
+    marginTop: 2,
+  },
+  founderQuoteText: {
+    fontSize: 15,
+    lineHeight: 24,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 
-  // Section
-  section: {
-    paddingVertical: 48,
-    paddingHorizontal: 20,
+  // Valuation Controls
+  valPanel: {
+    marginHorizontal: 20,
+    marginVertical: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
-  sectionHeader: {
+  valHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
-  sectionLabel: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 12,
+  valHeaderTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  sectionLabelText: {
-    fontSize: 12,
+  valHeaderBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  valBody: {
+    padding: 16,
+  },
+  sliderRow: {
+    marginBottom: 20,
+  },
+  sliderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sliderLabel: {
+    fontSize: 13,
+  },
+  sliderBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  sliderTrack: {
+    height: 6,
+    borderRadius: 3,
+    position: 'relative',
+  },
+  sliderFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  sliderThumb: {
+    width: 18,
+    height: 18,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 9,
+    borderWidth: 3,
+    position: 'absolute',
+    top: -6,
+  },
+  sliderScale: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  sliderScaleText: {
+    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  valResult: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  valResultLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  valResultValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  valResultImpact: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#34d399',
+  },
+
+  // Section shared
+  section: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     textAlign: 'center',
+    letterSpacing: -0.5,
     marginBottom: 8,
   },
-  sectionSubtitle: {
+  sectionDesc: {
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
   },
 
-  // Strategy Grid
-  strategyGrid: {
-    gap: 12,
-  },
-  strategyCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  strategyCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  strategyName: {
-    fontSize: 15,
+  // Black Box features
+  bbLabel: {
+    fontSize: 11,
     fontWeight: '700',
-    flex: 1,
-  },
-  strategyStat: {
-    alignItems: 'flex-end',
-  },
-  strategyStatValue: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  strategyStatLabel: {
-    fontSize: 9,
-    fontWeight: '600',
     textTransform: 'uppercase',
-    marginTop: 2,
-  },
-  strategyTagline: {
-    fontSize: 13,
-  },
-  strategyIndicator: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-  },
-
-  // Features Grid
-  featuresGrid: {
-    gap: 12,
-  },
-  featureCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 20,
-  },
-  featureIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    letterSpacing: 1,
     marginBottom: 12,
   },
-  featureTitle: {
+  bbTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    lineHeight: 30,
+    marginBottom: 16,
+  },
+  bbDesc: {
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  bbFeature: {
+    flexDirection: 'row',
+    gap: 14,
+    marginBottom: 20,
+  },
+  bbFeatureIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bbFeatureText: {
+    flex: 1,
+  },
+  bbFeatureTitle: {
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  featureDescription: {
+  bbFeatureDesc: {
     fontSize: 13,
     lineHeight: 20,
   },
 
-  // CTA Section
+  // Pipeline
+  pipelinePanel: {
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginTop: 24,
+  },
+  pipelineHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    borderBottomWidth: 1,
+  },
+  pipelineTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  pipelineBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  pipelineBody: {
+    padding: 14,
+  },
+  pipelineColLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  pipelineCnt: {
+    fontSize: 11,
+  },
+  pCard: {
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 8,
+  },
+  pCardTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  pCardMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  pRoi: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  pOffer: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  pNote: {
+    fontSize: 11,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+
+  // OS Bullets
+  osBullet: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 14,
+    alignItems: 'flex-start',
+  },
+  osDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginTop: 7,
+  },
+  osBulletText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 22,
+  },
+
+  // Toolkit
+  toolkitCard: {
+    flexDirection: 'row',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 10,
+    gap: 14,
+    alignItems: 'flex-start',
+  },
+  tkIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tkContent: {
+    flex: 1,
+  },
+  tkTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  tkText: {
+    fontSize: 12,
+    lineHeight: 19,
+  },
+
+  // CTA
   ctaSection: {
     paddingVertical: 48,
     paddingHorizontal: 24,
     alignItems: 'center',
+    borderTopWidth: 1,
   },
   ctaTitle: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '700',
     textAlign: 'center',
+    letterSpacing: -0.5,
+    lineHeight: 30,
     marginBottom: 12,
-    marginTop: 12,
   },
-  ctaSubtitle: {
-    fontSize: 14,
+  ctaDesc: {
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  ctaButtonWrapper: {
-    width: '100%',
+    lineHeight: 24,
+    marginBottom: 28,
   },
   ctaButton: {
+    width: '100%',
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   ctaButtonText: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
   },
 
@@ -1399,14 +1166,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   footerLogo: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#F1F5F9',
     marginBottom: 8,
   },
   footerTagline: {
-    fontSize: 13,
-    color: '#9ca3af',
+    fontSize: 14,
+    color: '#CBD5E1',
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -1417,11 +1184,13 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#94A3B8',
     fontWeight: '500',
   },
   footerCopyright: {
-    fontSize: 12,
-    color: '#6b7280',
+    fontSize: 11,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

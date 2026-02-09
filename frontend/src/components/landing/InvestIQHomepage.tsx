@@ -140,51 +140,33 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             </div>
           </div>
 
-          {/* Terminal: Comp Table */}
+          {/* VerdictIQ Card */}
           <div className="hero-visual">
-            <div className="terminal-glow" />
-            <div className="terminal">
-              <div className="t-bar">
-                <div className="t-dots">
-                  <span className="t-dot-red" />
-                  <span className="t-dot-yellow" />
-                  <span className="t-dot-green" />
-                </div>
-                <div className="t-bar-title">PriceChecker<em>IQ</em> — Market Data Intelligence</div>
-                <div className="t-bar-badge">● Live</div>
+            <div className="verdict-card">
+              <div className="verdict-card-question">Is this worth your time as an<br /><em>investment?</em></div>
+              <div style={{ height: '1rem' }} />
+              <div className="verdict-score-ring">
+                <svg viewBox="0 0 140 140" className="verdict-ring-svg">
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="url(#verdictGrad)" strokeWidth="10" strokeLinecap="round"
+                    strokeDasharray="377" strokeDashoffset="177" transform="rotate(-90 70 70)" />
+                  <defs>
+                    <linearGradient id="verdictGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#fbbf24" />
+                      <stop offset="100%" stopColor="#fbbf24" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="verdict-score-num">53</div>
+                <div className="verdict-score-den">/ 100</div>
               </div>
-              <div className="t-body">
-                <div className="t-property">
-                  <div>
-                    <div className="t-prop-label">Target Property</div>
-                    <div className="t-prop-address">953 Banyan Dr, Delray Beach</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="t-prop-label">Confidence</div>
-                    <div className="t-conf-value">87.4<span className="t-conf-unit">%</span></div>
-                  </div>
-                </div>
-                <table className="t-comp-table">
-                  <thead>
-                    <tr><th>ID</th><th>Address</th><th>Sale Price</th><th>Adjust</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td className="t-comp-id">C1</td><td>1042 Linda Lane</td><td className="t-sale">$795,000</td><td className="t-adjust" /></tr>
-                    <tr><td className="t-comp-id">C2</td><td>746 Banyan Dr</td><td className="t-sale">$830,000</td><td className="t-adjust" /></tr>
-                    <tr><td className="t-comp-id">C3</td><td>—</td><td className="t-sale">$612,000</td><td className="t-adjust" /></tr>
-                  </tbody>
-                </table>
-                <div className="t-valuation">
-                  <div>
-                    <div className="t-val-label">Adjusted Value</div>
-                    <div className="t-val-price">$766,733</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="t-val-label">Spread</div>
-                    <div className="t-val-spread">+$154k</div>
-                  </div>
-                </div>
+              <div className="verdict-badge gold">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+                Marginal Deal
               </div>
+              <div className="verdict-card-desc">This property <strong>could work as an investment</strong> — but only at a significant discount. The income potential is there, but the numbers don&apos;t add up at the asking price.</div>
             </div>
           </div>
         </div>
@@ -432,7 +414,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
       >
         <div className="cta-inner">
-          <h2 className="cta-title">Stop Guessing. Start Closing.</h2>
+          <h2 className="cta-title">Stop wondering. Start knowing.</h2>
           <p className="cta-desc">Join thousands of serious investors using InvestIQ to uncover value others miss.</p>
           <button className="btn-cta" onClick={handleStartAnalysis}>Start Free Analysis</button>
         </div>
