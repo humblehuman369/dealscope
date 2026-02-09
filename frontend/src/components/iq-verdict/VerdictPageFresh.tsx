@@ -344,7 +344,7 @@ function ScoreHero({
         style={{
           backgroundColor: colors.background.white,
           border: `1px solid ${colors.harmonized.verdictCardBorder}`,
-          boxShadow: colors.shadow.verdictCard,
+          boxShadow: colors.shadow.card,
         }}
       >
         {/* Teal accent bar */}
@@ -512,7 +512,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
         style={{
           backgroundColor: colors.background.white,
           border: `1px solid ${colors.harmonized.verdictCardBorder}`,
-          boxShadow: colors.shadow.verdictCard,
+          boxShadow: colors.shadow.card,
         }}
       >
         <h3 
@@ -727,7 +727,7 @@ function InvestmentAnalysisSection({
             <div 
               key={metric.label} 
               className="rounded-lg p-4 text-center relative overflow-hidden"
-              style={{ backgroundColor: colors.background.white, border: `1px solid ${colors.ui.border}`, boxShadow: colors.shadow.metricCard }}
+              style={{ backgroundColor: colors.background.white, border: `1px solid ${colors.ui.border}`, boxShadow: colors.shadow.card }}
             >
               {/* Teal top accent */}
               <div 
