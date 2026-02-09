@@ -543,8 +543,7 @@ function VerdictContent() {
         router.push(`/price-intel?address=${encodedAddress}`)
         break
       case 'dashboard':
-        // Navigate to dashboard
-        router.push('/dashboard')
+        router.push('/search')
         break
     }
   }, [property, propertyIdParam, router])

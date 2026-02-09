@@ -104,7 +104,7 @@ export default function DealGapPage() {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link 
-              href="/dashboard"
+              href="/search"
               className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-white/60" />

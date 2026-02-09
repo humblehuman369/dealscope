@@ -92,8 +92,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
           <div className="nav-links" />
           <div className="nav-actions">
             {isAuthenticated && user ? (
-              <button className="btn-nav-dashboard" onClick={() => router.push('/dashboard')}>
-                Dashboard
+              <button className="btn-nav-dashboard" onClick={() => router.push('/search')}>
+                Search
               </button>
             ) : (
               <button className="btn-ghost" onClick={handleLoginRegister}>

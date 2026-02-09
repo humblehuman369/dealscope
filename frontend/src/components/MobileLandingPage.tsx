@@ -83,7 +83,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
           {isAuthenticated && user ? (
             <>
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/search')}
                 className={`text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/70 hover:text-white' 

@@ -244,7 +244,7 @@ export default function VerdictFreshPage() {
         window.location.href = `/price-intel?address=${encodedAddress}`
         break
       case 'dashboard':
-        window.location.href = '/dashboard'
+        window.location.href = '/search'
         break
     }
   }

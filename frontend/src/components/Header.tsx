@@ -2,7 +2,7 @@
 
 import { 
   Bell, Search, Sun, Moon, User, LogOut, 
-  ChevronDown, LayoutDashboard, Image, History, 
+  ChevronDown, Image, History, 
   Menu, X, CreditCard, Settings, BarChart3
 } from 'lucide-react'
 import Link from 'next/link'
@@ -101,7 +101,6 @@ export default function Header() {
 
   // Navigation items
   const navItems = [
-    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', auth: true },
     { href: '/search', icon: Search, label: 'Search', auth: false },
   ]
 
@@ -195,9 +194,7 @@ export default function Header() {
               )
             }
             
-            const active = item.href === '/dashboard' 
-              ? isActive('/dashboard')
-              : item.href.startsWith('/property') || item.href.startsWith('/search?')
+            const active = item.href.startsWith('/property') || item.href.startsWith('/search?')
                 ? isActivePrefix('/property')
                 : isActive(item.href)
             
@@ -354,9 +351,7 @@ export default function Header() {
                 )
               }
               
-              const active = item.href === '/dashboard' 
-                ? isActive('/dashboard')
-                : item.href.startsWith('/property') 
+              const active = item.href.startsWith('/property') 
                   ? isActivePrefix('/property')
                   : isActive(item.href)
               

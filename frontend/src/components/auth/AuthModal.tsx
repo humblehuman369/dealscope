@@ -52,7 +52,7 @@ export default function AuthModal() {
 
   // Post-login redirect — navigate to the intended destination
   const onLoginSuccess = useCallback(() => {
-    const redirect = searchParams.get('redirect') || '/dashboard'
+    const redirect = searchParams.get('redirect') || '/search'
     setIsOpen(false)
     // Use replace to avoid a back-button loop through the login URL
     router.replace(redirect)

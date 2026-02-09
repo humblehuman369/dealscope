@@ -37,7 +37,7 @@ export function WorksheetShell({
       <header className="worksheet-topbar">
         {/* Left Section: Back + Property Info */}
         <div className="worksheet-topbar-left">
-          <Link href="/dashboard" className="worksheet-back-link">
+          <Link href="/search" className="worksheet-back-link">
             <ChevronLeft className="w-5 h-5" />
             <span className="hidden sm:inline">Back</span>
           </Link>

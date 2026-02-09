@@ -12,9 +12,8 @@
  * Uses InvestIQ Universal Style Guide colors
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { formatPrice, formatNumber } from '@/utils/formatters'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
@@ -172,29 +171,7 @@ export function SalesCompsScreen({
   const comps = propsComps || DEFAULT_COMPS
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
-  const saveInput = useMemo(() => ({
-    addressStreet: property.address,
-    addressCity: property.city,
-    addressState: property.state,
-    addressZip: property.zipCode,
-    fullAddress,
-    zpid: property.zpid || undefined,
-    snapshot: {
-      zpid: property.zpid || undefined,
-      street: property.address,
-      city: property.city,
-      state: property.state,
-      zipCode: property.zipCode,
-      listPrice: property.price || undefined,
-      bedrooms: property.beds || undefined,
-      bathrooms: property.baths || undefined,
-      sqft: property.sqft || undefined,
-    },
-  }), [property, fullAddress])
-
-  const { isSaved, saveMessage, save: handleSave } = useSaveProperty(saveInput)
   const [shareMessage, setShareMessage] = useState<string | null>(null)
-  const displayMessage = saveMessage || shareMessage
 
   // Note: Header is now handled by global AppHeader
 
@@ -473,9 +450,9 @@ export function SalesCompsScreen({
       </main>
 
       {/* Toast Message */}
-      {displayMessage && (
+      {shareMessage && (
         <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
-          {displayMessage}
+          {shareMessage}
         </div>
       )}
 
@@ -490,19 +467,6 @@ export function SalesCompsScreen({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
           </svg>
           <span className="text-[10px] font-medium">Search</span>
-        </button>
-
-        {/* Save Button */}
-        <button 
-          className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer transition-colors ${
-            isSaved ? 'text-[#0891B2]' : 'text-[#64748B] hover:text-[#0891B2]'
-          }`}
-          onClick={handleSave}
-        >
-          <svg className="w-5 h-5" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
-          </svg>
-          <span className="text-[10px] font-medium">{isSaved ? 'Saved' : 'Save'}</span>
         </button>
 
         {/* Analyze Property Button - Primary CTA */}

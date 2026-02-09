@@ -211,7 +211,7 @@ export function useOnboarding() {
       if (completed) {
         await apiRequest('/api/v1/users/me/onboarding/complete', { method: 'POST' })
         await refreshUser()
-        router.push('/dashboard')
+        router.push('/search')
         return true
       }
 

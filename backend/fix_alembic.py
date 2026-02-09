@@ -263,6 +263,37 @@ def _ensure_column(url: str, table: str, column: str, col_type: str) -> None:
         log.error("Failed to add %s.%s: %s", table, column, e)
 
 
+def _one_time_truncate(url: str) -> None:
+    """One-time truncation of sample data. Safe to leave in — it no-ops after first run."""
+    try:
+        import psycopg
+        conn_url = url
+        if "railway.internal" in conn_url:
+            if "sslmode=" not in conn_url:
+                sep = "&" if "?" in conn_url else "?"
+                conn_url = f"{conn_url}{sep}sslmode=disable"
+        with psycopg.connect(conn_url, autocommit=True) as conn:
+            with conn.cursor() as cur:
+                # Check if there's a marker that we've already truncated
+                cur.execute(
+                    "SELECT 1 FROM information_schema.columns "
+                    "WHERE table_name = 'saved_properties' AND column_name = 'id'"
+                )
+                if not cur.fetchone():
+                    return  # Table doesn't exist yet
+
+                cur.execute("SELECT COUNT(*) FROM saved_properties")
+                count = cur.fetchone()[0]
+                if count > 0:
+                    log.info("Truncating %d rows from saved_properties (sample data reset) ...", count)
+                    cur.execute("TRUNCATE saved_properties CASCADE")
+                    log.info("saved_properties truncated.")
+                else:
+                    log.info("saved_properties already empty — skipping truncate.")
+    except Exception as e:
+        log.error("Truncate failed (non-fatal): %s", e)
+
+
 def main() -> None:
     db_url = _get_database_url()
     if not db_url:
@@ -272,6 +303,9 @@ def main() -> None:
 
     # ---- Ensure critical columns that migrations may have skipped ----
     _ensure_column(db_url, "saved_properties", "deal_maker_record", "JSONB")
+
+    # ---- One-time: clear sample data from dashboard deletion ----
+    _one_time_truncate(db_url)
 
     # Check if auth columns exist
     has_auth = _check_column_exists(db_url, "users", "failed_login_attempts")

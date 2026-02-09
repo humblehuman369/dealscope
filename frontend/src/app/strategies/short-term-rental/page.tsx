@@ -33,8 +33,8 @@ export default function ShortTermRentalPage() {
           <nav className="flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
-                <button onClick={() => router.push('/dashboard')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2">
-                  <LayoutGrid className="w-4 h-4" /> Dashboard
+                <button onClick={() => router.push('/search')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2">
+                  <LayoutGrid className="w-4 h-4" /> Search
                 </button>
                 <button onClick={() => logoutMutation.mutate()} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
               </>

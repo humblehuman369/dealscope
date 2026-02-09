@@ -29,7 +29,6 @@ const DEFAULT_TABS: NavTab[] = [
   { id: 'analyze', label: 'VerdictIQ' },
   { id: 'details', label: 'Details' },
   { id: 'price-checker', label: 'PriceCheckerIQ' },
-  { id: 'dashboard', label: 'DealHubIQ' },
 ]
 
 export function NavTabs({
@@ -55,8 +54,6 @@ export function NavTabs({
           : `/property?address=${encodedAddress}`
       case 'price-checker':
         return `/price-intel?address=${encodedAddress}`
-      case 'dashboard':
-        return '/dashboard'
       default:
         return '#'
     }

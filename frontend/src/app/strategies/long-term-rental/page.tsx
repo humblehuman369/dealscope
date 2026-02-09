@@ -35,7 +35,7 @@ export default function LongTermRentalPage() {
             {isAuthenticated && user ? (
               <>
                 <button
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => router.push('/search')}
                   className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2"
                 >
                   <LayoutGrid className="w-4 h-4" />

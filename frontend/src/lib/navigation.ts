@@ -96,7 +96,7 @@ export const ROUTES = {
   register: '/auth/register',
   
   // User
-  dashboard: '/dashboard',
+  dashboard: '/search',  // Dashboard removed — redirect to search
   profile: '/profile',
   billing: '/billing',
   searchHistory: '/search-history',

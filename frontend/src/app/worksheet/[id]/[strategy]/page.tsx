@@ -57,7 +57,7 @@ export default function StrategyWorksheetPage() {
         <div className="text-center">
           <p className="text-[var(--ws-negative)] mb-4">{error}</p>
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/search')}
             className="px-4 py-2 bg-[var(--ws-accent)] text-white rounded-lg hover:bg-[var(--ws-accent-hover)]"
           >
             Back to Dashboard

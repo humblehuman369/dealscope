@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
@@ -17,7 +16,7 @@ import {
   ListingInfo,
   LocationMap,
 } from './index'
-import { Heart, FileText, Share2, Search } from 'lucide-react'
+import { FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
@@ -39,40 +38,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
-  const saveInput = useMemo(() => ({
-    addressStreet: property.address.streetAddress,
-    addressCity: property.address.city,
-    addressState: property.address.state,
-    addressZip: property.address.zipcode,
-    fullAddress,
-    zpid: property.zpid || null,
-    snapshot: {
-      zpid: property.zpid,
-      street: property.address.streetAddress,
-      city: property.address.city,
-      state: property.address.state,
-      zipCode: property.address.zipcode,
-      listPrice: property.price,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      sqft: property.livingArea,
-      photos: property.images,
-      listingStatus: property.listingStatus,
-      isOffMarket: property.isOffMarket,
-      sellerType: property.sellerType,
-      isForeclosure: property.isForeclosure,
-      isBankOwned: property.isBankOwned,
-      isAuction: property.isAuction,
-      isNewConstruction: property.isNewConstruction,
-      daysOnMarket: property.daysOnMarket,
-      zestimate: property.zestimate,
-    },
-  }), [property, fullAddress])
-
-  const { isSaved, isSaving, saveMessage, save: handleSave } = useSaveProperty(saveInput)
   const [shareMessage, setShareMessage] = useState<string | null>(null)
-
-  const displayMessage = saveMessage || shareMessage
 
   // Handle share
   const handleShare = async () => {
@@ -187,25 +153,6 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           >
             <Search size={18} />
             <span className="text-sm font-medium hidden sm:inline">Search</span>
-          </button>
-
-          {/* Save Button */}
-          <button 
-            onClick={handleSave}
-            disabled={isSaving || isSaved}
-            className={`flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border transition-colors ${
-              isSaved 
-                ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' 
-                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-            } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <Heart 
-              size={18} 
-              className={isSaved ? 'fill-current' : ''} 
-            />
-            <span className="text-sm font-medium hidden sm:inline">
-              {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
-            </span>
           </button>
 
           {/* Analyze Property Button - Primary CTA */}

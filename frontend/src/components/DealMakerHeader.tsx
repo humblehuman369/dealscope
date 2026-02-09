@@ -103,14 +103,6 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
             {/* Auth Section */}
             {isAuthenticated && user ? (
               <div className="flex items-center gap-2">
-                {/* Dashboard Button */}
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-cyan-500 hover:bg-cyan-600 rounded-full transition-all"
-                >
-                  Dashboard
-                </Link>
-
                 {/* User Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                   <button

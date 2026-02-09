@@ -70,10 +70,10 @@ export function DesktopHeader({ onBack, showBackButton = true }: DesktopHeaderPr
         {/* Auth Buttons - Compact */}
         {isAuthenticated && user ? (
           <Link 
-            href="/dashboard"
+            href="/search"
             className="desktop-auth-btn desktop-auth-primary"
           >
-            {user.full_name?.split(' ')[0] || 'Dashboard'}
+            {user.full_name?.split(' ')[0] || 'Search'}
           </Link>
         ) : (
           <>

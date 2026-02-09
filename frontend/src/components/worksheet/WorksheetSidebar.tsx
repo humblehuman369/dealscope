@@ -48,7 +48,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
     {
       title: '',
       items: [
-        { id: 'back', label: 'View all properties', icon: ChevronLeft, href: '/dashboard' },
+        { id: 'back', label: 'Back to search', icon: ChevronLeft, href: '/search' },
       ],
     },
     {

@@ -51,7 +51,7 @@ export default function SearchHistoryError({ error, reset }: ErrorProps) {
               Try Again
             </button>
             <a
-              href="/dashboard"
+              href="/search"
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-navy-700 hover:bg-slate-200 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors"
             >
               <Home className="w-4 h-4" />

@@ -20,13 +20,11 @@
  * └─────────────────────────────────────────────────┘
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, Heart, LogOut, LayoutDashboard, UserCircle } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
-import { useSaveProperty } from '@/hooks/useSaveProperty'
-import type { SavePropertyInput } from '@/hooks/useSaveProperty'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -57,7 +55,7 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'details' | 'price-checker' | 'dashboard'
+export type AppTab = 'analyze' | 'details' | 'price-checker'
 
 interface PropertyInfo {
   address: string
@@ -92,7 +90,6 @@ const TABS: { id: AppTab; label: string }[] = [
   { id: 'analyze', label: 'VerdictIQ' },
   { id: 'details', label: 'Details' },
   { id: 'price-checker', label: 'PriceCheckerIQ' },
-  { id: 'dashboard', label: 'DealHubIQ' },
 ]
 
 // ===================
@@ -104,7 +101,6 @@ const HIDDEN_ROUTES = ['/']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
-  '/dashboard',
   '/profile',
   '/search',
   '/billing',
@@ -123,7 +119,6 @@ function getActiveTabFromPath(pathname: string): AppTab {
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
-  if (pathname.startsWith('/dashboard')) return 'dashboard'
   if (pathname.startsWith('/deal-maker')) return 'analyze'
   return 'analyze'
 }
@@ -234,34 +229,6 @@ export function AppHeader({
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
 
-  // Build save input from the current display address
-  const saveInput = useMemo<SavePropertyInput | null>(() => {
-    if (!displayAddress) return null
-    const { streetAddress, city, state, zipCode } = parseDisplayAddress(displayAddress)
-    if (!streetAddress) return null
-    return {
-      addressStreet: streetAddress,
-      addressCity: city,
-      addressState: state || '',
-      addressZip: zipCode || '',
-      fullAddress: displayAddress,
-      zpid: property?.zpid || undefined,
-      snapshot: {
-        zpid: property?.zpid || undefined,
-        street: streetAddress,
-        city: city,
-        state: state || '',
-        zipCode: zipCode || '',
-        listPrice: property?.price || undefined,
-        bedrooms: property?.beds || undefined,
-        bathrooms: property?.baths || undefined,
-        sqft: property?.sqft || undefined,
-      },
-    }
-  }, [displayAddress, property?.zpid, property?.price, property?.beds, property?.baths, property?.sqft])
-
-  const { isSaved, isSaving, save: handleSave, unsave: handleUnsave } = useSaveProperty(saveInput)
-
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
   // if (HIDDEN_ROUTES.includes(pathname || '')) {
   //   return null
@@ -350,9 +317,6 @@ export function AppHeader({
         } else {
           router.push('/search')
         }
-        break
-      case 'dashboard':
-        router.push('/dashboard')
         break
     }
   }
@@ -444,12 +408,6 @@ export function AppHeader({
                   >
                     <UserCircle className="w-4 h-4" /> Profile
                   </button>
-                  <button
-                    onClick={() => { setShowProfileMenu(false); router.push('/dashboard') }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                  >
-                    <LayoutDashboard className="w-4 h-4" /> Dashboard
-                  </button>
                   <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
                     <button
                       onClick={handleLogout}
@@ -528,29 +486,6 @@ export function AppHeader({
               
               {/* Right side actions */}
               <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                {/* Save/Unsave Button */}
-                <button
-                  onClick={isSaved ? handleUnsave : handleSave}
-                  disabled={isSaving}
-                  className={`p-1.5 rounded transition-colors flex items-center gap-1 ${
-                    isSaved 
-                      ? 'text-[#0891B2] hover:text-red-400 hover:bg-red-500/10' 
-                      : 'hover:text-[#0891B2] hover:bg-white/5'
-                  } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  style={{ color: isSaved ? colors.brand.teal : '#FFFFFF' }}
-                  aria-label={isSaved ? 'Unsave property' : 'Save property'}
-                  title={isSaved ? 'Click to unsave' : 'Save property'}
-                >
-                  <Heart 
-                    className="w-4 h-4" 
-                    fill={isSaved ? 'currentColor' : 'none'}
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-xs font-medium">
-                    {isSaving ? (isSaved ? 'Removing...' : 'Saving...') : isSaved ? 'Saved' : 'Save'}
-                  </span>
-                </button>
-
                 {/* Expand/Collapse Button */}
                 {property && (
                   <button
