@@ -237,12 +237,41 @@ def _apply_auth_columns_sql(url: str) -> bool:
         return False
 
 
+def _ensure_column(url: str, table: str, column: str, col_type: str) -> None:
+    """Add a column if it does not exist (idempotent)."""
+    if _check_column_exists(url, table, column):
+        return
+    log.info("Column %s.%s missing — adding ...", table, column)
+    try:
+        import psycopg
+        conn_url = url
+        if "railway.internal" in conn_url:
+            if "sslmode=" not in conn_url:
+                sep = "&" if "?" in conn_url else "?"
+                conn_url = f"{conn_url}{sep}sslmode=disable"
+        with psycopg.connect(conn_url, autocommit=True) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    DO $$ BEGIN
+                        ALTER TABLE {table} ADD COLUMN {column} {col_type};
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END $$;
+                """)
+        log.info("Column %s.%s added.", table, column)
+    except Exception as e:
+        log.error("Failed to add %s.%s: %s", table, column, e)
+
+
 def main() -> None:
     db_url = _get_database_url()
     if not db_url:
         return
 
     log.info("Checking database schema ...")
+
+    # ---- Ensure critical columns that migrations may have skipped ----
+    _ensure_column(db_url, "saved_properties", "deal_maker_record", "JSONB")
 
     # Check if auth columns exist
     has_auth = _check_column_exists(db_url, "users", "failed_login_attempts")
