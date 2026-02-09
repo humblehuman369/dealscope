@@ -184,6 +184,11 @@ async function apiRequest<T>(
     )
   }
 
+  // 204 No Content has no body — return undefined instead of parsing
+  if (response.status === 204) {
+    return undefined as T
+  }
+
   return response.json()
 }
 
