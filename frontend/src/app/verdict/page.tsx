@@ -16,14 +16,14 @@
  * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
-import { useCallback, useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
-  VerdictPageAdapter,
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
 } from '@/components/iq-verdict'
+import { colors, typography, tw, getScoreColor } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { useSession } from '@/hooks/useSession'
 import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
@@ -587,17 +587,228 @@ function VerdictContent() {
     )
   }
 
+  // Derived values for display
+  const score = analysis.dealScore
+  const scoreColor = getScoreColor(score)
+  const verdictLabel = score >= 90 ? 'Strong' : score >= 80 ? 'Good' : score >= 65 ? 'Average' : score >= 50 ? 'Marginal' : score >= 30 ? 'Unlikely' : 'Pass'
+  const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
+  const breakevenPrice = analysis.breakevenPrice || property.price
+  const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
+  const monthlyRent = property.monthlyRent || Math.round(property.price * 0.007)
+  const discountPct = analysis.discountPercent || 0
+
+  const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
+
+  // Signal indicators
+  const of = analysis.opportunityFactors
+  const dealGap = of?.dealGap ?? discountPct
+  const urgency = of?.motivation ?? 50
+  const market = of?.buyerMarket || 'Warm'
+  const signals = [
+    { label: 'Deal Gap', value: `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`, sub: dealGap >= 0 ? 'Favorable' : 'Difficult', color: dealGap >= 0 ? colors.brand.teal : colors.status.negative },
+    { label: 'Urgency', value: urgency >= 70 ? 'High' : urgency >= 40 ? 'Medium' : 'Low', sub: `${Math.round(urgency)}/100`, color: urgency >= 70 ? colors.brand.teal : colors.brand.gold },
+    { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
+    { label: 'Vacancy', value: '<5%', sub: 'Healthy', color: colors.status.positive },
+  ]
+
+  // Confidence
+  const dealProb = Math.min(100, Math.max(0, 50 + dealGap * 5))
+  const marketAlign = urgency
+  const priceConf = analysis.opportunity?.score ?? 65
+
+  const navigateToStrategy = () => {
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    router.push(`/strategy?address=${encodeURIComponent(fullAddress)}`)
+  }
+
   return (
     <>
-      <VerdictPageAdapter
-        property={property}
-        analysis={analysis}
-        onDealMakerClick={handleNavigateToDealMaker}
-        onShowMethodology={handleShowMethodology}
-        // Note: Header and navigation are now handled by global AppHeader
-      />
+      <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+        <div className="max-w-[520px] mx-auto">
+          {/* Nav */}
+          <nav className="flex justify-between items-center px-5 py-3.5 border-b" style={{ borderColor: colors.ui.border }}>
+            <button onClick={handleLogoClick} className="text-[1.35rem] font-bold" style={{ color: '#fff' }}>
+              Invest<span style={{ color: colors.brand.blue }}>IQ</span>
+            </button>
+            <div className="flex items-center gap-4">
+              <button onClick={handleSearchClick}>
+                <svg width="20" height="20" fill="none" stroke={colors.text.secondary} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </button>
+            </div>
+          </nav>
 
-      {/* Progressive Profiling Prompt - Shows after analysis completion */}
+          {/* Address Strip */}
+          <div className="flex justify-between items-center px-5 py-3 border-b" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <svg width="16" height="16" fill="none" stroke={colors.brand.blue} viewBox="0 0 24 24" strokeWidth="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              <div className="min-w-0">
+                <p className="text-[0.95rem] font-semibold truncate" style={{ color: colors.text.primary }}>{property.address}</p>
+                <p className="text-[0.82rem]" style={{ color: colors.text.secondary }}>{property.beds} bed · {property.baths} bath · {(property.sqft || 0).toLocaleString()} sqft · Listed {fmtShort(property.price)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Score Hero */}
+          <section className="px-5 pt-10 pb-8 text-center" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
+            <div className="relative inline-flex items-center justify-center w-32 h-32 mx-auto mb-5">
+              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360)} ${2 * Math.PI * 52 * (120/360)}`} strokeLinecap="round"/>
+                <circle cx="60" cy="60" r="52" fill="none" stroke={scoreColor} strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360) * (score/100)} ${2 * Math.PI * 52 - 2 * Math.PI * 52 * (240/360) * (score/100)}`} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}40)` }}/>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[2.8rem] font-bold tabular-nums" style={{ color: scoreColor, lineHeight: 1 }}>{score}</span>
+                <span className="text-xs font-medium mt-0.5" style={{ color: colors.text.secondary }}>/100</span>
+              </div>
+            </div>
+            <div className="inline-block px-5 py-1.5 rounded-full mb-4" style={{ border: `1.5px solid ${scoreColor}`, background: `${scoreColor}15` }}>
+              <span className="text-sm font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
+            </div>
+            <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
+            <div className="flex justify-center gap-2.5 mt-4">
+              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How VerdictIQ Works</button>
+              <span style={{ color: colors.text.muted }}>|</span>
+              <button className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How We Score</button>
+            </div>
+
+            {/* Confidence */}
+            <div className="mt-6 text-left max-w-sm mx-auto">
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: colors.text.secondary }}>Confidence Metrics</p>
+              {[
+                { label: 'Deal Probability', value: dealProb, color: colors.brand.blue },
+                { label: 'Market Alignment', value: marketAlign, color: colors.brand.teal },
+                { label: 'Price Confidence', value: priceConf, color: colors.brand.blue },
+              ].map((m, i) => (
+                <div key={i} className="flex items-center gap-2.5 mb-2.5">
+                  <span className="text-xs font-medium w-28 shrink-0" style={{ color: colors.text.body }}>{m.label}</span>
+                  <div className="flex-1 h-1.5 rounded" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                    <div className="h-full rounded" style={{ width: `${m.value}%`, background: m.color }} />
+                  </div>
+                  <span className="text-xs font-bold tabular-nums w-10 text-right" style={{ color: m.color }}>{Math.round(m.value)}%</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Price Targets */}
+          <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
+            <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Price Targets</p>
+            <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>What Should You Pay?</h2>
+            <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
+              Every investment property has three price levels. These tell you exactly when a deal starts making money.
+            </p>
+
+            <div className="flex gap-2.5">
+              {[
+                { label: 'Breakeven', value: breakevenPrice, sub: 'Max price for $0 cashflow', active: false },
+                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true },
+                { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false },
+              ].map((card, i) => (
+                <div key={i} className="flex-1 rounded-xl py-3 px-2 text-center transition-all" style={{
+                  background: card.active ? colors.background.cardUp : colors.background.card,
+                  border: card.active ? `1.5px solid ${colors.brand.blue}60` : `1px solid ${colors.ui.border}`,
+                  boxShadow: card.active ? `0 0 12px ${colors.brand.blue}20` : undefined,
+                }}>
+                  <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : colors.text.tertiary }}>{card.label}</p>
+                  <p className="text-lg font-bold tabular-nums mb-0.5" style={{ color: card.active ? colors.brand.blue : colors.text.secondary }}>{fmtShort(card.value)}</p>
+                  <p className="text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Price Scale Bar */}
+            <div className="mt-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-[0.82rem] font-medium" style={{ color: colors.text.body }}>
+                  Asking: <span className="font-bold" style={{ color: colors.status.negative }}>{fmtShort(property.price)}</span>
+                </span>
+              </div>
+              <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}, ${colors.brand.blue}, ${colors.brand.gold})` }}>
+                <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: '50%', background: colors.brand.blue, boxShadow: `0 0 8px ${colors.brand.blue}80` }} />
+                <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: '90%', background: colors.status.negative, boxShadow: `0 0 6px ${colors.status.negative}60` }} />
+              </div>
+              <div className="flex justify-between mt-2">
+                {['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶'].map((l, i) => (
+                  <span key={i} className="text-[0.68rem] font-semibold" style={{ color: i === 3 ? colors.status.negative : colors.text.secondary }}>{l}</span>
+                ))}
+              </div>
+              <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
+                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term</span>
+              </p>
+            </div>
+          </section>
+
+          {/* Market Snapshot */}
+          <section className="px-5 pb-6 border-t" style={{ borderColor: colors.ui.border }}>
+            <div className="flex justify-between items-center py-4">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider" style={{ color: colors.text.primary }}>Market Snapshot</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {signals.map((s, i) => (
+                <div key={i} className="flex justify-between items-center rounded-xl py-3 px-3.5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.text.body }}>{s.label}</p>
+                    <p className="text-xs font-medium" style={{ color: s.color }}>{s.sub}</p>
+                  </div>
+                  <span className="text-lg font-bold tabular-nums" style={{ color: s.color }}>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Beginner Tip */}
+          <section className="px-5 pb-6">
+            <div className="flex gap-3.5 rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+              <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.teal }}>
+                <svg width="18" height="18" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold mb-1" style={{ color: colors.text.primary }}>New to investing?</p>
+                <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
+                  A VerdictIQ score above 70 means the numbers work at or near asking price. Below 50, you&apos;d need a major discount. This property sits in the middle — possible with negotiation.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA → Strategy */}
+          <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>Think there&apos;s an opportunity?</p>
+            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>See If the Numbers<br/>Actually Work</h2>
+            <p className="text-[0.95rem] leading-relaxed max-w-xs mx-auto mb-7" style={{ color: colors.text.body }}>
+              Get a plain-English financial breakdown — what you&apos;d pay, what you&apos;d earn, and whether it&apos;s worth it.
+            </p>
+            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
+              style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
+              Show Me the Numbers
+              <svg width="18" height="18" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div className="flex justify-center gap-6 mt-5">
+              {['Free to use', 'No signup needed', '60 seconds'].map((f, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <svg width="14" height="14" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span className="text-xs font-medium" style={{ color: colors.text.secondary }}>{f}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Trust Strip */}
+          <div className="px-5 py-5 text-center border-t" style={{ borderColor: colors.ui.border }}>
+            <p className="text-xs leading-relaxed" style={{ color: colors.text.secondary }}>
+              VerdictIQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
+            </p>
+          </div>
+
+          {/* Footer */}
+          <footer className="text-center py-5 text-xs" style={{ color: colors.text.secondary }}>
+            Powered by <span className="font-semibold" style={{ color: colors.text.body }}>Invest<span style={{ color: colors.brand.blue }}>IQ</span></span>
+          </footer>
+        </div>
+      </div>
+
+      {/* Progressive Profiling Prompt */}
       {showPrompt && currentQuestion && (
         <ProgressiveProfilingPrompt
           question={currentQuestion}
