@@ -20,11 +20,11 @@
  * └─────────────────────────────────────────────────┘
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, Heart, LogOut, LayoutDashboard, UserCircle } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
-import { useSession } from '@/hooks/useSession'
+import { useSession, useLogout } from '@/hooks/useSession'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import type { SavePropertyInput } from '@/hooks/useSaveProperty'
 
@@ -186,9 +186,25 @@ export function AppHeader({
   
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
   
   // Auth context
-  const { isAuthenticated } = useSession()
+  const { isAuthenticated, user } = useSession()
+  const logoutMutation = useLogout()
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false)
+      }
+    }
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showProfileMenu])
 
   // Helper to fully decode a URL-encoded string (handles double/triple encoding)
   const fullyDecode = (str: string): string => {
@@ -269,7 +285,12 @@ export function AppHeader({
   }
 
   const handleProfileClick = () => {
-    router.push('/profile')
+    setShowProfileMenu((prev) => !prev)
+  }
+
+  const handleLogout = () => {
+    setShowProfileMenu(false)
+    logoutMutation.mutate()
   }
 
   const handleTabChange = (tab: AppTab) => {
@@ -395,16 +416,52 @@ export function AppHeader({
                 style={{ color: colors.text.white }}
               />
             </button>
-            <button
-              onClick={handleProfileClick}
-              className="p-2 rounded-full transition-colors hover:bg-white/10"
-              aria-label="Profile"
-            >
-              <User 
-                className="w-5 h-5" 
-                style={{ color: colors.text.white }}
-              />
-            </button>
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={handleProfileClick}
+                className="p-2 rounded-full transition-colors hover:bg-white/10"
+                aria-label="Profile"
+                aria-expanded={showProfileMenu}
+                aria-haspopup="true"
+              >
+                <User 
+                  className="w-5 h-5" 
+                  style={{ color: colors.text.white }}
+                />
+              </button>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
+                  {user && (
+                    <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
+                      <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                  >
+                    <UserCircle className="w-4 h-4" /> Profile
+                  </button>
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/dashboard') }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4" /> Dashboard
+                  </button>
+                  <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
+                    <button
+                      onClick={handleLogout}
+                      disabled={logoutMutation.isPending}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

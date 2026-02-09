@@ -153,12 +153,13 @@ class SavedPropertyService:
         """
         List saved properties with filtering and pagination.
         """
-        # Defer large JSON columns to avoid loading 50KB+ blobs per row on list
+        # Defer the large property_data_snapshot blob (50KB+ per row).
+        # Do NOT defer last_analytics_result — it is small and accessed
+        # by the router to populate best_strategy / best_cash_flow / best_coc_return.
         query = (
             select(SavedProperty)
             .options(
                 defer(SavedProperty.property_data_snapshot),
-                defer(SavedProperty.last_analytics_result),
             )
             .where(SavedProperty.user_id == uuid.UUID(user_id))
         )
