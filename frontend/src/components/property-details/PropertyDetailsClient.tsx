@@ -137,9 +137,9 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
       </div>
 
       {/* Toast Message */}
-      {displayMessage && (
+      {shareMessage && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-medium rounded-lg shadow-lg z-50 animate-fade-in">
-          {displayMessage}
+          {shareMessage}
         </div>
       )}
 
