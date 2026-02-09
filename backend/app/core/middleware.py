@@ -150,7 +150,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     """
 
     SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
-    EXEMPT_PREFIXES = ("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh", "/health", "/docs", "/redoc", "/openapi.json")
+    EXEMPT_PREFIXES = (
+        "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh",
+        "/api/v1/properties/search", "/api/v1/analysis/",
+        "/health", "/docs", "/redoc", "/openapi.json",
+    )
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Always set the CSRF cookie so the client has a token

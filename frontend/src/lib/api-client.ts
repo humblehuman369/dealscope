@@ -159,20 +159,16 @@ async function apiRequest<T>(
 
   let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
-  // 401 → try refresh once, then retry
+  // 401 → try a silent token refresh, then retry.
+  // Auth has been removed from the public flow so we NEVER hard-redirect
+  // to a login page. If refresh fails the 401 falls through to the
+  // generic error handler below.
   if (response.status === 401 && !skipAuth) {
     const refreshed = await refreshTokens()
     if (refreshed) {
       response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-    } else if (!softAuth) {
-      // Hard redirect to login (skip for softAuth callers like session checks)
-      if (typeof window !== 'undefined') {
-        const path = window.location.pathname
-        window.location.href = `/?auth=login&redirect=${encodeURIComponent(path)}`
-      }
-      throw new ApiError('Session expired', 401)
     }
-    // softAuth: just let the 401 fall through to the error handling below
+    // No redirect — let the error propagate naturally
   }
 
   if (!response.ok) {
