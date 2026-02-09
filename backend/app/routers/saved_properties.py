@@ -142,9 +142,9 @@ async def list_saved_properties(
             tags=p.tags,
             color_label=p.color_label,
             priority=p.priority,
-            best_strategy=p.last_analytics_result.get("best_strategy") if p.last_analytics_result else None,
-            best_cash_flow=p.last_analytics_result.get("best_cash_flow") if p.last_analytics_result else None,
-            best_coc_return=p.last_analytics_result.get("best_coc_return") if p.last_analytics_result else None,
+            best_strategy=p.best_strategy,
+            best_cash_flow=p.best_cash_flow,
+            best_coc_return=p.best_coc_return,
             saved_at=p.saved_at,
             last_viewed_at=p.last_viewed_at,
             updated_at=p.updated_at,
@@ -415,9 +415,9 @@ async def get_saved_property(
     return _build_saved_property_response(
         saved,
         deal_maker=deal_maker,
-        best_strategy=saved.last_analytics_result.get("best_strategy") if saved.last_analytics_result else None,
-        best_cash_flow=saved.last_analytics_result.get("best_cash_flow") if saved.last_analytics_result else None,
-        best_coc_return=saved.last_analytics_result.get("best_coc_return") if saved.last_analytics_result else None,
+        best_strategy=saved.best_strategy,
+        best_cash_flow=saved.best_cash_flow,
+        best_coc_return=saved.best_coc_return,
         document_count=doc_count,
     )
 
