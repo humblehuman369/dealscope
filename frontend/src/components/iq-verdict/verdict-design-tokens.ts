@@ -55,133 +55,185 @@ export const spacing = {
 } as const
 
 // ===================
-// TYPOGRAPHY SCALE
+// TYPOGRAPHY SCALE — Inter, per VerdictIQ 3.3
+// Headlines 700 (was 800), body 400, financial 600 + tabular-nums
 // ===================
 
 export const typography = {
-  /** 32px / bold - Score numbers, large display values */
-  display: {
-    size: 32,
+  /** 3.5rem / 700 - Score number in hero */
+  scoreDisplay: {
+    size: 56,
+    weight: 700,
+    lineHeight: 1,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  /** 1.35rem / 700 - Section titles */
+  heading: {
+    size: 22,
+    weight: 700,
+    lineHeight: 1.35,
+  },
+  /** 1rem / 400 - Body content */
+  body: {
+    size: 16,
+    weight: 400,
+    lineHeight: 1.65,
+  },
+  /** 0.92rem / 400 - Secondary body */
+  bodySmall: {
+    size: 15,
+    weight: 400,
+    lineHeight: 1.55,
+  },
+  /** 0.88rem / 600 - Financial values (tabular-nums) */
+  financial: {
+    size: 14,
+    weight: 600,
+    lineHeight: 1.4,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  /** 1.2rem / 700 - Large financial values */
+  financialLarge: {
+    size: 19,
+    weight: 700,
+    lineHeight: 1.3,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  /** 0.72rem / 700 - Section labels, uppercase */
+  label: {
+    size: 12,
     weight: 700,
     lineHeight: 1.2,
+    letterSpacing: 1.2,
   },
-  /** 18px / semibold - Section titles */
-  heading: {
-    size: 18,
-    weight: 600,
-    lineHeight: 1.3,
-  },
-  /** 14px / regular - Content text */
-  body: {
-    size: 14,
-    weight: 400,
-    lineHeight: 1.5,
-  },
-  /** 11px / medium - Uppercase labels, badges */
-  label: {
-    size: 11,
-    weight: 500,
-    lineHeight: 1.2,
-    letterSpacing: 0.5,
-  },
-  /** 10px / regular - Helper text, small captions */
-  caption: {
+  /** 0.65rem / 700 - Badge / tag text */
+  tag: {
     size: 10,
-    weight: 400,
+    weight: 700,
+    lineHeight: 1.3,
+    letterSpacing: 0.3,
+  },
+  /** 0.82rem / 500 - Caption / helper text */
+  caption: {
+    size: 13,
+    weight: 500,
+    lineHeight: 1.4,
+  },
+  /** 1.05rem / 700 - CTA buttons */
+  cta: {
+    size: 17,
+    weight: 700,
     lineHeight: 1.3,
   },
 } as const
 
 // ===================
-// COLORS
+// COLORS — VerdictIQ 3.3 Dark Theme
+// True black base, Slate text hierarchy, five semantic accents
 // ===================
 
 export const colors = {
-  // Brand - InvestIQ Voice
+  // Brand
   brand: {
-    /** #0891B2 - Primary teal for dark backgrounds, header, navigation */
-    teal: '#0891B2',
-    /** #0891B2 - Primary teal, matches header IQ */
-    tealBright: '#0891B2',
-    /** #00D4FF - Electric cyan for accents */
-    cyan: '#00D4FF',
+    /** #38bdf8 - Sky blue — primary accent */
+    blue: '#38bdf8',
+    /** #0EA5E9 - Deep sky — CTA buttons */
+    blueDeep: '#0EA5E9',
+    /** #2dd4bf - Teal — positive / interactive */
+    teal: '#2dd4bf',
+    /** #fbbf24 - Gold — caution / moderate */
+    gold: '#fbbf24',
+    // Legacy aliases
+    tealBright: '#38bdf8',
+    cyan: '#38bdf8',
   },
-  
-  // Text Colors - Light text for dark backgrounds
+
+  // Text — Four-tier Slate hierarchy
   text: {
-    /** #F1F5F9 - Primary light text (slate-100) */
+    /** #F1F5F9 - Headings (near-white) */
     primary: '#F1F5F9',
-    /** #94A3B8 - Secondary text (slate-400) */
+    /** #CBD5E1 - Body text (solid readable grey) */
+    body: '#CBD5E1',
+    /** #94A3B8 - Secondary (muted but legible) */
     secondary: '#94A3B8',
-    /** #64748B - Tertiary/muted text (slate-500) */
+    /** #64748B - Labels (smallest, still solid) */
     tertiary: '#64748B',
-    /** #475569 - Placeholder text (slate-600) */
-    muted: '#475569',
-    /** #FFFFFF - White text */
+    /** #64748B - Alias for label tier */
+    muted: '#64748B',
+    /** #FFFFFF */
     white: '#FFFFFF',
   },
-  
-  // Backgrounds - Dark navy palette
+
+  // Backgrounds — True black base
   background: {
-    /** #0F172A - Card/surface background */
-    white: '#0F172A',
-    /** #0A1628 - Page background */
-    light: '#0A1628',
-    /** #1E293B - Elevated/subtle background */
-    subtle: '#1E293B',
-    /** #0A1628 - Dark navy background */
-    dark: '#0A1628',
-    /** #07172E - Deep navy background */
-    deepNavy: '#07172E',
+    /** #000000 - True black page base */
+    base: '#000000',
+    /** #060B14 - Page sections background */
+    bg: '#060B14',
+    /** #0C1220 - Card / deep navy */
+    card: '#0C1220',
+    /** #101828 - Elevated card */
+    cardUp: '#101828',
+    // Legacy aliases
+    white: '#0C1220',
+    light: '#060B14',
+    subtle: '#101828',
+    dark: '#000000',
+    deepNavy: '#060B14',
   },
-  
-  // Status Colors
+
+  // Status / Semantic accents
   status: {
-    /** #10B981 - Positive/success */
-    positive: '#10B981',
-    /** #D97706 - Warning/caution (Amber) */
-    warning: '#D97706',
-    /** #EF4444 - Negative/danger (Red) - Unified */
-    negative: '#EF4444',
-    /** #D97706 - Amber for Average/Marginal scores - Unified */
-    amber: '#D97706',
+    /** #34d399 - Green — positive / success */
+    positive: '#34d399',
+    /** #fbbf24 - Gold — warning / caution */
+    warning: '#fbbf24',
+    /** #f87171 - Red — negative / danger */
+    negative: '#f87171',
+    /** #fbbf24 - Alias for gold */
+    amber: '#fbbf24',
   },
-  
-  // UI Elements - Dark borders and muted icons
+
+  // Accent backgrounds (10% opacity)
+  accentBg: {
+    blue: 'rgba(56,189,248,0.10)',
+    teal: 'rgba(45,212,191,0.10)',
+    gold: 'rgba(251,191,36,0.10)',
+    red: 'rgba(248,113,113,0.10)',
+    green: 'rgba(52,211,153,0.10)',
+  },
+
+  // UI Elements
   ui: {
-    /** #1E293B - Border color, dividers (slate-800) */
-    border: '#1E293B',
-    /** #334155 - Darker border (slate-700) */
-    borderDark: '#334155',
-    /** #64748B - Medium gray for icons */
+    /** 7% white opacity borders */
+    border: 'rgba(255,255,255,0.07)',
+    /** Active blue border */
+    borderActive: 'rgba(56,189,248,0.35)',
+    /** Stronger border for cards */
+    borderDark: 'rgba(255,255,255,0.12)',
+    /** #64748B - Icons */
     iconMuted: '#64748B',
   },
 
-  // Harmonized Metric Colors (VerdictIQ palette)
+  // Harmonized Metric Colors (kept for component compat)
   harmonized: {
-    /** #6B7F99 - Slate blue for moderate/caution (replaces amber in score context) */
-    slateBlue: '#6B7F99',
-    /** #C45B5B - Soft coral for concern/negative (replaces red in score context) */
-    softCoral: '#C45B5B',
-    /** Teal-tinted confidence bar track */
-    confidenceTrack: 'rgba(8,145,178,0.15)',
-    /** Card border matching investment card */
-    verdictCardBorder: 'rgba(8,145,178,0.25)',
-    /** Signal indicator card background */
-    signalCardBg: '#1E293B',
+    slateBlue: '#94A3B8',
+    softCoral: '#f87171',
+    confidenceTrack: 'rgba(56,189,248,0.08)',
+    verdictCardBorder: 'rgba(56,189,248,0.20)',
+    signalCardBg: '#0C1220',
   },
 
-  // Gradients & Shadows (VerdictIQ visual polish)
+  // Gradients & Shadows
   gradient: {
-    tealStart: 'rgba(8,145,178,0.10)',
-    cyanMid: 'rgba(6,182,212,0.05)',
-    tealEnd: 'rgba(8,145,178,0.10)',
+    heroGlow: 'radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.05) 0%, transparent 70%)',
+    ctaGlow: 'radial-gradient(ellipse at 50% 100%, rgba(14,165,233,0.05) 0%, transparent 70%)',
   },
   shadow: {
-    card: '0 2px 8px rgba(0,0,0,0.3)',
-    glow: '0 0 20px rgba(8,145,178,0.20)',
-    metricCard: '0 1px 4px rgba(0,0,0,0.3)',
-    verdictCard: '0 2px 8px rgba(0,0,0,0.25)',
+    card: '0 2px 8px rgba(0,0,0,0.4)',
+    glow: '0 0 20px rgba(56,189,248,0.15)',
+    ctaBtn: '0 4px 24px rgba(14,165,233,0.3)',
+    ctaBtnHover: '0 8px 32px rgba(14,165,233,0.45)',
   },
 } as const
 
@@ -193,32 +245,31 @@ export const components = {
   /** Card styling */
   card: {
     padding: spacing.md,
-    borderRadius: 12,
-    shadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-    shadowLg: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderRadius: 14,
+    shadow: '0 2px 8px rgba(0,0,0,0.4)',
   },
-  
+
   /** Stat block styling */
   statBlock: {
     textAlign: 'center' as const,
-    valueSize: typography.display.size,
+    valueSize: typography.financialLarge.size,
     labelSize: typography.label.size,
   },
-  
+
   /** Progress bar styling */
   progressBar: {
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: colors.ui.border,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  
+
   /** Button styling */
   button: {
-    primaryHeight: 48,
+    primaryHeight: 52,
     secondaryHeight: 40,
-    borderRadius: 8,
+    borderRadius: 100,
   },
-  
+
   /** Divider styling */
   divider: {
     height: 1,
@@ -232,34 +283,28 @@ export const components = {
 
 /**
  * Get color based on score value (0-100)
- * Unified color system across all VerdictIQ pages
- * 
- * Uses a harmonious palette that doesn't overpower the
- * Investment Analysis section:
- * - High scores: Brand teal (positive, confident)
- * - Mid scores: Muted slate-blue (neutral, doesn't scream)
- * - Low scores: Soft coral (concern without alarm)
+ * VerdictIQ 3.3 — uses five semantic accents
  * 
  * Score Tiers:
- * 80-100: Strong/Good - Teal
- * 50-79:  Average/Marginal - Slate blue
- * 0-49:   Unlikely/Pass - Soft coral
+ * 80-100: Strong/Good — Green #34d399
+ * 60-79:  Moderate — Gold #fbbf24
+ * 40-59:  Marginal — Blue #38bdf8
+ * 0-39:   Unlikely/Pass — Red #f87171
  */
 export function getScoreColor(score: number): string {
-  if (score >= 80) return colors.brand.tealBright   // Strong/Good
-  if (score >= 50) return '#6B7F99'                  // Slate blue - harmonious neutral
-  return '#C45B5B'                                   // Soft coral - muted concern
+  if (score >= 80) return colors.status.positive     // Green
+  if (score >= 60) return colors.brand.gold          // Gold
+  if (score >= 40) return colors.brand.blue          // Blue
+  return colors.status.negative                       // Red
 }
 
 /**
  * Get harmonized bar color for confidence metrics
- * Uses the same teal/slate/coral palette as getScoreColor
- * for visual consistency across the VerdictIQ section.
  */
 export function getHarmonizedBarColor(value: number): string {
-  if (value >= 70) return colors.brand.tealBright    // Strong
-  if (value >= 40) return colors.harmonized.slateBlue // Moderate
-  return colors.harmonized.softCoral                  // Concern
+  if (value >= 70) return colors.brand.teal           // Teal
+  if (value >= 40) return colors.brand.blue           // Blue
+  return colors.status.negative                        // Red
 }
 
 /**
@@ -271,28 +316,28 @@ export function getAssessment(
   higherIsBetter: boolean = true
 ): { color: string; label: string; bgClass: string } {
   const isGood = higherIsBetter ? value >= benchmark : value <= benchmark
-  const isFair = higherIsBetter 
-    ? value >= benchmark * 0.8 
+  const isFair = higherIsBetter
+    ? value >= benchmark * 0.8
     : value <= benchmark * 1.2
-  
+
   if (isGood) {
-    return { 
-      color: colors.status.positive, 
+    return {
+      color: colors.status.positive,
       label: 'GOOD',
-      bgClass: 'bg-emerald-500/15 text-emerald-400',
+      bgClass: 'bg-emerald-400/15 text-emerald-400',
     }
   }
   if (isFair) {
-    return { 
-      color: colors.status.warning, 
+    return {
+      color: colors.brand.gold,
       label: 'FAIR',
-      bgClass: 'bg-amber-500/15 text-amber-400',
+      bgClass: 'bg-amber-400/15 text-amber-400',
     }
   }
-  return { 
-    color: colors.status.negative, 
+  return {
+    color: colors.status.negative,
     label: 'POOR',
-    bgClass: 'bg-rose-500/15 text-rose-400',
+    bgClass: 'bg-red-400/15 text-red-400',
   }
 }
 
@@ -302,7 +347,7 @@ export function getAssessment(
 export function getUrgencyColor(urgency: string): string {
   switch (urgency.toLowerCase()) {
     case 'high': return colors.status.positive
-    case 'medium': return colors.status.warning
+    case 'medium': return colors.brand.gold
     case 'low': return colors.text.tertiary
     default: return colors.text.tertiary
   }
@@ -310,12 +355,11 @@ export function getUrgencyColor(urgency: string): string {
 
 /**
  * Get market temperature color
- * Uses tealBright for better visibility on white backgrounds
  */
 export function getMarketTempColor(temp: string): string {
   switch (temp.toLowerCase()) {
-    case 'cold': return colors.brand.tealBright
-    case 'warm': return colors.status.warning
+    case 'cold': return colors.brand.teal
+    case 'warm': return colors.brand.gold
     case 'hot': return colors.status.negative
     default: return colors.text.tertiary
   }
@@ -326,49 +370,50 @@ export function getMarketTempColor(temp: string): string {
 // ===================
 
 /**
- * Common Tailwind class compositions for consistent styling
- * Uses neutral grays (no blue undertone) for crisp appearance
+ * Common Tailwind class compositions — VerdictIQ 3.3 dark theme
+ * True black base, 7% white borders, Inter typography
  */
 export const tw = {
   // Cards
-  card: 'bg-slate-900 rounded-xl shadow-sm border border-slate-700',
-  cardHover: 'hover:shadow-md transition-shadow',
-  
+  card: 'rounded-[14px] border border-white/[0.07]',
+  cardBg: 'bg-[#0C1220]',
+  cardHover: 'hover:border-sky-400/25 transition-all',
+
   // Section headers
-  sectionHeader: 'text-xs font-semibold text-slate-400 uppercase tracking-wide',
-  
+  sectionHeader: 'text-xs font-bold text-sky-400 uppercase tracking-[0.12em]',
+
   // Labels
-  label: 'text-[11px] font-medium text-slate-400 uppercase tracking-wide',
-  
+  label: 'text-[11px] font-bold text-[#64748B] uppercase tracking-[0.04em]',
+
   // Values
-  valueLg: 'text-2xl font-bold text-slate-100',
-  valueMd: 'text-lg font-semibold text-slate-100',
-  
+  valueLg: 'text-2xl font-bold text-[#F1F5F9] tabular-nums',
+  valueMd: 'text-lg font-semibold text-[#F1F5F9] tabular-nums',
+
   // Buttons
-  buttonPrimary: 'h-12 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors',
-  buttonSecondary: 'h-10 px-4 border border-slate-600 hover:bg-slate-800 text-slate-300 font-medium rounded-lg transition-colors',
-  buttonGhost: 'text-cyan-500 hover:text-cyan-400 font-medium transition-colors',
-  
+  buttonPrimary: 'h-12 px-6 bg-[#0EA5E9] hover:bg-sky-400 text-white font-bold rounded-full transition-all shadow-[0_4px_24px_rgba(14,165,233,0.3)]',
+  buttonSecondary: 'h-10 px-4 border border-[#64748B] hover:border-teal-400 hover:text-teal-400 text-[#CBD5E1] font-semibold rounded-full transition-all',
+  buttonGhost: 'text-[#94A3B8] hover:text-teal-400 font-medium transition-colors',
+
   // Dividers
-  divider: 'border-t border-slate-700',
+  divider: 'border-t border-white/[0.07]',
 
   // VerdictIQ Visual Polish
-  investmentCard: 'bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl border border-teal-400/20 p-5',
-  metricCard: 'bg-slate-900 rounded-lg shadow-sm border border-slate-700 p-4 text-center',
-  pillBadge: 'px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide',
-  glowRing: 'drop-shadow-[0_0_12px_rgba(8,145,178,0.25)]',
-  
-  // Layout - max-width for readability on wide screens
-  pageContainer: 'min-h-screen max-w-2xl mx-auto',
-  container: 'max-w-2xl mx-auto',
-  section: 'px-4 py-4 sm:px-6',
-  
+  investmentCard: 'bg-[#0C1220] rounded-[14px] border border-white/[0.07] p-5',
+  metricCard: 'bg-[#0C1220] rounded-xl border border-white/[0.07] p-4 text-center',
+  pillBadge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.03em]',
+  glowRing: 'drop-shadow-[0_0_12px_rgba(56,189,248,0.25)]',
+
+  // Layout
+  pageContainer: 'min-h-screen max-w-[480px] mx-auto bg-black',
+  container: 'max-w-[480px] mx-auto',
+  section: 'px-5 py-8',
+
   // Responsive typography
-  textDisplay: 'text-2xl sm:text-3xl md:text-4xl font-bold',
-  textHeading: 'text-base sm:text-lg font-semibold',
-  textBody: 'text-sm sm:text-base',
-  textCaption: 'text-xs sm:text-sm',
-  textLabel: 'text-[10px] sm:text-[11px] font-medium uppercase tracking-wide',
+  textDisplay: 'text-[3.5rem] font-bold tabular-nums',
+  textHeading: 'text-[1.35rem] font-bold leading-[1.35]',
+  textBody: 'text-[0.95rem] font-normal leading-[1.55]',
+  textCaption: 'text-[0.82rem] font-medium',
+  textLabel: 'text-[0.72rem] font-bold uppercase tracking-[0.12em]',
 } as const
 
 // ===================
@@ -382,23 +427,31 @@ export const priceCardStyles: Record<PriceCardVariant, {
   borderClass: string
   labelClass: string
   valueClass: string
+  tagClass: string
+  tagLabel: string
 }> = {
   breakeven: {
-    bgClass: 'bg-slate-800/50',
-    borderClass: 'border-slate-600',
-    labelClass: 'text-slate-400',
-    valueClass: 'text-slate-200',
+    bgClass: 'bg-[#0C1220]',
+    borderClass: 'border-white/[0.07]',
+    labelClass: 'text-[#94A3B8]',
+    valueClass: 'text-[#F1F5F9]',
+    tagClass: 'bg-white/[0.06] text-[#94A3B8]',
+    tagLabel: 'No profit',
   },
   target: {
-    bgClass: 'bg-cyan-900/30',
-    borderClass: 'border-cyan-700',
-    labelClass: 'text-cyan-400',
-    valueClass: 'text-cyan-200',
+    bgClass: 'bg-[#101828]',
+    borderClass: 'border-sky-400/35',
+    labelClass: 'text-sky-400',
+    valueClass: 'text-sky-400',
+    tagClass: 'bg-sky-400/10 text-sky-400',
+    tagLabel: 'Best target',
   },
   wholesale: {
-    bgClass: 'bg-emerald-900/30',
-    borderClass: 'border-emerald-700',
-    labelClass: 'text-emerald-400',
-    valueClass: 'text-emerald-200',
+    bgClass: 'bg-[#0C1220]',
+    borderClass: 'border-white/[0.07]',
+    labelClass: 'text-[#94A3B8]',
+    valueClass: 'text-[#F1F5F9]',
+    tagClass: 'bg-teal-400/10 text-teal-400',
+    tagLabel: 'Deep value',
   },
 }

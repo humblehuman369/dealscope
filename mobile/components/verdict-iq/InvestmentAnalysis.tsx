@@ -18,7 +18,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { decisionGrade } from '../../theme/colors';
+import { verdictDark } from '../../theme/colors';
+import { verdictTypography } from '../../theme/textStyles';
 import { rf, rs } from './responsive';
 
 export type IQPriceId = 'breakeven' | 'target' | 'wholesale';
@@ -87,21 +88,12 @@ export function InvestmentAnalysis({
 
   return (
     <View style={styles.outerContainer}>
-      <LinearGradient
-        colors={[
-          decisionGrade.gradientTealStart,
-          decisionGrade.gradientCyanMid,
-          decisionGrade.gradientTealEnd,
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradientCard}
-      >
+      <View style={styles.gradientCard}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.iconCircle}>
-              <Ionicons name="analytics" size={18} color={decisionGrade.pacificTeal} />
+              <Ionicons name="analytics" size={18} color={verdictDark.blue} />
             </View>
             <View style={styles.headerTextGroup}>
               <Text style={styles.title}>YOUR INVESTMENT ANALYSIS</Text>
@@ -110,7 +102,7 @@ export function InvestmentAnalysis({
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={onChangeTerms} style={styles.termsBtn}>
-              <Ionicons name="settings-outline" size={14} color={decisionGrade.textSecondary} />
+              <Ionicons name="settings-outline" size={14} color={verdictDark.textBody} />
               <Text style={styles.termsBtnText}>Terms</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -191,7 +183,7 @@ export function InvestmentAnalysis({
 
         {/* Dynamic Context Label */}
         <View style={styles.contextLabelRow}>
-          <Ionicons name="information-circle-outline" size={14} color={decisionGrade.textTertiary} />
+          <Ionicons name="information-circle-outline" size={14} color={verdictDark.textLabel} />
           <Text style={styles.contextLabel}>
             Based on{' '}
             <Text style={styles.contextLabelHighlight}>
@@ -200,7 +192,7 @@ export function InvestmentAnalysis({
             {' '}price
           </Text>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Strategy Menu Modal */}
       <Modal
@@ -244,16 +236,15 @@ export function InvestmentAnalysis({
 
 const styles = StyleSheet.create({
   outerContainer: {
-    paddingHorizontal: rs(16),
-    paddingTop: 0,
     paddingBottom: rs(8),
-    backgroundColor: decisionGrade.bgSecondary,
+    backgroundColor: verdictDark.black,
   },
   gradientCard: {
-    borderRadius: rs(12),
+    borderRadius: rs(14),
     borderWidth: 1,
-    borderColor: 'rgba(8,145,178,0.20)',
+    borderColor: verdictDark.border,
     padding: rs(16),
+    backgroundColor: verdictDark.card,
     overflow: 'hidden',
   },
   header: {
@@ -272,14 +263,9 @@ const styles = StyleSheet.create({
     width: rs(36),
     height: rs(36),
     borderRadius: rs(18),
-    backgroundColor: 'white',
+    backgroundColor: verdictDark.blueBg,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
   headerTextGroup: {
     flex: 1,
@@ -287,14 +273,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: rf(12),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
     letterSpacing: 0.5,
     marginBottom: rs(2),
+    textTransform: 'uppercase',
   },
   subtitle: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
   },
   headerRight: {
     alignItems: 'flex-end',
@@ -306,15 +293,14 @@ const styles = StyleSheet.create({
     gap: rs(4),
     paddingVertical: rs(5),
     paddingHorizontal: rs(10),
-    borderRadius: rs(6),
+    borderRadius: rs(100),
     borderWidth: 1,
-    borderColor: decisionGrade.borderLight,
-    backgroundColor: 'white',
+    borderColor: verdictDark.textLabel,
   },
   termsBtnText: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textBody,
   },
   strategyBtn: {
     flexDirection: 'row',
@@ -322,45 +308,49 @@ const styles = StyleSheet.create({
     gap: rs(6),
     paddingVertical: rs(6),
     paddingHorizontal: rs(12),
-    backgroundColor: decisionGrade.pacificTeal,
-    borderRadius: rs(6),
+    backgroundColor: verdictDark.blueDeep,
+    borderRadius: rs(100),
   },
   strategyBtnText: {
     fontSize: rf(11),
     fontWeight: '600',
-    color: 'white',
+    color: verdictDark.white,
   },
   selectorContainer: {
     marginBottom: rs(10),
   },
   iqSelector: {
     flexDirection: 'row',
-    backgroundColor: decisionGrade.unselectedCardBg,
-    borderRadius: rs(10),
+    backgroundColor: verdictDark.bg,
+    borderRadius: rs(12),
     padding: rs(4),
     gap: rs(4),
+    borderWidth: 1,
+    borderColor: verdictDark.border,
   },
   iqOption: {
     flex: 1,
     paddingVertical: rs(12),
     paddingHorizontal: rs(6),
     alignItems: 'center',
-    borderRadius: rs(8),
+    borderRadius: rs(10),
     backgroundColor: 'transparent',
   },
   iqOptionSelected: {
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    backgroundColor: verdictDark.cardUp,
+    borderWidth: 1.5,
+    borderColor: verdictDark.borderActive,
+    shadowColor: verdictDark.blue,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     elevation: 3,
   },
   recommendedBadge: {
     position: 'absolute',
     top: rs(2),
     alignSelf: 'center',
-    backgroundColor: decisionGrade.recommendedBadgeBg,
+    backgroundColor: verdictDark.blueBg,
     paddingHorizontal: rs(6),
     paddingVertical: rs(1),
     borderRadius: rs(4),
@@ -369,39 +359,41 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     fontWeight: '700',
     letterSpacing: 0.5,
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
   },
   iqOptionLabelText: {
     fontSize: rf(9),
     fontWeight: '600',
     letterSpacing: 0.3,
-    color: decisionGrade.textTertiary,
+    color: verdictDark.textLabel,
     marginTop: rs(6),
     marginBottom: rs(4),
+    textTransform: 'uppercase',
   },
   iqOptionLabelSelected: {
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
     fontWeight: '700',
   },
   iqOptionValue: {
     fontSize: rf(15),
     fontWeight: '700',
-    color: decisionGrade.textTertiary,
+    fontVariant: ['tabular-nums'],
+    color: verdictDark.textSecondary,
     marginBottom: rs(2),
   },
   iqOptionValueSelected: {
     fontSize: rf(20),
-    fontWeight: '800',
-    color: decisionGrade.pacificTeal,
+    fontWeight: '700',
+    color: verdictDark.blue,
   },
   iqOptionSub: {
     fontSize: rf(8),
     fontWeight: '500',
-    color: decisionGrade.textMuted,
+    color: verdictDark.textLabel,
     textAlign: 'center',
   },
   iqOptionSubSelected: {
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textBody,
   },
   howCalculated: {
     flexDirection: 'row',
@@ -414,19 +406,19 @@ const styles = StyleSheet.create({
     height: rs(14),
     borderRadius: rs(7),
     borderWidth: 1.5,
-    borderColor: decisionGrade.pacificTeal,
+    borderColor: verdictDark.blue,
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoIconText: {
     fontSize: rf(9),
     fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
   },
   howCalculatedText: {
     fontSize: rf(10),
     fontWeight: '600',
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
   },
   metricsRow: {
     flexDirection: 'row',
@@ -435,19 +427,14 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: verdictDark.card,
     borderRadius: rs(10),
     paddingTop: rs(14),
     paddingBottom: rs(12),
     paddingHorizontal: rs(8),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
     borderWidth: 1,
-    borderColor: 'rgba(229,229,229,0.6)',
+    borderColor: verdictDark.border,
     overflow: 'hidden',
   },
   metricAccent: {
@@ -456,7 +443,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: rs(3),
-    backgroundColor: decisionGrade.pacificTeal,
+    backgroundColor: verdictDark.blue,
     borderTopLeftRadius: rs(10),
     borderTopRightRadius: rs(10),
   },
@@ -464,14 +451,15 @@ const styles = StyleSheet.create({
     fontSize: rf(9),
     fontWeight: '600',
     letterSpacing: 0.3,
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
     marginBottom: rs(4),
     textTransform: 'uppercase',
   },
   metricValue: {
+    ...verdictTypography.financial,
     fontSize: rf(17),
-    fontWeight: '800',
-    color: decisionGrade.pacificTeal,
+    fontWeight: '700',
+    color: verdictDark.blue,
   },
   contextLabelRow: {
     flexDirection: 'row',
@@ -482,29 +470,29 @@ const styles = StyleSheet.create({
   contextLabel: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textTertiary,
+    color: verdictDark.textLabel,
   },
   contextLabelHighlight: {
     fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
     paddingTop: rs(150),
     paddingRight: rs(16),
   },
   strategyMenu: {
-    backgroundColor: 'white',
-    borderRadius: rs(8),
+    backgroundColor: verdictDark.card,
+    borderRadius: rs(12),
     borderWidth: 1,
-    borderColor: decisionGrade.borderMedium,
+    borderColor: verdictDark.border,
     minWidth: rs(160),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
   },
@@ -514,15 +502,15 @@ const styles = StyleSheet.create({
   },
   strategyMenuItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: decisionGrade.borderLight,
+    borderBottomColor: verdictDark.border,
   },
   strategyMenuItemText: {
     fontSize: rf(12),
     fontWeight: '500',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textBody,
   },
   strategyMenuItemTextActive: {
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
     fontWeight: '600',
   },
 });

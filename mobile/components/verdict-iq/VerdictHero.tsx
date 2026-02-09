@@ -16,7 +16,8 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { decisionGrade } from '../../theme/colors';
+import { verdictDark } from '../../theme/colors';
+import { verdictTypography } from '../../theme/textStyles';
 import { rf, rs } from './responsive';
 import { ArcGauge } from './ArcGauge';
 
@@ -48,34 +49,36 @@ export interface VerdictHeroProps {
 }
 
 // =============================================================================
-// COLOR HELPERS (Harmonized palette)
+// COLOR HELPERS (VerdictIQ 3.3 dark theme)
 // =============================================================================
 
 const getVerdictColor = (score: number): string => {
-  if (score >= 80) return decisionGrade.pacificTeal;
-  if (score >= 50) return decisionGrade.slateBlue;
-  return decisionGrade.softCoral;
+  if (score >= 80) return verdictDark.green;
+  if (score >= 60) return verdictDark.gold;
+  if (score >= 40) return verdictDark.blue;
+  return verdictDark.red;
 };
 
 const getVerdictPillBg = (score: number): string => {
-  if (score >= 80) return 'rgba(8,145,178,0.10)';
-  if (score >= 50) return 'rgba(107,127,153,0.10)';
-  return 'rgba(196,91,91,0.10)';
+  if (score >= 80) return verdictDark.greenBg;
+  if (score >= 60) return verdictDark.goldBg;
+  if (score >= 40) return verdictDark.blueBg;
+  return verdictDark.redBg;
 };
 
 const getHarmonizedColor = (color: 'teal' | 'amber' | 'negative'): string => {
   switch (color) {
-    case 'teal': return decisionGrade.pacificTeal;
-    case 'amber': return decisionGrade.slateBlue;
-    case 'negative': return decisionGrade.softCoral;
+    case 'teal': return verdictDark.teal;
+    case 'amber': return verdictDark.gold;
+    case 'negative': return verdictDark.red;
   }
 };
 
 const getSignalAccentBg = (color: 'teal' | 'amber' | 'negative'): string => {
   switch (color) {
-    case 'teal': return 'rgba(8,145,178,0.08)';
-    case 'amber': return 'rgba(107,127,153,0.08)';
-    case 'negative': return 'rgba(196,91,91,0.08)';
+    case 'teal': return verdictDark.tealBg;
+    case 'amber': return verdictDark.goldBg;
+    case 'negative': return verdictDark.redBg;
   }
 };
 
@@ -193,100 +196,96 @@ export function VerdictHero({
 // =============================================================================
 
 const styles = StyleSheet.create({
-  // Card container
+  // Card container — dark theme
   outerContainer: {
-    paddingHorizontal: rs(16),
-    paddingVertical: rs(4),
-    backgroundColor: decisionGrade.bgSecondary,
+    paddingHorizontal: rs(20),
+    paddingVertical: rs(32),
+    backgroundColor: verdictDark.bg,
   },
   card: {
-    backgroundColor: decisionGrade.bgPrimary,
-    borderRadius: rs(12),
-    borderWidth: 1,
-    borderColor: decisionGrade.verdictCardBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: verdictDark.bg,
     overflow: 'hidden',
+    alignItems: 'center',
   },
   accentBar: {
-    height: rs(3),
-    backgroundColor: decisionGrade.pacificTeal,
+    height: 0, // Hidden in dark theme — hero uses radial glow instead
   },
 
   // Section header
   sectionHeader: {
     alignItems: 'center',
-    paddingTop: rs(16),
     paddingBottom: rs(4),
   },
   sectionTitle: {
-    fontSize: rf(15),
-    fontWeight: '800',
+    fontSize: rf(16),
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   titleNavy: {
-    color: decisionGrade.deepNavy,
+    color: verdictDark.textBody,
   },
   titleTeal: {
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.textBody,
   },
 
   // Arc gauge
   gaugeContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: rs(8),
+    paddingVertical: rs(12),
   },
 
   // Verdict info (centered)
   verdictInfoCenter: {
     alignItems: 'center',
     paddingHorizontal: rs(20),
-    paddingBottom: rs(16),
+    paddingBottom: rs(20),
   },
   verdictPill: {
-    paddingHorizontal: rs(16),
-    paddingVertical: rs(5),
-    borderRadius: rs(14),
-    marginBottom: rs(6),
+    paddingHorizontal: rs(24),
+    paddingVertical: rs(8),
+    borderRadius: rs(100),
+    borderWidth: 1.5,
+    marginBottom: rs(16),
   },
   verdictLabel: {
-    fontSize: rf(14),
+    fontSize: rf(15),
     fontWeight: '700',
   },
   verdictSubtitle: {
-    fontSize: rf(12),
-    fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    ...verdictTypography.body,
+    fontSize: rf(16),
+    color: verdictDark.textBody,
     textAlign: 'center',
-    marginBottom: rs(8),
+    marginBottom: rs(20),
+    maxWidth: 340,
+    lineHeight: rf(16) * 1.65,
   },
   verdictLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rs(6),
+    gap: rs(10),
   },
   verdictLink: {
-    fontSize: rf(11),
-    fontWeight: '600',
-    color: decisionGrade.pacificTeal,
+    fontSize: rf(13),
+    fontWeight: '500',
+    color: verdictDark.textSecondary,
   },
   linkSeparator: {
-    fontSize: rf(11),
-    color: decisionGrade.textMuted,
+    fontSize: rf(13),
+    color: verdictDark.textLabel,
   },
 
   // Internal divider
   internalDivider: {
     height: 1,
-    backgroundColor: decisionGrade.borderLight,
+    backgroundColor: verdictDark.border,
     marginHorizontal: rs(16),
+    width: '90%',
+    alignSelf: 'center',
   },
 
-  // Signal indicators
+  // Signal indicators — hidden in new verdict page (moved to MarketSnapshot)
   signalRow: {
     flexDirection: 'row',
     paddingHorizontal: rs(12),
@@ -295,13 +294,15 @@ const styles = StyleSheet.create({
   },
   signalCard: {
     flex: 1,
-    backgroundColor: decisionGrade.signalCardBg,
+    backgroundColor: verdictDark.card,
     borderRadius: rs(8),
     paddingTop: rs(10),
     paddingBottom: rs(8),
     paddingHorizontal: rs(6),
     alignItems: 'center',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: verdictDark.border,
   },
   signalAccentBar: {
     position: 'absolute',
@@ -316,13 +317,13 @@ const styles = StyleSheet.create({
     fontSize: rf(8),
     fontWeight: '700',
     letterSpacing: 0.5,
-    color: decisionGrade.textTertiary,
+    color: verdictDark.textLabel,
     textTransform: 'uppercase',
     marginBottom: rs(4),
   },
   signalValue: {
     fontSize: rf(14),
-    fontWeight: '800',
+    fontWeight: '700',
     marginBottom: rs(4),
   },
   signalStatusPill: {
@@ -336,17 +337,19 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
 
-  // Confidence metrics (harmonized)
+  // Confidence metrics
   confidenceSection: {
     paddingHorizontal: rs(20),
     paddingVertical: rs(16),
+    width: '100%',
   },
   confidenceHeader: {
     fontSize: rf(10),
     fontWeight: '700',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
     letterSpacing: 0.8,
     marginBottom: rs(12),
+    textTransform: 'uppercase',
   },
   confidenceRow: {
     flexDirection: 'row',
@@ -357,13 +360,13 @@ const styles = StyleSheet.create({
   confidenceLabel: {
     fontSize: rf(12),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textBody,
     width: rs(110),
   },
   confidenceBar: {
     flex: 1,
     height: rs(6),
-    backgroundColor: decisionGrade.confidenceTrack,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: rs(3),
     overflow: 'hidden',
   },
@@ -374,6 +377,7 @@ const styles = StyleSheet.create({
   confidenceValue: {
     fontSize: rf(13),
     fontWeight: '700',
+    fontVariant: ['tabular-nums'],
     width: rs(40),
     textAlign: 'right',
   },

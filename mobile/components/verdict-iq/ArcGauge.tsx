@@ -7,7 +7,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { decisionGrade } from '../../theme/colors';
+import { verdictDark } from '../../theme/colors';
 import { rf, rs } from './responsive';
 
 interface ArcGaugeProps {
@@ -50,7 +50,7 @@ export function ArcGauge({
           cx={scaledSize / 2}
           cy={scaledSize / 2}
           r={radius}
-          stroke="rgba(229,229,229,0.4)"
+          stroke="rgba(255,255,255,0.06)"
           strokeWidth={scaledStroke}
           fill="none"
           strokeDasharray={`${arcLength} ${gapLength}`}
@@ -95,13 +95,14 @@ const styles = StyleSheet.create({
   },
   scoreValue: {
     fontSize: rf(34),
-    fontWeight: '800',
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
     lineHeight: rf(38),
   },
   scoreMax: {
     fontSize: rf(12),
     fontWeight: '500',
-    color: decisionGrade.textMuted,
+    color: verdictDark.textSecondary,
     marginTop: rs(-2),
   },
 });

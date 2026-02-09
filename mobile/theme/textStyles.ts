@@ -170,3 +170,115 @@ export function getSemanticTextStyle(
   };
 }
 
+// =============================================================================
+// VERDICT/STRATEGY TYPOGRAPHY
+// Inter-based, per VerdictIQ 3.3 Design
+// Headlines 700, body 400, financial data 600 + tabular-nums
+// =============================================================================
+
+import { verdictDark } from './colors';
+
+export const verdictTypography = {
+  // Score display — large number in hero
+  scoreDisplay: {
+    fontSize: 56,
+    fontWeight: '700' as const,
+    lineHeight: 56,
+    fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
+    color: verdictDark.white,
+  } satisfies TextStyle,
+
+  // Page headings (section titles)
+  heading: {
+    fontSize: 22,
+    fontWeight: '700' as const,
+    lineHeight: 30,
+    color: verdictDark.textHeading,
+  } satisfies TextStyle,
+
+  // Sub-headings
+  subheading: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    lineHeight: 20,
+    color: verdictDark.textHeading,
+  } satisfies TextStyle,
+
+  // Body text
+  body: {
+    fontSize: 15,
+    fontWeight: '400' as const,
+    lineHeight: 24,
+    color: verdictDark.textBody,
+  } satisfies TextStyle,
+
+  // Body small
+  bodySmall: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    lineHeight: 20,
+    color: verdictDark.textBody,
+  } satisfies TextStyle,
+
+  // Financial values (tabular-nums, weight 600)
+  financial: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    lineHeight: 22,
+    fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
+    color: verdictDark.textHeading,
+  } satisfies TextStyle,
+
+  // Financial large
+  financialLarge: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    lineHeight: 26,
+    fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
+    color: verdictDark.textHeading,
+  } satisfies TextStyle,
+
+  // Section label (uppercase, small)
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    lineHeight: 14,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as const,
+    color: verdictDark.blue,
+  } satisfies TextStyle,
+
+  // Tag / badge text
+  tag: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    lineHeight: 14,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase' as const,
+  } satisfies TextStyle,
+
+  // Caption / helper
+  caption: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    lineHeight: 16,
+    color: verdictDark.textSecondary,
+  } satisfies TextStyle,
+
+  // CTA button
+  cta: {
+    fontSize: 17,
+    fontWeight: '700' as const,
+    lineHeight: 22,
+    color: verdictDark.white,
+  } satisfies TextStyle,
+
+  // Secondary button
+  buttonSecondary: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    lineHeight: 18,
+    color: verdictDark.textBody,
+  } satisfies TextStyle,
+};
+

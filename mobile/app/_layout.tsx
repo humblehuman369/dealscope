@@ -157,6 +157,15 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* Strategy IQ Page (Page 2 of VerdictIQ split) */}
+        <Stack.Screen 
+          name="strategy-iq/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
         {/* Property Details Page */}
         <Stack.Screen 
           name="property-details/[address]" 

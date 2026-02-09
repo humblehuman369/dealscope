@@ -322,6 +322,49 @@ export const decisionGrade = {
 } as const;
 
 // =============================================================================
+// VERDICT/STRATEGY DARK THEME
+// Per VerdictIQ 3.3 Design — True black base, Slate text, updated accents
+// Used exclusively on VerdictIQ and StrategyIQ pages
+// =============================================================================
+
+export const verdictDark = {
+  // Base surfaces
+  black: '#000000',          // True black base
+  bg: '#060B14',             // Page background
+  card: '#0C1220',           // Card / deep navy
+  cardUp: '#101828',         // Elevated card
+
+  // Text — Four-tier Slate hierarchy
+  textHeading: '#F1F5F9',    // Near-white for headings
+  textBody: '#CBD5E1',       // Solid readable grey for body
+  textSecondary: '#94A3B8',  // Muted but still legible
+  textLabel: '#64748B',      // Smallest text, still solid
+  white: '#FFFFFF',
+
+  // Semantic accents
+  blue: '#38bdf8',           // Sky blue — primary accent
+  blueDeep: '#0EA5E9',       // Deep sky — CTA buttons
+  blueBg: 'rgba(56,189,248,0.10)',
+  teal: '#2dd4bf',           // Teal — positive / interactive
+  tealBg: 'rgba(45,212,191,0.10)',
+  gold: '#fbbf24',           // Gold — caution / moderate
+  goldBg: 'rgba(251,191,36,0.10)',
+  red: '#f87171',            // Red — negative / risk
+  redBg: 'rgba(248,113,113,0.10)',
+  green: '#34d399',          // Green — positive / success
+  greenBg: 'rgba(52,211,153,0.10)',
+
+  // Borders
+  border: 'rgba(255,255,255,0.07)',       // 7% white opacity
+  borderActive: 'rgba(56,189,248,0.35)',  // Active blue border
+
+  // Logo font
+  logoFont: 'Source Sans 3',
+} as const;
+
+export type VerdictDarkKey = keyof typeof verdictDark;
+
+// =============================================================================
 // TYPE EXPORTS
 // =============================================================================
 

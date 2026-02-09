@@ -17,7 +17,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { decisionGrade } from '../../theme/colors';
+import { verdictDark } from '../../theme/colors';
+import { verdictTypography } from '../../theme/textStyles';
 import { rf, rs } from './responsive';
 
 export interface BreakdownRow {
@@ -156,7 +157,7 @@ export function FinancialBreakdown({
               Alert.alert('Get Funding', 'Funding resources coming soon');
             }}
           >
-            <Ionicons name="cash-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Ionicons name="cash-outline" size={14} color={verdictDark.teal} />
             <Text style={styles.resourceBtnText}>GET FUNDING</Text>
           </TouchableOpacity>
 
@@ -168,7 +169,7 @@ export function FinancialBreakdown({
               Alert.alert('Talk to an Agent', 'Agent matching coming soon');
             }}
           >
-            <Ionicons name="people-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Ionicons name="people-outline" size={14} color={verdictDark.teal} />
             <Text style={styles.resourceBtnText}>TALK TO AN AGENT</Text>
           </TouchableOpacity>
 
@@ -180,7 +181,7 @@ export function FinancialBreakdown({
               Alert.alert('Need a Contractor', 'Contractor matching coming soon');
             }}
           >
-            <Ionicons name="construct-outline" size={14} color={decisionGrade.pacificTeal} />
+            <Ionicons name="construct-outline" size={14} color={verdictDark.teal} />
             <Text style={styles.resourceBtnText}>NEED A CONTRACTOR</Text>
           </TouchableOpacity>
         </View>
@@ -250,7 +251,7 @@ export function FinancialBreakdown({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: decisionGrade.bgPrimary,
+    backgroundColor: verdictDark.black,
     paddingBottom: rs(12),
   },
 
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   sectionIcon: {
     width: rs(36),
     height: rs(36),
-    backgroundColor: decisionGrade.deepNavy,
+    backgroundColor: verdictDark.blueBg,
     borderRadius: rs(8),
     alignItems: 'center',
     justifyContent: 'center',
@@ -278,12 +279,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: rf(13),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
   },
   sectionSubtitle: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
   },
 
   /* ── Two-column area ── */
@@ -305,20 +306,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: rs(6),
     borderBottomWidth: 2,
-    borderBottomColor: decisionGrade.pacificTeal,
+    borderBottomColor: verdictDark.blue,
     marginBottom: rs(4),
   },
   subGroupAccent: {
     width: rs(3),
     height: rs(12),
-    backgroundColor: decisionGrade.pacificTeal,
+    backgroundColor: verdictDark.blue,
     borderRadius: rs(1.5),
     marginRight: rs(6),
   },
   subGroupTitle: {
     fontSize: rf(9),
     fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -330,30 +331,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: rs(5),
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: decisionGrade.borderLight,
+    borderBottomColor: verdictDark.border,
   },
   rowLabel: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textBody,
     flex: 1,
     marginRight: rs(4),
   },
   rowLabelSubHeader: {
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
     fontSize: rf(10),
   },
   rowValue: {
     fontSize: rf(10),
     fontWeight: '600',
-    color: decisionGrade.textPrimary,
+    fontVariant: ['tabular-nums'],
+    color: verdictDark.textHeading,
   },
   rowValueNegative: {
-    color: decisionGrade.negative,
+    color: verdictDark.red,
   },
   rowValueTeal: {
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.blue,
   },
 
   /* ── Total row ── */
@@ -363,20 +365,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: rs(6),
     borderTopWidth: 1.5,
-    borderTopColor: decisionGrade.pacificTeal,
+    borderTopColor: verdictDark.blue,
     marginTop: rs(2),
   },
   totalLabel: {
     fontSize: rf(10),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
     flex: 1,
     marginRight: rs(4),
   },
   totalValue: {
     fontSize: rf(10),
     fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+    fontVariant: ['tabular-nums'],
+    color: verdictDark.blue,
   },
 
   /* ── Bottom row (Resources left, NOI/Cash right) ── */
@@ -396,16 +399,16 @@ const styles = StyleSheet.create({
     gap: rs(8),
     paddingVertical: rs(10),
     paddingHorizontal: rs(12),
-    backgroundColor: decisionGrade.bgPrimary,
-    borderWidth: 1.5,
-    borderColor: decisionGrade.pacificTeal,
+    backgroundColor: verdictDark.card,
+    borderWidth: 1,
+    borderColor: verdictDark.border,
     borderRadius: rs(8),
     marginBottom: rs(6),
   },
   resourceBtnText: {
     fontSize: rf(9),
     fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+    color: verdictDark.teal,
     letterSpacing: 0.4,
   },
 
@@ -414,9 +417,9 @@ const styles = StyleSheet.create({
     paddingVertical: rs(10),
     paddingHorizontal: rs(12),
     paddingLeft: rs(16),
-    backgroundColor: 'rgba(8,145,178,0.05)',
+    backgroundColor: verdictDark.greenBg,
     borderWidth: 1,
-    borderColor: 'rgba(8,145,178,0.20)',
+    borderColor: 'rgba(52,211,153,0.2)',
     borderRadius: rs(10),
     overflow: 'hidden',
     marginBottom: rs(6),
@@ -427,7 +430,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: rs(4),
-    backgroundColor: decisionGrade.pacificTeal,
+    backgroundColor: verdictDark.green,
     borderTopLeftRadius: rs(10),
     borderBottomLeftRadius: rs(10),
   },
@@ -440,13 +443,14 @@ const styles = StyleSheet.create({
   noiLabel: {
     fontSize: rf(9),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
     flex: 1,
   },
   noiValue: {
+    ...verdictTypography.financial,
     fontSize: rf(12),
-    fontWeight: '800',
-    color: decisionGrade.pacificTeal,
+    fontWeight: '700',
+    color: verdictDark.green,
   },
   noiBottomRow: {
     flexDirection: 'row',
@@ -456,12 +460,13 @@ const styles = StyleSheet.create({
   noiMonthlyLabel: {
     fontSize: rf(9),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
   },
   noiMonthlyValue: {
     fontSize: rf(10),
     fontWeight: '600',
-    color: decisionGrade.pacificTeal,
+    fontVariant: ['tabular-nums'],
+    color: verdictDark.green,
   },
 
   /* ── Cashflow Box ── */
@@ -483,18 +488,18 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: rs(10),
   },
   cashflowAccentPositive: {
-    backgroundColor: decisionGrade.pacificTeal,
+    backgroundColor: verdictDark.green,
   },
   cashflowAccentNegative: {
-    backgroundColor: decisionGrade.negative,
+    backgroundColor: verdictDark.red,
   },
   cashflowBoxPositive: {
-    backgroundColor: 'rgba(8,145,178,0.05)',
-    borderColor: 'rgba(8,145,178,0.20)',
+    backgroundColor: verdictDark.greenBg,
+    borderColor: 'rgba(52,211,153,0.2)',
   },
   cashflowBoxNegative: {
-    backgroundColor: 'rgba(220,38,38,0.05)',
-    borderColor: 'rgba(220,38,38,0.20)',
+    backgroundColor: verdictDark.redBg,
+    borderColor: 'rgba(248,113,113,0.2)',
   },
   cashflowRow: {
     flexDirection: 'row',
@@ -505,25 +510,27 @@ const styles = StyleSheet.create({
   cashflowLabel: {
     fontSize: rf(9),
     fontWeight: '700',
-    color: decisionGrade.textPrimary,
+    color: verdictDark.textHeading,
   },
   cashflowValue: {
+    ...verdictTypography.financial,
     fontSize: rf(12),
-    fontWeight: '800',
-    color: decisionGrade.pacificTeal,
+    fontWeight: '700',
+    color: verdictDark.green,
   },
   cashflowValueNeg: {
-    color: decisionGrade.negative,
+    color: verdictDark.red,
   },
   cashflowMonthlyLabel: {
     fontSize: rf(9),
     fontWeight: '500',
-    color: decisionGrade.textSecondary,
+    color: verdictDark.textSecondary,
   },
   cashflowMonthlyValue: {
     fontSize: rf(10),
     fontWeight: '600',
-    color: decisionGrade.pacificTeal,
+    fontVariant: ['tabular-nums'],
+    color: verdictDark.green,
   },
 });
 

@@ -75,6 +75,12 @@ export const ROUTES = {
     return `/verdict?${params.toString()}`;
   },
   
+  strategy: (ctx: NavContext) => {
+    const params = new URLSearchParams({ address: ctx.address || '' });
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
+    return `/strategy?${params.toString()}`;
+  },
+
   dealMaker: (ctx: NavContext) => 
     `/deal-maker/${encodeURIComponent(ctx.address || '')}`,
   

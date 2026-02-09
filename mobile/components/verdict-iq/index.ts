@@ -28,3 +28,13 @@ export { DealGap } from './DealGap';
 
 export { AtAGlance, PerformanceBenchmarks } from './PerformanceBenchmarks';
 export type { GlanceMetric, BenchmarkMetric, BenchmarkGroup } from './PerformanceBenchmarks';
+
+// New VerdictIQ 3.3 components
+export { MarketSnapshot } from './MarketSnapshot';
+export type { MarketTile } from './MarketSnapshot';
+
+export { BeginnerTip } from './BeginnerTip';
+
+export { PriceScale } from './PriceScale';
+
+export { VerdictCTA, TrustStrip, VerdictFooter } from './VerdictCTA';
