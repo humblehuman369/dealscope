@@ -78,10 +78,7 @@
   max-width: 1240px; margin: 0 auto; padding: 0 2rem;
   display: flex; justify-content: space-between; align-items: center; height: 68px;
 }
-.iq-landing .logo { text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
-.iq-landing .logo-icon {
-  width: 32px; height: 32px; object-fit: contain;
-}
+.iq-landing .logo { text-decoration: none; display: flex; align-items: center; }
 .iq-landing .logo-text {
   font-family: var(--font-logo); font-size: 1.35rem; font-weight: 700;
   color: var(--white); letter-spacing: -0.01em;

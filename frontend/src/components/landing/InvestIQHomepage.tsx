@@ -88,7 +88,6 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       <nav className="iq-nav">
         <div className="nav-inner">
           <a href="/" className="logo" onClick={(e) => { e.preventDefault(); router.push('/'); }}>
-            <img src="/images/iq-icon-gradient.png" alt="" className="logo-icon" />
             <div className="logo-text">Invest<span>IQ</span></div>
           </a>
           <div className="nav-links" />
