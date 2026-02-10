@@ -63,13 +63,16 @@ class AssumptionUpdateSerializer(serializers.Serializer):
         assumption = self.context.get("assumption")
         if not assumption:
             return value
-        if assumption.data_type == "number":
+        # allow_blank=True: empty string is permitted for all types
+        if value == "":
+            return value
+        if assumption.data_type in ("number", "percentage", "currency"):
             try:
                 float(value)
             except (ValueError, TypeError):
                 raise serializers.ValidationError("Must be a valid number")
         elif assumption.data_type == "boolean":
-            if value.lower() not in ("true", "false", "1", "0", "yes", "no", ""):
+            if value.lower() not in ("true", "false", "1", "0", "yes", "no"):
                 raise serializers.ValidationError("Must be true or false")
         return value
 

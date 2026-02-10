@@ -172,12 +172,11 @@ class DefaultAssumptionViewSet(viewsets.ModelViewSet):
                         assumption.value = new_value
                         assumption.updated_by = request.user
                         assumption.save()
-
-                    results.append({
-                        'id': assumption.id,
-                        'key': assumption.key,
-                        'status': 'updated'
-                    })
+                        results.append({
+                            'id': assumption.id,
+                            'key': assumption.key,
+                            'status': 'updated'
+                        })
                 except DefaultAssumption.DoesNotExist:
                     errors.append({
                         'id': item['id'],
