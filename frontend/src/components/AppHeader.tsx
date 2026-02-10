@@ -22,7 +22,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
 
@@ -111,6 +111,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/verify-email',
   '/reset-password',
   '/forgot-password',
+  '/admin',
 ]
 
 // Map routes to active tabs
@@ -187,7 +188,7 @@ export function AppHeader({
   const profileMenuRef = useRef<HTMLDivElement>(null)
   
   // Auth context
-  const { isAuthenticated, user } = useSession()
+  const { isAuthenticated, user, isAdmin } = useSession()
   const logoutMutation = useLogout()
 
   // Close profile menu on outside click
@@ -437,6 +438,14 @@ export function AppHeader({
                   >
                     <UserCircle className="w-4 h-4" /> Profile
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4" /> Admin Dashboard
+                    </button>
+                  )}
                   <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
                     <button
                       onClick={handleLogout}
