@@ -165,13 +165,6 @@ function StrategyContent() {
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       <div className="max-w-[520px] mx-auto">
-        {/* Nav */}
-        <nav className="flex justify-between items-center px-5 py-3.5 border-b" style={{ borderColor: colors.ui.border, background: '#000' }}>
-          <span className="text-[1.35rem] font-bold" style={{ color: '#fff', fontFamily: "'Source Sans 3', sans-serif" }}>
-            Invest<span style={{ color: colors.brand.blue }}>IQ</span>
-          </span>
-        </nav>
-
         {/* Back Strip */}
         <div className="flex justify-between items-center px-5 py-3 border-b" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
           <button onClick={handleBack} className="flex items-center gap-1.5 font-semibold text-sm" style={{ color: colors.brand.teal }}>

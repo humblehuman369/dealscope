@@ -341,7 +341,7 @@ export function AppHeader({
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: colors.background.deepNavy }}
         >
-          {/* Logo - Clickable to go home */}
+          {/* Logo - Dynamic per page, clickable to go home */}
           <button 
             onClick={handleLogoClick}
             className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
@@ -350,7 +350,7 @@ export function AppHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              Verdict
+              {pathname?.startsWith('/strategy') ? 'Strategy' : 'Verdict'}
             </span>
             <span 
               className="text-lg font-bold tracking-tight"
