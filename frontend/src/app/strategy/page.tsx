@@ -126,7 +126,6 @@ function StrategyContent() {
   const propertyTaxes = propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
   const insurance = propertyInfo?.insurance || Math.round(listPrice * 0.01)
   const parsed = parseAddressString(addressParam)
-  const shortAddress = parsed.street || addressParam.split(',')[0]
 
   // Financial calcs
   const downPayment = targetPrice * 0.20
@@ -165,15 +164,6 @@ function StrategyContent() {
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       <div className="max-w-[520px] mx-auto">
-        {/* Back Strip */}
-        <div className="flex justify-between items-center px-5 py-3 border-b" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
-          <button onClick={handleBack} className="flex items-center gap-1.5 font-semibold text-sm" style={{ color: colors.brand.teal }}>
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Back to Verdict
-          </button>
-          <span className="text-sm font-medium" style={{ color: colors.text.secondary }}>{shortAddress}</span>
-        </div>
-
         {/* Full Breakdown */}
         <section className="px-5 py-8">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Full Breakdown</p>
