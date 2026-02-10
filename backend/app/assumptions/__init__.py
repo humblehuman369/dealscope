@@ -1,0 +1,1 @@
+# Assumptions Django app
