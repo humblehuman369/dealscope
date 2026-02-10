@@ -50,6 +50,7 @@ function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
 
+
 function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -160,6 +161,130 @@ function StrategyContent() {
   const dealProb = of ? Math.min(100, Math.max(0, 50 + (of.dealGap || 0) * 5)) : 50
   const marketAlign = of?.motivation || 50
   const priceConf = (data.opportunity || (data as any).opportunity)?.score || 65
+
+  const handleExportReport = () => {
+    const score = data.deal_score || 0
+    const verdict = data.deal_verdict || 'Unknown'
+    const streetAddr = parsed.street || addressParam.split(',')[0]
+    const cityStateZip = [parsed.city, [parsed.state, parsed.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+
+    const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>InvestIQ Strategy Report — ${streetAddr}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; color: #1e293b; background: #fff; padding: 40px 48px; max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+  .subtitle { font-size: 13px; color: #64748b; margin-bottom: 4px; }
+  .score-badge { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 14px; border-radius: 20px; margin-top: 8px; }
+  .score-good { background: #dcfce7; color: #16a34a; }
+  .score-poor { background: #fee2e2; color: #dc2626; }
+  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0ea5e9; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+  td { font-size: 13px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; }
+  td:last-child { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .total-row td { font-weight: 700; border-top: 2px solid #e2e8f0; border-bottom: none; padding-top: 10px; }
+  .highlight { color: #0ea5e9; }
+  .negative { color: #dc2626; }
+  .positive { color: #16a34a; }
+  .result-box { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-radius: 10px; margin-bottom: 10px; }
+  .result-noi { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .result-cf { background: #fef2f2; border: 1px solid #fecaca; }
+  .result-box .label { font-size: 13px; font-weight: 600; }
+  .result-box .sublabel { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .result-box .value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .result-box .subvalue { font-size: 11px; margin-top: 2px; text-align: right; }
+  .bench-status { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+  .bench-good { background: #dcfce7; color: #16a34a; }
+  .bench-poor { background: #fee2e2; color: #dc2626; }
+  .confidence-bar { height: 8px; border-radius: 4px; background: #f1f5f9; margin: 6px 0 14px; }
+  .confidence-fill { height: 100%; border-radius: 4px; }
+  .footer { margin-top: 32px; text-align: center; font-size: 11px; color: #94a3b8; }
+  @media print { body { padding: 24px 32px; } }
+</style>
+</head><body>
+<h1>${streetAddr}</h1>
+<div class="subtitle">${cityStateZip}</div>
+<div class="subtitle">${propertyInfo?.details?.bedrooms || '—'} bed · ${propertyInfo?.details?.bathrooms || '—'} bath · ${(propertyInfo?.details?.square_footage || 0).toLocaleString()} sqft</div>
+<span class="score-badge ${score >= 65 ? 'score-good' : 'score-poor'}">IQ Score: ${score} — ${verdict}</span>
+
+<hr class="divider">
+
+<h2>Financial Breakdown</h2>
+<table>
+  <tr><td>Market Price</td><td style="text-decoration:line-through;color:#94a3b8">${formatCurrency(listPrice)}</td></tr>
+  <tr><td>Your Target Price</td><td class="highlight">${formatCurrency(targetPrice)}</td></tr>
+  <tr><td>Down Payment (20%)</td><td>${formatCurrency(downPayment)}</td></tr>
+  <tr><td>Closing Costs (3%)</td><td>${formatCurrency(closingCosts)}</td></tr>
+  <tr class="total-row"><td>Cash Needed at Close</td><td class="highlight">${formatCurrency(downPayment + closingCosts)}</td></tr>
+</table>
+
+<table style="margin-top:20px">
+  <tr><td>Monthly Rent</td><td>${formatCurrency(monthlyRent)}/mo</td></tr>
+  <tr><td>Vacancy Loss (5%)</td><td class="negative">-${formatCurrency(vacancyLoss)}/yr</td></tr>
+  <tr><td>Effective Income</td><td>${formatCurrency(effectiveIncome)}/yr</td></tr>
+</table>
+
+<table style="margin-top:20px">
+  <tr><td>Property Taxes</td><td>${formatCurrency(propertyTaxes)}/yr</td></tr>
+  <tr><td>Insurance</td><td>${formatCurrency(insurance)}/yr</td></tr>
+  <tr><td>Management (8%)</td><td>${formatCurrency(mgmt)}/yr</td></tr>
+  <tr><td>Maintenance (5%)</td><td>${formatCurrency(maint)}/yr</td></tr>
+  <tr><td>Reserves (5%)</td><td>${formatCurrency(reserves)}/yr</td></tr>
+  <tr><td>Loan Payment</td><td>${formatCurrency(monthlyPI)}/mo</td></tr>
+  <tr class="total-row"><td>Total Costs</td><td class="negative">${formatCurrency(totalExpenses)}/yr</td></tr>
+</table>
+
+<div style="margin-top:20px">
+  <div class="result-box result-noi">
+    <div><div class="label">Net Operating Income</div><div class="sublabel">Before loan payments</div></div>
+    <div style="text-align:right"><div class="value positive">${formatCurrency(noi)}</div><div class="subvalue positive">${formatCurrency(Math.round(noi / 12))}/mo</div></div>
+  </div>
+  <div class="result-box result-cf">
+    <div><div class="label">Cash Flow After Debt</div><div class="sublabel">What you'd pocket</div></div>
+    <div style="text-align:right"><div class="value negative">(${formatCurrency(Math.abs(annualCashFlow))})</div><div class="subvalue negative">(${formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</div></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<h2>Investor Benchmarks</h2>
+<table>
+  <thead><tr><th>Metric</th><th>This Deal</th><th>Target</th><th style="text-align:right">Status</th></tr></thead>
+  <tbody>
+    ${benchmarks.map(b => `<tr><td>${b.metric}</td><td style="font-weight:600">${b.value}</td><td>${b.target}</td><td style="text-align:right"><span class="bench-status ${b.status === 'good' ? 'bench-good' : 'bench-poor'}">${b.status === 'good' ? 'Good' : 'Below'}</span></td></tr>`).join('')}
+  </tbody>
+</table>
+
+<hr class="divider">
+
+<h2>Data Quality</h2>
+${[
+  { label: 'Deal Probability', value: dealProb },
+  { label: 'Market Alignment', value: marketAlign },
+  { label: 'Price Confidence', value: priceConf },
+].map(m => `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+  <span style="width:140px;font-size:13px;font-weight:500">${m.label}</span>
+  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:${m.value}%;background:#0ea5e9"></div></div>
+  <span style="width:40px;text-align:right;font-size:13px;font-weight:700;color:#0ea5e9">${Math.round(m.value)}%</span>
+</div>`).join('')}
+
+<div class="footer">
+  Generated by InvestIQ · ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+</div>
+</body></html>`
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(html)
+      printWindow.document.close()
+      // Slight delay to let styles render before print dialog
+      setTimeout(() => printWindow.print(), 400)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
@@ -301,10 +426,7 @@ function StrategyContent() {
             <button
               className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
               style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
-              onClick={() => {
-                // TODO: Wire to export API
-                console.log('Export report')
-              }}
+              onClick={handleExportReport}
             >
               Export Report
             </button>
