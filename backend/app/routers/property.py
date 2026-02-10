@@ -75,7 +75,7 @@ async def search_property(
                     error_message=e.message,
                 )
             except Exception as rec_err:
-                logger.warning(f"Failed to record search history: {rec_err}")
+                logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
         logger.error(f"External API error during property search: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -100,7 +100,7 @@ async def search_property(
                     error_message=str(e),
                 )
             except Exception as rec_err:
-                logger.warning(f"Failed to record search history: {rec_err}")
+                logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
         logger.error(f"Property search error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -138,8 +138,11 @@ async def search_property(
                 search_source="web",
                 was_successful=True,
             )
+            logger.info(f"Search history recorded for user {current_user.id}")
         except Exception as rec_err:
-            logger.warning(f"Failed to record search history: {rec_err}")
+            logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
+    else:
+        logger.debug("Search history not recorded: no authenticated user")
 
     return result
 
