@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyDescriptionProps {
   description: string
@@ -9,8 +10,8 @@ interface PropertyDescriptionProps {
 /**
  * PropertyDescription Component
  * 
- * Displays the property description with expandable text
- * for longer descriptions.
+ * Expandable property description with generous line-height for readability.
+ * Body text uses the second-tier slate (#CBD5E1) at weight 400.
  */
 export function PropertyDescription({ description }: PropertyDescriptionProps) {
   const [expanded, setExpanded] = useState(false)
@@ -18,17 +19,31 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
   const displayText = expanded || !isLong ? description : description.slice(0, 400) + '...'
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
-      <div className="text-sm font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+    <div
+      className="rounded-[14px] p-6"
+      style={{
+        backgroundColor: colors.background.card,
+        border: `1px solid ${colors.ui.border}`,
+        boxShadow: colors.shadow.card,
+      }}
+    >
+      <div
+        className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+        style={{ color: colors.brand.blue }}
+      >
         Description
       </div>
-      <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
+      <p
+        className="text-base leading-[1.65] whitespace-pre-line"
+        style={{ color: colors.text.body, fontWeight: 400 }}
+      >
         {displayText}
       </p>
       {isLong && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-4 text-base font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
+          className="mt-4 text-base font-semibold transition-colors hover:brightness-125"
+          style={{ color: colors.brand.blue }}
         >
           {expanded ? 'Show less' : 'Read more'}
         </button>
@@ -43,15 +58,17 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
  */
 export function PropertyDescriptionSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-3" />
+    <div
+      className="rounded-[14px] p-5"
+      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+    >
+      <div className="h-3 w-20 rounded animate-pulse mb-3" style={{ backgroundColor: colors.background.cardUp }} />
       <div className="space-y-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div 
             key={i} 
-            className={`h-4 bg-slate-200 dark:bg-slate-800 rounded animate-pulse ${
-              i === 3 ? 'w-3/4' : 'w-full'
-            }`} 
+            className={`h-4 rounded animate-pulse ${i === 3 ? 'w-3/4' : 'w-full'}`}
+            style={{ backgroundColor: colors.background.cardUp }}
           />
         ))}
       </div>

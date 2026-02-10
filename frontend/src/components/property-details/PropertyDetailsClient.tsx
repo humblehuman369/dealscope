@@ -19,6 +19,7 @@ import {
 import { FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
@@ -31,6 +32,8 @@ interface PropertyDetailsClientProps {
  * 
  * Client component wrapper for property details with interactive features
  * like saving, sharing, and navigation to analysis.
+ * 
+ * Dark fintech theme — true black base, deep navy cards, four-tier Slate text hierarchy.
  */
 export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
@@ -60,7 +63,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b1426] pb-24 transition-colors">
+    <div
+      className="min-h-screen pb-24 font-['Inter',sans-serif]"
+      style={{ backgroundColor: colors.background.base }}
+    >
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -68,16 +74,23 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         <nav className="flex items-center gap-3 mb-6" aria-label="Breadcrumb">
           <button
             onClick={() => router.back()}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:text-teal-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-teal-400 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5"
+            style={{ color: colors.text.secondary }}
             aria-label="Go back"
           >
             <ArrowLeft size={18} />
           </button>
-          <span className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide">
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: colors.brand.blue }}
+          >
             Property Details
           </span>
-          <ChevronRight size={12} className="text-slate-300 dark:text-slate-600" />
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide truncate max-w-[200px] sm:max-w-none">
+          <ChevronRight size={12} style={{ color: colors.text.tertiary }} />
+          <span
+            className="text-[10px] uppercase tracking-wide truncate max-w-[200px] sm:max-w-none"
+            style={{ color: colors.text.tertiary }}
+          >
             {property.address.streetAddress}
           </span>
         </nav>
@@ -138,18 +151,28 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
 
       {/* Toast Message */}
       {shareMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-medium rounded-lg shadow-lg z-50 animate-fade-in">
+        <div
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 text-white text-sm font-medium rounded-lg shadow-lg z-50 animate-fade-in"
+          style={{ backgroundColor: colors.background.cardUp }}
+        >
           {shareMessage}
         </div>
       )}
 
       {/* Fixed Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-6 z-50 backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95">
+      <div
+        className="fixed bottom-0 left-0 right-0 py-4 px-6 z-50 backdrop-blur-xl"
+        style={{
+          backgroundColor: 'rgba(12,18,32,0.95)',
+          borderTop: `1px solid ${colors.ui.border}`,
+        }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 sm:gap-4">
           {/* Search New Property */}
           <button
             onClick={() => setShowSearchModal(true)}
-            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full transition-colors hover:bg-white/5"
+            style={{ border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
           >
             <Search size={18} />
             <span className="text-sm font-medium hidden sm:inline">Search</span>
@@ -158,16 +181,21 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           {/* Analyze Property Button - Primary CTA */}
           <Link
             href={`/property?address=${encodeURIComponent(fullAddress)}`}
-            className="flex items-center gap-2 px-6 sm:px-8 py-3 rounded-lg bg-teal-500 hover:bg-teal-600 text-white transition-colors shadow-sm"
+            className="flex items-center gap-2 px-6 sm:px-8 py-3 rounded-full text-white font-bold transition-all hover:brightness-110"
+            style={{
+              backgroundColor: colors.brand.blueDeep,
+              boxShadow: colors.shadow.ctaBtn,
+            }}
           >
             <FileText size={18} />
-            <span className="text-sm font-semibold">Analyze Property</span>
+            <span className="text-sm font-bold">Analyze Property</span>
           </Link>
 
           {/* Share Button */}
           <button 
             onClick={handleShare}
-            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full transition-colors hover:bg-white/5"
+            style={{ border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
           >
             <Share2 size={18} />
             <span className="text-sm font-medium hidden sm:inline">Share</span>

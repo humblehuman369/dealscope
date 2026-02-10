@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Check, Waves } from 'lucide-react'
-import { PropertyData } from './types'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyFeaturesProps {
   interiorFeatures: string[]
@@ -22,6 +22,7 @@ type TabId = 'interior' | 'exterior' | 'appliances'
  * 
  * Tabbed display of interior/exterior features, appliances,
  * construction details, and waterfront information.
+ * Active tab uses deep sky CTA color; checkmarks use teal (positive/success).
  */
 export function PropertyFeatures({
   interiorFeatures,
@@ -44,8 +45,18 @@ export function PropertyFeatures({
   const currentFeatures = tabs.find(t => t.id === activeTab)?.features || []
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
-      <div className="text-sm font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-5">
+    <div
+      className="rounded-[14px] p-6"
+      style={{
+        backgroundColor: colors.background.card,
+        border: `1px solid ${colors.ui.border}`,
+        boxShadow: colors.shadow.card,
+      }}
+    >
+      <div
+        className="text-xs font-bold uppercase tracking-[0.12em] mb-5"
+        style={{ color: colors.brand.blue }}
+      >
         Features & Amenities
       </div>
 
@@ -55,11 +66,12 @@ export function PropertyFeatures({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-              activeTab === tab.id
-                ? 'bg-teal-500 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
+            className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
+            style={{
+              backgroundColor: activeTab === tab.id ? colors.brand.blueDeep : colors.background.cardUp,
+              color: activeTab === tab.id ? '#FFFFFF' : colors.text.secondary,
+              border: activeTab === tab.id ? 'none' : `1px solid ${colors.ui.border}`,
+            }}
           >
             {tab.label}
           </button>
@@ -70,24 +82,24 @@ export function PropertyFeatures({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {currentFeatures.map((feature, i) => (
           <div key={i} className="flex items-center gap-2.5 py-2.5">
-            <Check size={18} className="text-teal-500 flex-shrink-0" />
-            <span className="text-base text-slate-600 dark:text-slate-400">{feature}</span>
+            <Check size={16} className="flex-shrink-0" style={{ color: colors.status.positive }} />
+            <span className="text-[15px]" style={{ color: colors.text.body, fontWeight: 400 }}>{feature}</span>
           </div>
         ))}
       </div>
 
       {currentFeatures.length === 0 && (
-        <p className="text-base text-slate-400 dark:text-slate-500 text-center py-6">
+        <p className="text-base text-center py-6" style={{ color: colors.text.tertiary }}>
           No {activeTab} features listed
         </p>
       )}
 
       {/* Waterfront Badge */}
       {isWaterfront && waterfrontFeatures && waterfrontFeatures.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${colors.ui.border}` }}>
           <div className="flex items-center gap-2 mb-2">
-            <Waves size={16} className="text-teal-500" />
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <Waves size={16} style={{ color: colors.brand.teal }} />
+            <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>
               Waterfront Property
             </span>
           </div>
@@ -95,7 +107,8 @@ export function PropertyFeatures({
             {waterfrontFeatures.map((feature, i) => (
               <span 
                 key={i} 
-                className="px-3 py-1 rounded-full bg-teal-500/10 dark:bg-teal-400/10 text-xs font-medium text-teal-700 dark:text-teal-300"
+                className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: colors.accentBg.teal, color: colors.brand.teal }}
               >
                 {feature}
               </span>
@@ -106,33 +119,45 @@ export function PropertyFeatures({
 
       {/* Construction */}
       {(construction?.length > 0 || roof || foundation) && (
-        <div className="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div
+          className="mt-5 pt-5 grid grid-cols-1 sm:grid-cols-3 gap-5"
+          style={{ borderTop: `1px solid ${colors.ui.border}` }}
+        >
           {construction?.length > 0 && (
             <div>
-              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+              <div
+                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+                style={{ color: colors.text.tertiary }}
+              >
                 Construction
               </div>
-              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium" style={{ color: colors.text.body }}>
                 {construction.join(', ')}
               </div>
             </div>
           )}
           {roof && (
             <div>
-              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+              <div
+                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+                style={{ color: colors.text.tertiary }}
+              >
                 Roof
               </div>
-              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium" style={{ color: colors.text.body }}>
                 {roof}
               </div>
             </div>
           )}
           {foundation && (
             <div>
-              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+              <div
+                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+                style={{ color: colors.text.tertiary }}
+              >
                 Foundation
               </div>
-              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium" style={{ color: colors.text.body }}>
                 {foundation}
               </div>
             </div>
@@ -149,16 +174,19 @@ export function PropertyFeatures({
  */
 export function PropertyFeaturesSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="h-3 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-4" />
+    <div
+      className="rounded-[14px] p-5"
+      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+    >
+      <div className="h-3 w-32 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
       <div className="flex gap-2 mb-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-9 w-20 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+          <div key={i} className="h-9 w-20 rounded-full animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
         ))}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="h-6 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+          <div key={i} className="h-6 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
         ))}
       </div>
     </div>
