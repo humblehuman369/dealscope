@@ -440,6 +440,14 @@ function VerdictContent() {
   // Analysis is now fetched from backend API (stored in state)
   // No local calculations are performed
 
+  // Auto-open DealMaker popup if navigated from StrategyIQ with openDealMaker=1
+  useEffect(() => {
+    if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
+      setShowDealMakerPopup(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, property, analysis])
+
   // Track analysis completion for progressive profiling
   // This triggers after analysis is loaded (not during loading state)
   useEffect(() => {

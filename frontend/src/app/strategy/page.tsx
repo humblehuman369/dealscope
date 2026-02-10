@@ -297,6 +297,29 @@ function StrategyContent() {
             </div>
           </div>
 
+          {/* Action Buttons */}
+          <div className="flex gap-3 mt-8">
+            <button
+              onClick={() => {
+                router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
+              }}
+              className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
+              style={{ color: colors.brand.teal, border: `1.5px solid ${colors.brand.teal}50`, background: `${colors.brand.teal}10` }}
+            >
+              Change Terms
+            </button>
+            <button
+              className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
+              style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
+              onClick={() => {
+                // TODO: Wire to export API
+                console.log('Export report')
+              }}
+            >
+              Export Report
+            </button>
+          </div>
+
           {/* Insight Box */}
           <div className="mt-6 p-4 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: colors.ui.border, borderLeftColor: colors.brand.blue }}>
             <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: colors.brand.blue }}>What this means for you</p>
