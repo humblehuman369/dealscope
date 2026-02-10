@@ -657,53 +657,59 @@ export function AppHeader({
                   </button>
                 )}
                 {/* Expand/Collapse Button */}
-                {resolvedProperty && (
-                  <button
-                    onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
-                    className="p-1 hover:bg-white/5 rounded transition-colors"
-                    aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
-                  >
-                    {isPropertyExpanded ? (
-                      <ChevronUp className="w-4 h-4" style={{ color: colors.text.tertiary }} />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" style={{ color: colors.text.tertiary }} />
-                    )}
-                  </button>
-                )}
+                <button
+                  onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
+                  className="p-1 hover:bg-white/5 rounded transition-colors"
+                  aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
+                >
+                  {isPropertyExpanded ? (
+                    <ChevronUp className="w-4 h-4" style={{ color: colors.text.tertiary }} />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" style={{ color: colors.text.tertiary }} />
+                  )}
+                </button>
               </div>
             </div>
 
             {/* Expanded Details - 4 columns */}
-            {isPropertyExpanded && resolvedProperty && (
-              <div 
-                className="grid grid-cols-4 gap-2 px-4 pb-3 border-t"
-                style={{ borderColor: colors.ui.border }}
-              >
-                {resolvedProperty.beds !== undefined && (
-                  <div className="text-center pt-3">
-                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Beds</div>
-                    <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.beds}</div>
-                  </div>
-                )}
-                {resolvedProperty.baths !== undefined && (
-                  <div className="text-center pt-3">
-                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Baths</div>
-                    <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.baths}</div>
-                  </div>
-                )}
-                {resolvedProperty.sqft !== undefined && (
-                  <div className="text-center pt-3">
-                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Sqft</div>
-                    <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.sqft.toLocaleString()}</div>
-                  </div>
-                )}
-                {resolvedProperty.price !== undefined && (
-                  <div className="text-center pt-3">
-                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Price</div>
-                    <div className="font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(resolvedProperty.price)}</div>
-                  </div>
-                )}
-              </div>
+            {isPropertyExpanded && (
+              resolvedProperty ? (
+                <div 
+                  className="grid grid-cols-4 gap-2 px-4 pb-3 border-t"
+                  style={{ borderColor: colors.ui.border }}
+                >
+                  {resolvedProperty.beds !== undefined && (
+                    <div className="text-center pt-3">
+                      <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Beds</div>
+                      <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.beds}</div>
+                    </div>
+                  )}
+                  {resolvedProperty.baths !== undefined && (
+                    <div className="text-center pt-3">
+                      <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Baths</div>
+                      <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.baths}</div>
+                    </div>
+                  )}
+                  {resolvedProperty.sqft !== undefined && (
+                    <div className="text-center pt-3">
+                      <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Sqft</div>
+                      <div className="font-semibold" style={{ color: colors.text.primary }}>{resolvedProperty.sqft.toLocaleString()}</div>
+                    </div>
+                  )}
+                  {resolvedProperty.price !== undefined && (
+                    <div className="text-center pt-3">
+                      <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Price</div>
+                      <div className="font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(resolvedProperty.price)}</div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="px-4 py-3 border-t" style={{ borderColor: colors.ui.border }}>
+                  <p className="text-xs" style={{ color: colors.text.tertiary }}>
+                    Property details loading...
+                  </p>
+                </div>
+              )
             )}
           </div>
         )}
