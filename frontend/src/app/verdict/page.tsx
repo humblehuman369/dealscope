@@ -272,6 +272,7 @@ function VerdictContent() {
           yearBuilt: data.details?.year_built,
           lotSize: data.details?.lot_size,
           propertyType: data.details?.property_type,
+          listingStatus: data.listing?.listing_status || undefined,
           // Enriched data for dynamic scoring
           monthlyRent: monthlyRentLTR,
           propertyTaxes,
@@ -293,6 +294,7 @@ function VerdictContent() {
           parsed.baths = propertyData.baths
           parsed.sqft = propertyData.sqft
           parsed.price = propertyData.price
+          parsed.listingStatus = propertyData.listingStatus || null
           sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
         } catch {
           // Ignore storage errors

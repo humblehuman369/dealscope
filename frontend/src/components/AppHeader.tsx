@@ -69,6 +69,7 @@ interface PropertyInfo {
   sqft?: number
   price?: number
   zpid?: string
+  listingStatus?: string
 }
 
 interface AppHeaderProps {
@@ -261,6 +262,7 @@ export function AppHeader({
             sqft: parsed.sqft,
             price: parsed.price,
             zpid: parsed.zpid,
+            listingStatus: parsed.listingStatus,
           }
         }
       }
@@ -630,7 +632,8 @@ export function AppHeader({
                         resolvedProperty.beds ? `${resolvedProperty.beds} bed` : null,
                         resolvedProperty.baths ? `${resolvedProperty.baths} bath` : null,
                         resolvedProperty.sqft ? `${resolvedProperty.sqft.toLocaleString()} sqft` : null,
-                        resolvedProperty.price ? `Listed $${Math.round(resolvedProperty.price).toLocaleString()}` : null,
+                        resolvedProperty.price ? `$${Math.round(resolvedProperty.price).toLocaleString()}` : null,
+                        resolvedProperty.listingStatus === 'FOR_SALE' ? 'Listed' : 'Off-Market',
                       ].filter(Boolean).join(' · ')}
                     </p>
                   )}
@@ -671,11 +674,11 @@ export function AppHeader({
               </div>
             </div>
 
-            {/* Expanded Details - 4 columns */}
+            {/* Expanded Details - 5 columns */}
             {isPropertyExpanded && (
               resolvedProperty ? (
                 <div 
-                  className="grid grid-cols-4 gap-2 px-4 pb-3 border-t"
+                  className="grid grid-cols-5 gap-2 px-4 pb-3 border-t"
                   style={{ borderColor: colors.ui.border }}
                 >
                   {resolvedProperty.beds !== undefined && (
@@ -702,6 +705,12 @@ export function AppHeader({
                       <div className="font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(resolvedProperty.price)}</div>
                     </div>
                   )}
+                  <div className="text-center pt-3">
+                    <div className="text-xs mb-0.5" style={{ color: colors.text.tertiary }}>Status</div>
+                    <div className="font-semibold" style={{ color: colors.text.primary }}>
+                      {resolvedProperty.listingStatus === 'FOR_SALE' ? 'Listed' : 'Off-Market'}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="px-4 py-3 border-t" style={{ borderColor: colors.ui.border }}>
