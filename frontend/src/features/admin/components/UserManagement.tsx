@@ -30,8 +30,8 @@ export function UserManagementSection() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const data = await api.get<{ items?: AdminUser[] }>('/api/v1/admin/users?limit=20')
-        setUsers(data.items || [])
+        const data = await api.get<AdminUser[]>('/api/v1/admin/users?limit=20')
+        setUsers(data || [])
       } catch (err) {
         console.error('Failed to fetch users:', err)
       } finally {
@@ -44,7 +44,7 @@ export function UserManagementSection() {
 
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
-      await api.post(`/api/v1/admin/users/${userId}/toggle-active`)
+      await api.patch(`/api/v1/admin/users/${userId}`, { is_active: !currentStatus })
       setUsers(prev => prev.map(u => 
         u.id === userId ? { ...u, is_active: !currentStatus } : u
       ))

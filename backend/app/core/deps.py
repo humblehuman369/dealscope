@@ -188,6 +188,9 @@ def require_permission(codename: str) -> Callable:
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ) -> User:
+        # Superusers implicitly have all permissions
+        if current_user.is_superuser:
+            return current_user
         has = await role_repo.user_has_permission(db, current_user.id, codename)
         if not has:
             raise HTTPException(
