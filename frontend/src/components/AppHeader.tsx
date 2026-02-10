@@ -350,7 +350,7 @@ export function AppHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              Invest
+              Verdict
             </span>
             <span 
               className="text-lg font-bold tracking-tight"

@@ -590,7 +590,7 @@ function VerdictContent() {
   // Derived values for display
   const score = analysis.dealScore
   const scoreColor = getScoreColor(score)
-  const verdictLabel = score >= 90 ? 'Strong' : score >= 80 ? 'Good' : score >= 65 ? 'Average' : score >= 50 ? 'Marginal' : score >= 30 ? 'Unlikely' : 'Pass'
+  const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'Marginal Deal' : score >= 30 ? 'Unlikely Deal' : 'Pass'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const breakevenPrice = analysis.breakevenPrice || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
@@ -627,18 +627,6 @@ function VerdictContent() {
     <>
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         <div className="max-w-[520px] mx-auto">
-          {/* Nav */}
-          <nav className="flex justify-between items-center px-5 py-3.5 border-b" style={{ borderColor: colors.ui.border }}>
-            <button onClick={handleLogoClick} className="text-[1.35rem] font-bold" style={{ color: '#fff' }}>
-              Invest<span style={{ color: colors.brand.blue }}>IQ</span>
-            </button>
-            <div className="flex items-center gap-4">
-              <button onClick={handleSearchClick}>
-                <svg width="20" height="20" fill="none" stroke={colors.text.secondary} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </button>
-            </div>
-          </nav>
-
           {/* Address Strip */}
           <div className="flex justify-between items-center px-5 py-3 border-b" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -662,8 +650,11 @@ function VerdictContent() {
                 <span className="text-xs font-medium mt-0.5" style={{ color: colors.text.secondary }}>/100</span>
               </div>
             </div>
-            <div className="inline-block px-5 py-1.5 rounded-full mb-4" style={{ border: `1.5px solid ${scoreColor}`, background: `${scoreColor}15` }}>
-              <span className="text-sm font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
+              <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              <span className="text-[0.88rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
             </div>
             <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
             <div className="flex justify-center gap-2.5 mt-4">
