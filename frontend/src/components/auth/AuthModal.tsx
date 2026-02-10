@@ -44,11 +44,12 @@ export default function AuthModal() {
   // Dismiss modal (X button or backdrop click) — stay on current page
   const close = useCallback(() => {
     setIsOpen(false)
-    // Use the Next.js router to clean URL params instead of raw
-    // window.history.replaceState, which wipes the router's internal
-    // state and breaks pending navigations.
-    router.replace(pathname, { scroll: false })
-  }, [router, pathname])
+    // Strip only the auth param, preserving all others (e.g. address)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('auth')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }, [router, pathname, searchParams])
 
   // Post-login redirect — navigate to the intended destination
   const onLoginSuccess = useCallback(() => {
@@ -58,8 +59,12 @@ export default function AuthModal() {
       // Explicit redirect target — honour it
       router.replace(redirect)
     } else {
-      // No explicit redirect — stay on current page, just strip ?auth param
-      router.replace(pathname, { scroll: false })
+      // No explicit redirect — stay on current page, strip only auth/redirect params
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('auth')
+      params.delete('redirect')
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
     }
   }, [searchParams, router, pathname])
 

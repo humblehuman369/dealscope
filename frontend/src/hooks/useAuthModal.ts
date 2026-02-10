@@ -16,7 +16,9 @@ export function useAuthModal() {
 
   const openAuthModal = useCallback(
     (mode: 'login' | 'register') => {
-      router.push(`${pathname}?auth=${mode}`)
+      const params = new URLSearchParams(window.location.search)
+      params.set('auth', mode)
+      router.push(`${pathname}?${params.toString()}`)
     },
     [router, pathname],
   )
