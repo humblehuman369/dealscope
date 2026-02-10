@@ -10,24 +10,28 @@ import { NearbySchoolsSkeleton } from './NearbySchools'
 import { ListingInfoSkeleton } from './ListingInfo'
 import { LocationMapSkeleton } from './LocationMap'
 import { PriceHistorySkeleton } from './PriceHistory'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 /**
  * PropertyDetailsSkeleton
  * 
  * Full page loading skeleton for the property details page.
- * Matches the exact layout of the PropertyDetailsPage component.
+ * Matches the dark fintech theme of the live components.
  */
 export function PropertyDetailsSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b1426] pb-24 transition-colors">
+    <div
+      className="min-h-screen pb-24 font-['Inter',sans-serif]"
+      style={{ backgroundColor: colors.background.base }}
+    >
       <style>{`.num { font-variant-numeric: tabular-nums; }`}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Breadcrumb Skeleton */}
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-          <div className="h-3 w-3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-          <div className="h-3 w-40 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+          <div className="h-3 w-24 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+          <div className="h-3 w-3 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+          <div className="h-3 w-40 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
         </div>
 
         {/* Full Width Image Gallery */}
@@ -54,14 +58,19 @@ export function PropertyDetailsSkeleton() {
       </div>
 
       {/* Action Bar Skeleton */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-6 z-50">
+      <div
+        className="fixed bottom-0 left-0 right-0 py-4 px-6 z-50 backdrop-blur-xl"
+        style={{
+          backgroundColor: 'rgba(12,18,32,0.95)',
+          borderTop: `1px solid ${colors.ui.border}`,
+        }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div 
               key={i} 
-              className={`h-12 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse ${
-                i === 2 ? 'w-40' : 'w-24'
-              }`} 
+              className={`h-12 rounded-full animate-pulse ${i === 2 ? 'w-40' : 'w-24'}`}
+              style={{ backgroundColor: colors.background.cardUp }}
             />
           ))}
         </div>
