@@ -30,6 +30,7 @@ import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
+import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -147,6 +148,8 @@ function VerdictContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasTrackedAnalysis, setHasTrackedAnalysis] = useState(false)
+  const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
 
   // Progressive profiling hook
   const {
@@ -733,6 +736,15 @@ function VerdictContent() {
               <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
                 Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term</span>
               </p>
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setShowDealMakerPopup(true)}
+                  className="px-6 py-2 rounded-full text-sm font-semibold transition-all"
+                  style={{ color: colors.brand.blue, border: `1.5px solid ${colors.brand.blue}50`, background: `${colors.brand.blue}10` }}
+                >
+                  Change Terms
+                </button>
+              </div>
             </div>
           </section>
 
@@ -804,6 +816,44 @@ function VerdictContent() {
           </footer>
         </div>
       </div>
+
+      {/* DealMaker Popup for editing terms/assumptions */}
+      {property && analysis && (
+        <DealMakerPopup
+          isOpen={showDealMakerPopup}
+          onClose={() => setShowDealMakerPopup(false)}
+          onApply={(values: DealMakerValues) => {
+            setShowDealMakerPopup(false)
+            // Re-run analysis with updated terms by navigating with overrides
+            const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+            const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+            const params = new URLSearchParams({
+              address: fullAddress,
+              purchasePrice: String(values.buyPrice),
+              monthlyRent: String(values.monthlyRent),
+              propertyTaxes: String(values.propertyTaxes),
+              insurance: String(values.insurance),
+            })
+            if (property.zpid) params.set('zpid', String(property.zpid))
+            router.push(`/verdict?${params.toString()}`)
+          }}
+          strategyType={currentStrategy}
+          onStrategyChange={(s) => setCurrentStrategy(s)}
+          initialValues={{
+            buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
+            monthlyRent: property.monthlyRent || Math.round(property.price * 0.007),
+            propertyTaxes: property.propertyTaxes || Math.round(property.price * 0.012),
+            insurance: property.insurance || Math.round(property.price * 0.01),
+            arv: property.arv || property.price,
+            downPayment: 20,
+            closingCosts: 3,
+            interestRate: 6,
+            loanTerm: 30,
+            vacancyRate: 5,
+            managementRate: 8,
+          }}
+        />
+      )}
 
       {/* Progressive Profiling Prompt */}
       {showPrompt && currentQuestion && (
