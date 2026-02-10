@@ -344,27 +344,19 @@ export function AppHeader({
           {/* Logo - Clickable to go home */}
           <button 
             onClick={handleLogoClick}
-            className="flex flex-col cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
+            className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
           >
-            <div className="flex items-baseline">
-              <span 
-                className="text-lg font-bold tracking-tight"
-                style={{ color: colors.text.white }}
-              >
-                DealMaker
-              </span>
-              <span 
-                className="text-lg font-bold tracking-tight"
-                style={{ color: colors.brand.teal }}
-              >
-                IQ
-              </span>
-            </div>
             <span 
-              className="text-[12px] font-medium -mt-0.5 text-left"
+              className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              by InvestIQ
+              Invest
+            </span>
+            <span 
+              className="text-lg font-bold tracking-tight"
+              style={{ color: colors.brand.teal }}
+            >
+              IQ
             </span>
           </button>
 
