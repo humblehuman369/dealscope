@@ -343,15 +343,13 @@ ${[
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
 
               {/* Before Your Loan (NOI) Card */}
-              <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
-                <div>
-                  <p className="text-sm font-semibold whitespace-nowrap" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>NOI</p>
-                </div>
-                <div className="text-right">
+              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
-                  <p className="text-xs font-medium tabular-nums mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
                 </div>
+                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
               </div>
             </div>
 
@@ -403,15 +401,13 @@ ${[
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
 
               {/* What You'd Pocket Card */}
-              <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
-                <div>
-                  <p className="text-sm font-semibold whitespace-nowrap" style={{ color: colors.text.primary }}>What You'd Pocket</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.negative }}>Net</p>
-                </div>
-                <div className="text-right">
+              <div className="rounded-xl p-4" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: colors.status.negative }}>Net</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(annualCashFlow))})</p>
-                  <p className="text-xs font-medium tabular-nums mt-0.5" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</p>
                 </div>
+                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</p>
               </div>
             </div>
           </div>
