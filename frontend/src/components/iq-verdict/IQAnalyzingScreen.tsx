@@ -117,12 +117,11 @@ export function IQAnalyzingScreen({
             className="w-20 h-20 rounded-full flex items-center justify-center"
             style={{ backgroundColor: `${IQ_COLORS.electricCyan}40` }}
           >
-            <span 
-              className="text-4xl font-extrabold"
-              style={{ color: IQ_COLORS.electricCyan }}
-            >
-              IQ
-            </span>
+            <img 
+              src="/images/IQ-Logo.svg"
+              alt="IQ"
+              className="w-14 h-14 object-contain"
+            />
           </div>
         </div>
 
