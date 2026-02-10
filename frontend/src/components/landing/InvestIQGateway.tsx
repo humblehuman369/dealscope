@@ -88,7 +88,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
         </button>
 
         {/* Body */}
-        <div className="gw-body" style={{ padding: '1.75rem' }}>
+        <div className="gw-body" style={{ padding: '2rem' }}>
 
           {/* Step 1: Start */}
           <div className={stepClass('start')}>
@@ -131,14 +131,14 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
 
           {/* Step 2: Address Entry */}
           <div className={stepClass('address')}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="gw-assistant-box">
                 <div className="gw-iq-icon">
                   <IQIcon size={40} />
                 </div>
                 <div>
                   <h3>I&apos;m IQ, your analyst.</h3>
-                  <p>Enter the address and adjust the property details below to sharpen my analysis.</p>
+                  <p>Adjust property indicators below and I'll sharpen my analysis.</p>
                 </div>
               </div>
 
@@ -215,7 +215,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
 
           {/* Step 3: Scan */}
           <div className={stepClass('scan')}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="gw-assistant-box">
                 <div className="gw-iq-icon">
                   <IQIcon size={40} />
