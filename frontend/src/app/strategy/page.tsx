@@ -339,6 +339,20 @@ ${[
                 <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Monthly Payment</span>
                 <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(monthlyPI)}</span>
               </div>
+
+              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
+
+              {/* Before Your Loan (NOI) Card */}
+              <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
+                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>Net Operating Income</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
+                  <p className="text-xs font-medium tabular-nums mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
+                </div>
+              </div>
             </div>
 
             {/* Right: Earn + Expenses */}
@@ -388,17 +402,7 @@ ${[
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
 
-              {/* Result Cards */}
-              <div className="rounded-xl p-4 mb-2.5 flex justify-between items-center" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>Net Operating Income</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
-                  <p className="text-xs font-medium tabular-nums mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
-                </div>
-              </div>
+              {/* What You'd Pocket Card */}
               <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
