@@ -2,25 +2,44 @@
 
 import { School, BookOpen, GraduationCap, ExternalLink } from 'lucide-react'
 import { SchoolInfo } from './types'
-import { getRatingColor } from './utils'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface NearbySchoolsProps {
   schools: SchoolInfo[]
 }
 
 /**
+ * Get rating badge color using the semantic color system:
+ * - 8-10: green (positive) — great schools
+ * - 5-7: gold (caution) — average
+ * - 1-4: red (negative) — below average
+ */
+function getSchoolRatingStyle(rating: number): { bg: string; color: string } {
+  if (rating >= 8) return { bg: colors.accentBg.green, color: colors.status.positive }
+  if (rating >= 5) return { bg: colors.accentBg.gold, color: colors.brand.gold }
+  return { bg: colors.accentBg.red, color: colors.status.negative }
+}
+
+/**
  * NearbySchools Component
  * 
  * Displays nearby schools with ratings, grades, and distances.
+ * Rating badges use semantic colors: green (good), gold (average), red (poor).
  */
 export function NearbySchools({ schools }: NearbySchoolsProps) {
+  const cardStyle = {
+    backgroundColor: colors.background.card,
+    border: `1px solid ${colors.ui.border}`,
+    boxShadow: colors.shadow.card,
+  }
+
   if (!schools || schools.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-        <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+      <div className="rounded-[14px] p-5" style={cardStyle}>
+        <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
           Nearby Schools
         </div>
-        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
+        <p className="text-sm text-center py-4" style={{ color: colors.text.tertiary }}>
           No school information available
         </p>
       </div>
@@ -41,26 +60,31 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+    <div className="rounded-[14px] p-5" style={cardStyle}>
+      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
         Nearby Schools
       </div>
 
       <div className="space-y-3">
         {schools.map((school, i) => {
           const LevelIcon = getLevelIcon(school.level)
+          const ratingStyle = getSchoolRatingStyle(school.rating)
           return (
             <div 
               key={i} 
-              className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-4 p-3 rounded-xl transition-colors hover:bg-white/[0.03]"
+              style={{ backgroundColor: colors.background.cardUp, border: `1px solid ${colors.ui.border}` }}
             >
-              <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center flex-shrink-0">
-                <LevelIcon size={18} className="text-slate-500 dark:text-slate-400" />
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: colors.background.card }}
+              >
+                <LevelIcon size={18} style={{ color: colors.text.secondary }} />
               </div>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  <span className="text-sm font-semibold truncate" style={{ color: colors.text.primary }}>
                     {school.name}
                   </span>
                   {school.link && (
@@ -68,18 +92,26 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
                       href={school.link} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-teal-500 hover:text-teal-600 dark:hover:text-teal-400 flex-shrink-0"
+                      className="flex-shrink-0 transition-colors hover:brightness-125"
+                      style={{ color: colors.brand.blue }}
                     >
                       <ExternalLink size={12} />
                     </a>
                   )}
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-xs" style={{ color: colors.text.secondary }}>
                   {school.type} · Grades {school.grades} · {school.distance} mi
                 </div>
               </div>
 
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${getRatingColor(school.rating)}`}>
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
+                style={{
+                  backgroundColor: ratingStyle.bg,
+                  color: ratingStyle.color,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 {school.rating}
               </div>
             </div>
@@ -87,7 +119,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
         })}
       </div>
 
-      <p className="mt-3 text-[10px] text-slate-400 dark:text-slate-500">
+      <p className="mt-3 text-[10px]" style={{ color: colors.text.tertiary }}>
         School ratings provided by GreatSchools. Ratings are on a scale of 1-10.
       </p>
     </div>
@@ -100,17 +132,20 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
  */
 export function NearbySchoolsSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-4" />
+    <div
+      className="rounded-[14px] p-5"
+      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+    >
+      <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-            <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+          <div key={i} className="flex items-center gap-4 p-3 rounded-xl" style={{ backgroundColor: colors.background.cardUp }}>
+            <div className="w-10 h-10 rounded-lg animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
             <div className="flex-1">
-              <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1" />
-              <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+              <div className="h-4 w-3/4 rounded animate-pulse mb-1" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
+              <div className="h-3 w-1/2 rounded animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
             </div>
-            <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+            <div className="w-8 h-8 rounded-lg animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
           </div>
         ))}
       </div>

@@ -2,6 +2,7 @@
 
 import { PropertyData } from './types'
 import { formatDate } from './utils'
+import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface ListingInfoProps {
   property: PropertyData
@@ -10,8 +11,8 @@ interface ListingInfoProps {
 /**
  * ListingInfo Component
  * 
- * Displays listing agent information, brokerage,
- * list date, and MLS number.
+ * Key-value listing details. Labels use tertiary text,
+ * values use primary text with semibold weight.
  */
 export function ListingInfo({ property }: ListingInfoProps) {
   const hasListingInfo = property.listingAgent || property.listDate || property.mlsId
@@ -20,45 +21,38 @@ export function ListingInfo({ property }: ListingInfoProps) {
     return null
   }
 
+  const cardStyle = {
+    backgroundColor: colors.background.card,
+    border: `1px solid ${colors.ui.border}`,
+    boxShadow: colors.shadow.card,
+  }
+
+  const rows = [
+    property.listingAgent?.name && { label: 'Listed By', value: property.listingAgent.name },
+    property.listingAgent?.brokerage && { label: 'Brokerage', value: property.listingAgent.brokerage },
+    property.listDate && { label: 'List Date', value: formatDate(property.listDate) },
+    property.mlsId && { label: 'MLS #', value: property.mlsId },
+  ].filter(Boolean) as { label: string; value: string }[]
+
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+    <div className="rounded-[14px] p-5" style={cardStyle}>
+      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
         Listing Information
       </div>
 
       <div className="space-y-0">
-        {property.listingAgent?.name && (
-          <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Listed By</span>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {property.listingAgent.name}
+        {rows.map((row, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between py-2.5"
+            style={i < rows.length - 1 ? { borderBottom: `1px solid ${colors.ui.border}` } : undefined}
+          >
+            <span className="text-sm" style={{ color: colors.text.secondary }}>{row.label}</span>
+            <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>
+              {row.value}
             </span>
           </div>
-        )}
-        {property.listingAgent?.brokerage && (
-          <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Brokerage</span>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {property.listingAgent.brokerage}
-            </span>
-          </div>
-        )}
-        {property.listDate && (
-          <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-sm text-slate-500 dark:text-slate-400">List Date</span>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {formatDate(property.listDate)}
-            </span>
-          </div>
-        )}
-        {property.mlsId && (
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-slate-500 dark:text-slate-400">MLS #</span>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {property.mlsId}
-            </span>
-          </div>
-        )}
+        ))}
       </div>
     </div>
   )
@@ -70,18 +64,20 @@ export function ListingInfo({ property }: ListingInfoProps) {
  */
 export function ListingInfoSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="h-3 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-4" />
+    <div
+      className="rounded-[14px] p-5"
+      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+    >
+      <div className="h-3 w-32 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
       <div className="space-y-0">
         {Array.from({ length: 4 }).map((_, i) => (
           <div 
             key={i} 
-            className={`flex items-center justify-between py-2 ${
-              i < 3 ? 'border-b border-slate-100 dark:border-slate-800' : ''
-            }`}
+            className="flex items-center justify-between py-2"
+            style={i < 3 ? { borderBottom: `1px solid ${colors.ui.border}` } : undefined}
           >
-            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+            <div className="h-4 w-20 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+            <div className="h-4 w-32 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
           </div>
         ))}
       </div>

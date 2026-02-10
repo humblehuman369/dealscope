@@ -89,7 +89,7 @@ export function useSession() {
     permissions: user?.permissions ?? [],
     roles: user?.roles ?? [],
     hasPermission: (perm: string) => user?.permissions?.includes(perm) ?? false,
-    isAdmin: user?.roles?.includes('admin') || user?.roles?.includes('owner') || false,
+    isAdmin: user?.roles?.includes('admin') || user?.roles?.includes('owner') || user?.is_superuser || false,
   }
 }
 
