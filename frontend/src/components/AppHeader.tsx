@@ -55,7 +55,7 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'details' | 'price-checker'
+export type AppTab = 'analyze' | 'strategy' | 'details' | 'price-checker'
 
 interface PropertyInfo {
   address: string
@@ -88,8 +88,9 @@ interface AppHeaderProps {
 
 const TABS: { id: AppTab; label: string }[] = [
   { id: 'analyze', label: 'VerdictIQ' },
-  { id: 'details', label: 'Details' },
-  { id: 'price-checker', label: 'PriceCheckerIQ' },
+  { id: 'strategy', label: 'StrategyIQ' },
+  { id: 'details', label: 'Property Profile' },
+  { id: 'price-checker', label: 'PriceIQ' },
 ]
 
 // ===================
@@ -115,6 +116,7 @@ const NO_PROPERTY_BAR_ROUTES = [
 // Map routes to active tabs
 function getActiveTabFromPath(pathname: string): AppTab {
   if (pathname.startsWith('/verdict')) return 'analyze'
+  if (pathname.startsWith('/strategy')) return 'strategy'
   if (pathname.startsWith('/property/')) return 'details'
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
@@ -298,6 +300,13 @@ export function AppHeader({
       case 'analyze':
         if (displayAddress) {
           router.push(`/verdict?address=${encodedAddress}`)
+        } else {
+          router.push('/search')
+        }
+        break
+      case 'strategy':
+        if (displayAddress) {
+          router.push(`/strategy?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }
