@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { Search, User } from 'lucide-react';
 import { InvestIQGateway } from './InvestIQGateway';
 import './investiq-homepage.css';
 
@@ -92,9 +93,22 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
           <div className="nav-links" />
           <div className="nav-actions">
             {isAuthenticated && user ? (
-              <button className="btn-nav-dashboard" onClick={() => router.push('/search')}>
-                Search
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <button
+                  onClick={() => router.push('/search')}
+                  className="btn-icon"
+                  aria-label="Search properties"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="btn-icon"
+                  aria-label="Account"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              </div>
             ) : (
               <button className="btn-ghost" onClick={handleLoginRegister}>
                 Login/Register

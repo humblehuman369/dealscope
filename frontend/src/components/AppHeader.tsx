@@ -25,6 +25,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
 import { api } from '@/lib/api-client'
 
 // ===================
@@ -196,6 +197,7 @@ export function AppHeader({
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
+  const { openAuthModal } = useAuthModal()
   const logoutMutation = useLogout()
 
   // Close profile menu on outside click
@@ -368,6 +370,10 @@ export function AppHeader({
   }
 
   const handleProfileClick = () => {
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
     setShowProfileMenu((prev) => !prev)
   }
 

@@ -105,6 +105,15 @@
   cursor: pointer;
 }
 .iq-landing .btn-nav-dashboard:hover { background: #38bdf8; transform: translateY(-1px); }
+.iq-landing .btn-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text); cursor: pointer; transition: all 0.2s;
+}
+.iq-landing .btn-icon:hover {
+  background: rgba(255,255,255,0.15); color: var(--white);
+}
 
 /* HERO */
 .iq-landing .hero {
