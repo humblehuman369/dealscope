@@ -240,11 +240,11 @@ function StrategyContent() {
 
 <div style="margin-top:20px">
   <div class="result-box result-noi">
-    <div><div class="label">Net Operating Income</div><div class="sublabel">Before loan payments</div></div>
+    <div><div class="label">Before Your Loan</div><div class="sublabel">NOI</div></div>
     <div style="text-align:right"><div class="value positive">${formatCurrency(noi)}</div><div class="subvalue positive">${formatCurrency(Math.round(noi / 12))}/mo</div></div>
   </div>
   <div class="result-box result-cf">
-    <div><div class="label">Cash Flow After Debt</div><div class="sublabel">What you'd pocket</div></div>
+    <div><div class="label">What You'd Pocket</div><div class="sublabel">Net</div></div>
     <div style="text-align:right"><div class="value negative">(${formatCurrency(Math.abs(annualCashFlow))})</div><div class="subvalue negative">(${formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</div></div>
   </div>
 </div>
@@ -345,8 +345,8 @@ ${[
               {/* Before Your Loan (NOI) Card */}
               <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>Net Operating Income</p>
+                  <p className="text-sm font-semibold whitespace-nowrap" style={{ color: colors.text.primary }}>Before Your Loan</p>
+                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>NOI</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
@@ -405,8 +405,8 @@ ${[
               {/* What You'd Pocket Card */}
               <div className="rounded-xl p-4 flex justify-between items-center" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.negative }}>After everything</p>
+                  <p className="text-sm font-semibold whitespace-nowrap" style={{ color: colors.text.primary }}>What You'd Pocket</p>
+                  <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.negative }}>Net</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(annualCashFlow))})</p>
