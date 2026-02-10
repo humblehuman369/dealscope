@@ -137,7 +137,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>I&apos;m IQ, your analyst.</h3>
+                  <h3>I&apos;m IQ, your investment analyst.</h3>
                   <p>Adjust property indicators below and I'll sharpen my analysis.</p>
                 </div>
               </div>
@@ -221,7 +221,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>I&apos;m IQ, your analyst.</h3>
+                  <h3>I&apos;m IQ, your investment analyst.</h3>
                   <p>Adjust the property details below so I can give you a more accurate valuation.</p>
                 </div>
               </div>
