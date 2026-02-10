@@ -304,7 +304,9 @@
 .iq-landing .val-result-impact { font-variant-numeric: tabular-nums; font-size: 0.88rem; font-weight: 700; color: var(--green); }
 
 /* BLACK BOX */
-.iq-landing .bb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+.iq-landing .bb-centered {
+  max-width: 680px; margin: 0 auto; text-align: center;
+}
 .iq-landing .bb-label {
   font-variant-numeric: tabular-nums; font-size: 0.75rem; font-weight: 700;
   color: var(--blue); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 1rem;
@@ -315,7 +317,10 @@
 }
 .iq-landing .bb-desc { font-size: 0.95rem; color: var(--text); line-height: 1.7; margin-bottom: 2.25rem; }
 .iq-landing .bb-desc strong { color: var(--white); font-weight: 600; }
-.iq-landing .bb-feature { display: flex; gap: 1.125rem; margin-bottom: 1.75rem; }
+.iq-landing .bb-features-row {
+  display: flex; gap: 2.5rem; justify-content: center; text-align: left;
+}
+.iq-landing .bb-feature { display: flex; gap: 1.125rem; margin-bottom: 0; flex: 1; max-width: 320px; }
 .iq-landing .bb-feature-icon {
   width: 44px; height: 44px; background: var(--panel); border: 1px solid var(--border);
   border-radius: 10px; display: flex; align-items: center; justify-content: center;
@@ -324,47 +329,59 @@
 .iq-landing .bb-feature h4 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; }
 .iq-landing .bb-feature p { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
 
-/* DEAL PIPELINE */
-.iq-landing .pipeline-panel {
-  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+/* INVESTMENT STRATEGIES */
+.iq-landing .strategies-label {
+  font-variant-numeric: tabular-nums; font-size: 0.75rem; font-weight: 700;
+  color: var(--green); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 1rem;
 }
-.iq-landing .pipeline-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+.iq-landing .strategies-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
 }
-.iq-landing .pipeline-title { font-size: 1rem; font-weight: 700; color: var(--white); }
-.iq-landing .pipeline-badge {
-  font-variant-numeric: tabular-nums; font-size: 0.72rem; font-weight: 700;
-  color: var(--green); background: var(--green-dim);
-  border: 1px solid rgba(52, 211, 153, 0.2); padding: 0.25rem 0.625rem;
-  border-radius: 5px; letter-spacing: 0.04em;
+.iq-landing .strat-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.5rem 1.5rem 1.75rem; border-left: 3px solid transparent;
+  transition: all 0.3s ease;
 }
-.iq-landing .pipeline-body { padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.iq-landing .pipeline-col-label {
-  font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
-  margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;
+.iq-landing .strat-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+.iq-landing .strat-card.strat-green { border-left-color: var(--green); }
+.iq-landing .strat-card.strat-green:hover { border-left-color: var(--green); }
+.iq-landing .strat-card.strat-blue { border-left-color: var(--blue); }
+.iq-landing .strat-card.strat-blue:hover { border-left-color: var(--blue); }
+.iq-landing .strat-card.strat-purple { border-left-color: var(--purple); }
+.iq-landing .strat-card.strat-purple:hover { border-left-color: var(--purple); }
+.iq-landing .strat-card.strat-red { border-left-color: var(--red); }
+.iq-landing .strat-card.strat-red:hover { border-left-color: var(--red); }
+.iq-landing .strat-card.strat-teal { border-left-color: var(--teal); }
+.iq-landing .strat-card.strat-teal:hover { border-left-color: var(--teal); }
+.iq-landing .strat-card.strat-gold { border-left-color: var(--gold); }
+.iq-landing .strat-card.strat-gold:hover { border-left-color: var(--gold); }
+.iq-landing .strat-card-top {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;
 }
-.iq-landing .pipeline-col-label .cnt { background: var(--border); padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.78rem; }
-.iq-landing .pipeline-col-label.offer { color: var(--green); }
-.iq-landing .p-card {
-  background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px;
-  padding: 0.875rem 1rem; margin-bottom: 0.625rem;
+.iq-landing .strat-name {
+  font-size: 1.05rem; font-weight: 700; color: var(--white); line-height: 1.3;
 }
-.iq-landing .p-card-title { font-size: 0.85rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; }
-.iq-landing .p-card-meta { display: flex; justify-content: space-between; align-items: center; }
-.iq-landing .p-tag {
-  font-variant-numeric: tabular-nums; font-size: 0.7rem; font-weight: 700;
-  padding: 0.15rem 0.5rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em;
+.iq-landing .strat-metric { text-align: right; flex-shrink: 0; margin-left: 1rem; }
+.iq-landing .strat-metric-value {
+  font-variant-numeric: tabular-nums; font-size: 1.1rem; font-weight: 700; line-height: 1.2;
 }
-.iq-landing .p-tag.flip { background: var(--blue-dim); color: var(--blue); }
-.iq-landing .p-tag.brrrr { background: var(--purple-dim); color: var(--purple); }
-.iq-landing .p-roi { font-variant-numeric: tabular-nums; font-size: 0.75rem; font-weight: 600; color: var(--text-dim); }
-.iq-landing .p-offer { font-variant-numeric: tabular-nums; font-size: 0.7rem; color: var(--text); }
-.iq-landing .p-status { font-size: 0.72rem; font-weight: 600; }
-.iq-landing .p-status.pending { color: var(--gold); }
-.iq-landing .p-status.analysis { color: var(--blue); }
-.iq-landing .p-note { font-size: 0.78rem; color: var(--text-faint); margin-top: 0.25rem; font-style: italic; }
+.iq-landing .strat-metric-value.green { color: var(--green); }
+.iq-landing .strat-metric-value.blue { color: var(--blue); }
+.iq-landing .strat-metric-value.purple { color: var(--purple); }
+.iq-landing .strat-metric-value.red { color: var(--red); }
+.iq-landing .strat-metric-value.teal { color: var(--teal); }
+.iq-landing .strat-metric-value.gold { color: var(--gold); }
+.iq-landing .strat-metric-label {
+  font-variant-numeric: tabular-nums; font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 0.125rem;
+}
+.iq-landing .strat-trend-icon { color: var(--purple); display: block; margin-left: auto; }
+.iq-landing .strat-subtitle {
+  font-size: 0.82rem; color: var(--text); font-weight: 500; margin-bottom: 0.875rem;
+}
+.iq-landing .strat-body {
+  font-size: 0.8rem; color: var(--text-dim); line-height: 1.65;
+}
 
 /* INVESTMENT OS */
 .iq-landing .os-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
@@ -462,14 +479,17 @@
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
-  .iq-landing .hero-inner, .iq-landing .bb-grid, .iq-landing .os-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .iq-landing .hero-inner, .iq-landing .os-grid { grid-template-columns: 1fr; gap: 3rem; }
   .iq-landing .hero-visual { max-width: 520px; margin: 0 auto; }
   .iq-landing .founder-inner { flex-direction: column; text-align: center; }
   .iq-landing .founder-info { border-right: none; padding-right: 0; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .iq-landing .strategies-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
   .iq-landing .toolkit-grid { grid-template-columns: 1fr; }
-  .iq-landing .pipeline-body { grid-template-columns: 1fr; }
+  .iq-landing .strategies-grid { grid-template-columns: 1fr; }
+  .iq-landing .bb-features-row { flex-direction: column; align-items: center; gap: 1.5rem; }
+  .iq-landing .bb-feature { max-width: 100%; }
 }
 @media (max-width: 640px) {
   .iq-landing .hero { padding: 7.5rem 1.25rem 3.5rem; }

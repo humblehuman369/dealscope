@@ -232,7 +232,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </div>
 
-      {/* BLACK BOX + PIPELINE */}
+      {/* BLACK BOX */}
       <section
         className={`section ${fadeClass(1)}`}
         id="pricechecker"
@@ -240,13 +240,13 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[1] = el; }}
       >
         <div className="section-inner">
-          <div className="bb-grid">
-            <div>
-              <div className="bb-label">01 — Appraisal Autonomy</div>
-              <h2 className="bb-title">The End of the<br />&ldquo;Black Box&rdquo; Estimate.</h2>
-              <p className="bb-desc">
-                Traditional AVMs give you a number but hide the math. <strong>PriceCheckerIQ</strong> is transparent. The AI gathers the data, but you act as the Appraiser.
-              </p>
+          <div className="bb-centered">
+            <div className="bb-label">01 — Appraisal Autonomy</div>
+            <h2 className="bb-title">The End of the<br />&ldquo;Black Box&rdquo; Estimate.</h2>
+            <p className="bb-desc">
+              Traditional AVMs give you a number but hide the math. <strong>PriceCheckerIQ</strong> is transparent. The AI gathers the data, but you act as the Appraiser.
+            </p>
+            <div className="bb-features-row">
               <div className="bb-feature">
                 <div className="bb-feature-icon">
                   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -269,35 +269,92 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
                 <div><h4>Weighted Adjustments</h4><p>Apply appraiser-style adjustments for pools, renovations, and square footage.</p></div>
               </div>
             </div>
-            <div className="pipeline-panel">
-              <div className="pipeline-header">
-                <div className="pipeline-title">Deal Pipeline</div>
-                <div className="pipeline-badge">4 Active Offers</div>
-              </div>
-              <div className="pipeline-body">
-                <div>
-                  <div className="pipeline-col-label">Underwriting <span className="cnt">2</span></div>
-                  <div className="p-card">
-                    <div className="p-card-title">12 Oak Street</div>
-                    <div className="p-card-meta"><span className="p-tag flip">Flip</span><span className="p-roi">ROI: 18%</span></div>
-                  </div>
-                  <div className="p-card">
-                    <div className="p-card-title">550 Main Ave</div>
-                    <div className="p-card-meta"><span className="p-tag brrrr">BRRRR</span><span className="p-status analysis">Analysis Req</span></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="pipeline-col-label offer">Offer Sent</div>
-                  <div className="p-card" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>
-                    <div className="p-card-title">953 Banyan Dr</div>
-                    <div className="p-offer">$536k Offer</div>
-                    <div className="p-card-meta" style={{ marginTop: '0.375rem' }}>
-                      <span /><span className="p-status pending">Pending</span>
-                    </div>
-                    <div className="p-note">Counter-offer expected today</div>
-                  </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INVESTMENT STRATEGIES */}
+      <section
+        className={`section section-alt ${fadeClass(2)}`}
+        id="strategies"
+        data-idx="2"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[2] = el; }}
+      >
+        <div className="section-inner">
+          <div className="section-header">
+            <div className="strategies-label">6 Investment Strategies</div>
+            <h2 className="section-title">One Property, Multiple Opportunities</h2>
+            <p className="section-desc">Instantly see how any property performs across all major real estate investment strategies.</p>
+          </div>
+          <div className="strategies-grid">
+            <div className="strat-card strat-green">
+              <div className="strat-card-top">
+                <div className="strat-name">Long-Term Rental</div>
+                <div className="strat-metric">
+                  <div className="strat-metric-value green">8-12%</div>
+                  <div className="strat-metric-label">Cash-on-Cash</div>
                 </div>
               </div>
+              <div className="strat-subtitle">Steady income &amp; build equity</div>
+              <p className="strat-body">Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.</p>
+            </div>
+            <div className="strat-card strat-blue">
+              <div className="strat-card-top">
+                <div className="strat-name">Short-Term Rental</div>
+                <div className="strat-metric">
+                  <div className="strat-metric-value blue">15-25%</div>
+                  <div className="strat-metric-label">Cash-on-Cash</div>
+                </div>
+              </div>
+              <div className="strat-subtitle">Vacation &amp; business rental income</div>
+              <p className="strat-body">Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.</p>
+            </div>
+            <div className="strat-card strat-purple">
+              <div className="strat-card-top">
+                <div className="strat-name">BRRRR</div>
+                <div className="strat-metric">
+                  <svg className="strat-trend-icon" width="24" height="16" viewBox="0 0 24 16" fill="none">
+                    <path d="M1 14L8 7L13 10L23 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M17 1H23V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <div className="strat-metric-label">Scale</div>
+                </div>
+              </div>
+              <div className="strat-subtitle">Buy-Rehab-Rent-Refi-Repeat wealth builder</div>
+              <p className="strat-body">Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.</p>
+            </div>
+            <div className="strat-card strat-red">
+              <div className="strat-card-top">
+                <div className="strat-name">Fix &amp; Flip</div>
+                <div className="strat-metric">
+                  <div className="strat-metric-value red">$50K+</div>
+                  <div className="strat-metric-label">Profit</div>
+                </div>
+              </div>
+              <div className="strat-subtitle">Buy low, fix up, sell high</div>
+              <p className="strat-body">Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.</p>
+            </div>
+            <div className="strat-card strat-teal">
+              <div className="strat-card-top">
+                <div className="strat-name">House Hack</div>
+                <div className="strat-metric">
+                  <div className="strat-metric-value teal">75%</div>
+                  <div className="strat-metric-label">Cost Savings</div>
+                </div>
+              </div>
+              <div className="strat-subtitle">Cut your housing costs up to 100%</div>
+              <p className="strat-body">Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.</p>
+            </div>
+            <div className="strat-card strat-gold">
+              <div className="strat-card-top">
+                <div className="strat-name">Wholesale</div>
+                <div className="strat-metric">
+                  <div className="strat-metric-value gold">$10K+</div>
+                  <div className="strat-metric-label">Per Deal</div>
+                </div>
+              </div>
+              <div className="strat-subtitle">Find deals, assign contracts, profit</div>
+              <p className="strat-body">Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.</p>
             </div>
           </div>
         </div>
@@ -305,10 +362,10 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* INVESTMENT OS */}
       <section
-        className={`section section-alt ${fadeClass(2)}`}
+        className={`section section-alt ${fadeClass(3)}`}
         id="dealhub"
-        data-idx="2"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[2] = el; }}
+        data-idx="3"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[3] = el; }}
       >
         <div className="section-inner">
           <div className="os-grid">
@@ -337,10 +394,10 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* TOOLKIT */}
       <section
-        className={`section ${fadeClass(3)}`}
+        className={`section ${fadeClass(4)}`}
         id="toolkit"
-        data-idx="3"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[3] = el; }}
+        data-idx="4"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
       >
         <div className="section-inner">
           <div className="section-header">
@@ -409,9 +466,9 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* CTA */}
       <section
-        className={`cta-section ${fadeClass(4)}`}
-        data-idx="4"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
+        className={`cta-section ${fadeClass(5)}`}
+        data-idx="5"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[5] = el; }}
       >
         <div className="cta-inner">
           <h2 className="cta-title">Stop wondering. Start knowing.</h2>
