@@ -97,6 +97,10 @@ function StrategyContent() {
     router.push(`/verdict?address=${encodeURIComponent(addressParam)}`)
   }, [router, addressParam])
 
+  const handleOpenDealMaker = useCallback(() => {
+    router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
+  }, [router, addressParam])
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -301,8 +305,11 @@ ${[
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-16">
             {/* Left: Pay */}
             <div>
-              <div className="flex items-center gap-2 mb-4 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
+                </div>
+                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Market Price', formatCurrency(listPrice), true],
@@ -322,8 +329,11 @@ ${[
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
 
-              <div className="flex items-center gap-2 mb-4 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
+                </div>
+                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Loan Amount', formatCurrency(loanAmount)],
@@ -355,8 +365,11 @@ ${[
 
             {/* Right: Earn + Expenses */}
             <div>
-              <div className="flex items-center gap-2 mb-4 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
-                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
+                </div>
+                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Monthly Rent', formatCurrency(monthlyRent)],
@@ -378,8 +391,11 @@ ${[
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
 
-              <div className="flex items-center gap-2 mb-4 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
-                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs to Own</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs to Own</span>
+                </div>
+                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
