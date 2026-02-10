@@ -141,7 +141,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="gw-address-input-wrap">
                 <div className="gw-search-icon">
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,7 +225,7 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Property Condition</label>
