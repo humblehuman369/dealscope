@@ -20,11 +20,12 @@
  * └─────────────────────────────────────────────────┘
  */
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
+import { api } from '@/lib/api-client'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -187,6 +188,11 @@ export function AppHeader({
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   
+  // Save property state
+  const [isSaved, setIsSaved] = useState(false)
+  const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
   const logoutMutation = useLogout()
@@ -259,6 +265,84 @@ export function AppHeader({
     return undefined
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [property, displayAddress])
+
+  // Check if the current property is already saved
+  useEffect(() => {
+    if (!isAuthenticated || !displayAddress) {
+      setIsSaved(false)
+      setSavedPropertyId(null)
+      return
+    }
+    
+    let cancelled = false
+    const checkSaved = async () => {
+      try {
+        const result = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
+          `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
+        )
+        if (!cancelled) {
+          setIsSaved(result.is_saved)
+          setSavedPropertyId(result.saved_property_id)
+        }
+      } catch {
+        // Silently fail — don't block the UI
+      }
+    }
+    
+    checkSaved()
+    return () => { cancelled = true }
+  }, [isAuthenticated, displayAddress])
+
+  // Save / unsave property handler
+  const handleSaveToggle = useCallback(async () => {
+    if (!isAuthenticated || !displayAddress || isSaving) return
+    
+    setIsSaving(true)
+    try {
+      if (isSaved && savedPropertyId) {
+        // Unsave
+        await api.delete(`/api/v1/properties/saved/${savedPropertyId}`)
+        setIsSaved(false)
+        setSavedPropertyId(null)
+      } else {
+        // Save
+        const addrParts = parseDisplayAddress(displayAddress)
+        const snapshot: Record<string, any> = {}
+        if (resolvedProperty) {
+          snapshot.street = addrParts.streetAddress
+          snapshot.city = addrParts.city
+          snapshot.state = addrParts.state
+          snapshot.zipCode = addrParts.zipCode
+          if (resolvedProperty.beds) snapshot.bedrooms = resolvedProperty.beds
+          if (resolvedProperty.baths) snapshot.bathrooms = resolvedProperty.baths
+          if (resolvedProperty.sqft) snapshot.sqft = resolvedProperty.sqft
+          if (resolvedProperty.price) snapshot.listPrice = resolvedProperty.price
+          if (resolvedProperty.zpid) snapshot.zpid = resolvedProperty.zpid
+        }
+
+        const result = await api.post<{ id: string }>('/api/v1/properties/saved', {
+          address_street: addrParts.streetAddress,
+          address_city: addrParts.city || undefined,
+          address_state: addrParts.state || undefined,
+          address_zip: addrParts.zipCode || undefined,
+          full_address: displayAddress,
+          zpid: resolvedProperty?.zpid || undefined,
+          property_data_snapshot: Object.keys(snapshot).length > 0 ? snapshot : undefined,
+          status: 'watching',
+        })
+        setIsSaved(true)
+        setSavedPropertyId(result.id)
+      }
+    } catch (err: any) {
+      // If already saved (409), update state to reflect that
+      if (err?.status === 409) {
+        setIsSaved(true)
+      }
+      console.error('Save toggle failed:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [isAuthenticated, displayAddress, isSaved, savedPropertyId, isSaving, resolvedProperty])
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
   // if (HIDDEN_ROUTES.includes(pathname || '')) {
@@ -444,6 +528,12 @@ export function AppHeader({
                   >
                     <History className="w-4 h-4" /> Search History
                   </button>
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/saved-properties') }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                  >
+                    <Bookmark className="w-4 h-4" /> Saved Properties
+                  </button>
                   {isAdmin && (
                     <button
                       onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
@@ -542,6 +632,23 @@ export function AppHeader({
               
               {/* Right side actions */}
               <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                {/* Save Property Button */}
+                {isAuthenticated && (
+                  <button
+                    onClick={handleSaveToggle}
+                    disabled={isSaving}
+                    className={`p-1.5 rounded transition-all ${
+                      isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10'
+                    }`}
+                    aria-label={isSaved ? 'Unsave property' : 'Save property'}
+                    title={isSaved ? 'Saved — click to remove' : 'Save property'}
+                  >
+                    <Bookmark
+                      className={`w-4 h-4 transition-colors ${isSaved ? 'fill-current' : ''}`}
+                      style={{ color: isSaved ? colors.brand.tealBright : colors.text.tertiary }}
+                    />
+                  </button>
+                )}
                 {/* Expand/Collapse Button */}
                 {resolvedProperty && (
                   <button

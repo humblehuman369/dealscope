@@ -93,6 +93,42 @@ router = APIRouter(prefix="/api/v1/properties/saved", tags=["Saved Properties"])
 
 
 # ===========================================
+# Lookup / Check
+# ===========================================
+
+@router.get(
+    "/check",
+    summary="Check if a property is saved"
+)
+async def check_property_saved(
+    current_user: CurrentUser,
+    db: DbSession,
+    address: Optional[str] = Query(None, description="Full address to check"),
+    external_id: Optional[str] = Query(None, description="External property ID to check"),
+):
+    """
+    Check if a property is already saved by the current user.
+    Returns saved property id and status if found, or null.
+    """
+    saved = await saved_property_service.get_by_address_or_id(
+        db=db,
+        user_id=str(current_user.id),
+        external_id=external_id,
+        address=address,
+    )
+    
+    if saved:
+        return {
+            "is_saved": True,
+            "saved_property_id": str(saved.id),
+            "status": saved.status.value if saved.status else "watching",
+            "saved_at": saved.saved_at,
+        }
+    
+    return {"is_saved": False, "saved_property_id": None, "status": None, "saved_at": None}
+
+
+# ===========================================
 # List & Stats
 # ===========================================
 
