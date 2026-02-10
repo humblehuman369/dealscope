@@ -284,16 +284,18 @@ function VerdictContent() {
 
         setProperty(propertyData)
         
-        // Store zpid to sessionStorage so global AppHeader can access it for navigation
-        if (propertyData.zpid) {
-          try {
-            const existingData = sessionStorage.getItem('dealMakerOverrides')
-            const parsed = existingData ? JSON.parse(existingData) : {}
-            parsed.zpid = propertyData.zpid
-            sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
-          } catch {
-            // Ignore storage errors
-          }
+        // Store property info to sessionStorage so global AppHeader can access it
+        try {
+          const existingData = sessionStorage.getItem('dealMakerOverrides')
+          const parsed = existingData ? JSON.parse(existingData) : {}
+          if (propertyData.zpid) parsed.zpid = propertyData.zpid
+          parsed.beds = propertyData.beds
+          parsed.baths = propertyData.baths
+          parsed.sqft = propertyData.sqft
+          parsed.price = propertyData.price
+          sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+        } catch {
+          // Ignore storage errors
         }
         
         // Fetch analysis from backend API (all calculations done server-side)
@@ -638,17 +640,6 @@ function VerdictContent() {
     <>
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         <div className="max-w-[520px] mx-auto">
-          {/* Address Strip */}
-          <div className="flex justify-between items-center px-5 py-3 border-b" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <svg width="16" height="16" fill="none" stroke={colors.brand.blue} viewBox="0 0 24 24" strokeWidth="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-              <div className="min-w-0">
-                <p className="text-[0.95rem] font-semibold truncate" style={{ color: colors.text.primary }}>{property.address}</p>
-                <p className="text-[0.82rem]" style={{ color: colors.text.secondary }}>{property.beds} bed · {property.baths} bath · {(property.sqft || 0).toLocaleString()} sqft · Listed {fmtShort(property.price)}</p>
-              </div>
-            </div>
-          </div>
-
           {/* Score Hero */}
           <section className="px-5 pt-10 pb-8 text-center" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
             <div className="relative inline-flex items-center justify-center w-32 h-32 mx-auto mb-5">
