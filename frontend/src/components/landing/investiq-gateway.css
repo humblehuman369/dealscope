@@ -53,17 +53,9 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Header */
-.gw-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0.75rem 1.25rem; border-bottom: 1px solid #334155;
-  background: #0F172A; flex-shrink: 0;
-}
-
-.gw-logo-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; color: #fff; }
-.gw-logo-text .gw-brand { color: #0EA5E9; }
-
+/* Close button — absolute top-right of card */
 .gw-close-btn {
+  position: absolute; top: 0.75rem; right: 0.75rem; z-index: 20;
   color: #6b7280; background: none; border: none; cursor: pointer;
   transition: color 0.2s; padding: 0.25rem;
 }
@@ -224,11 +216,10 @@
 @media (max-width: 520px) {
   .gw-overlay { padding: 12px; }
   .gw-card { max-width: calc(100vw - 24px); border-radius: 0.75rem; }
-  .gw-header { padding: 10px 16px; }
-  .gw-logo-text { font-size: 1.125rem; }
+  .gw-close-btn { top: 0.625rem; right: 0.625rem; }
   .gw-start-title { font-size: 1.125rem; }
   .gw-start-subtitle { font-size: 0.75rem; }
-  .gw-assistant-box { padding: 0.75rem; gap: 0.625rem; margin-bottom: 0.875rem; }
+  .gw-assistant-box { padding: 0.75rem; gap: 0.625rem; margin-bottom: 1.25rem; }
   .gw-assistant-box h3 { font-size: 0.75rem; }
   .gw-assistant-box p { font-size: 0.6875rem; }
   .gw-method-btn { padding: 0.75rem; gap: 0.75rem; }

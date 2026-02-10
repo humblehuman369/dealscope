@@ -80,20 +80,15 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
       <div className="gw-grid-bg" />
 
       <div className="gw-card">
-        {/* Header */}
-        <div className="gw-header">
-          <div className="gw-font-logo gw-logo-text">
-            <span>Invest</span><span className="gw-brand">IQ</span>
-          </div>
-          <button className="gw-close-btn" onClick={onClose} aria-label="Close">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        {/* Close button — absolute top-right */}
+        <button className="gw-close-btn" onClick={onClose} aria-label="Close">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
         {/* Body */}
-        <div className="gw-body" style={{ padding: '1.25rem' }}>
+        <div className="gw-body" style={{ padding: '1.75rem' }}>
 
           {/* Step 1: Start */}
           <div className={stepClass('start')}>
