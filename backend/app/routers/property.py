@@ -131,7 +131,7 @@ async def search_property(
                     "property_type": details.property_type if details else None,
                     "bedrooms": details.bedrooms if details else None,
                     "bathrooms": details.bathrooms if details else None,
-                    "square_footage": details.living_area if details else None,
+                    "square_footage": details.square_footage if details else None,
                     "estimated_value": (valuations.zestimate or valuations.current_value_avm) if valuations else None,
                     "rent_estimate": rentals.monthly_rent_ltr if rentals else None,
                 },
