@@ -6,7 +6,7 @@ Extracted from main.py for cleaner architecture.
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 
 from app.schemas.property import (
@@ -14,7 +14,10 @@ from app.schemas.property import (
     PropertyResponse,
 )
 from app.services.property_service import property_service
+from app.services.search_history_service import search_history_service
+from app.core.deps import OptionalUser, DbSession
 from app.core.exceptions import PropertyNotFoundError, ExternalAPIError
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -26,42 +29,119 @@ router = APIRouter(prefix="/api/v1", tags=["Properties"])
 # ============================================
 
 @router.post("/properties/search", response_model=PropertyResponse)
-async def search_property(request: PropertySearchRequest):
+async def search_property(
+    request: PropertySearchRequest,
+    db: DbSession,
+    current_user: OptionalUser = None,
+):
     """
     Search for a property by address.
     
     Fetches data from RentCast and AXESSO APIs, normalizes into unified schema.
     Returns property details, valuations, rental estimates, and data provenance.
+    Automatically records the search in the user's search history when authenticated.
     """
+    # Build full address
+    address_parts = [request.address]
+    if request.city:
+        address_parts.append(request.city)
+    if request.state:
+        address_parts.append(request.state)
+    if request.zip_code:
+        address_parts.append(request.zip_code)
+    
+    full_address = ", ".join(address_parts)
+    
+    logger.info(f"Searching for property: {full_address}")
+
     try:
-        # Build full address
-        address_parts = [request.address]
-        if request.city:
-            address_parts.append(request.city)
-        if request.state:
-            address_parts.append(request.state)
-        if request.zip_code:
-            address_parts.append(request.zip_code)
-        
-        full_address = ", ".join(address_parts)
-        
-        logger.info(f"Searching for property: {full_address}")
-        
         result = await property_service.search_property(full_address)
-        return result
-        
     except ExternalAPIError as e:
+        # Record failed search for authenticated users
+        if current_user:
+            try:
+                await search_history_service.record_search(
+                    db=db,
+                    user_id=str(current_user.id),
+                    search_query=full_address,
+                    address_parts={
+                        "street": request.address,
+                        "city": request.city,
+                        "state": request.state,
+                        "zip": request.zip_code,
+                    },
+                    search_source="web",
+                    was_successful=False,
+                    error_message=e.message,
+                )
+            except Exception as rec_err:
+                logger.warning(f"Failed to record search history: {rec_err}")
         logger.error(f"External API error during property search: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=e.message
         )
     except Exception as e:
+        # Record failed search for authenticated users
+        if current_user:
+            try:
+                await search_history_service.record_search(
+                    db=db,
+                    user_id=str(current_user.id),
+                    search_query=full_address,
+                    address_parts={
+                        "street": request.address,
+                        "city": request.city,
+                        "state": request.state,
+                        "zip": request.zip_code,
+                    },
+                    search_source="web",
+                    was_successful=False,
+                    error_message=str(e),
+                )
+            except Exception as rec_err:
+                logger.warning(f"Failed to record search history: {rec_err}")
         logger.error(f"Property search error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+    # Record successful search for authenticated users
+    if current_user:
+        try:
+            addr = result.address
+            details = result.details
+            valuations = result.valuations
+            rentals = result.rentals
+
+            await search_history_service.record_search(
+                db=db,
+                user_id=str(current_user.id),
+                search_query=full_address,
+                property_cache_id=result.property_id,
+                zpid=result.zpid,
+                address_parts={
+                    "street": addr.street if addr else request.address,
+                    "city": addr.city if addr else request.city,
+                    "state": addr.state if addr else request.state,
+                    "zip": addr.zip_code if addr else request.zip_code,
+                },
+                result_summary={
+                    "property_type": details.property_type if details else None,
+                    "bedrooms": details.bedrooms if details else None,
+                    "bathrooms": details.bathrooms if details else None,
+                    "square_footage": details.living_area if details else None,
+                    "estimated_value": (valuations.zestimate or valuations.current_value_avm) if valuations else None,
+                    "rent_estimate": rentals.monthly_rent_ltr if rentals else None,
+                },
+                search_source="web",
+                was_successful=True,
+            )
+        except Exception as rec_err:
+            logger.warning(f"Failed to record search history: {rec_err}")
+
+    return result
 
 
 @router.get("/properties/demo/sample", response_model=PropertyResponse)

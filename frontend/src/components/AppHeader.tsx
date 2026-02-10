@@ -22,7 +22,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
 
@@ -437,6 +437,12 @@ export function AppHeader({
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
                   >
                     <UserCircle className="w-4 h-4" /> Profile
+                  </button>
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/search-history') }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                  >
+                    <History className="w-4 h-4" /> Search History
                   </button>
                   {isAdmin && (
                     <button
