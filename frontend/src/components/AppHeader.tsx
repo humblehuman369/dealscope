@@ -603,6 +603,8 @@ export function AppHeader({
           <div 
             className="border-b"
             style={{ backgroundColor: colors.background.surface, borderColor: colors.ui.border }}
+            onMouseEnter={() => setIsPropertyExpanded(true)}
+            onMouseLeave={() => setIsPropertyExpanded(false)}
           >
             {/* Collapsed Header */}
             <div className="flex items-center justify-between px-4 py-3">
