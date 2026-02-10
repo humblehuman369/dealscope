@@ -651,9 +651,15 @@ function VerdictContent() {
               </div>
             </div>
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
-              <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
+              {score >= 65 ? (
+                <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              )}
               <span className="text-[0.88rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
             </div>
             <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
