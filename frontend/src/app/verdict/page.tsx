@@ -824,9 +824,20 @@ function VerdictContent() {
           onClose={() => setShowDealMakerPopup(false)}
           onApply={(values: DealMakerValues) => {
             setShowDealMakerPopup(false)
-            // Re-run analysis with updated terms by navigating with overrides
+            // Persist ALL DealMaker values + strategy to sessionStorage so they
+            // survive the page reload and re-populate the popup next time.
             const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
             const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+            try {
+              const sessionKey = `dealMaker_${encodeURIComponent(fullAddress)}`
+              sessionStorage.setItem(sessionKey, JSON.stringify({
+                ...values,
+                strategy: currentStrategy,
+                timestamp: Date.now(),
+              }))
+            } catch { /* ignore storage errors */ }
+
+            // Pass values the backend API accepts as URL overrides
             const params = new URLSearchParams({
               address: fullAddress,
               purchasePrice: String(values.buyPrice),
@@ -834,24 +845,41 @@ function VerdictContent() {
               propertyTaxes: String(values.propertyTaxes),
               insurance: String(values.insurance),
             })
+            if (values.arv) params.set('arv', String(values.arv))
             if (property.zpid) params.set('zpid', String(property.zpid))
             router.push(`/verdict?${params.toString()}`)
           }}
           strategyType={currentStrategy}
           onStrategyChange={(s) => setCurrentStrategy(s)}
-          initialValues={{
-            buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
-            monthlyRent: property.monthlyRent || Math.round(property.price * 0.007),
-            propertyTaxes: property.propertyTaxes || Math.round(property.price * 0.012),
-            insurance: property.insurance || Math.round(property.price * 0.01),
-            arv: property.arv || property.price,
-            downPayment: 20,
-            closingCosts: 3,
-            interestRate: 6,
-            loanTerm: 30,
-            vacancyRate: 5,
-            managementRate: 8,
-          }}
+          initialValues={(() => {
+            // Restore previous DealMaker values from sessionStorage if available
+            const defaults = {
+              buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
+              monthlyRent: property.monthlyRent || Math.round(property.price * 0.007),
+              propertyTaxes: property.propertyTaxes || Math.round(property.price * 0.012),
+              insurance: property.insurance || Math.round(property.price * 0.01),
+              arv: property.arv || property.price,
+              downPayment: 20,
+              closingCosts: 3,
+              interestRate: 6,
+              loanTerm: 30,
+              vacancyRate: 5,
+              managementRate: 8,
+            }
+            if (typeof window === 'undefined') return defaults
+            try {
+              const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+              const fullAddr = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+              const stored = sessionStorage.getItem(`dealMaker_${encodeURIComponent(fullAddr)}`)
+              if (stored) {
+                const parsed = JSON.parse(stored)
+                if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
+                  return { ...defaults, ...parsed }
+                }
+              }
+            } catch { /* ignore */ }
+            return defaults
+          })()}
         />
       )}
 
