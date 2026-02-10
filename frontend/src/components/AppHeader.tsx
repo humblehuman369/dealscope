@@ -107,6 +107,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/search',
   '/billing',
   '/search-history',
+  '/saved-properties',
   '/national-averages',
   '/onboarding',
   '/verify-email',

@@ -106,6 +106,7 @@ export const ROUTES = {
   profile: '/profile',
   billing: '/billing',
   searchHistory: '/search-history',
+  savedProperties: '/saved-properties',
 
   // Admin
   admin: '/admin',
