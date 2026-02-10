@@ -359,7 +359,7 @@ export function AppHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property') ? 'Invest' : 'Verdict'}
+              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property') ? 'Invest' : pathname?.startsWith('/price-intel') ? 'Price' : 'Verdict'}
             </span>
             <span 
               className="text-lg font-bold tracking-tight"
