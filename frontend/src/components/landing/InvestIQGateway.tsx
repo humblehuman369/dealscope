@@ -131,17 +131,17 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
 
           {/* Step 2: Address Entry */}
           <div className={stepClass('address')}>
-            <div className="gw-assistant-box">
-              <div className="gw-iq-icon">
-                <IQIcon size={40} />
-              </div>
-              <div>
-                <h3>I&apos;m IQ, your analyst.</h3>
-                <p>Enter the address and adjust the property details below to sharpen my analysis.</p>
-              </div>
-            </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="gw-assistant-box">
+                <div className="gw-iq-icon">
+                  <IQIcon size={40} />
+                </div>
+                <div>
+                  <h3>I&apos;m IQ, your analyst.</h3>
+                  <p>Enter the address and adjust the property details below to sharpen my analysis.</p>
+                </div>
+              </div>
+
               <div className="gw-address-input-wrap">
                 <div className="gw-search-icon">
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,36 +196,36 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
                   <span>Poor</span><span>Standard</span><span>Premium</span>
                 </div>
               </div>
-            </div>
 
-            <div className="gw-btn-row">
-              <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
-              <button
-                className="gw-btn-primary"
-                onClick={handleGenerateBaseline}
-                disabled={!addressInput.trim()}
-              >
-                <span>Generate Baseline</span>
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </button>
+              <div className="gw-btn-row">
+                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
+                <button
+                  className="gw-btn-primary"
+                  onClick={handleGenerateBaseline}
+                  disabled={!addressInput.trim()}
+                >
+                  <span>Generate Baseline</span>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Step 3: Scan */}
           <div className={stepClass('scan')}>
-            <div className="gw-assistant-box">
-              <div className="gw-iq-icon">
-                <IQIcon size={40} />
-              </div>
-              <div>
-                <h3>I&apos;m IQ, your analyst.</h3>
-                <p>Adjust the property details below so I can give you a more accurate valuation.</p>
-              </div>
-            </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="gw-assistant-box">
+                <div className="gw-iq-icon">
+                  <IQIcon size={40} />
+                </div>
+                <div>
+                  <h3>I&apos;m IQ, your analyst.</h3>
+                  <p>Adjust the property details below so I can give you a more accurate valuation.</p>
+                </div>
+              </div>
+
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Property Condition</label>
@@ -263,16 +263,16 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
                   <span>Poor</span><span>Standard</span><span>Premium</span>
                 </div>
               </div>
-            </div>
 
-            <div className="gw-btn-row">
-              <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
-              <button className="gw-btn-primary" onClick={handleScanNow}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                </svg>
-                <span>Scan Now</span>
-              </button>
+              <div className="gw-btn-row">
+                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
+                <button className="gw-btn-primary" onClick={handleScanNow}>
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                  <span>Scan Now</span>
+                </button>
+              </div>
             </div>
           </div>
 
