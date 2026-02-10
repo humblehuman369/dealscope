@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import {
   PropertyData,
   PropertyDetailsSkeleton,
-  PropertyDetailsScreen
+  PropertyDetailsClient
 } from '@/components/property-details'
 
 /**
@@ -346,7 +346,7 @@ async function PropertyDetailsContent({ zpid, address, strategy }: { zpid: strin
     notFound()
   }
 
-  return <PropertyDetailsScreen property={property} initialStrategy={strategy} />
+  return <PropertyDetailsClient property={property} initialStrategy={strategy} />
 }
 
 /**
