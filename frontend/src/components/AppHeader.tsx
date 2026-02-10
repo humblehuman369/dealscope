@@ -117,7 +117,7 @@ const NO_PROPERTY_BAR_ROUTES = [
 function getActiveTabFromPath(pathname: string): AppTab {
   if (pathname.startsWith('/verdict')) return 'analyze'
   if (pathname.startsWith('/strategy')) return 'strategy'
-  if (pathname.startsWith('/property/')) return 'details'
+  if (pathname.startsWith('/property')) return 'details'
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
@@ -359,7 +359,7 @@ export function AppHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property/') ? 'Invest' : pathname?.startsWith('/price-intel') ? 'Price' : 'Verdict'}
+              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property') ? 'Invest' : pathname?.startsWith('/price-intel') ? 'Price' : 'Verdict'}
             </span>
             <span 
               className="text-lg font-bold tracking-tight"
