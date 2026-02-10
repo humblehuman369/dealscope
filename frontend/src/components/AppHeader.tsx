@@ -240,7 +240,7 @@ export function AppHeader({
       if (stored) {
         const parsed = JSON.parse(stored)
         if (parsed.beds || parsed.baths || parsed.sqft || parsed.price) {
-          const addrParts = parseAddress(displayAddress)
+          const addrParts = parseDisplayAddress(displayAddress)
           return {
             address: addrParts.streetAddress,
             city: addrParts.city,
