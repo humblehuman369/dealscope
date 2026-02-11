@@ -296,6 +296,8 @@ function VerdictContent() {
           parsed.price = propertyData.price
           parsed.listingStatus = propertyData.listingStatus || null
           sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+          // Notify AppHeader that property details are available
+          window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
         } catch {
           // Ignore storage errors
         }
