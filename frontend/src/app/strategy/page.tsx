@@ -50,6 +50,12 @@ function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
 
+function normalizePercentMetric(value?: number): number | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) return null
+  // Some payloads send ratios (0.0605), others already send percent (6.05).
+  return Math.abs(value) <= 1 ? value * 100 : value
+}
+
 
 function StrategyContent() {
   const router = useRouter()
@@ -222,11 +228,13 @@ function StrategyContent() {
   const monthlyCashFlow = annualCashFlow / 12
 
   // Benchmarks
-  const capRate = data.return_factors?.capRate || (data as any).returnFactors?.capRate
-  const coc = data.return_factors?.cashOnCash || (data as any).returnFactors?.cashOnCash
+  const capRateRaw = data.return_factors?.capRate ?? (data as any).returnFactors?.capRate
+  const cocRaw = data.return_factors?.cashOnCash ?? (data as any).returnFactors?.cashOnCash
+  const capRate = normalizePercentMetric(capRateRaw)
+  const coc = normalizePercentMetric(cocRaw)
   const benchmarks = [
-    { metric: 'Cap Rate', value: capRate ? `${(capRate * 100).toFixed(1)}%` : '—', target: '6.0%', status: (capRate && capRate >= 0.06) ? 'good' : 'poor' },
-    { metric: 'Cash-on-Cash', value: coc ? `${(coc * 100).toFixed(1)}%` : '—', target: '8.0%', status: (coc && coc >= 0.08) ? 'good' : 'poor' },
+    { metric: 'Cap Rate', value: capRate !== null ? `${capRate.toFixed(1)}%` : '—', target: '6.0%', status: (capRate !== null && capRate >= 6.0) ? 'good' : 'poor' },
+    { metric: 'Cash-on-Cash', value: coc !== null ? `${coc.toFixed(1)}%` : '—', target: '8.0%', status: (coc !== null && coc >= 8.0) ? 'good' : 'poor' },
     { metric: 'Monthly Cash Flow', value: formatCurrency(monthlyCashFlow), target: '+$300', status: monthlyCashFlow >= 300 ? 'good' : 'poor' },
   ]
 
