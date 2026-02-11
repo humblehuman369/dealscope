@@ -240,7 +240,7 @@ export function VerdictIQPageNew({
 
   return (
     <div 
-      className="min-h-screen flex flex-col max-w-[480px] mx-auto"
+      className="min-h-screen flex flex-col max-w-[640px] mx-auto"
       style={{ 
         background: '#F1F5F9',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -339,7 +339,7 @@ export function VerdictIQPageNew({
       </main>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-5">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white border-t border-[#E2E8F0] p-4 px-5">
         <button 
           className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] active:scale-[0.98] transition-all"
           onClick={handleOpenDealMaker}

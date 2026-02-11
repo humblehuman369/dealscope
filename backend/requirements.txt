@@ -54,8 +54,7 @@ Pillow==10.2.0
 # WeasyPrint requires Cairo, Pango, and GDK-PixBuf
 # On macOS: brew install cairo pango gdk-pixbuf libffi
 # On Ubuntu: apt-get install libcairo2 libpango-1.0-0 libgdk-pixbuf2.0-0
-# Uncomment to enable PDF export:
-# weasyprint==62.0
+weasyprint==62.0
 
 # ===========================================
 # NEW: Email (Phase 7)
