@@ -90,7 +90,7 @@ interface FetchParams {
 // API SERVICES
 // ============================================
 async function fetchSimilarSold(params: FetchParams) {
-  const url = new URL('/api/v1/axesso/similar-sold', window.location.origin)
+  const url = new URL('/api/v1/similar-sold', window.location.origin)
   if (params.zpid) url.searchParams.append('zpid', params.zpid)
   if (params.address) url.searchParams.append('address', params.address)
   if (params.limit) url.searchParams.append('limit', params.limit.toString())
@@ -103,7 +103,7 @@ async function fetchSimilarSold(params: FetchParams) {
 }
 
 async function fetchSimilarRent(params: FetchParams) {
-  const url = new URL('/api/v1/axesso/similar-rent', window.location.origin)
+  const url = new URL('/api/v1/similar-rent', window.location.origin)
   if (params.zpid) url.searchParams.append('zpid', params.zpid)
   if (params.address) url.searchParams.append('address', params.address)
   if (params.limit) url.searchParams.append('limit', params.limit.toString())
@@ -147,8 +147,8 @@ const getDaysAgoNum = (dateString: string): number => {
 const getFreshnessBadge = (dateString: string, isSale: boolean) => {
   const daysAgo = getDaysAgoNum(dateString)
   if (daysAgo < 0) return null
-  if (daysAgo <= 30) return { label: 'Recent', color: '#10B981', bgColor: '#10B98115' }
-  if (daysAgo > 90) return { label: isSale ? 'Older sale' : 'Older listing', color: '#F59E0B', bgColor: '#F59E0B15' }
+  if (daysAgo <= 30) return { label: 'Recent', color: '#34d399', bgColor: 'rgba(52,211,153,0.12)' }
+  if (daysAgo > 90) return { label: isSale ? 'Older sale' : 'Older listing', color: '#fbbf24', bgColor: 'rgba(251,191,36,0.12)' }
   return null
 }
 
@@ -285,13 +285,13 @@ const toCompProperty = (c: LocalComp): CompProperty => ({
 // SUB-COMPONENTS
 // ============================================
 const CompCardSkeleton = () => (
-  <div className="bg-white rounded-xl border border-slate-200 p-4 animate-pulse">
+  <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-4 animate-pulse">
     <div className="flex gap-4">
-      <div className="w-[100px] h-[80px] bg-slate-200 rounded-lg flex-shrink-0" />
+      <div className="w-[100px] h-[80px] bg-white/[0.07] rounded-lg flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-slate-200 rounded w-3/4" />
-        <div className="h-3 bg-slate-200 rounded w-1/2" />
-        <div className="h-3 bg-slate-200 rounded w-1/3" />
+        <div className="h-4 bg-white/[0.07] rounded w-3/4" />
+        <div className="h-3 bg-white/[0.07] rounded w-1/2" />
+        <div className="h-3 bg-white/[0.07] rounded w-1/3" />
       </div>
     </div>
   </div>
@@ -302,13 +302,13 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
   const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value))
   return (
     <div className="flex items-center gap-2">
-      <Icon className="w-3 h-3 text-slate-400 flex-shrink-0" />
-      <span className="text-xs text-slate-500 w-14">{label}</span>
-      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <Icon className="w-3 h-3 text-[#64748B] flex-shrink-0" />
+      <span className="text-xs text-[#94A3B8] w-14">{label}</span>
+      <div className="flex-1 h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#0891B2' : safeValue >= 75 ? '#0E7490' : '#F59E0B' }} />
+          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#38bdf8' : safeValue >= 75 ? '#2dd4bf' : '#fbbf24' }} />
       </div>
-      <span className="text-xs font-semibold text-slate-700 w-8 text-right tabular-nums">{safeValue}%</span>
+      <span className="text-xs font-semibold text-[#CBD5E1] w-8 text-right tabular-nums">{safeValue}%</span>
     </div>
   )
 }
@@ -327,20 +327,20 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
 
   return (
     <div className={`relative rounded-xl border transition-all overflow-hidden ${
-      isSelected ? 'bg-white ring-2 ring-teal-500/20 border-teal-200' : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+      isSelected ? 'bg-[#0C1220] ring-2 ring-[#38bdf8]/20 border-[#38bdf8]/30' : 'bg-[#0C1220] border-white/[0.07] hover:border-white/[0.12]'
     }`}>
       {/* Selection checkbox */}
       <button onClick={onToggle}
         className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected ? 'bg-teal-500 border-teal-500' : 'bg-white border-slate-300 hover:border-teal-500'
+          isSelected ? 'bg-[#38bdf8] border-[#38bdf8]' : 'bg-[#0C1220] border-[#64748B] hover:border-[#38bdf8]'
         }`}>
-        {isSelected && <Check className="w-3 h-3 text-white" />}
+        {isSelected && <Check className="w-3 h-3 text-black" />}
       </button>
 
       {/* Refresh button on unselected */}
       {!isSelected && (
         <button onClick={onRefreshComp} disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-500 hover:border-teal-300 transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#0C1220] border border-white/[0.07] text-[#64748B] hover:text-[#38bdf8] hover:border-[#38bdf8]/30 transition-colors disabled:opacity-50"
           title="Replace this comp">
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -348,16 +348,16 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
 
       <div className="flex">
         {/* Image + distance badge */}
-        <div className="relative w-[100px] h-[80px] flex-shrink-0 bg-slate-100 rounded-l-xl overflow-hidden">
+        <div className="relative w-[100px] h-[80px] flex-shrink-0 bg-white/[0.05] rounded-l-xl overflow-hidden">
           {comp.image ? (
             <img src={comp.image} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-200">
-              {isSale ? <Building2 className="w-5 h-5 text-slate-400" /> : <Home className="w-5 h-5 text-slate-400" />}
+            <div className="w-full h-full flex items-center justify-center bg-white/[0.05]">
+              {isSale ? <Building2 className="w-5 h-5 text-[#64748B]" /> : <Home className="w-5 h-5 text-[#64748B]" />}
             </div>
           )}
-          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm">
-            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distance.toFixed(2)} mi</span>
+          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
+            <span className="text-[10px] font-semibold text-[#38bdf8] tabular-nums">{comp.distance.toFixed(2)} mi</span>
           </div>
         </div>
 
@@ -365,21 +365,21 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
         <div className="flex-1 p-3 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0 pl-4">
-              <h4 className="text-sm font-semibold text-slate-800 truncate">{comp.address}</h4>
-              <p className="text-xs text-slate-400 truncate">{comp.city}, {comp.state}</p>
+              <h4 className="text-sm font-semibold text-[#F1F5F9] truncate">{comp.address}</h4>
+              <p className="text-xs text-[#64748B] truncate">{comp.city}, {comp.state}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-slate-800 tabular-nums">
+              <p className="text-sm font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {formatCurrency(comp.price)}
-                {!isSale && <span className="text-xs font-normal text-slate-400">/mo</span>}
+                {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
               </p>
-              <p className="text-[11px] font-semibold text-teal-600 tabular-nums">
+              <p className="text-[11px] font-semibold text-[#38bdf8] tabular-nums">
                 ${comp.pricePerSqft}{isSale ? '' : '.00'}/sf{!isSale && '/mo'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-1.5 pl-4">
+          <div className="flex items-center gap-2 text-xs text-[#94A3B8] mb-1.5 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
             <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()}</span>
@@ -387,15 +387,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           </div>
 
           <div className="flex items-center gap-1.5 pl-4">
-            <span className="text-[10px] text-slate-400">{isSale ? 'Sold' : 'Listed'} {formatDate(comp.date)}</span>
-            <span className="text-[10px] px-1 py-0.5 rounded bg-slate-100 text-slate-500">{getDaysAgo(comp.date)}</span>
+            <span className="text-[10px] text-[#64748B]">{isSale ? 'Sold' : 'Listed'} {formatDate(comp.date)}</span>
+            <span className="text-[10px] px-1 py-0.5 rounded bg-white/[0.07] text-[#94A3B8]">{getDaysAgo(comp.date)}</span>
             {freshness && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                 style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
                 {freshness.label}
               </span>
             )}
-            <button onClick={onExpand} className="ml-auto text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-0.5">
+            <button onClick={onExpand} className="ml-auto text-xs text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
@@ -404,17 +404,17 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
 
       {/* Expandable Details: match score, similarity, adjustments */}
       {isExpanded && (
-        <div className="border-t border-slate-100 p-3 bg-slate-50/50">
+        <div className="border-t border-white/[0.07] p-3 bg-white/[0.03]">
           {/* Match Score header */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Match Score:</span>
+            <span className="text-xs font-semibold text-[#94A3B8] uppercase">Match Score:</span>
             <span className="text-lg font-bold tabular-nums" style={{
-              color: similarity.overall >= 90 ? '#0891B2' : similarity.overall >= 75 ? '#0E7490' : '#F59E0B'
+              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#2dd4bf' : '#fbbf24'
             }}>{similarity.overall}%</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h5 className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-2">Similarity</h5>
+              <h5 className="text-[10px] font-semibold text-[#38bdf8] uppercase tracking-wide mb-2">Similarity</h5>
               <div className="space-y-1.5">
                 <SimilarityBar label="Location" value={similarity.location} icon={MapPin} />
                 <SimilarityBar label="Size" value={similarity.size} icon={Square} />
@@ -423,7 +423,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
               </div>
             </div>
             <div>
-              <h5 className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide mb-2">Adjustments</h5>
+              <h5 className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wide mb-2">Adjustments</h5>
               <div className="space-y-1">
                 {isSale && saleAdj && [
                   { label: 'Size', value: saleAdj.size },
@@ -433,8 +433,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Lot', value: saleAdj.lot },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-slate-500">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <span className="text-[#94A3B8]">{adj.label}</span>
+                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}
                     </span>
                   </div>
@@ -445,15 +445,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Bathroom', value: rentAdj.bathroom },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-slate-500">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <span className="text-[#94A3B8]">{adj.label}</span>
+                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}/mo
                     </span>
                   </div>
                 ))}
-                <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
-                  <span className="font-semibold text-slate-700">Adjusted</span>
-                  <span className="font-bold text-teal-600 tabular-nums">
+                <div className="flex justify-between text-xs pt-1 border-t border-white/[0.07]">
+                  <span className="font-semibold text-[#CBD5E1]">Adjusted</span>
+                  <span className="font-bold text-[#38bdf8] tabular-nums">
                     {formatCurrency(comp.price + Math.round(isSale ? (saleAdj?.total || 0) : (rentAdj?.total || 0)))}
                     {!isSale && '/mo'}
                   </span>
@@ -473,55 +473,55 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
 }) {
   if (compAdjustments.length === 0) return null
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+    <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] overflow-hidden">
+      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
         <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-teal-500" />
-          <span className="text-sm font-semibold text-slate-700">Adjustment Breakdown</span>
-          <span className="text-xs text-slate-400">({compAdjustments.length} comps)</span>
+          <DollarSign className="w-4 h-4 text-[#38bdf8]" />
+          <span className="text-sm font-semibold text-[#F1F5F9]">Adjustment Breakdown</span>
+          <span className="text-xs text-[#64748B]">({compAdjustments.length} comps)</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-[#64748B]" /> : <ChevronDown className="w-4 h-4 text-[#64748B]" />}
       </button>
       {isExpanded && (
-        <div className="border-t border-slate-100 overflow-x-auto">
+        <div className="border-t border-white/[0.07] overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-slate-50">
+            <thead className="bg-white/[0.05]">
               <tr>
-                <th className="px-3 py-2 text-left font-semibold text-slate-600">Address</th>
-                <th className="px-3 py-2 text-right font-semibold text-slate-600">{isSale ? 'Base' : 'Rent'}</th>
-                <th className="px-3 py-2 text-right font-semibold text-slate-600">Size</th>
-                <th className="px-3 py-2 text-right font-semibold text-slate-600">Bed</th>
-                <th className="px-3 py-2 text-right font-semibold text-slate-600">Bath</th>
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-slate-600">Age</th>}
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-slate-600">Lot</th>}
-                <th className="px-3 py-2 text-right font-semibold text-teal-600">Adjusted</th>
-                <th className="px-3 py-2 text-right font-semibold text-slate-600">Weight</th>
+                <th className="px-3 py-2 text-left font-semibold text-[#94A3B8]">Address</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">{isSale ? 'Base' : 'Rent'}</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Size</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Bed</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Bath</th>
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Age</th>}
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Lot</th>}
+                <th className="px-3 py-2 text-right font-semibold text-[#38bdf8]">Adjusted</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Weight</th>
               </tr>
             </thead>
             <tbody>
               {compAdjustments.map((ca, idx) => (
-                <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                  <td className="px-3 py-2 text-slate-700 truncate max-w-[140px]" title={ca.compAddress}>{ca.compAddress}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-slate-600">{isSale ? formatCompactCurrency(ca.basePrice) : `$${ca.basePrice}`}</td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}>
+                  <td className="px-3 py-2 text-[#CBD5E1] truncate max-w-[140px]" title={ca.compAddress}>{ca.compAddress}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-[#CBD5E1]">{isSale ? formatCompactCurrency(ca.basePrice) : `$${ca.basePrice}`}</td>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                     {ca.sizeAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.sizeAdjustment) : `$${ca.sizeAdjustment}`}
                   </td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                     {ca.bedroomAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.bedroomAdjustment) : `$${ca.bedroomAdjustment}`}
                   </td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                     {ca.bathroomAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.bathroomAdjustment) : `$${ca.bathroomAdjustment}`}
                   </td>
-                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                     {ca.ageAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.ageAdjustment)}
                   </td>}
-                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                     {ca.lotAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.lotAdjustment)}
                   </td>}
-                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-teal-700">
+                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-[#38bdf8]">
                     {isSale ? formatCompactCurrency(ca.adjustedPrice) : `$${ca.adjustedPrice}/mo`}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-slate-500">{(ca.weight * 100).toFixed(1)}%</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-[#94A3B8]">{(ca.weight * 100).toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -641,9 +641,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     } finally { setRentLoading(false) }
   }, [buildParams])
 
-  // Initial fetch on mount -- store originals for reset
+  // Initial fetch on mount -- store originals for reset (requires zpid or address)
   useEffect(() => {
-    if (!property.address) return
+    if (!property.zpid && !property.address) return
     const init = async () => {
       const [sold, rented] = await Promise.all([fetchSaleComps(), fetchRentComps()])
       setSaleComps(sold)
@@ -807,30 +807,30 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const displayImprovedRent = rentOverrideImproved ?? rentAppraisal.improvedRent
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-black max-w-[480px] mx-auto font-['Inter',sans-serif]">
       <main className="pb-6">
         {/* Page Header */}
-        <div className="bg-white border-b border-[#E2E8F0] p-4">
+        <div className="bg-[#0C1220] border-b border-white/[0.07] p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-lg font-bold text-[#0A1628]">Price<span className="text-[#0891B2]">IQ</span></h1>
+              <h1 className="text-lg font-bold text-[#F1F5F9]">Price<span className="text-[#38bdf8]">IQ</span></h1>
               <p className="text-xs text-[#64748B]">Comparable analysis for {property.address || 'property'}</p>
             </div>
             <div className="flex gap-1.5">
               {hasChangedFromOriginal && (
                 <button onClick={handleResetToOriginal} disabled={loading}
-                  className="px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50 flex items-center gap-1"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[11px] font-medium text-[#fbbf24] hover:bg-[#fbbf24]/15 disabled:opacity-50 flex items-center gap-1"
                   title="Restore original system-selected comps">
                   <RotateCcw className="w-3 h-3" />Reset
                 </button>
               )}
               <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.07] text-[11px] font-medium text-[#CBD5E1] hover:bg-white/[0.08] disabled:opacity-50 flex items-center gap-1"
                 title="Replace unselected comps with new ones">
                 <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
               </button>
               <button onClick={handleRefreshAll} disabled={loading}
-                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.07] text-[11px] font-medium text-[#CBD5E1] hover:bg-white/[0.08] disabled:opacity-50 flex items-center gap-1"
                 title="Fetch all new comps from API">
                 <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
               </button>
@@ -838,16 +838,16 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
 
           {/* Sub-tabs: Sale Comps | Rent Comps */}
-          <div className="flex rounded-xl bg-slate-100 p-1">
+          <div className="flex rounded-xl bg-white/[0.05] p-1">
             <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isSale ? 'bg-white text-[#0A1628] shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#94A3B8] hover:text-[#CBD5E1]'
               }`}>
               Sale Comps
             </button>
             <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                !isSale ? 'bg-white text-[#0A1628] shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                !isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#94A3B8] hover:text-[#CBD5E1]'
               }`}>
               Rent Comps
             </button>
@@ -856,56 +856,57 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Dual Valuation Panel */}
         <div className="mx-4 mt-4">
-          <div className="bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl p-4 border border-teal-200/50">
+          <div className="relative rounded-xl p-4 border border-white/[0.07] overflow-hidden"
+            style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(56,189,248,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(45,212,191,0.06) 0%, transparent 50%), #0C1220' }}>
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center">
-                  <Target className="w-4.5 h-4.5 text-teal-500" />
+                <div className="w-9 h-9 rounded-full bg-[#38bdf8]/10 border border-[#38bdf8]/20 flex items-center justify-center">
+                  <Target className="w-4.5 h-4.5 text-[#38bdf8]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
-                  <p className="text-xs text-slate-500">From {selectedIds.size} selected comps</p>
+                  <h3 className="text-sm font-bold text-[#F1F5F9]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
+                  <p className="text-xs text-[#94A3B8]">From {selectedIds.size} selected comps</p>
                 </div>
               </div>
-              <div className="text-center px-2 py-1 rounded-lg bg-white/60">
+              <div className="text-center px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.07]">
                 <div className="text-base font-bold tabular-nums" style={{
-                  color: (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 85 ? '#0891B2'
-                    : (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 70 ? '#F59E0B' : '#EF4444'
+                  color: (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 85 ? '#38bdf8'
+                    : (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 70 ? '#fbbf24' : '#f87171'
                 }}>
                   {loading ? '...' : `${isSale ? saleAppraisal.confidence : rentAppraisal.confidence}%`}
                 </div>
-                <div className="text-[9px] text-slate-500 uppercase">Confidence</div>
+                <div className="text-[9px] text-[#64748B] uppercase">Confidence</div>
               </div>
             </div>
 
             {/* Dual values */}
             <div className="grid grid-cols-2 gap-3 mb-3">
               {/* Left: Market Value / Market Rent */}
-              <div className="bg-white rounded-lg p-3 border border-slate-200">
+              <div className="bg-white/[0.05] rounded-lg p-3 border border-white/[0.07]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wide">
                     {isSale ? 'Est. Market Value' : 'Est. Market Rent'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)
                     else setRentOverrideMarket(rentOverrideMarket !== null ? null : rentAppraisal.marketRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-amber-500' : 'text-slate-400'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-[#fbbf24]' : 'text-[#64748B]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? (
                   <input type="text" value={formatCurrency(isSale ? saleOverrideMarket! : rentOverrideMarket!)}
                     onChange={(e) => { const v = parseInt(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) isSale ? setSaleOverrideMarket(v) : setRentOverrideMarket(v) }}
-                    className="text-lg font-bold text-slate-800 tabular-nums bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 w-full" />
+                    className="text-lg font-bold text-[#F1F5F9] tabular-nums bg-[#fbbf24]/10 border border-[#fbbf24]/30 rounded px-1.5 py-0.5 w-full" />
                 ) : (
-                  <div className="text-lg font-bold text-slate-800 tabular-nums">
+                  <div className="text-lg font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
-                    {!isSale && <span className="text-xs font-normal text-slate-400">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-slate-400 mt-0.5">As-Is Condition</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">
+                <div className="text-[10px] text-[#64748B] mt-0.5">As-Is Condition</div>
+                <div className="text-[10px] text-[#94A3B8] mt-0.5">
                   Range: {isSale 
                     ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
@@ -914,50 +915,50 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
 
               {/* Right: ARV / Improved Rent */}
-              <div className="bg-white rounded-lg p-3 border border-teal-200">
+              <div className="bg-white/[0.05] rounded-lg p-3 border border-[#38bdf8]/20">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[#38bdf8] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideArv(saleOverrideArv !== null ? null : saleAppraisal.arv)
                     else setRentOverrideImproved(rentOverrideImproved !== null ? null : rentAppraisal.improvedRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-amber-500' : 'text-slate-400'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-[#fbbf24]' : 'text-[#64748B]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? (
                   <input type="text" value={formatCurrency(isSale ? saleOverrideArv! : rentOverrideImproved!)}
                     onChange={(e) => { const v = parseInt(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) isSale ? setSaleOverrideArv(v) : setRentOverrideImproved(v) }}
-                    className="text-lg font-bold text-teal-700 tabular-nums bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 w-full" />
+                    className="text-lg font-bold text-[#38bdf8] tabular-nums bg-[#fbbf24]/10 border border-[#fbbf24]/30 rounded px-1.5 py-0.5 w-full" />
                 ) : (
-                  <div className="text-lg font-bold text-teal-700 tabular-nums">
+                  <div className="text-lg font-bold text-[#38bdf8] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
-                    {!isSale && <span className="text-xs font-normal text-slate-400">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-slate-400 mt-0.5">Post-Rehab</div>
+                <div className="text-[10px] text-[#64748B] mt-0.5">Post-Rehab</div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <TrendingUp className="w-3 h-3 text-green-500" />
-                  <span className="text-[10px] font-medium text-green-600">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
+                  <TrendingUp className="w-3 h-3 text-[#34d399]" />
+                  <span className="text-[10px] font-medium text-[#34d399]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
               </div>
             </div>
 
             {/* Methodology + $/sqft */}
-            <div className="flex items-center justify-between text-[10px] text-slate-500 mb-3 px-0.5">
+            <div className="flex items-center justify-between text-[10px] text-[#64748B] mb-3 px-0.5">
               <div className="flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>Weighted hybrid methodology</span>
               </div>
-              <span className="tabular-nums font-medium">
+              <span className="tabular-nums font-medium text-[#94A3B8]">
                 ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
               </span>
             </div>
 
             <button onClick={handleApplyValues}
               disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
-              className="w-full px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 transition-colors">
+              className="w-full px-4 py-2.5 rounded-lg bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-sm font-semibold disabled:opacity-50 transition-colors">
               Apply to Deal Analysis
             </button>
           </div>
@@ -976,23 +977,23 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Filters + Controls */}
         <div className="px-4 mt-3 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Filter:</span>
-            <div className="flex rounded-lg bg-slate-100 p-0.5">
+            <span className="text-xs text-[#64748B]">Filter:</span>
+            <div className="flex rounded-lg bg-white/[0.05] p-0.5">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    recencyFilter === val ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    recencyFilter === val ? 'bg-[#0C1220] text-[#38bdf8] shadow-sm shadow-black/20' : 'text-[#64748B] hover:text-[#94A3B8]'
                   }`}>{label}</button>
               ))}
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
+            <span className="text-sm text-[#94A3B8]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
             <div className="flex gap-2">
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                className="px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Select All</button>
+                className="px-3 py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Select All</button>
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                className="px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Clear</button>
+                className="px-3 py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Clear</button>
             </div>
           </div>
         </div>
@@ -1006,20 +1007,20 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Error */}
         {error && !loading && (
-          <div className="mx-4 mt-3 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-            <AlertCircle className="mx-auto mb-2 text-red-500 w-8 h-8" />
-            <h3 className="text-sm font-semibold text-red-800 mb-1">Failed to Load {isSale ? 'Sale' : 'Rental'} Comps</h3>
-            <p className="text-xs text-red-600 mb-3">{error}</p>
-            <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg">Try Again</button>
+          <div className="mx-4 mt-3 bg-[#f87171]/10 border border-[#f87171]/20 rounded-xl p-4 text-center">
+            <AlertCircle className="mx-auto mb-2 text-[#f87171] w-8 h-8" />
+            <h3 className="text-sm font-semibold text-[#f87171] mb-1">Failed to Load {isSale ? 'Sale' : 'Rental'} Comps</h3>
+            <p className="text-xs text-[#f87171]/80 mb-3">{error}</p>
+            <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-[#f87171]/15 hover:bg-[#f87171]/25 text-[#f87171] text-sm font-medium rounded-lg border border-[#f87171]/20">Try Again</button>
           </div>
         )}
 
         {/* Empty */}
         {!loading && !error && comps.length === 0 && (
-          <div className="mx-4 mt-3 bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-            {isSale ? <Building2 className="mx-auto mb-2 text-slate-400 w-8 h-8" /> : <Home className="mx-auto mb-2 text-slate-400 w-8 h-8" />}
-            <h3 className="text-sm font-semibold text-slate-700 mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
-            <p className="text-xs text-slate-500">Try refreshing or check the property address</p>
+          <div className="mx-4 mt-3 bg-[#0C1220] border border-white/[0.07] rounded-xl p-6 text-center">
+            {isSale ? <Building2 className="mx-auto mb-2 text-[#64748B] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#64748B] w-8 h-8" />}
+            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
+            <p className="text-xs text-[#94A3B8]">Try refreshing or check the property address</p>
           </div>
         )}
 
@@ -1045,11 +1046,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Location Quality */}
         {!loading && !error && comps.length > 0 && (
-          <div className="mx-4 mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
+          <div className="mx-4 mt-4 p-3 rounded-lg bg-[#0C1220] border border-white/[0.07]">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500">{comps.filter(c => c.distance <= 0.5).length} of {comps.length} within 0.5 mi</span>
+              <span className="text-xs text-[#94A3B8]">{comps.filter(c => c.distance <= 0.5).length} of {comps.length} within 0.5 mi</span>
               <span className={`text-xs font-semibold ${
-                comps.filter(c => c.distance <= 0.5).length >= 3 ? 'text-teal-600' : comps.filter(c => c.distance <= 1).length >= 3 ? 'text-amber-500' : 'text-slate-500'
+                comps.filter(c => c.distance <= 0.5).length >= 3 ? 'text-[#34d399]' : comps.filter(c => c.distance <= 1).length >= 3 ? 'text-[#fbbf24]' : 'text-[#94A3B8]'
               }`}>
                 Location: {comps.filter(c => c.distance <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distance <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
               </span>
@@ -1060,7 +1061,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
       {/* Toast */}
       {saveMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-[#F1F5F9] text-black text-sm font-medium rounded-lg shadow-lg shadow-black/40 z-50">
           {saveMessage}
         </div>
       )}

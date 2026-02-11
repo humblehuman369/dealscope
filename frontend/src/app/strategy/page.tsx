@@ -236,127 +236,52 @@ function StrategyContent() {
   const marketAlign = of?.motivation || 50
   const priceConf = (data.opportunity || (data as any).opportunity)?.score || 65
 
-  const handleExportReport = () => {
-    const score = data.deal_score || 0
-    const verdict = data.deal_verdict || 'Unknown'
-    const streetAddr = parsed.street || addressParam.split(',')[0]
-    const cityStateZip = [parsed.city, [parsed.state, parsed.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+  const handlePDFDownload = async (theme: 'light' | 'dark' = 'light') => {
+    setIsExporting('pdf')
+    setExportError(null)
+    try {
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
+      const params = new URLSearchParams({
+        address: addressParam,
+        strategy: 'ltr',
+        theme,
+      })
+      const url = `/api/v1/proforma/property/${propertyId}/pdf?${params}`
 
-    const html = `<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8">
-<title>InvestIQ Strategy Report — ${streetAddr}</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; color: #1e293b; background: #fff; padding: 40px 48px; max-width: 800px; margin: 0 auto; }
-  h1 { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
-  .subtitle { font-size: 13px; color: #64748b; margin-bottom: 4px; }
-  .score-badge { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 14px; border-radius: 20px; margin-top: 8px; }
-  .score-good { background: #dcfce7; color: #16a34a; }
-  .score-poor { background: #fee2e2; color: #dc2626; }
-  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
-  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0ea5e9; margin-bottom: 16px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-  th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-  td { font-size: 13px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; }
-  td:last-child { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .total-row td { font-weight: 700; border-top: 2px solid #e2e8f0; border-bottom: none; padding-top: 10px; }
-  .highlight { color: #0ea5e9; }
-  .negative { color: #dc2626; }
-  .positive { color: #16a34a; }
-  .result-box { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-radius: 10px; margin-bottom: 10px; }
-  .result-noi { background: #f0fdf4; border: 1px solid #bbf7d0; }
-  .result-cf { background: #fef2f2; border: 1px solid #fecaca; }
-  .result-box .label { font-size: 13px; font-weight: 600; }
-  .result-box .sublabel { font-size: 11px; color: #64748b; margin-top: 2px; }
-  .result-box .value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .result-box .subvalue { font-size: 11px; margin-top: 2px; text-align: right; }
-  .bench-status { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
-  .bench-good { background: #dcfce7; color: #16a34a; }
-  .bench-poor { background: #fee2e2; color: #dc2626; }
-  .confidence-bar { height: 8px; border-radius: 4px; background: #f1f5f9; margin: 6px 0 14px; }
-  .confidence-fill { height: 100%; border-radius: 4px; }
-  .footer { margin-top: 32px; text-align: center; font-size: 11px; color: #94a3b8; }
-  @media print { body { padding: 24px 32px; } }
-</style>
-</head><body>
-<h1>${streetAddr}</h1>
-<div class="subtitle">${cityStateZip}</div>
-<div class="subtitle">${propertyInfo?.details?.bedrooms || '—'} bed · ${propertyInfo?.details?.bathrooms || '—'} bath · ${(propertyInfo?.details?.square_footage || 0).toLocaleString()} sqft</div>
-<span class="score-badge ${score >= 65 ? 'score-good' : 'score-poor'}">IQ Score: ${score} — ${verdict}</span>
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
 
-<hr class="divider">
+      const response = await fetch(url, { headers, credentials: 'include' })
 
-<h2>Financial Breakdown</h2>
-<table>
-  <tr><td>Market Price</td><td style="text-decoration:line-through;color:#94a3b8">${formatCurrency(listPrice)}</td></tr>
-  <tr><td>Your Target Price</td><td class="highlight">${formatCurrency(targetPrice)}</td></tr>
-  <tr><td>Down Payment (20%)</td><td>${formatCurrency(downPayment)}</td></tr>
-  <tr><td>Closing Costs (3%)</td><td>${formatCurrency(closingCosts)}</td></tr>
-  <tr class="total-row"><td>Cash Needed</td><td class="highlight">${formatCurrency(downPayment + closingCosts)}</td></tr>
-</table>
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Failed to generate PDF report')
+      }
 
-<table style="margin-top:20px">
-  <tr><td>Monthly Rent</td><td>${formatCurrency(monthlyRent)}/mo</td></tr>
-  <tr><td>Vacancy Loss (5%)</td><td class="negative">-${formatCurrency(vacancyLoss)}/yr</td></tr>
-  <tr><td>Effective Income</td><td>${formatCurrency(effectiveIncome)}/yr</td></tr>
-</table>
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let filename = `InvestIQ_Report_${theme}.pdf`
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/)
+        if (match) filename = match[1]
+      }
 
-<table style="margin-top:20px">
-  <tr><td>Property Taxes</td><td>${formatCurrency(propertyTaxes)}/yr</td></tr>
-  <tr><td>Insurance</td><td>${formatCurrency(insurance)}/yr</td></tr>
-  <tr><td>Management (8%)</td><td>${formatCurrency(mgmt)}/yr</td></tr>
-  <tr><td>Maintenance (5%)</td><td>${formatCurrency(maint)}/yr</td></tr>
-  <tr><td>Reserves (5%)</td><td>${formatCurrency(reserves)}/yr</td></tr>
-  <tr><td>Loan Payment</td><td>${formatCurrency(monthlyPI)}/mo</td></tr>
-  <tr class="total-row"><td>Total Costs</td><td class="negative">${formatCurrency(totalExpenses)}/yr</td></tr>
-</table>
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
 
-<div style="margin-top:20px">
-  <div class="result-box result-noi">
-    <div><div class="label">Before Your Loan</div><div class="sublabel">NOI</div></div>
-    <div style="text-align:right"><div class="value positive">${formatCurrency(noi)}</div><div class="subvalue positive">${formatCurrency(Math.round(noi / 12))}/mo</div></div>
-  </div>
-  <div class="result-box result-cf">
-    <div><div class="label">What You'd Pocket</div><div class="sublabel">Net</div></div>
-    <div style="text-align:right"><div class="value negative">(${formatCurrency(Math.abs(annualCashFlow))})</div><div class="subvalue negative">(${formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</div></div>
-  </div>
-</div>
-
-<hr class="divider">
-
-<h2>Investor Benchmarks</h2>
-<table>
-  <thead><tr><th>Metric</th><th>This Deal</th><th>Target</th><th style="text-align:right">Status</th></tr></thead>
-  <tbody>
-    ${benchmarks.map(b => `<tr><td>${b.metric}</td><td style="font-weight:600">${b.value}</td><td>${b.target}</td><td style="text-align:right"><span class="bench-status ${b.status === 'good' ? 'bench-good' : 'bench-poor'}">${b.status === 'good' ? 'Good' : 'Below'}</span></td></tr>`).join('')}
-  </tbody>
-</table>
-
-<hr class="divider">
-
-<h2>Data Quality</h2>
-${[
-  { label: 'Deal Probability', value: dealProb },
-  { label: 'Market Alignment', value: marketAlign },
-  { label: 'Price Confidence', value: priceConf },
-].map(m => `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-  <span style="width:140px;font-size:13px;font-weight:500">${m.label}</span>
-  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:${m.value}%;background:#0ea5e9"></div></div>
-  <span style="width:40px;text-align:right;font-size:13px;font-weight:700;color:#0ea5e9">${Math.round(m.value)}%</span>
-</div>`).join('')}
-
-<div class="footer">
-  Generated by InvestIQ · ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-</div>
-</body></html>`
-
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
-      printWindow.document.write(html)
-      printWindow.document.close()
-      // Slight delay to let styles render before print dialog
-      setTimeout(() => printWindow.print(), 400)
+      setIsExportOpen(false)
+    } catch (err) {
+      console.error('PDF download failed:', err)
+      setExportError(err instanceof Error ? err.message : 'PDF download failed')
+    } finally {
+      setIsExporting(null)
     }
   }
 
@@ -531,24 +456,49 @@ ${[
                     <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.text.tertiary }}>Export Format</p>
                   </div>
 
-                  {/* PDF option */}
+                  {/* PDF Light option */}
                   <button
-                    onClick={() => { handleExportReport(); setIsExportOpen(false) }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                    onClick={() => handlePDFDownload('light')}
+                    disabled={isExporting !== null}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
                     style={{ color: colors.text.primary }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {isExporting === 'pdf' ? (
+                      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#f87171', borderTopColor: 'transparent' }} />
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold">PDF Report — Light</p>
+                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Print-optimized, white background</p>
+                    </div>
+                  </button>
+
+                  {/* PDF Dark option */}
+                  <button
+                    onClick={() => handlePDFDownload('dark')}
+                    disabled={isExporting !== null}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
+                    style={{ color: colors.text.primary }}
+                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
+                      <path d="M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold">PDF Report</p>
-                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Print-friendly format</p>
+                      <p className="text-sm font-semibold">PDF Report — Dark</p>
+                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Digital-optimized, dark theme</p>
                     </div>
                   </button>
 

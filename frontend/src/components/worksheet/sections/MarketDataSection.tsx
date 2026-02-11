@@ -15,7 +15,7 @@ import { formatCurrency, formatPercent, formatNumber } from '@/utils/formatters'
 // ============================================
 async function fetchMarketData(location: string) {
   // Use Next.js API route to proxy requests to Axesso (avoids CORS)
-  const url = new URL('/api/v1/axesso/market-data', window.location.origin)
+  const url = new URL('/api/v1/market-data', window.location.origin)
   
   if (location) url.searchParams.append('location', location)
 
