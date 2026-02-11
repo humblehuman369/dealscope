@@ -645,31 +645,40 @@ function VerdictContent() {
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         <div className="max-w-[520px] mx-auto">
           {/* Score Hero */}
-          <section className="px-5 pt-10 pb-8 text-center" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
-            <div className="relative inline-flex items-center justify-center w-32 h-32 mx-auto mb-5">
-              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360)} ${2 * Math.PI * 52 * (120/360)}`} strokeLinecap="round"/>
-                <circle cx="60" cy="60" r="52" fill="none" stroke={scoreColor} strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360) * (score/100)} ${2 * Math.PI * 52 - 2 * Math.PI * 52 * (240/360) * (score/100)}`} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}40)` }}/>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[2.8rem] font-bold tabular-nums" style={{ color: scoreColor, lineHeight: 1 }}>{score}</span>
-                <span className="text-xs font-medium mt-0.5" style={{ color: colors.text.secondary }}>/100</span>
+          <section className="px-5 pt-10 pb-8" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
+            {/* Score gauge + description inline */}
+            <div className="flex items-center justify-center gap-6 mb-5">
+              {/* Score gauge */}
+              <div className="relative flex-shrink-0 w-32 h-32">
+                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360)} ${2 * Math.PI * 52 * (120/360)}`} strokeLinecap="round"/>
+                  <circle cx="60" cy="60" r="52" fill="none" stroke={scoreColor} strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360) * (score/100)} ${2 * Math.PI * 52 - 2 * Math.PI * 52 * (240/360) * (score/100)}`} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}40)` }}/>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[2.8rem] font-bold tabular-nums" style={{ color: scoreColor, lineHeight: 1 }}>{score}</span>
+                  <span className="text-xs font-medium mt-0.5" style={{ color: colors.text.secondary }}>/100</span>
+                </div>
+              </div>
+
+              {/* Verdict description — aligned to center of gauge */}
+              <div className="flex flex-col items-start" style={{ maxWidth: '220px' }}>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-2" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
+                  {score >= 65 ? (
+                    <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                  )}
+                  <span className="text-[0.82rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
               </div>
             </div>
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
-              {score >= 65 ? (
-                <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg width="16" height="16" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                </svg>
-              )}
-              <span className="text-[0.88rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
-            </div>
-            <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
-            <div className="flex justify-center gap-2.5 mt-4">
+
+            <div className="flex justify-center gap-2.5 mt-2">
               <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How VerdictIQ Works</button>
               <span style={{ color: colors.text.muted }}>|</span>
               <button className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How We Score</button>
