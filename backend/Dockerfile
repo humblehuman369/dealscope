@@ -3,6 +3,7 @@ FROM python:3.11-slim
 # System dependencies for WeasyPrint (Cairo, Pango, GDK-PixBuf)
 # and general build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
     libcairo2 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
