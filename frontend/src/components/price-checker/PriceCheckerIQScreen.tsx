@@ -229,16 +229,16 @@ function transformRentResponse(apiData: Record<string, unknown>, subjectLat: num
     const miniPhotoUrl = miniPhotos?.[0]?.url as string | undefined
     if (!imageUrl) imageUrl = (comp.imgSrc as string) || (comp.imageUrl as string) || miniPhotoUrl || ''
     
-    // Rent -- try many field names
+    // RentCast-first rent fields, with resilient fallback for legacy shapes
     const units = comp.units as Record<string, unknown>[] | undefined
     const unitPrice = units?.[0]?.price
     const monthlyRent = parseFloat(String(
-      comp.rent || comp.monthlyRent || comp.price || comp.listPrice || 
+      comp.price || comp.rent || comp.monthlyRent || comp.listPrice ||
       comp.unformattedPrice || unitPrice || 0
     )) || 0
     
-    // Sqft
-    const sqft = parseInt(String(comp.livingAreaValue || comp.livingArea || comp.sqft || comp.area || 0)) || 0
+    // Square footage -- prioritize RentCast schema
+    const sqft = parseInt(String(comp.squareFootage || comp.livingAreaValue || comp.livingArea || comp.sqft || comp.area || 0)) || 0
     
     // Coordinates
     const latObj = comp.latLong as Record<string, number> | undefined
@@ -247,10 +247,10 @@ function transformRentResponse(apiData: Record<string, unknown>, subjectLat: num
     const distance = (subjectLat && subjectLon && lat && lon) ? haversineDistance(subjectLat, subjectLon, lat, lon) : 1
     
     // Build address fields from object or string
-    const streetAddress = (addr.streetAddress as string) || (comp.streetAddress as string) || (comp.formattedAddress as string) || addrStr || ''
+    const streetAddress = (comp.formattedAddress as string) || (comp.addressLine1 as string) || (addr.streetAddress as string) || (comp.streetAddress as string) || addrStr || ''
     const city = (addr.city as string) || (comp.city as string) || ''
     const state = (addr.state as string) || (comp.state as string) || ''
-    const zip = (addr.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || ''
+    const zip = (comp.zipCode as string) || (addr.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || ''
     
     return {
       id: (comp.zpid as string) || (comp.id as string) || `rent-${index + 1}`,
@@ -266,7 +266,7 @@ function transformRentResponse(apiData: Record<string, unknown>, subjectLat: num
       sqft,
       lotSize: 0,
       yearBuilt: parseInt(String(comp.yearBuilt || 0)) || 0,
-      date: (comp.listingDate as string) || (comp.seenDate as string) || (comp.datePosted as string) || (comp.dateSeen as string) || '',
+      date: (comp.listedDate as string) || (comp.lastSeenDate as string) || (comp.listingDate as string) || (comp.seenDate as string) || (comp.datePosted as string) || (comp.dateSeen as string) || '',
       distance: Math.round(distance * 100) / 100,
       image: imageUrl,
       latitude: lat,

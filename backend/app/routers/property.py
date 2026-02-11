@@ -404,6 +404,17 @@ async def get_rentcast_rental_comps(
             offset=offset,
             exclude_zpids=exclude_list,
         )
+        logger.info(
+            "RentCast rental comps response",
+            extra={
+                "provider": "rentcast",
+                "success": result.get("success", False),
+                "returned_comp_count": len(result.get("results", []) or []),
+                "total_available": result.get("total_available"),
+                "offset": offset,
+                "limit": limit,
+            },
+        )
         return result
     except HTTPException:
         raise
