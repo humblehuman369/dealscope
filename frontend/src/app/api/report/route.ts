@@ -212,7 +212,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   // Photo grid HTML
   const photoHTML = ph.length > 0 ? `<div class="photos photos-${Math.min(ph.length,5)}">${ph.map((u,i) => `<div class="ph${i===0?' ph-main':''}"><img src="${u}" alt=""/></div>`).join('')}</div>` : ''
 
-  const N = 8
+  const N = 11
   const pgHdr = `<div class="pg-hdr"><div class="logo-sm">Invest<span class="iq">IQ</span></div><div class="pg-hdr-title">${d.property_address}</div></div>`
   const pgFt = (n: number) => `<div class="pg-foot"><span>InvestIQ Property Report</span><span>${dateStr}</span><span>Page ${n} of ${N}</span></div>`
 
@@ -286,19 +286,19 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${pgFt(2)}
 </div>
 
-<!-- ===== PAGE 3: MARKET + INCOME ===== -->
+<!-- ===== PAGE 3: MARKET POSITION ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">02</div>
   <h2 class="sec-title">Market Position &amp; Location Analysis</h2>
   <p class="narrative">Located in ${d.property.city}, ${d.property.state}, this property benefits from the area's residential market dynamics. With an assumed annual appreciation of ${pct(d.projections.appreciation_rate,1)}, the investment leverages both rental income and long-term value growth. Strong fundamentals in the local housing market support the projected appreciation trajectory.</p>
-  <div class="grid4 mt-16">
+  <div class="grid4 mt-24">
     <div class="stat-card"><div class="stat-val">${pct(d.projections.appreciation_rate,1)}</div><div class="stat-lbl">Annual Appreciation</div></div>
     <div class="stat-card"><div class="stat-val">${pct(d.projections.rent_growth_rate,1)}</div><div class="stat-lbl">Rent Growth Rate</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.property_values[d.projections.property_values.length-1] || d.acquisition.purchase_price)}</div><div class="stat-lbl">Projected Value (Yr ${d.projections.hold_period_years})</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.equity_positions[d.projections.equity_positions.length-1] || d.financing.down_payment)}</div><div class="stat-lbl">Projected Equity (Yr ${d.projections.hold_period_years})</div></div>
   </div>
-  <div class="card mt-16">
+  <div class="card mt-24">
     <div class="card-hd">Depreciation &amp; Tax Shield</div>
     <div class="grid2">
       <div>
@@ -313,11 +313,16 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </div>
     </div>
   </div>
-  <div class="sec-divider"></div>
+  ${pgFt(3)}
+</div>
+
+<!-- ===== PAGE 4: INCOME & CASH FLOW ===== -->
+<div class="page">
+  ${pgHdr}
   <div class="sec-tag">03</div>
   <h2 class="sec-title">Income &amp; Cash Flow Analysis</h2>
   <p class="narrative">${narrativeIncome(d)}</p>
-  <div class="mt-16">
+  <div class="mt-24">
     ${wfRow('Gross Rental Income', $(d.income.annual_gross_rent), 100, 'pos', p)}
     ${wfRow(`Vacancy Allowance (${pct(d.income.vacancy_percent,0)})`, `-${$(d.income.vacancy_allowance)}`, (d.income.vacancy_allowance/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Effective Gross Income', $(d.income.effective_gross_income), (d.income.effective_gross_income/d.income.annual_gross_rent)*100, 'brand', p)}
@@ -326,22 +331,22 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     ${wfRow('Annual Debt Service', `-${$(d.metrics.annual_debt_service)}`, (d.metrics.annual_debt_service/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Pre-Tax Cash Flow', sign$(d.metrics.annual_cash_flow), Math.max((Math.abs(d.metrics.annual_cash_flow)/d.income.annual_gross_rent)*100, 3), d.metrics.annual_cash_flow>=0?'pos':'neg', p, true)}
   </div>
-  <div class="grid4 mt-16">
+  <div class="grid4 mt-24">
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="stat-lbl">Monthly Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.annual_cash_flow)}</div><div class="stat-lbl">Annual Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.metrics.net_operating_income)}</div><div class="stat-lbl">Net Operating Income</div></div>
     <div class="stat-card"><div class="stat-val">${pct(exp.expense_ratio,1)}</div><div class="stat-lbl">Expense Ratio</div></div>
   </div>
-  ${pgFt(3)}
+  ${pgFt(4)}
 </div>
 
-<!-- ===== PAGE 4: EXPENSES + METRICS ===== -->
+<!-- ===== PAGE 5: EXPENSE BREAKDOWN ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">04</div>
   <h2 class="sec-title">Expense Breakdown</h2>
   <p class="narrative">${narrativeExpense(d)}</p>
-  <div class="expense-layout mt-16">
+  <div class="expense-layout mt-24">
     <div class="donut-col">
       ${donut(expSegs, p, 'Total Annual', $(exp.total_operating_expenses), 180)}
       <div class="legend">
@@ -363,11 +368,16 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </table>
     </div>
   </div>
-  <div class="sec-divider"></div>
+  ${pgFt(5)}
+</div>
+
+<!-- ===== PAGE 6: PERFORMANCE ANALYSIS ===== -->
+<div class="page">
+  ${pgHdr}
   <div class="sec-tag">05</div>
   <h2 class="sec-title">Performance Analysis</h2>
   <p class="narrative">${narrativeMetrics(d)}</p>
-  <div class="metric-grid mt-16">
+  <div class="metric-grid mt-24">
     ${metricCard('Cap Rate', pct(d.metrics.cap_rate), 'Unlevered return on property value')}
     ${metricCard('Cash-on-Cash', pct(d.metrics.cash_on_cash_return), 'Annual return on cash invested')}
     ${metricCard('DSCR', `${d.metrics.dscr.toFixed(2)}x`, 'Debt coverage safety margin')}
@@ -381,10 +391,10 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     ${metricCard('Rent / sqft', `$${d.metrics.rent_per_sqft.toFixed(2)}`, 'Monthly rent per square foot')}
     ${metricCard('Avg Annual Return', pct(d.returns.average_annual_return), 'Average return per year')}
   </div>
-  ${pgFt(4)}
+  ${pgFt(6)}
 </div>
 
-<!-- ===== PAGE 5: INVESTMENT VERDICT ===== -->
+<!-- ===== PAGE 7: INVESTMENT VERDICT ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">06</div>
@@ -423,10 +433,10 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </div>
     </div>
   </div>
-  ${pgFt(5)}
+  ${pgFt(7)}
 </div>
 
-<!-- ===== PAGE 6: PROJECTIONS ===== -->
+<!-- ===== PAGE 8: PROJECTIONS ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">07</div>
@@ -436,16 +446,16 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <thead><tr><th>Year</th><th>Income</th><th>Expenses</th><th>NOI</th><th>Debt Service</th><th>Cash Flow</th><th>Property Value</th><th>Equity</th></tr></thead>
     <tbody>${d.projections.annual_projections.map((yr,i) => `<tr><td><strong>Yr ${yr.year}</strong></td><td>${$(yr.total_income)}</td><td>${$(yr.operating_expenses)}</td><td>${$(yr.net_operating_income)}</td><td>${$(yr.total_debt_service)}</td><td style="color:${yr.pre_tax_cash_flow>=0?p.pos:p.neg};font-weight:600">${sign$(yr.pre_tax_cash_flow)}</td><td>${$(d.projections.property_values[i]||0)}</td><td>${$(d.projections.equity_positions[i]||0)}</td></tr>`).join('')}</tbody>
   </table>
-  ${pgFt(6)}
+  ${pgFt(8)}
 </div>
 
-<!-- ===== PAGE 7: EXIT + SENSITIVITY ===== -->
+<!-- ===== PAGE 9: EXIT STRATEGY ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">08</div>
   <h2 class="sec-title">Exit Strategy &amp; Tax Analysis</h2>
   <p class="narrative">${narrativeExit(d)}</p>
-  <div class="grid2 mt-16">
+  <div class="grid2 mt-24">
     <div class="card">
       <div class="card-hd">Sale Proceeds (Year ${d.exit.hold_period_years})</div>
       ${kv('Projected Sale Price', $(d.exit.projected_sale_price))}
@@ -464,23 +474,26 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       ${kvTotal('After-Tax Proceeds', $(d.exit.after_tax_proceeds))}
     </div>
   </div>
-  <div class="sec-divider"></div>
+  ${pgFt(9)}
+</div>
+
+<!-- ===== PAGE 10: SENSITIVITY ANALYSIS ===== -->
+<div class="page">
+  ${pgHdr}
   <div class="sec-tag">09</div>
   <h2 class="sec-title">What-If Scenarios</h2>
   <p class="narrative">${narrativeSensitivity(d)}</p>
-  <div class="sens-container mt-16">
+  <div class="sens-container mt-24">
     ${sensBlock('Purchase Price Scenarios', d.sensitivity.purchase_price)}
     ${sensBlock('Interest Rate Scenarios', d.sensitivity.interest_rate)}
-  </div>
-  ${pgFt(7)}
-</div>
-
-<!-- ===== PAGE 8: SENSITIVITY + DISCLAIMER ===== -->
-<div class="page">
-  ${pgHdr}
-  <div class="sens-container">
     ${sensBlock('Rent Scenarios', d.sensitivity.rent)}
   </div>
+  ${pgFt(10)}
+</div>
+
+<!-- ===== PAGE 11: DISCLAIMER ===== -->
+<div class="page">
+  ${pgHdr}
   <div class="disclaimer">
     <h4>Data Sources</h4>
     <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
@@ -488,7 +501,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
     <p class="mt-8">&copy; ${now.getFullYear()} InvestIQ. All rights reserved.</p>
   </div>
-  ${pgFt(8)}
+  ${pgFt(11)}
 </div>`
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>InvestIQ Property Report — ${d.property_address}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
@@ -501,7 +514,7 @@ function css(p: P, dk: boolean): string {
   return `
 @page{size:letter;margin:0}
 @media print{body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-.page{page-break-after:always}.page:last-child{page-break-after:auto}}
+.page{height:11in;overflow:hidden;page-break-after:always}.page:last-child{page-break-after:auto}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.6;color:${p.text};background:${p.bg}}
 .page{width:8.5in;min-height:11in;padding:0.75in 0.6in 0.75in;position:relative;background:${p.bg};margin:0 auto}
