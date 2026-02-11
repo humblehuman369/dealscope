@@ -90,10 +90,10 @@ interface AppHeaderProps {
 // ===================
 
 const TABS: { id: AppTab; label: string }[] = [
-  { id: 'analyze', label: 'VerdictIQ' },
-  { id: 'strategy', label: 'StrategyIQ' },
+  { id: 'analyze', label: 'Verdict' },
+  { id: 'strategy', label: 'Strategy' },
   { id: 'details', label: 'Property Profile' },
-  { id: 'price-checker', label: 'PriceIQ' },
+  { id: 'price-checker', label: 'Price' },
 ]
 
 // ===================
@@ -660,17 +660,6 @@ export function AppHeader({
                   >
                     {displayAddress}
                   </button>
-                  {resolvedProperty && (resolvedProperty.beds || resolvedProperty.baths || resolvedProperty.sqft || resolvedProperty.price) && (
-                    <p className="text-xs truncate mt-0.5" style={{ color: colors.text.tertiary }}>
-                      {[
-                        resolvedProperty.beds ? `${resolvedProperty.beds} bed` : null,
-                        resolvedProperty.baths ? `${resolvedProperty.baths} bath` : null,
-                        resolvedProperty.sqft ? `${resolvedProperty.sqft.toLocaleString()} sqft` : null,
-                        resolvedProperty.price ? `$${Math.round(resolvedProperty.price).toLocaleString()}` : null,
-                        resolvedProperty.listingStatus === 'FOR_SALE' ? 'Listed' : 'Off-Market',
-                      ].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
                 </div>
               </div>
               
