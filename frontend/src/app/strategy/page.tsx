@@ -10,7 +10,7 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import { useCallback, useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useRef, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
@@ -61,6 +61,10 @@ function StrategyContent() {
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isExportOpen, setIsExportOpen] = useState(false)
+  const [isExporting, setIsExporting] = useState<string | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const exportRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -100,6 +104,67 @@ function StrategyContent() {
   const handleOpenDealMaker = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
   }, [router, addressParam])
+
+  // Close export dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setIsExportOpen(false)
+      }
+    }
+    if (isExportOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isExportOpen])
+
+  const handleExcelDownload = async () => {
+    setIsExporting('excel')
+    setExportError(null)
+    try {
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
+      const params = new URLSearchParams({
+        address: addressParam,
+        strategy: 'ltr',
+      })
+      const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
+
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
+      const response = await fetch(url, { headers, credentials: 'include' })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Failed to generate Excel report')
+      }
+
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let filename = 'InvestIQ_Strategy_Report.xlsx'
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/)
+        if (match) filename = match[1]
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+
+      setIsExportOpen(false)
+    } catch (err) {
+      console.error('Excel download failed:', err)
+      setExportError(err instanceof Error ? err.message : 'Download failed')
+    } finally {
+      setIsExporting(null)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -223,7 +288,7 @@ function StrategyContent() {
   <tr><td>Your Target Price</td><td class="highlight">${formatCurrency(targetPrice)}</td></tr>
   <tr><td>Down Payment (20%)</td><td>${formatCurrency(downPayment)}</td></tr>
   <tr><td>Closing Costs (3%)</td><td>${formatCurrency(closingCosts)}</td></tr>
-  <tr class="total-row"><td>Cash Needed at Close</td><td class="highlight">${formatCurrency(downPayment + closingCosts)}</td></tr>
+  <tr class="total-row"><td>Cash Needed</td><td class="highlight">${formatCurrency(downPayment + closingCosts)}</td></tr>
 </table>
 
 <table style="margin-top:20px">
@@ -323,7 +388,7 @@ ${[
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Cash Needed at Close</span>
+                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Cash Needed</span>
                 <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(downPayment + closingCosts)}</span>
               </div>
 
@@ -393,7 +458,7 @@ ${[
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
-                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs to Own</span>
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
                 </div>
                 <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
@@ -439,13 +504,82 @@ ${[
             >
               Change Terms
             </button>
-            <button
-              className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
-              style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
-              onClick={handleExportReport}
-            >
-              Export Report
-            </button>
+            <div ref={exportRef} className="relative flex-1">
+              <button
+                className="w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5"
+                style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
+                onClick={() => setIsExportOpen(!isExportOpen)}
+              >
+                Export Report
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: isExportOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }}>
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {isExportOpen && (
+                <div
+                  className="absolute bottom-full left-0 right-0 mb-2 rounded-xl overflow-hidden shadow-lg z-30"
+                  style={{ background: colors.background.card, border: `1px solid ${colors.ui.borderDark}` }}
+                >
+                  <div className="px-3 pt-3 pb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.text.tertiary }}>Export Format</p>
+                  </div>
+
+                  {/* PDF option */}
+                  <button
+                    onClick={() => { handleExportReport(); setIsExportOpen(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                    style={{ color: colors.text.primary }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold">PDF Report</p>
+                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Print-friendly format</p>
+                    </div>
+                  </button>
+
+                  {/* Excel option */}
+                  <button
+                    onClick={handleExcelDownload}
+                    disabled={isExporting !== null}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
+                    style={{ color: colors.text.primary }}
+                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {isExporting === 'excel' ? (
+                      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#34d399', borderTopColor: 'transparent' }} />
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <rect x="8" y="12" width="8" height="6" rx="1" />
+                        <line x1="12" y1="12" x2="12" y2="18" />
+                        <line x1="8" y1="15" x2="16" y2="15" />
+                      </svg>
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold">Excel Workbook</p>
+                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Full financial analysis</p>
+                    </div>
+                  </button>
+
+                  {exportError && (
+                    <div className="px-3 py-2 border-t" style={{ borderColor: colors.ui.border }}>
+                      <p className="text-[11px]" style={{ color: colors.status.negative }}>{exportError}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Insight Box */}
