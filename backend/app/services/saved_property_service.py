@@ -88,7 +88,7 @@ class SavedPropertyService:
         )
         
         db.add(saved_property)
-        await db.flush()
+        await db.commit()
         await db.refresh(saved_property)
         
         logger.info(f"Property saved: {saved_property.id} - {data.address_street}")
@@ -291,7 +291,7 @@ class SavedPropertyService:
         
         saved_property.updated_at = datetime.now(timezone.utc)
         
-        await db.flush()
+        await db.commit()
         await db.refresh(saved_property)
         
         logger.info(f"Property updated: {property_id}")
@@ -346,7 +346,7 @@ class SavedPropertyService:
             )
         )
         
-        await db.flush()
+        await db.commit()
         count = result.rowcount
         
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
@@ -369,7 +369,7 @@ class SavedPropertyService:
             return False
         
         db.delete(saved_property)  # delete() is synchronous in SQLAlchemy 2.0
-        await db.flush()
+        await db.commit()
         
         logger.info(f"Property deleted: {property_id}")
         return True
@@ -403,7 +403,7 @@ class SavedPropertyService:
             )
         )
         
-        await db.flush()
+        await db.commit()
         count = result.rowcount
         
         logger.info(f"Bulk delete: {count} properties deleted")
@@ -459,7 +459,7 @@ class SavedPropertyService:
         )
         
         db.add(adjustment)
-        await db.flush()
+        await db.commit()
         await db.refresh(adjustment)
         
         return adjustment

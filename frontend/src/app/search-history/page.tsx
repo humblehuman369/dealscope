@@ -8,9 +8,19 @@ import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
   History, Search, MapPin, Building2, Clock, Trash2, 
-  ExternalLink, ChevronRight, TrendingUp, Filter,
+  ExternalLink, TrendingUp, Filter,
   Calendar, BarChart3, Star, AlertCircle, X
 } from 'lucide-react'
+
+// ===========================================
+// Search History Page — Dark Fintech Theme
+// ===========================================
+// Typography: Inter 700 headlines, 400 body, 600 financial data
+// Text hierarchy: slate-100 > slate-300 > slate-400 > slate-500
+// Accents: sky-400 (primary), teal-400 (positive), amber-400 (caution),
+//          red-400 (negative), emerald-400 (success/income)
+// Theme: true black base, #0C1220 cards, 7% white borders
+// ===========================================
 
 // Use relative URLs to go through Next.js API routes (which proxy to backend)
 
@@ -151,35 +161,43 @@ export default function SearchHistoryPage() {
     }).format(value)
   }
 
+  // ── Loading / auth gate ──────────────────────
+
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
       </div>
     )
   }
 
+  // ── Render ───────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors">
+    <div
+      className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
+      style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+    >
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
+
+        {/* ── Page Header ───────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-navy-900 dark:text-white flex items-center gap-3">
-              <History className="w-8 h-8 text-brand-500" />
+            <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
+              <History className="w-8 h-8 text-sky-400" />
               Search History
             </h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+            <p className="mt-2 text-slate-400">
               Review your past property searches
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setFilterSuccessful(!filterSuccessful)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
+              className={`px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all ${
                 filterSuccessful
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-white dark:bg-navy-800 text-gray-600 dark:text-gray-400 border border-neutral-200 dark:border-neutral-700'
+                  ? 'bg-sky-500 text-white shadow-[0_0_20px_rgba(56,189,248,0.15)]'
+                  : 'bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -188,7 +206,7 @@ export default function SearchHistoryPage() {
             {history.length > 0 && (
               <button
                 onClick={clearAllHistory}
-                className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium text-sm flex items-center gap-2"
+                className="px-4 py-2.5 text-red-400 hover:bg-red-400/10 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 Clear All
@@ -197,112 +215,119 @@ export default function SearchHistoryPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* ── Stats Cards ───────────────────────── */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+            {/* Total Searches — sky (primary data) */}
+            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-lg">
-                  <Search className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+                <div className="p-2 bg-sky-400/10 rounded-lg">
+                  <Search className="w-5 h-5 text-sky-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">{stats.total_searches}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">Total Searches</p>
+                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{stats.total_searches}</p>
+                  <p className="text-xs text-slate-500 font-medium">Total Searches</p>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+
+            {/* Successful — emerald (success) */}
+            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="p-2 bg-emerald-400/10 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">{stats.successful_searches}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">Successful</p>
+                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{stats.successful_searches}</p>
+                  <p className="text-xs text-slate-500 font-medium">Successful</p>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+
+            {/* Saved — amber (value/importance) */}
+            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <Star className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="p-2 bg-amber-400/10 rounded-lg">
+                  <Star className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">{stats.saved_from_search}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">Saved</p>
+                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{stats.saved_from_search}</p>
+                  <p className="text-xs text-slate-500 font-medium">Saved</p>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+
+            {/* This Week — teal (positive/info) */}
+            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                  <Calendar className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <div className="p-2 bg-teal-400/10 rounded-lg">
+                  <Calendar className="w-5 h-5 text-teal-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">{stats.searches_this_week}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">This Week</p>
+                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{stats.searches_this_week}</p>
+                  <p className="text-xs text-slate-500 font-medium">This Week</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Top Markets */}
+        {/* ── Top Markets ───────────────────────── */}
         {stats && stats.top_markets.length > 0 && (
-          <div className="bg-white dark:bg-navy-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 mb-8">
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
+          <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07] mb-8">
+            <h3 className="text-sm font-medium text-slate-400 mb-3 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-slate-500" />
               Your Top Markets
             </h3>
             <div className="flex flex-wrap gap-2">
               {stats.top_markets.map(market => (
                 <div
                   key={market.state}
-                  className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 rounded-full text-sm"
+                  className="px-3 py-1.5 bg-sky-400/10 rounded-full text-sm border border-sky-400/10"
                 >
-                  <span className="font-medium text-brand-700 dark:text-brand-300">{market.state}</span>
-                  <span className="text-brand-500 dark:text-brand-400 ml-1">({market.count})</span>
+                  <span className="font-semibold text-sky-400">{market.state}</span>
+                  <span className="text-sky-400/60 ml-1.5 tabular-nums">({market.count})</span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Error State */}
+        {/* ── Error State ───────────────────────── */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
+          <div className="mb-6 p-4 bg-red-400/10 border border-red-400/20 rounded-xl text-red-400 flex items-center gap-2 text-sm">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
             {error}
           </div>
         )}
 
-        {/* Search History List */}
-        <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-          <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
-            <h3 className="text-lg font-semibold text-navy-900 dark:text-white">
+        {/* ── Search History List ────────────────── */}
+        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/[0.07]">
+            <h3 className="text-lg font-semibold text-slate-100">
               Recent Searches
             </h3>
           </div>
 
           {isLoadingHistory ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
             </div>
           ) : history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-              <h4 className="text-lg font-medium text-navy-900 dark:text-white mb-2">
+            /* ── Empty State ─────────────────────── */
+            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-5">
+                <Search className="w-8 h-8 text-slate-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-slate-100 mb-2">
                 No search history yet
               </h4>
-              <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm">
+              <p className="text-slate-400 mb-6 max-w-sm">
                 Start searching for properties to build your history
               </p>
               <button
                 onClick={() => setShowSearchModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
               >
                 <Search className="w-4 h-4" />
                 Search Properties
@@ -310,33 +335,36 @@ export default function SearchHistoryPage() {
               <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
             </div>
           ) : (
-            <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
+            /* ── History Items ────────────────────── */
+            <div className="divide-y divide-white/[0.07]">
               {history.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 hover:bg-gray-50 dark:hover:bg-navy-700/50 transition-colors"
+                  className="px-6 py-4 hover:bg-white/[0.02] transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
+                        {/* Status Icon */}
+                        <div className={`p-2 rounded-lg flex-shrink-0 ${
                           item.was_successful 
-                            ? 'bg-green-100 dark:bg-green-900/30' 
-                            : 'bg-red-100 dark:bg-red-900/30'
+                            ? 'bg-emerald-400/10' 
+                            : 'bg-red-400/10'
                         }`}>
                           {item.was_successful ? (
-                            <Building2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            <Building2 className="w-4 h-4 text-emerald-400" />
                           ) : (
-                            <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                            <X className="w-4 h-4 text-red-400" />
                           )}
                         </div>
+                        {/* Address */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-navy-900 dark:text-white truncate">
+                          <p className="font-medium text-slate-100 truncate">
                             {item.address_street || item.search_query}
                           </p>
                           {(item.address_city || item.address_state) && (
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
+                            <p className="text-sm text-slate-400 flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
                               {[item.address_city, item.address_state].filter(Boolean).join(', ')}
                               {item.address_zip && ` ${item.address_zip}`}
                             </p>
@@ -346,29 +374,29 @@ export default function SearchHistoryPage() {
 
                       {/* Property Summary */}
                       {item.result_summary && item.was_successful && (
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
+                        <div className="mt-3 ml-11 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                           {item.result_summary.property_type && (
-                            <span className="text-gray-600 dark:text-gray-400">
+                            <span className="text-slate-400">
                               {item.result_summary.property_type}
                             </span>
                           )}
-                          {item.result_summary.bedrooms && (
-                            <span className="text-gray-600 dark:text-gray-400">
+                          {item.result_summary.bedrooms != null && (
+                            <span className="text-slate-400 tabular-nums">
                               {item.result_summary.bedrooms} bd
                             </span>
                           )}
-                          {item.result_summary.bathrooms && (
-                            <span className="text-gray-600 dark:text-gray-400">
+                          {item.result_summary.bathrooms != null && (
+                            <span className="text-slate-400 tabular-nums">
                               {item.result_summary.bathrooms} ba
                             </span>
                           )}
-                          {item.result_summary.square_footage && (
-                            <span className="text-gray-600 dark:text-gray-400">
+                          {item.result_summary.square_footage != null && (
+                            <span className="text-slate-400 tabular-nums">
                               {item.result_summary.square_footage.toLocaleString()} sqft
                             </span>
                           )}
-                          {item.result_summary.estimated_value && (
-                            <span className="font-medium text-navy-900 dark:text-white">
+                          {item.result_summary.estimated_value != null && (
+                            <span className="font-semibold text-sky-400 tabular-nums">
                               {formatCurrency(item.result_summary.estimated_value)}
                             </span>
                           )}
@@ -376,18 +404,18 @@ export default function SearchHistoryPage() {
                       )}
 
                       {/* Tags */}
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-neutral-400 dark:text-neutral-500 flex items-center gap-1">
+                      <div className="mt-2 ml-11 flex items-center gap-2">
+                        <span className="text-xs text-slate-500 flex items-center gap-1 tabular-nums">
                           <Clock className="w-3 h-3" />
                           {formatDate(item.searched_at)}
                         </span>
                         {item.search_source && item.search_source !== 'web' && (
-                          <span className="px-2 py-0.5 bg-gray-100 dark:bg-navy-700 text-xs text-gray-600 dark:text-gray-400 rounded">
+                          <span className="px-2 py-0.5 bg-white/[0.04] border border-white/[0.07] text-xs text-slate-500 rounded">
                             {item.search_source}
                           </span>
                         )}
                         {item.was_saved && (
-                          <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-xs text-green-700 dark:text-green-400 rounded flex items-center gap-1">
+                          <span className="px-2 py-0.5 bg-emerald-400/10 text-xs text-emerald-400 rounded flex items-center gap-1 font-medium">
                             <Star className="w-3 h-3" />
                             Saved
                           </span>
@@ -396,11 +424,11 @@ export default function SearchHistoryPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       {item.was_successful && (
                         <Link
                           href={`/property?address=${encodeURIComponent(item.search_query)}`}
-                          className="p-2 text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition-colors"
+                          className="p-2 text-sky-400 hover:bg-sky-400/10 rounded-lg transition-colors"
                           title="View property"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -408,7 +436,7 @@ export default function SearchHistoryPage() {
                       )}
                       <button
                         onClick={() => deleteEntry(item.id)}
-                        className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                         title="Delete from history"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -424,4 +452,3 @@ export default function SearchHistoryPage() {
     </div>
   )
 }
-
