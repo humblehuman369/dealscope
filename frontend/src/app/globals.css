@@ -1,12 +1,20 @@
 /* ==========================================
-   INVESTIQ DESIGN SYSTEM - Global Styles
-   Version 1.0 - January 2026
+   INVESTIQ DESIGN SYSTEM — Dark Fintech
+   Version 2.0 — February 2026
+   
+   Personality: Confident but not cold, data-rich
+   but not overwhelming — like a financial advisor
+   who explains things in plain English.
+   
+   Philosophy: Size and weight carry hierarchy,
+   not visibility. Color carries meaning, not
+   decoration.
    ========================================== */
 
 /* ==========================================
    CSS Imports (must be at top before @tailwind)
    ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Source+Sans+3:wght@400;600;700&display=swap');
 @import '../components/landing/landing.css';
 
 @tailwind base;
@@ -14,22 +22,51 @@
 @tailwind utilities;
 
 /* ==========================================
-   Theme Color Variables - InvestIQ Design System
+   Design Tokens — CSS Custom Properties
+   
+   Dark-first: True black (#000) base with
+   deep navy cards (#0C1220). Subtle radial
+   gradients for depth, never flat backgrounds.
+   Borders at 7% white opacity.
    ========================================== */
 :root {
-  /* Primary Brand Colors */
+  /* ---- Base Surfaces ---- */
+  --color-base: #000000;
+  --color-card: #0C1220;
+  --color-panel: #101828;
+  --color-panel-hover: #152238;
+
+  /* ---- Four-Tier Slate Text Hierarchy ---- */
+  --text-heading: #F1F5F9;      /* Tier 1: near-white headings */
+  --text-body: #CBD5E1;          /* Tier 2: solid grey body */
+  --text-secondary: #94A3B8;     /* Tier 3: mid-slate secondary */
+  --text-label: #64748B;         /* Tier 4: smallest labels */
+
+  /* ---- Five Semantic Accent Colors ---- */
+  --color-sky: #38bdf8;          /* Primary actions & key data */
+  --color-sky-deep: #0EA5E9;
+  --color-sky-dim: rgba(56,189,248,0.10);
+  --color-teal: #2dd4bf;         /* Positive signals & education */
+  --color-teal-deep: #0d9488;
+  --color-teal-dim: rgba(45,212,191,0.10);
+  --color-gold: #fbbf24;         /* Caution & scores */
+  --color-gold-dim: rgba(251,191,36,0.10);
+  --color-red: #f87171;          /* Negatives & losses */
+  --color-red-dim: rgba(248,113,113,0.10);
+  --color-green: #34d399;        /* Income & success */
+  --color-green-dim: rgba(52,211,153,0.10);
+
+  /* ---- Borders ---- */
+  --color-border: rgba(255,255,255,0.07);
+  --color-border-light: rgba(255,255,255,0.12);
+
+  /* ---- Legacy aliases (for backward compat) ---- */
   --color-navy: #0A1628;
-  --color-teal: #0891B2;        /* Pacific Teal - primary accent */
-  --color-teal-light: #06B6D4;  /* Teal Light - hover states */
-  --color-teal-rgb: 8, 145, 178;
-  --color-cyan-electric: #00D4FF;
-  
-  /* Semantic Colors */
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
-  --color-success: #10B981;
-  
-  /* Surface Palette (Slate-based) */
+  --color-teal-rgb: 45, 212, 191;
+  --color-cyan-electric: #38bdf8;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-success: #34d399;
   --surface-50: #F8FAFC;
   --surface-100: #F1F5F9;
   --surface-200: #E2E8F0;
@@ -39,55 +76,29 @@
   --surface-600: #475569;
   --surface-700: #334155;
   --surface-800: #1E293B;
-  
-  /* Gradient endpoints for light mode */
-  --gradient-teal-start: #0891B2;
-  --gradient-teal-end: #0E7490;
-  
-  /* ==========================================
-     DECISION-GRADE UI COLORS
-     Per DealMakerIQ Design System & Style Guide
-     ========================================== */
-  --dg-deep-navy: #07172e;
-  --dg-pacific-teal: #0891B2;
-  --dg-teal-light: #06B6D4;
-  --dg-electric-cyan: #00D4FF;
-  
-  /* Semantic - Decision Grade */
-  --dg-positive: #0891B2;  /* Teal for positive signals */
-  --dg-caution: #B45309;   /* Amber for caution */
-  --dg-negative: #DC2626;  /* Red for loss/risk */
-  --dg-info-blue: #3B82F6; /* Blue for info/links */
-  
-  /* Surfaces - Decision Grade */
-  --dg-bg-primary: #FFFFFF;
-  --dg-bg-secondary: #F1F5F9;
-  --dg-bg-selected: #E0F7FA;
-  
-  /* Borders - Decision Grade */
-  --dg-border-strong: #94A3B8;
-  --dg-border-medium: #CBD5E1;
-  --dg-border-light: #E2E8F0;
-  
-  /* TEXT - Decision Grade (ALL high contrast) */
-  --dg-text-primary: #07172e;
-  --dg-text-secondary: #07172e;
-  --dg-text-tertiary: #07172e;
-}
 
-html.dark {
-  /* Dark Mode - Use Electric Cyan for accent */
-  --color-teal: #22d3ee;
-  --color-teal-light: #67e8f9;
-  --color-teal-rgb: 34, 211, 238;
-  
-  /* Gradient endpoints for dark mode */
-  --gradient-teal-start: #22d3ee;
-  --gradient-teal-end: #06B6D4;
+  /* ---- Decision-Grade UI (legacy compat) ---- */
+  --dg-deep-navy: #000000;
+  --dg-pacific-teal: #2dd4bf;
+  --dg-teal-light: #2dd4bf;
+  --dg-electric-cyan: #38bdf8;
+  --dg-positive: #2dd4bf;
+  --dg-caution: #fbbf24;
+  --dg-negative: #f87171;
+  --dg-info-blue: #38bdf8;
+  --dg-bg-primary: #0C1220;
+  --dg-bg-secondary: #101828;
+  --dg-bg-selected: rgba(45,212,191,0.08);
+  --dg-border-strong: #64748B;
+  --dg-border-medium: rgba(255,255,255,0.07);
+  --dg-border-light: rgba(255,255,255,0.05);
+  --dg-text-primary: #F1F5F9;
+  --dg-text-secondary: #CBD5E1;
+  --dg-text-tertiary: #94A3B8;
 }
 
 /* ==========================================
-   InvestIQ Slider Styles
+   Range Slider — Dark Fintech
    ========================================== */
 input[type="range"] {
   -webkit-appearance: none;
@@ -97,19 +108,19 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-track {
   height: 6px;
-  background: #E2E8F0;
+  background: rgba(255,255,255,0.07);
   border-radius: 3px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #0891B2;
-  margin-top: -5px;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  background: #F1F5F9;
+  margin-top: -6px;
+  border: 3px solid #000;
+  box-shadow: 0 0 8px rgba(255,255,255,0.3);
   transition: transform 0.15s ease;
 }
 
@@ -118,25 +129,25 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 input[type="range"]:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.2);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
 }
 
 input[type="range"]::-moz-range-track {
   height: 6px;
-  background: #E2E8F0;
+  background: rgba(255,255,255,0.07);
   border-radius: 3px;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #0891B2;
-  border: 2px solid white;
+  background: #F1F5F9;
+  border: 3px solid #000;
 }
 
 /* ==========================================
-   Base Styles
+   Base Styles — Dark First
    ========================================== */
 @layer base {
   html {
@@ -146,25 +157,24 @@ input[type="range"]::-moz-range-thumb {
   }
 
   body {
-    @apply bg-surface-50 font-sans;
-    color: var(--color-navy);
-    @apply transition-colors duration-300;
-  }
-
-  /* Dark mode */
-  html.dark body {
-    @apply bg-surface-800 text-white;
-  }
-
-  /* Heading styles - Inter font family */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: var(--color-navy);
+    background: var(--color-base);
+    color: var(--text-body);
+    @apply transition-colors duration-300;
+    -webkit-font-smoothing: antialiased;
   }
-  
-  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
-    @apply text-white;
+
+  /* Heading styles — Inter at 700 weight */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 700;
+    color: var(--text-heading);
+  }
+
+  /* Financial data utility */
+  .num, [data-num] {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
   }
 
   /* Link base styles */
@@ -175,27 +185,29 @@ input[type="range"]::-moz-range-thumb {
   /* Focus styles for accessibility */
   :focus-visible {
     @apply outline-2 outline-offset-2;
-    outline-color: var(--color-teal);
+    outline-color: var(--color-sky);
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-teal);
+    color: #000;
   }
 }
 
 /* ==========================================
-   UNIVERSAL HEADER
+   UNIVERSAL HEADER — Dark Fintech
    ========================================== */
 
 .header-universal {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid #e5e7eb;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--color-border);
   transition: background 0.2s, border-color 0.2s;
-}
-
-html.dark .header-universal {
-  background: rgba(11, 20, 38, 0.95);
-  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .header-container {
@@ -262,34 +274,20 @@ html.dark .header-universal {
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-secondary);
   border-radius: 8px;
   transition: all 0.15s;
   white-space: nowrap;
 }
 
 .header-nav-link:hover {
-  color: #0f172a;
-  background: #f1f5f9;
-}
-
-.header-nav-link.active {
-  color: #0891b2;
-  background: rgba(8, 145, 178, 0.08);
-}
-
-html.dark .header-nav-link {
-  color: #94a3b8;
-}
-
-html.dark .header-nav-link:hover {
-  color: #fff;
+  color: var(--text-heading);
   background: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .header-nav-link.active {
-  color: #22d3ee;
-  background: rgba(34, 211, 238, 0.1);
+.header-nav-link.active {
+  color: var(--color-sky);
+  background: var(--color-sky-dim);
 }
 
 /* Right Actions */
@@ -306,22 +304,13 @@ html.dark .header-nav-link.active {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--text-secondary);
   transition: all 0.15s;
 }
 
 .header-icon-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-html.dark .header-icon-btn {
-  color: #94a3b8;
-}
-
-html.dark .header-icon-btn:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: var(--text-heading);
 }
 
 .header-notif {
@@ -334,13 +323,9 @@ html.dark .header-icon-btn:hover {
   right: 8px;
   width: 6px;
   height: 6px;
-  background: #ef4444;
+  background: var(--color-red);
   border-radius: 50%;
-  border: 1.5px solid #fff;
-}
-
-html.dark .header-notif-dot {
-  border-color: #0b1426;
+  border: 1.5px solid #000;
 }
 
 /* User Button */
@@ -354,10 +339,6 @@ html.dark .header-notif-dot {
 }
 
 .header-user-btn:hover {
-  background: #f1f5f9;
-}
-
-html.dark .header-user-btn:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -365,11 +346,11 @@ html.dark .header-user-btn:hover {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  background: linear-gradient(135deg, var(--color-sky), var(--color-teal));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #000;
   font-size: 12px;
   font-weight: 600;
 }
@@ -380,27 +361,17 @@ html.dark .header-user-btn:hover {
   right: 0;
   top: calc(100% + 8px);
   width: 220px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-card);
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   z-index: 100;
 }
 
-html.dark .header-dropdown {
-  background: #1e293b;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-}
-
 .header-dropdown-header {
   padding: 12px 14px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-html.dark .header-dropdown-header {
-  border-color: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .header-dropdown-section {
@@ -414,20 +385,12 @@ html.dark .header-dropdown-header {
   width: 100%;
   padding: 10px 14px;
   font-size: 13px;
-  color: #475569;
+  color: var(--text-body);
   transition: background 0.1s;
   text-align: left;
 }
 
 .header-dropdown-item:hover {
-  background: #f8fafc;
-}
-
-html.dark .header-dropdown-item {
-  color: #cbd5e1;
-}
-
-html.dark .header-dropdown-item:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -448,36 +411,28 @@ html.dark .header-dropdown-item:hover {
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-secondary);
   border-radius: 8px;
   transition: color 0.15s;
 }
 
 .header-signin-btn:hover {
-  color: #0f172a;
-}
-
-html.dark .header-signin-btn {
-  color: #94a3b8;
-}
-
-html.dark .header-signin-btn:hover {
-  color: #fff;
+  color: var(--text-heading);
 }
 
 .header-cta-btn {
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #000;
+  background: var(--color-sky);
   border-radius: 8px;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .header-cta-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
 }
 
 /* Mobile Menu Toggle */
@@ -488,7 +443,7 @@ html.dark .header-signin-btn:hover {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--text-secondary);
   transition: all 0.15s;
 }
 
@@ -499,35 +454,21 @@ html.dark .header-signin-btn:hover {
 }
 
 .header-mobile-toggle:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-html.dark .header-mobile-toggle {
-  color: #94a3b8;
-}
-
-html.dark .header-mobile-toggle:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: var(--text-heading);
 }
 
 /* Mobile Menu */
 .header-mobile-menu {
   display: block;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
 }
 
 @media (min-width: 768px) {
   .header-mobile-menu {
     display: none;
   }
-}
-
-html.dark .header-mobile-menu {
-  background: #0b1426;
-  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .header-mobile-nav {
@@ -544,59 +485,37 @@ html.dark .header-mobile-menu {
   padding: 12px 14px;
   font-size: 15px;
   font-weight: 500;
-  color: #475569;
+  color: var(--text-secondary);
   border-radius: 10px;
   transition: all 0.15s;
 }
 
 .header-mobile-link:hover,
 .header-mobile-link.active {
-  background: #f1f5f9;
-  color: #0891b2;
-}
-
-html.dark .header-mobile-link {
-  color: #94a3b8;
-}
-
-html.dark .header-mobile-link:hover,
-html.dark .header-mobile-link.active {
   background: rgba(255, 255, 255, 0.04);
-  color: #22d3ee;
+  color: var(--color-sky);
 }
 
 .header-mobile-auth {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-html.dark .header-mobile-auth {
-  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .header-mobile-signin {
   padding: 12px;
   font-size: 15px;
   font-weight: 500;
-  color: #475569;
+  color: var(--text-secondary);
   text-align: center;
   border-radius: 10px;
   transition: background 0.15s;
 }
 
 .header-mobile-signin:hover {
-  background: #f1f5f9;
-}
-
-html.dark .header-mobile-signin {
-  color: #94a3b8;
-}
-
-html.dark .header-mobile-signin:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -604,14 +523,14 @@ html.dark .header-mobile-signin:hover {
   padding: 12px;
   font-size: 15px;
   font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #000;
+  background: var(--color-sky);
   border-radius: 10px;
   text-align: center;
 }
 
 /* ==========================================
-   Component Styles
+   Component Styles — Dark Fintech
    ========================================== */
 @layer components {
   /* ----- Buttons ----- */
@@ -623,47 +542,52 @@ html.dark .header-mobile-signin:hover {
 
   .btn-primary {
     @apply btn px-6 py-3;
-    @apply bg-brand-500 text-white;
-    @apply hover:bg-brand-600 hover:shadow-brand;
-    @apply focus-visible:ring-brand-500;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+    background: var(--color-sky);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
 
   .btn-secondary {
     @apply btn px-6 py-3;
-    @apply bg-white text-navy-900 border-2 border-neutral-300;
-    @apply hover:border-brand-500 hover:shadow-card-hover;
-    @apply focus-visible:ring-brand-500;
+    background: var(--color-panel);
+    color: var(--text-heading);
+    border: 1px solid var(--color-border);
   }
 
-  html.dark .btn-secondary {
-    @apply bg-navy-800 text-neutral-100 border-neutral-600;
-    @apply hover:border-brand-400;
+  .btn-secondary:hover {
+    border-color: var(--color-border-light);
+    background: var(--color-panel-hover);
   }
 
   .btn-ghost {
     @apply btn px-6 py-3;
-    @apply bg-transparent text-navy-900;
-    @apply hover:bg-navy-50;
-    @apply focus-visible:ring-brand-500;
+    background: transparent;
+    color: var(--text-body);
   }
 
-  html.dark .btn-ghost {
-    @apply text-neutral-100 hover:bg-navy-800;
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-heading);
   }
 
   .btn-accent {
     @apply btn px-6 py-3;
-    @apply bg-accent-500 text-navy-900 font-bold;
-    @apply hover:bg-accent-400 hover:shadow-glow-cyan;
-    @apply focus-visible:ring-accent-500;
+    background: var(--color-teal);
+    color: #000;
+    font-weight: 700;
   }
 
-  .btn-gradient {
-    @apply btn px-6 py-3;
-    @apply bg-brand-500 text-white font-bold;
-    @apply hover:bg-brand-600 hover:shadow-brand-lg;
-    @apply focus-visible:ring-brand-500;
+  .btn-accent:hover {
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
   }
 
   .btn-sm {
@@ -676,36 +600,42 @@ html.dark .header-mobile-signin:hover {
 
   /* ----- Cards ----- */
   .card {
-    @apply bg-white rounded-2xl shadow-card border border-neutral-200;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    @apply rounded-2xl;
     @apply transition-all duration-300;
   }
 
-  html.dark .card {
-    @apply bg-navy-800 border-neutral-700;
+  .card-hover {
+    @apply card;
   }
 
-  .card-hover {
-    @apply card hover:shadow-card-hover hover:border-brand-500;
+  .card-hover:hover {
+    border-color: var(--color-border-light);
+    transform: translateY(-2px);
   }
 
   .card-interactive {
     @apply card-hover cursor-pointer;
-    @apply hover:-translate-y-1;
   }
 
   /* ----- Inputs ----- */
   .input {
     @apply w-full px-4 py-3 rounded-xl;
-    @apply bg-white text-navy-900 placeholder-neutral-400;
-    @apply border-2 border-neutral-300;
+    background: var(--color-panel);
+    color: var(--text-heading);
+    border: 1px solid var(--color-border);
     @apply transition-all duration-200;
-    @apply focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
   }
 
-  html.dark .input {
-    @apply bg-navy-800 text-neutral-100 border-neutral-600;
-    @apply placeholder-neutral-500;
-    @apply focus:border-brand-400;
+  .input::placeholder {
+    color: var(--text-label);
+  }
+
+  .input:focus {
+    border-color: var(--color-sky);
+    box-shadow: 0 0 0 1px var(--color-sky);
+    outline: none;
   }
 
   .input-lg {
@@ -718,27 +648,39 @@ html.dark .header-mobile-signin:hover {
   }
 
   .badge-brand {
-    @apply badge bg-brand-100 text-brand-700;
+    @apply badge;
+    background: var(--color-sky-dim);
+    color: var(--color-sky);
   }
 
   .badge-accent {
-    @apply badge bg-accent-100 text-accent-700;
+    @apply badge;
+    background: var(--color-teal-dim);
+    color: var(--color-teal);
   }
 
   .badge-success {
-    @apply badge bg-success-100 text-success-700;
+    @apply badge;
+    background: var(--color-green-dim);
+    color: var(--color-green);
   }
 
   .badge-warning {
-    @apply badge bg-warning-100 text-warning-700;
+    @apply badge;
+    background: var(--color-gold-dim);
+    color: var(--color-gold);
   }
 
   .badge-danger {
-    @apply badge bg-danger-100 text-danger-700;
+    @apply badge;
+    background: var(--color-red-dim);
+    color: var(--color-red);
   }
 
   .badge-neutral {
-    @apply badge bg-neutral-100 text-neutral-700;
+    @apply badge;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
   }
 
   /* ----- Metric Cards ----- */
@@ -747,37 +689,38 @@ html.dark .header-mobile-signin:hover {
   }
 
   .metric-value {
-    @apply text-3xl font-bold text-navy-900;
-  }
-
-  html.dark .metric-value {
-    @apply text-white;
+    @apply text-3xl font-bold;
+    color: var(--text-heading);
+    font-variant-numeric: tabular-nums;
   }
 
   .metric-label {
-    @apply text-sm text-neutral-500 mt-1;
+    @apply text-sm mt-1;
+    color: var(--text-label);
   }
 
   /* ----- Section Headers ----- */
   .section-title {
-    @apply text-4xl md:text-5xl font-bold text-navy-900 mb-4;
-  }
-
-  html.dark .section-title {
-    @apply text-white;
+    @apply text-4xl md:text-5xl font-bold mb-4;
+    color: var(--text-heading);
   }
 
   .section-divider {
-    @apply h-1 w-24 bg-brand-500 mx-auto mb-6;
+    @apply h-1 w-24 mx-auto mb-6;
+    background: var(--color-sky);
   }
 
   .section-subtitle {
-    @apply text-xl text-neutral-500;
+    @apply text-xl;
+    color: var(--text-secondary);
   }
 
   /* ----- Text Gradient ----- */
   .text-gradient {
-    @apply bg-gradient-brand bg-clip-text text-transparent;
+    background: linear-gradient(135deg, var(--color-sky) 0%, var(--color-teal) 60%, var(--color-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   /* ----- Container ----- */
@@ -787,89 +730,98 @@ html.dark .header-mobile-signin:hover {
 }
 
 /* ==========================================
-   Utility Classes
+   Utility Classes — Dark Fintech
    ========================================== */
 @layer utilities {
-  /* ==========================================
-     InvestIQ Typography Utilities
-     ========================================== */
-  
   /* Tabular numerals for financial data alignment */
   .num {
     font-variant-numeric: tabular-nums;
   }
-  
-  /* Section labels - InvestIQ style */
+
+  /* Section labels */
   .section-label {
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
-  
+
   /* Text color utilities */
+  .text-heading {
+    color: var(--text-heading);
+  }
+
+  .text-body {
+    color: var(--text-body);
+  }
+
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-label {
+    color: var(--text-label);
+  }
+
   .text-navy {
-    color: #0A1628;
+    color: var(--text-heading);
   }
-  
-  html.dark .text-navy {
-    color: #F8FAFC;
-  }
-  
+
   .text-teal {
     color: var(--color-teal);
   }
-  
+
   .text-danger {
-    color: #EF4444;
+    color: var(--color-red);
   }
-  
+
   .text-surface-400 {
-    color: #94A3B8;
+    color: var(--text-secondary);
   }
-  
+
   .text-surface-500 {
-    color: #64748B;
+    color: var(--text-label);
   }
-  
+
   /* Background utilities */
   .bg-teal {
     background-color: var(--color-teal);
   }
-  
+
   .bg-surface-50 {
-    background-color: #F8FAFC;
+    background-color: var(--color-base);
   }
-  
+
   .bg-surface-100 {
-    background-color: #F1F5F9;
+    background-color: var(--color-card);
   }
-  
+
   /* Border utilities */
   .border-surface-100 {
-    border-color: #F1F5F9;
+    border-color: var(--color-border);
   }
-  
+
   .border-surface-200 {
-    border-color: #E2E8F0;
+    border-color: var(--color-border-light);
   }
 
   /* Skeleton loader */
   .skeleton {
-    @apply bg-neutral-200 rounded animate-pulse;
-  }
-
-  html.dark .skeleton {
-    @apply bg-neutral-700;
+    background: rgba(255,255,255,0.06);
+    @apply rounded animate-pulse;
   }
 
   /* Glow effects */
+  .glow-sky {
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.2);
+  }
+
   .glow-cyan {
-    @apply shadow-glow-cyan;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
   }
 
   .glow-blue {
-    @apply shadow-glow-blue;
+    box-shadow: 0 0 20px rgba(4, 101, 242, 0.5);
   }
 
   /* Safe area padding for mobile */
@@ -884,32 +836,28 @@ html.dark .header-mobile-signin:hover {
   /* Slider dynamic positioning using CSS custom properties */
   .slider-fill {
     width: var(--slider-fill, 0%);
-    background: linear-gradient(90deg, var(--color-teal) 0%, #0465f2 100%);
+    background: linear-gradient(90deg, var(--color-sky) 0%, var(--color-teal) 100%);
   }
 
-  /* Theme-aware teal text color */
+  /* Theme-aware color utilities */
   .text-teal {
     color: var(--color-teal);
   }
 
-  /* Theme-aware teal background */
   .bg-teal {
     background-color: var(--color-teal);
   }
 
-  /* Theme-aware teal border */
   .border-teal {
     border-color: var(--color-teal);
   }
 
-  /* Theme-aware teal gradient line */
   .bg-gradient-teal-line {
     background: linear-gradient(to right, transparent, var(--color-teal), transparent);
   }
 
-  /* Theme-aware brand gradient */
   .bg-gradient-brand-teal {
-    background: linear-gradient(135deg, #0465f2 0%, var(--color-teal) 100%);
+    background: linear-gradient(135deg, var(--color-sky) 0%, var(--color-teal) 100%);
   }
 
   .slider-fill-tailwind {
@@ -922,22 +870,16 @@ html.dark .header-mobile-signin:hover {
 
   /* Hide scrollbar but allow scrolling */
   .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
+    -ms-overflow-style: none;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
   }
 
-  /*
-   * Progressive enhancement for modern scrollbar hiding.
-   * - Firefox 64+ and Chrome 121+ support scrollbar-width: none
-   * - Older browsers use the ::-webkit-scrollbar solution above
-   * - The @supports query ensures graceful degradation
-   */
   @supports (scrollbar-width: none) {
     .scrollbar-hide {
-      scrollbar-width: none; /* csslint allow: scrollbar-width */
+      scrollbar-width: none;
     }
   }
 
@@ -960,31 +902,20 @@ html.dark .header-mobile-signin:hover {
     width: 68%;
   }
 
-  /* Explicit text colors for mobile visibility */
+  /* Explicit text colors */
   .text-navy-solid {
-    color: #07172e;
-    -webkit-text-fill-color: #07172e;
+    color: #F1F5F9;
+    -webkit-text-fill-color: #F1F5F9;
   }
 
   .text-brand-solid {
-    color: #0465f2;
-    -webkit-text-fill-color: #0465f2;
+    color: #38bdf8;
+    -webkit-text-fill-color: #38bdf8;
   }
 }
 
-/* Dark mode overrides for solid text colors */
-html.dark .text-navy-solid {
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
-}
-
-html.dark .text-brand-solid {
-  color: #66a5f9;
-  -webkit-text-fill-color: #66a5f9;
-}
-
 /* ==========================================
-   Animation Keyframes (for inline styles fallback)
+   Animation Keyframes
    ========================================== */
 @keyframes float-slow {
   0%, 100% { transform: translateY(0px); }
@@ -1008,7 +939,7 @@ html.dark .text-brand-solid {
   }
 }
 
-/* Legacy animation classes (for backward compatibility) */
+/* Legacy animation classes */
 .animate-float-slow {
   animation: float-slow 6s ease-in-out infinite;
 }
@@ -1028,11 +959,11 @@ html.dark .text-brand-solid {
 /* Phone scanner animations */
 @keyframes bracket-pulse {
   0%, 100% { 
-    filter: drop-shadow(0 0 4px rgba(var(--color-teal-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));
     opacity: 0.8;
   }
   50% { 
-    filter: drop-shadow(0 0 8px rgba(var(--color-teal-rgb), 0.8));
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
     opacity: 1;
   }
 }
@@ -1042,7 +973,7 @@ html.dark .text-brand-solid {
 }
 
 /* ==========================================
-   PROPERTY HERO - World Class Design
+   PROPERTY HERO — Dark Fintech
    ========================================== */
 
 .property-hero {
@@ -1050,14 +981,13 @@ html.dark .text-brand-solid {
   margin-bottom: 24px;
 }
 
-/* Photo Section */
 .property-hero-photos {
   position: relative;
   width: 100%;
   height: 280px;
   border-radius: 20px;
   overflow: hidden;
-  background: #0a1525;
+  background: var(--color-card);
 }
 
 @media (min-width: 768px) {
@@ -1098,10 +1028,9 @@ html.dark .text-brand-solid {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a1525 0%, #0d1d35 100%);
+  background: linear-gradient(135deg, var(--color-card) 0%, var(--color-panel) 100%);
 }
 
-/* Photo Counter */
 .property-hero-counter {
   position: absolute;
   bottom: 16px;
@@ -1114,11 +1043,10 @@ html.dark .text-brand-solid {
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
-  color: white;
+  color: var(--text-heading);
   font-weight: 500;
 }
 
-/* Navigation Arrows */
 .property-hero-nav {
   position: absolute;
   top: 50%;
@@ -1132,7 +1060,7 @@ html.dark .text-brand-solid {
   display: none;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-heading);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1151,7 +1079,6 @@ html.dark .text-brand-solid {
   }
 }
 
-/* Thumbnail Strip */
 .property-hero-thumbs {
   position: absolute;
   bottom: 16px;
@@ -1194,7 +1121,7 @@ html.dark .text-brand-solid {
 }
 
 .property-hero-thumb.active {
-  border-color: #4dd0e1;
+  border-color: var(--color-sky);
 }
 
 .property-hero-thumb:hover {
@@ -1210,10 +1137,9 @@ html.dark .text-brand-solid {
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  color: white;
+  color: var(--text-heading);
 }
 
-/* Dot Indicators (mobile) */
 .property-hero-dots {
   position: absolute;
   bottom: 16px;
@@ -1241,7 +1167,7 @@ html.dark .text-brand-solid {
 }
 
 .property-hero-dot.active {
-  background: #4dd0e1;
+  background: var(--color-sky);
   width: 24px;
   border-radius: 4px;
 }
@@ -1256,9 +1182,9 @@ html.dark .text-brand-solid {
   margin: -20px 12px 0;
   position: relative;
   z-index: 10;
-  background: rgba(11, 20, 38, 0.9);
+  background: rgba(12, 18, 32, 0.9);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(77, 208, 225, 0.2);
+  border: 1px solid var(--color-border-light);
   border-radius: 16px;
   padding: 14px 18px;
 }
@@ -1278,20 +1204,20 @@ html.dark .text-brand-solid {
 .property-hero-address {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-heading);
   margin: 0 0 4px;
   line-height: 1.2;
 }
 
 .property-hero-location {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   margin: 0 0 8px;
 }
 
 .property-hero-specs {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-label);
   margin: 0;
 }
 
@@ -1303,13 +1229,14 @@ html.dark .text-brand-solid {
 .property-hero-price {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #4dd0e1;
+  color: var(--color-sky);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .property-hero-price-label {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 4px;
@@ -1326,24 +1253,24 @@ html.dark .text-brand-solid {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .property-hero-action:hover {
-  background: rgba(77, 208, 225, 0.1);
-  border-color: rgba(77, 208, 225, 0.3);
-  color: #4dd0e1;
+  background: var(--color-sky-dim);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--color-sky);
 }
 
 /* ==========================================
-   STRATEGY GRID - Premium Design
+   STRATEGY GRID — Dark Fintech
    ========================================== */
 
 .strategy-grid-premium {
@@ -1358,14 +1285,13 @@ html.dark .text-brand-solid {
   }
 }
 
-/* Premium Strategy Card */
 .strategy-card-premium {
   position: relative;
   display: flex;
   flex-direction: column;
   padding: 16px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border);
   border-left: 3px solid var(--strategy-color);
   border-radius: 16px;
   cursor: pointer;
@@ -1377,16 +1303,15 @@ html.dark .text-brand-solid {
 .strategy-card-premium:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-border-light);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--strategy-glow);
 }
 
 .strategy-card-premium.active {
-  border-color: #4dd0e1;
-  box-shadow: 0 0 0 2px rgba(77, 208, 225, 0.2), 0 12px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-sky);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2), 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Number Badge */
 .strategy-number-premium {
   position: absolute;
   top: 12px;
@@ -1403,7 +1328,6 @@ html.dark .text-brand-solid {
   color: var(--strategy-color);
 }
 
-/* Stat Display */
 .strategy-stat-premium {
   position: absolute;
   top: 12px;
@@ -1415,16 +1339,16 @@ html.dark .text-brand-solid {
   font-size: 1.1rem;
   font-weight: 800;
   display: block;
+  font-variant-numeric: tabular-nums;
 }
 
 .strategy-stat-label-premium {
   font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
-/* Title Row */
 .strategy-title-premium {
   display: flex;
   align-items: center;
@@ -1436,6 +1360,7 @@ html.dark .text-brand-solid {
 .strategy-name-premium {
   font-size: 0.95rem;
   font-weight: 700;
+  color: var(--text-heading);
 }
 
 .strategy-icon-premium {
@@ -1447,15 +1372,13 @@ html.dark .text-brand-solid {
   justify-content: center;
 }
 
-/* Tagline */
 .strategy-tagline-premium {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-secondary);
   line-height: 1.4;
   margin: 0;
 }
 
-/* Accent Line */
 .strategy-accent-premium {
   position: absolute;
   bottom: 0;
@@ -1471,10 +1394,7 @@ html.dark .text-brand-solid {
   opacity: 1;
 }
 
-/* ==========================================
-   STRATEGY PROMPT - Premium Header
-   ========================================== */
-
+/* Strategy Prompt */
 .strategy-prompt-premium {
   text-align: center;
   margin-bottom: 24px;
@@ -1484,8 +1404,8 @@ html.dark .text-brand-solid {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(77, 208, 225, 0.1);
-  border: 1px solid rgba(77, 208, 225, 0.2);
+  background: var(--color-sky-dim);
+  border: 1px solid rgba(56, 189, 248, 0.2);
   padding: 8px 16px;
   border-radius: 24px;
   margin-bottom: 16px;
@@ -1493,14 +1413,14 @@ html.dark .text-brand-solid {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #4dd0e1;
+  color: var(--color-sky);
 }
 
 .strategy-badge-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4dd0e1;
+  background: var(--color-sky);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -1512,7 +1432,7 @@ html.dark .text-brand-solid {
 .strategy-title-main {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-heading);
   margin: 0 0 12px;
 }
 
@@ -1524,115 +1444,16 @@ html.dark .text-brand-solid {
 
 .strategy-subtitle-main {
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 auto;
   max-width: 400px;
 }
 
-/* Light Mode Support - Class-based (html:not(.dark)) */
-html:not(.dark) .property-hero-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 126, 167, 0.2);
-}
-
-html:not(.dark) .property-hero-address {
-  color: #0f172a;
-}
-
-html:not(.dark) .property-hero-location {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-html:not(.dark) .property-hero-specs {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-html:not(.dark) .property-hero-price {
-  color: #0891b2;
-}
-
-html:not(.dark) .property-hero-price-label {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-html:not(.dark) .property-hero-photos {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-}
-
-html:not(.dark) .property-hero-placeholder {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-html:not(.dark) .property-hero-action {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-  color: #64748b;
-}
-
-html:not(.dark) .property-hero-action:hover {
-  background: rgba(8, 145, 178, 0.1);
-  border-color: rgba(8, 145, 178, 0.3);
-  color: #0891b2;
-}
-
-html:not(.dark) .strategy-card-premium {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-html:not(.dark) .strategy-card-premium:hover {
-  background: rgba(0, 0, 0, 0.04);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-}
-
-html:not(.dark) .strategy-stat-label-premium {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-html:not(.dark) .strategy-tagline-premium {
-  color: rgba(0, 0, 0, 0.55);
-}
-
-html:not(.dark) .strategy-title-main {
-  color: #0f172a;
-}
-
-html:not(.dark) .strategy-subtitle-main {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-html:not(.dark) .strategy-badge-premium {
-  background: rgba(8, 145, 178, 0.1);
-  border-color: rgba(8, 145, 178, 0.2);
-  color: #0891b2;
-}
-
-html:not(.dark) .strategy-badge-dot {
-  background: #0891b2;
-}
-
-html:not(.dark) .strategy-number-premium {
-  background: rgba(8, 145, 178, 0.15);
-}
-
-html:not(.dark) .strategy-name-premium {
-  color: #0f172a;
-}
-
-html:not(.dark) .strategy-stat-value-premium {
-  color: #0f172a;
-}
-
 /* ==========================================
-   Landing Page Imports (moved to top of file)
-   ========================================== */
-/* ==========================================
-   DECISION-GRADE UI COMPONENTS
-   Per DealMakerIQ Design System & Style Guide
+   DECISION-GRADE UI — Dark Fintech
    ========================================== */
 
-/* Nav Tabs - Edge to Edge */
 .dg-nav-tabs {
   display: flex;
   background: var(--dg-bg-primary);
@@ -1675,11 +1496,10 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-nav-tab.active {
-  background: var(--dg-pacific-teal);
-  color: white;
+  background: var(--color-teal);
+  color: #000;
 }
 
-/* Property Context Bar */
 .dg-property-context {
   display: flex;
   align-items: center;
@@ -1733,7 +1553,7 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-property-city {
   font-size: 11px;
   font-weight: 600;
-  color: var(--dg-text-primary);
+  color: var(--dg-text-secondary);
 }
 
 .dg-property-status {
@@ -1751,20 +1571,20 @@ html:not(.dark) .strategy-stat-value-premium {
 
 .dg-property-status.off-market {
   color: var(--dg-negative);
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
+  background: var(--color-red-dim);
+  border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
 .dg-property-status.active {
-  color: var(--dg-pacific-teal);
-  background: var(--dg-bg-selected);
-  border: 1px solid var(--dg-pacific-teal);
+  color: var(--color-teal);
+  background: var(--color-teal-dim);
+  border: 1px solid rgba(45, 212, 191, 0.2);
 }
 
 .dg-property-status.pending {
   color: var(--dg-caution);
-  background: #FEF3C7;
-  border: 1px solid var(--dg-caution);
+  background: var(--color-gold-dim);
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 .dg-status-dot {
@@ -1774,7 +1594,7 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-property-status.off-market .dg-status-dot { background: var(--dg-negative); }
-.dg-property-status.active .dg-status-dot { background: var(--dg-pacific-teal); }
+.dg-property-status.active .dg-status-dot { background: var(--color-teal); }
 .dg-property-status.pending .dg-status-dot { background: var(--dg-caution); }
 
 .dg-property-details {
@@ -1783,7 +1603,7 @@ html:not(.dark) .strategy-stat-value-premium {
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--dg-text-primary);
+  color: var(--dg-text-secondary);
   margin-top: 2px;
 }
 
@@ -1792,8 +1612,9 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-property-price {
-  color: var(--dg-pacific-teal);
+  color: var(--color-sky);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Verdict Section */
@@ -1819,7 +1640,7 @@ html:not(.dark) .strategy-stat-value-premium {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 5px solid var(--dg-pacific-teal);
+  border: 5px solid var(--color-teal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1830,7 +1651,7 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-score-value {
   font-size: 42px;
   font-weight: 800;
-  color: var(--dg-deep-navy);
+  color: var(--text-heading);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -1848,13 +1669,13 @@ html:not(.dark) .strategy-stat-value-premium {
   line-height: 1.2;
 }
 
-.dg-verdict-title .verdict { color: var(--dg-deep-navy); }
-.dg-verdict-title .iq { color: var(--dg-pacific-teal); }
+.dg-verdict-title .verdict { color: var(--text-heading); }
+.dg-verdict-title .iq { color: var(--color-teal); }
 
 .dg-verdict-label {
   font-size: 20px;
   font-weight: 700;
-  color: var(--dg-pacific-teal);
+  color: var(--color-teal);
   line-height: 1.2;
   margin-bottom: 1px;
 }
@@ -1876,7 +1697,7 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-verdict-link {
   font-size: 11px;
   font-weight: 600;
-  color: var(--dg-pacific-teal);
+  color: var(--color-sky);
   text-decoration: none;
 }
 
@@ -1927,7 +1748,7 @@ html:not(.dark) .strategy-stat-value-premium {
   border-radius: 4px;
 }
 
-.dg-confidence-fill.teal { background: var(--dg-pacific-teal); }
+.dg-confidence-fill.teal { background: var(--color-teal); }
 .dg-confidence-fill.amber { background: var(--dg-caution); }
 .dg-confidence-fill.negative { background: var(--dg-negative); }
 
@@ -1941,7 +1762,7 @@ html:not(.dark) .strategy-stat-value-premium {
   font-variant-numeric: tabular-nums;
 }
 
-.dg-confidence-value.teal { color: var(--dg-pacific-teal); }
+.dg-confidence-value.teal { color: var(--color-teal); }
 .dg-confidence-value.amber { color: var(--dg-caution); }
 .dg-confidence-value.negative { color: var(--dg-negative); }
 
@@ -1961,7 +1782,7 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-iq-option:hover:not(.selected) {
-  background: #E8EAED;
+  background: var(--color-panel-hover);
 }
 
 .dg-iq-option.selected {
@@ -1990,13 +1811,13 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-iq-option.selected .dg-iq-option-value {
-  color: var(--dg-pacific-teal);
+  color: var(--color-sky);
 }
 
 .dg-iq-option-sub {
   font-size: 10px;
   font-weight: 500;
-  color: var(--dg-text-primary);
+  color: var(--dg-text-secondary);
 }
 
 /* Metrics Row */
@@ -2017,14 +1838,14 @@ html:not(.dark) .strategy-stat-value-premium {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  color: var(--dg-text-primary);
+  color: var(--dg-text-secondary);
   margin-bottom: 4px;
 }
 
 .dg-metrics-box-value {
   font-size: 18px;
   font-weight: 800;
-  color: var(--dg-pacific-teal);
+  color: var(--color-sky);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2063,11 +1884,11 @@ html:not(.dark) .strategy-stat-value-premium {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid #000;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-.dg-benchmark-marker.teal { background: var(--dg-pacific-teal); }
+.dg-benchmark-marker.teal { background: var(--color-teal); }
 .dg-benchmark-marker.amber { background: var(--dg-caution); }
 .dg-benchmark-marker.negative { background: var(--dg-negative); }
 
@@ -2079,8 +1900,8 @@ html:not(.dark) .strategy-stat-value-premium {
   gap: 8px;
   width: 100%;
   padding: 14px;
-  background: var(--dg-pacific-teal);
-  color: white;
+  background: var(--color-sky);
+  color: #000;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -2091,7 +1912,8 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-btn-primary:hover {
-  background: var(--dg-teal-light);
+  background: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
 .dg-btn-secondary {
@@ -2102,8 +1924,8 @@ html:not(.dark) .strategy-stat-value-premium {
   width: 100%;
   padding: 14px;
   background: var(--dg-bg-primary);
-  color: var(--dg-pacific-teal);
-  border: 2px solid var(--dg-pacific-teal);
+  color: var(--color-sky);
+  border: 2px solid var(--color-sky);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
@@ -2113,14 +1935,13 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-btn-secondary:hover {
-  background: var(--dg-bg-selected);
+  background: var(--color-sky-dim);
 }
 
-/* Adjust Button (inline) */
 .dg-adjust-btn {
   padding: 5px 12px;
-  background: var(--dg-pacific-teal);
-  color: white;
+  background: var(--color-sky);
+  color: #000;
   border: none;
   border-radius: 4px;
   font-size: 10px;
@@ -2130,7 +1951,7 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-adjust-btn:hover {
-  background: var(--dg-teal-light);
+  background: #38bdf8;
 }
 
 /* Table Styling */
@@ -2139,13 +1960,13 @@ html:not(.dark) .strategy-stat-value-premium {
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 2px solid var(--dg-pacific-teal);
+  border-bottom: 2px solid var(--color-teal);
 }
 
 .dg-table-group-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--dg-pacific-teal);
+  color: var(--color-teal);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2176,7 +1997,7 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 .dg-row-value.negative { color: var(--dg-negative); }
-.dg-row-value.teal { color: var(--dg-pacific-teal); }
+.dg-row-value.teal { color: var(--color-teal); }
 
 .dg-total-row {
   display: flex;
@@ -2184,7 +2005,7 @@ html:not(.dark) .strategy-stat-value-premium {
   align-items: center;
   padding: 12px 0;
   margin-top: 4px;
-  border-top: 2px solid var(--dg-pacific-teal);
+  border-top: 2px solid var(--color-teal);
 }
 
 .dg-total-row .dg-row-label,
@@ -2197,8 +2018,8 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-highlight-box {
   margin: 12px 16px;
   padding: 14px 16px;
-  background: var(--dg-bg-selected);
-  border: 2px solid var(--dg-pacific-teal);
+  background: var(--color-teal-dim);
+  border: 2px solid var(--color-teal);
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -2214,13 +2035,12 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-highlight-box .value {
   font-size: 18px;
   font-weight: 800;
-  color: var(--dg-pacific-teal);
+  color: var(--color-teal);
   font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================
-   WORKSHEET TAB NAVIGATION
-   Add this to the END of your globals.css
+   WORKSHEET TAB NAVIGATION — Dark Fintech
    ========================================== */
 
 .worksheet-tab-nav {
@@ -2228,7 +2048,6 @@ html:not(.dark) .strategy-stat-value-premium {
   align-items: center;
   gap: 0.5rem;
   height: 50px;
-  /* NO max-width/margin/padding here - the wrapper handles it */
 }
 
 .worksheet-tabs-wrapper {
@@ -2276,21 +2095,13 @@ html:not(.dark) .strategy-stat-value-premium {
 .worksheet-tabs-fade.left {
   left: 0;
   justify-content: flex-start;
-  background: linear-gradient(to right, white 60%, transparent);
+  background: linear-gradient(to right, #000 60%, transparent);
 }
 
 .worksheet-tabs-fade.right {
   right: 0;
   justify-content: flex-end;
-  background: linear-gradient(to left, white 60%, transparent);
-}
-
-html.dark .worksheet-tabs-fade.left {
-  background: linear-gradient(to right, #0A1628 60%, transparent);
-}
-
-html.dark .worksheet-tabs-fade.right {
-  background: linear-gradient(to left, #0A1628 60%, transparent);
+  background: linear-gradient(to left, #000 60%, transparent);
 }
 
 .worksheet-tabs-scroll-btn {
@@ -2300,28 +2111,17 @@ html.dark .worksheet-tabs-fade.right {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .worksheet-tabs-scroll-btn:hover {
-  background: #f1f5f9;
-  color: #0891b2;
-  border-color: #cbd5e1;
-}
-
-html.dark .worksheet-tabs-scroll-btn {
-  background: #1e293b;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
-}
-
-html.dark .worksheet-tabs-scroll-btn:hover {
-  background: #334155;
-  color: #22d3ee;
+  background: var(--color-panel-hover);
+  color: var(--color-sky);
+  border-color: var(--color-border-light);
 }
 
 .worksheet-tab {
@@ -2332,7 +2132,7 @@ html.dark .worksheet-tabs-scroll-btn:hover {
   border-radius: 8px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-secondary);
   white-space: nowrap;
   background: transparent;
   border: none;
@@ -2341,32 +2141,18 @@ html.dark .worksheet-tabs-scroll-btn:hover {
 }
 
 .worksheet-tab:hover:not(.disabled) {
-  background: #f1f5f9;
-  color: #0a1628;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-heading);
 }
 
 .worksheet-tab.active {
-  background: rgba(8, 145, 178, 0.1);
-  color: #0891b2;
+  background: var(--color-sky-dim);
+  color: var(--color-sky);
 }
 
 .worksheet-tab.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-html.dark .worksheet-tab {
-  color: #94a3b8;
-}
-
-html.dark .worksheet-tab:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-html.dark .worksheet-tab.active {
-  background: rgba(34, 211, 238, 0.1);
-  color: #22d3ee;
 }
 
 .worksheet-tab-icon {
@@ -2390,15 +2176,10 @@ html.dark .worksheet-tab.active {
   font-weight: 600;
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
-  background: #f1f5f9;
-  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.025em;
-}
-
-html.dark .worksheet-tab-badge {
-  background: rgba(255, 255, 255, 0.1);
-  color: #64748b;
 }
 
 .worksheet-help-btn {
@@ -2410,20 +2191,15 @@ html.dark .worksheet-tab-badge {
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
 
 .worksheet-help-btn:hover {
-  background: #f1f5f9;
-  color: #0891b2;
-}
-
-html.dark .worksheet-help-btn:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #22d3ee;
+  color: var(--color-sky);
 }
 
 /* Mobile Menu */
@@ -2436,7 +2212,7 @@ html.dark .worksheet-help-btn:hover {
 .worksheet-mobile-menu-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .worksheet-mobile-menu-content {
@@ -2444,37 +2220,24 @@ html.dark .worksheet-help-btn:hover {
   top: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: var(--color-card);
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   max-height: 80vh;
   overflow-y: auto;
 }
 
-html.dark .worksheet-mobile-menu-content {
-  background: #1e293b;
-}
-
 .worksheet-mobile-menu-header {
   padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
-  color: #0a1628;
-}
-
-html.dark .worksheet-mobile-menu-header {
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--text-heading);
 }
 
 .worksheet-mobile-menu-strategy {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-html.dark .worksheet-mobile-menu-strategy {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .worksheet-mobile-menu-tabs {
@@ -2490,7 +2253,7 @@ html.dark .worksheet-mobile-menu-strategy {
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -2499,32 +2262,18 @@ html.dark .worksheet-mobile-menu-strategy {
 }
 
 .worksheet-mobile-tab:hover:not(.disabled) {
-  background: #f1f5f9;
-  color: #0a1628;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-heading);
 }
 
 .worksheet-mobile-tab.active {
-  background: rgba(8, 145, 178, 0.1);
-  color: #0891b2;
+  background: var(--color-sky-dim);
+  color: var(--color-sky);
 }
 
 .worksheet-mobile-tab.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-html.dark .worksheet-mobile-tab {
-  color: #94a3b8;
-}
-
-html.dark .worksheet-mobile-tab:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-html.dark .worksheet-mobile-tab.active {
-  background: rgba(34, 211, 238, 0.1);
-  color: #22d3ee;
 }
 
 .worksheet-mobile-tab-label {

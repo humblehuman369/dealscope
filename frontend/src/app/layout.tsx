@@ -18,10 +18,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#e8eef3' },
-    { media: '(prefers-color-scheme: dark)', color: '#07172e' },
-  ],
+  themeColor: '#000000',
 }
 
 export default function RootLayout({
@@ -30,13 +27,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="antialiased">
+    <html lang="en" className="dark antialiased">
       <head>
         {/* Preconnect to Google Fonts for faster loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="font-sans bg-neutral-50 text-navy-900 dark:bg-navy-900 dark:text-neutral-100 transition-colors duration-300">
+      <body className="font-sans bg-black text-slate-body transition-colors duration-300">
         <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}
