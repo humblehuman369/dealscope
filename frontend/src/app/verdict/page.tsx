@@ -687,9 +687,9 @@ function VerdictContent() {
             <p className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
 
             <div className="flex justify-center gap-2.5 mt-2">
-              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How VerdictIQ Works</button>
+              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How VerdictIQ Works</button>
               <span style={{ color: colors.text.muted }}>|</span>
-              <button onClick={handleShowHowWeScore} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How We Score</button>
+              <button onClick={handleShowHowWeScore} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How We Score</button>
             </div>
 
             {/* Confidence */}
@@ -713,7 +713,7 @@ function VerdictContent() {
 
           {/* Price Targets */}
           <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
-            <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Price Targets</p>
+            <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>What Should You Pay?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
               Every investment property has three price levels. These tell you exactly when a deal starts making money.
