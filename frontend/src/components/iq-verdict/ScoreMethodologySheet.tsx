@@ -74,7 +74,7 @@ const SCORE_FORMULA = {
     'Compare your Deal Gap to the Max Achievable Discount',
     'Score = Probability of successfully negotiating the gap',
   ],
-  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that's easily achievable = High Score (A+)',
+  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that\'s easily achievable = High Score (A+)',
 }
 
 // =============================================================================
