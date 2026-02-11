@@ -531,7 +531,7 @@ ${[
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
                     style={{ color: colors.text.primary }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '')}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -553,7 +553,7 @@ ${[
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
                     style={{ color: colors.text.primary }}
                     onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '')}
                   >
                     {isExporting === 'excel' ? (
                       <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#34d399', borderTopColor: 'transparent' }} />
