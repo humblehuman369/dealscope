@@ -382,6 +382,146 @@ class PropertyService:
 
         return response.zpid
 
+    async def _resolve_address_from_zpid(self, zpid: str) -> Optional[str]:
+        """Resolve a formatted address from a Zillow zpid."""
+        if not zpid:
+            return None
+
+        try:
+            details = await self.zillow.get_property_details(zpid=zpid)
+        except Exception as exc:
+            logger.warning(f"Address lookup failed for zpid '{zpid}': {exc}")
+            return None
+
+        if not details.success or not details.data or not isinstance(details.data, dict):
+            return None
+
+        raw_address = details.data.get("address")
+        if isinstance(raw_address, str) and raw_address.strip():
+            return raw_address.strip()
+
+        if isinstance(raw_address, dict):
+            street = str(raw_address.get("streetAddress") or raw_address.get("line1") or "").strip()
+            city = str(raw_address.get("city") or "").strip()
+            state = str(raw_address.get("state") or "").strip()
+            zip_code = str(raw_address.get("zipcode") or raw_address.get("zip") or "").strip()
+            parts = [p for p in [street, city] if p]
+            state_zip = " ".join([p for p in [state, zip_code] if p]).strip()
+            if state_zip:
+                parts.append(state_zip)
+            if parts:
+                return ", ".join(parts)
+
+        street = str(details.data.get("streetAddress") or "").strip()
+        city = str(details.data.get("city") or "").strip()
+        state = str(details.data.get("state") or "").strip()
+        zip_code = str(details.data.get("zipcode") or details.data.get("zip") or "").strip()
+        parts = [p for p in [street, city] if p]
+        state_zip = " ".join([p for p in [state, zip_code] if p]).strip()
+        if state_zip:
+            parts.append(state_zip)
+        return ", ".join(parts) if parts else None
+
+    async def get_rentcast_rental_comps(
+        self,
+        zpid: Optional[str] = None,
+        address: Optional[str] = None,
+        limit: int = 10,
+        offset: int = 0,
+        exclude_zpids: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Fetch rental comps from RentCast.
+
+        Uses RentCast's rent estimate endpoint and returns the comparables payload
+        when present in the response.
+        """
+        try:
+            resolved_address = (address or "").strip() or None
+            if not resolved_address and zpid:
+                resolved_address = await self._resolve_address_from_zpid(zpid)
+
+            if not resolved_address:
+                return {
+                    "success": False,
+                    "error": "At least one of address or zpid that resolves to an address is required",
+                    "results": [],
+                    "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
+                    "provider": "rentcast",
+                    "fetched_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+            result = await self.rentcast.get_rent_estimate(address=resolved_address)
+            if not result.success or not result.data:
+                return {
+                    "success": False,
+                    "error": result.error or "Failed to fetch rental comps from RentCast",
+                    "results": [],
+                    "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
+                    "provider": "rentcast",
+                    "fetched_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+            payload = result.data
+            comps: List[Dict[str, Any]] = []
+
+            if isinstance(payload, dict):
+                for key in ("comparables", "comps", "rentalComps", "rentComps", "listings", "results", "data"):
+                    candidate = payload.get(key)
+                    if isinstance(candidate, list):
+                        comps = [c for c in candidate if isinstance(c, dict)]
+                        break
+            elif isinstance(payload, list):
+                comps = [c for c in payload if isinstance(c, dict)]
+
+            if exclude_zpids:
+                exclude_set = set(str(z) for z in exclude_zpids)
+                filtered: List[Dict[str, Any]] = []
+                for comp in comps:
+                    comp_id = str(comp.get("zpid") or comp.get("id") or comp.get("propertyId") or "")
+                    if comp_id and comp_id in exclude_set:
+                        continue
+                    filtered.append(comp)
+                comps = filtered
+
+            total_available = len(comps)
+            paginated_results = comps[offset:offset + limit]
+
+            return {
+                "success": True,
+                "results": paginated_results,
+                "total_count": len(paginated_results),
+                "total_available": total_available,
+                "offset": offset,
+                "limit": limit,
+                "has_more": (offset + limit) < total_available,
+                "provider": "rentcast",
+                "source_address": resolved_address,
+                "fetched_at": datetime.now(timezone.utc).isoformat(),
+            }
+        except Exception as exc:
+            logger.error(f"Error fetching RentCast rental comps: {exc}")
+            return {
+                "success": False,
+                "error": str(exc),
+                "results": [],
+                "total_count": 0,
+                "total_available": 0,
+                "offset": offset,
+                "limit": limit,
+                "has_more": False,
+                "provider": "rentcast",
+                "fetched_at": datetime.now(timezone.utc).isoformat(),
+            }
+
     def _build_market_location_candidates(self, location: str) -> List[str]:
         """Generate fallback location formats for market data queries."""
         normalized = " ".join(location.split()).strip()
