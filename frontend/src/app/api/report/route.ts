@@ -85,7 +85,7 @@ function narrativeCover(d: Proforma): string {
 }
 
 function narrativeOverview(d: Proforma): string {
-  const coc = d.metrics.cash_on_cash_return * 100, pr = d.property, ac = d.acquisition, inc = d.income
+  const coc = d.metrics.cash_on_cash_return, pr = d.property, ac = d.acquisition, inc = d.income
   let assess = coc >= 8 ? 'a strong cash-flowing investment opportunity' : coc >= 0 ? 'a moderate investment opportunity with positive returns' : 'a wealth-building investment opportunity focused on long-term appreciation'
   let t = `This ${ptypeLabel(pr.property_type)} represents ${assess} in ${pr.city}'s residential market. With a list price of ${$(ac.list_price)} and a projected monthly rent of ${$(inc.monthly_rent)}, the property `
   if (d.metrics.price_per_sqft > 0) t += `carries a price per square foot of $${fmt(d.metrics.price_per_sqft)}. `
@@ -97,8 +97,8 @@ function narrativeFinancing(d: Proforma): string {
   const f = d.financing, ac = d.acquisition
   let t = `The investment requires a total acquisition cost of ${$(ac.total_acquisition_cost)}, including the purchase price and closing costs`
   if (ac.rehab_costs > 0) t += `, plus ${$(ac.rehab_costs)} in rehabilitation costs`
-  t += `. With a ${f.loan_type} financing structure utilizing a ${(f.down_payment_percent*100).toFixed(0)}% down payment, investors can leverage ${$(f.loan_amount)} while maintaining strong equity positioning. `
-  t += `The ${f.loan_term_years}-year fixed mortgage at ${(f.interest_rate*100).toFixed(2)}% interest provides payment stability throughout the hold period. Over the life of the loan, total interest payments will reach ${$(f.total_interest_over_life)}, making refinancing opportunities an important consideration.`
+  t += `. With a ${f.loan_type} financing structure utilizing a ${f.down_payment_percent.toFixed(0)}% down payment, investors can leverage ${$(f.loan_amount)} while maintaining strong equity positioning. `
+  t += `The ${f.loan_term_years}-year fixed mortgage at ${f.interest_rate.toFixed(2)}% interest provides payment stability throughout the hold period. Over the life of the loan, total interest payments will reach ${$(f.total_interest_over_life)}, making refinancing opportunities an important consideration.`
   return t
 }
 
@@ -115,26 +115,26 @@ function narrativeIncome(d: Proforma): string {
 
 function narrativeExpense(d: Proforma): string {
   const exp = d.expenses, proj = d.projections
-  const ratio = exp.expense_ratio < 1 ? exp.expense_ratio * 100 : exp.expense_ratio
+  const ratio = exp.expense_ratio
   let t = `Total operating expenses of ${$(exp.total_operating_expenses)} annually represent ${ratio.toFixed(1)}% of effective gross income`
   t += ratio >= 35 && ratio <= 45 ? ', a healthy expense ratio for residential properties. ' : ratio < 35 ? ', a favorable ratio indicating efficient operations. ' : ', which is elevated relative to typical benchmarks. '
   t += exp.insurance > exp.property_taxes ? `Insurance costs are the largest category at ${$(exp.insurance)}, ` : `Property taxes are the largest category at ${$(exp.property_taxes)}, `
   t += `while conservative reserves for maintenance and capital expenditures ensure adequate funds for property upkeep. `
   if (exp.hoa_fees === 0) t += 'The absence of HOA fees provides a meaningful cost advantage. '
-  t += `With ${pct(proj.expense_growth_rate*100,1)} annual expense growth, operating cost inflation remains modest relative to the projected ${pct(proj.rent_growth_rate*100,1)} annual rent growth.`
+  t += `With ${pct(proj.expense_growth_rate,1)} annual expense growth, operating cost inflation remains modest relative to the projected ${pct(proj.rent_growth_rate,1)} annual rent growth.`
   return t
 }
 
 function narrativeMetrics(d: Proforma): string {
   const m = d.metrics, r = d.returns; let t = ''
-  const cap = m.cap_rate*100, coc = m.cash_on_cash_return*100
+  const cap = m.cap_rate, coc = m.cash_on_cash_return
   if (cap >= 6 && coc >= 8) t += 'This investment demonstrates strong operational fundamentals with above-benchmark returns on both an unlevered and levered basis. '
   else if (cap >= 4 && coc >= 0) t += 'The investment shows moderate operational performance. While first-year metrics reflect current market conditions, the property is positioned for improving returns. '
   else t += 'First-year operational metrics reflect the challenges of current market pricing and financing conditions. '
   if (m.dscr >= 1.25) t += `A DSCR of ${m.dscr.toFixed(2)} indicates the property's income comfortably covers debt obligations with a healthy safety margin. `
   else if (m.dscr >= 1.0) t += `A DSCR of ${m.dscr.toFixed(2)} indicates the property's income covers debt obligations, though with limited margin. `
   else t += `A DSCR below 1.0 (${m.dscr.toFixed(2)}) indicates the property's operational income does not fully cover debt obligations in year one. `
-  if (r.irr > 0) { t += `The ${pct(r.irr*100)} projected IRR demonstrates `; t += r.irr*100 >= 15 ? 'excellent' : r.irr*100 >= 10 ? 'solid' : 'moderate'; t += ' total returns when held through the full investment cycle, accounting for rental income, appreciation, loan amortization, and eventual sale proceeds.' }
+  if (r.irr > 0) { t += `The ${pct(r.irr)} projected IRR demonstrates `; t += r.irr >= 15 ? 'excellent' : r.irr >= 10 ? 'solid' : 'moderate'; t += ' total returns when held through the full investment cycle, accounting for rental income, appreciation, loan amortization, and eventual sale proceeds.' }
   return t
 }
 
@@ -145,7 +145,7 @@ function narrativeDealScore(d: Proforma): string {
   else if (ds.score >= 40) { assess = 'a marginal opportunity requiring careful evaluation'; action = 'Significant price negotiation would be needed to achieve target returns.' }
   else { assess = 'a challenging investment at current pricing'; action = 'The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies.' }
   let t = `The InvestIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
-  if (ds.breakeven_price > 0 && ds.discount_required !== 0) t += `The breakeven price is calculated at ${$(ds.breakeven_price)}, representing a ${Math.abs(ds.discount_required*100).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
+  if (ds.breakeven_price > 0 && ds.discount_required !== 0) t += `The breakeven price is calculated at ${$(ds.breakeven_price)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
   return t + action
 }
 
@@ -157,16 +157,16 @@ function narrativeProjections(d: Proforma): string {
   const eqGrowth = initEq > 0 ? ((finalEq - initEq) / initEq * 100) : 0
   const initVal = d.acquisition.purchase_price, finalVal = proj.property_values[proj.property_values.length-1] || initVal
   let t = ''
-  if (posYr && posYr > 1) t += `The property transforms from negative to positive cash flow by year ${posYr} as rent growth at ${pct(proj.rent_growth_rate*100,1)} annually outpaces expense growth at ${pct(proj.expense_growth_rate*100,1)}. `
-  else if (posYr === 1) t += `The property generates positive cash flow from year one, with returns strengthening as rent growth at ${pct(proj.rent_growth_rate*100,1)} outpaces expenses. `
-  else t += `Over the ${yrs}-year projection, rent growth at ${pct(proj.rent_growth_rate*100,1)} works to offset expense growth at ${pct(proj.expense_growth_rate*100,1)}. `
+  if (posYr && posYr > 1) t += `The property transforms from negative to positive cash flow by year ${posYr} as rent growth at ${pct(proj.rent_growth_rate,1)} annually outpaces expense growth at ${pct(proj.expense_growth_rate,1)}. `
+  else if (posYr === 1) t += `The property generates positive cash flow from year one, with returns strengthening as rent growth at ${pct(proj.rent_growth_rate,1)} outpaces expenses. `
+  else t += `Over the ${yrs}-year projection, rent growth at ${pct(proj.rent_growth_rate,1)} works to offset expense growth at ${pct(proj.expense_growth_rate,1)}. `
   t += `Property value appreciation drives the primary wealth creation, compounding from ${$(initVal)} to a projected ${$(finalVal)} by year ${yrs}. Combined with loan principal reduction, total equity grows from ${$(initEq)} to ${$(finalEq)} — a ${eqGrowth.toFixed(0)}% increase over the hold period.`
   return t
 }
 
 function narrativeExit(d: Proforma): string {
   const e = d.exit, r = d.returns, f = d.financing
-  let t = `After a ${e.hold_period_years}-year hold period, the exit analysis projects a gross sale price of ${$(e.projected_sale_price)} based on continued ${pct(e.appreciation_rate*100,1)} annual appreciation. After broker commissions, closing costs, and loan payoff of ${$(e.remaining_loan_balance)}, net sale proceeds reach ${$(e.net_sale_proceeds)} before taxes. `
+  let t = `After a ${e.hold_period_years}-year hold period, the exit analysis projects a gross sale price of ${$(e.projected_sale_price)} based on continued ${pct(e.appreciation_rate,1)} annual appreciation. After broker commissions, closing costs, and loan payoff of ${$(e.remaining_loan_balance)}, net sale proceeds reach ${$(e.net_sale_proceeds)} before taxes. `
   if (e.accumulated_depreciation > 0) t += `Tax implications are significant, with accumulated depreciation of ${$(e.accumulated_depreciation)} subject to recapture at 25%, plus capital gains taxes on the remaining ${$(e.capital_gain)} profit. `
   t += `The after-tax proceeds of ${$(e.after_tax_proceeds)} represent a ${r.equity_multiple.toFixed(2)}x equity multiple on the original ${$(f.down_payment)} down payment. `
   t += 'Investors should consider 1031 exchange opportunities to defer capital gains taxation and reinvest proceeds into larger properties, accelerating portfolio growth.'
@@ -175,8 +175,8 @@ function narrativeExit(d: Proforma): string {
 
 function narrativeSensitivity(d: Proforma): string {
   const s = d.sensitivity; let t = 'Sensitivity analysis examines how changes in key variables affect investment returns. '
-  if (s.purchase_price?.length) { const best = s.purchase_price.reduce((a,b)=>a.irr>b.irr?a:b), worst = s.purchase_price.reduce((a,b)=>a.irr<b.irr?a:b); t += `Purchase price scenarios show IRR ranging from ${pct(worst.irr*100)} to ${pct(best.irr*100)}, demonstrating the impact of acquisition pricing on total returns. ` }
-  if (s.rent?.length) { const best = s.rent.reduce((a,b)=>a.irr>b.irr?a:b), worst = s.rent.reduce((a,b)=>a.irr<b.irr?a:b); t += `Rent variation scenarios project IRR between ${pct(worst.irr*100)} and ${pct(best.irr*100)}, highlighting the sensitivity of returns to rental income assumptions. ` }
+  if (s.purchase_price?.length) { const best = s.purchase_price.reduce((a,b)=>a.irr>b.irr?a:b), worst = s.purchase_price.reduce((a,b)=>a.irr<b.irr?a:b); t += `Purchase price scenarios show IRR ranging from ${pct(worst.irr)} to ${pct(best.irr)}, demonstrating the impact of acquisition pricing on total returns. ` }
+  if (s.rent?.length) { const best = s.rent.reduce((a,b)=>a.irr>b.irr?a:b), worst = s.rent.reduce((a,b)=>a.irr<b.irr?a:b); t += `Rent variation scenarios project IRR between ${pct(worst.irr)} and ${pct(best.irr)}, highlighting the sensitivity of returns to rental income assumptions. ` }
   t += 'These scenarios help quantify risk and identify the variables with the greatest impact on investment performance.'
   return t
 }
@@ -195,7 +195,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
 
   const sensBlock = (title: string, rows: Array<{change_percent:number;absolute_value:number;irr:number;cash_on_cash:number;net_profit:number}>) => {
     if (!rows?.length) return ''
-    return `<div class="sens-block"><h4>${title}</h4><table class="tbl"><thead><tr><th>Change</th><th>Value</th><th>IRR</th><th>CoC Return</th><th>Net Profit</th></tr></thead><tbody>${rows.map(s => { const c = s.irr>=0?p.pos:p.neg; return `<tr><td>${s.change_percent>0?'+':''}${pct(s.change_percent,0)}</td><td>${$(s.absolute_value)}</td><td style="color:${c}">${pct(s.irr*100)}</td><td style="color:${c}">${pct(s.cash_on_cash*100)}</td><td style="color:${c}">${sign$(s.net_profit)}</td></tr>` }).join('')}</tbody></table></div>`
+    return `<div class="sens-block"><h4>${title}</h4><table class="tbl"><thead><tr><th>Change</th><th>Value</th><th>IRR</th><th>CoC Return</th><th>Net Profit</th></tr></thead><tbody>${rows.map(s => { const c = s.irr>=0?p.pos:p.neg; return `<tr><td>${s.change_percent>0?'+':''}${pct(s.change_percent,0)}</td><td>${$(s.absolute_value)}</td><td style="color:${c}">${pct(s.irr)}</td><td style="color:${c}">${pct(s.cash_on_cash)}</td><td style="color:${c}">${sign$(s.net_profit)}</td></tr>` }).join('')}</tbody></table></div>`
   }
 
   // Photo grid HTML
@@ -217,8 +217,8 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="hero">
     <div class="hero-item"><div class="hero-val">${$(d.acquisition.purchase_price)}</div><div class="hero-lbl">Purchase Price</div></div>
     <div class="hero-item"><div class="hero-val">${$(d.income.monthly_rent)}</div><div class="hero-lbl">Monthly Rent</div></div>
-    <div class="hero-item"><div class="hero-val">${pct(d.metrics.cash_on_cash_return*100)}</div><div class="hero-lbl">Cash-on-Cash</div></div>
-    <div class="hero-item"><div class="hero-val">${pct(d.metrics.cap_rate*100)}</div><div class="hero-lbl">Cap Rate</div></div>
+    <div class="hero-item"><div class="hero-val">${pct(d.metrics.cash_on_cash_return)}</div><div class="hero-lbl">Cash-on-Cash</div></div>
+    <div class="hero-item"><div class="hero-val">${pct(d.metrics.cap_rate)}</div><div class="hero-lbl">Cap Rate</div></div>
     <div class="hero-item"><div class="hero-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="hero-lbl">Monthly Cash Flow</div></div>
     <div class="hero-item"><div class="hero-val">${d.metrics.dscr.toFixed(2)}x</div><div class="hero-lbl">DSCR</div></div>
   </div>
@@ -258,21 +258,21 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       <div class="card-hd">Acquisition</div>
       ${kv('Purchase Price', $(d.acquisition.purchase_price))}
       ${kv('List Price', $(d.acquisition.list_price))}
-      ${kv('Discount from List', pct(d.acquisition.discount_from_list*100,1))}
-      ${kv('Closing Costs', `${$(d.acquisition.closing_costs)} (${pct(d.acquisition.closing_costs_percent*100,1)})`)}
+      ${kv('Discount from List', pct(d.acquisition.discount_from_list,1))}
+      ${kv('Closing Costs', `${$(d.acquisition.closing_costs)} (${pct(d.acquisition.closing_costs_percent,1)})`)}
       ${kv('Rehab Costs', $(d.acquisition.rehab_costs))}
       ${kvTotal('Total Investment', $(d.acquisition.total_acquisition_cost))}
     </div>
     <div class="card">
       <div class="card-hd">Financing</div>
-      ${kv('Down Payment', `${$(d.financing.down_payment)} (${pct(d.financing.down_payment_percent*100,0)})`)}
+      ${kv('Down Payment', `${$(d.financing.down_payment)} (${pct(d.financing.down_payment_percent,0)})`)}
       ${kv('Loan Amount', $(d.financing.loan_amount))}
-      ${kv('Interest Rate', pct(d.financing.interest_rate*100))}
+      ${kv('Interest Rate', pct(d.financing.interest_rate))}
       ${kv('Loan Term', `${d.financing.loan_term_years} years (${d.financing.loan_type})`)}
       ${kv('Monthly P&I', $(d.financing.monthly_payment))}
       ${kv('Monthly w/ Escrow', $(d.financing.monthly_payment_with_escrow))}
       ${kv('Total Interest', $(d.financing.total_interest_over_life))}
-      ${kv('APR', pct(d.financing.apr*100))}
+      ${kv('APR', pct(d.financing.apr))}
     </div>
   </div>
   
@@ -283,11 +283,11 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="sec-divider"></div>
   <div class="sec-tag">02</div>
   <h2 class="sec-title">Market Position & Location Analysis</h2>
-  <p class="narrative">Located in ${d.property.city}, ${d.property.state}, this property benefits from the area's residential market dynamics. The neighborhood offers access to local amenities, schools, and transportation corridors that drive tenant demand. With an assumed annual appreciation rate of ${pct(d.projections.appreciation_rate*100,1)}, the investment thesis leverages both rental income and long-term value growth. Strong fundamentals in the local housing market — including limited inventory and consistent demand from relocating professionals — support the projected appreciation trajectory.</p>
+  <p class="narrative">Located in ${d.property.city}, ${d.property.state}, this property benefits from the area's residential market dynamics. The neighborhood offers access to local amenities, schools, and transportation corridors that drive tenant demand. With an assumed annual appreciation rate of ${pct(d.projections.appreciation_rate,1)}, the investment thesis leverages both rental income and long-term value growth. Strong fundamentals in the local housing market — including limited inventory and consistent demand from relocating professionals — support the projected appreciation trajectory.</p>
 
   <div class="grid4 mt-16">
-    <div class="stat-card"><div class="stat-val">${pct(d.projections.appreciation_rate*100,1)}</div><div class="stat-lbl">Annual Appreciation</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.projections.rent_growth_rate*100,1)}</div><div class="stat-lbl">Rent Growth Rate</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(d.projections.appreciation_rate,1)}</div><div class="stat-lbl">Annual Appreciation</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(d.projections.rent_growth_rate,1)}</div><div class="stat-lbl">Rent Growth Rate</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.property_values[d.projections.property_values.length-1] || d.acquisition.purchase_price)}</div><div class="stat-lbl">Projected Value (Yr ${d.projections.hold_period_years})</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.equity_positions[d.projections.equity_positions.length-1] || d.financing.down_payment)}</div><div class="stat-lbl">Projected Equity (Yr ${d.projections.hold_period_years})</div></div>
   </div>
@@ -319,7 +319,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
 
   <div class="waterfall mt-16">
     ${wfRow('Gross Rental Income', $(d.income.annual_gross_rent), 100, 'pos', p)}
-    ${wfRow(`Vacancy Allowance (${pct(d.income.vacancy_percent*100,0)})`, `-${$(d.income.vacancy_allowance)}`, (d.income.vacancy_allowance/d.income.annual_gross_rent)*100, 'neg', p)}
+    ${wfRow(`Vacancy Allowance (${pct(d.income.vacancy_percent,0)})`, `-${$(d.income.vacancy_allowance)}`, (d.income.vacancy_allowance/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Effective Gross Income', $(d.income.effective_gross_income), (d.income.effective_gross_income/d.income.annual_gross_rent)*100, 'brand', p)}
     ${wfRow('Operating Expenses', `-${$(exp.total_operating_expenses)}`, (exp.total_operating_expenses/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Net Operating Income', sign$(d.metrics.net_operating_income), (Math.abs(d.metrics.net_operating_income)/d.income.annual_gross_rent)*100, d.metrics.net_operating_income>=0?'pos':'neg', p, true)}
@@ -331,7 +331,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="stat-lbl">Monthly Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.annual_cash_flow)}</div><div class="stat-lbl">Annual Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.metrics.net_operating_income)}</div><div class="stat-lbl">Net Operating Income</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(exp.expense_ratio*100,1)}</div><div class="stat-lbl">Operating Expense Ratio</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(exp.expense_ratio,1)}</div><div class="stat-lbl">Operating Expense Ratio</div></div>
   </div>
 
   <div class="card mt-16">
@@ -340,13 +340,13 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       <div>
         ${kv('Gross Scheduled Rent', $(d.income.annual_gross_rent))}
         ${kv('Monthly Rent', $(d.income.monthly_rent))}
-        ${kv('Vacancy Rate', pct(d.income.vacancy_percent*100,1))}
+        ${kv('Vacancy Rate', pct(d.income.vacancy_percent,1))}
         ${kv('Effective Gross Income', $(d.income.effective_gross_income))}
       </div>
       <div>
-        ${kv('Expense Ratio', pct(exp.expense_ratio*100,1))}
+        ${kv('Expense Ratio', pct(exp.expense_ratio,1))}
         ${kv('Debt Service Coverage', `${d.metrics.dscr.toFixed(2)}x`)}
-        ${kv('Break-Even Occupancy', pct(d.metrics.break_even_occupancy*100,1))}
+        ${kv('Break-Even Occupancy', pct(d.metrics.break_even_occupancy,1))}
         ${kv('Rent per sqft (monthly)', `$${(d.income.monthly_rent/d.property.square_feet).toFixed(2)}`)}
       </div>
     </div>
@@ -374,11 +374,11 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
         <tbody>
           <tr><td>Property Taxes</td><td>${$(exp.property_taxes)}</td><td>${$(exp.property_taxes/12)}</td><td>${pct((exp.property_taxes/d.income.effective_gross_income)*100,1)}</td></tr>
           <tr><td>Insurance</td><td>${$(exp.insurance)}</td><td>${$(exp.insurance/12)}</td><td>${pct((exp.insurance/d.income.effective_gross_income)*100,1)}</td></tr>
-          <tr><td>Management</td><td>${$(exp.management)}</td><td>${$(exp.management/12)}</td><td>${pct(exp.management_percent*100,1)}</td></tr>
-          <tr><td>Maintenance</td><td>${$(exp.maintenance)}</td><td>${$(exp.maintenance/12)}</td><td>${pct(exp.maintenance_percent*100,1)}</td></tr>
-          <tr><td>CapEx Reserve</td><td>${$(exp.cap_ex_reserve)}</td><td>${$(exp.cap_ex_reserve/12)}</td><td>${pct(exp.cap_ex_reserve_percent*100,1)}</td></tr>
+          <tr><td>Management</td><td>${$(exp.management)}</td><td>${$(exp.management/12)}</td><td>${pct(exp.management_percent,1)}</td></tr>
+          <tr><td>Maintenance</td><td>${$(exp.maintenance)}</td><td>${$(exp.maintenance/12)}</td><td>${pct(exp.maintenance_percent,1)}</td></tr>
+          <tr><td>CapEx Reserve</td><td>${$(exp.cap_ex_reserve)}</td><td>${$(exp.cap_ex_reserve/12)}</td><td>${pct(exp.cap_ex_reserve_percent,1)}</td></tr>
           ${exp.hoa_fees ? `<tr><td>HOA Fees</td><td>${$(exp.hoa_fees)}</td><td>${$(exp.hoa_fees/12)}</td><td>${pct((exp.hoa_fees/d.income.effective_gross_income)*100,1)}</td></tr>` : ''}
-          <tr class="tbl-total"><td><strong>Total</strong></td><td><strong>${$(exp.total_operating_expenses)}</strong></td><td><strong>${$(exp.total_operating_expenses/12)}</strong></td><td><strong>${pct(exp.expense_ratio*100,1)}</strong></td></tr>
+          <tr class="tbl-total"><td><strong>Total</strong></td><td><strong>${$(exp.total_operating_expenses)}</strong></td><td><strong>${$(exp.total_operating_expenses/12)}</strong></td><td><strong>${pct(exp.expense_ratio,1)}</strong></td></tr>
         </tbody>
       </table>
     </div>
@@ -394,18 +394,18 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <p class="narrative">${narrativeMetrics(d)}</p>
 
   <div class="metric-grid mt-16">
-    ${metricCard('Cap Rate', pct(d.metrics.cap_rate*100), 'Unlevered return on property value', p)}
-    ${metricCard('Cash-on-Cash', pct(d.metrics.cash_on_cash_return*100), 'Annual return on cash invested', p)}
+    ${metricCard('Cap Rate', pct(d.metrics.cap_rate), 'Unlevered return on property value', p)}
+    ${metricCard('Cash-on-Cash', pct(d.metrics.cash_on_cash_return), 'Annual return on cash invested', p)}
     ${metricCard('DSCR', `${d.metrics.dscr.toFixed(2)}x`, 'Debt coverage safety margin', p)}
     ${metricCard('Gross Rent Multiplier', `${d.metrics.gross_rent_multiplier.toFixed(1)}x`, 'Price-to-rent ratio', p)}
-    ${metricCard('1% Rule', pct(d.metrics.one_percent_rule*100), 'Monthly rent / purchase price', p)}
-    ${metricCard('Break-Even Occupancy', pct(d.metrics.break_even_occupancy*100,0), 'Minimum occupancy to cover costs', p)}
-    ${metricCard('IRR', pct(d.returns.irr*100), 'Internal rate of return over hold', p)}
+    ${metricCard('1% Rule', pct(d.metrics.one_percent_rule), 'Monthly rent / purchase price', p)}
+    ${metricCard('Break-Even Occupancy', pct(d.metrics.break_even_occupancy,0), 'Minimum occupancy to cover costs', p)}
+    ${metricCard('IRR', pct(d.returns.irr), 'Internal rate of return over hold', p)}
     ${metricCard('Equity Multiple', `${d.returns.equity_multiple.toFixed(2)}x`, 'Total return on invested equity', p)}
-    ${metricCard('CAGR', pct(d.returns.cagr*100), 'Compound annual growth rate', p)}
+    ${metricCard('CAGR', pct(d.returns.cagr), 'Compound annual growth rate', p)}
     ${metricCard('Price / sqft', $(d.metrics.price_per_sqft), 'Acquisition cost per square foot', p)}
     ${metricCard('Rent / sqft', `$${d.metrics.rent_per_sqft.toFixed(2)}`, 'Monthly rent per square foot', p)}
-    ${metricCard('Avg Annual Return', pct(d.returns.average_annual_return*100), 'Average return per year', p)}
+    ${metricCard('Avg Annual Return', pct(d.returns.average_annual_return), 'Average return per year', p)}
   </div>
   
 </div>
@@ -425,13 +425,13 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   </div>
 
   <div class="grid4 mt-20">
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.irr*100)}</div><div class="stat-lbl">IRR</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(d.returns.irr)}</div><div class="stat-lbl">IRR</div></div>
     <div class="stat-card"><div class="stat-val">${d.returns.equity_multiple.toFixed(2)}x</div><div class="stat-lbl">Equity Multiple</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.average_annual_return*100)}</div><div class="stat-lbl">Avg Annual Return</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.cagr*100)}</div><div class="stat-lbl">CAGR</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(d.returns.average_annual_return)}</div><div class="stat-lbl">Avg Annual Return</div></div>
+    <div class="stat-card"><div class="stat-val">${pct(d.returns.cagr)}</div><div class="stat-lbl">CAGR</div></div>
   </div>
 
-  ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box mt-16"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required*100,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
+  ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box mt-16"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
 
   <div class="card mt-16">
     <div class="card-hd">Investment Thesis Summary</div>
@@ -439,12 +439,12 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       <div>
         ${kv('Total Cash Required', $(d.acquisition.total_acquisition_cost))}
         ${kv('Year 1 Cash Flow', sign$(d.metrics.annual_cash_flow))}
-        ${kv('Year 1 Cash-on-Cash', pct(d.metrics.cash_on_cash_return*100))}
-        ${kv('Cap Rate', pct(d.metrics.cap_rate*100))}
+        ${kv('Year 1 Cash-on-Cash', pct(d.metrics.cash_on_cash_return))}
+        ${kv('Cap Rate', pct(d.metrics.cap_rate))}
         ${kv('DSCR', `${d.metrics.dscr.toFixed(2)}x`)}
       </div>
       <div>
-        ${kv('10-Year IRR', pct(d.returns.irr*100))}
+        ${kv('10-Year IRR', pct(d.returns.irr))}
         ${kv('Equity Multiple', `${d.returns.equity_multiple.toFixed(2)}x`)}
         ${kv('After-Tax Proceeds', $(d.exit.after_tax_proceeds))}
         ${kv('Total Appreciation', $(d.exit.projected_sale_price - d.acquisition.purchase_price))}
