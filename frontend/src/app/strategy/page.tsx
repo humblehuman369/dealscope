@@ -253,10 +253,11 @@ function StrategyContent() {
         address: addressParam,
         strategy: 'ltr',
         theme,
-        auto_print: 'true',
+        propertyId,
       })
-      // Open the HTML report in a new tab — auto-print triggers Save as PDF
-      const url = `/api/v1/proforma/property/${propertyId}/report?${params}`
+      // Open the Vercel-hosted HTML report in a new tab
+      // The report auto-triggers window.print() for Save as PDF
+      const url = `/api/report?${params}`
       window.open(url, '_blank')
 
       setIsExportOpen(false)
