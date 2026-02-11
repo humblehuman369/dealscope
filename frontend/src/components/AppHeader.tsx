@@ -717,7 +717,7 @@ export function AppHeader({
               ) : (
                 <div className="px-4 py-3 border-t" style={{ borderColor: colors.ui.border }}>
                   <p className="text-xs" style={{ color: colors.text.tertiary }}>
-                    Property details loading...
+                    Property details not yet available
                   </p>
                 </div>
               )
