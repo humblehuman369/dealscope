@@ -383,27 +383,29 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
 <!-- ===== PAGE 4: DEAL SCORE + THESIS ===== -->
 <div class="page">
   ${pgHdr}
-  <div class="sec-tag">06</div>
-  <h2 class="sec-title">Investment Verdict</h2>
+  <div class="sec-tag" style="margin-top:10px">06</div>
+  <h2 class="sec-title" style="margin-bottom:14px">Investment Verdict</h2>
 
-  <div class="score-section">
-    <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 140)}</div>
+  <div class="score-section" style="margin-top:16px">
+    <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 160)}</div>
     <div class="score-text">
       <h3 class="verdict-hd" style="color:${gc(d.deal_score.grade,p)}">${d.deal_score.verdict || `Grade ${d.deal_score.grade}`}</h3>
       <p class="narrative">${narrativeDealScore(d)}</p>
     </div>
   </div>
 
-  <div class="grid4 mt-12">
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.irr)}</div><div class="stat-lbl">IRR</div></div>
-    <div class="stat-card"><div class="stat-val">${d.returns.equity_multiple.toFixed(2)}x</div><div class="stat-lbl">Equity Multiple</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.average_annual_return)}</div><div class="stat-lbl">Avg Annual Return</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.cagr)}</div><div class="stat-lbl">CAGR</div></div>
+  <div class="grid4" style="margin-top:24px">
+    <div class="stat-card" style="padding:14px"><div class="stat-val">${pct(d.returns.irr)}</div><div class="stat-lbl">IRR</div></div>
+    <div class="stat-card" style="padding:14px"><div class="stat-val">${d.returns.equity_multiple.toFixed(2)}x</div><div class="stat-lbl">Equity Multiple</div></div>
+    <div class="stat-card" style="padding:14px"><div class="stat-val">${pct(d.returns.average_annual_return)}</div><div class="stat-lbl">Avg Annual Return</div></div>
+    <div class="stat-card" style="padding:14px"><div class="stat-val">${pct(d.returns.cagr)}</div><div class="stat-lbl">CAGR</div></div>
   </div>
 
-  ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box mt-12"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
+  ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box" style="margin-top:24px;padding:18px"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
 
-  <div class="card mt-12">
+  <div class="sec-divider" style="margin:24px 0 16px"></div>
+
+  <div class="card" style="padding:16px 18px">
     <div class="card-hd">Investment Thesis Summary</div>
     <div class="grid2">
       <div>
@@ -432,17 +434,17 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <h2 class="sec-title">Financial Projections</h2>
   <p class="narrative">${narrativeProjections(d)}</p>
 
-  <table class="tbl" style="margin-top:8px">
+  <table class="tbl" style="margin-top:10px">
     <thead><tr><th>Year</th><th>Income</th><th>Expenses</th><th>NOI</th><th>Debt Service</th><th>Cash Flow</th><th>Property Value</th><th>Equity</th></tr></thead>
     <tbody>${d.projections.annual_projections.map((yr,i) => `<tr><td><strong>Yr ${yr.year}</strong></td><td>${$(yr.total_income)}</td><td>${$(yr.operating_expenses)}</td><td>${$(yr.net_operating_income)}</td><td>${$(yr.total_debt_service)}</td><td style="color:${yr.pre_tax_cash_flow>=0?p.pos:p.neg};font-weight:600">${sign$(yr.pre_tax_cash_flow)}</td><td>${$(d.projections.property_values[i]||0)}</td><td>${$(d.projections.equity_positions[i]||0)}</td></tr>`).join('')}</tbody>
   </table>
 
-  <div class="sec-divider"></div>
+  <div class="sec-divider" style="margin:18px 0 12px"></div>
   <div class="sec-tag">08</div>
   <h2 class="sec-title">Exit Strategy & Tax Analysis</h2>
   <p class="narrative">${narrativeExit(d)}</p>
 
-  <div class="grid2" style="margin-top:8px">
+  <div class="grid2" style="margin-top:10px">
     <div class="card">
       <div class="card-hd">Sale Proceeds (Year ${d.exit.hold_period_years})</div>
       ${kv('Projected Sale Price', $(d.exit.projected_sale_price))}
@@ -467,20 +469,20 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
 <!-- ===== PAGE 6: SENSITIVITY + DISCLAIMER ===== -->
 <div class="page">
   ${pgHdr}
-  <div class="sec-tag">09</div>
-  <h2 class="sec-title">What-If Scenarios</h2>
+  <div class="sec-tag" style="margin-top:8px">09</div>
+  <h2 class="sec-title" style="margin-bottom:10px">What-If Scenarios</h2>
   <p class="narrative">${narrativeSensitivity(d)}</p>
 
-  <div class="sens-container" style="margin-top:8px">
+  <div class="sens-container" style="margin-top:14px;gap:16px">
     ${sensBlock('Purchase Price Scenarios', d.sensitivity.purchase_price)}
     ${sensBlock('Interest Rate Scenarios', d.sensitivity.interest_rate)}
     ${sensBlock('Rent Scenarios', d.sensitivity.rent)}
   </div>
 
-  <div class="disclaimer mt-16">
+  <div class="disclaimer" style="margin-top:28px;padding:16px">
     <h4>Data Sources</h4>
     <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
-    <h4 class="mt-8">Disclaimer</h4>
+    <h4 class="mt-12">Disclaimer</h4>
     <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
     <p class="mt-8">&copy; ${now.getFullYear()} InvestIQ. All rights reserved.</p>
   </div>
