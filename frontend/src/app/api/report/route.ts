@@ -208,6 +208,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="cover-top">
     <div class="logo-lg">Invest<span class="iq">IQ</span></div>
     <div class="cover-type">Property Investment Report</div>
+    <div class="cover-date">${dateStr} &bull; ${d.strategy_type.toUpperCase()} Strategy</div>
   </div>
   ${photoHTML}
   <div class="cover-divider"></div>
@@ -536,12 +537,10 @@ function metricCard(label: string, value: string, desc: string, p: P) { return `
 // ---------------------------------------------------------------------------
 function css(p: P, dk: boolean): string {
   return `
-@page{size:letter;margin:0.4in 0.5in 0.5in;}
-@media print{body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-.cover{page-break-after:always}}
+@page{size:letter;margin:0}
+@media print{body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;padding:0.4in 0.5in 0.5in}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.55;color:${p.text};background:${p.bg};max-width:8.5in;margin:0 auto;padding:0 0.5in}
-@media print{body{padding:0}}
 .section{padding:0 0 8px}
 .card,.stat-card,.m-card,.breakeven-box,.sens-block{page-break-inside:avoid}
 .tbl{page-break-inside:auto}
@@ -549,15 +548,16 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.5
 .sec-divider{height:3px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});border-radius:2px;margin:28px 0 16px}
 
 /* Cover */
-.cover{display:flex;flex-direction:column;min-height:calc(11in - 0.9in)}
+.cover{display:flex;flex-direction:column}
 .brand-bar{height:5px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.4in -0.5in 16px;width:calc(100% + 1in)}
 .cover-top{margin-bottom:16px}
 .logo-lg{font-size:28px;font-weight:700;color:${p.text}}.iq{color:${p.brand}}
 .cover-type{font-size:11px;color:${p.sub};text-transform:uppercase;letter-spacing:3px;margin-top:2px}
+.cover-date{font-size:11px;color:${p.muted};margin-top:4px}
 .cover-divider{width:60px;height:3px;background:${p.brand};border-radius:2px;margin:16px 0}
 .cover-addr{font-size:22px;font-weight:700;color:${p.text};line-height:1.3;margin-bottom:6px}
 .cover-meta{font-size:12px;color:${p.sub};margin-bottom:16px}
-.cover-footer{margin-top:auto;display:flex;justify-content:space-between;border-top:1px solid ${p.border};padding-top:10px;font-size:9px;color:${p.muted}}
+.cover-footer{margin-top:16px;display:flex;justify-content:space-between;border-top:1px solid ${p.border};padding-top:10px;font-size:9px;color:${p.muted}}
 
 /* Photos */
 .photos{display:grid;gap:4px;border-radius:8px;overflow:hidden;height:220px;margin-bottom:12px}
