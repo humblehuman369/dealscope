@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 try:
     from weasyprint import HTML, CSS
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except Exception as exc:
     WEASYPRINT_AVAILABLE = False
-    logger.warning("WeasyPrint not installed. PDF export will be limited.")
+    logger.warning(f"WeasyPrint unavailable — PDF export disabled. Error: {type(exc).__name__}: {exc}")
 
 
 class ProformaPDFExporter:
