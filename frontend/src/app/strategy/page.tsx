@@ -287,7 +287,7 @@ function StrategyContent() {
 
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-      <div className="max-w-[520px] mx-auto">
+      <div className="max-w-[640px] mx-auto">
         {/* Full Breakdown */}
         <section className="px-5 py-8">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Full Breakdown</p>
