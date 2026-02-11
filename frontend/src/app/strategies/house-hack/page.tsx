@@ -1,122 +1,62 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Users, ArrowLeft, LayoutGrid } from 'lucide-react';
-import { useSession, useLogout } from '@/hooks/useSession';
-import { useAuthModal } from '@/hooks/useAuthModal';
+import { Users, Home, BookOpen, CreditCard } from 'lucide-react';
+import {
+  StrategyPageLayout,
+  Callout,
+  Prose,
+} from '@/components/strategies/StrategyPageLayout';
+
+const ACCENT = '#2dd4bf';
 
 export default function HouseHackPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useSession();
-  const { openAuthModal } = useAuthModal();
-  const logoutMutation = useLogout();
-
   return (
-    <div className="min-h-screen bg-[#e8eef3]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <StrategyPageLayout
+      name="House Hack"
+      tagline="Cut your housing costs up to 100%"
+      accentColor={ACCENT}
+      icon={<Users size={28} />}
+      headline="The Ultimate Beginner Strategy"
+      benefitsHeadline="Why Choose House Hacking?"
+      benefits={[
+        {
+          icon: <Home size={22} />,
+          title: 'Zero Housing Cost',
+          description: 'Live for free or nearly free while building wealth',
+        },
+        {
+          icon: <BookOpen size={22} />,
+          title: 'Learn by Doing',
+          description: 'Beginner-friendly landlord experience with training wheels',
+        },
+        {
+          icon: <CreditCard size={22} />,
+          title: 'Low Down Payment',
+          description: 'FHA loans with as little as 3.5% down',
+        },
+      ]}
+    >
+      <Prose>
+        <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>House hacking</strong> is the
+        ultimate beginner strategy — your biggest expense (housing) becomes your biggest asset.
+        Buy a multi-unit property, live in one unit, and rent out the others to cover your mortgage.
+      </Prose>
 
-      {/* Header */}
-      <header className="bg-[#e8eef3] border-b border-[#d0d7de] py-6">
-        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-brand-500 to-blue-700 shadow-lg shadow-brand-500/30" />
-              <img src="/images/investiq-logo-icon.png" alt="InvestIQ" className="relative h-12 w-12 rounded-full object-cover" style={{ boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 12px rgba(14, 99, 246, 0.25)' }} />
-            </div>
-            <span className="text-2xl font-bold text-navy-900 tracking-tight">Invest<span className="text-brand-500">IQ</span></span>
-          </a>
-          <nav className="flex items-center gap-4">
-            {isAuthenticated && user ? (
-              <>
-                <button onClick={() => router.push('/search')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2">
-                  <LayoutGrid className="w-4 h-4" /> Search
-                </button>
-                <button onClick={() => logoutMutation.mutate()} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => openAuthModal('login')} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign In</button>
-                <button onClick={() => openAuthModal('register')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all">Get Started</button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <Callout title="Live for free" accentColor={ACCENT}>
+        <p style={{ margin: 0 }}>
+          You&apos;re essentially{' '}
+          <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>living for free</strong> while
+          building equity and learning the landlord business with minimal risk. It&apos;s the
+          single best way to start your investing journey.
+        </p>
+      </Callout>
 
-      {/* Back Button */}
-      <div className="max-w-[1280px] mx-auto px-8">
-        <button onClick={() => router.push('/')} className="flex items-center gap-2 px-6 py-3 bg-[#aab2bd] text-white font-bold rounded-lg hover:bg-[#8a929d] transition-all my-8">
-          <ArrowLeft className="w-4 h-4" /> Back to Strategies
-        </button>
-      </div>
-
-      {/* Strategy Header */}
-      <div className="bg-brand-500 py-8 text-white mb-12">
-        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-center gap-6">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0">
-            <Users className="w-10 h-10 text-brand-500" />
-          </div>
-          <h1 className="text-4xl font-extrabold">House Hacking</h1>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-[1280px] mx-auto px-8 pb-16">
-        <div className="bg-white rounded-3xl p-12 shadow-lg mb-8">
-          <h2 className="text-3xl font-bold text-navy-900 mb-6">The Ultimate Beginner Strategy</h2>
-          <p className="text-lg text-[#4a5568] leading-relaxed mb-6">
-            <strong>House hacking</strong> is the <strong>ultimate beginner strategy</strong> where your biggest expense—housing—becomes your biggest asset instead!
-          </p>
-
-          <div className="bg-gradient-to-r from-[#e0f2fe] to-[#dbeafe] border-l-4 border-brand-500 rounded-lg p-6 my-8">
-            <h3 className="text-2xl font-bold text-navy-900 mb-4">Live for FREE</h3>
-            <p className="text-lg text-navy-900">You&apos;re essentially <strong>living for FREE</strong> while building equity and learning the landlord game with training wheels on.</p>
-          </div>
-
-          <button onClick={() => router.push('/')} className="w-full py-5 bg-brand-500 text-white text-xl font-bold rounded-full hover:bg-brand-600 transition-all">
-            Got it!
-          </button>
-        </div>
-
-        <div className="bg-white rounded-3xl p-12 shadow-lg">
-          <h2 className="text-3xl font-bold text-navy-900 mb-8">Why Choose House Hacking?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8">
-              <div className="text-5xl mb-4">🏠</div>
-              <h4 className="text-xl font-bold text-navy-900 mb-2">Zero Housing Cost</h4>
-              <p className="text-[#4a5568]">Live for free or nearly free</p>
-            </div>
-            <div className="text-center p-8">
-              <div className="text-5xl mb-4">🎓</div>
-              <h4 className="text-xl font-bold text-navy-900 mb-2">Learn by Doing</h4>
-              <p className="text-[#4a5568]">Beginner-friendly landlord training</p>
-            </div>
-            <div className="text-center p-8">
-              <div className="text-5xl mb-4">💳</div>
-              <h4 className="text-xl font-bold text-navy-900 mb-2">Low Down Payment</h4>
-              <p className="text-[#4a5568]">FHA loans with 3.5% down</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-[#d0d7de] py-8">
-        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/images/investiq-logo-icon.png" alt="InvestIQ" className="h-12 w-12 rounded-xl" />
-            <span className="text-xl font-bold text-navy-900">Invest<span className="text-brand-500">IQ</span></span>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-[#4a5568]">© 2026 InvestIQ. All rights reserved.</p>
-            <p className="text-sm font-semibold text-navy-900">Invest like a Guru!</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Prose>
+        Because you&apos;re living in the property, you qualify for owner-occupied financing — lower
+        down payments, better interest rates, and more favorable terms than traditional investment
+        loans. It&apos;s the lowest barrier to entry in real estate investing.
+      </Prose>
+    </StrategyPageLayout>
   );
 }
-
