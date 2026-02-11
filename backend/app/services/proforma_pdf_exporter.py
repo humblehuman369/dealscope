@@ -11,8 +11,42 @@ from app.schemas.proforma import FinancialProforma
 
 logger = logging.getLogger(__name__)
 
-# Lazy WeasyPrint import — same pattern as property_report_pdf.py
+# ---------------------------------------------------------------------------
+# Lazy WeasyPrint import — loaded on first PDF request, not at app startup.
+# ---------------------------------------------------------------------------
+_weasyprint_html = None
+_weasyprint_css = None
+_weasyprint_checked = False
 WEASYPRINT_AVAILABLE = False
+
+
+def _ensure_weasyprint():
+    """Lazy-load WeasyPrint on first use. Returns (HTML, CSS) or raises."""
+    global _weasyprint_html, _weasyprint_css, _weasyprint_checked, WEASYPRINT_AVAILABLE
+
+    if _weasyprint_checked:
+        if not WEASYPRINT_AVAILABLE:
+            raise ImportError(
+                "WeasyPrint is not available. Required system libraries may be missing. "
+                "See: https://doc.courtbouillon.org/weasyprint/stable/first_steps.html"
+            )
+        return _weasyprint_html, _weasyprint_css
+
+    _weasyprint_checked = True
+    try:
+        from weasyprint import HTML, CSS
+        _weasyprint_html = HTML
+        _weasyprint_css = CSS
+        WEASYPRINT_AVAILABLE = True
+        logger.info("WeasyPrint loaded successfully (ProformaPDFExporter)")
+        return HTML, CSS
+    except Exception as exc:
+        WEASYPRINT_AVAILABLE = False
+        logger.error(
+            "WeasyPrint import FAILED (ProformaPDFExporter) — "
+            f"Error: {type(exc).__name__}: {exc}"
+        )
+        raise
 
 
 class ProformaPDFExporter:
@@ -29,8 +63,7 @@ class ProformaPDFExporter:
         
     def generate(self) -> BytesIO:
         """Generate PDF report."""
-        if not WEASYPRINT_AVAILABLE:
-            raise ImportError("WeasyPrint is required for PDF export. Install with: pip install weasyprint")
+        HTML, CSS = _ensure_weasyprint()
         
         html_content = self._generate_html()
         css_content = self._generate_css()
