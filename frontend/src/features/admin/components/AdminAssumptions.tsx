@@ -6,6 +6,15 @@ import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
 
 // ===========================================
+// Admin Assumptions — Dark Fintech Theme
+// ===========================================
+// Amber accent for admin controls, sky-400 save action
+// Inputs: white/4% bg, white/7% border, sky-400 focus
+// Financial values: tabular-nums for alignment
+// Tooltips: inverted (light on dark) for readability
+// ===========================================
+
+// ===========================================
 // Types
 // ===========================================
 
@@ -312,8 +321,10 @@ export function AdminAssumptionsSection() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-6">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto" />
+      <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-6">
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
+        </div>
       </div>
     )
   }
@@ -329,30 +340,35 @@ export function AdminAssumptionsSection() {
     ? Object.entries(draft).filter(([key]) => !generalKeys.includes(key) && typeof draft[key] === 'object')
     : []
 
+  // ── Shared input classes ─────────────────────
+
+  const inputClass =
+    'w-full rounded-lg border border-white/[0.07] bg-white/[0.04] text-slate-100 px-2.5 py-1.5 text-sm pr-8 tabular-nums focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors'
+
   // ── Render ───────────────────────────────────
 
   return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-6">
+    <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <SlidersHorizontal className="w-5 h-5 text-amber-500" />
+          <h3 className="font-semibold text-slate-100 flex items-center gap-2">
+            <SlidersHorizontal className="w-5 h-5 text-amber-400" />
             Default Assumptions
             {hasChanges && (
-              <span className="ml-2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 rounded-full">
+              <span className="ml-2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-amber-400/10 text-amber-400 border border-amber-400/20 rounded-full">
                 Unsaved
               </span>
             )}
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             These defaults apply to all new calculations platform-wide. Users can override them in their profile.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={fetchAssumptions}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-slate-200 dark:border-navy-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-white/[0.07] rounded-lg text-slate-400 hover:text-slate-300 hover:border-white/[0.14] transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
@@ -360,13 +376,13 @@ export function AdminAssumptionsSection() {
           <button
             onClick={handleReset}
             disabled={!hasChanges}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-slate-200 dark:border-navy-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-white/[0.07] rounded-lg text-slate-400 hover:text-slate-300 hover:border-white/[0.14] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Undo Changes
           </button>
           <button
             onClick={handleResetToSystemDefaults}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-amber-300 dark:border-amber-700 rounded-lg text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-amber-400/30 rounded-lg text-amber-400 hover:bg-amber-400/10 transition-colors"
             title="Reset all values to the hardcoded system defaults from the backend"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -375,7 +391,7 @@ export function AdminAssumptionsSection() {
           <button
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-teal-500 text-white hover:bg-teal-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
           >
             <Save className="w-3.5 h-3.5" />
             {isSaving ? 'Saving...' : 'Save'}
@@ -385,14 +401,14 @@ export function AdminAssumptionsSection() {
 
       {/* Error */}
       {error && (
-        <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+        <div className="mb-4 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-3">
           {error}
         </div>
       )}
 
       {/* Meta */}
       {(meta.updated_at || meta.updated_by) && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+        <p className="text-xs text-slate-500 mb-5 tabular-nums">
           Last updated {meta.updated_at ? formatDate(meta.updated_at) : '—'}
           {meta.updated_by ? ` by ${meta.updated_by}` : ''}
           {meta.updated_by_email ? ` (${meta.updated_by_email})` : ''}
@@ -402,8 +418,8 @@ export function AdminAssumptionsSection() {
       {/* Category grids */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {categories.map(([category, values]) => (
-          <div key={category} className="border border-slate-200 dark:border-navy-600 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
+          <div key={category} className="border border-white/[0.07] rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-slate-200 mb-3">
               {CATEGORY_LABELS[category] || formatKeyLabel(category)}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -416,12 +432,12 @@ export function AdminAssumptionsSection() {
 
                 return (
                   <div key={key} className="relative">
-                    <label className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <label className="text-xs text-slate-500 font-medium flex items-center gap-1">
                       {formatKeyLabel(key)}
                       {description && (
                         <button
                           type="button"
-                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                          className="text-slate-500 hover:text-slate-300 transition-colors"
                           onMouseEnter={() => setHoveredField(fieldKey)}
                           onMouseLeave={() => setHoveredField(null)}
                           aria-label={`Info: ${description}`}
@@ -430,9 +446,9 @@ export function AdminAssumptionsSection() {
                         </button>
                       )}
                     </label>
-                    {/* Tooltip */}
+                    {/* Tooltip — inverted for readability on dark */}
                     {hoveredField === fieldKey && description && (
-                      <div className="absolute z-10 bottom-full left-0 mb-1 px-2.5 py-1.5 text-[11px] bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-800 rounded-md shadow-lg max-w-[220px] leading-tight pointer-events-none">
+                      <div className="absolute z-10 bottom-full left-0 mb-1 px-2.5 py-1.5 text-[11px] bg-slate-100 text-slate-900 rounded-md shadow-lg max-w-[220px] leading-tight pointer-events-none">
                         {description}
                       </div>
                     )}
@@ -444,10 +460,11 @@ export function AdminAssumptionsSection() {
                         max={getInputMax(key)}
                         value={displayValue}
                         onChange={(e) => handleUpdate(category, key, Number(e.target.value))}
-                        className="w-full rounded-md border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-900 text-slate-800 dark:text-white px-2.5 py-1.5 text-sm pr-8 tabular-nums"
+                        className={inputClass}
+                        style={{ colorScheme: 'dark' }}
                       />
                       {suffix && (
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 dark:text-slate-500 pointer-events-none">
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-500 pointer-events-none">
                           {suffix}
                         </span>
                       )}
@@ -460,8 +477,8 @@ export function AdminAssumptionsSection() {
         ))}
 
         {/* Growth / General Assumptions */}
-        <div className="border border-slate-200 dark:border-navy-600 rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
+        <div className="border border-white/[0.07] rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-slate-200 mb-3">
             Growth Rates
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -474,12 +491,12 @@ export function AdminAssumptionsSection() {
 
               return (
                 <div key={key} className="relative">
-                  <label className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <label className="text-xs text-slate-500 font-medium flex items-center gap-1">
                     {formatKeyLabel(key)}
                     {description && (
                       <button
                         type="button"
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        className="text-slate-500 hover:text-slate-300 transition-colors"
                         onMouseEnter={() => setHoveredField(fieldKey)}
                         onMouseLeave={() => setHoveredField(null)}
                         aria-label={`Info: ${description}`}
@@ -489,7 +506,7 @@ export function AdminAssumptionsSection() {
                     )}
                   </label>
                   {hoveredField === fieldKey && description && (
-                    <div className="absolute z-10 bottom-full left-0 mb-1 px-2.5 py-1.5 text-[11px] bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-800 rounded-md shadow-lg max-w-[220px] leading-tight pointer-events-none">
+                    <div className="absolute z-10 bottom-full left-0 mb-1 px-2.5 py-1.5 text-[11px] bg-slate-100 text-slate-900 rounded-md shadow-lg max-w-[220px] leading-tight pointer-events-none">
                       {description}
                     </div>
                   )}
@@ -501,10 +518,11 @@ export function AdminAssumptionsSection() {
                       max={getInputMax(key)}
                       value={displayValue}
                       onChange={(e) => handleUpdateGeneral(key, Number(e.target.value))}
-                      className="w-full rounded-md border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-900 text-slate-800 dark:text-white px-2.5 py-1.5 text-sm pr-8 tabular-nums"
+                      className={inputClass}
+                      style={{ colorScheme: 'dark' }}
                     />
                     {suffix && (
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 dark:text-slate-500 pointer-events-none">
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-500 pointer-events-none">
                         {suffix}
                       </span>
                     )}

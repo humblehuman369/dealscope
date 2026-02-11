@@ -5,6 +5,13 @@ import { BookOpen, Search, ChevronDown, ChevronRight, ExternalLink } from 'lucid
 import { api } from '@/lib/api-client'
 
 // ===========================================
+// Metrics Glossary — Dark Fintech Theme
+// ===========================================
+// Teal for formulas (educational), amber for notes,
+// sky for interpretation, white/7% borders throughout
+// ===========================================
+
+// ===========================================
 // Types
 // ===========================================
 
@@ -73,21 +80,21 @@ function matchesSearch(metricId: string, metric: MetricEntry, query: string): bo
 
 function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntry }) {
   return (
-    <div className="rounded-lg bg-slate-50 dark:bg-navy-700/60 p-3 border border-slate-100 dark:border-navy-600">
-      <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+    <div className="rounded-lg bg-white/[0.03] p-3 border border-white/[0.07]">
+      <div className="text-xs font-semibold text-slate-200 mb-1.5">
         {formatKeyLabel(metricId)}
       </div>
 
       {metric.formula && (
         <div className="mb-1.5">
-          <code className="text-[11px] font-mono text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded inline-block leading-relaxed break-all">
+          <code className="text-[11px] text-teal-400 bg-teal-400/10 px-1.5 py-0.5 rounded inline-block leading-relaxed break-all">
             {metric.formula}
           </code>
         </div>
       )}
 
       {metric.description && (
-        <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-1.5 leading-relaxed">
+        <p className="text-[11px] text-slate-400 mb-1.5 leading-relaxed">
           {metric.description}
         </p>
       )}
@@ -97,7 +104,7 @@ function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntr
           {metric.inputs.map((input) => (
             <span
               key={input}
-              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-200 dark:bg-navy-600 text-slate-600 dark:text-slate-300"
+              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.06] text-slate-300 border border-white/[0.07]"
             >
               {input}
             </span>
@@ -106,13 +113,13 @@ function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntr
       )}
 
       {metric.notes && (
-        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 leading-relaxed">
+        <p className="text-[10px] text-amber-400 mt-1 leading-relaxed">
           {metric.notes}
         </p>
       )}
 
       {metric.interpretation && typeof metric.interpretation === 'string' && (
-        <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 leading-relaxed">
+        <p className="text-[10px] text-sky-400 mt-1 leading-relaxed">
           {metric.interpretation}
         </p>
       )}
@@ -120,7 +127,7 @@ function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntr
       {metric.interpretation && typeof metric.interpretation === 'object' && (
         <div className="mt-1.5 space-y-0.5">
           {Object.entries(metric.interpretation).map(([label, desc]) => (
-            <p key={label} className="text-[10px] text-blue-600 dark:text-blue-400 leading-relaxed">
+            <p key={label} className="text-[10px] text-sky-400 leading-relaxed">
               <span className="font-semibold">{formatKeyLabel(label)}:</span> {desc}
             </p>
           ))}
@@ -153,30 +160,30 @@ function CollapsibleSection({
   }, [matchCount])
 
   return (
-    <div className="border border-slate-200 dark:border-navy-600 rounded-lg overflow-hidden">
+    <div className="border border-white/[0.07] rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 dark:hover:bg-navy-700/50 transition-colors"
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-2">
           {isOpen ? (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-slate-500" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           )}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            <h4 className="text-sm font-semibold text-slate-200">
               {title}
             </h4>
             {description && !isOpen && (
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">
+              <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
                 {description}
               </p>
             )}
           </div>
         </div>
         {matchCount !== undefined && (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-navy-600 text-slate-500 dark:text-slate-400">
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-slate-400 tabular-nums">
             {matchCount} {matchCount === 1 ? 'metric' : 'metrics'}
           </span>
         )}
@@ -184,7 +191,7 @@ function CollapsibleSection({
       {isOpen && (
         <div className="px-4 pb-4">
           {description && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+            <p className="text-xs text-slate-400 mb-3 leading-relaxed">
               {description}
             </p>
           )}
@@ -269,21 +276,21 @@ export function MetricsGlossarySection() {
   }, [filteredTopLevel, filteredStrategies])
 
   return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-6">
+    <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-amber-500" />
+          <h3 className="font-semibold text-slate-100 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-amber-400" />
             Formula Glossary
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Complete reference of all metrics, formulas, and calculations used across the platform.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {glossary?.version && (
-            <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
+            <span className="text-xs text-slate-500 whitespace-nowrap tabular-nums">
               v{glossary.version}
               {glossary.updatedAt && ` — ${glossary.updatedAt}`}
             </span>
@@ -293,16 +300,16 @@ export function MetricsGlossarySection() {
 
       {/* Search */}
       <div className="relative mb-5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search metrics, formulas, or inputs..."
-          className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-navy-700 border border-slate-200 dark:border-navy-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 dark:text-white placeholder:text-slate-400"
+          className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
         />
         {searchQuery && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-500 tabular-nums">
             {totalMatchCount} {totalMatchCount === 1 ? 'result' : 'results'}
           </span>
         )}
@@ -311,20 +318,20 @@ export function MetricsGlossarySection() {
       {/* Loading */}
       {isLoading && (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+        <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-3">
           {error}
         </div>
       )}
 
       {/* Source */}
       {glossary?.source && !searchQuery && (
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 mb-4">
+        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-4">
           <ExternalLink className="w-3 h-3" />
           <span>Source: {glossary.source}</span>
         </div>
@@ -368,7 +375,7 @@ export function MetricsGlossarySection() {
 
           {/* No results */}
           {searchQuery && totalMatchCount === 0 && (
-            <div className="text-center py-8 text-sm text-slate-500 dark:text-slate-400">
+            <div className="text-center py-8 text-sm text-slate-500">
               No metrics match &ldquo;{searchQuery}&rdquo;
             </div>
           )}
