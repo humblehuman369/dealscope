@@ -1,13 +1,13 @@
 /**
  * InvestIQ Property Investment Report — Vercel Serverless Function
  *
- * Generates a professional, print-ready HTML report from proforma data.
+ * Generates a professional, dense, print-ready HTML report from proforma data.
  * The browser's native print dialog (Cmd+P → Save as PDF) handles conversion.
  *
  * Flow:
  *  1. Frontend opens /api/report?address=...&strategy=...&theme=... in new tab
- *  2. This route fetches proforma JSON from Railway backend
- *  3. Generates a styled 11-page HTML report
+ *  2. This route fetches proforma JSON + property photos from Railway backend
+ *  3. Generates a styled, compact HTML report (3-4 pages, no wasted space)
  *  4. Returns it as text/html
  *  5. Auto-triggers window.print() after fonts load
  */
@@ -158,12 +158,12 @@ const DARK: Palette = {
 }
 
 // ---------------------------------------------------------------------------
-// SVG Chart: Donut
+// SVG Charts
 // ---------------------------------------------------------------------------
-function svgDonut(segments: [string,number][], p: Palette, innerLabel: string, innerValue: string): string {
+function svgDonut(segments: [string,number][], p: Palette, innerLabel: string, innerValue: string, size=140): string {
   const total = segments.reduce((s,[,v]) => s+v, 0)
   if (!total) return ''
-  const W=220, H=220, cx=W/2, cy=H/2, oR=W/2-8, iR=oR*0.6, sw=oR-iR, mR=(oR+iR)/2
+  const W=size, H=size, cx=W/2, cy=H/2, oR=W/2-6, iR=oR*0.6, sw=oR-iR, mR=(oR+iR)/2
   let angle=0; const paths: string[] = []
   for (let i=0;i<segments.length;i++){
     const [,v]=segments[i]; if(v<=0) continue
@@ -179,65 +179,32 @@ function svgDonut(segments: [string,number][], p: Palette, innerLabel: string, i
   }
   return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     ${paths.join('\n    ')}
-    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="10" font-weight="600" fill="${p.textTertiary}">${innerLabel}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="16" font-weight="700" fill="${p.textPrimary}">${innerValue}</text>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="8" font-weight="600" fill="${p.textTertiary}">${innerLabel}</text>
+    <text x="${cx}" y="${cy+10}" text-anchor="middle" font-size="12" font-weight="700" fill="${p.textPrimary}">${innerValue}</text>
   </svg>`
 }
 
-// ---------------------------------------------------------------------------
-// SVG Chart: Score Ring
-// ---------------------------------------------------------------------------
-function svgScoreRing(score: number, grade: string, p: Palette): string {
-  const W=180, H=180, cx=W/2, cy=H/2, R=70, C=2*Math.PI*R
+function svgScoreRing(score: number, grade: string, p: Palette, size=120): string {
+  const W=size, H=size, cx=W/2, cy=H/2, R=size/2-12, C=2*Math.PI*R
   const pct=Math.min(score,100)/100, offset=C*(1-pct)
   const color = gradeColor(grade, p)
   return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${p.border}" stroke-width="10"/>
-    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${color}" stroke-width="10" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-    <text x="${cx}" y="${cy-8}" text-anchor="middle" font-size="36" font-weight="700" fill="${p.textPrimary}">${score}</text>
-    <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="18" font-weight="700" fill="${color}">${grade}</text>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${p.border}" stroke-width="8"/>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${color}" stroke-width="8" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="24" font-weight="700" fill="${p.textPrimary}">${score}</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="14" font-weight="700" fill="${color}">${grade}</text>
   </svg>`
 }
 
 // ---------------------------------------------------------------------------
-// SVG Chart: Gauge Bar
+// HTML generation — DENSE LAYOUT (flowing, no forced page-per-section)
 // ---------------------------------------------------------------------------
-function svgGauge(label: string, value: number, max: number, target: number|null, unit: string, p: Palette): string {
-  const W=320, H=40, pct=Math.min(Math.max(value/max,0),1)
-  const color = value > 0 ? p.positive : p.negative
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg">
-    <text x="0" y="12" font-size="10" fill="${p.textSecondary}">${label}</text>
-    <text x="${W}" y="12" text-anchor="end" font-size="11" font-weight="600" fill="${p.textPrimary}">${value.toFixed(2)}${unit}</text>
-    <rect x="0" y="20" width="${W}" height="8" rx="4" fill="${p.border}"/>
-    <rect x="0" y="20" width="${(W*pct).toFixed(1)}" height="8" rx="4" fill="${color}"/>
-    ${target !== null ? `<line x1="${(W*Math.min(target/max,1)).toFixed(1)}" y1="18" x2="${(W*Math.min(target/max,1)).toFixed(1)}" y2="30" stroke="${p.warning}" stroke-width="2" stroke-dasharray="3,2"/>` : ''}
-  </svg>`
-}
-
-// ---------------------------------------------------------------------------
-// HTML generation
-// ---------------------------------------------------------------------------
-function buildReport(d: Proforma, theme: string): string {
+function buildReport(d: Proforma, theme: string, photos: string[]): string {
   const p = theme === 'dark' ? DARK : LIGHT
   const isDark = theme === 'dark'
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
 
-  // -- Helpers --
-  const card = (content: string, extra = '') =>
-    `<div class="card ${extra}">${content}</div>`
-  const metric = (label: string, value: string, sub = '') =>
-    `<div class="metric"><div class="metric-value">${value}</div><div class="metric-label">${label}</div>${sub ? `<div class="metric-sub">${sub}</div>` : ''}</div>`
-  const sectionHeader = (label: string, title: string) =>
-    `<div class="section-header"><div class="section-label">${label}</div><h2 class="section-title">${title}</h2><div class="section-rule"></div></div>`
-  const pageHeader = (title: string) =>
-    `<div class="page-header"><div class="logo">Invest<span class="logo-iq">IQ</span></div><div class="page-title">${title}</div></div>`
-  const tableRow = (cells: string[], isHeader = false) => {
-    const tag = isHeader ? 'th' : 'td'
-    return `<tr>${cells.map(c => `<${tag}>${c}</${tag}>`).join('')}</tr>`
-  }
-
-  // -- Expense segments for donut --
   const exp = d.expenses
   const expenseSegments: [string,number][] = [
     ['Property Taxes', exp.property_taxes],
@@ -248,278 +215,228 @@ function buildReport(d: Proforma, theme: string): string {
     ['Other', exp.utilities + exp.landscaping + exp.pest_control + (exp.hoa_fees||0) + exp.other_expenses],
   ].filter(([,v]) => (v as number) > 0) as [string,number][]
 
-  // -- Pages --
-  const coverPage = `
-<div class="page cover-page">
-  <div class="cover-top-band"></div>
-  <div class="cover-content">
-    <div class="cover-logo">Invest<span class="logo-iq">IQ</span></div>
-    <div class="cover-subtitle">Property Investment Report</div>
-    <div class="cover-divider"></div>
-    <h1 class="cover-address">${d.property_address}</h1>
-    <div class="cover-meta">
-      <span>${d.property.property_type} &bull; ${d.property.bedrooms} BD / ${d.property.bathrooms} BA &bull; ${fmt(d.property.square_feet)} sqft &bull; Built ${d.property.year_built}</span>
+  // Photo grid (up to 4 photos)
+  const photoSlice = photos.slice(0, 4)
+  const photoGrid = photoSlice.length > 0
+    ? `<div class="photo-grid photo-grid-${Math.min(photoSlice.length, 4)}">
+        ${photoSlice.map((url, i) => `<div class="photo-cell${i === 0 ? ' photo-main' : ''}"><img src="${url}" alt="Property photo ${i+1}"/></div>`).join('')}
+      </div>`
+    : ''
+
+  // -- Sensitivity helper --
+  const sensTable = (title: string, rows: Array<{change_percent:number; absolute_value:number; irr:number; cash_on_cash:number; net_profit:number}>) => {
+    if (!rows || rows.length === 0) return ''
+    return `<div class="sens-block">
+      <div class="sens-title">${title}</div>
+      <table class="t"><tr><th>Change</th><th>Value</th><th>IRR</th><th>CoC</th><th>Net Profit</th></tr>
+      ${rows.map(s => {
+        const c = s.irr >= 0 ? p.positive : p.negative
+        return `<tr><td>${s.change_percent > 0 ? '+' : ''}${fmtPct(s.change_percent,0)}</td><td>${fmtM(s.absolute_value)}</td><td style="color:${c}">${fmtPct(s.irr*100)}</td><td style="color:${c}">${fmtPct(s.cash_on_cash*100)}</td><td style="color:${c}">${signM(s.net_profit)}</td></tr>`
+      }).join('')}
+      </table></div>`
+  }
+
+  const body = `
+<!-- =============== PAGE 1: COVER + OVERVIEW + FINANCING =============== -->
+<div class="page">
+  <!-- Cover Header -->
+  <div class="cover-band"></div>
+  <div class="cover-header">
+    <div>
+      <div class="logo">Invest<span class="iq">IQ</span></div>
+      <div class="cover-sub">Property Investment Report</div>
     </div>
-    <div class="cover-hero">
-      ${card(metric('Purchase Price', fmtM(d.acquisition.purchase_price)) + metric('Monthly Rent', fmtM(d.income.monthly_rent)) + metric('Cash-on-Cash', fmtPct(d.metrics.cash_on_cash_return)) + metric('Cap Rate', fmtPct(d.metrics.cap_rate)), 'hero-metrics')}
+    <div class="cover-date">${dateStr}</div>
+  </div>
+
+  <!-- Photo Grid + Property Title -->
+  ${photoGrid}
+  <h1 class="prop-address">${d.property_address}</h1>
+  <div class="prop-meta">${d.property.property_type} &bull; ${d.property.bedrooms} BD / ${d.property.bathrooms} BA &bull; ${fmt(d.property.square_feet)} sqft &bull; Built ${d.property.year_built} &bull; Lot ${fmt(d.property.lot_size)} sqft &bull; Strategy: <strong>${d.strategy_type.toUpperCase()}</strong></div>
+
+  <!-- Hero Metrics Row -->
+  <div class="hero-row">
+    <div class="hero-metric"><div class="hv">${fmtM(d.acquisition.purchase_price)}</div><div class="hl">Purchase Price</div></div>
+    <div class="hero-metric"><div class="hv">${fmtM(d.income.monthly_rent)}</div><div class="hl">Monthly Rent</div></div>
+    <div class="hero-metric"><div class="hv">${fmtPct(d.metrics.cash_on_cash_return*100)}</div><div class="hl">Cash-on-Cash</div></div>
+    <div class="hero-metric"><div class="hv">${fmtPct(d.metrics.cap_rate*100)}</div><div class="hl">Cap Rate</div></div>
+    <div class="hero-metric"><div class="hv">${signM(d.metrics.monthly_cash_flow)}</div><div class="hl">Monthly CF</div></div>
+    <div class="hero-metric"><div class="hv">${d.metrics.dscr.toFixed(2)}x</div><div class="hl">DSCR</div></div>
+  </div>
+
+  <!-- Property + Acquisition + Financing (3 columns) -->
+  <div class="sec-label">Property Details &amp; Investment Structure</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Property</div>
+      <div class="kv"><span>Address</span><span>${d.property.address}</span></div>
+      <div class="kv"><span>City/State</span><span>${d.property.city}, ${d.property.state} ${d.property.zip}</span></div>
+      <div class="kv"><span>Type</span><span>${d.property.property_type}</span></div>
+      <div class="kv"><span>Bed / Bath</span><span>${d.property.bedrooms} / ${d.property.bathrooms}</span></div>
+      <div class="kv"><span>Sq Ft</span><span>${fmt(d.property.square_feet)}</span></div>
+      <div class="kv"><span>Year Built</span><span>${d.property.year_built}</span></div>
+      <div class="kv"><span>$/sqft</span><span>${fmtM(d.metrics.price_per_sqft)}</span></div>
+      <div class="kv"><span>Rent/sqft</span><span>$${d.metrics.rent_per_sqft.toFixed(2)}</span></div>
     </div>
-    <div class="cover-strategy">Strategy: <strong>${d.strategy_type.toUpperCase()}</strong></div>
+    <div class="card">
+      <div class="card-title">Acquisition</div>
+      <div class="kv"><span>Purchase Price</span><span>${fmtM(d.acquisition.purchase_price)}</span></div>
+      <div class="kv"><span>List Price</span><span>${fmtM(d.acquisition.list_price)}</span></div>
+      <div class="kv"><span>Discount</span><span>${fmtPct(d.acquisition.discount_from_list*100,1)}</span></div>
+      <div class="kv"><span>Closing Costs</span><span>${fmtM(d.acquisition.closing_costs)}</span></div>
+      <div class="kv"><span>Rehab</span><span>${fmtM(d.acquisition.rehab_costs)}</span></div>
+      <div class="kv tot"><span>Total Investment</span><span>${fmtM(d.acquisition.total_acquisition_cost)}</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Financing</div>
+      <div class="kv"><span>Down Payment</span><span>${fmtM(d.financing.down_payment)} (${fmtPct(d.financing.down_payment_percent*100,0)})</span></div>
+      <div class="kv"><span>Loan Amount</span><span>${fmtM(d.financing.loan_amount)}</span></div>
+      <div class="kv"><span>Rate / Term</span><span>${fmtPct(d.financing.interest_rate*100)} / ${d.financing.loan_term_years}yr</span></div>
+      <div class="kv"><span>Loan Type</span><span>${d.financing.loan_type}</span></div>
+      <div class="kv"><span>Monthly P&amp;I</span><span>${fmtM(d.financing.monthly_payment)}</span></div>
+      <div class="kv"><span>w/ Escrow</span><span>${fmtM(d.financing.monthly_payment_with_escrow)}</span></div>
+      <div class="kv"><span>Total Interest</span><span>${fmtM(d.financing.total_interest_over_life)}</span></div>
+    </div>
   </div>
-  <div class="cover-footer">
-    <span>Generated ${dateStr}</span>
-    <span>InvestIQ &mdash; Data-Driven Real Estate Intelligence</span>
-  </div>
-</div>`
 
-  const overviewPage = `
+  <div class="page-footer"><span>InvestIQ Property Report</span><span>${d.property_address}</span><span>Page 1</span></div>
+</div>
+
+<!-- =============== PAGE 2: INCOME + EXPENSES + METRICS + DEAL SCORE =============== -->
 <div class="page">
-  ${pageHeader('Property Overview')}
-  ${sectionHeader('01', 'Property Details & Annual Obligations')}
+  <div class="page-top"><div class="logo-sm">Invest<span class="iq">IQ</span></div></div>
+
+  <!-- Income Statement + Expense Donut side by side -->
+  <div class="sec-label">Year 1 Income &amp; Expenses</div>
   <div class="grid-2">
-    ${card(`<h3>Property Details</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Address</span><span class="dv">${d.property.address}</span></div>
-        <div><span class="dl">City/State</span><span class="dv">${d.property.city}, ${d.property.state} ${d.property.zip}</span></div>
-        <div><span class="dl">Type</span><span class="dv">${d.property.property_type}</span></div>
-        <div><span class="dl">Bedrooms</span><span class="dv">${d.property.bedrooms}</span></div>
-        <div><span class="dl">Bathrooms</span><span class="dv">${d.property.bathrooms}</span></div>
-        <div><span class="dl">Sq Ft</span><span class="dv">${fmt(d.property.square_feet)}</span></div>
-        <div><span class="dl">Year Built</span><span class="dv">${d.property.year_built}</span></div>
-        <div><span class="dl">Lot Size</span><span class="dv">${fmt(d.property.lot_size)} sqft</span></div>
-        <div><span class="dl">$/sqft</span><span class="dv">${fmtM(d.metrics.price_per_sqft)}</span></div>
-      </div>`)}
-    ${card(`<h3>Annual Obligations</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Property Taxes</span><span class="dv">${fmtM(d.expenses.property_taxes)}/yr</span></div>
-        <div><span class="dl">Insurance</span><span class="dv">${fmtM(d.expenses.insurance)}/yr</span></div>
-        <div><span class="dl">HOA Fees</span><span class="dv">${fmtM(d.expenses.hoa_fees || 0)}/yr</span></div>
-        <div><span class="dl">Debt Service</span><span class="dv">${fmtM(d.metrics.annual_debt_service)}/yr</span></div>
-        <div><span class="dl">Maintenance</span><span class="dv">${fmtM(d.expenses.maintenance)}/yr</span></div>
-        <div><span class="dl">Management</span><span class="dv">${fmtM(d.expenses.management)}/yr (${fmtPct(d.expenses.management_percent*100,0)})</span></div>
-        <div><span class="dl">CapEx Reserve</span><span class="dv">${fmtM(d.expenses.cap_ex_reserve)}/yr</span></div>
-        <div><span class="dl">Total Expenses</span><span class="dv highlight">${fmtM(d.expenses.total_operating_expenses)}/yr</span></div>
-        <div><span class="dl">Expense Ratio</span><span class="dv">${fmtPct(d.expenses.expense_ratio*100,1)}</span></div>
-      </div>`)}
-  </div>
-</div>`
-
-  const financingPage = `
-<div class="page">
-  ${pageHeader('Investment Structure')}
-  ${sectionHeader('02', 'Acquisition & Financing')}
-  <div class="grid-2">
-    ${card(`<h3>Acquisition</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Purchase Price</span><span class="dv">${fmtM(d.acquisition.purchase_price)}</span></div>
-        <div><span class="dl">List Price</span><span class="dv">${fmtM(d.acquisition.list_price)}</span></div>
-        <div><span class="dl">Discount</span><span class="dv">${fmtPct(d.acquisition.discount_from_list*100,1)}</span></div>
-        <div><span class="dl">Closing Costs</span><span class="dv">${fmtM(d.acquisition.closing_costs)} (${fmtPct(d.acquisition.closing_costs_percent*100,1)})</span></div>
-        <div><span class="dl">Rehab</span><span class="dv">${fmtM(d.acquisition.rehab_costs)}</span></div>
-        <div><span class="dl total">Total Investment</span><span class="dv total">${fmtM(d.acquisition.total_acquisition_cost)}</span></div>
-      </div>`)}
-    ${card(`<h3>Financing</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Down Payment</span><span class="dv">${fmtM(d.financing.down_payment)} (${fmtPct(d.financing.down_payment_percent*100,0)})</span></div>
-        <div><span class="dl">Loan Amount</span><span class="dv">${fmtM(d.financing.loan_amount)}</span></div>
-        <div><span class="dl">Interest Rate</span><span class="dv">${fmtPct(d.financing.interest_rate*100)}</span></div>
-        <div><span class="dl">Loan Term</span><span class="dv">${d.financing.loan_term_years} years (${d.financing.loan_type})</span></div>
-        <div><span class="dl">Monthly P&I</span><span class="dv">${fmtM(d.financing.monthly_payment)}</span></div>
-        <div><span class="dl">Monthly w/ Escrow</span><span class="dv">${fmtM(d.financing.monthly_payment_with_escrow)}</span></div>
-        <div><span class="dl">Total Interest</span><span class="dv">${fmtM(d.financing.total_interest_over_life)}</span></div>
-        <div><span class="dl">APR</span><span class="dv">${fmtPct(d.financing.apr*100)}</span></div>
-      </div>`)}
-  </div>
-</div>`
-
-  const incomePage = `
-<div class="page">
-  ${pageHeader('Year 1 Income')}
-  ${sectionHeader('03', 'Income Statement')}
-  <div class="income-waterfall">
-    ${card(`
-      <div class="waterfall">
-        <div class="wf-step">
-          <div class="wf-label">Gross Rental Income</div>
-          <div class="wf-bar positive" style="width:100%"></div>
-          <div class="wf-value">${fmtM(d.income.annual_gross_rent)}</div>
-        </div>
-        <div class="wf-step">
-          <div class="wf-label">Vacancy (${fmtPct(d.income.vacancy_percent*100,0)})</div>
-          <div class="wf-bar negative" style="width:${((d.income.vacancy_allowance/d.income.annual_gross_rent)*100).toFixed(0)}%"></div>
-          <div class="wf-value">-${fmtM(d.income.vacancy_allowance)}</div>
-        </div>
-        <div class="wf-step">
-          <div class="wf-label">Effective Gross Income</div>
-          <div class="wf-bar brand" style="width:${((d.income.effective_gross_income/d.income.annual_gross_rent)*100).toFixed(0)}%"></div>
-          <div class="wf-value">${fmtM(d.income.effective_gross_income)}</div>
-        </div>
-        <div class="wf-step">
-          <div class="wf-label">Operating Expenses</div>
-          <div class="wf-bar negative" style="width:${((d.expenses.total_operating_expenses/d.income.annual_gross_rent)*100).toFixed(0)}%"></div>
-          <div class="wf-value">-${fmtM(d.expenses.total_operating_expenses)}</div>
-        </div>
-        <div class="wf-step">
-          <div class="wf-label">Net Operating Income</div>
-          <div class="wf-bar ${d.metrics.net_operating_income >= 0 ? 'positive' : 'negative'}" style="width:${((Math.abs(d.metrics.net_operating_income)/d.income.annual_gross_rent)*100).toFixed(0)}%"></div>
-          <div class="wf-value">${signM(d.metrics.net_operating_income)}</div>
-        </div>
-        <div class="wf-step">
-          <div class="wf-label">Debt Service</div>
-          <div class="wf-bar negative" style="width:${((d.metrics.annual_debt_service/d.income.annual_gross_rent)*100).toFixed(0)}%"></div>
-          <div class="wf-value">-${fmtM(d.metrics.annual_debt_service)}</div>
-        </div>
-        <div class="wf-step wf-total">
-          <div class="wf-label">Pre-Tax Cash Flow</div>
-          <div class="wf-bar ${d.metrics.annual_cash_flow >= 0 ? 'positive' : 'negative'}" style="width:${Math.max((Math.abs(d.metrics.annual_cash_flow)/d.income.annual_gross_rent)*100,5).toFixed(0)}%"></div>
-          <div class="wf-value highlight">${signM(d.metrics.annual_cash_flow)}</div>
+    <div class="card">
+      <div class="card-title">Income Waterfall</div>
+      <div class="wf"><div class="wf-row"><span>Gross Rental Income</span><span class="wf-pos">${fmtM(d.income.annual_gross_rent)}</span></div>
+      <div class="wf-row"><span>Vacancy (${fmtPct(d.income.vacancy_percent*100,0)})</span><span class="wf-neg">-${fmtM(d.income.vacancy_allowance)}</span></div>
+      <div class="wf-row"><span>Effective Gross Income</span><span class="wf-brand">${fmtM(d.income.effective_gross_income)}</span></div>
+      <div class="wf-row"><span>Operating Expenses</span><span class="wf-neg">-${fmtM(exp.total_operating_expenses)}</span></div>
+      <div class="wf-row hl"><span>Net Operating Income</span><span class="wf-pos">${signM(d.metrics.net_operating_income)}</span></div>
+      <div class="wf-row"><span>Debt Service</span><span class="wf-neg">-${fmtM(d.metrics.annual_debt_service)}</span></div>
+      <div class="wf-row hl total"><span>Pre-Tax Cash Flow</span><span style="color:${d.metrics.annual_cash_flow >= 0 ? p.positive : p.negative}">${signM(d.metrics.annual_cash_flow)}</span></div>
+      <div class="wf-row"><span>Monthly Cash Flow</span><span style="color:${p.brand};font-weight:700">${signM(d.metrics.monthly_cash_flow)}</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Expense Breakdown — ${fmtM(exp.total_operating_expenses)}/yr (${fmtPct(exp.expense_ratio*100,1)} ratio)</div>
+      <div class="donut-row">
+        ${svgDonut(expenseSegments, p, 'Total', fmtM(exp.total_operating_expenses), 130)}
+        <div class="legend">
+          ${expenseSegments.map(([label,val], i) =>
+            `<div class="leg-item"><span class="leg-dot" style="background:${p.chartColors[i%p.chartColors.length]}"></span>${label}<span class="leg-val">${fmtM(val as number)}</span></div>`
+          ).join('')}
         </div>
       </div>
-    `)}
+      <table class="t mt-8"><tr><th>Category</th><th>Annual</th><th>Monthly</th><th>% Inc</th></tr>
+      <tr><td>Property Taxes</td><td>${fmtM(exp.property_taxes)}</td><td>${fmtM(exp.property_taxes/12)}</td><td>${fmtPct((exp.property_taxes/d.income.effective_gross_income)*100,1)}</td></tr>
+      <tr><td>Insurance</td><td>${fmtM(exp.insurance)}</td><td>${fmtM(exp.insurance/12)}</td><td>${fmtPct((exp.insurance/d.income.effective_gross_income)*100,1)}</td></tr>
+      <tr><td>Management</td><td>${fmtM(exp.management)}</td><td>${fmtM(exp.management/12)}</td><td>${fmtPct(exp.management_percent*100,1)}</td></tr>
+      <tr><td>Maintenance</td><td>${fmtM(exp.maintenance)}</td><td>${fmtM(exp.maintenance/12)}</td><td>${fmtPct(exp.maintenance_percent*100,1)}</td></tr>
+      <tr><td>CapEx Reserve</td><td>${fmtM(exp.cap_ex_reserve)}</td><td>${fmtM(exp.cap_ex_reserve/12)}</td><td>${fmtPct(exp.cap_ex_reserve_percent*100,1)}</td></tr>
+      ${exp.hoa_fees ? `<tr><td>HOA</td><td>${fmtM(exp.hoa_fees)}</td><td>${fmtM(exp.hoa_fees/12)}</td><td>${fmtPct((exp.hoa_fees/d.income.effective_gross_income)*100,1)}</td></tr>` : ''}
+      <tr class="total-row"><td><strong>Total</strong></td><td><strong>${fmtM(exp.total_operating_expenses)}</strong></td><td><strong>${fmtM(exp.total_operating_expenses/12)}</strong></td><td><strong>${fmtPct(exp.expense_ratio*100,1)}</strong></td></tr>
+      </table>
+    </div>
   </div>
-  <div class="grid-3 mt-16">
-    ${card(metric('Monthly Cash Flow', signM(d.metrics.monthly_cash_flow)))}
-    ${card(metric('Annual Cash Flow', signM(d.metrics.annual_cash_flow)))}
-    ${card(metric('NOI', fmtM(d.metrics.net_operating_income)))}
-  </div>
-</div>`
 
-  const expensesPage = `
-<div class="page">
-  ${pageHeader('Expense Breakdown')}
-  ${sectionHeader('04', 'Operating Expense Analysis')}
+  <!-- Key Metrics + Deal Score side by side -->
+  <div class="sec-label mt-12">Key Metrics &amp; Deal Score</div>
   <div class="grid-2">
-    <div class="donut-container">
-      ${svgDonut(expenseSegments, p, 'Total', fmtM(exp.total_operating_expenses))}
-      <div class="donut-legend">
-        ${expenseSegments.map(([label,val], i) =>
-          `<div class="legend-item"><span class="legend-dot" style="background:${p.chartColors[i%p.chartColors.length]}"></span><span class="legend-label">${label}</span><span class="legend-value">${fmtM(val)}</span></div>`
-        ).join('')}
+    <div class="card">
+      <div class="card-title">Performance Metrics</div>
+      <div class="metrics-grid">
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.metrics.cap_rate*100)}</span><span class="mg-lbl">Cap Rate</span></div>
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.metrics.cash_on_cash_return*100)}</span><span class="mg-lbl">Cash-on-Cash</span></div>
+        <div class="mg-item"><span class="mg-val">${d.metrics.dscr.toFixed(2)}x</span><span class="mg-lbl">DSCR</span></div>
+        <div class="mg-item"><span class="mg-val">${d.metrics.gross_rent_multiplier.toFixed(1)}x</span><span class="mg-lbl">GRM</span></div>
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.metrics.one_percent_rule*100)}</span><span class="mg-lbl">1% Rule</span></div>
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.metrics.break_even_occupancy*100,0)}</span><span class="mg-lbl">Break-Even Occ.</span></div>
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.returns.irr*100)}</span><span class="mg-lbl">IRR</span></div>
+        <div class="mg-item"><span class="mg-val">${d.returns.equity_multiple.toFixed(2)}x</span><span class="mg-lbl">Equity Multiple</span></div>
+        <div class="mg-item"><span class="mg-val">${fmtPct(d.returns.cagr*100)}</span><span class="mg-lbl">CAGR</span></div>
       </div>
     </div>
-    ${card(`<h3>Expense Detail</h3>
-      <table class="data-table">
-        ${tableRow(['Category', 'Annual', 'Monthly', '% of Income'], true)}
-        ${tableRow(['Property Taxes', fmtM(exp.property_taxes), fmtM(exp.property_taxes/12), fmtPct((exp.property_taxes/d.income.effective_gross_income)*100,1)])}
-        ${tableRow(['Insurance', fmtM(exp.insurance), fmtM(exp.insurance/12), fmtPct((exp.insurance/d.income.effective_gross_income)*100,1)])}
-        ${tableRow(['Management', fmtM(exp.management), fmtM(exp.management/12), fmtPct(exp.management_percent*100,1)])}
-        ${tableRow(['Maintenance', fmtM(exp.maintenance), fmtM(exp.maintenance/12), fmtPct(exp.maintenance_percent*100,1)])}
-        ${tableRow(['CapEx Reserve', fmtM(exp.cap_ex_reserve), fmtM(exp.cap_ex_reserve/12), fmtPct(exp.cap_ex_reserve_percent*100,1)])}
-        ${exp.hoa_fees ? tableRow(['HOA Fees', fmtM(exp.hoa_fees), fmtM(exp.hoa_fees/12), fmtPct((exp.hoa_fees/d.income.effective_gross_income)*100,1)]) : ''}
-        ${tableRow(['<strong>Total</strong>', `<strong>${fmtM(exp.total_operating_expenses)}</strong>`, `<strong>${fmtM(exp.total_operating_expenses/12)}</strong>`, `<strong>${fmtPct(exp.expense_ratio*100,1)}</strong>`])}
-      </table>`)}
-  </div>
-</div>`
-
-  const metricsPage = `
-<div class="page">
-  ${pageHeader('Key Metrics')}
-  ${sectionHeader('05', 'Investment Performance Metrics')}
-  <div class="gauge-section">
-    ${svgGauge('Cap Rate', d.metrics.cap_rate*100, 15, 5, '%', p)}
-    ${svgGauge('Cash-on-Cash Return', d.metrics.cash_on_cash_return*100, 20, 8, '%', p)}
-    ${svgGauge('DSCR', d.metrics.dscr, 3, 1.25, 'x', p)}
-    ${svgGauge('Gross Rent Multiplier', d.metrics.gross_rent_multiplier, 30, 15, 'x', p)}
-    ${svgGauge('1% Rule', d.metrics.one_percent_rule*100, 2, 1, '%', p)}
-    ${svgGauge('Break-Even Occupancy', d.metrics.break_even_occupancy*100, 100, 85, '%', p)}
-  </div>
-  <div class="grid-3 mt-16">
-    ${card(metric('Price/sqft', fmtM(d.metrics.price_per_sqft)))}
-    ${card(metric('Rent/sqft', `$${d.metrics.rent_per_sqft.toFixed(2)}`))}
-    ${card(metric('Price/Unit', fmtM(d.metrics.price_per_unit)))}
-  </div>
-</div>`
-
-  const dealScorePage = `
-<div class="page">
-  ${pageHeader('Deal Score')}
-  ${sectionHeader('06', 'InvestIQ Verdict')}
-  <div class="deal-score-container">
-    <div class="score-ring-container">
-      ${svgScoreRing(d.deal_score.score, d.deal_score.grade, p)}
-    </div>
-    <div class="verdict-text">
-      <h3 class="verdict-title" style="color:${gradeColor(d.deal_score.grade, p)}">${d.deal_score.verdict}</h3>
-      <p class="verdict-detail">This ${d.property.property_type.toLowerCase()} at <strong>${d.property_address}</strong> scores <strong>${d.deal_score.score}/100</strong> (Grade ${d.deal_score.grade}) based on cash flow, appreciation potential, risk metrics, and market conditions.</p>
-      ${d.deal_score.breakeven_price > 0 ? `<p class="verdict-breakeven">Breakeven Price: <strong>${fmtM(d.deal_score.breakeven_price)}</strong> (${d.deal_score.discount_required > 0 ? fmtPct(d.deal_score.discount_required*100,1)+' discount needed' : 'currently profitable'})</p>` : ''}
+    <div class="card">
+      <div class="card-title">InvestIQ Verdict</div>
+      <div class="deal-score-row">
+        ${svgScoreRing(d.deal_score.score, d.deal_score.grade, p, 100)}
+        <div class="verdict-info">
+          <div class="verdict-title" style="color:${gradeColor(d.deal_score.grade, p)}">${d.deal_score.verdict || `Grade ${d.deal_score.grade}`}</div>
+          <div class="verdict-body">Score <strong>${d.deal_score.score}/100</strong> based on cash flow, appreciation, risk, and market conditions.</div>
+          ${d.deal_score.breakeven_price > 0 ? `<div class="verdict-be">Breakeven: ${fmtM(d.deal_score.breakeven_price)}</div>` : ''}
+        </div>
+      </div>
     </div>
   </div>
-  <div class="grid-4 mt-16">
-    ${card(metric('IRR', fmtPct(d.returns.irr*100)))}
-    ${card(metric('Equity Multiple', d.returns.equity_multiple.toFixed(2) + 'x'))}
-    ${card(metric('Avg Annual Return', fmtPct(d.returns.average_annual_return*100)))}
-    ${card(metric('CAGR', fmtPct(d.returns.cagr*100)))}
-  </div>
-</div>`
 
-  const projectionsPage = `
+  <div class="page-footer"><span>InvestIQ Property Report</span><span>${d.property_address}</span><span>Page 2</span></div>
+</div>
+
+<!-- =============== PAGE 3: PROJECTIONS + EXIT + SENSITIVITY =============== -->
 <div class="page">
-  ${pageHeader('10-Year Projections')}
-  ${sectionHeader('07', 'Financial Projections')}
-  ${card(`
-    <table class="data-table compact">
-      ${tableRow(['Year','Income','Expenses','NOI','Debt Service','Cash Flow','Property Value','Equity'], true)}
-      ${d.projections.annual_projections.map((yr, i) => tableRow([
-        `Yr ${yr.year}`,
-        fmtM(yr.total_income),
-        fmtM(yr.operating_expenses),
-        fmtM(yr.net_operating_income),
-        fmtM(yr.total_debt_service),
-        signM(yr.pre_tax_cash_flow),
-        fmtM(d.projections.property_values[i] || 0),
-        fmtM(d.projections.equity_positions[i] || 0),
-      ])).join('')}
+  <div class="page-top"><div class="logo-sm">Invest<span class="iq">IQ</span></div></div>
+
+  <!-- 10-Year Projections -->
+  <div class="sec-label">10-Year Financial Projections</div>
+  <div class="card">
+    <table class="t">
+      <tr><th>Year</th><th>Income</th><th>Expenses</th><th>NOI</th><th>Debt Svc</th><th>Cash Flow</th><th>Prop Value</th><th>Equity</th></tr>
+      ${d.projections.annual_projections.map((yr, i) => `<tr>
+        <td>Yr ${yr.year}</td><td>${fmtM(yr.total_income)}</td><td>${fmtM(yr.operating_expenses)}</td>
+        <td>${fmtM(yr.net_operating_income)}</td><td>${fmtM(yr.total_debt_service)}</td>
+        <td style="color:${yr.pre_tax_cash_flow >= 0 ? p.positive : p.negative};font-weight:600">${signM(yr.pre_tax_cash_flow)}</td>
+        <td>${fmtM(d.projections.property_values[i] || 0)}</td><td>${fmtM(d.projections.equity_positions[i] || 0)}</td>
+      </tr>`).join('')}
     </table>
-  `)}
-  <div class="grid-3 mt-16">
-    ${card(metric('Total Cash Flows', fmtM(d.returns.total_cash_flows), `over ${d.projections.hold_period_years} years`))}
-    ${card(metric('Appreciation', fmtPct(d.projections.appreciation_rate*100,1)+'/yr', `${fmtM(d.projections.property_values[0] || d.acquisition.purchase_price)} → ${fmtM(d.exit.projected_sale_price)}`))}
-    ${card(metric('Rent Growth', fmtPct(d.projections.rent_growth_rate*100,1)+'/yr'))}
+    <div class="proj-summary">
+      <span>Total Cash Flows: <strong>${fmtM(d.returns.total_cash_flows)}</strong></span>
+      <span>Appreciation: <strong>${fmtPct(d.projections.appreciation_rate*100,1)}/yr</strong></span>
+      <span>Rent Growth: <strong>${fmtPct(d.projections.rent_growth_rate*100,1)}/yr</strong></span>
+      <span>Final Value: <strong>${fmtM(d.exit.projected_sale_price)}</strong></span>
+    </div>
   </div>
-</div>`
 
-  const exitPage = `
-<div class="page">
-  ${pageHeader('Exit Strategy')}
-  ${sectionHeader('08', 'Disposition & Tax Analysis')}
+  <!-- Exit Strategy -->
+  <div class="sec-label mt-12">Exit Strategy &amp; Tax Analysis (Year ${d.exit.hold_period_years})</div>
   <div class="grid-2">
-    ${card(`<h3>Sale Proceeds</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Projected Sale Price</span><span class="dv">${fmtM(d.exit.projected_sale_price)}</span></div>
-        <div><span class="dl">Broker Commission</span><span class="dv">-${fmtM(d.exit.broker_commission)}</span></div>
-        <div><span class="dl">Closing Costs</span><span class="dv">-${fmtM(d.exit.closing_costs)}</span></div>
-        <div><span class="dl">Remaining Loan</span><span class="dv">-${fmtM(d.exit.remaining_loan_balance)}</span></div>
-        <div><span class="dl total">Net Sale Proceeds</span><span class="dv total">${fmtM(d.exit.net_sale_proceeds)}</span></div>
-      </div>`)}
-    ${card(`<h3>Tax on Sale</h3>
-      <div class="detail-grid">
-        <div><span class="dl">Total Gain</span><span class="dv">${fmtM(d.exit.total_gain)}</span></div>
-        <div><span class="dl">Depreciation Recapture</span><span class="dv">${fmtM(d.exit.depreciation_recapture)}</span></div>
-        <div><span class="dl">Recapture Tax (25%)</span><span class="dv">-${fmtM(d.exit.depreciation_recapture_tax)}</span></div>
-        <div><span class="dl">Capital Gains Tax</span><span class="dv">-${fmtM(d.exit.capital_gains_tax)}</span></div>
-        <div><span class="dl">Total Tax on Sale</span><span class="dv">-${fmtM(d.exit.total_tax_on_sale)}</span></div>
-        <div><span class="dl total">After-Tax Proceeds</span><span class="dv total">${fmtM(d.exit.after_tax_proceeds)}</span></div>
-      </div>`)}
+    <div class="card">
+      <div class="card-title">Sale Proceeds</div>
+      <div class="kv"><span>Projected Sale Price</span><span>${fmtM(d.exit.projected_sale_price)}</span></div>
+      <div class="kv"><span>Broker Commission</span><span class="neg">-${fmtM(d.exit.broker_commission)}</span></div>
+      <div class="kv"><span>Closing Costs</span><span class="neg">-${fmtM(d.exit.closing_costs)}</span></div>
+      <div class="kv"><span>Remaining Loan</span><span class="neg">-${fmtM(d.exit.remaining_loan_balance)}</span></div>
+      <div class="kv tot"><span>Net Sale Proceeds</span><span>${fmtM(d.exit.net_sale_proceeds)}</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tax on Sale</div>
+      <div class="kv"><span>Total Gain</span><span>${fmtM(d.exit.total_gain)}</span></div>
+      <div class="kv"><span>Depreciation Recapture</span><span>${fmtM(d.exit.depreciation_recapture)}</span></div>
+      <div class="kv"><span>Recapture Tax (25%)</span><span class="neg">-${fmtM(d.exit.depreciation_recapture_tax)}</span></div>
+      <div class="kv"><span>Capital Gains Tax</span><span class="neg">-${fmtM(d.exit.capital_gains_tax)}</span></div>
+      <div class="kv"><span>Total Tax</span><span class="neg">-${fmtM(d.exit.total_tax_on_sale)}</span></div>
+      <div class="kv tot"><span>After-Tax Proceeds</span><span style="color:${p.positive}">${fmtM(d.exit.after_tax_proceeds)}</span></div>
+    </div>
   </div>
-</div>`
 
-  const sensitivityPage = `
-<div class="page">
-  ${pageHeader('Sensitivity Analysis')}
-  ${sectionHeader('09', 'What-If Scenarios')}
-  ${buildSensitivityTable('Purchase Price', d.sensitivity.purchase_price, p)}
-  ${buildSensitivityTable('Interest Rate', d.sensitivity.interest_rate, p)}
-  ${buildSensitivityTable('Rent', d.sensitivity.rent, p)}
+  <!-- Sensitivity -->
+  <div class="sec-label mt-12">Sensitivity Analysis</div>
+  <div class="grid-3 sens-grid">
+    ${sensTable('Purchase Price', d.sensitivity.purchase_price)}
+    ${sensTable('Interest Rate', d.sensitivity.interest_rate)}
+    ${sensTable('Rent', d.sensitivity.rent)}
+  </div>
+
+  <!-- Footer / Disclaimer -->
   <div class="disclaimer">
-    <h4>Data Sources & Disclaimer</h4>
-    <p>Rent: ${d.sources.rent_estimate_source} &bull; Value: ${d.sources.property_value_source} &bull; Tax: ${d.sources.tax_data_source} &bull; Market: ${d.sources.market_data_source}</p>
-    <p>Data freshness: ${d.sources.data_freshness}</p>
-    <p class="mt-8">This report is for informational purposes only and does not constitute investment advice. Projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Always conduct independent due diligence before making investment decisions.</p>
-    <p class="mt-8">&copy; ${now.getFullYear()} InvestIQ. All rights reserved.</p>
+    <strong>Data Sources:</strong> Rent: ${d.sources.rent_estimate_source} &bull; Value: ${d.sources.property_value_source} &bull; Tax: ${d.sources.tax_data_source} &bull; Market: ${d.sources.market_data_source} &bull; Freshness: ${d.sources.data_freshness}<br/>
+    This report is for informational purposes only and does not constitute investment advice. Projections are based on assumptions that may not materialize. &copy; ${now.getFullYear()} InvestIQ.
   </div>
-</div>`
 
-  // -- CSS --
-  const css = buildCSS(p, isDark)
+  <div class="page-footer"><span>InvestIQ Property Report</span><span>${d.property_address}</span><span>Page 3</span></div>
+</div>`
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -530,180 +447,133 @@ function buildReport(d: Proforma, theme: string): string {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>${css}</style>
-<script>
-  document.fonts.ready.then(function() {
-    setTimeout(function() { window.print(); }, 500);
-  });
-</script>
+<style>${buildCSS(p, isDark)}</style>
+<script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script>
 </head>
-<body>
-${coverPage}
-${overviewPage}
-${financingPage}
-${incomePage}
-${expensesPage}
-${metricsPage}
-${dealScorePage}
-${projectionsPage}
-${exitPage}
-${sensitivityPage}
-</body>
+<body>${body}</body>
 </html>`
 }
 
 // ---------------------------------------------------------------------------
-// Sensitivity table builder
-// ---------------------------------------------------------------------------
-function buildSensitivityTable(title: string, scenarios: Array<{change_percent:number; absolute_value:number; irr:number; cash_on_cash:number; net_profit:number}>, p: Palette): string {
-  if (!scenarios || scenarios.length === 0) return ''
-  return `<div class="sensitivity-block">
-    <h4>${title} Scenarios</h4>
-    <table class="data-table compact">
-      <tr><th>Change</th><th>Value</th><th>IRR</th><th>Cash-on-Cash</th><th>Net Profit</th></tr>
-      ${scenarios.map(s => {
-        const color = s.irr >= 0 ? p.positive : p.negative
-        return `<tr>
-          <td>${s.change_percent > 0 ? '+' : ''}${fmtPct(s.change_percent,0)}</td>
-          <td>${fmtM(s.absolute_value)}</td>
-          <td style="color:${color}">${fmtPct(s.irr*100)}</td>
-          <td style="color:${color}">${fmtPct(s.cash_on_cash*100)}</td>
-          <td style="color:${color}">${signM(s.net_profit)}</td>
-        </tr>`
-      }).join('')}
-    </table>
-  </div>`
-}
-
-// ---------------------------------------------------------------------------
-// CSS
+// CSS — compact, dense, professional
 // ---------------------------------------------------------------------------
 function buildCSS(p: Palette, isDark: boolean): string {
-  const cardShadow = isDark ? '0 2px 8px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.06)'
+  const cardShadow = isDark ? '0 1px 6px rgba(0,0,0,0.4)' : '0 1px 3px rgba(0,0,0,0.06)'
   return `
-@page {
-  size: letter;
-  margin: 0;
-}
+@page { size: letter; margin: 0.35in 0.45in 0.4in; }
 @media print {
   body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .page { page-break-after: always; break-after: page; }
   .page:last-child { page-break-after: auto; break-after: auto; }
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 11px; line-height: 1.5;
-  color: ${p.textPrimary}; background: ${p.bg};
-}
-.page {
-  width: 8.5in; min-height: 11in;
-  padding: 0.6in 0.65in;
-  page-break-after: always;
-  position: relative; background: ${p.bg};
-}
-.page:last-child { page-break-after: auto; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:9px;line-height:1.4;color:${p.textPrimary};background:${p.bg};}
+.page{width:8.5in;min-height:11in;padding:0.35in 0.45in 0.4in;position:relative;background:${p.bg};page-break-after:always;}
+.page:last-child{page-break-after:auto;}
 
-/* ===== COVER ===== */
-.cover-page { display:flex; flex-direction:column; padding:0; }
-.cover-top-band { height:8px; background:linear-gradient(90deg,${p.brand},${isDark?'#2DD4BF':'#0284c7'}); }
-.cover-content { flex:1; padding:60px 60px 30px; display:flex; flex-direction:column; justify-content:center; }
-.cover-logo { font-size:28px; font-weight:700; color:${p.textPrimary}; margin-bottom:8px; }
-.cover-logo .logo-iq, .logo .logo-iq { color:${p.brand}; }
-.cover-subtitle { font-size:14px; color:${p.textSecondary}; text-transform:uppercase; letter-spacing:2px; }
-.cover-divider { width:60px; height:3px; background:${p.brand}; margin:24px 0; border-radius:2px; }
-.cover-address { font-size:24px; font-weight:700; color:${p.textPrimary}; margin-bottom:12px; line-height:1.3; }
-.cover-meta { font-size:12px; color:${p.textSecondary}; margin-bottom:32px; }
-.cover-hero { margin-bottom:32px; }
-.hero-metrics { display:flex; gap:24px; justify-content:space-between; }
-.cover-strategy { font-size:12px; color:${p.textSecondary}; }
-.cover-footer { display:flex; justify-content:space-between; padding:16px 60px; border-top:1px solid ${p.border}; font-size:10px; color:${p.textTertiary}; }
+/* Cover */
+.cover-band{height:4px;background:linear-gradient(90deg,${p.brand},${isDark?'#2DD4BF':'#0284c7'});margin:-0.35in -0.45in 12px;width:calc(100% + 0.9in);}
+.cover-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.logo{font-size:20px;font-weight:700;color:${p.textPrimary};}.logo .iq,.logo-sm .iq{color:${p.brand};}
+.logo-sm{font-size:13px;font-weight:700;color:${p.textPrimary};}
+.cover-sub{font-size:9px;color:${p.textSecondary};text-transform:uppercase;letter-spacing:2px;margin-top:1px;}
+.cover-date{font-size:8px;color:${p.textTertiary};padding-top:4px;}
 
-/* ===== HEADER ===== */
-.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid ${p.border}; }
-.logo { font-size:16px; font-weight:700; color:${p.textPrimary}; }
-.page-title { font-size:11px; color:${p.textSecondary}; text-transform:uppercase; letter-spacing:1.5px; }
+/* Photos */
+.photo-grid{display:grid;gap:4px;margin-bottom:10px;border-radius:6px;overflow:hidden;height:180px;}
+.photo-grid-1{grid-template-columns:1fr;}
+.photo-grid-2{grid-template-columns:1fr 1fr;}
+.photo-grid-3{grid-template-columns:1.5fr 1fr;grid-template-rows:1fr 1fr;}
+.photo-grid-3 .photo-main{grid-row:1/3;}
+.photo-grid-4{grid-template-columns:1.5fr 1fr 1fr;grid-template-rows:1fr 1fr;}
+.photo-grid-4 .photo-main{grid-row:1/3;}
+.photo-cell{overflow:hidden;min-height:0;}
+.photo-cell img{width:100%;height:100%;object-fit:cover;display:block;}
 
-/* ===== SECTION HEADER ===== */
-.section-header { margin-bottom:20px; }
-.section-label { font-size:10px; font-weight:600; color:${p.brand}; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
-.section-title { font-size:18px; font-weight:700; color:${p.textPrimary}; margin-bottom:8px; }
-.section-rule { width:40px; height:3px; background:${p.brand}; border-radius:2px; }
+/* Property header */
+.prop-address{font-size:16px;font-weight:700;color:${p.textPrimary};margin-bottom:3px;line-height:1.2;}
+.prop-meta{font-size:8.5px;color:${p.textSecondary};margin-bottom:10px;}
 
-/* ===== CARDS ===== */
-.card { background:${p.cardBg}; border:1px solid ${p.border}; border-radius:8px; padding:16px; box-shadow:${cardShadow}; }
-.card h3 { font-size:12px; font-weight:600; color:${p.textPrimary}; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+/* Hero metrics */
+.hero-row{display:flex;gap:2px;margin-bottom:12px;background:${p.cardBg};border:1px solid ${p.border};border-radius:6px;padding:8px 4px;}
+.hero-metric{flex:1;text-align:center;border-right:1px solid ${p.border};padding:0 4px;}
+.hero-metric:last-child{border-right:none;}
+.hv{font-size:13px;font-weight:700;color:${p.textPrimary};}
+.hl{font-size:7px;color:${p.textSecondary};text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;}
 
-/* ===== GRIDS ===== */
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
-.grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+/* Section labels */
+.sec-label{font-size:8px;font-weight:600;color:${p.brand};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:3px;border-bottom:2px solid ${p.brand};}
 
-/* ===== METRIC ===== */
-.metric { text-align:center; padding:8px 0; }
-.metric-value { font-size:18px; font-weight:700; color:${p.textPrimary}; }
-.metric-label { font-size:10px; color:${p.textSecondary}; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
-.metric-sub { font-size:9px; color:${p.textTertiary}; margin-top:2px; }
+/* Cards */
+.card{background:${p.cardBg};border:1px solid ${p.border};border-radius:5px;padding:8px 10px;box-shadow:${cardShadow};}
+.card-title{font-size:8px;font-weight:700;color:${p.textPrimary};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;padding-bottom:3px;border-bottom:1px solid ${p.border};}
 
-/* ===== DETAIL GRID ===== */
-.detail-grid { display:grid; gap:8px; }
-.detail-grid > div { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid ${isDark?'rgba(255,255,255,0.04)':p.border}; }
-.detail-grid > div:last-child { border-bottom:none; }
-.dl { font-size:11px; color:${p.textSecondary}; }
-.dv { font-size:11px; font-weight:600; color:${p.textPrimary}; text-align:right; }
-.dv.highlight { color:${p.brand}; font-weight:700; }
-.dl.total, .dv.total { font-weight:700; font-size:12px; }
+/* Grids */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.sens-grid{gap:6px;}
 
-/* ===== TABLE ===== */
-.data-table { width:100%; border-collapse:collapse; font-size:10px; }
-.data-table th { text-align:left; padding:6px 8px; border-bottom:2px solid ${p.border}; font-weight:600; color:${p.textSecondary}; text-transform:uppercase; letter-spacing:0.5px; font-size:9px; }
-.data-table td { padding:5px 8px; border-bottom:1px solid ${isDark?'rgba(255,255,255,0.04)':p.border}; }
-.data-table.compact th, .data-table.compact td { padding:3px 6px; font-size:9px; }
-.data-table tr:last-child td { border-bottom:none; }
+/* Key-Value rows */
+.kv{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid ${isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)'};}
+.kv:last-child{border-bottom:none;}
+.kv span:first-child{color:${p.textSecondary};font-size:8.5px;}
+.kv span:last-child{font-weight:600;color:${p.textPrimary};font-size:8.5px;}
+.kv.tot{border-top:1.5px solid ${p.border};margin-top:3px;padding-top:4px;}
+.kv.tot span{font-weight:700;font-size:9px;}
+.neg{color:${p.negative}!important;}
 
-/* ===== WATERFALL ===== */
-.waterfall { display:flex; flex-direction:column; gap:12px; }
-.wf-step { display:grid; grid-template-columns:180px 1fr 100px; align-items:center; gap:12px; }
-.wf-label { font-size:11px; color:${p.textSecondary}; }
-.wf-bar { height:16px; border-radius:4px; min-width:4px; }
-.wf-bar.positive { background:${p.positive}; }
-.wf-bar.negative { background:${p.negative}; }
-.wf-bar.brand { background:${p.brand}; }
-.wf-value { font-size:12px; font-weight:600; color:${p.textPrimary}; text-align:right; }
-.wf-value.highlight { color:${p.brand}; font-weight:700; }
-.wf-total { border-top:2px solid ${p.border}; padding-top:12px; }
+/* Waterfall */
+.wf{display:flex;flex-direction:column;gap:3px;}
+.wf-row{display:flex;justify-content:space-between;padding:2.5px 0;border-bottom:1px solid ${isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)'};}
+.wf-row:last-child{border-bottom:none;}
+.wf-row span:first-child{color:${p.textSecondary};font-size:8.5px;}
+.wf-row.hl{background:${isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)'};padding:3px 4px;border-radius:3px;}
+.wf-row.total{border-top:1.5px solid ${p.border};margin-top:2px;padding-top:4px;}
+.wf-pos{color:${p.positive};font-weight:600;font-size:8.5px;}
+.wf-neg{color:${p.negative};font-weight:600;font-size:8.5px;}
+.wf-brand{color:${p.brand};font-weight:600;font-size:8.5px;}
 
-/* ===== DONUT ===== */
-.donut-container { display:flex; flex-direction:column; align-items:center; gap:16px; }
-.donut-legend { display:grid; gap:6px; width:100%; }
-.legend-item { display:flex; align-items:center; gap:8px; font-size:10px; }
-.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.legend-label { flex:1; color:${p.textSecondary}; }
-.legend-value { font-weight:600; color:${p.textPrimary}; }
+/* Donut + legend */
+.donut-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.legend{display:flex;flex-direction:column;gap:2px;flex:1;}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:8px;color:${p.textSecondary};}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.leg-val{margin-left:auto;font-weight:600;color:${p.textPrimary};}
 
-/* ===== GAUGE ===== */
-.gauge-section { display:flex; flex-direction:column; gap:20px; }
+/* Metrics grid */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.mg-item{text-align:center;padding:4px 2px;background:${isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)'};border-radius:4px;}
+.mg-val{font-size:12px;font-weight:700;color:${p.textPrimary};display:block;}
+.mg-lbl{font-size:7px;color:${p.textSecondary};text-transform:uppercase;letter-spacing:0.3px;}
 
-/* ===== DEAL SCORE ===== */
-.deal-score-container { display:flex; gap:32px; align-items:center; margin-bottom:24px; }
-.score-ring-container { flex-shrink:0; }
-.verdict-text { flex:1; }
-.verdict-title { font-size:20px; font-weight:700; margin-bottom:8px; }
-.verdict-detail { font-size:12px; color:${p.textSecondary}; line-height:1.6; margin-bottom:8px; }
-.verdict-breakeven { font-size:11px; color:${p.textTertiary}; }
+/* Deal score */
+.deal-score-row{display:flex;align-items:center;gap:12px;}
+.verdict-info{flex:1;}
+.verdict-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.verdict-body{font-size:8.5px;color:${p.textSecondary};line-height:1.4;}
+.verdict-be{font-size:8px;color:${p.textTertiary};margin-top:3px;}
 
-/* ===== SENSITIVITY ===== */
-.sensitivity-block { margin-bottom:16px; }
-.sensitivity-block h4 { font-size:11px; font-weight:600; color:${p.textPrimary}; margin-bottom:8px; }
+/* Tables */
+.t{width:100%;border-collapse:collapse;font-size:8px;}
+.t th{text-align:left;padding:3px 4px;border-bottom:1.5px solid ${p.border};font-weight:600;color:${p.textSecondary};text-transform:uppercase;letter-spacing:0.3px;font-size:7px;}
+.t td{padding:2.5px 4px;border-bottom:1px solid ${isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)'};}
+.t tr:last-child td{border-bottom:none;}
+.t .total-row td{border-top:1.5px solid ${p.border};}
 
-/* ===== DISCLAIMER ===== */
-.disclaimer { margin-top:24px; padding:16px; border:1px solid ${p.border}; border-radius:8px; background:${p.cardBg}; }
-.disclaimer h4 { font-size:11px; font-weight:600; color:${p.textPrimary}; margin-bottom:8px; }
-.disclaimer p { font-size:9px; color:${p.textTertiary}; line-height:1.5; }
+/* Projections summary */
+.proj-summary{display:flex;gap:16px;padding:6px 4px;margin-top:4px;border-top:1px solid ${p.border};font-size:8px;color:${p.textSecondary};}
 
-/* ===== UTILS ===== */
-.mt-8 { margin-top:8px; }
-.mt-16 { margin-top:16px; }
+/* Sensitivity */
+.sens-block{margin-bottom:0;}
+.sens-title{font-size:8px;font-weight:600;color:${p.textPrimary};margin-bottom:3px;}
+
+/* Disclaimer */
+.disclaimer{margin-top:10px;padding:8px;border:1px solid ${p.border};border-radius:4px;background:${p.cardBg};font-size:7px;color:${p.textTertiary};line-height:1.4;}
+
+/* Page furniture */
+.page-top{margin-bottom:8px;}
+.page-footer{position:absolute;bottom:0.25in;left:0.45in;right:0.45in;display:flex;justify-content:space-between;font-size:7px;color:${p.textTertiary};border-top:1px solid ${p.border};padding-top:4px;}
+.mt-8{margin-top:8px;}.mt-12{margin-top:12px;}
 `
 }
 
@@ -722,29 +592,42 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Fetch proforma data from Railway backend
-    const params = new URLSearchParams({ address, strategy })
-    const backendUrl = `${BACKEND_URL}/api/v1/proforma/property/${propertyId}?${params}`
+    // Fetch proforma data + photos in parallel from Railway backend
+    const proformaParams = new URLSearchParams({ address, strategy })
+    const proformaUrl = `${BACKEND_URL}/api/v1/proforma/property/${propertyId}?${proformaParams}`
+    const photosUrl = `${BACKEND_URL}/api/v1/photos?zpid=${propertyId}`
 
-    const res = await fetch(backendUrl, {
-      headers: { 'Accept': 'application/json' },
-      // Don't cache — always fetch fresh data
-      cache: 'no-store',
-    })
+    const [proformaRes, photosRes] = await Promise.all([
+      fetch(proformaUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }),
+      fetch(photosUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }).catch(() => null),
+    ])
 
-    if (!res.ok) {
-      const err = await res.text()
-      console.error(`Backend proforma fetch failed (${res.status}):`, err)
+    if (!proformaRes.ok) {
+      const err = await proformaRes.text()
+      console.error(`Backend proforma fetch failed (${proformaRes.status}):`, err)
       return new NextResponse(
-        `<html><body style="font-family:sans-serif;padding:40px;text-align:center;"><h2>Report generation failed</h2><p>Could not fetch property data. Status: ${res.status}</p><p>${err}</p></body></html>`,
+        `<html><body style="font-family:sans-serif;padding:40px;text-align:center;"><h2>Report generation failed</h2><p>Could not fetch property data. Status: ${proformaRes.status}</p><p>${err}</p></body></html>`,
         { status: 502, headers: { 'Content-Type': 'text/html' } },
       )
     }
 
-    const proforma: Proforma = await res.json()
+    const proforma: Proforma = await proformaRes.json()
+
+    // Extract photo URLs (best-effort, non-blocking)
+    let photos: string[] = []
+    try {
+      if (photosRes && photosRes.ok) {
+        const photosData = await photosRes.json()
+        if (photosData.success && Array.isArray(photosData.photos)) {
+          photos = photosData.photos
+            .map((p: { url?: string }) => p.url)
+            .filter((u: string | undefined): u is string => !!u)
+        }
+      }
+    } catch { /* photos are optional */ }
 
     // Generate HTML report
-    const html = buildReport(proforma, theme === 'dark' ? 'dark' : 'light')
+    const html = buildReport(proforma, theme === 'dark' ? 'dark' : 'light', photos)
 
     return new NextResponse(html, {
       status: 200,
