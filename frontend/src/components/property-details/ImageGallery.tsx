@@ -1,9 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Eye, Camera, Home } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Camera, Home, ImageOff } from 'lucide-react'
 import { formatNumber } from './utils'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
+
+/** Unsplash fallback images used when all property photos fail to load */
+const FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+  'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
+]
 
 interface ImageGalleryProps {
   images: string[]
@@ -16,16 +23,37 @@ interface ImageGalleryProps {
  * 
  * Full-width responsive image gallery with navigation, thumbnails,
  * and photo/view counters. Active thumbnail uses sky blue ring.
+ * 
+ * Includes referrerPolicy="no-referrer" on all <img> tags to bypass
+ * Zillow CDN hotlink protection that blocks requests with non-Zillow Referer headers.
+ * Falls back to stock images when all property photos fail to load.
  */
-export function ImageGallery({ images, totalPhotos, views }: ImageGalleryProps) {
+export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [imageError, setImageError] = useState<Record<number, boolean>>({})
+  const [useFallback, setUseFallback] = useState(false)
+
+  // Switch to fallback images when all originals fail
+  const images = useFallback ? FALLBACK_IMAGES : rawImages
+  const displayTotalPhotos = useFallback ? FALLBACK_IMAGES.length : totalPhotos
 
   const nextImage = () => setCurrentIndex((prev) => (prev + 1) % images.length)
   const prevImage = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
 
   const handleImageError = (index: number) => {
-    setImageError(prev => ({ ...prev, [index]: true }))
+    setImageError(prev => {
+      const next = { ...prev, [index]: true }
+      // If every original image has failed, switch to fallback set
+      if (!useFallback) {
+        const allFailed = rawImages.every((_, i) => next[i])
+        if (allFailed) {
+          setUseFallback(true)
+          setCurrentIndex(0)
+          return {} // Reset error state for fallback images
+        }
+      }
+      return next
+    })
   }
 
   return (
@@ -40,11 +68,20 @@ export function ImageGallery({ images, totalPhotos, views }: ImageGalleryProps) 
             src={images[currentIndex]}
             alt={`Property photo ${currentIndex + 1}`}
             className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
             onError={() => handleImageError(currentIndex)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Home size={48} style={{ color: colors.text.tertiary }} />
+          <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+            {useFallback ? (
+              <Home size={48} style={{ color: colors.text.tertiary }} />
+            ) : (
+              <>
+                <ImageOff size={48} style={{ color: colors.text.tertiary }} />
+                <span className="text-sm" style={{ color: colors.text.tertiary }}>Photo unavailable</span>
+              </>
+            )}
           </div>
         )}
         
@@ -67,7 +104,7 @@ export function ImageGallery({ images, totalPhotos, views }: ImageGalleryProps) 
           >
             <Camera size={14} style={{ color: colors.text.secondary }} />
             <span className="text-sm font-medium" style={{ color: colors.text.body, fontVariantNumeric: 'tabular-nums' }}>
-              {currentIndex + 1}/{totalPhotos}
+              {currentIndex + 1}/{displayTotalPhotos}
             </span>
           </div>
         </div>
@@ -113,6 +150,8 @@ export function ImageGallery({ images, totalPhotos, views }: ImageGalleryProps) 
                 src={img} 
                 alt={`Thumbnail ${i + 1}`} 
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
                 onError={() => handleImageError(i)}
               />
             ) : (

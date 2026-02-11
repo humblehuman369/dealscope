@@ -92,26 +92,8 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ===========================================
-# Photos
-# ===========================================
-
-@router.get("/api/v1/photos")
-async def get_property_photos(
-    zpid: Optional[str] = None,
-    url: Optional[str] = None,
-):
-    """Get property photos from Zillow via AXESSO API."""
-    try:
-        if not zpid and not url:
-            raise HTTPException(status_code=400, detail="Either zpid or url parameter is required")
-        result = await property_service.get_property_photos(zpid=zpid, url=url)
-        return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Photos fetch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# NOTE: Photos endpoint lives in property.py (prefix=/api/v1, path=/photos).
+# Duplicate removed to avoid route shadowing.
 
 
 # ===========================================
