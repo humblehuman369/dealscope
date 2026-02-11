@@ -394,15 +394,6 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               <div className="os-bullet"><div className="os-dot g" /><p><strong>Side-by-Side:</strong> Compare Rental Cashflow vs. Flip Profit instantly for the same address.</p></div>
               <div className="os-bullet"><div className="os-dot o" /><p><strong>Export:</strong> Generate PDF lender packages in one click.</p></div>
             </div>
-            <div className="iq-avatar-wrap">
-              <div className="iq-avatar-box">
-                <img
-                  src="/images/iq-icon-blue.png"
-                  alt="InvestIQ"
-                  style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative' }}
-                />
-              </div>
-            </div>
           </div>
         </div>
       </section>
