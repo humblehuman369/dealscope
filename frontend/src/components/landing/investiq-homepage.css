@@ -347,6 +347,7 @@
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
 }
 .iq-landing .strat-card {
+  display: block; text-decoration: none; color: inherit; cursor: pointer;
   background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
   padding: 1.5rem 1.5rem 1.75rem; border-left: 3px solid transparent;
   transition: all 0.3s ease;

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { Search, User } from 'lucide-react';
@@ -301,7 +302,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             <p className="section-desc">Instantly see how any property performs across all major real estate investment strategies.</p>
           </div>
           <div className="strategies-grid">
-            <div className="strat-card strat-green">
+            <Link href="/strategies/long-term-rental" className="strat-card strat-green">
               <div className="strat-card-top">
                 <div className="strat-name">Long-Term Rental</div>
                 <div className="strat-metric">
@@ -311,8 +312,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Steady income &amp; build equity</div>
               <p className="strat-body">Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.</p>
-            </div>
-            <div className="strat-card strat-blue">
+            </Link>
+            <Link href="/strategies/short-term-rental" className="strat-card strat-blue">
               <div className="strat-card-top">
                 <div className="strat-name">Short-Term Rental</div>
                 <div className="strat-metric">
@@ -322,8 +323,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Vacation &amp; business rental income</div>
               <p className="strat-body">Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.</p>
-            </div>
-            <div className="strat-card strat-purple">
+            </Link>
+            <Link href="/strategies/brrrr" className="strat-card strat-purple">
               <div className="strat-card-top">
                 <div className="strat-name">BRRRR</div>
                 <div className="strat-metric">
@@ -336,8 +337,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Buy-Rehab-Rent-Refi-Repeat wealth builder</div>
               <p className="strat-body">Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.</p>
-            </div>
-            <div className="strat-card strat-red">
+            </Link>
+            <Link href="/strategies/fix-flip" className="strat-card strat-red">
               <div className="strat-card-top">
                 <div className="strat-name">Fix &amp; Flip</div>
                 <div className="strat-metric">
@@ -347,8 +348,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Buy low, fix up, sell high</div>
               <p className="strat-body">Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.</p>
-            </div>
-            <div className="strat-card strat-teal">
+            </Link>
+            <Link href="/strategies/house-hack" className="strat-card strat-teal">
               <div className="strat-card-top">
                 <div className="strat-name">House Hack</div>
                 <div className="strat-metric">
@@ -358,8 +359,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Cut your housing costs up to 100%</div>
               <p className="strat-body">Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.</p>
-            </div>
-            <div className="strat-card strat-gold">
+            </Link>
+            <Link href="/strategies/wholesale" className="strat-card strat-gold">
               <div className="strat-card-top">
                 <div className="strat-name">Wholesale</div>
                 <div className="strat-metric">
@@ -369,7 +370,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </div>
               <div className="strat-subtitle">Find deals, assign contracts, profit</div>
               <p className="strat-body">Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.</p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
