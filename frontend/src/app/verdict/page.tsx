@@ -754,7 +754,7 @@ function VerdictContent() {
                 ))}
               </div>
               <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
-                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term</span> at the Target Buy price
+                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </p>
               <div className="flex justify-center mt-4">
                 <button

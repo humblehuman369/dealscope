@@ -10,7 +10,13 @@ import { PreferencesTab } from './_components/PreferencesTab'
 import type { TabType } from './_components/types'
 
 // ===========================================
-// Profile Page — Thin Orchestrator
+// Profile Page — Dark Fintech Theme
+// ===========================================
+// Typography: Inter 700 headlines, 400 body, 600 financial data
+// Text hierarchy: slate-100 > slate-300 > slate-400 > slate-500
+// Accents: sky-400 (primary), teal-400 (positive), amber-400 (caution),
+//          red-400 (negative), emerald-400 (success/income)
+// Theme: true black base, #0C1220 cards, 7% white borders
 // ===========================================
 
 const tabs = [
@@ -55,8 +61,8 @@ export default function ProfilePage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
       </div>
     )
   }
@@ -64,34 +70,49 @@ export default function ProfilePage() {
   // ── Render ───────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors">
+    <div
+      className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
+      style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+    >
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
+
+        {/* ── Page Header ───────────────────────── */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy-900 dark:text-white">Your Profile</h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+          <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
+            Your Profile
+          </h1>
+          <p className="mt-2 text-slate-400">
             Manage your account, business information, and investment preferences
           </p>
         </div>
 
-        {/* Profile Card with Avatar */}
-        <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden mb-6">
-          <div className="h-24 bg-brand-500"></div>
+        {/* ── Profile Card with Avatar ──────────── */}
+        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] overflow-hidden mb-6">
+          {/* Subtle radial gradient banner — depth, not decoration */}
+          <div
+            className="h-24"
+            style={{
+              background:
+                'radial-gradient(ellipse at 50% 100%, rgba(56, 189, 248, 0.12), rgba(45, 212, 191, 0.06) 50%, transparent 80%)',
+            }}
+          />
           <div className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12">
+              {/* Avatar */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-brand-500 flex items-center justify-center text-white text-4xl font-bold border-4 border-white dark:border-navy-800 shadow-lg">
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-sky-500 to-teal-400 flex items-center justify-center text-white text-4xl font-bold border-4 border-[#0C1220] shadow-lg shadow-sky-500/10">
                   {user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()}
                 </div>
-                <button className="absolute bottom-0 right-0 p-2 bg-white dark:bg-navy-700 rounded-full shadow-lg border border-neutral-200 dark:border-neutral-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
-                  <Camera className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <button className="absolute bottom-0 right-0 p-2 bg-[#0C1220] rounded-full shadow-lg border border-white/[0.07] hover:border-sky-400/30 transition-colors">
+                  <Camera className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
+              {/* Name & Email */}
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-navy-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-slate-100">
                   {user?.full_name || 'Add your name'}
                 </h2>
-                <p className="text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                <p className="text-slate-400 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   {user?.email}
                 </p>
@@ -100,30 +121,30 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Alerts */}
+        {/* ── Status Alerts ─────────────────────── */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 flex items-center gap-2">
-            <X className="w-5 h-5" />
+          <div className="mb-6 p-4 bg-red-400/10 border border-red-400/20 rounded-xl text-red-400 flex items-center gap-2 text-sm">
+            <X className="w-5 h-5 flex-shrink-0" />
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-600 dark:text-green-400 flex items-center gap-2">
-            <Check className="w-5 h-5" />
+          <div className="mb-6 p-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl text-emerald-400 flex items-center gap-2 text-sm">
+            <Check className="w-5 h-5 flex-shrink-0" />
             {success}
           </div>
         )}
 
-        {/* Tabs */}
+        {/* ── Tab Navigation ────────────────────── */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-white dark:bg-navy-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-navy-700 border border-neutral-200 dark:border-neutral-700'
+                  ? 'bg-sky-500 text-white shadow-[0_0_20px_rgba(56,189,248,0.15)]'
+                  : 'bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -132,8 +153,8 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* Tab Content */}
-        <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+        {/* ── Tab Content ───────────────────────── */}
+        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] p-6 sm:p-8">
           {activeTab === 'account' && (
             <AccountTab
               user={user}
