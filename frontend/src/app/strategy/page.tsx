@@ -66,6 +66,11 @@ function StrategyContent() {
   const [exportError, setExportError] = useState<string | null>(null)
   const exportRef = useRef<HTMLDivElement>(null)
 
+  // Scroll to top on mount — prevents opening mid-page after navigation
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     async function fetchData() {
       if (!addressParam) { setError('No address'); setIsLoading(false); return }
@@ -367,7 +372,7 @@ ${[
           </p>
 
           {/* Two columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
             {/* Left: Pay */}
             <div>
               <div className="flex items-center justify-between mb-4">
