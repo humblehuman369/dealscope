@@ -26,8 +26,6 @@ import {
 import { colors, typography, tw, getScoreColor } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { useSession } from '@/hooks/useSession'
-import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
-import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
@@ -148,21 +146,10 @@ function VerdictContent() {
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [hasTrackedAnalysis, setHasTrackedAnalysis] = useState(false)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
-
-  // Progressive profiling hook
-  const {
-    showPrompt,
-    currentQuestion,
-    trackAnalysis,
-    handleAnswer,
-    handleSkip,
-    handleClose,
-  } = useProgressiveProfiling()
 
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
@@ -456,20 +443,6 @@ function VerdictContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, property, analysis])
-
-  // Track analysis completion for progressive profiling
-  // This triggers after analysis is loaded (not during loading state)
-  useEffect(() => {
-    if (analysis && !hasTrackedAnalysis && !isLoading) {
-      // Delay slightly to let the verdict screen render first
-      const timer = setTimeout(() => {
-        trackAnalysis()
-        setHasTrackedAnalysis(true)
-      }, 1500) // Show prompt 1.5s after verdict loads
-      
-      return () => clearTimeout(timer)
-    }
-  }, [analysis, hasTrackedAnalysis, isLoading, trackAnalysis])
 
   // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
   const handleBack = useCallback(() => {
@@ -911,15 +884,6 @@ function VerdictContent() {
         scoreType={methodologyScoreType}
       />
 
-      {/* Progressive Profiling Prompt */}
-      {showPrompt && currentQuestion && (
-        <ProgressiveProfilingPrompt
-          question={currentQuestion}
-          onAnswer={handleAnswer}
-          onSkip={handleSkip}
-          onClose={handleClose}
-        />
-      )}
     </>
   )
 }
