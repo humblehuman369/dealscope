@@ -52,38 +52,42 @@ from app.services.pdf_narrative import (
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Diagnose system library availability (appears in Railway deploy logs)
+# Lazy WeasyPrint import — loaded on first PDF request, not at app startup.
+# This prevents blocking or crashing the server if system libs are missing.
 # ---------------------------------------------------------------------------
-import ctypes.util as _ctypes_util
+_weasyprint_html = None
+_weasyprint_css = None
+_weasyprint_checked = False
+WEASYPRINT_AVAILABLE = False
 
-_REQUIRED_LIBS = {
-    "cairo": "libcairo2",
-    "pango-1.0": "libpango-1.0-0",
-    "pangocairo-1.0": "libpangocairo-1.0-0",
-    "gdk_pixbuf-2.0": "libgdk-pixbuf-2.0-0",
-}
-_missing_libs = []
-for _lib_name, _pkg_name in _REQUIRED_LIBS.items():
-    _path = _ctypes_util.find_library(_lib_name)
-    if _path:
-        logger.info(f"WeasyPrint dep OK: {_lib_name} -> {_path}")
-    else:
-        _missing_libs.append(f"{_lib_name} (apt: {_pkg_name})")
-        logger.error(f"WeasyPrint dep MISSING: {_lib_name} — install {_pkg_name}")
 
-if _missing_libs:
-    logger.error(f"WeasyPrint cannot load — missing system libs: {', '.join(_missing_libs)}")
+def _ensure_weasyprint():
+    """Lazy-load WeasyPrint on first use. Returns (HTML, CSS) or raises."""
+    global _weasyprint_html, _weasyprint_css, _weasyprint_checked, WEASYPRINT_AVAILABLE
 
-try:
-    from weasyprint import HTML, CSS
-    WEASYPRINT_AVAILABLE = True
-    logger.info("WeasyPrint loaded successfully — PDF report generation enabled")
-except Exception as exc:
-    WEASYPRINT_AVAILABLE = False
-    logger.error(
-        "WeasyPrint import FAILED — PDF report generation disabled. "
-        f"Error: {type(exc).__name__}: {exc}"
-    )
+    if _weasyprint_checked:
+        if not WEASYPRINT_AVAILABLE:
+            raise ImportError(
+                "WeasyPrint is not available. Required system libraries may be missing. "
+                "See: https://doc.courtbouillon.org/weasyprint/stable/first_steps.html"
+            )
+        return _weasyprint_html, _weasyprint_css
+
+    _weasyprint_checked = True
+    try:
+        from weasyprint import HTML, CSS
+        _weasyprint_html = HTML
+        _weasyprint_css = CSS
+        WEASYPRINT_AVAILABLE = True
+        logger.info("WeasyPrint loaded successfully — PDF report generation enabled")
+        return HTML, CSS
+    except Exception as exc:
+        WEASYPRINT_AVAILABLE = False
+        logger.error(
+            "WeasyPrint import FAILED — PDF report generation disabled. "
+            f"Error: {type(exc).__name__}: {exc}"
+        )
+        raise
 
 
 def _fmt(val: float, decimals: int = 0) -> str:
@@ -118,11 +122,7 @@ class PropertyReportPDFExporter:
 
     def generate(self) -> BytesIO:
         """Generate the full PDF report and return as BytesIO."""
-        if not WEASYPRINT_AVAILABLE:
-            raise ImportError(
-                "WeasyPrint is required for PDF report generation. "
-                "Install with: pip install weasyprint"
-            )
+        HTML, CSS = _ensure_weasyprint()
 
         html_content = self._build_html()
         css_content = self._build_css()
