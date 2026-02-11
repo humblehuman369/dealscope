@@ -103,7 +103,7 @@ async function fetchSimilarSold(params: FetchParams) {
 }
 
 async function fetchSimilarRent(params: FetchParams) {
-  const url = new URL('/api/v1/similar-rent', window.location.origin)
+  const url = new URL('/api/v1/rentcast/rental-comps', window.location.origin)
   if (params.zpid) url.searchParams.append('zpid', params.zpid)
   if (params.address) url.searchParams.append('address', params.address)
   if (params.limit) url.searchParams.append('limit', params.limit.toString())
@@ -247,7 +247,7 @@ function transformRentResponse(apiData: Record<string, unknown>, subjectLat: num
     const distance = (subjectLat && subjectLon && lat && lon) ? haversineDistance(subjectLat, subjectLon, lat, lon) : 1
     
     // Build address fields from object or string
-    const streetAddress = (addr.streetAddress as string) || (comp.streetAddress as string) || addrStr || ''
+    const streetAddress = (addr.streetAddress as string) || (comp.streetAddress as string) || (comp.formattedAddress as string) || addrStr || ''
     const city = (addr.city as string) || (comp.city as string) || ''
     const state = (addr.state as string) || (comp.state as string) || ''
     const zip = (addr.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || ''

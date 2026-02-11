@@ -364,6 +364,57 @@ async def get_similar_rent(
         )
 
 
+@router.get("/rentcast/rental-comps")
+async def get_rentcast_rental_comps(
+    zpid: Optional[str] = None,
+    address: Optional[str] = None,
+    limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
+    offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
+    exclude_zpids: Optional[str] = Query(default=None, description="Comma-separated IDs to exclude"),
+):
+    """
+    Get rental comps from RentCast.
+
+    Accepts a direct address or zpid (resolved to an address before calling RentCast).
+    """
+    try:
+        if not zpid and not address:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one of zpid or address is required",
+            )
+
+        exclude_list = []
+        if exclude_zpids:
+            exclude_list = [z.strip() for z in exclude_zpids.split(",") if z.strip()]
+
+        logger.info(
+            "RentCast rental comps request - zpid: %s, address: %s, limit: %s, offset: %s, exclude: %s IDs",
+            zpid,
+            address,
+            limit,
+            offset,
+            len(exclude_list),
+        )
+
+        result = await property_service.get_rentcast_rental_comps(
+            zpid=zpid,
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list,
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"RentCast rental comps fetch error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
 @router.get("/similar-sold")
 async def get_similar_sold(
     zpid: Optional[str] = None,
