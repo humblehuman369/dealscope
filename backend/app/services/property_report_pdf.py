@@ -51,13 +51,37 @@ from app.services.pdf_narrative import (
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Diagnose system library availability (appears in Railway deploy logs)
+# ---------------------------------------------------------------------------
+import ctypes.util as _ctypes_util
+
+_REQUIRED_LIBS = {
+    "cairo": "libcairo2",
+    "pango-1.0": "libpango-1.0-0",
+    "pangocairo-1.0": "libpangocairo-1.0-0",
+    "gdk_pixbuf-2.0": "libgdk-pixbuf-2.0-0",
+}
+_missing_libs = []
+for _lib_name, _pkg_name in _REQUIRED_LIBS.items():
+    _path = _ctypes_util.find_library(_lib_name)
+    if _path:
+        logger.info(f"WeasyPrint dep OK: {_lib_name} -> {_path}")
+    else:
+        _missing_libs.append(f"{_lib_name} (apt: {_pkg_name})")
+        logger.error(f"WeasyPrint dep MISSING: {_lib_name} — install {_pkg_name}")
+
+if _missing_libs:
+    logger.error(f"WeasyPrint cannot load — missing system libs: {', '.join(_missing_libs)}")
+
 try:
     from weasyprint import HTML, CSS
     WEASYPRINT_AVAILABLE = True
+    logger.info("WeasyPrint loaded successfully — PDF report generation enabled")
 except Exception as exc:
     WEASYPRINT_AVAILABLE = False
-    logger.warning(
-        "WeasyPrint unavailable — PDF report generation disabled. "
+    logger.error(
+        "WeasyPrint import FAILED — PDF report generation disabled. "
         f"Error: {type(exc).__name__}: {exc}"
     )
 
