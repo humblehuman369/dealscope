@@ -244,7 +244,7 @@ function StrategyContent() {
   const marketAlign = of?.motivation || 50
   const priceConf = (data.opportunity || (data as any).opportunity)?.score || 65
 
-  const handlePDFDownload = async (theme: 'light' | 'dark' = 'light') => {
+  const handlePDFDownload = (theme: 'light' | 'dark' = 'light') => {
     setIsExporting('pdf')
     setExportError(null)
     try {
@@ -253,41 +253,16 @@ function StrategyContent() {
         address: addressParam,
         strategy: 'ltr',
         theme,
+        auto_print: 'true',
       })
-      const url = `/api/v1/proforma/property/${propertyId}/pdf?${params}`
-
-      const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
-      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-
-      const response = await fetch(url, { headers, credentials: 'include' })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || 'Failed to generate PDF report')
-      }
-
-      const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = `InvestIQ_Report_${theme}.pdf`
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/)
-        if (match) filename = match[1]
-      }
-
-      const blob = await response.blob()
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(downloadUrl)
+      // Open the HTML report in a new tab — auto-print triggers Save as PDF
+      const url = `/api/v1/proforma/property/${propertyId}/report?${params}`
+      window.open(url, '_blank')
 
       setIsExportOpen(false)
     } catch (err) {
-      console.error('PDF download failed:', err)
-      setExportError(err instanceof Error ? err.message : 'PDF download failed')
+      console.error('PDF report failed:', err)
+      setExportError(err instanceof Error ? err.message : 'Failed to open report')
     } finally {
       setIsExporting(null)
     }

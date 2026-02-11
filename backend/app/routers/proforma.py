@@ -9,7 +9,7 @@ from datetime import datetime
 import uuid
 
 from fastapi import APIRouter, HTTPException, status, Query
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse
 
 from app.schemas.proforma import (
     ProformaRequest,
@@ -357,4 +357,65 @@ async def download_proforma_pdf(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating PDF report: {str(e)}"
+        )
+
+
+@router.get(
+    "/property/{property_id}/report",
+    summary="View property investment report as HTML (browser print-to-PDF)",
+    response_class=HTMLResponse,
+)
+async def view_proforma_report(
+    property_id: str,
+    address: str = Query(..., description="Property address for lookup"),
+    strategy: str = Query("ltr", description="Investment strategy"),
+    theme: str = Query("light", description="Report theme: 'light' for print, 'dark' for digital"),
+    auto_print: bool = Query(True, description="Auto-trigger browser print dialog"),
+    land_value_percent: float = Query(0.20, ge=0, le=0.50),
+    marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
+    capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
+    hold_period_years: int = Query(10, ge=1, le=30),
+):
+    """
+    Render the InvestIQ Property Investment Report as a browser-viewable HTML page.
+
+    The page is styled for print-to-PDF: open in a new tab, then use Cmd/Ctrl+P
+    to save as PDF. If ``auto_print=true`` (default) the browser print dialog
+    opens automatically after fonts have loaded.
+
+    **No WeasyPrint or system dependencies required.**
+    """
+    if theme not in ("light", "dark"):
+        theme = "light"
+
+    try:
+        property_data = await property_service.search_property(address)
+
+        if not property_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Property not found: {address}",
+            )
+
+        proforma = await generate_proforma_data(
+            property_data=property_data,
+            strategy=strategy,
+            land_value_percent=land_value_percent,
+            marginal_tax_rate=marginal_tax_rate,
+            capital_gains_tax_rate=capital_gains_tax_rate,
+            hold_period_years=hold_period_years,
+        )
+
+        exporter = PropertyReportPDFExporter(proforma, theme=theme)
+        html_content = exporter.generate_html(auto_print=auto_print)
+
+        return HTMLResponse(content=html_content)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating HTML report: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating report: {str(e)}",
         )

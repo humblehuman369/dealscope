@@ -1,8 +1,8 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-# Full Debian image includes all system libraries WeasyPrint needs
-# (Cairo, Pango, GObject/GLib, GDK-PixBuf, libffi, shared-mime-info).
-# Only fonts need to be added explicitly.
+# Slim image is all we need — PDF generation now uses browser print-to-PDF
+# instead of WeasyPrint, eliminating system library dependencies entirely.
+# Only fonts are added for any potential server-side rendering fallback.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation2 \
     && rm -rf /var/lib/apt/lists/*

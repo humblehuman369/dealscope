@@ -33,7 +33,6 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,
-        "build": "b02d2106-fullpy311",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
