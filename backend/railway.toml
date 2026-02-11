@@ -1,5 +1,6 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 # Fix alembic version mismatch, then start server
