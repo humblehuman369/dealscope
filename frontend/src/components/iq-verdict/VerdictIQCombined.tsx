@@ -670,7 +670,7 @@ export function VerdictIQCombined({
 
   return (
     <div 
-      className="min-h-screen flex flex-col max-w-[480px] mx-auto"
+      className="min-h-screen flex flex-col max-w-[640px] mx-auto"
       style={{ 
         background: 'var(--dg-bg-primary)',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -959,7 +959,7 @@ export function VerdictIQCombined({
 
       {/* Fixed Bottom Actions - Decision-Grade UI */}
       <div 
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px]"
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px]"
         style={{
           background: 'var(--dg-bg-primary)',
           borderTop: '1px solid var(--dg-border-medium)',

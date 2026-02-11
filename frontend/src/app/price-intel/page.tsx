@@ -45,8 +45,8 @@ function PriceIntelContent() {
 export default function PriceIntelPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#0891B2] animate-spin" />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#38bdf8] animate-spin" />
       </div>
     }>
       <PriceIntelContent />

@@ -1,0 +1,5 @@
+# Nixpacks configuration for Railway deployment
+# Adds system-level dependencies required by WeasyPrint for PDF report generation
+
+[phases.setup]
+nixPkgs = ["python311", "cairo", "pango", "gdk-pixbuf", "gobject-introspection", "libffi", "shared-mime-info"]

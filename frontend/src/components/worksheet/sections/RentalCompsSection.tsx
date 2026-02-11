@@ -31,7 +31,7 @@ interface FetchParams {
 }
 
 async function fetchRentalComps(params: FetchParams) {
-  const url = new URL('/api/v1/axesso/similar-rent', window.location.origin)
+  const url = new URL('/api/v1/similar-rent', window.location.origin)
   
   if (params.zpid) url.searchParams.append('zpid', params.zpid)
   if (params.url) url.searchParams.append('url', params.url)
