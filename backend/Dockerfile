@@ -1,8 +1,6 @@
 FROM python:3.11-slim
 
 # System dependencies for WeasyPrint (Cairo, Pango, GObject, GDK-PixBuf, fonts)
-# --no-install-recommends keeps the image lean; ldconfig refreshes the
-# shared-library cache so ctypes.util.find_library() can locate them.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libcairo2 \
@@ -13,8 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi-dev \
     shared-mime-info \
     fonts-liberation2 \
-    && ldconfig \
     && rm -rf /var/lib/apt/lists/*
+
+# Tell the dynamic linker where to find the .so files directly
+# (python:3.11-slim has a stale ldconfig cache after --no-install-recommends)
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib
 
 WORKDIR /app
 
