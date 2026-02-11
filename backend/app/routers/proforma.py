@@ -19,19 +19,8 @@ from app.schemas.proforma import (
 from app.services.proforma_generator import generate_proforma_data
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_pdf_exporter import ProformaPDFExporter, WEASYPRINT_AVAILABLE
+from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
-
-# Defensive import — if the report PDF module fails (e.g. missing system libs for
-# WeasyPrint), the rest of the proforma router (Excel, JSON) must still work.
-try:
-    from app.services.property_report_pdf import PropertyReportPDFExporter
-    from app.services.property_report_pdf import WEASYPRINT_AVAILABLE as REPORT_PDF_AVAILABLE
-except Exception as _exc:
-    PropertyReportPDFExporter = None  # type: ignore[assignment, misc]
-    REPORT_PDF_AVAILABLE = False
-    logging.getLogger(__name__).warning(
-        f"Property report PDF module failed to load: {_exc}"
-    )
 from app.core.deps import CurrentUser, OptionalUser
 
 logger = logging.getLogger(__name__)
@@ -111,16 +100,16 @@ async def generate_proforma(
             )
         
         elif request.format == "pdf":
-            if not REPORT_PDF_AVAILABLE:
+            # Generate PDF report using new InvestIQ report exporter
+            # WeasyPrint is lazy-loaded on first call to generate()
+            try:
+                exporter = PropertyReportPDFExporter(proforma, theme="light")
+                buffer = exporter.generate()
+            except ImportError as exc:
                 raise HTTPException(
                     status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                    detail="PDF export requires WeasyPrint. Install with: pip install weasyprint"
+                    detail="PDF export requires WeasyPrint system libraries. Contact support."
                 )
-            
-            # Generate PDF report using new InvestIQ report exporter
-            # Default to light theme for POST; use GET endpoint for theme selection
-            exporter = PropertyReportPDFExporter(proforma, theme="light")
-            buffer = exporter.generate()
             
             filename = f"InvestIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
             
@@ -312,12 +301,6 @@ async def download_proforma_pdf(
     Supports light theme (print-optimized) and dark theme (digital).
     Requires WeasyPrint to be installed on the server.
     """
-    if not REPORT_PDF_AVAILABLE:
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="PDF export requires WeasyPrint. Contact support to enable this feature."
-        )
-    
     # Validate theme
     if theme not in ("light", "dark"):
         theme = "light"

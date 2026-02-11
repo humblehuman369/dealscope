@@ -11,13 +11,8 @@ from app.schemas.proforma import FinancialProforma
 
 logger = logging.getLogger(__name__)
 
-# Try to import weasyprint, fall back to basic HTML if not available
-try:
-    from weasyprint import HTML, CSS
-    WEASYPRINT_AVAILABLE = True
-except Exception as exc:
-    WEASYPRINT_AVAILABLE = False
-    logger.warning(f"WeasyPrint unavailable — PDF export disabled. Error: {type(exc).__name__}: {exc}")
+# Lazy WeasyPrint import — same pattern as property_report_pdf.py
+WEASYPRINT_AVAILABLE = False
 
 
 class ProformaPDFExporter:
