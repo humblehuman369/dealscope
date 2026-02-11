@@ -527,12 +527,12 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.5
 .pg-foot{position:absolute;bottom:0.25in;left:0.5in;right:0.5in;display:flex;justify-content:space-between;font-size:8px;color:${p.muted};border-top:1px solid ${p.border};padding-top:4px}
 
 /* Cover */
-.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.75in -0.5in 10px;width:calc(100% + 1in)}
+.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.75in -0.5in calc(0.75in - 4px);width:calc(100% + 1in)}
 .cover-top{margin-bottom:8px}
 .logo-lg{font-size:26px;font-weight:700;color:${p.text}}.iq{color:${p.brand}}
 .cover-type{font-size:10px;color:${p.sub};text-transform:uppercase;letter-spacing:3px;margin-top:2px}
 .cover-date{font-size:10px;color:${p.muted};margin-top:3px}
-.cover-divider{width:50px;height:3px;background:${p.brand};border-radius:2px;margin:8px 0}
+.cover-divider{width:50px;height:3px;background:${p.brand};border-radius:2px;margin:8px 0 0.5in}
 .cover-addr{font-size:20px;font-weight:700;color:${p.text};line-height:1.3;margin-bottom:3px}
 .cover-meta{font-size:11px;color:${p.sub};margin-bottom:8px}
 
