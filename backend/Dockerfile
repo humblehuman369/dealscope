@@ -1,21 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.11
 
-# System dependencies for WeasyPrint (Cairo, Pango, GObject, GDK-PixBuf, fonts)
+# Full Debian image includes all system libraries WeasyPrint needs
+# (Cairo, Pango, GObject/GLib, GDK-PixBuf, libffi, shared-mime-info).
+# Only fonts need to be added explicitly.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libglib2.0-0 \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libpangoft2-1.0-0 \
-    libgdk-pixbuf-2.0-0 \
-    libffi-dev \
-    shared-mime-info \
     fonts-liberation2 \
     && rm -rf /var/lib/apt/lists/*
-
-# Help WeasyPrint find system libs via dlopen() — the slim image's ldconfig
-# cache is stale after --no-install-recommends, so we point the linker directly.
-ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 
 WORKDIR /app
 
