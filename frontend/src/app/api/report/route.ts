@@ -403,7 +403,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
 
   ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box" style="margin-top:24px;padding:18px"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
 
-  <div class="sec-divider" style="margin:24px 0 16px"></div>
+  <div class="sec-divider" style="margin:24px 0 0.5in"></div>
 
   <div class="card" style="padding:16px 18px">
     <div class="card-hd">Investment Thesis Summary</div>
@@ -439,7 +439,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <tbody>${d.projections.annual_projections.map((yr,i) => `<tr><td><strong>Yr ${yr.year}</strong></td><td>${$(yr.total_income)}</td><td>${$(yr.operating_expenses)}</td><td>${$(yr.net_operating_income)}</td><td>${$(yr.total_debt_service)}</td><td style="color:${yr.pre_tax_cash_flow>=0?p.pos:p.neg};font-weight:600">${sign$(yr.pre_tax_cash_flow)}</td><td>${$(d.projections.property_values[i]||0)}</td><td>${$(d.projections.equity_positions[i]||0)}</td></tr>`).join('')}</tbody>
   </table>
 
-  <div class="sec-divider" style="margin:18px 0 12px"></div>
+  <div class="sec-divider" style="margin:18px 0 0.5in"></div>
   <div class="sec-tag">08</div>
   <h2 class="sec-title">Exit Strategy & Tax Analysis</h2>
   <p class="narrative">${narrativeExit(d)}</p>
@@ -513,10 +513,10 @@ function css(p: P, dk: boolean): string {
 .page{page-break-after:always}.page:last-child{page-break-after:auto}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.55;color:${p.text};background:${p.bg}}
-.page{width:8.5in;min-height:11in;max-height:11in;padding:0.3in 0.5in 0.45in;position:relative;background:${p.bg};margin:0 auto;overflow:hidden}
+.page{width:8.5in;min-height:11in;max-height:11in;padding:0.75in 0.5in 0.75in;position:relative;background:${p.bg};margin:0 auto;overflow:hidden}
 .card,.stat-card,.m-card,.breakeven-box,.sens-block{page-break-inside:avoid}
 .tbl thead{display:table-header-group}
-.sec-divider{height:2px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});border-radius:2px;margin:14px 0 10px}
+.sec-divider{height:2px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});border-radius:2px;margin:14px 0 0.5in}
 
 /* Page header */
 .pg-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid ${p.brand};padding-bottom:6px;margin-bottom:10px}
@@ -524,10 +524,10 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.5
 .pg-hdr-title{font-size:8px;color:${p.sub};text-transform:uppercase;letter-spacing:1.5px}
 
 /* Page footer */
-.pg-foot{position:absolute;bottom:0.18in;left:0.5in;right:0.5in;display:flex;justify-content:space-between;font-size:8px;color:${p.muted};border-top:1px solid ${p.border};padding-top:4px}
+.pg-foot{position:absolute;bottom:0.25in;left:0.5in;right:0.5in;display:flex;justify-content:space-between;font-size:8px;color:${p.muted};border-top:1px solid ${p.border};padding-top:4px}
 
 /* Cover */
-.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.3in -0.5in 10px;width:calc(100% + 1in)}
+.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.75in -0.5in 10px;width:calc(100% + 1in)}
 .cover-top{margin-bottom:8px}
 .logo-lg{font-size:26px;font-weight:700;color:${p.text}}.iq{color:${p.brand}}
 .cover-type{font-size:10px;color:${p.sub};text-transform:uppercase;letter-spacing:3px;margin-top:2px}
@@ -537,7 +537,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.5
 .cover-meta{font-size:11px;color:${p.sub};margin-bottom:8px}
 
 /* Photos */
-.photos{display:grid;gap:3px;border-radius:6px;overflow:hidden;height:170px;margin-bottom:8px}
+.photos{display:grid;gap:3px;border-radius:6px;overflow:hidden;height:150px;margin-bottom:8px}
 .photos-1{grid-template-columns:1fr}
 .photos-2{grid-template-columns:1fr 1fr}
 .photos-3{grid-template-columns:1.6fr 1fr;grid-template-rows:1fr 1fr}.photos-3 .ph-main{grid-row:1/3}
