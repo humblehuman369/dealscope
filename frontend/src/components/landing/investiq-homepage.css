@@ -496,7 +496,7 @@
   .iq-landing .strategies-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .iq-landing .toolkit-grid { grid-template-columns: 1fr; }
+  .iq-landing .toolkit-grid { grid-template-columns: repeat(2, 1fr); }
   .iq-landing .strategies-grid { grid-template-columns: 1fr; }
   .iq-landing .bb-features-row { flex-direction: column; align-items: center; gap: 1.5rem; }
   .iq-landing .bb-feature { max-width: 100%; }
@@ -506,6 +506,9 @@
   .iq-landing .section { padding: 4rem 1.25rem; }
   .iq-landing .hero-actions { flex-direction: column; }
   .iq-landing .nav-links { display: none; }
+}
+@media (max-width: 480px) {
+  .iq-landing .toolkit-grid { grid-template-columns: 1fr; }
 }
 
 .iq-landing .fade-in { opacity: 0; transform: translateY(16px); transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1); }
