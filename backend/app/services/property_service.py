@@ -457,6 +457,15 @@ class PropertyService:
 
             result = await self.rentcast.get_rent_estimate(address=resolved_address)
             if not result.success or not result.data:
+                logger.warning(
+                    "RentCast rental comps upstream failure",
+                    extra={
+                        "provider": "rentcast",
+                        "resolved_address": resolved_address,
+                        "status_code": result.status_code,
+                        "error": result.error,
+                    },
+                )
                 return {
                     "success": False,
                     "error": result.error or "Failed to fetch rental comps from RentCast",
@@ -471,29 +480,103 @@ class PropertyService:
                 }
 
             payload = result.data
-            comps: List[Dict[str, Any]] = []
+            comps_raw: List[Dict[str, Any]] = []
 
             if isinstance(payload, dict):
                 for key in ("comparables", "comps", "rentalComps", "rentComps", "listings", "results", "data"):
                     candidate = payload.get(key)
                     if isinstance(candidate, list):
-                        comps = [c for c in candidate if isinstance(c, dict)]
+                        comps_raw = [c for c in candidate if isinstance(c, dict)]
                         break
             elif isinstance(payload, list):
-                comps = [c for c in payload if isinstance(c, dict)]
+                comps_raw = [c for c in payload if isinstance(c, dict)]
+
+            logger.info(
+                "RentCast rental comps fetched",
+                extra={
+                    "provider": "rentcast",
+                    "resolved_address": resolved_address,
+                    "upstream_status_code": result.status_code,
+                    "raw_comp_count": len(comps_raw),
+                },
+            )
+
+            normalized_comps: List[Dict[str, Any]] = []
+            for comp in comps_raw:
+                comp_id = str(comp.get("id") or comp.get("zpid") or comp.get("propertyId") or "")
+                formatted_address = str(comp.get("formattedAddress") or "").strip()
+                address_line1 = str(comp.get("addressLine1") or "").strip()
+                address_line2 = str(comp.get("addressLine2") or "").strip()
+                city = str(comp.get("city") or "").strip()
+                state = str(comp.get("state") or "").strip()
+                zip_code = str(comp.get("zipCode") or comp.get("zipcode") or comp.get("zip") or "").strip()
+                display_address = formatted_address or ", ".join(
+                    p for p in [address_line1, city, f"{state} {zip_code}".strip()] if p
+                )
+
+                normalized_comps.append(
+                    {
+                        "id": comp_id or None,
+                        "zpid": comp.get("zpid"),
+                        "propertyId": comp.get("propertyId"),
+                        "provider": "rentcast",
+                        "formattedAddress": display_address,
+                        "addressLine1": address_line1,
+                        "addressLine2": address_line2,
+                        "city": city,
+                        "state": state,
+                        "zipCode": zip_code,
+                        "address": {
+                            "streetAddress": address_line1 or display_address,
+                            "city": city,
+                            "state": state,
+                            "zipcode": zip_code,
+                        },
+                        "bedrooms": comp.get("bedrooms"),
+                        "bathrooms": comp.get("bathrooms"),
+                        "squareFootage": comp.get("squareFootage"),
+                        "lotSize": comp.get("lotSize"),
+                        "yearBuilt": comp.get("yearBuilt"),
+                        "price": comp.get("price"),
+                        "listedDate": comp.get("listedDate"),
+                        "lastSeenDate": comp.get("lastSeenDate"),
+                        "removedDate": comp.get("removedDate"),
+                        "daysOnMarket": comp.get("daysOnMarket"),
+                        "distance": comp.get("distance"),
+                        "correlation": comp.get("correlation"),
+                        "latitude": comp.get("latitude"),
+                        "longitude": comp.get("longitude"),
+                        "status": comp.get("status"),
+                        "listingType": comp.get("listingType"),
+                        "imageUrl": comp.get("imageUrl"),
+                        "raw": comp,
+                    }
+                )
 
             if exclude_zpids:
                 exclude_set = set(str(z) for z in exclude_zpids)
                 filtered: List[Dict[str, Any]] = []
-                for comp in comps:
+                for comp in normalized_comps:
                     comp_id = str(comp.get("zpid") or comp.get("id") or comp.get("propertyId") or "")
                     if comp_id and comp_id in exclude_set:
                         continue
                     filtered.append(comp)
-                comps = filtered
+                normalized_comps = filtered
 
-            total_available = len(comps)
-            paginated_results = comps[offset:offset + limit]
+            total_available = len(normalized_comps)
+            paginated_results = normalized_comps[offset:offset + limit]
+
+            logger.info(
+                "RentCast rental comps ready",
+                extra={
+                    "provider": "rentcast",
+                    "resolved_address": resolved_address,
+                    "filtered_comp_count": total_available,
+                    "returned_comp_count": len(paginated_results),
+                    "offset": offset,
+                    "limit": limit,
+                },
+            )
 
             return {
                 "success": True,

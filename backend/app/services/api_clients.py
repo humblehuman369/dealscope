@@ -122,8 +122,9 @@ class RentCastClient(BaseAPIClient[APIResponse]):
             params["bathrooms"] = bathrooms
         if square_footage:
             params["squareFootage"] = square_footage
-        
-        return await self._make_request("rentEstimate", params)
+
+        # RentCast long-term rent AVM endpoint returns the valuation plus comparables[].
+        return await self._make_request("avm/rent/long-term", params)
     
     async def get_market_statistics(
         self,
