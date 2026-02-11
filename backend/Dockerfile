@@ -1,8 +1,9 @@
 FROM python:3.11-slim
 
 # System dependencies for WeasyPrint (Cairo, Pango, GObject, GDK-PixBuf, fonts)
-# Omit --no-install-recommends so apt pulls all transitive deps (GObject, etc.)
-RUN apt-get update && apt-get install -y \
+# --no-install-recommends keeps the image lean; ldconfig refreshes the
+# shared-library cache so ctypes.util.find_library() can locate them.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libcairo2 \
     libpango-1.0-0 \
