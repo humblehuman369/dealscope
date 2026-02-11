@@ -808,7 +808,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
-      <main className="max-w-[480px] mx-auto pb-6">
+      <main className="max-w-[640px] mx-auto pb-6">
         {/* Page Header */}
         <div className="bg-[#0C1220] border-b border-white/[0.07] p-4">
           <div className="flex items-center justify-between mb-3">
