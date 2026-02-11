@@ -37,15 +37,15 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   if (sent) {
     return (
       <div className="text-center space-y-4 py-4">
-        <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <div className="w-16 h-16 mx-auto bg-green-900/30 rounded-full flex items-center justify-center">
+          <CheckCircle className="w-8 h-8 text-green-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Check your email</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <h3 className="text-lg font-semibold text-white">Check your email</h3>
+        <p className="text-sm text-gray-400">
           If an account exists with that email, we&apos;ve sent a password reset link.
         </p>
         {onBack && (
-          <button onClick={onBack} className="text-blue-600 hover:underline font-medium text-sm">
+          <button onClick={onBack} className="text-brand-500 hover:text-brand-600 font-medium text-sm">
             Back to sign in
           </button>
         )}
@@ -56,24 +56,24 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {onBack && (
-        <button type="button" onClick={onBack} className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+        <button type="button" onClick={onBack} className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to sign in
         </button>
       )}
 
-      <p className="text-sm text-gray-600 dark:text-gray-400">
+      <p className="text-sm text-gray-400">
         Enter your email and we&apos;ll send you a link to reset your password.
       </p>
 
       {error && (
-        <div className="flex items-center gap-2 p-3 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg" role="alert">
+        <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-300 mb-1">
           Email
         </label>
         <div className="relative">
@@ -84,17 +84,17 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
             {...register('email')}
             placeholder="you@example.com"
             autoComplete="email"
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             aria-invalid={!!errors.email}
           />
         </div>
-        {errors.email && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>}
+        {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+        className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Send Reset Link
