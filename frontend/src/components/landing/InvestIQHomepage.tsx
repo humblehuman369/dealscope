@@ -14,7 +14,7 @@ interface InvestIQHomepageProps {
 }
 
 /** Handles ?auth=login / ?auth=register query params (must be in Suspense) */
-function AuthParamHandler() {
+function AuthParamHandler({ onOpenGateway }: { onOpenGateway?: () => void }) {
   const { openAuthModal } = useAuthModal();
   const searchParams = useSearchParams();
 
@@ -25,7 +25,12 @@ function AuthParamHandler() {
     } else if (authParam === 'register') {
       openAuthModal('register');
     }
-  }, [searchParams, openAuthModal]);
+
+    const actionParam = searchParams.get('action');
+    if (actionParam === 'analyze' && onOpenGateway) {
+      onOpenGateway();
+    }
+  }, [searchParams, openAuthModal, onOpenGateway]);
 
   return null;
 }
@@ -80,7 +85,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
   return (
     <div className="iq-landing">
       <Suspense fallback={null}>
-        <AuthParamHandler />
+        <AuthParamHandler onOpenGateway={handleStartAnalysis} />
       </Suspense>
 
       <div className="grid-bg" />
