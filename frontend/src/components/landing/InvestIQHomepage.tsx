@@ -151,7 +151,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             </div>
             <div className="hero-ticker">
               <strong>Institutional Data Intelligence</strong>
-              <span style={{ display: 'block', marginTop: '0.375rem' }}>Analyze 50 deals in the time it takes to do 1.</span>
+              <span style={{ display: 'block', marginTop: '0.375rem' }}>Analytical Intelligence not Artificial</span>
             </div>
           </div>
 

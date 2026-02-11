@@ -93,7 +93,8 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             value={mfaCode}
             onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             autoFocus
             autoComplete="one-time-code"
           />
@@ -102,7 +103,8 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
         <button
           onClick={onMfaSubmit}
           disabled={isLoading || mfaCode.length !== 6}
-          className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+          style={{ backgroundColor: '#0891B2' }}
         >
           {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
           Verify
@@ -130,18 +132,19 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
 
       {/* Email */}
       <div>
-        <label htmlFor="login-email" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="login-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="login-email"
             type="email"
             {...register('email')}
             placeholder="you@example.com"
             autoComplete="email"
-            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? 'login-email-error' : undefined}
           />
@@ -153,24 +156,26 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
 
       {/* Password */}
       <div>
-        <label htmlFor="login-password" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="login-password" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="login-password"
             type={showPassword ? 'text' : 'password'}
             {...register('password')}
             placeholder="Enter your password"
             autoComplete="current-password"
-            className="w-full pl-10 pr-10 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.password}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-white transition-colors"
+            style={{ color: '#94A3B8' }}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -188,15 +193,17 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded border-navy-600 bg-navy-700 text-brand-500 focus:ring-brand-500"
+            className="w-4 h-4 rounded text-brand-500 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', borderColor: '#15446c' }}
           />
-          <span className="text-sm text-gray-400">Remember me</span>
+          <span className="text-sm" style={{ color: '#94A3B8' }}>Remember me</span>
         </label>
         {onForgotPassword && (
           <button
             type="button"
             onClick={onForgotPassword}
-            className="text-sm text-brand-500 hover:text-brand-600 font-medium"
+            className="text-sm font-medium"
+            style={{ color: '#0891B2' }}
           >
             Forgot password?
           </button>
@@ -207,7 +214,8 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        style={{ backgroundColor: '#0891B2' }}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Sign In
@@ -215,9 +223,9 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
 
       {/* Switch to register */}
       {onSwitchToRegister && (
-        <p className="text-center text-sm text-gray-400">
+        <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Don&apos;t have an account?{' '}
-          <button type="button" onClick={onSwitchToRegister} className="text-brand-500 hover:text-brand-600 font-medium">
+          <button type="button" onClick={onSwitchToRegister} className="font-medium" style={{ color: '#0891B2' }}>
             Sign up
           </button>
         </p>

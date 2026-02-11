@@ -40,12 +40,12 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
         <div className="w-16 h-16 mx-auto bg-green-900/30 rounded-full flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-green-400" />
         </div>
-        <h3 className="text-lg font-semibold text-white">Check your email</h3>
-        <p className="text-sm text-gray-400">
+        <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>Check your email</h3>
+        <p className="text-sm" style={{ color: '#94A3B8' }}>
           If an account exists with that email, we&apos;ve sent a password reset link.
         </p>
         {onBack && (
-          <button onClick={onBack} className="text-brand-500 hover:text-brand-600 font-medium text-sm">
+          <button onClick={onBack} className="font-medium text-sm" style={{ color: '#0891B2' }}>
             Back to sign in
           </button>
         )}
@@ -56,12 +56,12 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {onBack && (
-        <button type="button" onClick={onBack} className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors">
+        <button type="button" onClick={onBack} className="flex items-center gap-1 text-sm hover:text-white transition-colors" style={{ color: '#94A3B8' }}>
           <ArrowLeft className="w-4 h-4" /> Back to sign in
         </button>
       )}
 
-      <p className="text-sm text-gray-400">
+      <p className="text-sm" style={{ color: '#94A3B8' }}>
         Enter your email and we&apos;ll send you a link to reset your password.
       </p>
 
@@ -73,18 +73,19 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
       )}
 
       <div>
-        <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="forgot-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="forgot-email"
             type="email"
             {...register('email')}
             placeholder="you@example.com"
             autoComplete="email"
-            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.email}
           />
         </div>
@@ -94,7 +95,8 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        style={{ backgroundColor: '#0891B2' }}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Send Reset Link

@@ -96,18 +96,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Full name */}
       <div>
-        <label htmlFor="reg-name" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="reg-name" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Full Name
         </label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="reg-name"
             type="text"
             {...register('fullName')}
             placeholder="John Doe"
             autoComplete="name"
-            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.fullName}
           />
         </div>
@@ -116,18 +117,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Email */}
       <div>
-        <label htmlFor="reg-email" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="reg-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="reg-email"
             type="email"
             {...register('email')}
             placeholder="you@example.com"
             autoComplete="email"
-            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.email}
           />
         </div>
@@ -136,24 +138,26 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Password */}
       <div>
-        <label htmlFor="reg-password" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="reg-password" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="reg-password"
             type={showPassword ? 'text' : 'password'}
             {...register('password')}
             placeholder="Create a strong password"
             autoComplete="new-password"
-            className="w-full pl-10 pr-10 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.password}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-white transition-colors"
+            style={{ color: '#94A3B8' }}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -168,29 +172,31 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : 'bg-navy-600'}`}
+                  className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : ''}`}
+                  style={i > strength.score ? { backgroundColor: '#15446c' } : undefined}
                 />
               ))}
             </div>
-            <p className="text-xs text-gray-400">Strength: {strength.label}</p>
+            <p className="text-xs" style={{ color: '#94A3B8' }}>Strength: {strength.label}</p>
           </div>
         )}
       </div>
 
       {/* Confirm password */}
       <div>
-        <label htmlFor="reg-confirm" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="reg-confirm" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
           Confirm Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
           <input
             id="reg-confirm"
             type={showPassword ? 'text' : 'password'}
             {...register('confirmPassword')}
             placeholder="Confirm your password"
             autoComplete="new-password"
-            className="w-full pl-10 pr-4 py-3 border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{ backgroundColor: '#103351', border: '1px solid #15446c', color: '#FFFFFF' }}
             aria-invalid={!!errors.confirmPassword}
           />
         </div>
@@ -201,21 +207,22 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       <button
         type="submit"
         disabled={registerMutation.isPending}
-        className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
+        style={{ backgroundColor: '#0891B2' }}
       >
         {registerMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
         Create Account
       </button>
 
-      <p className="text-xs text-center text-gray-500">
+      <p className="text-xs text-center" style={{ color: '#64748B' }}>
         By creating an account, you agree to our Terms of Service and Privacy Policy.
       </p>
 
       {/* Switch to login */}
       {onSwitchToLogin && (
-        <p className="text-center text-sm text-gray-400">
+        <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Already have an account?{' '}
-          <button type="button" onClick={onSwitchToLogin} className="text-brand-500 hover:text-brand-600 font-medium">
+          <button type="button" onClick={onSwitchToLogin} className="font-medium" style={{ color: '#0891B2' }}>
             Sign in
           </button>
         </p>
