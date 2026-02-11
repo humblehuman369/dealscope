@@ -121,7 +121,7 @@ class PropertyReportPDFExporter:
         self.now = datetime.now()
 
     def generate(self) -> BytesIO:
-        """Generate the full PDF report and return as BytesIO."""
+        """Generate the full PDF report and return as BytesIO (requires WeasyPrint)."""
         HTML, CSS = _ensure_weasyprint()
 
         html_content = self._build_html()
@@ -135,9 +135,62 @@ class PropertyReportPDFExporter:
         buffer.seek(0)
         return buffer
 
+    def generate_html(self, auto_print: bool = True) -> str:
+        """Return a self-contained HTML string ready for browser rendering and print-to-PDF.
+
+        No WeasyPrint or system dependencies required. The browser's native
+        print dialog (Cmd/Ctrl+P → Save as PDF) produces a professional result
+        thanks to embedded @page and page-break CSS rules.
+
+        Args:
+            auto_print: If True, injects a small script that opens the browser
+                        print dialog automatically after fonts have loaded.
+        """
+        css_content = self._build_css()
+        body_content = self._build_body()
+
+        print_script = ""
+        if auto_print:
+            print_script = """
+<script>
+  // Wait for web fonts to load before triggering print
+  document.fonts.ready.then(function() {
+    setTimeout(function() { window.print(); }, 400);
+  });
+</script>"""
+
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvestIQ Property Report — {self.data.property_address}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>{css_content}</style>
+{print_script}
+</head>
+<body>
+{body_content}
+</body>
+</html>"""
+
     # -----------------------------------------------------------------------
     # HTML Assembly
     # -----------------------------------------------------------------------
+
+    def _build_body(self) -> str:
+        """Return the inner body content (all pages) without the HTML wrapper."""
+        return f"""{self._page_cover()}
+{self._page_overview()}
+{self._page_market()}
+{self._page_financing()}
+{self._page_income()}
+{self._page_expenses()}
+{self._page_metrics()}
+{self._page_deal_score()}
+{self._page_projections()}
+{self._page_exit()}
+{self._page_sensitivity()}"""
 
     def _build_html(self) -> str:
         return f"""<!DOCTYPE html>
