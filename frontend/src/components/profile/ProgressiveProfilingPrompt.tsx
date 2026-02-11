@@ -5,6 +5,8 @@
  * 
  * Shows a single question prompt after analysis to collect profile info incrementally.
  * Part of progressive profiling flow - asks one question at a time based on analysis count.
+ *
+ * Dark Fintech Theme — aligned with InvestIQ Design System v2.0
  */
 
 import React, { useState } from 'react'
@@ -77,20 +79,20 @@ export function ProgressiveProfilingPrompt({
           subtitle: "We'll tailor recommendations to your needs",
           benefit: "Get personalized strategy suggestions",
           content: (
-            <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className="grid grid-cols-2 gap-2.5 mt-5">
               {EXPERIENCE_OPTIONS.map(option => (
                 <button
                   key={option.value}
                   onClick={() => setSelectedExperience(option.value)}
-                  className={`p-3 rounded-xl border-2 text-left transition-all ${
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
                     selectedExperience === option.value
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-slate-200 hover:border-slate-300'
+                      ? 'border-sky-500/50 bg-sky-500/10'
+                      : 'border-white/[0.07] hover:border-white/[0.12] bg-white/[0.03]'
                   }`}
                 >
-                  <span className="text-xl mb-1 block">{option.icon}</span>
-                  <p className="text-sm font-semibold text-slate-800">{option.label}</p>
-                  <p className="text-[10px] text-slate-500">{option.desc}</p>
+                  <span className="text-xl mb-1.5 block">{option.icon}</span>
+                  <p className="text-sm font-semibold text-[#F1F5F9]">{option.label}</p>
+                  <p className="text-[10px] text-[#94A3B8] mt-0.5">{option.desc}</p>
                 </button>
               ))}
             </div>
@@ -105,7 +107,7 @@ export function ProgressiveProfilingPrompt({
           subtitle: "Select all that apply",
           benefit: "We'll highlight relevant scores on every analysis",
           content: (
-            <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className="grid grid-cols-2 gap-2.5 mt-5">
               {STRATEGY_OPTIONS.map(option => {
                 const isSelected = selectedStrategies.includes(option.id)
                 return (
@@ -116,14 +118,14 @@ export function ProgressiveProfilingPrompt({
                         ? prev.filter(s => s !== option.id)
                         : [...prev, option.id]
                     )}
-                    className={`p-3 rounded-xl border-2 text-left transition-all flex items-center justify-between ${
+                    className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
                       isSelected
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-slate-200 hover:border-slate-300'
+                        ? 'border-sky-500/50 bg-sky-500/10'
+                        : 'border-white/[0.07] hover:border-white/[0.12] bg-white/[0.03]'
                     }`}
                   >
-                    <span className="text-sm font-medium text-slate-800">{option.label}</span>
-                    {isSelected && <Check className="w-4 h-4 text-teal-500" />}
+                    <span className="text-sm font-medium text-[#F1F5F9]">{option.label}</span>
+                    {isSelected && <Check className="w-4 h-4 text-sky-400" />}
                   </button>
                 )
               })}
@@ -139,20 +141,20 @@ export function ProgressiveProfilingPrompt({
           subtitle: "Per deal investment budget",
           benefit: "Filter alerts to properties in your range",
           content: (
-            <div className="grid grid-cols-1 gap-2 mt-4">
+            <div className="grid grid-cols-1 gap-2 mt-5">
               {BUDGET_OPTIONS.map(option => {
                 const isSelected = selectedBudget?.min === option.min && selectedBudget?.max === option.max
                 return (
                   <button
                     key={option.label}
                     onClick={() => setSelectedBudget({ min: option.min, max: option.max })}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${
+                    className={`p-3.5 rounded-xl border text-left transition-all ${
                       isSelected
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-slate-200 hover:border-slate-300'
+                        ? 'border-sky-500/50 bg-sky-500/10'
+                        : 'border-white/[0.07] hover:border-white/[0.12] bg-white/[0.03]'
                     }`}
                   >
-                    <span className="text-sm font-medium text-slate-800">{option.label}</span>
+                    <span className="text-sm font-medium text-[#F1F5F9]">{option.label}</span>
                   </button>
                 )
               })}
@@ -177,42 +179,42 @@ export function ProgressiveProfilingPrompt({
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl animate-slide-up">
+      {/* Modal — Deep navy card surface */}
+      <div className="relative w-full max-w-md bg-[#0C1220] border border-white/[0.07] rounded-t-2xl sm:rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-slide-up">
         {/* Handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-slate-300" />
+          <div className="w-10 h-1 rounded-full bg-white/10" />
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between px-5 pt-4 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-teal-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xs font-semibold text-teal-600">Personalize Your Experience</span>
+            <span className="text-xs font-semibold text-sky-400">Personalize Your Experience</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-slate-100 transition-colors"
+            className="p-1 rounded-full hover:bg-white/[0.06] transition-colors"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-5 h-5 text-[#64748B]" />
           </button>
         </div>
 
         {/* Content */}
         <div className="px-5 pb-5">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">
+          <h2 className="text-xl font-bold text-[#F1F5F9] mb-1">
             {questionContent.title}
           </h2>
-          <p className="text-sm text-slate-500 mb-1">
+          <p className="text-sm text-[#94A3B8] mb-1">
             {questionContent.subtitle}
           </p>
-          <p className="text-xs text-teal-600">
+          <p className="text-xs text-teal-400 font-medium">
             {questionContent.benefit}
           </p>
 
@@ -222,14 +224,14 @@ export function ProgressiveProfilingPrompt({
           <div className="flex items-center justify-between mt-6">
             <button
               onClick={onSkip}
-              className="text-sm text-slate-500 hover:text-slate-700"
+              className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
             >
               Skip for now
             </button>
             <button
               onClick={questionContent.onSubmit}
               disabled={!questionContent.isValid}
-              className="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-black rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(56,189,248,0.15)] hover:shadow-[0_0_28px_rgba(56,189,248,0.25)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
             >
               Continue
               <ChevronRight className="w-4 h-4" />
@@ -237,7 +239,7 @@ export function ProgressiveProfilingPrompt({
           </div>
 
           {/* Time estimate */}
-          <p className="text-[10px] text-slate-400 text-center mt-4">
+          <p className="text-[10px] text-[#64748B] text-center mt-4">
             Takes about 3 seconds
           </p>
         </div>
@@ -245,11 +247,11 @@ export function ProgressiveProfilingPrompt({
 
       <style jsx>{`
         @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
         .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
+          animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
       `}</style>
     </div>
