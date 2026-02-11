@@ -243,49 +243,65 @@ export function AppHeader({
     : '')
 
   // Resolve property details — use prop if available, otherwise read from sessionStorage.
-  // Listens for a custom 'dealMakerOverridesUpdated' event dispatched by the Verdict page
-  // after it writes property data to sessionStorage, so the header updates reactively.
+  // Uses multiple strategies to stay in sync:
+  // 1. Custom event from the Verdict page after it writes to sessionStorage
+  // 2. Re-read when the dropdown expands (covers missed events)
+  // 3. Poll every 2s while details are missing (covers race conditions)
   const [resolvedProperty, setResolvedProperty] = useState<PropertyInfo | undefined>(undefined)
 
-  useEffect(() => {
-    const readFromStorage = () => {
-      if (property) {
-        setResolvedProperty(property)
-        return
-      }
-      if (typeof window === 'undefined') return
-      try {
-        const stored = sessionStorage.getItem('dealMakerOverrides')
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          if (parsed.beds || parsed.baths || parsed.sqft || parsed.price) {
-            const addrParts = parseDisplayAddress(displayAddress)
-            setResolvedProperty({
-              address: addrParts.streetAddress,
-              city: addrParts.city,
-              state: addrParts.state,
-              zip: addrParts.zipCode,
-              beds: parsed.beds,
-              baths: parsed.baths,
-              sqft: parsed.sqft,
-              price: parsed.price,
-              zpid: parsed.zpid,
-              listingStatus: parsed.listingStatus,
-            })
-            return
-          }
-        }
-      } catch { /* ignore */ }
-      setResolvedProperty(undefined)
+  const readPropertyFromStorage = useCallback(() => {
+    if (property) {
+      setResolvedProperty(property)
+      return
     }
-
-    // Read immediately on mount / when dependencies change
-    readFromStorage()
-
-    // Listen for updates from the Verdict page
-    window.addEventListener('dealMakerOverridesUpdated', readFromStorage)
-    return () => window.removeEventListener('dealMakerOverridesUpdated', readFromStorage)
+    if (typeof window === 'undefined') return
+    try {
+      const stored = sessionStorage.getItem('dealMakerOverrides')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.beds || parsed.baths || parsed.sqft || parsed.price) {
+          const addrParts = parseDisplayAddress(displayAddress)
+          setResolvedProperty({
+            address: addrParts.streetAddress,
+            city: addrParts.city,
+            state: addrParts.state,
+            zip: addrParts.zipCode,
+            beds: parsed.beds,
+            baths: parsed.baths,
+            sqft: parsed.sqft,
+            price: parsed.price,
+            zpid: parsed.zpid,
+            listingStatus: parsed.listingStatus,
+          })
+          return
+        }
+      }
+    } catch { /* ignore */ }
+    setResolvedProperty(undefined)
   }, [property, displayAddress])
+
+  // Read on mount + listen for custom event from Verdict page
+  useEffect(() => {
+    readPropertyFromStorage()
+
+    window.addEventListener('dealMakerOverridesUpdated', readPropertyFromStorage)
+    return () => window.removeEventListener('dealMakerOverridesUpdated', readPropertyFromStorage)
+  }, [readPropertyFromStorage])
+
+  // Poll sessionStorage every 2s while we have an address but no property details.
+  // Stops automatically once details are found.
+  useEffect(() => {
+    if (resolvedProperty || !displayAddress) return
+    const interval = setInterval(readPropertyFromStorage, 2000)
+    return () => clearInterval(interval)
+  }, [resolvedProperty, displayAddress, readPropertyFromStorage])
+
+  // Re-read when dropdown expands (in case event was missed)
+  useEffect(() => {
+    if (isPropertyExpanded) {
+      readPropertyFromStorage()
+    }
+  }, [isPropertyExpanded, readPropertyFromStorage])
 
   // Check if the current property is already saved
   useEffect(() => {
