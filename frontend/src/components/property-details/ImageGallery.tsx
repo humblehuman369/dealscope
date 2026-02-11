@@ -161,12 +161,12 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
             )}
           </button>
         ))}
-        {totalPhotos > images.length && (
+        {displayTotalPhotos > images.length && (
           <button
             className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-white/5"
             style={{ backgroundColor: colors.background.cardUp, color: colors.text.secondary }}
           >
-            +{totalPhotos - images.length}
+            +{displayTotalPhotos - images.length}
           </button>
         )}
       </div>
