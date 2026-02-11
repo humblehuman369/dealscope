@@ -646,8 +646,8 @@ function VerdictContent() {
         <div className="max-w-[520px] mx-auto">
           {/* Score Hero */}
           <section className="px-5 pt-10 pb-8" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
-            {/* Score gauge + description inline */}
-            <div className="flex items-center justify-center gap-6 mb-5">
+            {/* Score gauge + badge row */}
+            <div className="flex items-center justify-center gap-5 mb-5">
               {/* Score gauge */}
               <div className="relative flex-shrink-0 w-32 h-32">
                 <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
@@ -660,23 +660,23 @@ function VerdictContent() {
                 </div>
               </div>
 
-              {/* Verdict description — aligned to center of gauge */}
-              <div className="flex flex-col items-start" style={{ maxWidth: '220px' }}>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-2" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
-                  {score >= 65 ? (
-                    <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                    </svg>
-                  )}
-                  <span className="text-[0.82rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
-                </div>
-                <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
+              {/* Verdict badge — centered vertically with gauge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
+                {score >= 65 ? (
+                  <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                )}
+                <span className="text-[0.82rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
               </div>
             </div>
+
+            {/* Verdict description — centered below score + badge */}
+            <p className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
 
             <div className="flex justify-center gap-2.5 mt-2">
               <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How VerdictIQ Works</button>
