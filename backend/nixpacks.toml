@@ -1,5 +1,17 @@
 # Nixpacks configuration for Railway deployment
 # Adds system-level dependencies required by WeasyPrint for PDF report generation
+#
+# Using aptPkgs (not nixPkgs) so libraries install to standard /usr/lib paths
+# where WeasyPrint's cffi/ctypes bindings can discover them at runtime.
 
 [phases.setup]
-nixPkgs = ["python311", "cairo", "pango", "gdk-pixbuf", "gobject-introspection", "libffi", "shared-mime-info"]
+aptPkgs = [
+  "libcairo2",
+  "libpango-1.0-0",
+  "libpangocairo-1.0-0",
+  "libpangoft2-1.0-0",
+  "libgdk-pixbuf2.0-0",
+  "libffi-dev",
+  "shared-mime-info",
+  "fonts-liberation2",
+]
