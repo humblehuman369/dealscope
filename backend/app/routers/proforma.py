@@ -106,9 +106,10 @@ async def generate_proforma(
                 exporter = PropertyReportPDFExporter(proforma, theme="light")
                 buffer = exporter.generate()
             except ImportError as exc:
+                logger.error(f"PDF export failed — WeasyPrint not available: {exc}")
                 raise HTTPException(
                     status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                    detail="PDF export requires WeasyPrint system libraries. Contact support."
+                    detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
                 )
             
             filename = f"InvestIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
@@ -326,8 +327,15 @@ async def download_proforma_pdf(
         )
         
         # Generate PDF using new InvestIQ report exporter
-        exporter = PropertyReportPDFExporter(proforma, theme=theme)
-        buffer = exporter.generate()
+        try:
+            exporter = PropertyReportPDFExporter(proforma, theme=theme)
+            buffer = exporter.generate()
+        except ImportError as exc:
+            logger.error(f"PDF report failed — WeasyPrint not available: {exc}")
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
+            )
         
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id

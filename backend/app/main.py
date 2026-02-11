@@ -132,6 +132,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Startup cleanup failed (non-fatal): {e}")
 
+    # Check WeasyPrint availability for PDF exports
+    try:
+        from app.services.property_report_pdf import _ensure_weasyprint
+        _ensure_weasyprint()
+        logger.info("WeasyPrint: AVAILABLE — PDF report generation enabled")
+    except Exception as exc:
+        logger.warning(f"WeasyPrint: NOT AVAILABLE — PDF exports will fail. Error: {exc}")
+
     logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here
