@@ -69,14 +69,14 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
     return (
       <div className="space-y-4">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Two-Factor Authentication</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h3 className="text-lg font-semibold text-white">Two-Factor Authentication</h3>
+          <p className="text-sm text-gray-400 mt-1">
             Enter the 6-digit code from your authenticator app.
           </p>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg" role="alert">
+          <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {error}
           </div>
@@ -93,7 +93,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             value={mfaCode}
             onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] border rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] border rounded-xl bg-navy-700 border-navy-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             autoFocus
             autoComplete="one-time-code"
           />
@@ -102,7 +102,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
         <button
           onClick={onMfaSubmit}
           disabled={isLoading || mfaCode.length !== 6}
-          className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
         >
           {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
           Verify
@@ -110,7 +110,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
 
         <button
           onClick={() => { setMfaChallenge(null); setMfaCode(''); setError('') }}
-          className="w-full text-sm text-gray-600 dark:text-gray-400 hover:underline"
+          className="w-full text-sm text-gray-400 hover:text-white hover:underline transition-colors"
         >
           Back to login
         </button>
