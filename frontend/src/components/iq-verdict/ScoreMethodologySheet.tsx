@@ -3,49 +3,53 @@
 /**
  * ScoreMethodologySheet Component
  * 
- * Bottom sheet/modal explaining how IQ scores are calculated.
+ * Centered modal explaining how IQ scores are calculated.
  * Shows scoring factors with weights, grade tier legend, and data sources.
  * 
- * Addresses bounce trigger: Users don't understand how scores are calculated.
+ * Design system: Dark fintech — true black base, deep navy cards,
+ * Inter typography, four-tier Slate text hierarchy, semantic accent colors.
  */
 
 import React from 'react'
-import { X, Info, TrendingUp, Shield, Target, BarChart3, Percent, Home, Database, Clock, DollarSign } from 'lucide-react'
+import { X, TrendingUp, Target, BarChart3, Home, Database, Clock, DollarSign } from 'lucide-react'
 
 // =============================================================================
-// BRAND COLORS (synced with verdict-design-tokens.ts)
+// DESIGN TOKENS — Dark Fintech System
 // =============================================================================
-const COLORS = {
-  navy: '#F1F5F9',       // Inverted: light text on dark bg
-  teal: '#0891B2',
-  tealLight: '#0891B2',
-  cyan: '#00D4FF',
-  rose: '#E11D48',
-  warning: '#F59E0B',
-  green: '#10B981',
-  surface50: '#0A1628',   // Deep dark page bg
-  surface100: '#0F172A',  // Card bg
-  surface200: '#1E293B',  // Border
-  surface300: '#334155',  // Darker border
-  surface400: '#64748B',  // Muted text
-  surface500: '#94A3B8',  // Secondary text
-  surface600: '#CBD5E1',  // Body text (inverted)
-  surface700: '#E2E8F0',  // Emphasized text (inverted)
+const T = {
+  // Backgrounds
+  base: '#000000',        // True black
+  card: '#0C1220',        // Deep navy cards
+  cardElevated: '#111827', // Slightly lifted card
+
+  // Borders — 7% white opacity
+  border: 'rgba(255,255,255,0.07)',
+  borderSubtle: 'rgba(255,255,255,0.04)',
+
+  // Four-tier Slate text hierarchy
+  heading: '#F1F5F9',     // Near-white — headings
+  body: '#CBD5E1',        // Solid grey — body text
+  secondary: '#94A3B8',   // Mid-slate — secondary
+  label: '#64748B',       // Slate — smallest labels
+
+  // Semantic accent colors
+  blue: '#38bdf8',        // Primary actions, key data
+  teal: '#2dd4bf',        // Positive signals, educational
+  amber: '#fbbf24',       // Caution, scores
+  red: '#f87171',         // Negatives, losses
+  green: '#34d399',       // Income, success
 }
 
 // =============================================================================
 // IQ VERDICT METHODOLOGY
 // =============================================================================
 
-// The Verdict IQ Score answers: "How likely can you negotiate the required discount?"
-// Score = Probability of achieving Deal Gap given Motivation level
-
 const METHODOLOGY_SECTIONS = [
   {
     name: 'Deal Gap %',
     icon: TrendingUp,
     description: 'The discount needed from asking price to reach your breakeven price.',
-    formula: 'Deal Gap = (List Price or Market Value - Breakeven) / List Price or Market Value × 100',
+    formula: 'Deal Gap = (List Price − Breakeven) ÷ List Price × 100',
     explanation: 'Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).',
     priceNote: 'For listed properties, List Price is used. For off-market properties, Market Value (Zestimate) is used.',
     note: 'Based on LTR (rental) revenue model.',
@@ -55,40 +59,34 @@ const METHODOLOGY_SECTIONS = [
     icon: Target,
     description: 'Seller willingness to negotiate, based on signals and market conditions.',
     components: [
-      { label: 'Foreclosure/Bank-Owned', impact: 'Very High (+90-100)' },
-      { label: 'FSBO + Price Reductions', impact: 'High (+70-85)' },
-      { label: 'High Days on Market (90+)', impact: 'Medium (+50-70)' },
-      { label: 'Standard Listing', impact: 'Low (+40-50)' },
-      { label: 'Off-Market', impact: 'Minimal (+25-35)' },
+      { label: 'Foreclosure / Bank-Owned', impact: 'Very High (+90–100)' },
+      { label: 'FSBO + Price Reductions', impact: 'High (+70–85)' },
+      { label: 'High Days on Market (90+)', impact: 'Medium (+50–70)' },
+      { label: 'Standard Listing', impact: 'Low (+40–50)' },
+      { label: 'Off-Market', impact: 'Minimal (+25–35)' },
     ],
-    marketModifier: {
-      cold: '+15 (Buyer\'s market - sellers more motivated)',
-      warm: '+0 (Balanced market)',
-      hot: '-15 (Seller\'s market - sellers less motivated)',
-    },
   },
 ] as const
 
 const SCORE_FORMULA = {
-  title: 'How the Score is Calculated',
   steps: [
-    'Motivation Score determines Max Achievable Discount (0-25%)',
+    'Motivation Score determines Max Achievable Discount (0–25%)',
     'Compare your Deal Gap to the Max Achievable Discount',
     'Score = Probability of successfully negotiating the gap',
   ],
-  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that\'s easily achievable = High Score (A+)',
+  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that's easily achievable = High Score (A+)',
 }
 
 // =============================================================================
-// GRADE TIERS - Unified rating system across all VerdictIQ pages
+// GRADE TIERS
 // =============================================================================
 const GRADE_TIERS = [
-  { grade: 'A+', range: '90-100', label: 'Strong', color: '#0891B2', meaning: 'Deal Gap easily achievable' },
-  { grade: 'A', range: '80-89', label: 'Good', color: '#0891B2', meaning: 'Deal Gap likely achievable' },
-  { grade: 'B', range: '65-79', label: 'Average', color: '#D97706', meaning: 'Negotiation required' },
-  { grade: 'C', range: '50-64', label: 'Marginal', color: '#D97706', meaning: 'Aggressive discount needed' },
-  { grade: 'D', range: '30-49', label: 'Unlikely', color: '#EF4444', meaning: 'Deal Gap probably too large' },
-  { grade: 'F', range: '0-29', label: 'Pass', color: '#EF4444', meaning: 'Not a viable investment' },
+  { grade: 'A+', range: '90–100', label: 'Strong Deal', color: T.teal, meaning: 'Deal Gap easily achievable' },
+  { grade: 'A',  range: '80–89',  label: 'Good Deal',   color: T.teal, meaning: 'Deal Gap likely achievable' },
+  { grade: 'B',  range: '65–79',  label: 'Average',     color: T.amber, meaning: 'Negotiation required' },
+  { grade: 'C',  range: '50–64',  label: 'Marginal',    color: T.amber, meaning: 'Aggressive discount needed' },
+  { grade: 'D',  range: '30–49',  label: 'Unlikely',    color: T.red, meaning: 'Deal Gap probably too large' },
+  { grade: 'F',  range: '0–29',   label: 'Pass',        color: T.red, meaning: 'Not a viable investment' },
 ]
 
 // =============================================================================
@@ -96,7 +94,7 @@ const GRADE_TIERS = [
 // =============================================================================
 const DATA_SOURCES = [
   { name: 'Zillow', description: 'Property values, rent estimates', icon: Home },
-  { name: 'County Records', description: 'Property taxes, ownership history', icon: Database },
+  { name: 'County Records', description: 'Taxes, ownership history', icon: Database },
   { name: 'Rental Comps', description: 'Nearby rental listings', icon: BarChart3 },
   { name: 'Sales Comps', description: 'Recent sold properties', icon: TrendingUp },
 ]
@@ -129,360 +127,315 @@ export function ScoreMethodologySheet({
   const getTitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'How Verdict IQ Works'
+        return 'How VerdictIQ Works'
       case 'strategy':
         return 'Strategy Score Breakdown'
       default:
-        return 'How We Calculate Profit Quality'
+        return 'How We Score'
+    }
+  }
+
+  const getSubtitle = () => {
+    switch (scoreType) {
+      case 'verdict':
+        return 'Understanding how we evaluate every deal'
+      case 'strategy':
+        return 'How each strategy is ranked and scored'
+      default:
+        return 'The methodology behind every score'
     }
   }
 
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 animate-fade-in"
+      {/* Backdrop — no washout, just a subtle dim */}
+      <div
+        className="fixed inset-0 z-50"
+        style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}
         onClick={onClose}
       />
-      
-      {/* Sheet */}
-      <div 
-        className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-hidden rounded-t-2xl animate-slide-up"
-        style={{ backgroundColor: COLORS.surface50 }}
-      >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div 
-            className="w-10 h-1 rounded-full"
-            style={{ backgroundColor: COLORS.surface300 }}
-          />
-        </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b" style={{ borderColor: COLORS.surface200 }}>
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: `${COLORS.teal}20` }}
-            >
-              <Info className="w-5 h-5" style={{ color: COLORS.teal }} />
-            </div>
+      {/* Centered modal — max small desktop width */}
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+        <div
+          className="pointer-events-auto w-full sm:max-w-[520px] max-h-[90vh] sm:max-h-[85vh] overflow-hidden sm:rounded-2xl rounded-t-2xl"
+          style={{
+            backgroundColor: T.base,
+            border: `1px solid ${T.border}`,
+            boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+            fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between px-6 pt-6 pb-5" style={{ borderBottom: `1px solid ${T.border}` }}>
             <div>
-              <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>
+              <h2 className="text-lg font-bold" style={{ color: T.heading }}>
                 {getTitle()}
               </h2>
+              <p className="text-sm mt-1" style={{ color: T.secondary }}>
+                {getSubtitle()}
+              </p>
               {currentScore !== undefined && (
-                <p className="text-sm" style={{ color: COLORS.surface500 }}>
-                  Your current score: <span className="font-semibold" style={{ color: COLORS.teal }}>{currentScore}</span>
-                  {currentGrade && <span className="ml-1">({currentGrade})</span>}
+                <p className="text-sm mt-1.5" style={{ color: T.label }}>
+                  Current score: <span className="font-semibold" style={{ color: T.blue, fontVariantNumeric: 'tabular-nums' }}>{currentScore}</span>
+                  {currentGrade && <span className="ml-1" style={{ color: T.secondary }}>({currentGrade})</span>}
                 </p>
               )}
             </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
-          >
-            <X className="w-5 h-5" style={{ color: COLORS.surface500 }} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(85vh-100px)] px-5 py-4 space-y-5">
-          {/* Core Concept */}
-          <section>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: `${COLORS.teal}10`, border: `1px solid ${COLORS.teal}30` }}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+              style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
             >
-              <p className="text-sm font-medium text-center" style={{ color: COLORS.navy }}>
-                The Verdict IQ Score answers:
+              <X className="w-4 h-4" style={{ color: T.secondary }} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto px-6 py-5 space-y-6" style={{ maxHeight: 'calc(90vh - 100px)' }}>
+
+            {/* Core Concept — Educational helper box */}
+            <div
+              className="p-5 rounded-xl"
+              style={{
+                background: `radial-gradient(ellipse at 50% 0%, rgba(45,212,191,0.06) 0%, transparent 70%), ${T.card}`,
+                border: `1px solid rgba(45,212,191,0.15)`,
+              }}
+            >
+              <p className="text-sm font-normal text-center" style={{ color: T.body }}>
+                The VerdictIQ Score answers one question:
               </p>
-              <p className="text-base font-bold text-center mt-1" style={{ color: COLORS.teal }}>
-                "How likely can you negotiate the required discount?"
+              <p className="text-base font-bold text-center mt-2" style={{ color: T.teal }}>
+                &ldquo;How likely can you negotiate the required discount?&rdquo;
               </p>
             </div>
-          </section>
 
-          {/* Breakeven Price Section */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              Understanding Breakeven Price
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${COLORS.green}10` }}
-                >
-                  <DollarSign className="w-4 h-4" style={{ color: COLORS.green }} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+            {/* Breakeven Price */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                Understanding Breakeven Price
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="flex items-start gap-3 mb-4">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(52,211,153,0.1)' }}
+                  >
+                    <DollarSign className="w-4 h-4" style={{ color: T.green }} />
+                  </div>
+                  <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
                     The maximum price you can pay and still break even on monthly cash flow.
                   </p>
                 </div>
-              </div>
-              
-              <div className="space-y-2 mb-3">
-                <p className="text-xs font-semibold" style={{ color: COLORS.surface600 }}>
+
+                <p className="text-xs font-semibold mb-2.5" style={{ color: T.body }}>
                   Breakeven is calculated using YOUR assumptions:
                 </p>
-                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Down payment %</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Interest rate</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Loan term</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Vacancy rate</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Management fees</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span style={{ color: COLORS.teal }}>•</span>
-                    <span style={{ color: COLORS.surface500 }}>Maintenance %</span>
-                  </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
+                  {['Down payment %', 'Interest rate', 'Loan term', 'Vacancy rate', 'Management fees', 'Maintenance %'].map((item) => (
+                    <div key={item} className="flex items-center gap-1.5 text-[11px]">
+                      <span style={{ color: T.teal }}>•</span>
+                      <span style={{ color: T.secondary }}>{item}</span>
+                    </div>
+                  ))}
                 </div>
-              </div>
-              
-              <div 
-                className="p-3 rounded-lg"
-                style={{ backgroundColor: `${COLORS.green}08`, border: `1px solid ${COLORS.green}20` }}
-              >
-                <p className="text-xs" style={{ color: COLORS.surface600 }}>
-                  <span className="font-semibold">At breakeven:</span> Monthly rental income exactly covers all expenses (mortgage, taxes, insurance, vacancy, maintenance, management). Any price below breakeven = positive cash flow.
+
+                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(52,211,153,0.05)', border: `1px solid rgba(52,211,153,0.12)` }}>
+                  <p className="text-xs leading-relaxed" style={{ color: T.body }}>
+                    <span className="font-semibold" style={{ color: T.green }}>At breakeven:</span> Monthly rental income exactly covers all expenses (mortgage, taxes, insurance, vacancy, maintenance, management). Any price below breakeven = positive cash flow.
+                  </p>
+                </div>
+
+                <p className="text-[11px] mt-3" style={{ color: T.label }}>
+                  Based on LTR (Long-Term Rental) revenue model using estimated market rent.
                 </p>
               </div>
-              
-              <p className="text-[11px] mt-3 italic" style={{ color: COLORS.surface400 }}>
-                Based on LTR (Long-Term Rental) revenue model using estimated market rent.
-              </p>
-            </div>
-          </section>
+            </section>
 
-          {/* Deal Gap Section */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              1. Deal Gap %
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${COLORS.teal}10` }}
-                >
-                  <TrendingUp className="w-4 h-4" style={{ color: COLORS.teal }} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+            {/* Deal Gap */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                1. Deal Gap %
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="flex items-start gap-3 mb-4">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(56,189,248,0.1)' }}
+                  >
+                    <TrendingUp className="w-4 h-4" style={{ color: T.blue }} />
+                  </div>
+                  <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
                     {METHODOLOGY_SECTIONS[0].description}
                   </p>
                 </div>
-              </div>
-              <div 
-                className="p-3 rounded-lg mb-3"
-                style={{ backgroundColor: COLORS.surface50 }}
-              >
-                <p className="text-xs font-mono font-medium text-center" style={{ color: COLORS.navy }}>
-                  {METHODOLOGY_SECTIONS[0].formula}
+
+                {/* Formula — weight + color, not monospace */}
+                <div className="p-3.5 rounded-lg mb-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                  <p className="text-xs font-semibold text-center leading-relaxed" style={{ color: T.heading }}>
+                    {METHODOLOGY_SECTIONS[0].formula}
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed" style={{ color: T.body }}>
+                  {METHODOLOGY_SECTIONS[0].explanation}
+                </p>
+                <p className="text-xs leading-relaxed mt-2" style={{ color: T.secondary }}>
+                  {METHODOLOGY_SECTIONS[0].priceNote}
+                </p>
+                <p className="text-[11px] mt-2" style={{ color: T.label }}>
+                  {METHODOLOGY_SECTIONS[0].note}
                 </p>
               </div>
-              <p className="text-xs" style={{ color: COLORS.surface500 }}>
-                {METHODOLOGY_SECTIONS[0].explanation}
-              </p>
-              <p className="text-xs mt-2" style={{ color: COLORS.surface500 }}>
-                {METHODOLOGY_SECTIONS[0].priceNote}
-              </p>
-              <p className="text-[11px] mt-2 italic" style={{ color: COLORS.surface400 }}>
-                {METHODOLOGY_SECTIONS[0].note}
-              </p>
-            </div>
-          </section>
+            </section>
 
-          {/* Motivation Section */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              2. Motivation Score
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${COLORS.teal}10` }}
-                >
-                  <Target className="w-4 h-4" style={{ color: COLORS.teal }} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+            {/* Motivation */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                2. Motivation Score
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="flex items-start gap-3 mb-4">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(56,189,248,0.1)' }}
+                  >
+                    <Target className="w-4 h-4" style={{ color: T.blue }} />
+                  </div>
+                  <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
                     {METHODOLOGY_SECTIONS[1].description}
                   </p>
                 </div>
-              </div>
-              
-              {/* Seller Signals */}
-              <p className="text-xs font-semibold mb-2" style={{ color: COLORS.surface600 }}>
-                Seller Signals:
-              </p>
-              <div className="space-y-1.5 mb-4">
-                {METHODOLOGY_SECTIONS[1].components.map((comp, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs">
-                    <span style={{ color: COLORS.surface500 }}>{comp.label}</span>
-                    <span className="font-medium" style={{ color: COLORS.navy }}>{comp.impact}</span>
-                  </div>
-                ))}
-              </div>
 
-              {/* Market Temperature */}
-              <p className="text-xs font-semibold mb-2" style={{ color: COLORS.surface600 }}>
-                Market Condition Modifier:
-              </p>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: COLORS.surface500 }}>Cold Market</span>
-                  <span className="font-medium" style={{ color: COLORS.green }}>+15</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: COLORS.surface500 }}>Warm Market</span>
-                  <span className="font-medium" style={{ color: COLORS.surface500 }}>+0</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: COLORS.surface500 }}>Hot Market</span>
-                  <span className="font-medium" style={{ color: COLORS.rose }}>-15</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* How Score is Calculated */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              3. Score Calculation
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="space-y-2 mb-3">
-                {SCORE_FORMULA.steps.map((step, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <span 
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
-                      style={{ backgroundColor: `${COLORS.teal}15`, color: COLORS.teal }}
-                    >
-                      {idx + 1}
-                    </span>
-                    <span className="text-xs" style={{ color: COLORS.surface600 }}>{step}</span>
-                  </div>
-                ))}
-              </div>
-              <div 
-                className="p-3 rounded-lg"
-                style={{ backgroundColor: `${COLORS.green}08`, border: `1px solid ${COLORS.green}20` }}
-              >
-                <p className="text-xs" style={{ color: COLORS.surface600 }}>
-                  <span className="font-semibold">Example: </span>
-                  {SCORE_FORMULA.example}
+                <p className="text-xs font-semibold mb-3" style={{ color: T.body }}>
+                  Seller Signals
                 </p>
-              </div>
-            </div>
-          </section>
+                <div className="space-y-2 mb-5">
+                  {METHODOLOGY_SECTIONS[1].components.map((comp, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: T.secondary }}>{comp.label}</span>
+                      <span className="text-xs font-semibold" style={{ color: T.heading, fontVariantNumeric: 'tabular-nums' }}>{comp.impact}</span>
+                    </div>
+                  ))}
+                </div>
 
-          {/* Grade Tiers */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              Score Interpretation
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="grid grid-cols-3 gap-2">
-                {GRADE_TIERS.map((tier) => (
-                  <div 
-                    key={tier.grade}
-                    className="text-center p-2 rounded-lg"
-                    style={{ backgroundColor: `${tier.color}10` }}
-                  >
-                    <div 
-                      className="text-lg font-bold"
-                      style={{ color: tier.color }}
-                    >
-                      {tier.grade}
-                    </div>
-                    <div className="text-[10px] font-medium" style={{ color: COLORS.surface500 }}>
-                      {tier.range}
-                    </div>
-                    <div className="text-[10px] font-semibold" style={{ color: tier.color }}>
-                      {tier.label}
-                    </div>
+                <p className="text-xs font-semibold mb-3" style={{ color: T.body }}>
+                  Market Condition Modifier
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: T.secondary }}>Cold Market</span>
+                    <span className="text-xs font-semibold" style={{ color: T.green }}>+15</span>
                   </div>
-                ))}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: T.secondary }}>Warm Market</span>
+                    <span className="text-xs font-semibold" style={{ color: T.label }}>+0</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: T.secondary }}>Hot Market</span>
+                    <span className="text-xs font-semibold" style={{ color: T.red }}>−15</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Data Sources */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              Data Sources
-            </h3>
-            <div 
-              className="p-4 rounded-xl"
-              style={{ backgroundColor: COLORS.surface100, border: `1px solid ${COLORS.surface200}` }}
-            >
-              <div className="grid grid-cols-2 gap-3">
-                {DATA_SOURCES.map((source) => {
-                  const Icon = source.icon
-                  return (
-                    <div key={source.name} className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" style={{ color: COLORS.teal }} />
-                      <div>
-                        <div className="text-xs font-medium" style={{ color: COLORS.navy }}>
-                          {source.name}
-                        </div>
-                        <div className="text-[10px]" style={{ color: COLORS.surface400 }}>
-                          {source.description}
-                        </div>
+            {/* Score Calculation */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                3. Score Calculation
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="space-y-3 mb-4">
+                  {SCORE_FORMULA.steps.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <span
+                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
+                        style={{ backgroundColor: 'rgba(56,189,248,0.1)', color: T.blue }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm leading-relaxed" style={{ color: T.body }}>{step}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(45,212,191,0.05)', border: `1px solid rgba(45,212,191,0.12)` }}>
+                  <p className="text-xs leading-relaxed" style={{ color: T.body }}>
+                    <span className="font-semibold" style={{ color: T.teal }}>Example: </span>
+                    {SCORE_FORMULA.example}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Grade Tiers */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                Score Interpretation
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {GRADE_TIERS.map((tier) => (
+                    <div
+                      key={tier.grade}
+                      className="text-center py-3 px-2 rounded-xl"
+                      style={{ backgroundColor: `${tier.color}08`, border: `1px solid ${tier.color}18` }}
+                    >
+                      <div className="text-xl font-bold" style={{ color: tier.color, fontVariantNumeric: 'tabular-nums' }}>
+                        {tier.grade}
+                      </div>
+                      <div className="text-[10px] font-semibold mt-0.5" style={{ color: tier.color }}>
+                        {tier.label}
+                      </div>
+                      <div className="text-[10px] mt-0.5" style={{ color: T.label }}>
+                        {tier.range}
                       </div>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Last Updated */}
-          {lastUpdated && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <Clock className="w-3 h-3" style={{ color: COLORS.surface400 }} />
-              <span className="text-xs" style={{ color: COLORS.surface400 }}>
-                Score updated: {lastUpdated}
-              </span>
-            </div>
-          )}
+            {/* Data Sources */}
+            <section>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+                Data Sources
+              </h3>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+                <div className="grid grid-cols-2 gap-4">
+                  {DATA_SOURCES.map((source) => {
+                    const Icon = source.icon
+                    return (
+                      <div key={source.name} className="flex items-center gap-2.5">
+                        <Icon className="w-4 h-4 flex-shrink-0" style={{ color: T.teal }} />
+                        <div>
+                          <div className="text-xs font-semibold" style={{ color: T.heading }}>
+                            {source.name}
+                          </div>
+                          <div className="text-[10px]" style={{ color: T.label }}>
+                            {source.description}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
 
-          {/* Bottom padding for safe area */}
-          <div className="h-6" />
+            {/* Last Updated */}
+            {lastUpdated && (
+              <div className="flex items-center justify-center gap-2 pt-1">
+                <Clock className="w-3 h-3" style={{ color: T.label }} />
+                <span className="text-[11px]" style={{ color: T.label }}>
+                  Score updated: {lastUpdated}
+                </span>
+              </div>
+            )}
+
+            {/* Bottom safe area */}
+            <div className="h-4" />
+          </div>
         </div>
       </div>
 
@@ -492,14 +445,14 @@ export function ScoreMethodologySheet({
           to { opacity: 1; }
         }
         @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from { transform: translateY(24px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
-        .animate-fade-in {
+        .fixed.inset-0.z-50:first-child {
           animation: fade-in 0.2s ease-out;
         }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
+        .pointer-events-auto {
+          animation: slide-up 0.25s ease-out;
         }
       `}</style>
     </>

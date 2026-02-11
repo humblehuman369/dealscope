@@ -4,10 +4,51 @@
  * HowWeScoreDropdown Component
  * 
  * Collapsible section explaining the scoring methodology.
+ * 
+ * Design system: Dark fintech — true black base, deep navy cards,
+ * Inter typography, four-tier Slate text hierarchy, semantic accent colors.
  */
 
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react'
+
+// =============================================================================
+// DESIGN TOKENS — Dark Fintech System
+// =============================================================================
+const T = {
+  base: '#000000',
+  card: '#0C1220',
+  border: 'rgba(255,255,255,0.07)',
+  heading: '#F1F5F9',
+  body: '#CBD5E1',
+  secondary: '#94A3B8',
+  label: '#64748B',
+  blue: '#38bdf8',
+  teal: '#2dd4bf',
+}
+
+const SCORING_FACTORS = [
+  {
+    label: 'Deal Gap',
+    weight: '50%',
+    description: 'Distance between asking price and your target buy price. Smaller gaps score higher.',
+  },
+  {
+    label: 'Motivation',
+    weight: '30%',
+    description: 'Seller signals like days on market, price drops, and distressed sale indicators.',
+  },
+  {
+    label: 'Market Conditions',
+    weight: '10%',
+    description: 'Buyer vs seller market dynamics affecting negotiation leverage.',
+  },
+  {
+    label: 'Returns Profile',
+    weight: '10%',
+    description: 'Cap rate, cash-on-cash, and other return metrics at target price.',
+  },
+]
 
 interface HowWeScoreDropdownProps {
   isExpanded?: boolean
@@ -30,62 +71,49 @@ export function HowWeScoreDropdown({
   }
 
   return (
-    <div className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+    <div style={{ backgroundColor: T.base, borderBottom: `1px solid ${T.border}` }}>
       <button 
-        className="w-full flex items-center justify-between p-4 px-6 bg-transparent border-none cursor-pointer text-left"
+        className="w-full flex items-center justify-between py-4 px-6 bg-transparent border-none cursor-pointer text-left"
         onClick={handleToggle}
       >
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-[#0891B2]" />
-          <span className="text-[13px] font-medium text-[#475569]">How We Score</span>
+        <div className="flex items-center gap-2.5">
+          <HelpCircle className="w-4 h-4" style={{ color: T.teal }} />
+          <span className="text-[13px] font-semibold" style={{ color: T.secondary }}>How We Score</span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-[#94A3B8]" />
+          <ChevronUp className="w-4 h-4" style={{ color: T.label }} />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
+          <ChevronDown className="w-4 h-4" style={{ color: T.label }} />
         )}
       </button>
 
       {isExpanded && (
-        <div className="px-6 pb-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-lg p-3 border border-[#E2E8F0]">
-              <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide mb-1">
-                Deal Gap (50%)
+        <div className="px-6 pb-5 space-y-3">
+          <div className="grid grid-cols-2 gap-2.5">
+            {SCORING_FACTORS.map((factor) => (
+              <div
+                key={factor.label}
+                className="rounded-xl p-3.5"
+                style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}
+              >
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: T.blue }}>
+                    {factor.label}
+                  </span>
+                  <span className="text-[11px] font-semibold" style={{ color: T.label, fontVariantNumeric: 'tabular-nums' }}>
+                    {factor.weight}
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: T.secondary }}>
+                  {factor.description}
+                </p>
               </div>
-              <p className="text-[11px] text-[#64748B] leading-relaxed">
-                Distance between asking price and your target buy price. Smaller gaps score higher.
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-3 border border-[#E2E8F0]">
-              <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide mb-1">
-                Motivation (30%)
-              </div>
-              <p className="text-[11px] text-[#64748B] leading-relaxed">
-                Seller signals like days on market, price drops, and distressed sale indicators.
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-3 border border-[#E2E8F0]">
-              <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide mb-1">
-                Market Conditions (10%)
-              </div>
-              <p className="text-[11px] text-[#64748B] leading-relaxed">
-                Buyer vs seller market dynamics affecting negotiation leverage.
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-3 border border-[#E2E8F0]">
-              <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide mb-1">
-                Returns Profile (10%)
-              </div>
-              <p className="text-[11px] text-[#64748B] leading-relaxed">
-                Cap rate, cash-on-cash, and other return metrics at target price.
-              </p>
-            </div>
+            ))}
           </div>
           
-          <div className="text-[11px] text-[#94A3B8] text-center pt-2">
+          <p className="text-[11px] text-center pt-1" style={{ color: T.label }}>
             Score updated in real-time based on your financing terms
-          </div>
+          </p>
         </div>
       )}
     </div>
