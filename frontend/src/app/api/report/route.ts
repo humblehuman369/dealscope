@@ -246,7 +246,7 @@ function buildReport(d: Proforma, theme: string): string {
     ['Maintenance', exp.maintenance],
     ['CapEx Reserve', exp.cap_ex_reserve],
     ['Other', exp.utilities + exp.landscaping + exp.pest_control + (exp.hoa_fees||0) + exp.other_expenses],
-  ].filter(([,v]) => v > 0) as [string,number][]
+  ].filter(([,v]) => (v as number) > 0) as [string,number][]
 
   // -- Pages --
   const coverPage = `
