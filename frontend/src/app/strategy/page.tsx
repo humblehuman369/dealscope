@@ -420,17 +420,6 @@ ${[
                 <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(monthlyPI)}</span>
               </div>
 
-              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
-
-              {/* Before Your Loan (NOI) Card */}
-              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
-                </div>
-                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
-              </div>
             </div>
 
             {/* Right: Earn + Expenses */}
@@ -484,32 +473,44 @@ ${[
                 <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.negative }}>{formatCurrency(totalExpenses)}/yr</span>
               </div>
 
-              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
+            </div>
+          </div>
 
-              {/* What You'd Pocket Card */}
-              <div className="rounded-xl p-4" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: colors.status.negative }}>Net</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(annualCashFlow))})</p>
-                </div>
-                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</p>
+          {/* Summary Cards — aligned row above action buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
+            {/* Before Your Loan (NOI) Card */}
+            <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+              <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
+              <div className="flex justify-between items-baseline mt-1">
+                <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
               </div>
+              <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
+            </div>
+
+            {/* What You'd Pocket Card */}
+            <div className="rounded-xl p-4" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
+              <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
+              <div className="flex justify-between items-baseline mt-1">
+                <p className="text-xs font-medium" style={{ color: colors.status.negative }}>Net</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(annualCashFlow))})</p>
+              </div>
+              <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-4">
             <button
               onClick={() => {
                 router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
               }}
-              className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
+              className="w-full py-3 rounded-xl text-sm font-bold transition-all"
               style={{ color: colors.brand.teal, border: `1.5px solid ${colors.brand.teal}50`, background: `${colors.brand.teal}10` }}
             >
               Change Terms
             </button>
-            <div ref={exportRef} className="relative flex-1">
+            <div ref={exportRef} className="relative">
               <button
                 className="w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5"
                 style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
