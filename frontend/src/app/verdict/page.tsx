@@ -31,6 +31,7 @@ import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProf
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
+import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -150,6 +151,8 @@ function VerdictContent() {
   const [hasTrackedAnalysis, setHasTrackedAnalysis] = useState(false)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+  const [showMethodologySheet, setShowMethodologySheet] = useState(false)
+  const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
 
   // Progressive profiling hook
   const {
@@ -516,10 +519,15 @@ function VerdictContent() {
     handleNavigateToDealMaker()
   }, [handleNavigateToDealMaker])
 
-  // Handle show methodology - could open a modal or navigate
+  // Handle show methodology sheets
   const handleShowMethodology = useCallback(() => {
-    // TODO: Implement methodology popup/modal
-    console.log('Show methodology clicked')
+    setMethodologyScoreType('verdict')
+    setShowMethodologySheet(true)
+  }, [])
+
+  const handleShowHowWeScore = useCallback(() => {
+    setMethodologyScoreType('profit')
+    setShowMethodologySheet(true)
   }, [])
 
   // Header navigation handlers
@@ -681,7 +689,7 @@ function VerdictContent() {
             <div className="flex justify-center gap-2.5 mt-2">
               <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How VerdictIQ Works</button>
               <span style={{ color: colors.text.muted }}>|</span>
-              <button className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How We Score</button>
+              <button onClick={handleShowHowWeScore} className="text-[0.82rem] font-medium" style={{ color: colors.text.secondary }}>How We Score</button>
             </div>
 
             {/* Confidence */}
@@ -746,7 +754,7 @@ function VerdictContent() {
                 ))}
               </div>
               <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
-                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term</span>
+                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term</span> at the Target Buy price
               </p>
               <div className="flex justify-center mt-4">
                 <button
@@ -894,6 +902,14 @@ function VerdictContent() {
           })()}
         />
       )}
+
+      {/* Score Methodology Sheet */}
+      <ScoreMethodologySheet
+        isOpen={showMethodologySheet}
+        onClose={() => setShowMethodologySheet(false)}
+        currentScore={analysis?.dealScore}
+        scoreType={methodologyScoreType}
+      />
 
       {/* Progressive Profiling Prompt */}
       {showPrompt && currentQuestion && (
