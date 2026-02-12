@@ -4,7 +4,7 @@
  * The primary consumers (StrategyAnalyticsContainer, DesktopStrategyAnalyticsContainer)
  * have been migrated to backend-only calculations via:
  *   - frontend/src/hooks/useIQAnalysis.ts  (POST /api/v1/analysis/verdict + worksheets)
- *   - frontend/src/hooks/useDealMakerBackendCalc.ts  (POST /api/v1/worksheet/*/calculate)
+ *   - frontend/src/hooks/useDealMakerBackendCalc.ts  (POST /api/v1/worksheet/{strategy}/calculate)
  *
  * This file is retained for TYPE EXPORTS ONLY (IQTargetResult, TargetAssumptions).
  * The calculation functions (calculateIQTarget, getMetricsAtPrice, etc.) are still
