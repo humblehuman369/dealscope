@@ -1414,8 +1414,8 @@ def calculate_deal_opportunity_score(
     deal_gap_decimal = deal_gap_pct / 100  # Convert to decimal
     
     if deal_gap_decimal <= 0:
-        # No discount needed - already a good deal at asking price
-        iq_score = 100
+        # No discount needed - good deal at asking price, but never 100 (no guarantees)
+        iq_score = 90
     elif max_achievable_discount <= 0:
         # No negotiation power
         iq_score = max(0, 30 - deal_gap_pct * 2)
@@ -1436,8 +1436,8 @@ def calculate_deal_opportunity_score(
         excess = deal_gap_decimal - max_achievable_discount * 1.5
         iq_score = max(0, round(40 - excess * 200))  # Steep drop-off
     
-    # Ensure score is in valid range
-    iq_score = min(100, max(0, iq_score))
+    # Ensure score is in valid range (capped at 90 — no deal is guaranteed)
+    iq_score = min(90, max(0, iq_score))
     
     # ========================================
     # STEP 5: Determine Grade and Label

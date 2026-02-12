@@ -115,6 +115,16 @@ class ScoreDisplayResponse(BaseModel):
     color: str
 
 
+class VerdictComponentScores(BaseModel):
+    """Individual component scores that feed the composite verdict."""
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    deal_gap_score: int
+    return_quality_score: int
+    market_alignment_score: int
+    deal_probability_score: int
+
+
 class IQVerdictResponse(BaseModel):
     """Response from IQ Verdict analysis."""
     model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
@@ -133,6 +143,7 @@ class IQVerdictResponse(BaseModel):
     opportunity_factors: OpportunityFactorsResponse
     return_rating: ScoreDisplayResponse
     return_factors: ReturnFactorsResponse
+    component_scores: Optional[VerdictComponentScores] = None
 
 
 class DealScoreInput(BaseModel):
@@ -394,6 +405,115 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
     }
 
 
+def _calculate_deal_gap_component(breakeven_price: float, list_price: float) -> int:
+    """
+    Deal Gap Score component (0-90).
+    Measures how favorably the property is priced relative to breakeven.
+    Tops out at 90 (not 100) -- a property at breakeven is good, not perfect.
+    Differentiates within positive territory: further below breakeven = higher.
+    """
+    if list_price <= 0:
+        return 0
+    gap_pct = ((list_price - breakeven_price) / list_price) * 100
+
+    if gap_pct <= -10:
+        # Breakeven is 10%+ below list price -> very strong (80-90)
+        # More margin = higher score, capped at 90
+        excess = min(abs(gap_pct) - 10, 20)  # cap additional credit at 20% more
+        return min(90, round(80 + excess * 0.5))
+    elif gap_pct <= 0:
+        # Breakeven at or slightly below list price -> good (70-80)
+        return round(70 + abs(gap_pct))
+    elif gap_pct <= 10:
+        # Need up to 10% discount -> decent (45-70)
+        return round(70 - gap_pct * 2.5)
+    elif gap_pct <= 25:
+        # Need 10-25% discount -> moderate (15-45)
+        return round(45 - (gap_pct - 10) * 2)
+    elif gap_pct <= 40:
+        # Need 25-40% discount -> weak (5-15)
+        return round(15 - (gap_pct - 25) * 0.67)
+    else:
+        return 5  # floor
+
+
+def _calculate_return_quality_component(top_strategy_score: int) -> int:
+    """
+    Return Quality Score component (0-90).
+    Uses the best strategy's score as a proxy for return quality,
+    normalized so a perfect strategy score of 100 maps to 90.
+    """
+    return min(90, round(top_strategy_score * 0.9))
+
+
+def _calculate_deal_probability_component(
+    deal_gap_pct: float,
+    motivation_score: int,
+) -> int:
+    """
+    Deal Probability Score component (0-90).
+    How likely you can actually close at or below the breakeven price.
+    Combines the required discount with seller motivation.
+    """
+    if deal_gap_pct <= 0:
+        # No discount needed -- high probability, but not certain
+        return min(90, round(80 + motivation_score * 0.1))
+
+    # Max achievable discount based on motivation (0-25% range)
+    max_discount = (motivation_score / 100) * 0.25
+    gap_decimal = deal_gap_pct / 100
+
+    if max_discount <= 0:
+        return max(5, round(25 - deal_gap_pct * 1.5))
+
+    ratio = gap_decimal / max_discount
+    if ratio <= 0.6:
+        return min(90, round(75 + (1 - ratio / 0.6) * 15))
+    elif ratio <= 1.0:
+        return round(55 + (1 - (ratio - 0.6) / 0.4) * 20)
+    elif ratio <= 1.5:
+        return round(25 + (1 - (ratio - 1.0) / 0.5) * 30)
+    else:
+        excess = ratio - 1.5
+        return max(5, round(25 - excess * 40))
+
+
+def _calculate_composite_verdict_score(
+    breakeven_price: float,
+    list_price: float,
+    top_strategy_score: int,
+    motivation_score: int,
+) -> tuple[int, int, int, int, int]:
+    """
+    Composite IQ Verdict Score.
+
+    Returns (composite_score, deal_gap, return_quality, market_alignment, deal_probability).
+    All individual components are 0-90. Composite is capped at [5, 95].
+
+    Weights:
+      Deal Gap Score      x 0.35
+      Return Quality      x 0.30
+      Market Alignment    x 0.20
+      Deal Probability    x 0.15
+    """
+    gap_pct = ((list_price - breakeven_price) / list_price) * 100 if list_price > 0 else 100
+
+    deal_gap = _calculate_deal_gap_component(breakeven_price, list_price)
+    return_quality = _calculate_return_quality_component(top_strategy_score)
+    market_alignment = min(90, motivation_score)  # already 0-100, cap at 90
+    deal_probability = _calculate_deal_probability_component(gap_pct, motivation_score)
+
+    composite = round(
+        deal_gap * 0.35
+        + return_quality * 0.30
+        + market_alignment * 0.20
+        + deal_probability * 0.15
+    )
+    composite = max(5, min(95, composite))
+
+    return composite, deal_gap, return_quality, market_alignment, deal_probability
+
+
 def _calculate_opportunity_score(breakeven_price: float, list_price: float) -> tuple[int, float, str]:
     if list_price <= 0:
         return (0, 100.0, "Invalid")
@@ -466,9 +586,9 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             score = strategy["score"]
             strategy["badge"] = "Strong" if score >= 80 else ("Good" if score >= 60 else None)
 
-        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
         top_strategy = max(strategies, key=lambda x: x["score"])
 
+        # Calculate motivation from listing context (defaults to 50 when unknown)
         motivation_score = 50
         motivation_label = "Medium"
         is_distressed = input_data.is_foreclosure or input_data.is_bank_owned
@@ -484,6 +604,26 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             )
             motivation_score = avail["score"]
             motivation_label = avail["motivation"].capitalize()
+
+        # Composite verdict score (replaces old single-factor score)
+        deal_score, comp_gap, comp_return, comp_market, comp_prob = _calculate_composite_verdict_score(
+            breakeven_price=breakeven,
+            list_price=list_price,
+            top_strategy_score=top_strategy["score"],
+            motivation_score=motivation_score,
+        )
+
+        # Legacy discount_pct for backward compatibility
+        discount_pct = max(0, ((list_price - breakeven) / list_price) * 100) if list_price > 0 else 0
+        deal_verdict = (
+            "Strong Opportunity" if discount_pct <= 5
+            else "Great Opportunity" if discount_pct <= 10
+            else "Moderate Opportunity" if discount_pct <= 15
+            else "Potential Opportunity" if discount_pct <= 25
+            else "Mild Opportunity" if discount_pct <= 35
+            else "Weak Opportunity" if discount_pct <= 45
+            else "Poor Opportunity"
+        )
 
         opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
         ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
@@ -512,6 +652,12 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
                 cap_rate=top_strategy.get("cap_rate"), cash_on_cash=top_strategy.get("cash_on_cash"),
                 dscr=top_strategy.get("dscr"), annual_roi=top_strategy.get("annual_cash_flow"),
                 annual_profit=top_strategy.get("annual_cash_flow"), strategy_name=top_strategy["name"],
+            ),
+            component_scores=VerdictComponentScores(
+                deal_gap_score=comp_gap,
+                return_quality_score=comp_return,
+                market_alignment_score=comp_market,
+                deal_probability_score=comp_prob,
             ),
         )
     except Exception as e:
