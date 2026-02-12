@@ -27,6 +27,7 @@ import * as Haptics from 'expo-haptics';
 
 import { api } from '../../services/apiClient';
 import { useTheme } from '../../context/ThemeContext';
+import { useAssumptionsStore } from '../../stores';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -760,13 +761,59 @@ export default function WorksheetScreen() {
   const [results, setResults] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialise inputs from strategy defaults + URL search params
+  // Pull user's saved defaults from assumptions store
+  const storeAssumptions = useAssumptionsStore((s) => s.assumptions);
+
+  // Build a map from worksheet input keys → store values for the current strategy
+  const storeDefaults = useMemo((): Record<string, number> => {
+    const m: Record<string, number> = {};
+    const { financing, operating } = storeAssumptions;
+    // Financing defaults
+    m.down_payment_pct = financing.down_payment_pct;
+    m.interest_rate = financing.interest_rate;
+    m.loan_term_years = financing.loan_term_years;
+    // Operating defaults
+    m.vacancy_rate = operating.vacancy_rate;
+    m.property_management_pct = operating.property_management_pct;
+    m.maintenance_pct = operating.maintenance_pct;
+    m.capex_pct = operating.maintenance_pct; // fallback
+    // Strategy-specific
+    if (strategy === 'str') {
+      const s = storeAssumptions.str;
+      m.occupancy_rate = 0.75;
+      m.platform_fees_pct = s.platform_fees_pct;
+      m.furnishing_budget = s.furniture_setup_cost;
+      m.supplies_monthly = s.supplies_monthly;
+    } else if (strategy === 'brrrr') {
+      const b = storeAssumptions.brrrr;
+      m.refi_ltv = b.refinance_ltv;
+      m.refi_interest_rate = b.refinance_interest_rate;
+      m.refi_loan_term = b.refinance_term_years;
+    } else if (strategy === 'flip') {
+      const f = storeAssumptions.flip;
+      m.selling_costs_pct = f.selling_costs_pct;
+      m.holding_months = f.holding_period_months;
+    } else if (strategy === 'house_hack') {
+      const h = storeAssumptions.house_hack;
+      m.down_payment_pct = h.fha_down_payment_pct;
+      m.pmi_rate = h.fha_mip_rate;
+    } else if (strategy === 'wholesale') {
+      const w = storeAssumptions.wholesale;
+      m.assignment_fee = w.assignment_fee;
+      m.marketing_costs = w.marketing_costs;
+      m.earnest_money = w.earnest_money_deposit;
+    }
+    return m;
+  }, [strategy, storeAssumptions]);
+
+  // Initialise inputs from strategy defaults + store overrides + URL params
   const [inputs, setInputs] = useState<Record<string, number>>(() => {
     if (!config) return {};
     const initial: Record<string, number> = {};
     for (const section of config.inputSections) {
       for (const field of section.fields) {
-        initial[field.key] = field.defaultValue;
+        // Use store default if available, otherwise use config default
+        initial[field.key] = storeDefaults[field.key] ?? field.defaultValue;
       }
     }
     const price = parseFloat(String(params.price ?? ''));
