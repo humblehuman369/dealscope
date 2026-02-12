@@ -45,6 +45,7 @@ export interface VerdictHeroProps {
   confidenceMetrics: ConfidenceMetric[];
   signalIndicators?: SignalIndicator[];
   onHowItWorksPress?: () => void;
+  /** @deprecated Use onHowItWorksPress — the two links have been merged */
   onHowWeScorePress?: () => void;
 }
 
@@ -127,11 +128,7 @@ export function VerdictHero({
           <Text style={styles.verdictSubtitle}>{verdictSubtitle}</Text>
           <View style={styles.verdictLinks}>
             <TouchableOpacity onPress={onHowItWorksPress}>
-              <Text style={styles.verdictLink}>How VerdictIQ Works</Text>
-            </TouchableOpacity>
-            <Text style={styles.linkSeparator}>|</Text>
-            <TouchableOpacity onPress={onHowWeScorePress}>
-              <Text style={styles.verdictLink}>How We Score</Text>
+              <Text style={styles.verdictLink}>How Verdict Score Works</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -271,11 +268,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: verdictDark.textSecondary,
   },
-  linkSeparator: {
-    fontSize: rf(13),
-    color: verdictDark.textLabel,
-  },
-
   // Internal divider
   internalDivider: {
     height: 1,

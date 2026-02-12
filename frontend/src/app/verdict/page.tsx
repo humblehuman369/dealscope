@@ -521,11 +521,6 @@ function VerdictContent() {
     setShowMethodologySheet(true)
   }, [])
 
-  const handleShowHowWeScore = useCallback(() => {
-    setMethodologyScoreType('profit')
-    setShowMethodologySheet(true)
-  }, [])
-
   // Header navigation handlers
   const handleLogoClick = useCallback(() => {
     router.push('/')
@@ -690,10 +685,8 @@ function VerdictContent() {
             {/* Verdict description — centered below score + badge */}
             <p className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
 
-            <div className="flex justify-center gap-2.5 mt-2">
-              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How VerdictIQ Works</button>
-              <span style={{ color: colors.text.muted }}>|</span>
-              <button onClick={handleShowHowWeScore} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How We Score</button>
+            <div className="flex justify-center mt-2">
+              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How Verdict Score Works</button>
             </div>
 
             {/* Score Components — real backend values that feed the headline score */}
