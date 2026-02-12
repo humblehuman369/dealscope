@@ -3,7 +3,6 @@
  */
 
 export * from './types'
-export * from './calculations'
 export * from './DealMakerSlider'
 export * from './ScoreBadge'
 export * from './MetricsHeader'
