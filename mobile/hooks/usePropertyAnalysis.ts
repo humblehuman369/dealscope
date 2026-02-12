@@ -76,6 +76,13 @@ export interface IQVerdictResponse {
   opportunityFactors: OpportunityFactorsResponse;
   returnRating: ScoreDisplayResponse;
   returnFactors: ReturnFactorsResponse;
+  // Composite verdict component scores
+  componentScores?: {
+    dealGapScore: number;
+    returnQualityScore: number;
+    marketAlignmentScore: number;
+    dealProbabilityScore: number;
+  };
 }
 
 export interface VerdictInput {

@@ -51,6 +51,12 @@ interface BackendAnalysisResponse {
   purchase_price: number  // Recommended purchase price (95% of breakeven)
   breakeven_price: number
   list_price: number
+  component_scores?: {
+    deal_gap_score: number
+    return_quality_score: number
+    market_alignment_score: number
+    deal_probability_score: number
+  }
 }
 
 // Helper to get strategy icon
@@ -414,6 +420,8 @@ function VerdictContent() {
             opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
             returnRating: analysisData.return_rating ?? analysisData.returnRating,
             returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
+            // NEW: Composite verdict component scores
+            componentScores: analysisData.component_scores ?? analysisData.componentScores,
           }
           setAnalysis(analysisResult)
         } catch (analysisErr) {
@@ -625,10 +633,12 @@ function VerdictContent() {
     { label: 'Vacancy', value: '<5%', sub: 'Healthy', color: colors.status.positive },
   ]
 
-  // Confidence
-  const dealProb = Math.min(100, Math.max(0, 50 + dealGap * 5))
-  const marketAlign = urgency
-  const priceConf = analysis.opportunity?.score ?? 65
+  // Component scores from backend composite scorer (replaces frontend-computed values)
+  const cs = analysis.componentScores
+  const compDealGap = cs?.dealGapScore ?? 50
+  const compReturnQuality = cs?.returnQualityScore ?? 50
+  const compMarketAlignment = cs?.marketAlignmentScore ?? 50
+  const compDealProbability = cs?.dealProbabilityScore ?? 50
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -686,13 +696,14 @@ function VerdictContent() {
               <button onClick={handleShowHowWeScore} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How We Score</button>
             </div>
 
-            {/* Confidence */}
+            {/* Score Components — real backend values that feed the headline score */}
             <div className="mt-6 text-left max-w-sm mx-auto">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: colors.text.secondary }}>Confidence Metrics</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: colors.text.secondary }}>Score Components</p>
               {[
-                { label: 'Deal Probability', value: dealProb, color: colors.brand.blue },
-                { label: 'Market Alignment', value: marketAlign, color: colors.brand.teal },
-                { label: 'Price Confidence', value: priceConf, color: colors.brand.blue },
+                { label: 'Deal Gap', value: compDealGap, color: colors.brand.teal },
+                { label: 'Return Quality', value: compReturnQuality, color: colors.brand.blue },
+                { label: 'Market Alignment', value: compMarketAlignment, color: colors.brand.teal },
+                { label: 'Deal Probability', value: compDealProbability, color: colors.brand.blue },
               ].map((m, i) => (
                 <div key={i} className="flex items-center gap-2.5 mb-2.5">
                   <span className="text-xs font-medium w-28 shrink-0" style={{ color: colors.text.body }}>{m.label}</span>

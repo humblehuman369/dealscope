@@ -162,10 +162,10 @@ export function VerdictHero({
           </>
         )}
 
-        {/* Confidence Metrics */}
+        {/* Score Components — real backend values that feed the headline score */}
         <View style={styles.internalDivider} />
         <View style={styles.confidenceSection}>
-          <Text style={styles.confidenceHeader}>CONFIDENCE METRICS</Text>
+          <Text style={styles.confidenceHeader}>SCORE COMPONENTS</Text>
           {confidenceMetrics.map((metric, index) => {
             const metricColor = getHarmonizedColor(metric.color);
             return (
