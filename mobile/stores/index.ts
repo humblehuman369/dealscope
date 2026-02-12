@@ -42,3 +42,27 @@ export {
   useActiveStrategy,
   useToast,
 } from './uiStore';
+
+// Deal Maker store — persists deal-maker inputs per property
+export {
+  useDealMakerStore,
+  useDealMakerDerived,
+  useDealMakerReady,
+} from './dealMakerStore';
+export type {
+  CachedMetrics,
+  DealMakerRecord,
+  DealMakerUpdate,
+  PriceTarget,
+} from './dealMakerStore';
+
+// Worksheet store — persists worksheet inputs per property/strategy
+export {
+  useWorksheetStore,
+  useWorksheetDerived,
+} from './worksheetStore';
+export type {
+  StrategyId as WorksheetStrategyId,
+  WorksheetMetrics,
+  WorksheetEntry,
+} from './worksheetStore';
