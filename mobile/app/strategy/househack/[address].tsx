@@ -3,7 +3,7 @@
  * Owner-occupied multi-unit analysis
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -25,10 +25,10 @@ const statusColors = {
   primary: colors.primary[500],
 };
 import {
-  analyzeHouseHack,
   DEFAULT_HOUSE_HACK_INPUTS,
   HouseHackInputs,
 } from '@/components/analytics/strategies';
+import { useStrategyWorksheet } from '@/hooks/useStrategyWorksheet';
 import {
   StrategyHeader,
   MetricCard,
@@ -53,7 +53,34 @@ export default function HouseHackStrategyScreen() {
 
   const [inputs, setInputs] = useState<HouseHackInputs>(DEFAULT_HOUSE_HACK_INPUTS);
 
-  const analysis = useMemo(() => analyzeHouseHack(inputs), [inputs]);
+  const { analysis, isLoading, error: calcError } = useStrategyWorksheet('house_hack', inputs as Record<string, unknown>);
+
+  // Loading or error state
+  if (!analysis) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 10, backgroundColor: theme.surface }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.text }]}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>House Hack Analysis</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
+              {address ? decodeURIComponent(address) : 'Live & Invest'}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.content, { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+          {isLoading ? (
+            <Text style={{ color: theme.text }}>Loading...</Text>
+          ) : calcError ? (
+            <Text style={{ color: colors.loss.main }}>{calcError}</Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
   const { metrics, score, grade, color, insights } = analysis;
 
   // Calculate total rental income

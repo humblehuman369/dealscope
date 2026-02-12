@@ -38,11 +38,7 @@ import {
   getStrategyType,
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
-import { calculateSTRMetrics } from './calculations/strCalculations'
-import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
-import { calculateFlipMetrics } from './calculations/flipCalculations'
-import { calculateHouseHackMetrics } from './calculations/houseHackCalculations'
-import { calculateWholesaleMetrics, getViabilityDisplay } from './calculations/wholesaleCalculations'
+import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
 
 // Re-export for consumers that import from this file
 export type { DealMakerPropertyData }
@@ -774,31 +770,17 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   // Get metrics - from store for saved properties, calculate locally for unsaved
   const isCalculating = isSavedPropertyMode ? dealMakerStore.isSaving : false
   
-  // Calculate metrics - prefer store values for saved properties
+  // Calculate metrics via backend worksheet endpoints (debounced)
+  const { result: backendResult, isCalculating: backendCalculating } = useDealMakerBackendCalc<Record<string, unknown>>(
+    strategyType as 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale',
+    state as unknown as Record<string, unknown>,
+  )
+  
+  // Map backend result to the metrics shape the UI expects
   const metrics = useMemo<AnyStrategyMetrics>(() => {
-    // For STR strategy, use STR calculations
-    if (strategyType === 'str' && isSTRState(state)) {
-      return calculateSTRMetrics(state)
-    }
-    
-    // For BRRRR strategy, use BRRRR calculations
-    if (strategyType === 'brrrr' && isBRRRRState(state)) {
-      return calculateBRRRRMetrics(state)
-    }
-    
-    // For Flip strategy, use Flip calculations
-    if (strategyType === 'flip' && isFlipState(state)) {
-      return calculateFlipMetrics(state)
-    }
-    
-    // For HouseHack strategy, use HouseHack calculations
-    if (strategyType === 'house_hack' && isHouseHackState(state)) {
-      return calculateHouseHackMetrics(state)
-    }
-    
-    // For Wholesale strategy, use Wholesale calculations
-    if (strategyType === 'wholesale' && isWholesaleState(state)) {
-      return calculateWholesaleMetrics(state)
+    // If backend result available for non-LTR strategies, use it directly
+    if (backendResult && strategyType !== 'ltr') {
+      return backendResult as unknown as AnyStrategyMetrics
     }
     
     // For saved properties with LTR, use cached metrics from store

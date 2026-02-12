@@ -45,11 +45,10 @@ import {
 } from './StrategyMetricsContent'
 import { StrategyId, SubTabId, BenchmarkConfig, TuneGroup } from './types'
 import { 
-  calculateIQTarget, 
-  getMetricsAtPrice, 
   TargetAssumptions,
   IQTargetResult 
 } from '@/lib/iqTarget'
+import { useIQAnalysis } from '@/hooks/useIQAnalysis'
 import { 
   calculate10YearProjections, 
   getDefaultProjectionAssumptions,
@@ -179,22 +178,14 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
     }
   }, [onBack])
   
-  // Compute IQ Target
-  const iqTarget = useMemo(() => {
-    if (!activeStrategy) return null
-    return calculateIQTarget(activeStrategy, assumptions)
-  }, [activeStrategy, assumptions])
-  
-  // Compute metrics at both prices
-  const metricsAtTarget = useMemo(() => {
-    if (!activeStrategy || !iqTarget) return null
-    return getMetricsAtPrice(activeStrategy, iqTarget.targetPrice, assumptions)
-  }, [activeStrategy, iqTarget, assumptions])
-  
-  const metricsAtList = useMemo(() => {
-    if (!activeStrategy) return null
-    return getMetricsAtPrice(activeStrategy, assumptions.listPrice, assumptions)
-  }, [activeStrategy, assumptions])
+  // Compute IQ Target + metrics via backend (debounced)
+  const {
+    iqTarget,
+    metricsAtTarget,
+    metricsAtList,
+    isLoading: isCalculating,
+    error: calcError,
+  } = useIQAnalysis(activeStrategy, assumptions)
   
   // Current metrics based on compare view
   const currentMetrics = compareView === 'target' ? metricsAtTarget : metricsAtList
@@ -418,8 +409,8 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
 interface StrategySpecificMetricsProps {
   strategy: StrategyId
   iqTarget: IQTargetResult
-  metricsAtTarget: ReturnType<typeof getMetricsAtPrice> | null
-  metricsAtList: ReturnType<typeof getMetricsAtPrice> | null
+  metricsAtTarget: Record<string, unknown> | null
+  metricsAtList: Record<string, unknown> | null
   assumptions: TargetAssumptions
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void
@@ -452,8 +443,8 @@ function StrategySpecificMetrics(props: StrategySpecificMetricsProps) {
 interface LTRMetricsContentProps {
   strategy: StrategyId
   iqTarget: IQTargetResult
-  metricsAtTarget: ReturnType<typeof getMetricsAtPrice> | null
-  metricsAtList: ReturnType<typeof getMetricsAtPrice> | null
+  metricsAtTarget: Record<string, unknown> | null
+  metricsAtList: Record<string, unknown> | null
   assumptions: TargetAssumptions
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void
@@ -830,7 +821,7 @@ function ProjectionsTabContent({ projections, iqTarget, assumptions }: Projectio
 
 interface ScoreTabContentProps {
   strategy: StrategyId
-  metrics: ReturnType<typeof getMetricsAtPrice>
+  metrics: Record<string, unknown>
   iqTarget: IQTargetResult
   assumptions: TargetAssumptions
 }

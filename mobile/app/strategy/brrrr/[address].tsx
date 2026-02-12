@@ -3,7 +3,7 @@
  * Buy, Rehab, Rent, Refinance, Repeat
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -24,11 +24,8 @@ const statusColors = {
   warning: colors.warning.main,
   primary: colors.primary[500],
 };
-import {
-  analyzeBRRRR,
-  DEFAULT_BRRRR_INPUTS,
-  BRRRRInputs,
-} from '@/components/analytics/strategies';
+import { useStrategyWorksheet } from '@/hooks/useStrategyWorksheet';
+import { DEFAULT_BRRRR_INPUTS, BRRRRInputs } from '@/components/analytics/strategies';
 import {
   StrategyHeader,
   MetricCard,
@@ -54,8 +51,50 @@ export default function BRRRRStrategyScreen() {
 
   const [inputs, setInputs] = useState<BRRRRInputs>(DEFAULT_BRRRR_INPUTS);
 
-  const analysis = useMemo(() => analyzeBRRRR(inputs), [inputs]);
-  const { metrics, score, grade, color, insights } = analysis;
+  const { analysis, isLoading, error: calcError } = useStrategyWorksheet('brrrr', inputs);
+
+  if (calcError) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text, padding: 16 }}>Error: {calcError}</Text>
+      </View>
+    );
+  }
+
+  if (!analysis) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: theme.textSecondary }}>{isLoading ? 'Calculating...' : 'No analysis'}</Text>
+      </View>
+    );
+  }
+
+  const { metrics: rawMetrics, score, grade, color, insights } = analysis;
+
+  // Map backend snake_case to frontend camelCase
+  const m = rawMetrics as Record<string, unknown>;
+  const metrics = {
+    cashRecoupPercent: (m.total_cash_invested as number) > 0
+      ? ((m.cash_out as number) / (m.total_cash_invested as number)) * 100
+      : 0,
+    infiniteReturn: (m.infinite_roi_achieved as boolean) ?? false,
+    cashLeftInDeal: (m.cash_left_in_deal as number) ?? 0,
+    equityCreated: (m.equity_created as number) ?? 0,
+    equityPercent: (m.arv as number) > 0
+      ? ((m.equity_created as number) / (m.arv as number)) * 100
+      : 0,
+    monthlyCashFlow: (m.monthly_cash_flow as number) ?? 0,
+    cashOnCash: (m.cash_on_cash_return as number) === Infinity ? Infinity : ((m.cash_on_cash_return as number) ?? 0),
+    totalTimeMonths: inputs.rehabTimeMonths + 4,
+    purchaseCosts: (m.purchase_costs as number) ?? 0,
+    rehabCosts: (m.total_rehab as number) ?? 0,
+    holdingCosts: (m.holding_costs as number) ?? 0,
+    refinanceLoanAmount: (m.refinance_loan_amount as number) ?? 0,
+    cashOutAmount: (m.cash_out as number) ?? 0,
+    totalInitialInvestment: (m.total_cash_invested as number) ?? 0,
+    newMortgagePayment: ((m.annual_debt_service as number) ?? 0) / 12,
+    annualCashFlow: (m.annual_cash_flow as number) ?? 0,
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
