@@ -1,21 +1,69 @@
 /**
- * useDealScore Hook
- * Manages deal score calculation with memoization
+ * useDealScore — Backend-powered Deal Score hook
+ *
+ * Calls POST /api/v1/worksheet/deal-score to compute the deal score,
+ * matching the frontend implementation. No local financial math.
+ *
+ * This hook is exported via the analytics barrel but is NOT actively used
+ * by any screen. Keeping it backend-powered for consistency in case future
+ * screens reference it.
  */
 
-import { useMemo, useCallback } from 'react';
-import { AnalyticsInputs, CalculatedMetrics, DealScore, ScoreBreakdown } from '../types';
-import { calculateMetrics, calculateDealScore } from '../calculations';
-import { getScoreGrade } from '../benchmarks';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { api } from '../../../services/apiClient';
+import { AnalyticsInputs, DealScore, ScoreBreakdown } from '../types';
 
-interface UseDealScoreResult {
-  metrics: CalculatedMetrics;
-  score: DealScore;
-  recalculate: (inputs: AnalyticsInputs) => DealScore;
-  getBreakdownForCategory: (category: string) => ScoreBreakdown | undefined;
-  isGoodDeal: boolean;
-  improvementSuggestions: ImprovementSuggestion[];
+// ============================================
+// Types
+// ============================================
+
+export interface DealScoreInput {
+  listPrice: number;
+  purchasePrice: number;
+  monthlyRent: number;
+  propertyTaxes: number;
+  insurance: number;
+  vacancyRate?: number;
+  maintenancePct?: number;
+  managementPct?: number;
+  downPaymentPct?: number;
+  interestRate?: number;
+  loanTermYears?: number;
+  listingStatus?: string | null;
+  sellerType?: string | null;
+  isForeclosure?: boolean;
+  isBankOwned?: boolean;
+  isFsbo?: boolean;
+  isAuction?: boolean;
+  priceReductions?: number;
+  daysOnMarket?: number | null;
 }
+
+export interface DealScoreResult {
+  dealScore: number;
+  dealVerdict: string;
+  discountPercent: number;
+  breakevenPrice: number;
+  purchasePrice: number;
+  listPrice: number;
+  grade?: string;
+  color?: string;
+  factors?: {
+    dealGapScore: number;
+    dealGapPercent: number;
+    availabilityScore: number;
+    availabilityStatus: string;
+    availabilityLabel: string;
+    availabilityMotivation: string;
+    domScore: number;
+    domLeverage: string;
+    daysOnMarket: number | null;
+  };
+}
+
+// ============================================
+// Legacy-compatible interface
+// ============================================
 
 interface ImprovementSuggestion {
   category: string;
@@ -25,111 +73,166 @@ interface ImprovementSuggestion {
   impact: 'high' | 'medium' | 'low';
 }
 
+interface UseDealScoreResult {
+  /** Backend deal score result (null while loading or on error) */
+  result: DealScoreResult | null;
+  /** Loading state */
+  isLoading: boolean;
+  /** Error message */
+  error: string | null;
+  /** Manually trigger a recalculation */
+  recalculate: () => void;
+
+  // Legacy fields (kept for backward compat if anything still references them)
+  metrics: null;
+  score: DealScore;
+  getBreakdownForCategory: (category: string) => ScoreBreakdown | undefined;
+  isGoodDeal: boolean;
+  improvementSuggestions: ImprovementSuggestion[];
+}
+
+// ============================================
+// Hook
+// ============================================
+
+const DEBOUNCE_MS = 300;
+
 export function useDealScore(inputs: AnalyticsInputs): UseDealScoreResult {
-  // Calculate metrics and score
-  const metrics = useMemo(() => calculateMetrics(inputs), [inputs]);
-  const score = useMemo(() => calculateDealScore(metrics), [metrics]);
+  const [result, setResult] = useState<DealScoreResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Get breakdown for specific category
-  const getBreakdownForCategory = useCallback(
-    (category: string) => {
-      return score.breakdown.find(b => b.category.toLowerCase() === category.toLowerCase());
-    },
-    [score.breakdown]
-  );
+  const fetchDealScore = useCallback(async () => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-  // Recalculate with new inputs
-  const recalculate = useCallback((newInputs: AnalyticsInputs) => {
-    const newMetrics = calculateMetrics(newInputs);
-    return calculateDealScore(newMetrics);
+    if (!inputs.purchasePrice || !inputs.monthlyRent) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await api.post<Record<string, any>>(
+        '/api/v1/worksheet/deal-score',
+        {
+          list_price: inputs.purchasePrice,
+          purchase_price: inputs.purchasePrice,
+          monthly_rent: inputs.monthlyRent,
+          property_taxes: inputs.annualPropertyTax,
+          insurance: inputs.annualInsurance,
+          vacancy_rate: inputs.vacancyRate,
+          maintenance_pct: inputs.maintenanceRate,
+          management_pct: inputs.managementRate,
+          down_payment_pct: inputs.downPaymentPercent,
+          interest_rate: inputs.interestRate,
+          loan_term_years: inputs.loanTermYears,
+        },
+      );
+
+      if (!controller.signal.aborted) {
+        setResult({
+          dealScore: data.deal_score,
+          dealVerdict: data.deal_verdict,
+          discountPercent: data.discount_percent,
+          breakevenPrice: data.breakeven_price,
+          purchasePrice: data.purchase_price,
+          listPrice: data.list_price,
+          grade: data.grade,
+          color: data.color,
+          factors: data.factors
+            ? {
+                dealGapScore: data.factors.deal_gap_score,
+                dealGapPercent: data.factors.deal_gap_percent,
+                availabilityScore: data.factors.availability_score,
+                availabilityStatus: data.factors.availability_status,
+                availabilityLabel: data.factors.availability_label,
+                availabilityMotivation: data.factors.availability_motivation,
+                domScore: data.factors.dom_score,
+                domLeverage: data.factors.dom_leverage,
+                daysOnMarket: data.factors.days_on_market,
+              }
+            : undefined,
+        });
+      }
+    } catch (err: unknown) {
+      if (!controller.signal.aborted) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch deal score');
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
+    }
+  }, [
+    inputs.purchasePrice,
+    inputs.monthlyRent,
+    inputs.annualPropertyTax,
+    inputs.annualInsurance,
+    inputs.vacancyRate,
+    inputs.maintenanceRate,
+    inputs.managementRate,
+    inputs.downPaymentPercent,
+    inputs.interestRate,
+    inputs.loanTermYears,
+  ]);
+
+  // Debounced fetch
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(fetchDealScore, DEBOUNCE_MS);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [fetchDealScore]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
   }, []);
 
-  // Determine if this is a good deal
-  const isGoodDeal = useMemo(() => score.score >= 60, [score.score]);
-
-  // Generate improvement suggestions
-  const improvementSuggestions = useMemo(() => {
-    const suggestions: ImprovementSuggestion[] = [];
-
-    score.breakdown.forEach((item) => {
-      const percentAchieved = (item.points / item.maxPoints) * 100;
-      
-      if (percentAchieved < 50) {
-        const suggestion = getImprovementSuggestion(item.category, metrics, inputs);
-        if (suggestion) {
-          suggestions.push({
-            category: item.category,
-            currentPoints: item.points,
-            maxPoints: item.maxPoints,
-            suggestion,
-            impact: item.maxPoints >= 20 ? 'high' : item.maxPoints >= 15 ? 'medium' : 'low',
-          });
-        }
+  // Build a legacy-shaped DealScore from the backend result for backward compat
+  const legacyScore: DealScore = result
+    ? {
+        score: result.dealScore,
+        grade: (result.grade || 'C') as DealScore['grade'],
+        label: result.dealVerdict || 'Calculating',
+        verdict: result.dealVerdict || '',
+        color: result.color || '#f97316',
+        discountPercent: result.discountPercent,
+        breakevenPrice: result.breakevenPrice,
+        listPrice: result.listPrice,
+        breakdown: [],
       }
-    });
-
-    // Sort by impact
-    return suggestions.sort((a, b) => {
-      const order = { high: 0, medium: 1, low: 2 };
-      return order[a.impact] - order[b.impact];
-    });
-  }, [score.breakdown, metrics, inputs]);
+    : {
+        score: 0,
+        grade: 'F' as DealScore['grade'],
+        label: 'Loading',
+        verdict: '',
+        color: '#ef4444',
+        discountPercent: 0,
+        breakevenPrice: 0,
+        listPrice: 0,
+        breakdown: [],
+      };
 
   return {
-    metrics,
-    score,
-    recalculate,
-    getBreakdownForCategory,
-    isGoodDeal,
-    improvementSuggestions,
+    result,
+    isLoading,
+    error,
+    recalculate: fetchDealScore,
+
+    // Legacy compat
+    metrics: null,
+    score: legacyScore,
+    getBreakdownForCategory: () => undefined,
+    isGoodDeal: (result?.dealScore ?? 0) >= 60,
+    improvementSuggestions: [],
   };
 }
 
-function getImprovementSuggestion(
-  category: string,
-  metrics: CalculatedMetrics,
-  inputs: AnalyticsInputs
-): string | null {
-  switch (category.toLowerCase()) {
-    case 'cash flow':
-      if (metrics.monthlyCashFlow <= 0) {
-        const needed = Math.ceil((-metrics.monthlyCashFlow + 200) / 50) * 50;
-        return `Increase rent by $${needed}/mo or reduce purchase price by ${Math.round(needed * 200)}`;
-      }
-      return 'Negotiate a lower purchase price or find higher rent potential';
-
-    case 'cash-on-cash':
-      return 'Reduce down payment or negotiate seller credits to improve returns';
-
-    case 'cap rate':
-      const currentCap = metrics.capRate;
-      if (currentCap < 5) {
-        return 'Price is high relative to income - negotiate or find value-add opportunities';
-      }
-      return 'Look for properties with higher income relative to price';
-
-    case '1% rule':
-      if (metrics.onePercentRule < 0.8) {
-        return 'Property is priced high relative to rent - typical in appreciation markets';
-      }
-      return 'Consider markets with better rent-to-price ratios';
-
-    case 'dscr':
-      if (metrics.dscr < 1.25) {
-        return 'Increase rent or reduce debt to meet lender requirements';
-      }
-      return 'Debt coverage is tight - build in more margin';
-
-    case 'equity potential':
-      return 'Look for value-add opportunities or markets with stronger appreciation';
-
-    case 'risk buffer':
-      return 'Build in more reserves and target higher DSCR for safety';
-
-    default:
-      return null;
-  }
-}
-
 export default useDealScore;
-
