@@ -43,6 +43,22 @@ import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
 // Re-export for consumers that import from this file
 export type { DealMakerPropertyData }
 
+// Wholesale viability display helper (was in deleted wholesaleCalculations.ts)
+function getViabilityDisplay(viability: string): { label: string; color: string; icon: string } {
+  switch (viability) {
+    case 'excellent':
+      return { label: 'Excellent Deal', color: '#22c55e', icon: '🟢' }
+    case 'good':
+      return { label: 'Good Deal', color: '#3b82f6', icon: '🔵' }
+    case 'marginal':
+      return { label: 'Marginal Deal', color: '#f97316', icon: '🟠' }
+    case 'poor':
+      return { label: 'Poor Deal', color: '#ef4444', icon: '🔴' }
+    default:
+      return { label: 'Unknown', color: '#6b7280', icon: '⚪' }
+  }
+}
+
 // Local type guards — narrower than the ones in types.ts, scoped to this component's union
 function isSTRState(state: AnyStrategyState): state is STRDealMakerState {
   return 'averageDailyRate' in state && 'occupancyRate' in state
