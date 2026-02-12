@@ -393,6 +393,40 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Learn Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Learn</Text>
+          <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/national-averages' as any)}>
+              <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                <Ionicons name="bar-chart-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
+              </View>
+              <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>National Averages</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/search-history' as any)}>
+              <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                <Ionicons name="time-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
+              </View>
+              <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Search History</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/learn/ltr' as any)}>
+              <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                <Ionicons name="school-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
+              </View>
+              <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Strategy Education</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Support Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Support</Text>

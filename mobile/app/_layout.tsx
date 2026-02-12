@@ -221,6 +221,42 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* Photo Gallery */}
+        <Stack.Screen 
+          name="photos/[zpid]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* Search History */}
+        <Stack.Screen 
+          name="search-history/index" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* Strategy Education */}
+        <Stack.Screen 
+          name="learn/[strategy]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* National Averages */}
+        <Stack.Screen 
+          name="national-averages/index" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Animated Splash Screen with pulsating logo */}
