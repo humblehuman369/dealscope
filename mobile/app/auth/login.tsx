@@ -8,7 +8,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +16,7 @@ import * as Haptics from 'expo-haptics';
 
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { validateEmail, forgotPassword } from '../../services/authService';
+import { validateEmail } from '../../services/authService';
 import type { MFAChallengeResponse } from '../../services/authService';
 
 export default function LoginScreen() {
@@ -79,18 +78,10 @@ export default function LoginScreen() {
     }
   }, [mfaChallenge, mfaCode, rememberMe, loginMfa, router]);
 
-  const handleForgotPassword = useCallback(async () => {
-    if (!validateEmail(email)) {
-      Alert.alert('Email Required', 'Please enter your email address first.');
-      return;
-    }
-    try {
-      await forgotPassword(email);
-      Alert.alert('Check Your Email', 'If an account exists with that email, a reset link has been sent.');
-    } catch {
-      Alert.alert('Check Your Email', 'If an account exists with that email, a reset link has been sent.');
-    }
-  }, [email]);
+  const handleForgotPassword = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/auth/forgot-password');
+  }, [router]);
 
   const bg = isDark ? '#0f172a' : '#f8fafc';
   const cardBg = isDark ? '#1e293b' : '#ffffff';
