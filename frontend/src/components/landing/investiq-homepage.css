@@ -123,7 +123,7 @@
 .iq-landing .hero.hero-centered {
   min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center; text-align: center;
-  padding: 8rem 1.5rem 5rem; position: relative; z-index: 1;
+  padding: 4rem 1.5rem 5rem; position: relative; z-index: 1;
 }
 .iq-landing .hero::before {
   content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
@@ -605,11 +605,12 @@
   .iq-landing .verdict-section, .iq-landing .funnel-section { padding: 4.5rem 1.25rem; }
 }
 @media (max-width: 768px) {
+  .iq-landing .hero.hero-centered { padding: 5rem 1.25rem 3.5rem; }
   .iq-landing .toolkit-grid { grid-template-columns: repeat(2, 1fr); }
   .iq-landing .strategies-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .iq-landing .hero.hero-centered { padding: 7rem 1.25rem 3.5rem; min-height: auto; }
+  .iq-landing .hero.hero-centered { padding: 4.5rem 1.25rem 2.5rem; min-height: auto; }
   .iq-landing .section { padding: 4rem 1.25rem; }
   .iq-landing .hero-inputs { flex-direction: column; width: 100%; max-width: 400px; }
   .iq-landing .input-group input { width: 100%; }
