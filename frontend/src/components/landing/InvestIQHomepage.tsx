@@ -294,12 +294,72 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </section>
 
-      {/* INVESTMENT STRATEGIES */}
-      <section
-        className={`section section-alt ${fadeClass(2)}`}
-        id="strategies"
+      {/* FOUNDER + VALUATION CONTROLS */}
+      <div
+        className={fadeClass(2)}
         data-idx="2"
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[2] = el; }}
+      >
+        <div className="founder-bar">
+          <div className="founder-inner">
+            <div className="founder-info">
+              <div className="founder-meta">Architecture By</div>
+              <div className="founder-name">Brad Geisen</div>
+              <div className="founder-role">Founder, Foreclosure.com</div>
+            </div>
+            <div className="founder-quote-text">
+              &ldquo;I built the infrastructure behind <strong>HomePath.com</strong> (Fannie Mae) and <strong>HomeSteps.com</strong> (Freddie Mac). InvestIQ isn&apos;t a calculator; it&apos;s 35 years of institutional intelligence, now in your hands.&rdquo;
+            </div>
+          </div>
+          <div className="val-panel">
+            <div className="val-header">
+              <div className="val-header-title">Valuation Controls</div>
+              <div className="val-header-badge">Edit Mode: On</div>
+            </div>
+            <div className="val-body">
+              <div className="slider-row">
+                <div className="slider-top">
+                  <span className="slider-label">Property Condition</span>
+                  <span className="slider-badge gold">Needs Rehab (-$85k)</span>
+                </div>
+                <div className="slider-track">
+                  <div className="slider-fill gold-fill" style={{ width: '42%' }} />
+                  <div className="slider-thumb" style={{ left: 'calc(42% - 9px)' }} />
+                </div>
+                <div className="slider-scale"><span>Distressed</span><span>Average</span><span>Turnkey</span></div>
+              </div>
+              <div className="slider-row">
+                <div className="slider-top">
+                  <span className="slider-label">Location Premium</span>
+                  <span className="slider-badge gold">High Demand (+5%)</span>
+                </div>
+                <div className="slider-track">
+                  <div className="slider-fill gold-fill" style={{ width: '58%' }} />
+                  <div className="slider-thumb" style={{ left: 'calc(58% - 9px)' }} />
+                </div>
+                <div className="slider-scale"><span>Poor</span><span>Standard</span><span>Premium</span></div>
+              </div>
+              <div className="val-result">
+                <div>
+                  <div className="val-result-label">Adjusted Value</div>
+                  <div className="val-result-value">$766,733</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="val-result-label">Impact</div>
+                  <div className="val-result-impact">+ $12,400</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* INVESTMENT STRATEGIES */}
+      <section
+        className={`section section-alt ${fadeClass(3)}`}
+        id="strategies"
+        data-idx="3"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[3] = el; }}
       >
         <div className="section-inner">
           <div className="section-header">
@@ -383,10 +443,10 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* INVESTMENT OS */}
       <section
-        className={`section section-alt ${fadeClass(3)}`}
+        className={`section section-alt ${fadeClass(4)}`}
         id="dealhub"
-        data-idx="3"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[3] = el; }}
+        data-idx="4"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
       >
         <div className="section-inner">
           <div className="os-grid">
@@ -406,10 +466,10 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* TOOLKIT */}
       <section
-        className={`section ${fadeClass(4)}`}
+        className={`section ${fadeClass(5)}`}
         id="toolkit"
-        data-idx="4"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
+        data-idx="5"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[5] = el; }}
       >
         <div className="section-inner">
           <div className="section-header">
@@ -478,9 +538,9 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* CTA */}
       <section
-        className={`cta-section ${fadeClass(5)}`}
-        data-idx="5"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[5] = el; }}
+        className={`cta-section ${fadeClass(6)}`}
+        data-idx="6"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[6] = el; }}
       >
         <div className="cta-inner">
           <h2 className="cta-title">Stop wondering. Start knowing.</h2>
