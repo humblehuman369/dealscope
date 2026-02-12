@@ -645,6 +645,9 @@ function VerdictContent() {
         <div className="max-w-[520px] mx-auto">
           {/* Score Hero */}
           <section className="px-5 pt-10 pb-8" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
+            {/* The Verdict label */}
+            <p className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6" style={{ color: colors.text.muted }}>The Verdict</p>
+
             {/* Score gauge + badge row */}
             <div className="flex items-center justify-center gap-5 mb-5">
               {/* Score gauge */}
@@ -707,7 +710,7 @@ function VerdictContent() {
             <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>What Should You Pay?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
-              Every investment property has three price levels. These tell you exactly when a deal starts making money.
+              Every investment property has three price levels. The gap between asking price and your target buy price is what makes or breaks this deal.
             </p>
 
             <div className="flex gap-2.5">
@@ -761,8 +764,9 @@ function VerdictContent() {
 
           {/* Market Snapshot */}
           <section className="px-5 pb-6 border-t" style={{ borderColor: colors.ui.border }}>
-            <div className="flex justify-between items-center py-4">
-              <span className="text-[0.68rem] font-bold uppercase tracking-wider" style={{ color: colors.text.primary }}>Market Snapshot</span>
+            <div className="py-4">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider block" style={{ color: colors.text.primary }}>Market Snapshot</span>
+              <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>The four signals from your 60-second screen</p>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {signals.map((s, i) => (
@@ -784,9 +788,9 @@ function VerdictContent() {
                 <svg width="18" height="18" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
               </div>
               <div>
-                <p className="text-sm font-bold mb-1" style={{ color: colors.text.primary }}>New to investing?</p>
+                <p className="text-sm font-bold mb-1" style={{ color: colors.text.primary }}>This is your 60-second screen.</p>
                 <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
-                  A VerdictIQ score above 70 means the numbers work at or near asking price. Below 50, you&apos;d need a major discount. This property sits in the middle — possible with negotiation.
+                  A VerdictIQ score tells you whether to keep scrolling or dig deeper. This property scored {score} — {score >= 65 ? 'a ' + verdictLabel.toLowerCase() + ' worth your full analysis' : 'the numbers need work before committing'}. Ready to go deep? The full financial breakdown is one tap away.
                 </p>
               </div>
             </div>
@@ -794,10 +798,10 @@ function VerdictContent() {
 
           {/* CTA → Strategy */}
           <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
-            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>Think there&apos;s an opportunity?</p>
-            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>See If the Numbers<br/>Actually Work</h2>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>This deal passed the screen</p>
+            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>Now Prove It.</h2>
             <p className="text-[0.95rem] leading-relaxed max-w-xs mx-auto mb-7" style={{ color: colors.text.body }}>
-              Get a plain-English financial breakdown — what you&apos;d pay, what you&apos;d earn, and whether it&apos;s worth it.
+              Get a full financial breakdown across 6 investment strategies — what you&apos;d pay, what you&apos;d earn, and whether the numbers actually work.
             </p>
             <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
               style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
