@@ -25,6 +25,7 @@ import {
 } from '@/components/iq-verdict'
 import { colors, typography, tw, getScoreColor } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
+import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
@@ -96,6 +97,8 @@ function VerdictContent() {
   const urlInsurance = searchParams.get('insurance')
   const urlArv = searchParams.get('arv')
   const urlZpid = searchParams.get('zpid')
+  const conditionParam = searchParams.get('condition')
+  const locationParam = searchParams.get('location')
   
   // Load sessionStorage data synchronously to avoid race conditions
   // This function is called during render, so we use a try/catch
@@ -347,6 +350,18 @@ function VerdictContent() {
             arv: arvForCalc,
             source: hasLegacyOverrides ? 'urlParams' : 'propertyData',
           })
+        }
+
+        // Apply condition / location slider adjustments (from IQ Gateway)
+        if (conditionParam) {
+          const cond = getConditionAdjustment(Number(conditionParam))
+          // Turnkey premium increases effective list price; rehab doesn't change list price
+          // (rehab cost is handled downstream in strategy page)
+          listPriceForCalc += cond.pricePremium
+        }
+        if (locationParam) {
+          const loc = getLocationAdjustment(Number(locationParam))
+          rentForCalc = Math.round(rentForCalc * loc.rentMultiplier)
         }
         
         try {
@@ -618,7 +633,10 @@ function VerdictContent() {
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    router.push(`/strategy?address=${encodeURIComponent(fullAddress)}`)
+    const params = new URLSearchParams({ address: fullAddress })
+    if (conditionParam) params.set('condition', conditionParam)
+    if (locationParam) params.set('location', locationParam)
+    router.push(`/strategy?${params.toString()}`)
   }
 
   return (
