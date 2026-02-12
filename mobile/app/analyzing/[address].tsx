@@ -6,13 +6,14 @@
  * Automatically transitions to verdict screen after animation
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 
 import {
   IQAnalyzingScreen,
   IQProperty,
 } from '../../components/analytics/iq-verdict';
+import { usePropertyStore } from '../../stores';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
@@ -48,6 +49,18 @@ export default function AnalyzingScreen() {
     latitude: params.lat ? parseFloat(params.lat) : undefined,
     longitude: params.lng ? parseFloat(params.lng) : undefined,
   }), [params, decodedAddress]);
+
+  // Record this search in the property store
+  const addRecentSearch = usePropertyStore((s) => s.addRecentSearch);
+  useEffect(() => {
+    addRecentSearch({
+      address: property.address,
+      propertyId: encodeURIComponent(property.address),
+      price: property.price,
+      beds: property.beds,
+      baths: property.baths,
+    });
+  }, [property.address]);
 
   // Handle analysis complete - navigate to verdict screen
   const handleAnalysisComplete = useCallback(() => {

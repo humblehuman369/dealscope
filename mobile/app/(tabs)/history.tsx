@@ -29,6 +29,7 @@ import { ScannedProperty, AnalyticsData } from '../../database';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
+import { useRecentSearches } from '../../stores';
 
 // Brand Colors - Use colors from theme for consistency
 const BRAND = {
@@ -105,6 +106,61 @@ function getStrategyName(key: string): string {
     wholesale: 'Wholesale',
   };
   return names[key] || key;
+}
+
+/** Compact recent-search list from the property store */
+function RecentSearchesSection({ router, isDark }: { router: ReturnType<typeof useRouter>; isDark: boolean }) {
+  const recentSearches = useRecentSearches();
+  if (recentSearches.length === 0) return null;
+
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        Recent Searches
+      </Text>
+      {recentSearches.slice(0, 5).map((search) => (
+        <TouchableOpacity
+          key={search.propertyId}
+          activeOpacity={0.7}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push(`/analyzing/${search.propertyId}` as any);
+          }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            backgroundColor: cardBg,
+            borderRadius: 10,
+            marginBottom: 6,
+            borderWidth: 1,
+            borderColor,
+          }}
+        >
+          <Ionicons name="search-outline" size={16} color={BRAND.blue} style={{ marginRight: 10 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '500', color: textColor }} numberOfLines={1}>
+              {decodeURIComponent(search.address)}
+            </Text>
+            {search.price ? (
+              <Text style={{ fontSize: 12, color: mutedColor, marginTop: 1 }}>
+                ${search.price.toLocaleString()}
+                {search.beds ? ` · ${search.beds}bd` : ''}
+                {search.baths ? ` / ${search.baths}ba` : ''}
+              </Text>
+            ) : null}
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={mutedColor} />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
 }
 
 export default function HistoryScreen() {
@@ -396,6 +452,7 @@ export default function HistoryScreen() {
             colors={[BRAND.blue]}
           />
         }
+        ListHeaderComponent={<RecentSearchesSection router={router} isDark={isDark} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons 

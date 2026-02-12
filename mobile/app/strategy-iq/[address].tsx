@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
+import { useUIStore } from '../../stores';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
 import {
@@ -228,6 +229,18 @@ export default function StrategyIQScreen() {
   }>();
 
   const [currentStrategy, setCurrentStrategy] = useState('Long-Term Rental');
+  const setActiveStrategy = useUIStore((s) => s.setActiveStrategy);
+
+  // Sync strategy selection to UI store for cross-screen consistency
+  const handleSetStrategy = useCallback((name: string) => {
+    setCurrentStrategy(name);
+    const strategyMap: Record<string, string> = {
+      'Long-Term Rental': 'ltr', 'Short-Term Rental': 'str', 'BRRRR': 'brrrr',
+      'Fix & Flip': 'flip', 'House Hack': 'house_hack', 'Wholesale': 'wholesale',
+    };
+    const id = strategyMap[name];
+    if (id) setActiveStrategy(id as any);
+  }, [setActiveStrategy]);
 
   const decodedAddress = decodeURIComponent(address || '');
   const listPrice = price ? parseFloat(price) : 350000;
