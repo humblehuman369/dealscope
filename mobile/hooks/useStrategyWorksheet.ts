@@ -147,7 +147,7 @@ function mapResultToMetrics(
     const currentHousing = (inputs.currentHousingPayment as number) ?? 2000;
     const housingReduction =
       currentHousing > 0 ? ((currentHousing - yourHousingCost) / currentHousing) * 100 : 0;
-    const rentedUnits = (inputs.rentedUnits as number) ?? ((inputs.rentPerUnit as number[]) || []).length || 1;
+    const rentedUnits = (inputs.rentedUnits as number) ?? (((inputs.rentPerUnit as number[]) || []).length || 1);
     const fullRentalCashFlow = (result.full_rental_cash_flow as number) ?? 0;
     return {
       ...result,
