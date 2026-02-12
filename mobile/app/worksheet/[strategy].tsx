@@ -27,7 +27,7 @@ import * as Haptics from 'expo-haptics';
 
 import { api } from '../../services/apiClient';
 import { useTheme } from '../../context/ThemeContext';
-import { useAssumptionsStore } from '../../stores';
+import { useAssumptionsStore, useWorksheetStore } from '../../stores';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -806,35 +806,54 @@ export default function WorksheetScreen() {
     return m;
   }, [strategy, storeAssumptions]);
 
+  // Worksheet persistence store
+  const worksheetStore = useWorksheetStore();
+  const propertyId = params.address ? encodeURIComponent(decodeURIComponent(params.address as string)) : 'default';
+
   // Initialise inputs from strategy defaults + store overrides + URL params
+  // If the store has a persisted entry for this property+strategy, re-use it
   const [inputs, setInputs] = useState<Record<string, number>>(() => {
     if (!config) return {};
+
+    // Check for persisted entry
+    const persisted = worksheetStore.getEntry(propertyId, strategy);
+
     const initial: Record<string, number> = {};
     for (const section of config.inputSections) {
       for (const field of section.fields) {
-        // Use store default if available, otherwise use config default
-        initial[field.key] = storeDefaults[field.key] ?? field.defaultValue;
+        // Priority: persisted > store defaults > config default
+        initial[field.key] =
+          persisted?.inputs[field.key] ??
+          storeDefaults[field.key] ??
+          field.defaultValue;
       }
     }
     const price = parseFloat(String(params.price ?? ''));
     if (!isNaN(price) && price > 0) {
-      if ('purchase_price' in initial) initial.purchase_price = price;
-      if ('contract_price' in initial) initial.contract_price = price;
+      if ('purchase_price' in initial && !persisted) initial.purchase_price = price;
+      if ('contract_price' in initial && !persisted) initial.contract_price = price;
     }
     const rent = parseFloat(String(params.rent ?? ''));
-    if (!isNaN(rent) && rent > 0 && 'monthly_rent' in initial) {
+    if (!isNaN(rent) && rent > 0 && 'monthly_rent' in initial && !persisted) {
       initial.monthly_rent = rent;
     }
     const adr = parseFloat(String(params.adr ?? ''));
-    if (!isNaN(adr) && adr > 0 && 'average_daily_rate' in initial) {
+    if (!isNaN(adr) && adr > 0 && 'average_daily_rate' in initial && !persisted) {
       initial.average_daily_rate = adr;
     }
     const arv = parseFloat(String(params.arv ?? ''));
-    if (!isNaN(arv) && arv > 0 && 'arv' in initial) {
+    if (!isNaN(arv) && arv > 0 && 'arv' in initial && !persisted) {
       initial.arv = arv;
     }
     return initial;
   });
+
+  // Register this worksheet in the persistence store on mount
+  useEffect(() => {
+    if (config && Object.keys(inputs).length > 0) {
+      worksheetStore.initWorksheet(propertyId, strategy, inputs);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // All input sections start expanded
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
@@ -846,10 +865,15 @@ export default function WorksheetScreen() {
     return expanded;
   });
 
-  // ── Input updater ───────────────────────────────────────────────────────
+  // ── Input updater (also persists to store) ──────────────────────────────
   const updateInput = useCallback((key: string, value: number) => {
-    setInputs(prev => ({ ...prev, [key]: value }));
-  }, []);
+    setInputs(prev => {
+      const next = { ...prev, [key]: value };
+      // Persist to worksheet store
+      worksheetStore.updateInput(key, value);
+      return next;
+    });
+  }, [worksheetStore]);
 
   // ── Debounced API calculation ───────────────────────────────────────────
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -866,6 +890,8 @@ export default function WorksheetScreen() {
         const payload = preparePayload(strategy, inputs);
         const data = await api.post<Record<string, unknown>>(config.endpoint, payload);
         setResults(data);
+        // Also persist inputs + results snapshot to store
+        worksheetStore.initWorksheet(propertyId, strategy, inputs);
       } catch (err: any) {
         setError(err?.message || 'Calculation failed');
       } finally {

@@ -7,7 +7,7 @@
  * - Content padding: 16px
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { 
   View, 
   Text,
@@ -21,6 +21,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import Svg, { Path } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useDealMakerBackendCalc } from '../../hooks/useDealMakerBackendCalc';
 
@@ -43,6 +44,9 @@ import {
   LoanType,
 } from './types';
 
+// Persistence key prefix for deal-maker state
+const DM_STORAGE_PREFIX = 'investiq-dm-state::';
+
 export function DealMakerScreen({
   propertyAddress,
   listPrice,
@@ -53,8 +57,9 @@ export function DealMakerScreen({
   onBackPress,
 }: DealMakerScreenProps) {
   const insets = useSafeAreaInsets();
+  const storageKey = `${DM_STORAGE_PREFIX}${encodeURIComponent(propertyAddress)}`;
 
-  // State
+  // State — initialised from props; persisted entry loaded via effect below
   const [state, setState] = useState<DealMakerState>(() => ({
     ...DEFAULT_DEAL_MAKER_STATE,
     buyPrice: listPrice ?? DEFAULT_DEAL_MAKER_STATE.buyPrice,
@@ -67,6 +72,36 @@ export function DealMakerScreen({
 
   const [activeTab, setActiveTab] = useState<TabId>('buyPrice');
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
+
+  // ── Restore persisted state on mount ───────────────────────────────────
+  const didRestore = useRef(false);
+  useEffect(() => {
+    if (didRestore.current) return;
+    didRestore.current = true;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(storageKey);
+        if (raw) {
+          const saved = JSON.parse(raw) as Partial<DealMakerState>;
+          setState(prev => ({ ...prev, ...saved }));
+        }
+      } catch {
+        // Silent — fall through to prop defaults
+      }
+    })();
+  }, [storageKey]);
+
+  // ── Persist state changes (debounced) ──────────────────────────────────
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      AsyncStorage.setItem(storageKey, JSON.stringify(state)).catch(() => {});
+    }, 400);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [state, storageKey]);
 
   // Calculations — delegated to backend via debounced API call
   const { metrics, isCalculating, error: calcError } = useDealMakerBackendCalc(state, listPrice);
