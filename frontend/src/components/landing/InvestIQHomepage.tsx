@@ -413,8 +413,8 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       >
         <div className="section-inner">
           <div className="section-header">
-            <h2 className="section-title">The Complete Toolkit</h2>
-            <p className="section-desc">Everything you need to underwrite with confidence.</p>
+            <h2 className="section-title">When a Deal Passes the Screen, Everything You Need Is Ready.</h2>
+            <p className="section-desc">Go deep with investor-grade tools built for confident decision-making.</p>
           </div>
           <div className="toolkit-grid">
             <div className="toolkit-card">
