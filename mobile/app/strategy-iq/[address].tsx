@@ -196,6 +196,21 @@ const NEXT_STEPS: StepCardData[] = [
   { icon: 'construct-outline', name: 'Contractor', description: 'Renovation estimates' },
 ];
 
+interface DeepDiveTool {
+  icon: string;
+  label: string;
+  desc: string;
+  color: string;
+  route: string;
+}
+
+const DEEP_DIVE_TOOLS: DeepDiveTool[] = [
+  { icon: 'calculator-outline', label: 'Full Worksheet', desc: 'Edit every input, see every metric', color: '#0d9488', route: 'worksheet' },
+  { icon: 'trending-down-outline', label: 'Deal Gap', desc: 'Interactive price analysis', color: '#3b82f6', route: 'deal-gap' },
+  { icon: 'bar-chart-outline', label: 'Price Intel', desc: 'Comps & valuation data', color: '#8b5cf6', route: 'price-intel' },
+  { icon: 'hammer-outline', label: 'Rehab Estimator', desc: 'Quick or detailed estimates', color: '#f97316', route: 'rehab' },
+];
+
 // =============================================================================
 // SCREEN
 // =============================================================================
@@ -313,6 +328,27 @@ export default function StrategyIQScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert('Create Account', 'Sign up flow coming soon');
   }, []);
+
+  const handleDeepDive = useCallback((tool: DeepDiveTool) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const params = {
+      address: encodeURIComponent(decodedAddress),
+      price: String(listPrice),
+      beds: String(bedroomCount),
+      baths: String(bathroomCount),
+      sqft: String(sqftValue),
+      rent: String(monthlyRent),
+    };
+    if (tool.route === 'worksheet') {
+      router.push({ pathname: '/worksheet/[strategy]', params: { strategy: 'ltr', ...params } });
+    } else if (tool.route === 'deal-gap') {
+      router.push({ pathname: '/deal-gap/[address]', params });
+    } else if (tool.route === 'price-intel') {
+      router.push({ pathname: '/price-intel/[address]', params });
+    } else if (tool.route === 'rehab') {
+      router.push('/rehab');
+    }
+  }, [router, decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, monthlyRent]);
 
   // Short address for back strip
   const shortAddress = decodedAddress.split(',')[0] || decodedAddress;
@@ -467,6 +503,51 @@ export default function StrategyIQScreen() {
             </Text>
 
             <DataQuality metrics={confidenceMetrics} />
+          </View>
+
+          {/* Deep Dive Tools */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>
+              <Ionicons name="apps-outline" size={rf(14)} color={verdictDark.teal} />{' '}
+              ANALYSIS TOOLS
+            </Text>
+            <Text style={styles.sectionTitle}>Go Deeper</Text>
+            <Text style={styles.sectionSub}>
+              Explore detailed worksheets, comps, and what-if scenarios.
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: rs(10), marginTop: rs(16) }}>
+              {DEEP_DIVE_TOOLS.map((tool) => (
+                <TouchableOpacity
+                  key={tool.route}
+                  onPress={() => handleDeepDive(tool)}
+                  activeOpacity={0.7}
+                  style={{
+                    width: '48%',
+                    backgroundColor: verdictDark.surface,
+                    borderRadius: rs(14),
+                    padding: rs(16),
+                    borderWidth: 1,
+                    borderColor: verdictDark.border,
+                  }}
+                >
+                  <View style={{
+                    width: rs(36), height: rs(36), borderRadius: rs(10),
+                    backgroundColor: tool.color + '20', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: rs(10),
+                  }}>
+                    <Ionicons name={tool.icon as any} size={rf(18)} color={tool.color} />
+                  </View>
+                  <Text style={{
+                    fontFamily: 'Inter_600SemiBold', fontSize: rf(14),
+                    color: verdictDark.textPrimary, marginBottom: rs(2),
+                  }}>{tool.label}</Text>
+                  <Text style={{
+                    fontFamily: 'Inter_400Regular', fontSize: rf(11),
+                    color: verdictDark.textSecondary, lineHeight: rf(15),
+                  }}>{tool.desc}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           {/* Next Steps Section */}
