@@ -210,6 +210,8 @@ const DEEP_DIVE_TOOLS: DeepDiveTool[] = [
   { icon: 'trending-down-outline', label: 'Deal Gap', desc: 'Interactive price analysis', color: '#3b82f6', route: 'deal-gap' },
   { icon: 'bar-chart-outline', label: 'Price Intel', desc: 'Comps & valuation data', color: '#8b5cf6', route: 'price-intel' },
   { icon: 'hammer-outline', label: 'Rehab Estimator', desc: 'Quick or detailed estimates', color: '#f97316', route: 'rehab' },
+  { icon: 'images-outline', label: 'Photos', desc: 'View property photos', color: '#ec4899', route: 'photos' },
+  { icon: 'school-outline', label: 'Learn Strategy', desc: 'How this strategy works', color: '#22c55e', route: 'learn' },
 ];
 
 // =============================================================================
@@ -360,8 +362,18 @@ export default function StrategyIQScreen() {
       router.push({ pathname: '/price-intel/[address]', params });
     } else if (tool.route === 'rehab') {
       router.push('/rehab');
+    } else if (tool.route === 'photos') {
+      router.push({ pathname: '/photos/[zpid]', params: { zpid: encodeURIComponent(decodedAddress), address: decodedAddress } });
+    } else if (tool.route === 'learn') {
+      // Map current strategy name to route id
+      const strategyMap: Record<string, string> = {
+        'Long-Term Rental': 'ltr', 'Short-Term Rental': 'str', 'BRRRR': 'brrrr',
+        'Fix & Flip': 'flip', 'House Hack': 'house_hack', 'Wholesale': 'wholesale',
+      };
+      const strategyId = strategyMap[currentStrategy] || 'ltr';
+      router.push({ pathname: '/learn/[strategy]', params: { strategy: strategyId } });
     }
-  }, [router, decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, monthlyRent]);
+  }, [router, decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, monthlyRent, currentStrategy]);
 
   // Short address for back strip
   const shortAddress = decodedAddress.split(',')[0] || decodedAddress;

@@ -6,7 +6,7 @@
  * Automatically transitions to verdict screen after animation
  */
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 
 import {
@@ -14,6 +14,8 @@ import {
   IQProperty,
 } from '../../components/analytics/iq-verdict';
 import { usePropertyStore } from '../../stores';
+import { useProgressiveProfiling } from '../../hooks/useProgressiveProfiling';
+import { ProgressiveProfilingPrompt } from '../../components/ProgressiveProfilingPrompt';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
@@ -62,6 +64,17 @@ export default function AnalyzingScreen() {
     });
   }, [property.address]);
 
+  // Progressive profiling
+  const {
+    showPrompt,
+    currentQuestion,
+    trackAnalysis,
+    handleAnswer,
+    handleSkip,
+    handleClose,
+  } = useProgressiveProfiling();
+  const [pendingNavigation, setPendingNavigation] = useState(false);
+
   // Handle analysis complete - navigate to verdict screen
   const handleAnalysisComplete = useCallback(() => {
     const encodedAddress = encodeURIComponent(property.address);
@@ -93,10 +106,26 @@ export default function AnalyzingScreen() {
       queryParams.set('lng', params.lng);
     }
 
-    // Replace current screen with verdict screen (no back to analyzing)
-    // Using type assertion to handle new route until types are regenerated
-    router.replace(`/verdict-iq/${encodedAddress}?${queryParams.toString()}` as any);
-  }, [property, params.monthlyRent, router]);
+    // Track analysis for progressive profiling
+    trackAnalysis();
+
+    // If profiling prompt will show, delay navigation
+    // Otherwise navigate immediately
+    setPendingNavigation(true);
+    
+    // Small delay to let profiling state update
+    setTimeout(() => {
+      // Navigate to verdict (profiling overlay will show on top if needed)
+      router.replace(`/verdict-iq/${encodedAddress}?${queryParams.toString()}` as any);
+    }, 100);
+  }, [property, params.monthlyRent, router, trackAnalysis]);
+
+  // Handle profiling answer — then proceed
+  const onProfilingAnswer = useCallback((answer: any) => {
+    if (currentQuestion) {
+      handleAnswer(currentQuestion, answer);
+    }
+  }, [currentQuestion, handleAnswer]);
 
   return (
     <>
@@ -110,6 +139,13 @@ export default function AnalyzingScreen() {
         property={property}
         onAnalysisComplete={handleAnalysisComplete}
         minimumDisplayTime={2800}
+      />
+      <ProgressiveProfilingPrompt
+        visible={showPrompt && pendingNavigation}
+        question={currentQuestion}
+        onAnswer={onProfilingAnswer}
+        onSkip={handleSkip}
+        onClose={handleClose}
       />
     </>
   );
