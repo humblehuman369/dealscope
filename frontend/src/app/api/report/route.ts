@@ -212,12 +212,12 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   // Photo grid HTML
   const photoHTML = ph.length > 0 ? `<div class="photos photos-${Math.min(ph.length,5)}">${ph.map((u,i) => `<div class="ph${i===0?' ph-main':''}"><img src="${u}" alt=""/></div>`).join('')}</div>` : ''
 
-  const N = 11
+  const N = 6
   const pgHdr = `<div class="pg-hdr"><div class="logo-sm">Invest<span class="iq">IQ</span></div><div class="pg-hdr-title">${d.property_address}</div></div>`
   const pgFt = (n: number) => `<div class="pg-foot"><span>InvestIQ Property Report</span><span>${dateStr}</span><span>Page ${n} of ${N}</span></div>`
 
   const pages = `
-<!-- ===== PAGE 1: COVER ===== -->
+<!-- ===== PAGE 1: COVER + PROPERTY DETAILS ===== -->
 <div class="page">
   <div class="brand-bar"></div>
   <div class="cover-top">
@@ -234,21 +234,16 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <div class="hero-item"><div class="hero-val">${$(d.income.monthly_rent)}</div><div class="hero-lbl">Monthly Rent</div></div>
     <div class="hero-item"><div class="hero-val">${pct(d.metrics.cash_on_cash_return)}</div><div class="hero-lbl">Cash-on-Cash</div></div>
     <div class="hero-item"><div class="hero-val">${pct(d.metrics.cap_rate)}</div><div class="hero-lbl">Cap Rate</div></div>
-    <div class="hero-item"><div class="hero-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="hero-lbl">Monthly Cash Flow</div></div>
+    <div class="hero-item"><div class="hero-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="hero-lbl">Cash Flow</div></div>
     <div class="hero-item"><div class="hero-val">${d.metrics.dscr.toFixed(2)}x</div><div class="hero-lbl">DSCR</div></div>
   </div>
   <p class="narrative">${narrativeCover(d)}</p>
-  ${pgFt(1)}
-</div>
-
-<!-- ===== PAGE 2: PROPERTY DETAILS ===== -->
-<div class="page">
-  ${pgHdr}
+  <div class="sec-divider"></div>
   <div class="sec-tag">01</div>
   <h2 class="sec-title">Property Details &amp; Capital Structure</h2>
   <p class="narrative">${narrativeOverview(d)}</p>
-  <p class="narrative mt-8">${narrativeFinancing(d)}</p>
-  <div class="grid3 mt-16">
+  <p class="narrative mt-4">${narrativeFinancing(d)}</p>
+  <div class="grid3 mt-8">
     <div class="card">
       <div class="card-hd">Property Details</div>
       ${kv('Address', d.property.address)}
@@ -276,29 +271,28 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       ${kv('Down Payment', `${$(d.financing.down_payment)} (${pct(d.financing.down_payment_percent,0)})`)}
       ${kv('Loan Amount', $(d.financing.loan_amount))}
       ${kv('Interest Rate', pct(d.financing.interest_rate))}
-      ${kv('Loan Term', `${d.financing.loan_term_years} years (${d.financing.loan_type})`)}
+      ${kv('Loan Term', `${d.financing.loan_term_years} yrs (${d.financing.loan_type})`)}
       ${kv('Monthly P&I', $(d.financing.monthly_payment))}
       ${kv('Monthly w/ Escrow', $(d.financing.monthly_payment_with_escrow))}
       ${kv('Total Interest', $(d.financing.total_interest_over_life))}
-      ${kv('APR', pct(d.financing.apr))}
     </div>
   </div>
-  ${pgFt(2)}
+  ${pgFt(1)}
 </div>
 
-<!-- ===== PAGE 3: MARKET POSITION ===== -->
+<!-- ===== PAGE 2: MARKET + INCOME ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">02</div>
   <h2 class="sec-title">Market Position &amp; Location Analysis</h2>
   <p class="narrative">Located in ${d.property.city}, ${d.property.state}, this property benefits from the area's residential market dynamics. With an assumed annual appreciation of ${pct(d.projections.appreciation_rate,1)}, the investment leverages both rental income and long-term value growth. Strong fundamentals in the local housing market support the projected appreciation trajectory.</p>
-  <div class="grid4 mt-24">
+  <div class="grid4 mt-10">
     <div class="stat-card"><div class="stat-val">${pct(d.projections.appreciation_rate,1)}</div><div class="stat-lbl">Annual Appreciation</div></div>
     <div class="stat-card"><div class="stat-val">${pct(d.projections.rent_growth_rate,1)}</div><div class="stat-lbl">Rent Growth Rate</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.property_values[d.projections.property_values.length-1] || d.acquisition.purchase_price)}</div><div class="stat-lbl">Projected Value (Yr ${d.projections.hold_period_years})</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.projections.equity_positions[d.projections.equity_positions.length-1] || d.financing.down_payment)}</div><div class="stat-lbl">Projected Equity (Yr ${d.projections.hold_period_years})</div></div>
   </div>
-  <div class="card mt-24">
+  <div class="card mt-10">
     <div class="card-hd">Depreciation &amp; Tax Shield</div>
     <div class="grid2">
       <div>
@@ -313,16 +307,11 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </div>
     </div>
   </div>
-  ${pgFt(3)}
-</div>
-
-<!-- ===== PAGE 4: INCOME & CASH FLOW ===== -->
-<div class="page">
-  ${pgHdr}
+  <div class="sec-divider"></div>
   <div class="sec-tag">03</div>
   <h2 class="sec-title">Income &amp; Cash Flow Analysis</h2>
   <p class="narrative">${narrativeIncome(d)}</p>
-  <div class="mt-24">
+  <div class="mt-10">
     ${wfRow('Gross Rental Income', $(d.income.annual_gross_rent), 100, 'pos', p)}
     ${wfRow(`Vacancy Allowance (${pct(d.income.vacancy_percent,0)})`, `-${$(d.income.vacancy_allowance)}`, (d.income.vacancy_allowance/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Effective Gross Income', $(d.income.effective_gross_income), (d.income.effective_gross_income/d.income.annual_gross_rent)*100, 'brand', p)}
@@ -331,24 +320,24 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     ${wfRow('Annual Debt Service', `-${$(d.metrics.annual_debt_service)}`, (d.metrics.annual_debt_service/d.income.annual_gross_rent)*100, 'neg', p)}
     ${wfRow('Pre-Tax Cash Flow', sign$(d.metrics.annual_cash_flow), Math.max((Math.abs(d.metrics.annual_cash_flow)/d.income.annual_gross_rent)*100, 3), d.metrics.annual_cash_flow>=0?'pos':'neg', p, true)}
   </div>
-  <div class="grid4 mt-24">
+  <div class="grid4 mt-10">
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.monthly_cash_flow)}</div><div class="stat-lbl">Monthly Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${sign$(d.metrics.annual_cash_flow)}</div><div class="stat-lbl">Annual Cash Flow</div></div>
     <div class="stat-card"><div class="stat-val">${$(d.metrics.net_operating_income)}</div><div class="stat-lbl">Net Operating Income</div></div>
     <div class="stat-card"><div class="stat-val">${pct(exp.expense_ratio,1)}</div><div class="stat-lbl">Expense Ratio</div></div>
   </div>
-  ${pgFt(4)}
+  ${pgFt(2)}
 </div>
 
-<!-- ===== PAGE 5: EXPENSE BREAKDOWN ===== -->
+<!-- ===== PAGE 3: EXPENSES + PERFORMANCE ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">04</div>
   <h2 class="sec-title">Expense Breakdown</h2>
   <p class="narrative">${narrativeExpense(d)}</p>
-  <div class="expense-layout mt-24">
+  <div class="expense-layout mt-10">
     <div class="donut-col">
-      ${donut(expSegs, p, 'Total Annual', $(exp.total_operating_expenses), 180)}
+      ${donut(expSegs, p, 'Total Annual', $(exp.total_operating_expenses), 140)}
       <div class="legend">
         ${expSegs.map(([l,v],i) => `<div class="leg"><span class="dot" style="background:${p.colors[i%p.colors.length]}"></span><span class="leg-name">${l}</span><span class="leg-amt">${$(v as number)}</span></div>`).join('')}
       </div>
@@ -368,16 +357,11 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </table>
     </div>
   </div>
-  ${pgFt(5)}
-</div>
-
-<!-- ===== PAGE 6: PERFORMANCE ANALYSIS ===== -->
-<div class="page">
-  ${pgHdr}
+  <div class="sec-divider"></div>
   <div class="sec-tag">05</div>
   <h2 class="sec-title">Performance Analysis</h2>
   <p class="narrative">${narrativeMetrics(d)}</p>
-  <div class="metric-grid mt-24">
+  <div class="metric-grid mt-10">
     ${metricCard('Cap Rate', pct(d.metrics.cap_rate), 'Unlevered return on property value')}
     ${metricCard('Cash-on-Cash', pct(d.metrics.cash_on_cash_return), 'Annual return on cash invested')}
     ${metricCard('DSCR', `${d.metrics.dscr.toFixed(2)}x`, 'Debt coverage safety margin')}
@@ -391,30 +375,22 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     ${metricCard('Rent / sqft', `$${d.metrics.rent_per_sqft.toFixed(2)}`, 'Monthly rent per square foot')}
     ${metricCard('Avg Annual Return', pct(d.returns.average_annual_return), 'Average return per year')}
   </div>
-  ${pgFt(6)}
+  ${pgFt(3)}
 </div>
 
-<!-- ===== PAGE 7: INVESTMENT VERDICT ===== -->
+<!-- ===== PAGE 4: VERDICT + DISCLAIMER ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">06</div>
   <h2 class="sec-title">Investment Verdict</h2>
   <div class="score-section">
-    <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 180)}</div>
+    <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 130)}</div>
     <div class="score-text">
       <h3 class="verdict-hd" style="color:${gc(d.deal_score.grade,p)}">${d.deal_score.verdict || `Grade ${d.deal_score.grade}`}</h3>
       <p class="narrative">${narrativeDealScore(d)}</p>
     </div>
   </div>
-  <div class="grid4 mt-24">
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.irr)}</div><div class="stat-lbl">IRR</div></div>
-    <div class="stat-card"><div class="stat-val">${d.returns.equity_multiple.toFixed(2)}x</div><div class="stat-lbl">Equity Multiple</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.average_annual_return)}</div><div class="stat-lbl">Avg Annual Return</div></div>
-    <div class="stat-card"><div class="stat-val">${pct(d.returns.cagr)}</div><div class="stat-lbl">CAGR</div></div>
-  </div>
-  ${d.deal_score.breakeven_price > 0 ? `<div class="breakeven-box"><div class="be-label">Breakeven Purchase Price</div><div class="be-val">${$(d.deal_score.breakeven_price)}</div><div class="be-sub">${d.deal_score.discount_required > 0 ? pct(d.deal_score.discount_required,1) + ' discount needed from current price' : 'Currently above breakeven — profitable at asking price'}</div></div>` : ''}
-  <div class="sec-divider"></div>
-  <div class="card">
+  <div class="card mt-12">
     <div class="card-hd">Investment Thesis Summary</div>
     <div class="grid2">
       <div>
@@ -433,29 +409,31 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </div>
     </div>
   </div>
-  ${pgFt(7)}
+  <div class="disclaimer">
+    <h4>Data Sources</h4>
+    <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
+    <h4 class="mt-6">Disclaimer</h4>
+    <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
+    <p class="mt-4">&copy; ${now.getFullYear()} InvestIQ. All rights reserved.</p>
+  </div>
+  ${pgFt(4)}
 </div>
 
-<!-- ===== PAGE 8: PROJECTIONS ===== -->
+<!-- ===== PAGE 5: PROJECTIONS + EXIT ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">07</div>
   <h2 class="sec-title">Financial Projections</h2>
   <p class="narrative">${narrativeProjections(d)}</p>
-  <table class="tbl mt-24">
+  <table class="tbl mt-10">
     <thead><tr><th>Year</th><th>Income</th><th>Expenses</th><th>NOI</th><th>Debt Service</th><th>Cash Flow</th><th>Property Value</th><th>Equity</th></tr></thead>
     <tbody>${d.projections.annual_projections.map((yr,i) => `<tr><td><strong>Yr ${yr.year}</strong></td><td>${$(yr.total_income)}</td><td>${$(yr.operating_expenses)}</td><td>${$(yr.net_operating_income)}</td><td>${$(yr.total_debt_service)}</td><td style="color:${yr.pre_tax_cash_flow>=0?p.pos:p.neg};font-weight:600">${sign$(yr.pre_tax_cash_flow)}</td><td>${$(d.projections.property_values[i]||0)}</td><td>${$(d.projections.equity_positions[i]||0)}</td></tr>`).join('')}</tbody>
   </table>
-  ${pgFt(8)}
-</div>
-
-<!-- ===== PAGE 9: EXIT STRATEGY ===== -->
-<div class="page">
-  ${pgHdr}
+  <div class="sec-divider"></div>
   <div class="sec-tag">08</div>
   <h2 class="sec-title">Exit Strategy &amp; Tax Analysis</h2>
   <p class="narrative">${narrativeExit(d)}</p>
-  <div class="grid2 mt-24">
+  <div class="grid2 mt-10">
     <div class="card">
       <div class="card-hd">Sale Proceeds (Year ${d.exit.hold_period_years})</div>
       ${kv('Projected Sale Price', $(d.exit.projected_sale_price))}
@@ -474,34 +452,21 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       ${kvTotal('After-Tax Proceeds', $(d.exit.after_tax_proceeds))}
     </div>
   </div>
-  ${pgFt(9)}
+  ${pgFt(5)}
 </div>
 
-<!-- ===== PAGE 10: SENSITIVITY ANALYSIS ===== -->
+<!-- ===== PAGE 6: SENSITIVITY ANALYSIS ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">09</div>
   <h2 class="sec-title">What-If Scenarios</h2>
   <p class="narrative">${narrativeSensitivity(d)}</p>
-  <div class="sens-container mt-24">
+  <div class="sens-container mt-12">
     ${sensBlock('Purchase Price Scenarios', d.sensitivity.purchase_price)}
     ${sensBlock('Interest Rate Scenarios', d.sensitivity.interest_rate)}
     ${sensBlock('Rent Scenarios', d.sensitivity.rent)}
   </div>
-  ${pgFt(10)}
-</div>
-
-<!-- ===== PAGE 11: DISCLAIMER ===== -->
-<div class="page">
-  ${pgHdr}
-  <div class="disclaimer">
-    <h4>Data Sources</h4>
-    <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
-    <h4 class="mt-16">Disclaimer</h4>
-    <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
-    <p class="mt-8">&copy; ${now.getFullYear()} InvestIQ. All rights reserved.</p>
-  </div>
-  ${pgFt(11)}
+  ${pgFt(6)}
 </div>`
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>InvestIQ Property Report — ${d.property_address}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
@@ -516,31 +481,31 @@ function css(p: P, dk: boolean): string {
 @media print{body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 .page{height:11in;overflow:hidden;page-break-after:always}.page:last-child{page-break-after:auto}}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.6;color:${p.text};background:${p.bg}}
-.page{width:8.5in;min-height:11in;padding:0.75in 0.6in 0.75in;position:relative;background:${p.bg};margin:0 auto}
-.card,.stat-card,.m-card,.breakeven-box,.sens-block{page-break-inside:avoid}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:10px;line-height:1.5;color:${p.text};background:${p.bg}}
+.page{width:8.5in;min-height:11in;padding:0.5in;position:relative;background:${p.bg};margin:0 auto}
+.card,.stat-card,.m-card,.sens-block{page-break-inside:avoid}
 .tbl thead{display:table-header-group}
 
 /* --- Page Header (pages 2+) --- */
-.pg-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid ${p.brand};padding-bottom:8px;margin-bottom:16px}
-.logo-sm{font-size:14px;font-weight:700;color:${p.text}}
-.pg-hdr-title{font-size:9px;color:${p.sub};text-transform:uppercase;letter-spacing:1.5px}
+.pg-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid ${p.brand};padding-bottom:6px;margin-bottom:10px}
+.logo-sm{font-size:12px;font-weight:700;color:${p.text}}
+.pg-hdr-title{font-size:8px;color:${p.sub};text-transform:uppercase;letter-spacing:1.5px}
 
 /* --- Page Footer --- */
-.pg-foot{position:absolute;bottom:0.3in;left:0.6in;right:0.6in;display:flex;justify-content:space-between;font-size:8.5px;color:${p.muted};border-top:1px solid ${p.border};padding-top:6px}
+.pg-foot{position:absolute;bottom:0.2in;left:0.5in;right:0.5in;display:flex;justify-content:space-between;font-size:8px;color:${p.muted};border-top:1px solid ${p.border};padding-top:4px}
 
 /* --- Cover --- */
-.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.75in -0.6in calc(0.75in - 4px);width:calc(100% + 1.2in)}
-.cover-top{margin-bottom:16px}
-.logo-lg{font-size:28px;font-weight:700;color:${p.text}}.iq{color:${p.brand}}
-.cover-type{font-size:11px;color:${p.sub};text-transform:uppercase;letter-spacing:3px;margin-top:4px}
-.cover-date{font-size:11px;color:${p.muted};margin-top:4px}
-.cover-divider{width:60px;height:3px;background:${p.brand};border-radius:2px;margin:16px 0 32px}
-.cover-addr{font-size:24px;font-weight:700;color:${p.text};line-height:1.3;margin-bottom:6px}
-.cover-meta{font-size:12px;color:${p.sub};margin-bottom:16px}
+.brand-bar{height:4px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});margin:-0.5in -0.5in calc(0.5in - 4px);width:calc(100% + 1in)}
+.cover-top{margin-bottom:6px}
+.logo-lg{font-size:22px;font-weight:700;color:${p.text}}.iq{color:${p.brand}}
+.cover-type{font-size:9px;color:${p.sub};text-transform:uppercase;letter-spacing:2px;margin-top:2px}
+.cover-date{font-size:9px;color:${p.muted};margin-top:2px}
+.cover-divider{width:50px;height:3px;background:${p.brand};border-radius:2px;margin:6px 0 12px}
+.cover-addr{font-size:18px;font-weight:700;color:${p.text};line-height:1.3;margin-bottom:3px}
+.cover-meta{font-size:10px;color:${p.sub};margin-bottom:8px}
 
 /* --- Photos --- */
-.photos{display:grid;gap:4px;border-radius:8px;overflow:hidden;height:180px;margin-bottom:16px}
+.photos{display:grid;gap:3px;border-radius:6px;overflow:hidden;height:130px;margin-bottom:8px}
 .photos-1{grid-template-columns:1fr}
 .photos-2{grid-template-columns:1fr 1fr}
 .photos-3{grid-template-columns:1.6fr 1fr;grid-template-rows:1fr 1fr}.photos-3 .ph-main{grid-row:1/3}
@@ -549,92 +514,86 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.6
 .ph{overflow:hidden}.ph img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* --- Hero Metrics Bar --- */
-.hero{display:flex;background:${p.card};border:1px solid ${p.border};border-radius:8px;padding:14px 12px;margin-bottom:16px;gap:4px}
-.hero-item{flex:1;text-align:center;border-right:1px solid ${p.border};padding:0 10px}.hero-item:last-child{border-right:none}
-.hero-val{font-size:18px;font-weight:700;color:${p.text}}
-.hero-lbl{font-size:8.5px;color:${p.sub};text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.hero{display:flex;background:${p.card};border:1px solid ${p.border};border-radius:6px;padding:8px 6px;margin-bottom:8px;gap:2px}
+.hero-item{flex:1;text-align:center;border-right:1px solid ${p.border};padding:0 6px}.hero-item:last-child{border-right:none}
+.hero-val{font-size:14px;font-weight:700;color:${p.text}}
+.hero-lbl{font-size:7.5px;color:${p.sub};text-transform:uppercase;letter-spacing:0.4px;margin-top:2px}
 
 /* --- Section Divider, Tag, Title --- */
-.sec-divider{height:2px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});border-radius:2px;margin:24px 0 32px}
-.sec-tag{font-size:12px;font-weight:700;color:${p.brand};margin-bottom:4px}
-.sec-title{font-size:18px;font-weight:700;color:${p.text};margin-bottom:10px;line-height:1.3}
+.sec-divider{height:2px;background:linear-gradient(90deg,${p.brand},${dk?'#2DD4BF':'#0284c7'});border-radius:2px;margin:10px 0 12px}
+.sec-tag{font-size:10px;font-weight:700;color:${p.brand};margin-bottom:2px}
+.sec-title{font-size:14px;font-weight:700;color:${p.text};margin-bottom:5px;line-height:1.3}
 
 /* --- Narrative --- */
-.narrative{font-size:11.5px;color:${p.sub};line-height:1.65;max-width:100%}
+.narrative{font-size:10px;color:${p.sub};line-height:1.5;max-width:100%}
 
 /* --- Cards --- */
-.card{background:${p.card};border:1px solid ${p.border};border-radius:8px;padding:14px 16px}
-.card-hd{font-size:10px;font-weight:700;color:${p.text};text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid ${p.brand}}
+.card{background:${p.card};border:1px solid ${p.border};border-radius:6px;padding:10px 12px}
+.card-hd{font-size:9px;font-weight:700;color:${p.text};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid ${p.brand}}
 
 /* --- Grids --- */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
 
 /* --- KV Rows --- */
-.kv{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid ${dk?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'}}.kv:last-child{border-bottom:none}
-.kv span:first-child{color:${p.sub};font-size:11px}.kv span:last-child{font-weight:600;color:${p.text};font-size:11px}
-.kv-total{border-top:2px solid ${p.border};margin-top:6px;padding-top:8px;border-bottom:none}.kv-total span{font-weight:700!important;font-size:12px!important}
+.kv{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${dk?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'}}.kv:last-child{border-bottom:none}
+.kv span:first-child{color:${p.sub};font-size:10px}.kv span:last-child{font-weight:600;color:${p.text};font-size:10px}
+.kv-total{border-top:2px solid ${p.border};margin-top:4px;padding-top:5px;border-bottom:none}.kv-total span{font-weight:700!important;font-size:11px!important}
 
 /* --- Waterfall --- */
-.wf-row{display:grid;grid-template-columns:200px 1fr 110px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid ${dk?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)'}}.wf-row:last-child{border-bottom:none}
-.wf-hl{background:${dk?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)'};border-radius:4px;padding:8px 6px;margin:2px 0;border-bottom:none}
-.wf-label{font-size:11px;color:${p.sub}}
-.wf-track{height:12px;background:${p.border};border-radius:4px;overflow:hidden}
+.wf-row{display:grid;grid-template-columns:180px 1fr 90px;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid ${dk?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)'}}.wf-row:last-child{border-bottom:none}
+.wf-hl{background:${dk?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)'};border-radius:4px;padding:5px 4px;margin:1px 0;border-bottom:none}
+.wf-label{font-size:10px;color:${p.sub}}
+.wf-track{height:10px;background:${p.border};border-radius:4px;overflow:hidden}
 .wf-bar{height:100%;border-radius:4px;min-width:3px}
-.wf-val{font-size:11px;font-weight:700;color:${p.text};text-align:right}
+.wf-val{font-size:10px;font-weight:700;color:${p.text};text-align:right}
 
 /* --- Stat Cards --- */
-.stat-card{background:${p.card};border:1px solid ${p.border};border-radius:8px;padding:14px;text-align:center}
-.stat-val{font-size:20px;font-weight:700;color:${p.text}}
-.stat-lbl{font-size:8.5px;color:${p.sub};text-transform:uppercase;letter-spacing:0.8px;margin-top:4px}
+.stat-card{background:${p.card};border:1px solid ${p.border};border-radius:6px;padding:8px;text-align:center}
+.stat-val{font-size:15px;font-weight:700;color:${p.text}}
+.stat-lbl{font-size:7.5px;color:${p.sub};text-transform:uppercase;letter-spacing:0.6px;margin-top:2px}
 
 /* --- Expense Layout --- */
-.expense-layout{display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:start}
+.expense-layout{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:start}
 .donut-col{text-align:center}
-.legend{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.leg{display:flex;align-items:center;gap:8px;font-size:11px;color:${p.sub}}
-.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.leg{display:flex;align-items:center;gap:6px;font-size:9px;color:${p.sub}}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .leg-name{flex:1}
 .leg-amt{font-weight:600;color:${p.text}}
 
 /* --- Metric Grid --- */
-.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.m-card{background:${p.card};border:1px solid ${p.border};border-radius:8px;padding:14px 10px;text-align:center}
-.m-val{font-size:18px;font-weight:700;color:${p.text}}
-.m-lbl{font-size:9px;font-weight:600;color:${p.text};margin-top:4px}
-.m-desc{font-size:8px;color:${p.muted};margin-top:2px}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.m-card{background:${p.card};border:1px solid ${p.border};border-radius:6px;padding:8px 6px;text-align:center}
+.m-val{font-size:14px;font-weight:700;color:${p.text}}
+.m-lbl{font-size:8px;font-weight:600;color:${p.text};margin-top:2px}
+.m-desc{font-size:7px;color:${p.muted};margin-top:1px}
 
 /* --- Deal Score --- */
-.score-section{display:flex;gap:32px;align-items:center;margin-top:24px}
+.score-section{display:flex;gap:20px;align-items:center;margin-top:10px}
 .score-ring-wrap{flex-shrink:0}
 .score-text{flex:1}
-.verdict-hd{font-size:20px;font-weight:700;margin-bottom:8px}
-
-/* --- Breakeven Box --- */
-.breakeven-box{background:${p.card};border:2px solid ${p.brand};border-radius:10px;padding:20px;text-align:center;margin-top:24px}
-.be-label{font-size:10px;color:${p.sub};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
-.be-val{font-size:28px;font-weight:700;color:${p.brand}}
-.be-sub{font-size:11px;color:${p.sub};margin-top:4px}
+.verdict-hd{font-size:15px;font-weight:700;margin-bottom:5px}
 
 /* --- Tables --- */
-.tbl{width:100%;border-collapse:collapse;font-size:10.5px}
-.tbl thead th{text-align:left;padding:6px 8px;border-bottom:2px solid ${p.border};font-weight:600;color:${p.sub};text-transform:uppercase;letter-spacing:0.5px;font-size:9px}
-.tbl tbody td{padding:5px 8px;border-bottom:1px solid ${dk?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'}}
+.tbl{width:100%;border-collapse:collapse;font-size:9.5px}
+.tbl thead th{text-align:left;padding:3px 6px;border-bottom:2px solid ${p.border};font-weight:600;color:${p.sub};text-transform:uppercase;letter-spacing:0.5px;font-size:8px}
+.tbl tbody td{padding:3px 6px;border-bottom:1px solid ${dk?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'}}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl-total td{border-top:2px solid ${p.border}!important}
 
 /* --- Sensitivity --- */
-.sens-container{display:flex;flex-direction:column;gap:20px}
-.sens-block h4{font-size:13px;font-weight:700;color:${p.text};margin-bottom:8px}
+.sens-container{display:flex;flex-direction:column;gap:14px}
+.sens-block h4{font-size:11px;font-weight:700;color:${p.text};margin-bottom:5px}
 
 /* --- Disclaimer --- */
-.disclaimer{background:${p.card};border:1px solid ${p.border};border-radius:8px;padding:20px;margin-top:32px}
-.disclaimer h4{font-size:11px;font-weight:700;color:${p.text};margin-bottom:6px}
-.disclaimer p{font-size:10px;color:${p.muted};line-height:1.6}
+.disclaimer{background:${p.card};border:1px solid ${p.border};border-radius:6px;padding:12px;margin-top:14px}
+.disclaimer h4{font-size:9px;font-weight:700;color:${p.text};margin-bottom:3px}
+.disclaimer p{font-size:8.5px;color:${p.muted};line-height:1.5}
 
 /* --- Utilities --- */
-.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mt-32{margin-top:32px}
+.mt-4{margin-top:4px}.mt-6{margin-top:6px}.mt-8{margin-top:8px}.mt-10{margin-top:10px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}
 `
 }
 
