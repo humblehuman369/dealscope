@@ -175,6 +175,52 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* Onboarding Flow */}
+        <Stack.Screen 
+          name="onboarding/index" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'fade',
+            gestureEnabled: false,
+          }} 
+        />
+        {/* Deal Gap Analysis */}
+        <Stack.Screen 
+          name="deal-gap/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* Rehab Estimator */}
+        <Stack.Screen 
+          name="rehab/index" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* Price Intel (Comps & Valuation) */}
+        <Stack.Screen 
+          name="price-intel/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* Strategy Worksheets */}
+        <Stack.Screen 
+          name="worksheet/[strategy]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Animated Splash Screen with pulsating logo */}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -77,6 +77,13 @@ export default function HomeScreen() {
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Redirect to onboarding if user hasn't completed it yet
+  useEffect(() => {
+    if (user && isAuthenticated && !user.onboarding_completed) {
+      router.replace('/onboarding');
+    }
+  }, [user, isAuthenticated, router]);
 
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
