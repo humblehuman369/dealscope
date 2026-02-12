@@ -303,17 +303,8 @@ export default function VerdictIQScreen() {
   const handleHowVerdictWorks = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Alert.alert(
-      'How VerdictIQ Works',
-      'VerdictIQ analyzes multiple factors including deal probability, market alignment, and price confidence to give you a comprehensive score (0-100).',
-      [{ text: 'Got it' }]
-    );
-  }, []);
-
-  const handleHowWeScore = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      'How We Score',
-      'Scores are calculated based on:\n\n• Deal Probability\n• Market Alignment\n• Price Confidence',
+      'How Verdict Score Works',
+      'Your Verdict Score (5–95) is a weighted composite of four factors:\n\n• Deal Gap (35%) — How favorably priced vs breakeven\n• Return Quality (30%) — Best strategy\'s financial returns\n• Market Alignment (20%) — Seller motivation & market conditions\n• Deal Probability (15%) — Likelihood of closing at target price\n\nNo property scores 100 — every deal carries risk.',
       [{ text: 'Got it' }]
     );
   }, []);
@@ -418,7 +409,6 @@ export default function VerdictIQScreen() {
             confidenceMetrics={confidenceMetrics}
             signalIndicators={signalIndicators}
             onHowItWorksPress={handleHowVerdictWorks}
-            onHowWeScorePress={handleHowWeScore}
           />
 
           {/* Price Targets */}
