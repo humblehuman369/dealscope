@@ -25,6 +25,8 @@ function AnalyzingContent() {
   const beds = searchParams.get('beds')
   const baths = searchParams.get('baths')
   const sqft = searchParams.get('sqft')
+  const condition = searchParams.get('condition')
+  const location = searchParams.get('location')
 
   // Build property object from query params
   const property = useMemo((): IQProperty => ({
@@ -85,7 +87,7 @@ function AnalyzingContent() {
     setPromptResolved(true)
   }, [rawHandleClose])
 
-  // Build the verdict URL
+  // Build the verdict URL (thread condition/location through)
   const verdictUrl = useMemo(() => {
     const queryParams = new URLSearchParams({
       address: encodeURIComponent(property.address),
@@ -94,8 +96,10 @@ function AnalyzingContent() {
       baths: property.baths.toString(),
       sqft: (property.sqft || 0).toString(),
     })
+    if (condition) queryParams.set('condition', condition)
+    if (location) queryParams.set('location', location)
     return `/verdict?${queryParams.toString()}`
-  }, [property])
+  }, [property, condition, location])
 
   // Navigate to verdict only when BOTH conditions are met
   useEffect(() => {

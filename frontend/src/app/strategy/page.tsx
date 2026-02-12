@@ -15,6 +15,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
 import { parseAddressString } from '@/utils/formatters'
+import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 
 // Types from existing verdict system
@@ -63,6 +64,8 @@ function StrategyContent() {
   useSession()
 
   const addressParam = searchParams.get('address') || ''
+  const conditionParam = searchParams.get('condition')
+  const locationParam = searchParams.get('location')
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -83,10 +86,21 @@ function StrategyContent() {
       try {
         setIsLoading(true)
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
-        const price = propData.valuations?.current_value_avm || propData.valuations?.zestimate || 350000
-        const monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
+        let price = propData.valuations?.current_value_avm || propData.valuations?.zestimate || 350000
+        let monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
         const propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
         const insurance = propData.expenses?.insurance_annual || Math.round(price * 0.01)
+
+        // Apply condition / location slider adjustments (from IQ Gateway)
+        if (conditionParam) {
+          const cond = getConditionAdjustment(Number(conditionParam))
+          price += cond.pricePremium // Turnkey premium increases market value
+        }
+        if (locationParam) {
+          const loc = getLocationAdjustment(Number(locationParam))
+          monthlyRent = Math.round(monthlyRent * loc.rentMultiplier)
+        }
+
         setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance })
 
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', {
@@ -106,7 +120,8 @@ function StrategyContent() {
       }
     }
     fetchData()
-  }, [addressParam])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressParam, conditionParam, locationParam])
 
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(addressParam)}`)
@@ -208,6 +223,9 @@ function StrategyContent() {
   const insurance = propertyInfo?.insurance || Math.round(listPrice * 0.01)
   const parsed = parseAddressString(addressParam)
 
+  // Condition / location adjustments for display
+  const rehabCost = conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0
+
   // Financial calcs
   const downPayment = targetPrice * 0.20
   const closingCosts = targetPrice * 0.03
@@ -295,6 +313,7 @@ function StrategyContent() {
                 ['Your Target Price', formatCurrency(targetPrice), false, colors.brand.blue],
                 ['Down Payment (20%)', formatCurrency(downPayment)],
                 ['Closing Costs (3%)', formatCurrency(closingCosts)],
+                ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
               ].map(([label, value, strike, color], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label as string}</span>
@@ -303,7 +322,7 @@ function StrategyContent() {
               ))}
               <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
                 <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Cash Needed</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(downPayment + closingCosts)}</span>
+                <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
               </div>
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
