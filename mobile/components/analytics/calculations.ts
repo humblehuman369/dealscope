@@ -3,7 +3,7 @@
  *
  * These functions duplicate backend logic and will be removed once
  * the remaining analytics breakdown/what-if tabs are migrated to
- * use backend endpoints (POST /api/v1/worksheet/*/calculate and
+ * use backend endpoints (POST /api/v1/worksheet/{strategy}/calculate and
  * POST /api/v1/analysis/verdict).
  *
  * All primary screens (Deal Maker, Strategy Detail, StrategyAnalytics)
