@@ -2,7 +2,7 @@
  * Fix & Flip Strategy Screen
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -24,10 +24,10 @@ const statusColors = {
   primary: colors.primary[500],
 };
 import {
-  analyzeFlip,
   DEFAULT_FLIP_INPUTS,
   FlipInputs,
 } from '@/components/analytics/strategies';
+import { useStrategyWorksheet } from '@/hooks/useStrategyWorksheet';
 import {
   StrategyHeader,
   MetricCard,
@@ -53,8 +53,73 @@ export default function FlipStrategyScreen() {
 
   const [inputs, setInputs] = useState<FlipInputs>(DEFAULT_FLIP_INPUTS);
 
-  const analysis = useMemo(() => analyzeFlip(inputs), [inputs]);
-  const { metrics, score, grade, color, insights } = analysis;
+  const { analysis, isLoading, error: calcError } = useStrategyWorksheet(
+    'flip',
+    inputs as Record<string, unknown>,
+  );
+
+  // Map backend snake_case metrics to UI format
+  const metrics = analysis?.metrics
+    ? {
+        netProfit: (analysis.metrics.net_profit_before_tax as number) ?? 0,
+        roi: (analysis.metrics.roi as number) ?? 0,
+        annualizedROI: (analysis.metrics.annualized_roi as number) ?? 0,
+        cashRequired: (analysis.metrics.total_cash_required as number) ?? 0,
+        meetsSeventyPercentRule: (analysis.metrics.meets_70_rule as boolean) ?? false,
+        maxAllowableOffer: (analysis.metrics.mao as number) ?? 0,
+        totalProjectTime: (analysis.metrics.holding_months as number) ?? 0,
+        totalCost: (analysis.metrics.total_project_cost as number) ?? 0,
+        purchaseCosts:
+          ((analysis.metrics.purchase_price as number) ?? 0) +
+          ((analysis.metrics.purchase_costs as number) ?? 0),
+        rehabCosts: (analysis.metrics.total_renovation as number) ?? 0,
+        holdingCosts: (analysis.metrics.total_holding_costs as number) ?? 0,
+        financingCosts: (analysis.metrics.points_cost as number) ?? 0,
+        sellingCosts: (analysis.metrics.selling_costs as number) ?? 0,
+      }
+    : null;
+
+  const score = analysis?.score ?? 0;
+  const grade = analysis?.grade ?? '-';
+  const color = analysis?.color ?? '#9ca3af';
+  const insights = analysis?.insights ?? [];
+
+  if (calcError) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 10, backgroundColor: theme.surface }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.text }]}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Fix & Flip Analysis</Text>
+          </View>
+        </View>
+        <View style={[styles.card, { margin: 16, backgroundColor: theme.surface }]}>
+          <Text style={[styles.cardTitle, { color: statusColors.error }]}>Calculation Error</Text>
+          <Text style={{ color: theme.textSecondary }}>{calcError}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (isLoading || !metrics) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 10, backgroundColor: theme.surface }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.text }]}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Fix & Flip Analysis</Text>
+          </View>
+        </View>
+        <View style={[styles.card, { margin: 16, backgroundColor: theme.surface }]}>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Calculating...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>

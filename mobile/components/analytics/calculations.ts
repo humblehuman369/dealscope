@@ -1,6 +1,18 @@
 /**
- * Property Analytics Calculations
- * Pure functions for all financial calculations
+ * @deprecated LOCAL CALCULATIONS — MIGRATION IN PROGRESS
+ *
+ * These functions duplicate backend logic and will be removed once
+ * the remaining analytics breakdown/what-if tabs are migrated to
+ * use backend endpoints (POST /api/v1/worksheet/*/calculate and
+ * POST /api/v1/analysis/verdict).
+ *
+ * All primary screens (Deal Maker, Strategy Detail, StrategyAnalytics)
+ * have already been migrated. See:
+ *   - mobile/hooks/useDealMakerBackendCalc.ts
+ *   - mobile/hooks/useBackendStrategies.ts
+ *   - mobile/hooks/useStrategyWorksheet.ts
+ *
+ * DO NOT add new calculation logic here.
  */
 
 import {

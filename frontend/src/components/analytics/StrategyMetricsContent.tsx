@@ -33,7 +33,7 @@ import {
 } from './index'
 import { StrategyId, BenchmarkConfig, TuneGroup, LeveragePoint } from './types'
 import { getReturnsAtPriceLabel } from '@/lib/priceUtils'
-import { IQTargetResult, TargetAssumptions, getMetricsAtPrice } from '@/lib/iqTarget'
+import { IQTargetResult, TargetAssumptions } from '@/lib/iqTarget'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
@@ -42,8 +42,8 @@ import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 interface BaseMetricsProps {
   iqTarget: IQTargetResult
-  metricsAtTarget: ReturnType<typeof getMetricsAtPrice> | null
-  metricsAtList: ReturnType<typeof getMetricsAtPrice> | null
+  metricsAtTarget: Record<string, unknown> | null
+  metricsAtList: Record<string, unknown> | null
   assumptions: TargetAssumptions
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void

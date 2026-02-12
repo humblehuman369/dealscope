@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import Svg, { Path } from 'react-native-svg';
 
-import { calculateMortgagePayment } from '../analytics/calculations';
+import { useDealMakerBackendCalc } from '../../hooks/useDealMakerBackendCalc';
 
 import { MetricsHeader } from './MetricsHeader';
 import { WorksheetTab } from './WorksheetTab';
@@ -68,10 +68,8 @@ export function DealMakerScreen({
   const [activeTab, setActiveTab] = useState<TabId>('buyPrice');
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
 
-  // Calculations
-  const metrics = useMemo<DealMakerMetrics>(() => {
-    return calculateDealMakerMetrics(state, listPrice);
-  }, [state, listPrice]);
+  // Calculations — delegated to backend via debounced API call
+  const { metrics, isCalculating, error: calcError } = useDealMakerBackendCalc(state, listPrice);
 
   // Handlers
   const updateState = useCallback(<K extends keyof DealMakerState>(
@@ -318,134 +316,8 @@ export function DealMakerScreen({
   );
 }
 
-// Calculations
-function calculateDealMakerMetrics(
-  state: DealMakerState,
-  listPrice?: number
-): DealMakerMetrics {
-  const {
-    buyPrice,
-    downPaymentPercent,
-    closingCostsPercent,
-    interestRate,
-    loanTermYears,
-    rehabBudget,
-    arv,
-    monthlyRent,
-    otherIncome,
-    vacancyRate,
-    maintenanceRate,
-    managementRate,
-    annualPropertyTax,
-    annualInsurance,
-    monthlyHoa,
-  } = state;
-
-  const downPaymentAmount = buyPrice * downPaymentPercent;
-  const closingCostsAmount = buyPrice * closingCostsPercent;
-  const cashNeeded = downPaymentAmount + closingCostsAmount;
-
-  const loanAmount = buyPrice - downPaymentAmount;
-  const monthlyPayment = calculateMortgagePayment(loanAmount, interestRate, loanTermYears);
-
-  const totalInvestment = buyPrice + rehabBudget;
-  const equityCreated = arv - totalInvestment;
-
-  const grossMonthlyIncome = monthlyRent + otherIncome;
-
-  const vacancy = grossMonthlyIncome * vacancyRate;
-  const maintenance = grossMonthlyIncome * maintenanceRate;
-  const management = grossMonthlyIncome * managementRate;
-  const propertyTaxMonthly = annualPropertyTax / 12;
-  const insuranceMonthly = annualInsurance / 12;
-
-  const monthlyOperatingExpenses = vacancy + maintenance + management + 
-    propertyTaxMonthly + insuranceMonthly + monthlyHoa;
-  const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment;
-
-  const annualNOI = (grossMonthlyIncome - monthlyOperatingExpenses) * 12;
-  const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12;
-  const annualProfit = annualCashFlow;
-
-  const capRate = buyPrice > 0 ? annualNOI / buyPrice : 0;
-  const cocReturn = cashNeeded > 0 ? annualCashFlow / cashNeeded : 0;
-
-  const effectiveListPrice = listPrice ?? buyPrice;
-  const discountFromList = effectiveListPrice > 0 
-    ? (effectiveListPrice - buyPrice) / effectiveListPrice 
-    : 0;
-  const dealGap = discountFromList;
-
-  const dealScore = calculateDealScore(cocReturn, capRate, annualCashFlow);
-  const dealGrade = getDealGrade(dealScore);
-  const profitQuality = getProfitQualityGrade(cocReturn);
-
-  return {
-    cashNeeded,
-    downPaymentAmount,
-    closingCostsAmount,
-    loanAmount,
-    monthlyPayment,
-    equityCreated,
-    totalInvestment,
-    grossMonthlyIncome,
-    totalMonthlyExpenses,
-    monthlyOperatingExpenses,
-    dealGap,
-    annualProfit,
-    capRate,
-    cocReturn,
-    dealScore,
-    dealGrade,
-    profitQuality,
-  };
-}
-
-function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: number): number {
-  let score = 0;
-
-  const cocPercent = cocReturn * 100;
-  if (cocPercent >= 15) score += 40;
-  else if (cocPercent >= 10) score += 35;
-  else if (cocPercent >= 8) score += 30;
-  else if (cocPercent >= 5) score += 20;
-  else if (cocPercent >= 2) score += 10;
-  else if (cocPercent > 0) score += 5;
-
-  const capPercent = capRate * 100;
-  if (capPercent >= 10) score += 30;
-  else if (capPercent >= 8) score += 25;
-  else if (capPercent >= 6) score += 20;
-  else if (capPercent >= 4) score += 10;
-  else if (capPercent > 0) score += 5;
-
-  if (annualCashFlow >= 12000) score += 30;
-  else if (annualCashFlow >= 6000) score += 25;
-  else if (annualCashFlow >= 3000) score += 20;
-  else if (annualCashFlow >= 1200) score += 10;
-  else if (annualCashFlow > 0) score += 5;
-
-  return Math.min(100, score);
-}
-
-function getDealGrade(score: number): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' {
-  if (score >= 85) return 'A+';
-  if (score >= 70) return 'A';
-  if (score >= 55) return 'B';
-  if (score >= 40) return 'C';
-  if (score >= 25) return 'D';
-  return 'F';
-}
-
-function getProfitQualityGrade(cocReturn: number): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' {
-  const cocPercent = cocReturn * 100;
-  if (cocPercent >= 12) return 'A+';
-  if (cocPercent >= 10) return 'A';
-  if (cocPercent >= 8) return 'B';
-  if (cocPercent >= 5) return 'C';
-  if (cocPercent >= 2) return 'D';
-  return 'F';
-}
+// Local calculations removed — all metrics now computed by backend via
+// useDealMakerBackendCalc hook (POST /api/v1/worksheet/ltr/calculate).
 
 // Styles - EXACT from design files
 const styles = StyleSheet.create({

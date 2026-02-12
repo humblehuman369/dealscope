@@ -3,7 +3,7 @@
  * Contract assignment analysis
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -25,10 +25,10 @@ const statusColors = {
   primary: colors.primary[500],
 };
 import {
-  analyzeWholesale,
   DEFAULT_WHOLESALE_INPUTS,
   WholesaleInputs,
 } from '@/components/analytics/strategies';
+import { useStrategyWorksheet } from '@/hooks/useStrategyWorksheet';
 import {
   StrategyHeader,
   MetricCard,
@@ -52,7 +52,34 @@ export default function WholesaleStrategyScreen() {
 
   const [inputs, setInputs] = useState<WholesaleInputs>(DEFAULT_WHOLESALE_INPUTS);
 
-  const analysis = useMemo(() => analyzeWholesale(inputs), [inputs]);
+  const { analysis, isLoading, error: calcError } = useStrategyWorksheet('wholesale', inputs as Record<string, unknown>);
+
+  // Loading or error state
+  if (!analysis) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 10, backgroundColor: theme.surface }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.text }]}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Wholesale Analysis</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
+              {address ? decodeURIComponent(address) : 'Contract Assignment'}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.content, { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+          {isLoading ? (
+            <Text style={{ color: theme.text }}>Loading...</Text>
+          ) : calcError ? (
+            <Text style={{ color: colors.loss.main }}>{calcError}</Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
   const { metrics, score, grade, color, insights } = analysis;
 
   return (

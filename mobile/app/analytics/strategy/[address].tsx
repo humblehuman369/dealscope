@@ -19,8 +19,6 @@ import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../../context/ThemeContext';
 import {
-  AnalyticsInputs,
-  DEFAULT_INPUTS,
   StrategyType,
   Insight,
   formatCurrency,
@@ -37,17 +35,8 @@ import {
   InsightsSection,
 } from '../../../components/analytics/strategies/components';
 
-import { useAllStrategies } from '../../../components/analytics/hooks/useAllStrategies';
+import { useBackendStrategies } from '../../../hooks/useBackendStrategies';
 import { STRATEGY_LIST } from '../../../components/analytics/StrategySelector';
-
-// Strategy-specific slider configurations
-import {
-  DEFAULT_STR_INPUTS,
-  DEFAULT_BRRRR_INPUTS,
-  DEFAULT_FLIP_INPUTS,
-  DEFAULT_HOUSE_HACK_INPUTS,
-  DEFAULT_WHOLESALE_INPUTS,
-} from '../../../components/analytics/strategies';
 
 export default function StrategyDetailScreen() {
   const router = useRouter();
@@ -58,7 +47,7 @@ export default function StrategyDetailScreen() {
   const decodedAddress = decodeURIComponent(address || '');
   const activeStrategy = (strategy as StrategyType) || 'longTermRental';
 
-  // Mock property data
+  // Property data
   const property = useMemo(() => ({
     address: decodedAddress || '3742 Old Lighthouse Cir',
     city: 'Jupiter',
@@ -66,15 +55,11 @@ export default function StrategyDetailScreen() {
     price: 617670,
   }), [decodedAddress]);
 
-  // Base inputs
-  const baseInputs = useMemo((): AnalyticsInputs => ({
-    ...DEFAULT_INPUTS,
+  // Analyze all strategies via backend API
+  const { result: allStrategies, isLoading } = useBackendStrategies({
     purchasePrice: property.price,
     monthlyRent: Math.round(property.price * 0.006),
-  }), [property.price]);
-
-  // Analyze all strategies
-  const allStrategies = useAllStrategies(baseInputs);
+  });
   const strategyData = allStrategies.strategies[activeStrategy];
   const strategyInfo = STRATEGY_LIST.find(s => s.id === activeStrategy);
 

@@ -10,22 +10,15 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
-
-// Convenience color aliases
-const statusColors = {
-  success: colors.profit.main,
-  error: colors.loss.main,
-  warning: colors.warning.main,
-  primary: colors.primary[500],
-};
+import { useStrategyWorksheet } from '@/hooks/useStrategyWorksheet';
 import {
-  analyzeSTR,
   DEFAULT_STR_INPUTS,
   STRInputs,
 } from '@/components/analytics/strategies';
@@ -35,6 +28,14 @@ import {
   CostBreakdownChart,
   InsightsSection,
 } from '@/components/analytics/strategies/components';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 
 export default function STRStrategyScreen() {
   const { address } = useLocalSearchParams<{ address: string }>();
@@ -54,9 +55,73 @@ export default function STRStrategyScreen() {
   // State for inputs (would come from property data in real app)
   const [inputs, setInputs] = useState<STRInputs>(DEFAULT_STR_INPUTS);
 
-  // Calculate analysis
-  const analysis = useMemo(() => analyzeSTR(inputs), [inputs]);
-  const { metrics, score, grade, color, insights } = analysis;
+  // Calculate analysis via backend
+  const { analysis, isLoading, error: calcError } = useStrategyWorksheet('str', inputs);
+
+  // Map backend snake_case metrics to UI format
+  const { metrics, score, grade, color, insights } = useMemo(() => {
+    if (!analysis) {
+      return {
+        metrics: null,
+        score: 0,
+        grade: '-',
+        color: '#6b7280',
+        insights: [] as Array<{ type: string; text: string; icon?: string; highlight?: string }>,
+      };
+    }
+    const m = analysis.metrics as Record<string, number>;
+    const monthlyGrossRevenue = (m.gross_revenue ?? 0) / 12;
+    // Backend returns annual values for most expenses; convert to monthly
+    const monthlyExpenses = {
+      mortgage: m.monthly_payment ?? m.monthly_pi ?? 0,
+      management: (m.str_management ?? 0) / 12,
+      platformFees: (m.platform_fees ?? 0) / 12,
+      cleaning: (m.cleaning_costs ?? 0) / 12,
+      utilities: (m.utilities ?? 0) / 12,
+      taxes: (m.property_taxes ?? 0) / 12,
+      insurance: (m.insurance ?? 0) / 12,
+      maintenance: (m.maintenance ?? 0) / 12,
+      hoa: 0,
+    };
+    return {
+      metrics: {
+        ...m,
+        monthlyCashFlow: m.monthly_cash_flow ?? 0,
+        cashOnCash: m.cash_on_cash_return ?? 0, // backend returns 0-100, formatPercent displays as %
+        revPAR: m.revpar ?? 0,
+        monthlyGrossRevenue,
+        totalCashRequired: m.total_cash_needed ?? 0,
+        capRate: m.cap_rate ?? 0, // backend returns 0-100
+        annualCashFlow: m.annual_cash_flow ?? 0,
+        monthlyExpenses,
+      },
+      score: analysis.score,
+      grade: analysis.grade,
+      color: analysis.color,
+      insights: analysis.insights ?? [],
+    };
+  }, [analysis]);
+
+  if (isLoading && !analysis) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background, flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={[styles.loadingText, { color: theme.text }]}>Calculating...</Text>
+      </View>
+    );
+  }
+
+  if (calcError) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background, flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={[styles.errorText, { color: statusColors.error }]}>Error: {calcError}</Text>
+      </View>
+    );
+  }
+
+  if (!metrics) {
+    return null;
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -366,6 +431,14 @@ const styles = StyleSheet.create({
   returnLabel: {
     fontSize: 10,
     marginTop: 4,
+    textAlign: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+  },
+  errorText: {
+    fontSize: 14,
     textAlign: 'center',
   },
 });
