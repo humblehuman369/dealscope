@@ -286,9 +286,9 @@ function StrategyContent() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Market Price', formatCurrency(listPrice), true],
@@ -310,9 +310,9 @@ function StrategyContent() {
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Loan Amount', formatCurrency(loanAmount)],
@@ -335,9 +335,9 @@ function StrategyContent() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
-                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Monthly Rent', formatCurrency(monthlyRent)],
@@ -361,9 +361,9 @@ function StrategyContent() {
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
-                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-[11px] font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
               </div>
               {[
                 ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
