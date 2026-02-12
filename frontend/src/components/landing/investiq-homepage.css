@@ -177,24 +177,25 @@
   display: flex; align-items: center;
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 12px; padding: 0.25rem; transition: border-color 0.3s;
+  cursor: pointer; font-family: var(--font); text-align: left;
 }
-.iq-landing .input-group:focus-within { border-color: rgba(56, 189, 248, 0.4); }
+.iq-landing .input-group:hover { border-color: rgba(56, 189, 248, 0.4); }
+.iq-landing .input-group:focus-visible { border-color: rgba(56, 189, 248, 0.5); outline: none; }
 .iq-landing .input-icon {
   padding: 0.75rem 0.875rem; color: var(--text-faint); font-size: 1rem;
   display: flex; align-items: center;
 }
-.iq-landing .input-group input {
-  background: none; border: none; outline: none; color: var(--white);
-  font-family: var(--font); font-size: 0.95rem; width: 280px; padding: 0.75rem 0;
-  cursor: pointer;
+.iq-landing .input-placeholder {
+  flex: 1; color: var(--text-faint);
+  font-family: var(--font); font-size: 0.95rem; padding: 0.75rem 0;
+  min-width: 0;
 }
-.iq-landing .input-group input::placeholder { color: var(--text-faint); }
 .iq-landing .btn-analyze {
   padding: 0.875rem 1.75rem; background: var(--teal-deep); color: var(--white);
   border: none; border-radius: 10px; font-family: var(--font); font-size: 0.95rem;
-  font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  font-weight: 700; transition: all 0.2s; white-space: nowrap;
 }
-.iq-landing .btn-analyze:hover { background: var(--teal); transform: translateY(-1px); }
+.iq-landing .input-group:hover .btn-analyze { background: var(--teal); transform: translateY(-1px); }
 .iq-landing .btn-scan {
   display: flex; align-items: center; gap: 0.625rem;
   padding: 1rem 1.75rem; background: var(--panel); border: 1px solid var(--border);
@@ -686,7 +687,7 @@
   .iq-landing .hero.hero-centered { padding: 4.5rem 1.25rem 2.5rem; min-height: auto; }
   .iq-landing .section { padding: 4rem 1.25rem; }
   .iq-landing .hero-inputs { flex-direction: column; width: 100%; max-width: 400px; }
-  .iq-landing .input-group input { width: 100%; }
+  .iq-landing .input-placeholder { width: 100%; }
   .iq-landing .nav-links { display: none; }
   .iq-landing .signals-grid { grid-template-columns: 1fr; }
   .iq-landing .verdict-header h2, .iq-landing .funnel-header h2 { font-size: 1.75rem; }

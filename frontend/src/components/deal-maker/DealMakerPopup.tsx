@@ -284,11 +284,11 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 function SectionDivider({ text }: { text: string }) {
   return (
     <div className="flex items-center my-6">
-      <div className="flex-1 h-px bg-[#E2E8F0]" />
-      <span className="px-3 text-[11px] font-bold text-[#0891B2] uppercase tracking-wide">
+      <div className="flex-1 h-px bg-white/[0.07]" />
+      <span className="px-3 text-[11px] font-bold text-[#38bdf8] uppercase tracking-wide">
         {text}
       </span>
-      <div className="flex-1 h-px bg-[#E2E8F0]" />
+      <div className="flex-1 h-px bg-white/[0.07]" />
     </div>
   )
 }
@@ -296,9 +296,9 @@ function SectionDivider({ text }: { text: string }) {
 // Calculated field display
 function CalculatedField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center p-3.5 px-4 bg-[#F8FAFC] rounded-xl mb-5 border border-[#E2E8F0]">
-      <span className="text-sm text-[#64748B]">{label}</span>
-      <span className="text-base font-bold text-[#0891B2]">{value}</span>
+    <div className="flex justify-between items-center p-3.5 px-4 bg-white/[0.03] rounded-xl mb-5 border border-white/[0.07]">
+      <span className="text-sm text-[#94A3B8]">{label}</span>
+      <span className="text-base font-bold text-[#38bdf8]">{value}</span>
     </div>
   )
 }
@@ -603,28 +603,28 @@ export function DealMakerPopup({
       }}
     >
       <div 
-        className="w-full max-w-[480px] max-h-[90vh] bg-white rounded-t-[20px] flex flex-col animate-slideUp"
+        className="w-full max-w-[480px] max-h-[90vh] bg-[#0C1220] rounded-t-[20px] flex flex-col animate-slideUp"
       >
         {/* Drag Handle */}
         <div className="flex justify-center py-3 pb-2">
-          <div className="w-12 h-1 bg-[#E2E8F0] rounded-full" />
+          <div className="w-12 h-1 bg-white/[0.15] rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-[#E2E8F0] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.07] flex-shrink-0">
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #101828 0%, #1E293B 100%)' }}
             >
-              <svg width="20" height="20" fill="none" stroke="#00D4FF" viewBox="0 0 24 24">
+              <svg width="20" height="20" fill="none" stroke="#38bdf8" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
               </svg>
             </div>
             <div>
               <h2 className="text-lg font-bold">
-                <span className="text-[#0A1628]">Deal Maker</span>
-                <span className="text-[#0891B2]">IQ</span>
+                <span className="text-[#F1F5F9]">Deal Maker</span>
+                <span className="text-[#38bdf8]">IQ</span>
               </h2>
               {/* Strategy Toggle */}
               <div className="flex flex-wrap items-center gap-0.5 mt-1">
@@ -636,8 +636,8 @@ export function DealMakerPopup({
                       idx === 0 ? 'rounded-l-md' : ''
                     } ${idx === arr.length - 1 ? 'rounded-r-md' : ''} ${
                       strategyType === s
-                        ? 'bg-[#0891B2] text-white'
-                        : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                        ? 'bg-[#14B8A6] text-white'
+                        : 'bg-white/[0.05] text-[#94A3B8] hover:bg-white/[0.1]'
                     }`}
                   >
                     {STRATEGY_LABELS[s]}
@@ -648,14 +648,14 @@ export function DealMakerPopup({
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center bg-[#F1F5F9] rounded-xl text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#0A1628] transition-colors"
+            className="w-9 h-9 flex items-center justify-center bg-white/[0.05] rounded-xl text-[#94A3B8] hover:bg-white/[0.1] hover:text-[#F1F5F9] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Price Target Pills */}
-        <div className="flex items-center justify-center gap-2 px-5 py-3 border-b border-[#E2E8F0] flex-shrink-0">
+        <div className="flex items-center justify-center gap-2 px-5 py-3 border-b border-white/[0.07] flex-shrink-0">
           <span className="text-[11px] font-medium text-[#64748B] mr-1">Calculate for:</span>
           {(['breakeven', 'targetBuy', 'wholesale'] as PriceTarget[]).map((target) => {
             const labels: Record<PriceTarget, string> = {
@@ -669,8 +669,8 @@ export function DealMakerPopup({
                 onClick={() => onPriceTargetChange?.(target)}
                 className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all ${
                   activePriceTarget === target
-                    ? 'bg-[#0891B2] text-white shadow-sm'
-                    : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                    ? 'bg-[#14B8A6] text-white shadow-sm'
+                    : 'bg-white/[0.05] text-[#94A3B8] hover:bg-white/[0.1]'
                 }`}
               >
                 {labels[target]}
@@ -680,11 +680,11 @@ export function DealMakerPopup({
         </div>
 
         {/* Instructions */}
-        <div className="flex items-start gap-2.5 px-5 py-3.5 bg-[#F0FDFA] border-b border-[#E2E8F0] flex-shrink-0">
-          <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-            <Info className="w-4 h-4 text-[#0891B2]" />
+        <div className="flex items-start gap-2.5 px-5 py-3.5 bg-[#14B8A6]/[0.06] border-b border-white/[0.07] flex-shrink-0">
+          <div className="w-7 h-7 bg-white/[0.06] rounded-lg flex items-center justify-center flex-shrink-0">
+            <Info className="w-4 h-4 text-[#14B8A6]" />
           </div>
-          <p className="text-[13px] text-[#0E7490] leading-relaxed">
+          <p className="text-[13px] text-[#14B8A6] leading-relaxed">
             Adjust the sliders or tap values to edit. Changes will recalculate your deal analytics in real-time.
           </p>
         </div>
@@ -1015,8 +1015,8 @@ export function DealMakerPopup({
                   onClick={() => handleChange('financingType', 'cash')}
                   className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                     values.financingType === 'cash'
-                      ? 'bg-[#0891B2] text-white'
-                      : 'bg-[#F1F5F9] text-[#64748B]'
+                      ? 'bg-[#14B8A6] text-white'
+                      : 'bg-white/[0.05] text-[#94A3B8]'
                   }`}
                 >
                   Cash
@@ -1025,8 +1025,8 @@ export function DealMakerPopup({
                   onClick={() => handleChange('financingType', 'hardMoney')}
                   className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                     values.financingType === 'hardMoney'
-                      ? 'bg-[#0891B2] text-white'
-                      : 'bg-[#F1F5F9] text-[#64748B]'
+                      ? 'bg-[#14B8A6] text-white'
+                      : 'bg-white/[0.05] text-[#94A3B8]'
                   }`}
                 >
                   Hard Money
@@ -1223,8 +1223,8 @@ export function DealMakerPopup({
                     onClick={() => handleChange('loanType', type)}
                     className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors ${
                       values.loanType === type
-                        ? 'bg-[#0891B2] text-white'
-                        : 'bg-[#F1F5F9] text-[#64748B]'
+                        ? 'bg-[#14B8A6] text-white'
+                        : 'bg-white/[0.05] text-[#94A3B8]'
                     }`}
                   >
                     {type.toUpperCase()}
@@ -1694,17 +1694,17 @@ export function DealMakerPopup({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-3 px-5 py-4 border-t border-[#E2E8F0] bg-white flex-shrink-0">
+        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.07] bg-[#0C1220] flex-shrink-0">
           <button 
             onClick={handleReset}
-            className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#64748B] text-[13px] font-medium hover:bg-[#F1F5F9] hover:text-[#0A1628] transition-all"
+            className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-white/[0.04] border border-white/[0.07] rounded-xl text-[#94A3B8] text-[13px] font-medium hover:bg-white/[0.08] hover:text-[#F1F5F9] transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
           </button>
           <button 
             onClick={handleApply}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#0891B2] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0E7490] active:scale-[0.98] transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#14B8A6] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0D9488] active:scale-[0.98] transition-all"
           >
             Apply Changes
             <Check className="w-4 h-4" />

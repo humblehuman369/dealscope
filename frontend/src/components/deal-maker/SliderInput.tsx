@@ -80,12 +80,12 @@ export function SliderInput({
       {/* Header with label and value */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex flex-col">
-          <span className="text-sm font-medium text-[#0A1628]">{label}</span>
+          <span className="text-sm font-medium text-[#F1F5F9]">{label}</span>
           {sublabel && (
-            <span className="text-[11px] text-[#94A3B8] mt-0.5">{sublabel}</span>
+            <span className="text-[11px] text-[#64748B] mt-0.5">{sublabel}</span>
           )}
         </div>
-        <span className="text-lg font-bold text-[#0891B2] tabular-nums">
+        <span className="text-lg font-bold text-[#38bdf8] tabular-nums">
           {formatValue(value, format)}
         </span>
       </div>
@@ -104,10 +104,10 @@ export function SliderInput({
             [&::-webkit-slider-thumb]:w-6
             [&::-webkit-slider-thumb]:h-6
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-[#0A1628]
+            [&::-webkit-slider-thumb]:bg-[#F1F5F9]
             [&::-webkit-slider-thumb]:border-[3px]
-            [&::-webkit-slider-thumb]:border-white
-            [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(10,22,40,0.3)]
+            [&::-webkit-slider-thumb]:border-[#0C1220]
+            [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:transition-transform
             [&::-webkit-slider-thumb]:duration-150
@@ -116,21 +116,21 @@ export function SliderInput({
             [&::-moz-range-thumb]:w-6
             [&::-moz-range-thumb]:h-6
             [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-[#0A1628]
+            [&::-moz-range-thumb]:bg-[#F1F5F9]
             [&::-moz-range-thumb]:border-[3px]
-            [&::-moz-range-thumb]:border-white
-            [&::-moz-range-thumb]:shadow-[0_2px_8px_rgba(10,22,40,0.3)]
+            [&::-moz-range-thumb]:border-[#0C1220]
+            [&::-moz-range-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-moz-range-thumb]:cursor-pointer"
           style={{
-            background: `linear-gradient(to right, #0891B2 0%, #0891B2 ${fillPercent}%, #E2E8F0 ${fillPercent}%, #E2E8F0 100%)`
+            background: `linear-gradient(to right, #14B8A6 0%, #14B8A6 ${fillPercent}%, rgba(255,255,255,0.08) ${fillPercent}%, rgba(255,255,255,0.08) 100%)`
           }}
         />
       </div>
 
       {/* Range labels */}
       <div className="flex justify-between mt-1.5">
-        <span className="text-[11px] text-[#94A3B8] tabular-nums">{formatMinMax(min, format)}</span>
-        <span className="text-[11px] text-[#94A3B8] tabular-nums">{formatMinMax(max, format)}</span>
+        <span className="text-[11px] text-[#64748B] tabular-nums">{formatMinMax(min, format)}</span>
+        <span className="text-[11px] text-[#64748B] tabular-nums">{formatMinMax(max, format)}</span>
       </div>
     </div>
   )
