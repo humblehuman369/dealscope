@@ -120,22 +120,25 @@ function buildMetricsFromAPI(
 }
 
 function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: string; value: number; color: 'teal' | 'amber' | 'negative' }> {
-  if (!raw || !raw.opportunityFactors) {
+  if (!raw) {
     return [
-      { label: 'Deal Probability', value: 0, color: 'negative' },
+      { label: 'Deal Gap', value: 0, color: 'negative' },
+      { label: 'Return Quality', value: 0, color: 'negative' },
       { label: 'Market Alignment', value: 0, color: 'negative' },
-      { label: 'Price Confidence', value: 0, color: 'negative' },
+      { label: 'Deal Probability', value: 0, color: 'negative' },
     ];
   }
-  const dealGap = raw.opportunityFactors.dealGap ?? 0;
-  const motivation = raw.opportunityFactors.motivation ?? 50;
-  const dealProbability = Math.min(100, Math.max(0, 50 + dealGap * 5));
-  const marketAlignment = motivation;
-  const priceConfidence = raw.opportunity?.score ?? 65;
+  // Use backend composite component scores (real values that feed the headline)
+  const cs = raw.componentScores;
+  const dealGap = cs?.dealGapScore ?? 50;
+  const returnQuality = cs?.returnQualityScore ?? 50;
+  const marketAlignment = cs?.marketAlignmentScore ?? 50;
+  const dealProbability = cs?.dealProbabilityScore ?? 50;
   return [
-    { label: 'Deal Probability', value: Math.round(dealProbability), color: getColorFromScore(dealProbability) },
-    { label: 'Market Alignment', value: Math.round(marketAlignment), color: getColorFromScore(marketAlignment) },
-    { label: 'Price Confidence', value: Math.round(priceConfidence), color: getColorFromScore(priceConfidence) },
+    { label: 'Deal Gap', value: dealGap, color: getColorFromScore(dealGap) },
+    { label: 'Return Quality', value: returnQuality, color: getColorFromScore(returnQuality) },
+    { label: 'Market Alignment', value: marketAlignment, color: getColorFromScore(marketAlignment) },
+    { label: 'Deal Probability', value: dealProbability, color: getColorFromScore(dealProbability) },
   ];
 }
 

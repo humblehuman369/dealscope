@@ -99,6 +99,19 @@ export interface IQAnalysisResult {
   // NEW: Profit Score (0-100) based on 5 financial metrics
   profitScore?: number;
   profitGrade?: ProfitGrade;
+  // NEW: Composite verdict component scores from backend
+  componentScores?: VerdictComponentScores;
+}
+
+/**
+ * Individual component scores that feed the composite IQ Verdict score.
+ * All scores are 0-90; the composite (dealScore) is capped at 95.
+ */
+export interface VerdictComponentScores {
+  dealGapScore: number;
+  returnQualityScore: number;
+  marketAlignmentScore: number;
+  dealProbabilityScore: number;
 }
 
 /**
