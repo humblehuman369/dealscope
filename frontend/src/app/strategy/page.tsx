@@ -10,7 +10,7 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import { useCallback, useEffect, useRef, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
@@ -70,10 +70,7 @@ function StrategyContent() {
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isExportOpen, setIsExportOpen] = useState(false)
   const [isExporting, setIsExporting] = useState<string | null>(null)
-  const [exportError, setExportError] = useState<string | null>(null)
-  const exportRef = useRef<HTMLDivElement>(null)
 
   // Scroll to top on mount — prevents opening mid-page after navigation
   useEffect(() => {
@@ -131,22 +128,9 @@ function StrategyContent() {
     router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
   }, [router, addressParam])
 
-  // Close export dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setIsExportOpen(false)
-      }
-    }
-    if (isExportOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isExportOpen])
 
   const handleExcelDownload = async () => {
     setIsExporting('excel')
-    setExportError(null)
     try {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
       const params = new URLSearchParams({
@@ -182,11 +166,8 @@ function StrategyContent() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
-
-      setIsExportOpen(false)
     } catch (err) {
       console.error('Excel download failed:', err)
-      setExportError(err instanceof Error ? err.message : 'Download failed')
     } finally {
       setIsExporting(null)
     }
@@ -264,7 +245,6 @@ function StrategyContent() {
 
   const handlePDFDownload = (theme: 'light' | 'dark' = 'light') => {
     setIsExporting('pdf')
-    setExportError(null)
     try {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
       const params = new URLSearchParams({
@@ -277,11 +257,8 @@ function StrategyContent() {
       // The report auto-triggers window.print() for Save as PDF
       const url = `/api/report?${params}`
       window.open(url, '_blank')
-
-      setIsExportOpen(false)
     } catch (err) {
       console.error('PDF report failed:', err)
-      setExportError(err instanceof Error ? err.message : 'Failed to open report')
     } finally {
       setIsExporting(null)
     }
@@ -290,13 +267,51 @@ function StrategyContent() {
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       <div className="max-w-[640px] mx-auto">
-        {/* Full Breakdown */}
-        <section className="px-5 py-8">
-          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Full Breakdown</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>Where Does the Money Go?</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
+        {/* Page Header + Actions */}
+        <section className="px-5 pt-8 pb-0">
+          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
+          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>This Deal Passed the Screen.<br/>Here Are the Numbers.</h2>
+          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
             Every dollar in and out — so you can see exactly whether this property pays for itself.
           </p>
+
+          {/* VerdictIQ reference badge */}
+          <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: colors.accentBg.green, border: '1px solid rgba(52,211,153,0.2)', color: colors.status.positive }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            VerdictIQ Score: {data.deal_score ?? (data as any).dealScore ?? '—'} · Long-Term Rental recommended
+          </div>
+
+          {/* Top Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2.5 mt-5 mb-2">
+            <button
+              onClick={handleOpenDealMaker}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-[10px] text-[13px] font-bold transition-all"
+              style={{ background: colors.brand.teal, color: '#fff' }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              Change Terms
+            </button>
+            <button
+              onClick={() => handlePDFDownload('light')}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-[10px] text-[13px] font-bold transition-all"
+              style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Get Full Report
+            </button>
+            <button
+              onClick={handleExcelDownload}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-[10px] text-[13px] font-bold transition-all"
+              style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              Financial Worksheet
+            </button>
+          </div>
+        </section>
+
+        {/* Financial Breakdown */}
+        <section className="px-5 py-6">
 
           {/* Two columns */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
@@ -427,126 +442,28 @@ function StrategyContent() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-4">
-            <button
-              onClick={() => {
-                router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
-              }}
-              className="w-full py-3 rounded-xl text-sm font-bold transition-all"
-              style={{ color: colors.brand.teal, border: `1.5px solid ${colors.brand.teal}50`, background: `${colors.brand.teal}10` }}
-            >
-              Change Terms
-            </button>
-            <div ref={exportRef} className="relative">
-              <button
-                className="w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5"
-                style={{ color: colors.brand.gold, border: `1.5px solid ${colors.brand.gold}50`, background: `${colors.brand.gold}10` }}
-                onClick={() => setIsExportOpen(!isExportOpen)}
-              >
-                Export Report
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: isExportOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }}>
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-
-              {isExportOpen && (
-                <div
-                  className="absolute bottom-full left-0 right-0 mb-2 rounded-xl overflow-hidden shadow-lg z-30"
-                  style={{ background: colors.background.card, border: `1px solid ${colors.ui.borderDark}` }}
-                >
-                  <div className="px-3 pt-3 pb-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.text.tertiary }}>Export Format</p>
-                  </div>
-
-                  {/* PDF Light option */}
-                  <button
-                    onClick={() => handlePDFDownload('light')}
-                    disabled={isExporting !== null}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
-                    style={{ color: colors.text.primary }}
-                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    {isExporting === 'pdf' ? (
-                      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#f87171', borderTopColor: 'transparent' }} />
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                        <polyline points="10 9 9 9 8 9" />
-                      </svg>
-                    )}
-                    <div>
-                      <p className="text-sm font-semibold">PDF Report — Light</p>
-                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Print-optimized, white background</p>
-                    </div>
-                  </button>
-
-                  {/* PDF Dark option */}
-                  <button
-                    onClick={() => handlePDFDownload('dark')}
-                    disabled={isExporting !== null}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
-                    style={{ color: colors.text.primary }}
-                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <path d="M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm font-semibold">PDF Report — Dark</p>
-                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Digital-optimized, dark theme</p>
-                    </div>
-                  </button>
-
-                  {/* Excel option */}
-                  <button
-                    onClick={handleExcelDownload}
-                    disabled={isExporting !== null}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors disabled:opacity-50"
-                    style={{ color: colors.text.primary }}
-                    onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    {isExporting === 'excel' ? (
-                      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#34d399', borderTopColor: 'transparent' }} />
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <rect x="8" y="12" width="8" height="6" rx="1" />
-                        <line x1="12" y1="12" x2="12" y2="18" />
-                        <line x1="8" y1="15" x2="16" y2="15" />
-                      </svg>
-                    )}
-                    <div>
-                      <p className="text-sm font-semibold">Excel Workbook</p>
-                      <p className="text-[11px]" style={{ color: colors.text.tertiary }}>Full financial analysis</p>
-                    </div>
-                  </button>
-
-                  {exportError && (
-                    <div className="px-3 py-2 border-t" style={{ borderColor: colors.ui.border }}>
-                      <p className="text-[11px]" style={{ color: colors.status.negative }}>{exportError}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+          {/* The Bottom Line */}
+          <div className="mt-7 p-5 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: `rgba(56,189,248,0.12)`, borderLeftColor: colors.brand.blue }}>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
+            <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
+              Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(monthlyCashFlow)))} per month out of pocket</strong> as a long-term rental. That doesn&apos;t mean it&apos;s a bad investment — but it means your returns come from appreciation and equity, not cashflow. Consider whether that fits your strategy.
+            </p>
           </div>
 
-          {/* Insight Box */}
-          <div className="mt-6 p-4 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: colors.ui.border, borderLeftColor: colors.brand.blue }}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: colors.brand.blue }}>What this means for you</p>
-            <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
-              Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(monthlyCashFlow)))} per month out of pocket</strong> as a long-term rental.
-            </p>
+          {/* Try Another Strategy */}
+          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+            <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.gold }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            </div>
+            <div>
+              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>Long-Term Rental isn&apos;t the only path.</p>
+              <p className="text-[13px] leading-relaxed mb-3" style={{ color: colors.text.body }}>This property scored well across multiple strategies. See how the numbers change with a different approach.</p>
+              <div className="flex flex-wrap gap-1.5">
+                {['BRRRR', 'Short-Term', 'House Hack', 'Fix & Flip'].map((label) => (
+                  <span key={label} className="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors" style={{ background: colors.background.cardUp, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}>{label}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -555,7 +472,7 @@ function StrategyContent() {
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
           <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
           <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
-            We compare this deal against numbers experienced investors actually look for.
+            We compare this deal against the numbers experienced investors actually look for. Green means this deal meets or beats the benchmark.
           </p>
           <table className="w-full">
             <thead>
@@ -609,15 +526,16 @@ function StrategyContent() {
 
         {/* Save CTA */}
         <section className="px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
-          <h2 className="text-xl font-bold mb-2" style={{ color: colors.text.primary }}>Don't Lose This Deal</h2>
-          <p className="text-sm mb-6" style={{ color: colors.text.body, lineHeight: 1.55 }}>
-            Save it to your DealVaultIQ. We'll keep the numbers fresh and alert you if anything changes.
+          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>You screened it. You proved it.</p>
+          <h2 className="text-2xl font-extrabold mb-3" style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}>Now Save It.</h2>
+          <p className="text-[15px] mb-7 mx-auto max-w-sm" style={{ color: colors.text.body, lineHeight: 1.6 }}>
+            Save to your DealVaultIQ and we&apos;ll keep the numbers fresh and alert you if anything changes.
           </p>
-          <button className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base text-white transition-all"
-            style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 20px rgba(14,165,233,0.3)' }}>
+          <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
+            style={{ background: colors.brand.teal }}>
             Create Free Account
           </button>
-          <p className="mt-3 text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
+          <p className="text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
         </section>
 
         {/* Footer */}
