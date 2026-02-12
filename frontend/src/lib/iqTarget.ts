@@ -1,9 +1,22 @@
 /**
+ * @deprecated LOCAL CALCULATIONS — MIGRATION IN PROGRESS
+ *
+ * The primary consumers (StrategyAnalyticsContainer, DesktopStrategyAnalyticsContainer)
+ * have been migrated to backend-only calculations via:
+ *   - frontend/src/hooks/useIQAnalysis.ts  (POST /api/v1/analysis/verdict + worksheets)
+ *   - frontend/src/hooks/useDealMakerBackendCalc.ts  (POST /api/v1/worksheet/*/calculate)
+ *
+ * This file is retained for TYPE EXPORTS ONLY (IQTargetResult, TargetAssumptions).
+ * The calculation functions (calculateIQTarget, getMetricsAtPrice, etc.) are still
+ * used by secondary features (StrategyMetricsContent helpers, worksheet calculators)
+ * and will be removed once those are also migrated.
+ *
+ * DO NOT add new calculation logic here.
+ *
+ * Original description:
  * InvestIQ - IQ Target Price Calculation Engine
- * 
  * The IQ Target Price is the recommended purchase price that achieves
- * profitable returns for each investment strategy. It's the "crown jewel"
- * of the InvestIQ analytics - telling investors exactly what to offer.
+ * profitable returns for each investment strategy.
  */
 
 // ============================================

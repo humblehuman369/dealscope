@@ -7,9 +7,11 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
-// Enable fallback analytics when API is unavailable
-// This allows the app to show estimated data even when the backend is down
-const USE_FALLBACK_ON_ERROR = true;
+// DISABLED: Local fallback analytics
+// All financial calculations must come from the backend. Showing locally-computed
+// estimates risks inconsistent numbers that could mislead investment decisions.
+// When the backend is unavailable, the UI should show an error state instead.
+const USE_FALLBACK_ON_ERROR = false;
 
 // Track API health for better error messaging
 let lastApiError: { timestamp: number; message: string } | null = null;
@@ -105,12 +107,14 @@ export function getLastApiError(): string | null {
 }
 
 /**
- * Generate estimated analytics using local calculations.
- * This provides a reasonable fallback when the backend API is unavailable.
- * 
- * @param address - Property address
- * @param parcelData - Optional parcel data from Google Maps for better estimates
- * @param marketAssumptions - Optional market-specific assumptions from backend
+ * @deprecated LOCAL FALLBACK — DISABLED
+ *
+ * All financial calculations must come from the backend (single source of truth).
+ * This function is no longer called because USE_FALLBACK_ON_ERROR = false.
+ * It remains here temporarily until the dead code is fully removed.
+ *
+ * When the backend is unreachable, the app shows an error state instead
+ * of potentially misleading estimated numbers.
  */
 export function generateEstimatedAnalytics(
   address: string, 
