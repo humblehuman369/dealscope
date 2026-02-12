@@ -7,6 +7,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -59,8 +60,8 @@ export default function VerdictScreen() {
     sqft: property.sqft,
   }), [property, params.monthlyRent]);
 
-  // Get IQ analysis
-  const { analysis } = useIQAnalysis(inputs);
+  // Get IQ analysis from backend
+  const { analysis, isLoading, error } = useIQAnalysis(inputs);
 
   // Navigation handlers
   const handleBack = useCallback(() => {
@@ -153,6 +154,19 @@ export default function VerdictScreen() {
     }
   }, [property, router]);
 
+  // Show loading spinner while backend is computing
+  if (isLoading && analysis.strategies.length === 0) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={verdictStyles.center}>
+          <ActivityIndicator size="large" color="#0891B2" />
+          <Text style={verdictStyles.loadingText}>Analyzing strategies...</Text>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -168,3 +182,17 @@ export default function VerdictScreen() {
     </>
   );
 }
+
+const verdictStyles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0A1628',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#94A3B8',
+  },
+});

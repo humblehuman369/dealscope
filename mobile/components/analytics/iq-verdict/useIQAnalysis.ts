@@ -1,127 +1,212 @@
 /**
- * useIQAnalysis - Hook to transform existing strategy analysis into IQ Verdict format
- * Bridges the existing useAllStrategies hook with the IQ Verdict screen
+ * useIQAnalysis - Hook to fetch IQ Verdict from backend API
+ *
+ * Replaces the previous local-calculation approach (useAllStrategies) with
+ * a backend call to POST /api/v1/analysis/verdict, ensuring mobile and
+ * frontend always show identical numbers.
  */
 
-import { useMemo } from 'react';
-import { useAllStrategies, AllStrategiesResult, StrategyResult } from '../hooks/useAllStrategies';
-import { AnalyticsInputs, StrategyType, CalculatedMetrics } from '../types';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { api } from '../../../services/apiClient';
+import { AnalyticsInputs } from '../types';
 import {
   IQAnalysisResult,
   IQStrategy,
-  IQStrategyId,
-  STRATEGY_TYPE_TO_ID,
+  IQStrategyBadge,
+  IQDealVerdict,
   STRATEGY_INFO,
-  getStrategyBadge,
-  getDealVerdict,
-  getVerdictDescription,
-  formatMetric,
+  getDealVerdict as localGetDealVerdict,
 } from './types';
 
-interface UseIQAnalysisResult {
-  analysis: IQAnalysisResult;
-  isLoading: boolean;
-  rawData: AllStrategiesResult;
+// ============================================
+// Backend response shape (matches IQVerdictResponse)
+// ============================================
+
+interface BackendStrategy {
+  id: string;
+  name: string;
+  metric: string;
+  metric_label?: string;
+  metricLabel?: string;
+  metric_value?: number;
+  metricValue?: number;
+  score: number;
+  rank: number;
+  badge: string | null;
 }
 
-/**
- * Transform strategy type to primary display metric value
- */
-function getStrategyMetricValue(
-  strategyType: StrategyType,
-  result: StrategyResult
-): number {
-  const metrics = result.analysis.metrics as any;
-  
-  switch (strategyType) {
-    case 'longTermRental':
-      return (metrics as CalculatedMetrics).cashOnCash * 100 || 0;
-    case 'shortTermRental':
-      return metrics.cashOnCash * 100 || 0;
-    case 'brrrr':
-      return metrics.cashOnCash * 100 || 0;
-    case 'fixAndFlip':
-      return metrics.netProfit || 0;
-    case 'houseHack':
-      return metrics.housingCostReductionPercent * 100 || 0;
-    case 'wholesale':
-      return metrics.netProfit || metrics.assignmentFee || 0;
-    default:
-      return 0;
-  }
-}
-
-/**
- * Hook to transform existing analysis into IQ Verdict format
- */
-export function useIQAnalysis(baseInputs: AnalyticsInputs): UseIQAnalysisResult {
-  // Use existing all strategies hook
-  const allStrategies = useAllStrategies(baseInputs);
-
-  const analysis = useMemo((): IQAnalysisResult => {
-    // Transform each strategy into IQ format
-    const strategies: IQStrategy[] = allStrategies.rankings.map((strategyType) => {
-      const result = allStrategies.strategies[strategyType];
-      const strategyId = STRATEGY_TYPE_TO_ID[strategyType];
-      const info = STRATEGY_INFO[strategyId];
-      
-      // Get the primary metric value for this strategy
-      const metricValue = getStrategyMetricValue(strategyType, result);
-      const { metric, metricLabel } = formatMetric(strategyId, metricValue);
-      
-      // Get badge based on rank and score
-      const badge = getStrategyBadge(result.rank, result.score);
-      
-      return {
-        id: strategyId,
-        name: info.name,
-        icon: info.icon,
-        metric,
-        metricLabel,
-        metricValue,
-        score: result.score,
-        rank: result.rank,
-        badge,
-      };
-    });
-
-    // Calculate overall deal score (average of top 3 viable strategies or all strategies)
-    const viableStrategies = strategies.filter((s, i) => 
-      allStrategies.strategies[allStrategies.rankings[i]].viable
-    );
-    
-    const scoringStrategies = viableStrategies.length >= 3 
-      ? viableStrategies.slice(0, 3) 
-      : strategies.slice(0, 3);
-    
-    const dealScore = Math.round(
-      scoringStrategies.reduce((sum, s) => sum + s.score, 0) / scoringStrategies.length
-    );
-
-    // Get verdict and description
-    const dealVerdict = getDealVerdict(dealScore);
-    const topStrategy = strategies[0];
-    const verdictDescription = getVerdictDescription(dealScore, topStrategy);
-
-    return {
-      analyzedAt: new Date().toISOString(),
-      dealScore,
-      dealVerdict,
-      verdictDescription,
-      strategies,
-    };
-  }, [allStrategies]);
-
-  return {
-    analysis,
-    isLoading: false,
-    rawData: allStrategies,
+interface BackendVerdictResponse {
+  deal_score?: number;
+  dealScore?: number;
+  deal_verdict?: string;
+  dealVerdict?: string;
+  verdict_description?: string;
+  verdictDescription?: string;
+  discount_percent?: number;
+  discountPercent?: number;
+  strategies: BackendStrategy[];
+  purchase_price?: number;
+  purchasePrice?: number;
+  breakeven_price?: number;
+  breakevenPrice?: number;
+  list_price?: number;
+  listPrice?: number;
+  component_scores?: {
+    deal_gap_score: number;
+    return_quality_score: number;
+    market_alignment_score: number;
+    deal_probability_score: number;
+  };
+  componentScores?: {
+    dealGapScore: number;
+    returnQualityScore: number;
+    marketAlignmentScore: number;
+    dealProbabilityScore: number;
   };
 }
 
+// ============================================
+// Hook return type
+// ============================================
+
+export interface UseIQAnalysisResult {
+  analysis: IQAnalysisResult;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// ============================================
+// Mapping helpers
+// ============================================
+
+function mapBadge(raw: string | null): IQStrategyBadge | null {
+  if (raw === 'Strong' || raw === 'Good' || raw === 'Best Match') {
+    return raw as IQStrategyBadge;
+  }
+  return null;
+}
+
+function mapStrategies(strategies: BackendStrategy[]): IQStrategy[] {
+  return strategies.map((s) => {
+    const id = s.id as IQStrategy['id'];
+    const info = STRATEGY_INFO[id] ?? { name: s.name, icon: '📊' };
+    return {
+      id,
+      name: info.name,
+      icon: info.icon,
+      metric: s.metric,
+      metricLabel: s.metric_label ?? s.metricLabel ?? '',
+      metricValue: s.metric_value ?? s.metricValue ?? 0,
+      score: s.score,
+      rank: s.rank,
+      badge: mapBadge(s.badge),
+    };
+  });
+}
+
+function buildEmptyAnalysis(): IQAnalysisResult {
+  return {
+    analyzedAt: new Date().toISOString(),
+    dealScore: 0,
+    dealVerdict: 'Poor Investment',
+    verdictDescription: 'Analyzing...',
+    strategies: [],
+  };
+}
+
+function mapResponse(res: BackendVerdictResponse): IQAnalysisResult {
+  const dealScore = res.deal_score ?? res.dealScore ?? 0;
+  const dealVerdict = (res.deal_verdict ?? res.dealVerdict ?? localGetDealVerdict(dealScore)) as IQDealVerdict;
+  const verdictDescription = res.verdict_description ?? res.verdictDescription ?? '';
+
+  return {
+    analyzedAt: new Date().toISOString(),
+    dealScore,
+    dealVerdict,
+    verdictDescription,
+    strategies: mapStrategies(res.strategies),
+  };
+}
+
+// ============================================
+// Hook
+// ============================================
+
+const DEBOUNCE_MS = 200;
+
+export function useIQAnalysis(baseInputs: AnalyticsInputs): UseIQAnalysisResult {
+  const [analysis, setAnalysis] = useState<IQAnalysisResult>(buildEmptyAnalysis);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    // Debounce: clear any pending request
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(async () => {
+      // Abort any in-flight request
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const payload = {
+          list_price: baseInputs.purchasePrice,
+          monthly_rent: baseInputs.monthlyRent,
+          property_taxes: baseInputs.annualPropertyTax,
+          insurance: baseInputs.annualInsurance,
+        };
+
+        const res = await api.post<BackendVerdictResponse>(
+          '/api/v1/analysis/verdict',
+          payload,
+        );
+
+        if (!controller.signal.aborted) {
+          setAnalysis(mapResponse(res));
+          setError(null);
+        }
+      } catch (err: unknown) {
+        if (!controller.signal.aborted) {
+          const msg = err instanceof Error ? err.message : 'Failed to fetch verdict';
+          setError(msg);
+          // Keep stale data visible; don't reset analysis
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [
+    baseInputs.purchasePrice,
+    baseInputs.monthlyRent,
+    baseInputs.annualPropertyTax,
+    baseInputs.annualInsurance,
+  ]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
+
+  return { analysis, isLoading, error };
+}
+
 /**
- * Create IQ analysis from property data without inputs
- * Uses default assumptions based on property details
+ * Create IQ analysis inputs from property data using default assumptions.
+ * Same logic as before — no financial calculations, just sensible defaults.
  */
 export function createIQInputsFromProperty(property: {
   price: number;
@@ -132,19 +217,14 @@ export function createIQInputsFromProperty(property: {
   propertyTaxes?: number;
   insurance?: number;
 }): AnalyticsInputs {
-  // Estimate monthly rent if not provided (0.8% of price as rough estimate)
   const estimatedRent = property.monthlyRent || Math.round(property.price * 0.008);
-  
-  // Estimate taxes if not provided (1.2% of price annually)
   const estimatedTaxes = property.propertyTaxes || Math.round(property.price * 0.012);
-  
-  // Estimate insurance if not provided ($1,500 base + $3 per sqft for Florida)
-  const estimatedInsurance = property.insurance || 
-    Math.round(1500 + (property.sqft || 1500) * 3);
+  const estimatedInsurance =
+    property.insurance || Math.round(1500 + (property.sqft || 1500) * 3);
 
   return {
     purchasePrice: property.price,
-    downPaymentPercent: 0.20,
+    downPaymentPercent: 0.2,
     closingCostsPercent: 0.03,
     interestRate: 0.0685,
     loanTermYears: 30,
