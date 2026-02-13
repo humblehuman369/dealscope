@@ -550,9 +550,15 @@ export default function VerdictIQScreen() {
           {/* Market Snapshot */}
           <MarketSnapshot tiles={marketTiles} />
 
-          {/* Beginner Tip */}
+          {/* Beginner Tip — dynamic based on actual score */}
           <BeginnerTip
-            body={`A VerdictIQ score above 70 means the numbers work at or near asking price. Below 50, you'd need a major discount. This property sits in the middle — possible with negotiation.`}
+            body={
+              dealScore.score >= 70
+                ? `A VerdictIQ score of ${dealScore.score} means the numbers work at or near asking price. This property looks strong — run the strategy breakdown to confirm.`
+                : dealScore.score >= 50
+                ? `A VerdictIQ score of ${dealScore.score} means this deal is possible with negotiation. Use the strategy page to see what price makes it work.`
+                : `A VerdictIQ score of ${dealScore.score} means you'd need a significant discount to make this work. Check the strategy breakdown to see if any approach fits.`
+            }
           />
 
           {/* CTA → Strategy Page */}

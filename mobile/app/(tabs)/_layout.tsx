@@ -55,7 +55,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
           ),
-          tabBarAccessibilityLabel: 'DealHub IQ dashboard tab',
+          tabBarAccessibilityLabel: 'Dashboard tab',
         }}
       />
       <Tabs.Screen

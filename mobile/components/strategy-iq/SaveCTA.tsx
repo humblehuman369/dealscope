@@ -20,9 +20,9 @@ interface SaveCTAProps {
 export function SaveCTA({
   onPress,
   title = "Don't Lose This Deal",
-  subtitle = "Save it to your DealVaultIQ. We'll keep the numbers fresh and alert you if anything changes.",
-  buttonLabel = 'Create Free Account',
-  note = 'No credit card · 3 free scans per month',
+  subtitle = "Save it to your portfolio. We'll keep the numbers fresh and alert you if anything changes.",
+  buttonLabel = 'Save to Portfolio',
+  note = 'Free during beta · No credit card required',
 }: SaveCTAProps) {
   return (
     <View style={styles.container}>
@@ -34,7 +34,7 @@ export function SaveCTA({
         activeOpacity={0.85}
         accessibilityRole="button"
         accessibilityLabel={buttonLabel}
-        accessibilityHint="Creates a free account to save this property analysis"
+        accessibilityHint="Save this property analysis to your portfolio"
       >
         <Text style={styles.buttonText}>{buttonLabel}</Text>
       </TouchableOpacity>

@@ -19,7 +19,7 @@ interface VerdictCTAProps {
 
 export function VerdictCTA({
   onPress,
-  headline = 'See If the Numbers\nActually Work',
+  headline = 'See If the Numbers Actually Work',
   body = 'Get a plain-English financial breakdown — what you\'d pay, what you\'d earn, and whether it\'s worth it.',
   buttonLabel = 'Show Me the Numbers',
 }: VerdictCTAProps) {
@@ -42,9 +42,9 @@ export function VerdictCTA({
       </TouchableOpacity>
 
       <View style={styles.features}>
-        <Feature label="Free to use" />
-        <Feature label="No signup needed" />
-        <Feature label="60 seconds" />
+        <Feature label="Free during beta" />
+        <Feature label="6 strategies" />
+        <Feature label="Under 15 seconds" />
       </View>
     </View>
   );

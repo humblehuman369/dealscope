@@ -187,7 +187,10 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <Text style={{ fontSize: 11, color: mutedColor, textAlign: 'center', marginTop: 12 }}>
-              By creating an account, you agree to our Terms of Service and Privacy Policy.
+              By creating an account, you agree to our{' '}
+              <Text style={{ color: accentColor, textDecorationLine: 'underline' }} onPress={() => router.push('/terms')}>Terms of Service</Text>
+              {' '}and{' '}
+              <Text style={{ color: accentColor, textDecorationLine: 'underline' }} onPress={() => router.push('/privacy')}>Privacy Policy</Text>.
             </Text>
           </View>
 

@@ -213,12 +213,10 @@ export function CalibrationPanel({
             <Ionicons name="bulb-outline" size={18} color={colors.primary[600]} />
             <View style={styles.tipsContent}>
               <Text style={styles.tipsTitle}>Tips for Accurate Scans</Text>
-              <Text style={styles.tipsText}>
-                • Hold phone vertically like taking a photo{'\n'}
-                • Point directly at the center of the property{'\n'}
-                • Stay at least 30-50 feet from the property{'\n'}
-                • Avoid scanning near large metal objects
-              </Text>
+              <Text style={styles.tipsText}>• Hold phone vertically like taking a photo</Text>
+              <Text style={styles.tipsText}>• Point directly at the center of the property</Text>
+              <Text style={styles.tipsText}>• Stay at least 30-50 feet from the property</Text>
+              <Text style={styles.tipsText}>• Avoid scanning near large metal objects</Text>
             </View>
           </View>
 

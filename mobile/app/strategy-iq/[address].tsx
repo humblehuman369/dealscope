@@ -675,16 +675,44 @@ export default function StrategyIQScreen() {
 
             <BenchmarkTable
               rows={benchmarkRows}
-              helperText='The "Target" column shows what experienced investors consider a good deal. When every metric is below target, it usually means the asking price is too high for this strategy.'
+              helperText='Target = what experienced investors look for. All below target? The price is probably too high for this strategy.'
             />
 
-            <InsightBox label="Quick translation">
-              <InsightText>
-                Every benchmark is below target as a long-term rental. This doesn't mean it's a bad property — it means{' '}
-                <InsightBold>the current price is too high for this strategy</InsightBold>.
-                Try switching to a different investment approach or adjusting the terms.
-              </InsightText>
-            </InsightBox>
+            {(() => {
+              const passing = benchmarkRows.filter(r => r.status === 'good' || r.status === 'pass').length;
+              const total = benchmarkRows.length;
+              if (passing === total) {
+                return (
+                  <InsightBox label="Quick translation">
+                    <InsightText>
+                      All benchmarks pass for {currentStrategy.toLowerCase()}.{' '}
+                      <InsightBold>The numbers work at this price point</InsightBold>.
+                      Run your own due diligence before making an offer.
+                    </InsightText>
+                  </InsightBox>
+                );
+              }
+              if (passing >= total / 2) {
+                return (
+                  <InsightBox label="Quick translation">
+                    <InsightText>
+                      {passing} of {total} benchmarks pass as a {currentStrategy.toLowerCase()}.{' '}
+                      <InsightBold>This deal has potential but needs negotiation</InsightBold>.
+                      Try adjusting terms or the purchase price to improve the numbers.
+                    </InsightText>
+                  </InsightBox>
+                );
+              }
+              return (
+                <InsightBox label="Quick translation">
+                  <InsightText>
+                    Most benchmarks are below target as a {currentStrategy.toLowerCase()}. This doesn't mean it's a bad property — it means{' '}
+                    <InsightBold>the current price is too high for this strategy</InsightBold>.
+                    Try a different investment approach or adjust the terms.
+                  </InsightText>
+                </InsightBox>
+              );
+            })()}
           </View>
 
           {/* Data Quality Section */}
