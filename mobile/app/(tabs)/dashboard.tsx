@@ -22,6 +22,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { getAccessToken } from '../../services/authService';
+import { getUserProfile } from '../../services/userService';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
@@ -118,6 +119,12 @@ export default function DashboardScreen() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ['mobile', 'dashboard', 'profile'],
+    queryFn: getUserProfile,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const onRefresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['mobile', 'dashboard'] });
   }, [queryClient]);
@@ -182,6 +189,121 @@ export default function DashboardScreen() {
           </View>
         )}
 
+        {/* Goals vs Actual */}
+        {profile && (profile.target_cash_on_cash || profile.target_cap_rate) && (
+          <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
+            <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Goals vs Actual</Text>
+            {profile.target_cash_on_cash != null && (
+              <GoalRow
+                label="Cash-on-Cash"
+                target={(profile.target_cash_on_cash * 100)}
+                actual={(stats?.average_coc_return || 0) * 100}
+                suffix="%"
+                textColor={textColor}
+                mutedColor={mutedColor}
+                borderColor={borderColor}
+              />
+            )}
+            {profile.target_cap_rate != null && (
+              <GoalRow
+                label="Cap Rate"
+                target={(profile.target_cap_rate * 100)}
+                actual={0}
+                suffix="%"
+                textColor={textColor}
+                mutedColor={mutedColor}
+                borderColor={borderColor}
+                noData={total === 0}
+              />
+            )}
+          </View>
+        )}
+
+        {/* Recommended Next Step */}
+        <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
+          <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 8 }}>Recommended Next Step</Text>
+          {(() => {
+            if (total === 0 && (!recentSearches || recentSearches.length === 0)) {
+              return (
+                <TouchableOpacity onPress={() => router.push('/(tabs)/scan')} accessibilityRole="button" accessibilityLabel="Run your first analysis">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: `${accentColor}15`, borderRadius: 10, borderWidth: 1, borderColor: `${accentColor}30` }}>
+                    <Ionicons name="scan-outline" size={22} color={accentColor} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>Run your first analysis</Text>
+                      <Text style={{ fontSize: 12, color: mutedColor }}>Point your camera at any property to get started</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={mutedColor} />
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            const actualCoC = (stats?.average_coc_return || 0) * 100;
+            const targetCoC = (profile?.target_cash_on_cash || 0.08) * 100;
+            if (total > 0 && actualCoC < targetCoC) {
+              return (
+                <TouchableOpacity onPress={() => router.push('/(tabs)/scan')} accessibilityRole="button" accessibilityLabel="Improve returns">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: '#fbbf2415', borderRadius: 10, borderWidth: 1, borderColor: '#fbbf2430' }}>
+                    <Ionicons name="trending-up-outline" size={22} color="#fbbf24" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>Returns below target</Text>
+                      <Text style={{ fontSize: 12, color: mutedColor }}>Actual {actualCoC.toFixed(1)}% vs target {targetCoC.toFixed(1)}% — scan more deals to find better fits</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={mutedColor} />
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            if (total > 0 && actualCoC >= targetCoC) {
+              return (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: '#22c55e15', borderRadius: 10, borderWidth: 1, borderColor: '#22c55e30' }}>
+                  <Ionicons name="checkmark-circle-outline" size={22} color="#22c55e" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>You&apos;re on pace</Text>
+                    <Text style={{ fontSize: 12, color: mutedColor }}>Portfolio CoC {actualCoC.toFixed(1)}% meets your {targetCoC.toFixed(1)}% target — keep building</Text>
+                  </View>
+                </View>
+              );
+            }
+            return (
+              <TouchableOpacity onPress={() => router.push('/(tabs)/scan')} accessibilityRole="button" accessibilityLabel="Analyze your first property">
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: `${accentColor}15`, borderRadius: 10, borderWidth: 1, borderColor: `${accentColor}30` }}>
+                  <Ionicons name="analytics-outline" size={22} color={accentColor} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>Save a property to your portfolio</Text>
+                    <Text style={{ fontSize: 12, color: mutedColor }}>Track your deals and see how they stack up against your goals</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={mutedColor} />
+                </View>
+              </TouchableOpacity>
+            );
+          })()}
+        </View>
+
+        {/* Activity */}
+        <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
+          <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Activity This Week</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1, alignItems: 'center', padding: 12, backgroundColor: isDark ? '#0f172a' : '#f8fafc', borderRadius: 10 }}>
+              <Text style={{ fontSize: 22, fontWeight: '800', color: '#3b82f6' }}>
+                {recentSearches?.filter(s => {
+                  const d = new Date(s.searched_at);
+                  const week = Date.now() - 7 * 86400000;
+                  return d.getTime() > week;
+                }).length ?? 0}
+              </Text>
+              <Text style={{ fontSize: 11, color: mutedColor, fontWeight: '600', textTransform: 'uppercase', marginTop: 2 }}>Searches</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center', padding: 12, backgroundColor: isDark ? '#0f172a' : '#f8fafc', borderRadius: 10 }}>
+              <Text style={{ fontSize: 22, fontWeight: '800', color: '#22c55e' }}>{total}</Text>
+              <Text style={{ fontSize: 11, color: mutedColor, fontWeight: '600', textTransform: 'uppercase', marginTop: 2 }}>Properties</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center', padding: 12, backgroundColor: isDark ? '#0f172a' : '#f8fafc', borderRadius: 10 }}>
+              <Text style={{ fontSize: 22, fontWeight: '800', color: accentColor }}>{Object.values(pipeline).reduce((a, b) => a + b, 0) > 0 ? Object.values(pipeline).reduce((a, b) => a + b, 0) : 0}</Text>
+              <Text style={{ fontSize: 11, color: mutedColor, fontWeight: '600', textTransform: 'uppercase', marginTop: 2 }}>In Pipeline</Text>
+            </View>
+          </View>
+        </View>
+
         {/* Recent Properties */}
         <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
           <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Properties</Text>
@@ -243,6 +365,45 @@ function MetricCard({ icon, label, value, color, bg, textColor, mutedColor, bord
         <Text style={{ fontSize: 11, fontWeight: '600', color: mutedColor, textTransform: 'uppercase' }}>{label}</Text>
       </View>
       <Text style={{ fontSize: 20, fontWeight: '800', color: textColor }}>{value}</Text>
+    </View>
+  );
+}
+
+// ------------------------------------------------------------------
+// GoalRow sub-component — shows target vs actual with gap indicator
+// ------------------------------------------------------------------
+
+function GoalRow({ label, target, actual, suffix, textColor, mutedColor, borderColor, noData }: {
+  label: string; target: number; actual: number; suffix: string;
+  textColor: string; mutedColor: string; borderColor: string; noData?: boolean;
+}) {
+  const gap = actual - target;
+  const isAbove = gap >= 0;
+  const gapColor = isAbove ? '#22c55e' : '#ef4444';
+
+  return (
+    <View accessibilityLabel={`${label}: target ${target.toFixed(1)}${suffix}, actual ${noData ? 'no data' : `${actual.toFixed(1)}${suffix}`}`}
+      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: borderColor }}>
+      <Text style={{ fontSize: 14, fontWeight: '500', color: textColor }}>{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 11, color: mutedColor }}>Target</Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>{target.toFixed(1)}{suffix}</Text>
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 11, color: mutedColor }}>Actual</Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: noData ? mutedColor : textColor }}>
+            {noData ? '—' : `${actual.toFixed(1)}${suffix}`}
+          </Text>
+        </View>
+        {!noData && (
+          <View style={{ minWidth: 48, alignItems: 'center', paddingHorizontal: 6, paddingVertical: 2, backgroundColor: `${gapColor}18`, borderRadius: 6 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: gapColor }}>
+              {isAbove ? '+' : ''}{gap.toFixed(1)}
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }

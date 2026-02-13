@@ -14,9 +14,10 @@ interface ActionBarProps {
   onExport: () => void;
   onChangeTerms: () => void;
   onStrategyPress: () => void;
+  onPDFExport?: () => void;
 }
 
-export function ActionBar({ currentStrategy, onExport, onChangeTerms, onStrategyPress }: ActionBarProps) {
+export function ActionBar({ currentStrategy, onExport, onChangeTerms, onStrategyPress, onPDFExport }: ActionBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.leftButtons}>
@@ -26,11 +27,24 @@ export function ActionBar({ currentStrategy, onExport, onChangeTerms, onStrategy
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Share analysis"
-          accessibilityHint="Exports and shares the financial analysis"
+          accessibilityHint="Shares the financial analysis summary"
         >
-          <Ionicons name="download-outline" size={rf(13)} color={verdictDark.textBody} />
-          <Text style={styles.ctxBtnText}>Export</Text>
+          <Ionicons name="share-outline" size={rf(13)} color={verdictDark.textBody} />
+          <Text style={styles.ctxBtnText}>Share</Text>
         </TouchableOpacity>
+        {onPDFExport && (
+          <TouchableOpacity 
+            style={styles.ctxBtn} 
+            onPress={onPDFExport} 
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Download PDF report"
+            accessibilityHint="Downloads a lender-ready PDF report"
+          >
+            <Ionicons name="document-text-outline" size={rf(13)} color={verdictDark.textBody} />
+            <Text style={styles.ctxBtnText}>Report</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity 
           style={styles.ctxBtn} 
           onPress={onChangeTerms} 
@@ -40,7 +54,7 @@ export function ActionBar({ currentStrategy, onExport, onChangeTerms, onStrategy
           accessibilityHint="Opens the worksheet to adjust financing terms"
         >
           <Ionicons name="options-outline" size={rf(13)} color={verdictDark.textBody} />
-          <Text style={styles.ctxBtnText}>Change Terms</Text>
+          <Text style={styles.ctxBtnText}>Terms</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity 
