@@ -426,8 +426,17 @@ function VerdictContent() {
             opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
             returnRating: analysisData.return_rating ?? analysisData.returnRating,
             returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            // NEW: Composite verdict component scores
-            componentScores: analysisData.component_scores ?? analysisData.componentScores,
+            // NEW: Composite verdict component scores (handle both snake_case and camelCase from backend)
+            componentScores: (() => {
+              const raw = analysisData.component_scores ?? analysisData.componentScores
+              if (!raw) return undefined
+              return {
+                dealGapScore: raw.dealGapScore ?? raw.deal_gap_score ?? 0,
+                returnQualityScore: raw.returnQualityScore ?? raw.return_quality_score ?? 0,
+                marketAlignmentScore: raw.marketAlignmentScore ?? raw.market_alignment_score ?? 0,
+                dealProbabilityScore: raw.dealProbabilityScore ?? raw.deal_probability_score ?? 0,
+              }
+            })(),
           }
           setAnalysis(analysisResult)
         } catch (analysisErr) {
@@ -639,12 +648,18 @@ function VerdictContent() {
     { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
   ]
 
-  // Component scores from backend composite scorer (replaces frontend-computed values)
+  // Component scores from backend composite scorer (0-90 scale)
   const cs = analysis.componentScores
-  const compDealGap = cs?.dealGapScore ?? 50
-  const compReturnQuality = cs?.returnQualityScore ?? 50
-  const compMarketAlignment = cs?.marketAlignmentScore ?? 50
-  const compDealProbability = cs?.dealProbabilityScore ?? 50
+  const compDealGap = cs?.dealGapScore ?? 0
+  const compReturnQuality = cs?.returnQualityScore ?? 0
+  const compMarketAlignment = cs?.marketAlignmentScore ?? 0
+  const compDealProbability = cs?.dealProbabilityScore ?? 0
+
+  // Qualitative label for component scores (0-90 scale)
+  const componentLabel = (v: number) =>
+    v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak'
+  const componentColor = (v: number) =>
+    v >= 75 ? colors.brand.teal : v >= 55 ? '#38bdf8' : v >= 40 ? colors.brand.gold : v >= 20 ? '#f97316' : colors.status.negative
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -706,19 +721,25 @@ function VerdictContent() {
             <div className="mt-6 text-left max-w-sm mx-auto">
               <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: colors.text.secondary }}>Score Components</p>
               {[
-                { label: 'Deal Gap', value: compDealGap, color: colors.brand.teal },
-                { label: 'Return Quality', value: compReturnQuality, color: colors.brand.blue },
-                { label: 'Market Alignment', value: compMarketAlignment, color: colors.brand.teal },
-                { label: 'Deal Probability', value: compDealProbability, color: colors.brand.blue },
-              ].map((m, i) => (
+                { label: 'Deal Gap', value: compDealGap, weight: '35%' },
+                { label: 'Return Quality', value: compReturnQuality, weight: '30%' },
+                { label: 'Market Alignment', value: compMarketAlignment, weight: '20%' },
+                { label: 'Deal Probability', value: compDealProbability, weight: '15%' },
+              ].map((m, i) => {
+                const clr = componentColor(m.value)
+                const lbl = componentLabel(m.value)
+                // Bar width: score / 90 (max per component) mapped to visual width
+                const barPct = Math.min(100, (m.value / 90) * 100)
+                return (
                 <div key={i} className="flex items-center gap-2.5 mb-2.5">
                   <span className="text-xs font-medium w-28 shrink-0" style={{ color: colors.text.body }}>{m.label}</span>
                   <div className="flex-1 h-1.5 rounded" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <div className="h-full rounded" style={{ width: `${m.value}%`, background: m.color }} />
+                    <div className="h-full rounded transition-all" style={{ width: `${barPct}%`, background: clr }} />
                   </div>
-                  <span className="text-xs font-bold tabular-nums w-10 text-right" style={{ color: m.color }}>{Math.round(m.value)}%</span>
+                  <span className="text-xs font-bold w-16 text-right" style={{ color: clr }}>{lbl}</span>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </section>
 
