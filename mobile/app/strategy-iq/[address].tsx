@@ -17,6 +17,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  ActionSheetIOS,
+  Platform,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -324,20 +327,78 @@ export default function StrategyIQScreen() {
     router.back();
   }, [router]);
 
-  const handleExport = useCallback(() => {
+  // ── Export: share financial summary as text ──
+  const handleExport = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert('Export Analysis', 'PDF export feature coming soon');
-  }, []);
+    const summary = [
+      `InvestIQ — ${currentStrategy} Analysis`,
+      `Property: ${decodedAddress}`,
+      `List Price: $${listPrice.toLocaleString()}`,
+      `Target Price: $${(targetPrice ?? listPrice).toLocaleString()}`,
+      `Monthly Rent: $${monthlyRent.toLocaleString()}`,
+      '',
+      'Analyze any property in 60 seconds at investiq.app',
+    ].join('\n');
+    try {
+      await Share.share({ message: summary, title: `${currentStrategy} Analysis` });
+    } catch {
+      // user cancelled — no-op
+    }
+  }, [currentStrategy, decodedAddress, listPrice, targetPrice, monthlyRent]);
 
+  // ── Change Terms: navigate to worksheet for the active strategy ──
   const handleChangeTerms = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Adjust Terms', 'Opens financing terms adjustment modal');
-  }, []);
+    const strategyMap: Record<string, string> = {
+      'Long-Term Rental': 'ltr', 'Short-Term Rental': 'str', 'BRRRR': 'brrrr',
+      'Fix & Flip': 'flip', 'House Hack': 'house_hack', 'Wholesale': 'wholesale',
+    };
+    const strategyId = strategyMap[currentStrategy] || 'ltr';
+    router.push({
+      pathname: '/worksheet/[strategy]',
+      params: {
+        strategy: strategyId,
+        address: encodeURIComponent(decodedAddress),
+        price: String(listPrice),
+        beds: String(bedroomCount),
+        baths: String(bathroomCount),
+        sqft: String(sqftValue),
+        rent: String(monthlyRent),
+      },
+    });
+  }, [currentStrategy, router, decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, monthlyRent]);
+
+  // ── Strategy picker: native ActionSheet on iOS, Alert on Android ──
+  const STRATEGIES = [
+    'Long-Term Rental', 'Short-Term Rental', 'BRRRR',
+    'Fix & Flip', 'House Hack', 'Wholesale',
+  ];
 
   const handleStrategyPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert('Change Strategy', 'Strategy selector coming soon');
-  }, []);
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...STRATEGIES, 'Cancel'],
+          cancelButtonIndex: STRATEGIES.length,
+          title: 'Select Strategy',
+        },
+        (buttonIndex) => {
+          if (buttonIndex < STRATEGIES.length) {
+            handleSetStrategy(STRATEGIES[buttonIndex]);
+          }
+        },
+      );
+    } else {
+      // Android fallback — use Alert with buttons
+      const buttons = STRATEGIES.map((s) => ({
+        text: s,
+        onPress: () => handleSetStrategy(s),
+      }));
+      buttons.push({ text: 'Cancel', onPress: () => {} });
+      Alert.alert('Select Strategy', undefined, buttons);
+    }
+  }, [handleSetStrategy]);
 
   const handleSignUp = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
