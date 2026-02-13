@@ -95,7 +95,7 @@ export default function PropertyDetailsRoute() {
         break;
       case 'analysis':
         router.push({
-          pathname: '/analysis-iq/[address]',
+          pathname: '/strategy-iq/[address]',
           params: {
             address: addressParam,
             price: String(property.price),

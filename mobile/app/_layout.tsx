@@ -11,6 +11,7 @@ import * as Sentry from '@sentry/react-native';
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // Initialize Sentry for error tracking
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -72,21 +73,23 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider>
-          <SafeAreaProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <AppContent 
-                appReady={appReady} 
-                showAnimatedSplash={showAnimatedSplash}
-                onAnimationComplete={handleAnimationComplete}
-              />
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ThemeProvider>
+            <SafeAreaProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <AppContent 
+                  appReady={appReady} 
+                  showAnimatedSplash={showAnimatedSplash}
+                  onAnimationComplete={handleAnimationComplete}
+                />
+              </GestureHandlerRootView>
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -112,15 +115,6 @@ function AppContent({
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="property/[address]" 
-          options={{ 
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            animation: 'slide_from_bottom',
-            gestureEnabled: false, // Disable swipe gestures to prevent conflicts with sliders
-          }} 
-        />
         {/* IQ Verdict Flow Screens */}
         <Stack.Screen 
           name="analyzing/[address]" 
@@ -131,24 +125,7 @@ function AppContent({
             gestureEnabled: false, // Prevent going back during analysis
           }} 
         />
-        <Stack.Screen 
-          name="verdict/[address]" 
-          options={{ 
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            animation: 'slide_from_right',
-          }} 
-        />
-        {/* New Analysis IQ Page */}
-        <Stack.Screen 
-          name="analysis-iq/[address]" 
-          options={{ 
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            animation: 'slide_from_right',
-          }} 
-        />
-        {/* New Verdict IQ Page */}
+        {/* Verdict IQ Page */}
         <Stack.Screen 
           name="verdict-iq/[address]" 
           options={{ 

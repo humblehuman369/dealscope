@@ -5,6 +5,9 @@
  * four-signal cards, toolkit section, and CTA.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useState, useRef, useEffect } from 'react';
 import {
   View,
