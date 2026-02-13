@@ -707,6 +707,8 @@ function VerdictContent() {
     const params = new URLSearchParams({ address: fullAddress })
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
+    // Pass current strategy so Strategy page shows the same one
+    if (currentStrategy) params.set('strategy', currentStrategy)
     router.push(`/strategy?${params.toString()}`)
   }
 
