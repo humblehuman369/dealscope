@@ -522,11 +522,7 @@ export function IQVerdictScreen({
             })}
           </View>
 
-          {/* Export Link */}
-          <TouchableOpacity style={[styles.exportLink, { paddingVertical: rsp(12) }]}>
-            <Ionicons name="download-outline" size={rs(18)} color={COLORS.surface500} />
-            <Text style={[styles.exportLinkText, { fontSize: rf(14) }]}>Export PDF Report</Text>
-          </TouchableOpacity>
+          {/* Export — deferred to Phase 4 (backend PDF exporter exists, frontend wiring pending) */}
         </View>
       </ScrollView>
     </View>
