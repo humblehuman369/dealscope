@@ -362,7 +362,9 @@ export function usePropertyScan() {
   const selectCandidate = useCallback(async (candidate: PropertyCandidate) => {
     setIsScanning(true);
     setShowCandidates(false);
-    setCandidates([]);
+    // NOTE: Do NOT clear candidates here — they're needed by reopenCandidates()
+    // so the "Not the right property?" button works on the result sheet.
+    // Candidates are cleared on the next performScan() call (line 181).
     setError(null);
 
     const startTime = Date.now();
