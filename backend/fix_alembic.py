@@ -52,7 +52,7 @@ def _check_column_exists(url: str, table: str, column: str) -> bool:
                 sep = "&" if "?" in conn_url else "?"
                 conn_url = f"{conn_url}{sep}sslmode=disable"
 
-        with psycopg.connect(conn_url, autocommit=True) as conn:
+        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT 1 FROM information_schema.columns "
@@ -75,7 +75,7 @@ def _apply_auth_columns_sql(url: str) -> bool:
                 sep = "&" if "?" in conn_url else "?"
                 conn_url = f"{conn_url}{sep}sslmode=disable"
 
-        with psycopg.connect(conn_url, autocommit=True) as conn:
+        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
             with conn.cursor() as cur:
                 # Add columns to users table (IF NOT EXISTS via DO blocks)
                 columns = [
@@ -249,7 +249,7 @@ def _ensure_column(url: str, table: str, column: str, col_type: str) -> None:
             if "sslmode=" not in conn_url:
                 sep = "&" if "?" in conn_url else "?"
                 conn_url = f"{conn_url}{sep}sslmode=disable"
-        with psycopg.connect(conn_url, autocommit=True) as conn:
+        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
             with conn.cursor() as cur:
                 cur.execute(f"""
                     DO $$ BEGIN
@@ -272,7 +272,7 @@ def _one_time_truncate(url: str) -> None:
             if "sslmode=" not in conn_url:
                 sep = "&" if "?" in conn_url else "?"
                 conn_url = f"{conn_url}{sep}sslmode=disable"
-        with psycopg.connect(conn_url, autocommit=True) as conn:
+        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
             with conn.cursor() as cur:
                 # Check if there's a marker that we've already truncated
                 cur.execute(
