@@ -31,6 +31,7 @@ import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
+import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -263,9 +264,9 @@ function VerdictContent() {
           city: data.address?.city || parsedAddress.city,
           state: data.address?.state || parsedAddress.state,
           zip: data.address?.zip_code || parsedAddress.zip,
-          beds: data.details?.bedrooms || 3,
-          baths: data.details?.bathrooms || 2,
-          sqft: data.details?.square_footage || 1500,
+          beds: data.details?.bedrooms || FALLBACK_PROPERTY.beds,
+          baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
+          sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
           price: Math.round(price),
           imageUrl: photoUrl,
           yearBuilt: data.details?.year_built,
@@ -440,10 +441,10 @@ function VerdictContent() {
           city: parsedFallback.city,
           state: parsedFallback.state,
           zip: parsedFallback.zip,
-          beds: 3,
-          baths: 2,
-          sqft: 1500,
-          price: 350000,
+          beds: FALLBACK_PROPERTY.beds,
+          baths: FALLBACK_PROPERTY.baths,
+          sqft: FALLBACK_PROPERTY.sqft,
+          price: FALLBACK_PROPERTY.price,
           imageUrl: SAMPLE_PHOTOS[0],
         }
         setProperty(fallbackProperty)

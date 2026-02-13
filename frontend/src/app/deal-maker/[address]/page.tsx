@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import { DealMakerScreen, type DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
+import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 
 /**
  * Deal Maker Page
@@ -28,8 +29,8 @@ export default function DealMakerRoutePage() {
   const addressParts = propertyAddress.split(',').map(s => s.trim())
   const streetAddress = addressParts[0] || propertyAddress
   const city = addressParts[1] || 'Unknown'
-  const stateZip = addressParts[2] || 'FL 00000'
-  const [state, zipCode] = stateZip.split(/\s+/)
+  const stateZip = addressParts[2] || ''
+  const [state = '', zipCode = ''] = stateZip.split(/\s+/)
 
   // Parse optional query params - helper to avoid NaN values
   const parseNumericParam = (name: string): number | undefined => {
@@ -52,12 +53,12 @@ export default function DealMakerRoutePage() {
   const property: DealMakerPropertyData = {
     address: streetAddress,
     city: city,
-    state: state || 'FL',
-    zipCode: zipCode || '00000',
-    beds: beds || 4,
-    baths: baths || 2,
-    sqft: sqft || 1850,
-    price: listPrice || 350000,
+    state: state || FALLBACK_PROPERTY.state,
+    zipCode: zipCode || FALLBACK_PROPERTY.zipCode,
+    beds: beds || FALLBACK_PROPERTY.beds,
+    baths: baths || FALLBACK_PROPERTY.baths,
+    sqft: sqft || FALLBACK_PROPERTY.sqft,
+    price: listPrice || FALLBACK_PROPERTY.price,
     rent: rentEstimate,
     propertyTax: propertyTax,
     insurance: insurance,
