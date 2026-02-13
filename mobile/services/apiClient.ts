@@ -102,8 +102,21 @@ function parseErrorResponse(error: unknown): APIError {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data;
     if (typeof data === 'object' && data !== null) {
+      // FastAPI 422 returns detail as an array of validation errors
+      let detail: string;
+      if (typeof data.detail === 'string') {
+        detail = data.detail;
+      } else if (Array.isArray(data.detail)) {
+        detail = data.detail.map((d: any) => d.msg || JSON.stringify(d)).join('; ');
+      } else if (data.detail && typeof data.detail === 'object') {
+        detail = JSON.stringify(data.detail);
+      } else if (typeof data.message === 'string') {
+        detail = data.message;
+      } else {
+        detail = `Request failed (${error.response?.status || 'unknown'})`;
+      }
       return {
-        detail: data.detail || data.message || 'Request failed',
+        detail,
         error: data.error,
         code: data.code,
         message: data.message,
