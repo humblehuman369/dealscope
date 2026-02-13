@@ -3,11 +3,13 @@ Device token service — CRUD operations for push notification tokens.
 """
 
 import logging
+import uuid as _uuid
 from typing import Optional, List
 from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select, update, delete
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.device_token import DeviceToken, DevicePlatform
@@ -30,45 +32,55 @@ class DeviceService:
         """
         Register or re-activate a device token.
 
+        Uses PostgreSQL INSERT … ON CONFLICT DO UPDATE (upsert) so the
+        operation is atomic — no TOCTOU race between concurrent requests.
+
         Idempotent: if the token already exists for this user, we update
-        it and mark it active. If it belongs to a different user, we
+        it and mark it active.  If it belongs to a different user, we
         reassign it (token is globally unique — a device can only have
         one owner).
         """
-        # Check if token already exists
-        result = await db.execute(
-            select(DeviceToken).where(DeviceToken.token == token)
-        )
-        existing = result.scalar_one_or_none()
-
         now = datetime.now(timezone.utc)
 
-        if existing:
-            # Re-activate and update ownership / metadata
-            existing.user_id = user_id
-            existing.device_platform = device_platform
-            existing.device_name = device_name or existing.device_name
-            existing.is_active = True
-            existing.last_used_at = now
-            existing.updated_at = now
-            await db.commit()
-            await db.refresh(existing)
-            logger.info("Device token updated for user %s (platform=%s)", user_id, device_platform.value)
-            return existing
-
-        # Create new token
-        device = DeviceToken(
-            user_id=user_id,
-            token=token,
-            device_platform=device_platform,
-            device_name=device_name,
-            is_active=True,
-            last_used_at=now,
+        stmt = (
+            pg_insert(DeviceToken)
+            .values(
+                id=_uuid.uuid4(),
+                user_id=user_id,
+                token=token,
+                device_platform=device_platform,
+                device_name=device_name,
+                is_active=True,
+                last_used_at=now,
+                created_at=now,
+                updated_at=now,
+            )
+            .on_conflict_do_update(
+                index_elements=["token"],
+                set_={
+                    "user_id": user_id,
+                    "device_platform": device_platform,
+                    "device_name": (
+                        device_name
+                        if device_name
+                        else DeviceToken.device_name  # keep existing if not provided
+                    ),
+                    "is_active": True,
+                    "last_used_at": now,
+                    "updated_at": now,
+                },
+            )
+            .returning(DeviceToken)
         )
-        db.add(device)
+
+        result = await db.execute(stmt)
         await db.commit()
-        await db.refresh(device)
-        logger.info("Device token registered for user %s (platform=%s)", user_id, device_platform.value)
+        device = result.scalar_one()
+        logger.info(
+            "Device token upserted for user %s (platform=%s)",
+            user_id,
+            device_platform.value,
+        )
         return device
 
     async def unregister_token(
