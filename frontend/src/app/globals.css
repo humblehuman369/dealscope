@@ -2279,3 +2279,44 @@ input[type="range"]::-moz-range-thumb {
 .worksheet-mobile-tab-label {
   flex: 1;
 }
+
+/* ── Google Places Autocomplete Dark Theme ── */
+.pac-container {
+  background: #0f172a !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+  margin-top: 4px !important;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif !important;
+  z-index: 10000 !important;
+}
+.pac-item {
+  padding: 10px 16px !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.08) !important;
+  cursor: pointer !important;
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+.pac-item:first-child {
+  border-top: none !important;
+}
+.pac-item:hover,
+.pac-item-selected {
+  background: rgba(14, 165, 233, 0.1) !important;
+}
+.pac-item-query {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+.pac-icon {
+  display: none !important;
+}
+.pac-matched {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+.pac-logo::after {
+  display: none !important;
+}

@@ -17,6 +17,7 @@ import { api } from '@/lib/api-client'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
+import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 
 // Types from existing verdict system
 interface BackendAnalysisResponse {
@@ -266,7 +267,8 @@ function StrategyContent() {
 
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-      <div className="max-w-[640px] mx-auto">
+      <AnalysisNav />
+      <div className="max-w-[640px] lg:max-w-5xl mx-auto">
         {/* Page Header + Actions */}
         <section className="px-5 pt-8 pb-0">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>

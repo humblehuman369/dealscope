@@ -32,6 +32,7 @@ import { api } from '@/lib/api-client'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
+import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -644,7 +645,9 @@ function VerdictContent() {
   return (
     <>
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-        <div className="max-w-[520px] mx-auto">
+        <AnalysisNav />
+        {/* Responsive container: mobile-first single column, desktop 2-column */}
+        <div className="max-w-[520px] lg:max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_380px] lg:gap-0">
           {/* Score Hero */}
           <section className="px-5 pt-10 pb-8" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
             {/* The Verdict label */}
@@ -774,13 +777,16 @@ function VerdictContent() {
             </div>
           </section>
 
+          {/* === RIGHT COLUMN on desktop / continues below on mobile === */}
+          <div className="lg:border-l lg:sticky lg:top-0 lg:self-start lg:h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
+
           {/* Market Snapshot */}
-          <section className="px-5 pb-6 border-t" style={{ borderColor: colors.ui.border }}>
+          <section className="px-5 pb-6 border-t lg:border-t-0 lg:pt-10" style={{ borderColor: colors.ui.border }}>
             <div className="py-4">
               <span className="text-[0.68rem] font-bold uppercase tracking-wider block" style={{ color: colors.text.primary }}>Market Snapshot</span>
               <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>Key signals from your 60-second screen</p>
             </div>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
               {signals.map((s, i) => (
                 <div key={i} className="flex justify-between items-center rounded-xl py-3 px-3.5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
                   <div>
@@ -838,15 +844,17 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* Trust Strip */}
-          <div className="px-5 py-5 text-center border-t" style={{ borderColor: colors.ui.border }}>
+          </div>{/* end right column */}
+
+          {/* Trust Strip — full-width, spans both columns on desktop */}
+          <div className="px-5 py-5 text-center border-t lg:col-span-2" style={{ borderColor: colors.ui.border }}>
             <p className="text-xs leading-relaxed" style={{ color: colors.text.secondary }}>
               VerdictIQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
             </p>
           </div>
 
-          {/* Footer */}
-          <footer className="text-center py-5 text-xs" style={{ color: colors.text.secondary }}>
+          {/* Footer — full-width, spans both columns on desktop */}
+          <footer className="text-center py-5 text-xs lg:col-span-2" style={{ color: colors.text.secondary }}>
             Powered by <span className="font-semibold" style={{ color: colors.text.body }}>Invest<span style={{ color: colors.brand.blue }}>IQ</span></span>
           </footer>
         </div>
