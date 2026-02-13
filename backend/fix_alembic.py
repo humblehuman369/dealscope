@@ -346,8 +346,10 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         log.error("fix_alembic.py crashed (non-fatal): %s", e)
-    # Diagnostic: confirm we reach the exit point
-    print(">>> fix_alembic.py DONE — exiting with code 0", flush=True)
-    # Don't use sys.exit() — it raises SystemExit which can confuse
-    # signal handlers. Just let the script end naturally with code 0.
-    # sys.exit(0)
+
+    # Replace this process with start.py (uvicorn wrapper).
+    # os.execv replaces the current process entirely — same PID, no shell
+    # chaining needed. This bypasses any Railway start-command override issues.
+    start_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "start.py")
+    print(f">>> fix_alembic.py DONE — exec'ing {start_script}", flush=True)
+    os.execv(sys.executable, [sys.executable, start_script])

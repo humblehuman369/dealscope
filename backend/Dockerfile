@@ -19,4 +19,4 @@ COPY . .
 # Railway injects $PORT at runtime (default 8080)
 ENV PORT=8080
 
-CMD ["sh", "-c", "python fix_alembic.py ; echo '>>> SHELL: Starting app...' ; python start.py"]
+CMD ["python", "fix_alembic.py"]
