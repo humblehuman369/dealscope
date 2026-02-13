@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +29,7 @@ export { ErrorBoundary };
 
 import { VerdictSkeleton } from '../../components/Skeleton';
 import { useIsOnline } from '../../hooks/useNetworkStatus';
+import { buildVerdictShareUrl } from '../../hooks/useDeepLinking';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
 import {
@@ -306,6 +308,27 @@ export default function VerdictIQScreen() {
     );
   }, []);
 
+  const handleShare = useCallback(async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const url = buildVerdictShareUrl(decodedAddress, {
+      price: listPrice,
+      beds: bedroomCount,
+      baths: bathroomCount,
+      sqft: sqftValue,
+      city: city || undefined,
+      state: state || undefined,
+    });
+    try {
+      await Share.share({
+        message: `Check out this investment property on InvestIQ:\n${decodedAddress}\n\n${url}`,
+        url, // iOS uses this for the share sheet preview
+        title: `InvestIQ — ${decodedAddress}`,
+      });
+    } catch {
+      // user cancelled
+    }
+  }, [decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, city, state]);
+
   const handleHowVerdictWorks = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Alert.alert(
@@ -404,10 +427,16 @@ export default function VerdictIQScreen() {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.saveBtn}>
-            <Ionicons name="bookmark-outline" size={rf(14)} color={verdictDark.textBody} />
-            <Text style={styles.saveBtnText}>Save</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={styles.saveBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={rf(14)} color={verdictDark.textBody} />
+              <Text style={styles.saveBtnText}>Share</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveBtn}>
+              <Ionicons name="bookmark-outline" size={rf(14)} color={verdictDark.textBody} />
+              <Text style={styles.saveBtnText}>Save</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView

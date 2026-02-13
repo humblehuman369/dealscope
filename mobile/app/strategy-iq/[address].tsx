@@ -31,6 +31,7 @@ export { ErrorBoundary };
 
 import { StrategySkeleton } from '../../components/Skeleton';
 import { useIsOnline } from '../../hooks/useNetworkStatus';
+import { buildShareUrl } from '../../hooks/useDeepLinking';
 import { useUIStore } from '../../stores';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
@@ -333,9 +334,17 @@ export default function StrategyIQScreen() {
     router.back();
   }, [router]);
 
-  // ── Export: share financial summary as text ──
+  // ── Export: share financial summary with deep link ──
   const handleExport = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const url = buildShareUrl('strategy', {
+      address: decodedAddress,
+      price: listPrice,
+      beds: bedroomCount,
+      baths: bathroomCount,
+      sqft: sqftValue,
+      rent: monthlyRent,
+    });
     const summary = [
       `InvestIQ — ${currentStrategy} Analysis`,
       `Property: ${decodedAddress}`,
@@ -343,14 +352,14 @@ export default function StrategyIQScreen() {
       `Target Price: $${(targetPrice ?? listPrice).toLocaleString()}`,
       `Monthly Rent: $${monthlyRent.toLocaleString()}`,
       '',
-      'Analyze any property in 60 seconds at investiq.app',
+      url,
     ].join('\n');
     try {
-      await Share.share({ message: summary, title: `${currentStrategy} Analysis` });
+      await Share.share({ message: summary, url, title: `${currentStrategy} Analysis` });
     } catch {
       // user cancelled — no-op
     }
-  }, [currentStrategy, decodedAddress, listPrice, targetPrice, monthlyRent]);
+  }, [currentStrategy, decodedAddress, listPrice, targetPrice, monthlyRent, bedroomCount, bathroomCount, sqftValue]);
 
   // ── Change Terms: navigate to worksheet for the active strategy ──
   const handleChangeTerms = useCallback(() => {

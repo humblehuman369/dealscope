@@ -1,0 +1,31 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": [
+          "TEAM_ID.com.investiq.mobile"
+        ],
+        "components": [
+          { "/": "/verdict*" },
+          { "/": "/property*" },
+          { "/": "/deal-gap*" },
+          { "/": "/deal-maker*" },
+          { "/": "/worksheet*" },
+          { "/": "/price-intel*" },
+          { "/": "/strategy*" },
+          { "/": "/analyzing*" },
+          { "/": "/search*" },
+          { "/": "/national-averages*" },
+          { "/": "/photos*" },
+          { "/": "/strategies/*" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.com.investiq.mobile"
+    ]
+  }
+}
