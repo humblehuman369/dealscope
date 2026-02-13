@@ -1,29 +1,59 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 /**
  * AnalysisNav — Persistent top navigation bar for the analysis flow.
- * Shows two tabs: VerdictIQ (screen) and StrategyIQ (deep dive).
+ * Primary tabs: VerdictIQ and StrategyIQ (pill toggle).
+ * Secondary tabs: Property Profile and Price (text links).
  * Preserves all search params when switching between pages.
  */
 export function AnalysisNav() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const params = searchParams.toString()
+  const address = searchParams.get('address') || ''
 
   const isVerdict = pathname === '/verdict'
   const isStrategy = pathname === '/strategy'
 
+  // Resolve zpid — check URL params first, then sessionStorage
+  const zpidFromUrl = searchParams.get('zpid') || searchParams.get('propertyId') || ''
+  const [zpid, setZpid] = useState(zpidFromUrl)
+
+  useEffect(() => {
+    if (zpidFromUrl) {
+      setZpid(zpidFromUrl)
+      return
+    }
+    // Fallback: read from sessionStorage (set by verdict page after API fetch)
+    if (typeof window === 'undefined') return
+    try {
+      const stored = sessionStorage.getItem('dealMakerOverrides')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.zpid) setZpid(String(parsed.zpid))
+      }
+    } catch { /* ignore */ }
+  }, [zpidFromUrl])
+
   // Only show on analysis pages
   if (!isVerdict && !isStrategy) return null
 
-  const tabs = [
+  const primaryTabs = [
     { label: 'VerdictIQ', href: `/verdict?${params}`, active: isVerdict, icon: verdictIcon },
     { label: 'StrategyIQ', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
   ]
+
+  // Build secondary nav links (Property Profile needs zpid)
+  const encodedAddress = encodeURIComponent(address)
+  const propertyHref = zpid
+    ? `/property/${zpid}?address=${encodedAddress}`
+    : address ? `/search?q=${encodedAddress}` : '/search'
+  const priceHref = address ? `/price-intel?address=${encodedAddress}` : '/search'
 
   return (
     <nav
@@ -40,25 +70,46 @@ export function AnalysisNav() {
           <span style={{ color: colors.brand.blue }}>IQ</span>
         </Link>
 
-        {/* Tab pills */}
-        <div className="flex items-center gap-1 bg-slate-900/60 rounded-full p-0.5">
-          {tabs.map((tab) => (
+        {/* Center: primary pill toggle + secondary links */}
+        <div className="flex items-center gap-4">
+          {/* Primary tab pills */}
+          <div className="flex items-center gap-1 bg-slate-900/60 rounded-full p-0.5">
+            {primaryTabs.map((tab) => (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  background: tab.active ? colors.brand.blueDeep : 'transparent',
+                  color: tab.active ? '#fff' : colors.text.muted,
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Secondary text links */}
+          <div className="hidden sm:flex items-center gap-3">
             <Link
-              key={tab.label}
-              href={tab.href}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
-              style={{
-                background: tab.active ? colors.brand.blueDeep : 'transparent',
-                color: tab.active ? '#fff' : colors.text.muted,
-              }}
+              href={propertyHref}
+              className="text-[11px] font-medium transition-colors hover:text-slate-200"
+              style={{ color: colors.text.muted }}
             >
-              {tab.icon}
-              {tab.label}
+              Property Profile
             </Link>
-          ))}
+            <Link
+              href={priceHref}
+              className="text-[11px] font-medium transition-colors hover:text-slate-200"
+              style={{ color: colors.text.muted }}
+            >
+              Price
+            </Link>
+          </div>
         </div>
 
-        {/* Right spacer — could hold actions in the future */}
+        {/* Right spacer — balances logo width */}
         <div className="w-14" />
       </div>
     </nav>
