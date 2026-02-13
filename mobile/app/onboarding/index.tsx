@@ -343,7 +343,7 @@ export default function OnboardingScreen() {
         {currentStep === 0 && (
           <View>
             <Text style={{ fontSize: 24, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>Welcome to InvestIQ! 👋</Text>
-            <Text style={{ fontSize: 15, color: mutedColor, textAlign: 'center', marginBottom: 24 }}>Let's personalize your experience. What's your investment experience?</Text>
+            <Text style={{ fontSize: 15, color: mutedColor, textAlign: 'center', marginBottom: 24 }}>Let's personalize InvestIQ for you. How much investing have you done?</Text>
             <View style={{ gap: 12 }}>
               {EXPERIENCE_LEVELS.map((level) => {
                 const isSelected = formData.investment_experience === level.value;

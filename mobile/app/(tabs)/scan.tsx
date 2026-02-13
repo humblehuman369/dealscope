@@ -352,7 +352,7 @@ export default function ScanScreen() {
                     <Animated.View style={{ transform: [{ rotate: spin }] }}>
                       <Ionicons name="navigate-circle-outline" size={28} color={colors.gray[400]} />
                     </Animated.View>
-                    <Text style={styles.disabledButtonText}>PLEASE WAIT</Text>
+                    <Text style={styles.disabledButtonText}>INITIALIZING...</Text>
                   </Animated.View>
                 ) : (
                   <>

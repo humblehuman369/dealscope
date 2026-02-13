@@ -27,7 +27,7 @@ const NAV_TABS: NavTab[] = [
   { id: 'details', label: 'Details' },
   { id: 'saleComps', label: 'Sale Comps' },
   { id: 'rentComps', label: 'Rent Comps' },
-  { id: 'dashboard', label: 'DealHubIQ' },
+  { id: 'dashboard', label: 'DealHubIQ' },  // Tab bar label matches _layout.tsx
 ];
 
 interface NavTabsProps {

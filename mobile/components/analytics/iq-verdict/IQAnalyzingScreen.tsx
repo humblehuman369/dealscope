@@ -42,12 +42,12 @@ const PROGRESS_INTERVALS = [300, 500, 350, 600, 400, 450];
 
 // Rotating micro-tips to show during analysis
 const MICRO_TIPS = [
-  'IQ checks 47 data points per strategy...',
-  'Comparing against 12 recent sales nearby...',
-  'Calculating cash-on-cash for 3 financing scenarios...',
-  'Analyzing rental comps within 0.5 miles...',
-  'Evaluating exit strategy options...',
-  'Computing breakeven occupancy rates...',
+  'Pulling property data and tax records...',
+  'Running rental comp analysis...',
+  'Scoring 6 investment strategies...',
+  'Calculating cash flow and returns...',
+  'Evaluating deal gap and risk...',
+  'Building your VerdictIQ score...',
 ];
 
 interface IQAnalyzingScreenProps {

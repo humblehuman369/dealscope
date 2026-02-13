@@ -192,15 +192,15 @@ export default function SearchScreen() {
           <Text style={[styles.tipsTitle, dynamicStyles.tipsTitle]}>Search Tips</Text>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={[styles.tipText, dynamicStyles.tipText]}>Include street number and name</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Use a full address with city, state, and ZIP</Text>
           </View>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={[styles.tipText, dynamicStyles.tipText]}>Add city, state, and ZIP code</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Include unit or apt number if applicable</Text>
           </View>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={[styles.tipText, dynamicStyles.tipText]}>Use full address for best results</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Double-check spelling for best results</Text>
           </View>
         </View>
       </ScrollView>

@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'System',
     fontWeight: '700',
-    fontSize: 28,
+    fontSize: 24,
     marginBottom: 12,
     letterSpacing: -0.5,
   },

@@ -179,7 +179,7 @@ export default function LoginScreen() {
           {/* Title */}
           <View style={{ marginBottom: 32, alignItems: 'center' }}>
             <Text style={{ fontSize: 28, fontWeight: '800', color: textColor }}>
-              DealHub<Text style={{ color: accentColor }}>IQ</Text>
+              Invest<Text style={{ color: accentColor }}>IQ</Text>
             </Text>
             <Text style={{ fontSize: 15, color: mutedColor, marginTop: 6 }}>Sign in to your account</Text>
           </View>

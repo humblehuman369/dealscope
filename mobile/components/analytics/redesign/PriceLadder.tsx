@@ -71,7 +71,7 @@ export function PriceLadder({ rungs, isDark = true, isOffMarket = false, listing
         <View style={styles.leftSide}>
           {/* Seller Pricing Label */}
           <Text style={[styles.zoneLabel, { color: mutedColor }]}>
-            SELLER{'\n'}PRICING
+            SELLER ZONE
           </Text>
 
           {/* IQ Target - positioned on left side */}
@@ -193,7 +193,7 @@ export function PriceLadder({ rungs, isDark = true, isOffMarket = false, listing
           {/* Investor Opportunity Label */}
           <View style={styles.opportunityLabel}>
             <Text style={[styles.zoneLabel, { color: mutedColor, textAlign: 'right' }]}>
-              INVESTOR{'\n'}OPPORTUNITY
+              BUYER ZONE
             </Text>
           </View>
         </View>

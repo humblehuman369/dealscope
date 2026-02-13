@@ -26,7 +26,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'How do I analyze a property?',
-    answer: 'Point your phone camera at any property to scan it, or enter an address manually. InvestIQ will pull real market data and run a full financial analysis in about 60 seconds.',
+    answer: 'Point your phone camera at any property to scan it, or enter an address manually. InvestIQ pulls real market data and runs a full financial analysis in under 15 seconds.',
   },
   {
     category: 'Getting Started',

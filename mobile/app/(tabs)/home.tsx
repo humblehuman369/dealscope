@@ -186,7 +186,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <Text style={[s.heroNote, { color: c.dim }]}>
-              <Text style={{ fontWeight: '700', color: c.text }}>60-second analysis</Text>
+              <Text style={{ fontWeight: '700', color: c.text }}>&lt;60s analysis</Text>
               {'  ·  No credit card required'}
             </Text>
           </View>
@@ -194,9 +194,9 @@ export default function HomeScreen() {
           {/* ─── VERDICT DEMO ────────────────────────────────────────── */}
           <View style={[s.section, { backgroundColor: c.surface }]}>
             <Text style={[s.sLabel, { color: c.blue }]}>IQ Verdict</Text>
-            <Text style={[s.sTitle, { color: c.white }]}>One Scan. Four Signals.{'\n'}Your Answer.</Text>
+            <Text style={[s.sTitle, { color: c.white }]}>One Scan. Four Signals. Your Answer.</Text>
             <Text style={[s.sDesc, { color: c.text }]}>
-              InvestIQ evaluates every property in 60 seconds across four key factors that determine if a deal is worth pursuing.
+              InvestIQ evaluates every property across four key factors that determine if a deal is worth pursuing.
             </Text>
 
             <View style={s.signalGrid}>
@@ -215,7 +215,7 @@ export default function HomeScreen() {
             {/* Score ring demo */}
             <View style={[s.verdictDemo, { backgroundColor: c.panel, borderColor: c.border }]}>
               <Text style={[s.verdictQ, { color: c.white }]}>
-                Is this worth your time as an{'\n'}
+                Is this worth your time as an{' '}
                 <Text style={{ color: c.blue }}>investment?</Text>
               </Text>
               <View style={s.ringWrap}>
@@ -258,7 +258,7 @@ export default function HomeScreen() {
 
           {/* ─── CTA ─────────────────────────────────────────────────── */}
           <View style={[s.cta, { borderTopColor: c.border }]}>
-            <Text style={[s.ctaTitle, { color: c.white }]}>Stop wondering.{'\n'}Start knowing.</Text>
+            <Text style={[s.ctaTitle, { color: c.white }]}>Stop wondering. Start knowing.</Text>
             <Text style={[s.ctaDesc, { color: c.text }]}>
               Join thousands of serious investors using InvestIQ to uncover value others miss.
             </Text>
