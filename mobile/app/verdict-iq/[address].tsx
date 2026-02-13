@@ -26,6 +26,8 @@ import * as Haptics from 'expo-haptics';
 import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
 export { ErrorBoundary };
 
+import { VerdictSkeleton } from '../../components/Skeleton';
+import { useIsOnline } from '../../hooks/useNetworkStatus';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
 import {
@@ -223,6 +225,7 @@ export default function VerdictIQScreen() {
     city?: string; state?: string; zip?: string; status?: string; image?: string;
   }>();
 
+  const isOnline = useIsOnline();
   const [currentStrategy, setCurrentStrategy] = useState('Long-term Rental');
   const [selectedIQPrice, setSelectedIQPrice] = useState<IQPriceId>('target');
 
@@ -333,28 +336,36 @@ export default function VerdictIQScreen() {
     });
   }, [router, property, monthlyRent, lat, lng]);
 
-  // Loading
-  if (isLoading) {
+  // Loading — show skeleton instead of spinner
+  if (isLoading && !raw) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
-          <ActivityIndicator size="large" color={verdictDark.blue} />
-          <Text style={styles.loadingText}>Analyzing property...</Text>
-        </View>
+        <VerdictSkeleton />
       </>
     );
   }
 
-  // Error
-  if (error) {
+  // Error — differentiate offline vs server error
+  if (error && !raw) {
+    const isOffline = !isOnline;
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
-          <Ionicons name="alert-circle-outline" size={48} color={verdictDark.red} />
-          <Text style={styles.errorText}>Unable to analyze property</Text>
-          <Text style={styles.errorSub}>{error}</Text>
+          <Ionicons
+            name={isOffline ? 'cloud-offline-outline' : 'alert-circle-outline'}
+            size={48}
+            color={isOffline ? verdictDark.textSecondary : verdictDark.red}
+          />
+          <Text style={styles.errorText}>
+            {isOffline ? 'You\'re Offline' : 'Unable to analyze property'}
+          </Text>
+          <Text style={styles.errorSub}>
+            {isOffline
+              ? 'Connect to the internet to analyze this property.'
+              : error}
+          </Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => analysisResult.refetch()}>
             <Text style={styles.retryBtnText}>Try Again</Text>
           </TouchableOpacity>

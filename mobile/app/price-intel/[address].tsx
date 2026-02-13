@@ -7,6 +7,7 @@
 import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
 export { ErrorBoundary };
 
+import { useIsOnline } from '../../hooks/useNetworkStatus';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,

@@ -7,6 +7,8 @@
 import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
 export { ErrorBoundary };
 
+import { GenericSkeleton } from '../../components/Skeleton';
+import { useIsOnline } from '../../hooks/useNetworkStatus';
 import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
@@ -112,24 +114,13 @@ export default function DealGapScreen() {
     router.back();
   }, [router]);
 
+  const isOnline = useIsOnline();
+
   if (isLoading) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.container, { backgroundColor: bg }]}>
-          <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-            <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={24} color={textColor} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: textColor }]}>Deal Gap</Text>
-          </View>
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color={accentColor} />
-            <Text style={[styles.loadingText, { color: mutedColor }]}>
-              Analyzing property...
-            </Text>
-          </View>
-        </View>
+        <GenericSkeleton />
       </>
     );
   }
@@ -146,8 +137,14 @@ export default function DealGapScreen() {
             <Text style={[styles.headerTitle, { color: textColor }]}>Deal Gap</Text>
           </View>
           <View style={styles.errorWrap}>
-            <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
-            <Text style={[styles.errorText, { color: textColor }]}>{error}</Text>
+            <Ionicons
+              name={!isOnline ? 'cloud-offline-outline' : 'alert-circle-outline'}
+              size={48}
+              color={!isOnline ? mutedColor : '#ef4444'}
+            />
+            <Text style={[styles.errorText, { color: textColor }]}>
+              {!isOnline ? 'You\'re offline. Connect to analyze this property.' : error}
+            </Text>
             <TouchableOpacity style={[styles.retryBtn, { backgroundColor: accentColor }]} onPress={refetch}>
               <Text style={styles.retryBtnText}>Try Again</Text>
             </TouchableOpacity>
