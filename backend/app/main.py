@@ -109,16 +109,23 @@ async def lifespan(app: FastAPI):
             logger.info(f"Is Railway URL: {'railway' in db_url.lower()}")
             logger.info(f"Is production: {settings.is_production}")
     
-    # Create database tables if they don't exist
+    # Create database tables if they don't exist.
+    # Wrapped in asyncio.wait_for so a slow/unreachable DB doesn't block
+    # the entire lifespan — uvicorn can't accept connections until yield.
+    import asyncio
     if settings.DATABASE_URL:
         try:
-            from app.db.base import Base
-            from app.db.session import get_engine
-            engine = get_engine()
-            async with engine.begin() as conn:
-                import app.models  # noqa: F401 — register ALL models with SQLAlchemy
-                await conn.run_sync(Base.metadata.create_all)
+            async def _init_db():
+                from app.db.base import Base
+                from app.db.session import get_engine
+                engine = get_engine()
+                async with engine.begin() as conn:
+                    import app.models  # noqa: F401 — register ALL models
+                    await conn.run_sync(Base.metadata.create_all)
                 logger.info("Database tables created/verified successfully")
+            await asyncio.wait_for(_init_db(), timeout=15)
+        except asyncio.TimeoutError:
+            logger.error("Database table init timed out after 15s — continuing without DB verification")
         except Exception as e:
             logger.error(f"Failed to create database tables: {e}")
     
@@ -126,9 +133,10 @@ async def lifespan(app: FastAPI):
     # In production, wire these into a cron schedule (e.g. Railway cron, APScheduler).
     try:
         from app.tasks.cleanup import run_all_cleanup
-        import asyncio
-        cleanup_result = await run_all_cleanup()
+        cleanup_result = await asyncio.wait_for(run_all_cleanup(), timeout=15)
         logger.info(f"Startup cleanup completed: {cleanup_result}")
+    except asyncio.TimeoutError:
+        logger.warning("Startup cleanup timed out after 15s (non-fatal)")
     except Exception as e:
         logger.warning(f"Startup cleanup failed (non-fatal): {e}")
 
