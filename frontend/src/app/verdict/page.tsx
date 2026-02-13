@@ -504,11 +504,8 @@ function VerdictContent() {
     }
   }, [property, propertyIdParam, router])
 
-  // Handle export
-  const handleExport = useCallback(() => {
-    // TODO: Implement export functionality
-    console.log('Export clicked')
-  }, [])
+  // Export — deferred to Phase 4 (backend PDF exporter exists, frontend wiring pending)
+  // const handleExport = useCallback(() => {}, [])
 
   // Handle change terms - navigate to Deal Maker to adjust assumptions
   const handleChangeTerms = useCallback(() => {
@@ -616,7 +613,7 @@ function VerdictContent() {
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
 
-  // Signal indicators
+  // Signal indicators — only real data, no hardcoded values
   const of = analysis.opportunityFactors
   const dealGap = of?.dealGap ?? discountPct
   const urgency = of?.motivation ?? 50
@@ -625,7 +622,6 @@ function VerdictContent() {
     { label: 'Deal Gap', value: `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`, sub: dealGap >= 0 ? 'Favorable' : 'Difficult', color: dealGap >= 0 ? colors.brand.teal : colors.status.negative },
     { label: 'Urgency', value: urgency >= 70 ? 'High' : urgency >= 40 ? 'Medium' : 'Low', sub: `${Math.round(urgency)}/100`, color: urgency >= 70 ? colors.brand.teal : colors.brand.gold },
     { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
-    { label: 'Vacancy', value: '<5%', sub: 'Healthy', color: colors.status.positive },
   ]
 
   // Component scores from backend composite scorer (replaces frontend-computed values)
@@ -735,17 +731,28 @@ function VerdictContent() {
               ))}
             </div>
 
-            {/* Price Scale Bar */}
+            {/* Price Scale Bar — data-driven positions */}
             <div className="mt-6">
               <div className="flex justify-between mb-2">
                 <span className="text-[0.82rem] font-medium" style={{ color: colors.text.body }}>
                   Asking: <span className="font-bold" style={{ color: colors.status.negative }}>{fmtShort(property.price)}</span>
                 </span>
               </div>
-              <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}, ${colors.brand.blue}, ${colors.brand.gold})` }}>
-                <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: '50%', background: colors.brand.blue, boxShadow: `0 0 8px ${colors.brand.blue}80` }} />
-                <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: '90%', background: colors.status.negative, boxShadow: `0 0 6px ${colors.status.negative}60` }} />
-              </div>
+              {(() => {
+                // Calculate real positions based on actual price relationships
+                const scaleMin = wholesalePrice * 0.95
+                const scaleMax = Math.max(property.price * 1.08, breakevenPrice * 1.05)
+                const range = scaleMax - scaleMin
+                const clamp = (v: number) => Math.min(96, Math.max(4, ((v - scaleMin) / range) * 100))
+                const targetPos = clamp(purchasePrice)
+                const askingPos = clamp(property.price)
+                return (
+                  <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}, ${colors.brand.blue}, ${colors.brand.gold})` }}>
+                    <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: `${targetPos}%`, background: colors.brand.blue, boxShadow: `0 0 8px ${colors.brand.blue}80` }} />
+                    <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: `${askingPos}%`, background: colors.status.negative, boxShadow: `0 0 6px ${colors.status.negative}60` }} />
+                  </div>
+                )
+              })()}
               <div className="flex justify-between mt-2">
                 {['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶'].map((l, i) => (
                   <span key={i} className="text-[0.68rem] font-semibold" style={{ color: i === 3 ? colors.status.negative : colors.text.secondary }}>{l}</span>
@@ -770,7 +777,7 @@ function VerdictContent() {
           <section className="px-5 pb-6 border-t" style={{ borderColor: colors.ui.border }}>
             <div className="py-4">
               <span className="text-[0.68rem] font-bold uppercase tracking-wider block" style={{ color: colors.text.primary }}>Market Snapshot</span>
-              <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>The four signals from your 60-second screen</p>
+              <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>Key signals from your 60-second screen</p>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {signals.map((s, i) => (
@@ -800,12 +807,20 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* CTA → Strategy */}
+          {/* CTA → Strategy — copy adapts to verdict score */}
           <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
-            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>This deal passed the screen</p>
-            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>Now Prove It.</h2>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>
+              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : 'The numbers don\'t work at asking price'}
+            </p>
+            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>
+              {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
+            </h2>
             <p className="text-[0.95rem] leading-relaxed max-w-xs mx-auto mb-7" style={{ color: colors.text.body }}>
-              Get a full financial breakdown across 6 investment strategies — what you&apos;d pay, what you&apos;d earn, and whether the numbers actually work.
+              {score >= 65
+                ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
+                : score >= 40
+                ? 'The margins are tight, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
+                : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work.'}
             </p>
             <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
               style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>

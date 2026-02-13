@@ -458,7 +458,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               </p>
               <div className="os-bullet"><div className="os-dot b" /><p><strong>DealVaultIQ:</strong> Saves every photo, comp, and underwriting assumption forever.</p></div>
               <div className="os-bullet"><div className="os-dot g" /><p><strong>Side-by-Side:</strong> Compare Rental Cashflow vs. Flip Profit instantly for the same address.</p></div>
-              <div className="os-bullet"><div className="os-dot o" /><p><strong>Export:</strong> Generate PDF lender packages in one click.</p></div>
+              <div className="os-bullet"><div className="os-dot o" /><p><strong>Export:</strong> PDF lender packages coming soon — share analysis with your team.</p></div>
             </div>
           </div>
         </div>
@@ -521,7 +521,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
                 </svg>
               </div>
               <div className="tk-title">Report<span>IQ</span></div>
-              <p className="tk-text">Generate lender-ready PDF reports. Share with partners, lenders, or your investment team.</p>
+              <p className="tk-text">Lender-ready PDF reports are coming soon. Share with partners, lenders, or your investment team.</p>
             </div>
             <div className="toolkit-card">
               <div className="tk-icon bl">
@@ -544,7 +544,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       >
         <div className="cta-inner">
           <h2 className="cta-title">Stop wondering. Start knowing.</h2>
-          <p className="cta-desc">Join thousands of serious investors using InvestIQ to uncover value others miss.</p>
+          <p className="cta-desc">Built by the founder of Foreclosure.com. Now in beta — try it free and help shape what it becomes.</p>
           <button className="btn-cta" onClick={handleStartAnalysis}>Start Free Analysis</button>
         </div>
       </section>

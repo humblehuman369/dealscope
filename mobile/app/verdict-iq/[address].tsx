@@ -153,12 +153,12 @@ function buildSignalIndicators(
   raw: IQVerdictResponse | null,
   discountPercent: number
 ): SignalIndicator[] {
+  // Only include signals backed by real API data — no hardcoded values
   if (!raw || !raw.opportunityFactors) {
     return [
       { label: 'DEAL GAP', value: '—', status: 'N/A', color: 'negative' },
       { label: 'URGENCY', value: '—', status: 'N/A', color: 'amber' },
       { label: 'MARKET', value: '—', status: 'N/A', color: 'amber' },
-      { label: 'VACANCY', value: '<5%', status: 'Healthy', color: 'teal' },
     ];
   }
   const { dealGap, motivation, motivationLabel, buyerMarket } = raw.opportunityFactors;
@@ -173,11 +173,11 @@ function buildSignalIndicators(
     { label: 'DEAL GAP', value: gapValue, status: gapStatus, color: gapColor },
     { label: 'URGENCY', value: urgencyLabel, status: `${Math.round(motivation)}/100`, color: urgencyColor },
     { label: 'MARKET', value: marketLabel, status: motivationLabel || 'Active', color: marketColor },
-    { label: 'VACANCY', value: '<5%', status: 'Healthy', color: 'teal' },
   ];
 }
 
 function buildMarketTiles(indicators: SignalIndicator[]): MarketTile[] {
+  // Only real API-sourced signals — vacancy removed (no reliable data source)
   const colorMap: Record<string, 'red' | 'gold' | 'teal' | 'green'> = {
     negative: 'red',
     amber: 'gold',
@@ -201,12 +201,6 @@ function buildMarketTiles(indicators: SignalIndicator[]): MarketTile[] {
       subLabel: indicators[2]?.status ?? 'N/A',
       value: indicators[2]?.value ?? '—',
       color: colorMap[indicators[2]?.color ?? 'teal'] ?? 'teal',
-    },
-    {
-      label: 'Vacancy',
-      subLabel: indicators[3]?.status ?? 'Healthy',
-      value: indicators[3]?.value ?? '<5%',
-      color: 'green',
     },
   ];
 }
@@ -501,15 +495,24 @@ export default function VerdictIQScreen() {
               onHowCalculated={handleHowCalculated}
             />
 
-            {/* Price Scale */}
+            {/* Price Scale — data-driven positions */}
             <View style={styles.scaleWrap}>
-              <PriceScale
-                askingPriceLabel={formatCurrency(listPrice)}
-                targetPosition={0.5}
-                askingPosition={0.95}
-                labels={['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶']}
-                termsNote="20% down · 6.0% rate · 30-year term"
-              />
+              {(() => {
+                // Calculate real positions based on actual price relationships
+                const scaleMin = wholesalePrice * 0.95;
+                const scaleMax = Math.max(listPrice * 1.08, breakevenPrice * 1.05);
+                const range = scaleMax - scaleMin;
+                const clamp = (v: number) => Math.min(0.96, Math.max(0.04, (v - scaleMin) / range));
+                return (
+                  <PriceScale
+                    askingPriceLabel={formatCurrency(listPrice)}
+                    targetPosition={clamp(targetPrice)}
+                    askingPosition={clamp(listPrice)}
+                    labels={['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶']}
+                    termsNote="20% down · 6.0% rate · 30-year term"
+                  />
+                );
+              })()}
             </View>
           </View>
 
