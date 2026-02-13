@@ -28,7 +28,14 @@ export function SaveCTA({
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
-      <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.85}>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={onPress} 
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={buttonLabel}
+        accessibilityHint="Creates a free account to save this property analysis"
+      >
         <Text style={styles.buttonText}>{buttonLabel}</Text>
       </TouchableOpacity>
       {note && <Text style={styles.note}>{note}</Text>}

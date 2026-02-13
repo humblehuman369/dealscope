@@ -87,10 +87,10 @@ export default function SearchScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={[styles.header, dynamicStyles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack} accessibilityRole="button" accessibilityLabel="Go back">
           <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>Search Property</Text>
+        <Text accessibilityRole="header" style={[styles.headerTitle, dynamicStyles.headerTitle]}>Search Property</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -119,11 +119,15 @@ export default function SearchScreen() {
               autoCorrect={false}
               returnKeyType="search"
               onSubmitEditing={handleSearch}
+              accessibilityLabel="Search for properties"
+              accessibilityHint="Enter a full property address to analyze"
             />
             {address.length > 0 && (
               <TouchableOpacity
                 style={styles.clearButton}
                 onPress={() => setAddress('')}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search input"
               >
                 <Ionicons name="close-circle" size={20} color={dynamicStyles.inputIcon} />
               </TouchableOpacity>
@@ -147,6 +151,9 @@ export default function SearchScreen() {
             onPress={handleSearch}
             disabled={!address.trim() || isSearching}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Search property"
+            accessibilityState={{ disabled: !address.trim() || isSearching, busy: isSearching }}
           >
             {isSearching ? (
               <ActivityIndicator color="#fff" size="small" />
@@ -168,6 +175,8 @@ export default function SearchScreen() {
               style={[styles.exampleItem, dynamicStyles.exampleItem]}
               onPress={() => setAddress(example)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Use example: ${example}`}
             >
               <Ionicons name="home-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
               <Text style={[styles.exampleText, dynamicStyles.exampleText]} numberOfLines={1}>

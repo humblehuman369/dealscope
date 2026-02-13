@@ -131,10 +131,16 @@ export default function DealGapScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.container, { backgroundColor: bg }]}>
           <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-            <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+            <TouchableOpacity 
+              onPress={handleBack} 
+              style={styles.backBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              accessibilityHint="Returns to the previous screen"
+            >
               <Ionicons name="arrow-back" size={24} color={textColor} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: textColor }]}>Deal Gap</Text>
+            <Text style={[styles.headerTitle, { color: textColor }]} accessibilityRole="header">Deal Gap</Text>
           </View>
           <View style={styles.errorWrap}>
             <Ionicons
@@ -145,7 +151,13 @@ export default function DealGapScreen() {
             <Text style={[styles.errorText, { color: textColor }]}>
               {!isOnline ? 'You\'re offline. Connect to analyze this property.' : error}
             </Text>
-            <TouchableOpacity style={[styles.retryBtn, { backgroundColor: accentColor }]} onPress={refetch}>
+            <TouchableOpacity 
+              style={[styles.retryBtn, { backgroundColor: accentColor }]} 
+              onPress={refetch}
+              accessibilityRole="button"
+              accessibilityLabel="Try again"
+              accessibilityHint="Retries loading the deal gap analysis"
+            >
               <Text style={styles.retryBtnText}>Try Again</Text>
             </TouchableOpacity>
           </View>
@@ -169,10 +181,16 @@ export default function DealGapScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.container, { backgroundColor: bg }]}>
         <View style={[styles.header, { paddingTop: insets.top + 16, borderBottomColor: borderColor }]}>
-          <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+          <TouchableOpacity 
+            onPress={handleBack} 
+            style={styles.backBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            accessibilityHint="Returns to the previous screen"
+          >
             <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>Deal Gap</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]} accessibilityRole="header">Deal Gap</Text>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -231,6 +249,10 @@ export default function DealGapScreen() {
               minimumTrackTintColor={accentColor}
               maximumTrackTintColor={borderColor}
               thumbTintColor={accentColor}
+              accessibilityRole="adjustable"
+              accessibilityLabel="Buy price percentage"
+              accessibilityHint={`Adjust buy price percentage. Current value is ${buyPricePercent} percent`}
+              accessibilityValue={{ min: 50, max: 100, now: buyPricePercent }}
             />
           </View>
 
@@ -255,7 +277,10 @@ export default function DealGapScreen() {
                 </Text>
               </View>
               <View style={styles.scoreDetails}>
-                <Text style={[styles.scoreValue, { color: textColor }]}>
+                <Text 
+                  style={[styles.scoreValue, { color: textColor }]}
+                  accessibilityLabel={`Deal score ${estimatedScore} out of 100, estimated at ${formatPrice(buyPrice)}`}
+                >
                   {estimatedScore}/100 (est. at {formatPrice(buyPrice)})
                 </Text>
                 <Text style={[styles.scoreLabel, { color: mutedColor }]}>

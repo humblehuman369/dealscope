@@ -20,16 +20,37 @@ export function ActionBar({ currentStrategy, onExport, onChangeTerms, onStrategy
   return (
     <View style={styles.container}>
       <View style={styles.leftButtons}>
-        <TouchableOpacity style={styles.ctxBtn} onPress={onExport} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.ctxBtn} 
+          onPress={onExport} 
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Share analysis"
+          accessibilityHint="Exports and shares the financial analysis"
+        >
           <Ionicons name="download-outline" size={rf(13)} color={verdictDark.textBody} />
           <Text style={styles.ctxBtnText}>Export</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.ctxBtn} onPress={onChangeTerms} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.ctxBtn} 
+          onPress={onChangeTerms} 
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Change terms"
+          accessibilityHint="Opens the worksheet to adjust financing terms"
+        >
           <Ionicons name="options-outline" size={rf(13)} color={verdictDark.textBody} />
           <Text style={styles.ctxBtnText}>Change Terms</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.strategyPill} onPress={onStrategyPress} activeOpacity={0.7}>
+      <TouchableOpacity 
+        style={styles.strategyPill} 
+        onPress={onStrategyPress} 
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Strategy selector, current strategy: ${currentStrategy}`}
+        accessibilityHint="Opens strategy selection menu"
+      >
         <Text style={styles.strategyText}>{currentStrategy}</Text>
         <Ionicons name="chevron-down" size={rf(12)} color={verdictDark.blue} />
       </TouchableOpacity>

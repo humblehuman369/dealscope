@@ -146,7 +146,7 @@ export default function DashboardScreen() {
       >
         {/* Header */}
         <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: textColor }}>
+          <Text accessibilityRole="header" style={{ fontSize: 24, fontWeight: '800', color: textColor }}>
             Welcome, {firstName}
           </Text>
           <Text style={{ fontSize: 14, color: mutedColor, marginTop: 2 }}>
@@ -184,7 +184,7 @@ export default function DashboardScreen() {
 
         {/* Recent Properties */}
         <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Properties</Text>
+          <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Properties</Text>
           {savedProperties && savedProperties.length > 0 ? (
             savedProperties.map((p) => (
               <View key={p.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: borderColor }}>
@@ -207,7 +207,7 @@ export default function DashboardScreen() {
 
         {/* Recent Searches */}
         <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Searches</Text>
+          <Text accessibilityRole="header" style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Searches</Text>
           {recentSearches && recentSearches.length > 0 ? (
             recentSearches.map((s) => (
               <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
@@ -237,7 +237,7 @@ function MetricCard({ icon, label, value, color, bg, textColor, mutedColor, bord
   bg: string; textColor: string; mutedColor: string; borderColor: string;
 }) {
   return (
-    <View style={{ flex: 1, minWidth: '45%', backgroundColor: bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor }}>
+    <View accessibilityLabel={`${label}: ${value}`} style={{ flex: 1, minWidth: '45%', backgroundColor: bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <Ionicons name={icon as any} size={18} color={color} />
         <Text style={{ fontSize: 11, fontWeight: '600', color: mutedColor, textTransform: 'uppercase' }}>{label}</Text>

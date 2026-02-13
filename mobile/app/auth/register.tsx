@@ -84,7 +84,7 @@ export default function RegisterScreen() {
       <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
         <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 32, borderWidth: 1, borderColor, alignItems: 'center', width: '100%' }}>
           <Ionicons name="checkmark-circle" size={56} color="#22c55e" />
-          <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, marginTop: 16, textAlign: 'center' }}>
+          <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '700', color: textColor, marginTop: 16, textAlign: 'center' }}>
             {requiresVerification ? 'Check your email' : 'Account created'}
           </Text>
           <Text style={{ fontSize: 14, color: mutedColor, marginTop: 8, textAlign: 'center', lineHeight: 20 }}>
@@ -94,6 +94,8 @@ export default function RegisterScreen() {
           </Text>
           <TouchableOpacity
             onPress={() => router.replace('/auth/login')}
+            accessibilityRole="button"
+            accessibilityLabel={requiresVerification ? "Go to sign in" : "Sign in now"}
             style={{ marginTop: 24, backgroundColor: accentColor, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
           >
             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
@@ -111,13 +113,13 @@ export default function RegisterScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
 
           {/* Back button */}
-          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 20 }}>
+          <TouchableOpacity onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 20 }}>
             <Ionicons name="arrow-back" size={20} color={mutedColor} />
             <Text style={{ fontSize: 14, color: mutedColor }}>Back</Text>
           </TouchableOpacity>
 
           <View style={{ marginBottom: 24, alignItems: 'center' }}>
-            <Text style={{ fontSize: 24, fontWeight: '800', color: textColor }}>Create Account</Text>
+            <Text accessibilityRole="header" style={{ fontSize: 24, fontWeight: '800', color: textColor }}>Create Account</Text>
             <Text style={{ fontSize: 14, color: mutedColor, marginTop: 4 }}>Start analyzing investment deals</Text>
           </View>
 
@@ -133,22 +135,22 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Full Name</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
               <Ionicons name="person-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={fullName} onChangeText={setFullName} placeholder="John Doe" placeholderTextColor={mutedColor} autoComplete="name" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput value={fullName} onChangeText={setFullName} placeholder="John Doe" placeholderTextColor={mutedColor} autoComplete="name" accessibilityLabel="Full name" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Email */}
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Email</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
               <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={mutedColor} autoCapitalize="none" keyboardType="email-address" autoComplete="email" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={mutedColor} autoCapitalize="none" keyboardType="email-address" autoComplete="email" accessibilityLabel="Email address" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Password */}
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Password</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 8 }}>
               <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={password} onChangeText={setPassword} placeholder="Create a strong password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingRight: 14 }}>
+              <TextInput value={password} onChangeText={setPassword} placeholder="Create a strong password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} accessibilityRole="button" accessibilityLabel={showPassword ? "Hide password" : "Show password"} style={{ paddingRight: 14 }}>
                 <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={mutedColor} />
               </TouchableOpacity>
             </View>
@@ -169,13 +171,16 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Confirm Password</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 20 }}>
               <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Confirm password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Submit */}
             <TouchableOpacity
               onPress={handleRegister}
               disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Create account"
+              accessibilityState={{ disabled: isLoading }}
               style={{ backgroundColor: accentColor, borderRadius: 12, padding: 16, alignItems: 'center', opacity: isLoading ? 0.6 : 1 }}
             >
               {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Create Account</Text>}
@@ -189,7 +194,7 @@ export default function RegisterScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, gap: 4 }}>
             <Text style={{ fontSize: 14, color: mutedColor }}>Already have an account?</Text>
             <Link href="/auth/login" asChild>
-              <TouchableOpacity>
+              <TouchableOpacity accessibilityRole="link" accessibilityLabel="Sign in to existing account">
                 <Text style={{ fontSize: 14, color: accentColor, fontWeight: '600' }}>Sign in</Text>
               </TouchableOpacity>
             </Link>

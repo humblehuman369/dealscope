@@ -119,6 +119,8 @@ export default function LoginScreen() {
                 keyboardType="number-pad"
                 maxLength={6}
                 autoFocus
+                accessibilityLabel="Two-factor authentication code"
+                accessibilityHint="Enter the 6 digit code from your authenticator app"
                 style={{
                   backgroundColor: inputBg,
                   borderRadius: 12,
@@ -144,6 +146,9 @@ export default function LoginScreen() {
                   alignItems: 'center',
                   opacity: isLoading || mfaCode.length !== 6 ? 0.5 : 1,
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="Verify authentication code"
+                accessibilityState={{ disabled: isLoading || mfaCode.length !== 6 }}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
@@ -189,9 +194,9 @@ export default function LoginScreen() {
             )}
 
             {/* Email */}
-            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Email</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }} accessibilityRole="text">Email</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
-              <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} accessibilityElementsHidden />
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -201,13 +206,15 @@ export default function LoginScreen() {
                 keyboardType="email-address"
                 autoComplete="email"
                 style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
+                accessibilityLabel="Email address"
+                textContentType="emailAddress"
               />
             </View>
 
             {/* Password */}
-            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Password</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }} accessibilityRole="text">Password</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 12 }}>
-              <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} accessibilityElementsHidden />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -216,19 +223,21 @@ export default function LoginScreen() {
                 secureTextEntry={!showPassword}
                 autoComplete="password"
                 style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
+                accessibilityLabel="Password"
+                textContentType="password"
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingRight: 14 }}>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingRight: 14 }} accessibilityRole="button" accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}>
                 <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={mutedColor} />
               </TouchableOpacity>
             </View>
 
             {/* Remember me + Forgot */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} accessibilityRole="checkbox" accessibilityLabel="Remember me" accessibilityState={{ checked: rememberMe }}>
                 <Ionicons name={rememberMe ? 'checkbox' : 'square-outline'} size={20} color={rememberMe ? accentColor : mutedColor} />
                 <Text style={{ fontSize: 13, color: mutedColor }}>Remember me</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleForgotPassword}>
+              <TouchableOpacity onPress={handleForgotPassword} accessibilityRole="link" accessibilityLabel="Forgot password">
                 <Text style={{ fontSize: 13, color: accentColor }}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
@@ -244,6 +253,9 @@ export default function LoginScreen() {
                 alignItems: 'center',
                 opacity: isLoading ? 0.6 : 1,
               }}
+              accessibilityRole="button"
+              accessibilityLabel={isLoading ? 'Signing in' : 'Sign In'}
+              accessibilityState={{ disabled: isLoading, busy: isLoading }}
             >
               {isLoading ? (
                 <ActivityIndicator color="#fff" />

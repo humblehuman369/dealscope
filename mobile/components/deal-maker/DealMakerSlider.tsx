@@ -216,6 +216,7 @@ export function DealMakerSlider({
               returnKeyType="done"
               selectTextOnFocus
               autoFocus
+              accessibilityLabel={`Edit ${config.label}`}
             />
             {config.format === 'percentage' && (
               <Text style={styles.inputSuffix}>%</Text>
@@ -231,7 +232,12 @@ export function DealMakerSlider({
             )}
           </View>
         ) : (
-          <TouchableOpacity onPress={handleValuePress} activeOpacity={0.6}>
+          <TouchableOpacity 
+            onPress={handleValuePress} 
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel={`${config.label}, ${formattedValue}. Double tap to edit`}
+          >
             <Text style={styles.inputValue}>{formattedValue}</Text>
           </TouchableOpacity>
         )}
@@ -251,6 +257,9 @@ export function DealMakerSlider({
           maximumTrackTintColor="#E2E8F0"
           thumbTintColor={Platform.OS === 'android' ? '#0891B2' : undefined}
           tapToSeek={true}
+          accessibilityLabel={config.label}
+          accessibilityValue={{ min: config.min, max: config.max, now: localValue, text: formattedValue }}
+          accessibilityRole="adjustable"
         />
       </View>
 
@@ -294,6 +303,8 @@ export function DealMakerSlider({
           onPress={handleReset} 
           style={styles.resetButton}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Reset to default value"
         >
           <Text style={styles.resetIcon}>↺</Text>
           <Text style={styles.resetText}>Reset to IQ Default</Text>

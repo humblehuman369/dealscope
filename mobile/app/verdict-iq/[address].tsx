@@ -389,7 +389,13 @@ export default function VerdictIQScreen() {
               ? 'Connect to the internet to analyze this property.'
               : error}
           </Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => analysisResult.refetch()}>
+          <TouchableOpacity 
+            style={styles.retryBtn} 
+            onPress={() => analysisResult.refetch()}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+            accessibilityHint="Retries the property analysis"
+          >
             <Text style={styles.retryBtnText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -407,10 +413,19 @@ export default function VerdictIQScreen() {
             Invest<Text style={styles.logoIQ}>IQ</Text>
           </Text>
           <View style={styles.navRight}>
-            <TouchableOpacity onPress={() => router.push('/search')}>
+            <TouchableOpacity 
+              onPress={() => router.push('/search')}
+              accessibilityRole="button"
+              accessibilityLabel="Search"
+              accessibilityHint="Opens the search screen"
+            >
               <Ionicons name="search-outline" size={rf(21)} color={verdictDark.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Profile"
+              accessibilityHint="Opens your profile"
+            >
               <Ionicons name="person-outline" size={rf(21)} color={verdictDark.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -428,11 +443,22 @@ export default function VerdictIQScreen() {
             </View>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleShare}>
+            <TouchableOpacity 
+              style={styles.saveBtn} 
+              onPress={handleShare}
+              accessibilityRole="button"
+              accessibilityLabel="Share analysis"
+              accessibilityHint="Shares this property analysis"
+            >
               <Ionicons name="share-outline" size={rf(14)} color={verdictDark.textBody} />
               <Text style={styles.saveBtnText}>Share</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn}>
+            <TouchableOpacity 
+              style={styles.saveBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Save property"
+              accessibilityHint="Saves this property to your list"
+            >
               <Ionicons name="bookmark-outline" size={rf(14)} color={verdictDark.textBody} />
               <Text style={styles.saveBtnText}>Save</Text>
             </TouchableOpacity>
@@ -457,7 +483,7 @@ export default function VerdictIQScreen() {
           {/* Price Targets */}
           <View style={styles.zonesSection}>
             <Text style={styles.sectionLabel}>PRICE TARGETS</Text>
-            <Text style={styles.zonesTitle}>What Should You Pay?</Text>
+            <Text style={styles.zonesTitle} accessibilityRole="header">What Should You Pay?</Text>
             <Text style={styles.zonesSub}>
               Every investment property has three price levels. These tell you exactly when a deal starts making money.
             </Text>

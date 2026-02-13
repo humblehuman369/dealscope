@@ -218,11 +218,11 @@ export default function ScanScreen() {
     return (
       <View style={[styles.permissionContainer, { backgroundColor: theme.background }]}>
         <Ionicons name="camera-outline" size={64} color={theme.textMuted} />
-        <Text style={[styles.permissionTitle, { color: theme.text }]}>Camera Access Required</Text>
-        <Text style={[styles.permissionText, { color: theme.textSecondary }]}>
+        <Text accessibilityRole="header" style={[styles.permissionTitle, { color: theme.text }]}>Camera Access Required</Text>
+        <Text accessibilityRole="text" style={[styles.permissionText, { color: theme.textSecondary }]}>
           InvestIQ needs camera access to scan properties and provide instant investment analytics.
         </Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission} accessibilityRole="button" accessibilityLabel="Enable camera access">
           <Text style={styles.permissionButtonText}>Enable Camera</Text>
         </TouchableOpacity>
       </View>
@@ -245,6 +245,9 @@ export default function ScanScreen() {
               <TouchableOpacity 
                 style={styles.helpButton}
                 onPress={() => setShowHelp(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Help"
+                accessibilityHint="Opens scanner help guide"
               >
                 <Ionicons name="help-circle-outline" size={20} color="#fff" />
               </TouchableOpacity>
@@ -252,6 +255,8 @@ export default function ScanScreen() {
                 <TouchableOpacity 
                   style={styles.calibrationWarning}
                   onPress={() => setShowCalibration(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Calibration needed"
                 >
                   <Ionicons name="warning" size={14} color={colors.loss.main} />
                 </TouchableOpacity>
@@ -259,6 +264,8 @@ export default function ScanScreen() {
               <TouchableOpacity 
                 style={styles.settingsButton}
                 onPress={() => setShowCalibration(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Scanner settings"
               >
                 <Ionicons name="settings-outline" size={18} color="#fff" />
               </TouchableOpacity>
@@ -309,6 +316,8 @@ export default function ScanScreen() {
                 router.push('/search');
               }}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Search for property by address"
             >
               <Ionicons name="search-outline" size={20} color="#fff" />
               <Text style={styles.secondaryButtonText}>SEARCH</Text>
@@ -325,6 +334,10 @@ export default function ScanScreen() {
                 onPress={handleScan}
                 disabled={isScanning || !scanner.isLocationReady}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={isScanning ? "Analyzing property" : !scanner.isLocationReady ? "Scanner initializing, please wait" : "Scan property"}
+                accessibilityHint="Scans the property you are pointing at"
+                accessibilityState={{ disabled: isScanning || !scanner.isLocationReady, busy: isScanning }}
               >
                 {isScanning ? (
                   <View style={styles.scanningIndicator}>
@@ -425,6 +438,8 @@ export default function ScanScreen() {
               style={styles.errorContainer}
               onPress={clearError}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`Error: ${error || scanner.error}. Tap to dismiss`}
             >
               <View style={styles.errorContent}>
                 <Ionicons name="alert-circle" size={18} color={colors.loss.main} />

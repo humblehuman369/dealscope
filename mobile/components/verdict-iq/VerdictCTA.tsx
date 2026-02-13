@@ -29,7 +29,14 @@ export function VerdictCTA({
       <Text style={styles.headline}>{headline}</Text>
       <Text style={styles.body}>{body}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.85}>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={onPress} 
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={buttonLabel}
+        accessibilityHint="Opens the StrategyIQ screen with detailed financial breakdown"
+      >
         <Text style={styles.buttonText}>{buttonLabel}</Text>
         <Ionicons name="chevron-forward" size={rf(18)} color={verdictDark.white} />
       </TouchableOpacity>

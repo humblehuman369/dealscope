@@ -82,16 +82,22 @@ export default function FilterBar({
           },
         ]}
       >
-        <Ionicons name="search" size={18} color={theme.textMuted} />
+        <Ionicons name="search" size={18} color={theme.textMuted} accessibilityElementsHidden />
         <TextInput
           style={[styles.searchInput, { color: theme.text }]}
           placeholder="Search properties..."
           placeholderTextColor={theme.textMuted}
           value={searchQuery}
           onChangeText={onSearchChange}
+          accessibilityLabel="Search properties"
+          accessibilityHint="Type to filter properties by name or address"
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange('')}>
+          <TouchableOpacity
+            onPress={() => onSearchChange('')}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+          >
             <Ionicons name="close-circle" size={18} color={theme.textMuted} />
           </TouchableOpacity>
         )}
@@ -119,6 +125,9 @@ export default function FilterBar({
               },
             ]}
             onPress={() => handleStatusPress(null)}
+            accessibilityRole="button"
+            accessibilityLabel="All statuses"
+            accessibilityState={{ selected: selectedStatus === null }}
           >
             <Text
               style={[
@@ -149,6 +158,9 @@ export default function FilterBar({
                 },
               ]}
               onPress={() => handleStatusPress(status)}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by ${PROPERTY_STATUS_LABELS[status]}`}
+              accessibilityState={{ selected: selectedStatus === status }}
             >
               <Text
                 style={[
@@ -173,6 +185,9 @@ export default function FilterBar({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setShowSortModal(true);
           }}
+          accessibilityRole="button"
+          accessibilityLabel={`Sort by ${getCurrentSortLabel()}, ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
+          accessibilityHint="Double tap to change sort order"
         >
           <Ionicons
             name={sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'}
@@ -217,6 +232,9 @@ export default function FilterBar({
                   },
                 ]}
                 onPress={() => handleSortSelect(option.value)}
+                accessibilityRole="menuitem"
+                accessibilityLabel={`Sort by ${option.label}${sortBy === option.value ? ', currently selected, ' + (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
+                accessibilityState={{ selected: sortBy === option.value }}
               >
                 <Text
                   style={[

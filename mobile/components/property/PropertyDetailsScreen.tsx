@@ -263,7 +263,7 @@ export function PropertyDetailsScreen({
       {/* Dark Header */}
       <View style={styles.darkHeader}>
         <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+          <TouchableOpacity style={styles.backBtn} onPress={handleBack} accessibilityRole="button" accessibilityLabel="Go back">
             <Ionicons name="chevron-back" size={20} color="rgba(255,255,255,0.8)" />
           </TouchableOpacity>
 
@@ -279,6 +279,8 @@ export function PropertyDetailsScreen({
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setIsStrategyOpen(!isStrategyOpen);
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Strategy: ${currentStrategy}. Tap to change`}
               >
                 <Text style={styles.strategyPillText}>{currentStrategy}</Text>
                 <Ionicons 
@@ -386,6 +388,9 @@ export function PropertyDetailsScreen({
             key={item.id}
             style={[styles.navBtn, activeNav === item.id && styles.navBtnActive]}
             onPress={() => handleNavClick(item.id)}
+            accessibilityRole="button"
+            accessibilityLabel={item.label}
+            accessibilityState={{ selected: activeNav === item.id }}
           >
             <Ionicons 
               name={item.icon} 
@@ -412,12 +417,16 @@ export function PropertyDetailsScreen({
             <TouchableOpacity 
               style={[styles.imageNav, styles.imageNavPrev]}
               onPress={() => setCurrentImageIndex(i => Math.max(0, i - 1))}
+              accessibilityRole="button"
+              accessibilityLabel="Previous image"
             >
               <Ionicons name="chevron-back" size={16} color={COLORS.navy} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.imageNav, styles.imageNavNext]}
               onPress={() => setCurrentImageIndex(i => Math.min((property.images?.length || 1) - 1, i + 1))}
+              accessibilityRole="button"
+              accessibilityLabel="Next image"
             >
               <Ionicons name="chevron-forward" size={16} color={COLORS.navy} />
             </TouchableOpacity>
@@ -451,6 +460,9 @@ export function PropertyDetailsScreen({
           <TouchableOpacity 
             style={styles.accordionHeader}
             onPress={() => toggleSection('facts')}
+            accessibilityRole="button"
+            accessibilityLabel={`Property Facts, ${expandedSections.facts ? 'expanded' : 'collapsed'}`}
+            accessibilityState={{ expanded: expandedSections.facts }}
           >
             <Ionicons name="grid-outline" size={24} color={COLORS.teal} />
             <Text style={styles.accordionTitle}>Property Facts</Text>
@@ -506,6 +518,9 @@ export function PropertyDetailsScreen({
           <TouchableOpacity 
             style={styles.accordionHeader}
             onPress={() => toggleSection('features')}
+            accessibilityRole="button"
+            accessibilityLabel={`Features and Amenities, ${expandedSections.features ? 'expanded' : 'collapsed'}`}
+            accessibilityState={{ expanded: expandedSections.features }}
           >
             <Ionicons name="list-outline" size={24} color={COLORS.teal} />
             <Text style={styles.accordionTitle}>Features & Amenities</Text>
@@ -545,6 +560,9 @@ export function PropertyDetailsScreen({
           <TouchableOpacity 
             style={styles.accordionHeader}
             onPress={() => toggleSection('location')}
+            accessibilityRole="button"
+            accessibilityLabel={`Location, ${expandedSections.location ? 'expanded' : 'collapsed'}`}
+            accessibilityState={{ expanded: expandedSections.location }}
           >
             <Ionicons name="location-outline" size={24} color={COLORS.teal} />
             <Text style={styles.accordionTitle}>Location</Text>
@@ -595,19 +613,19 @@ export function PropertyDetailsScreen({
 
       {/* Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleBack}>
+        <TouchableOpacity style={styles.actionBtn} onPress={handleBack} accessibilityRole="button" accessibilityLabel="Search for another property">
           <Ionicons name="search-outline" size={20} color={COLORS.surface500} />
           <Text style={styles.actionBtnLabel}>Search</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={onSave}>
+        <TouchableOpacity style={styles.actionBtn} onPress={onSave} accessibilityRole="button" accessibilityLabel="Save property">
           <Ionicons name="heart-outline" size={20} color={COLORS.surface500} />
           <Text style={styles.actionBtnLabel}>Save</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.analyzeBtn} onPress={handleAnalyze}>
+        <TouchableOpacity style={styles.analyzeBtn} onPress={handleAnalyze} accessibilityRole="button" accessibilityLabel="Analyze property">
           <Ionicons name="bar-chart-outline" size={18} color={COLORS.white} />
           <Text style={styles.analyzeBtnText}>Analyze Property</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={onShare}>
+        <TouchableOpacity style={styles.actionBtn} onPress={onShare} accessibilityRole="button" accessibilityLabel="Share property">
           <Ionicons name="share-social-outline" size={20} color={COLORS.surface500} />
           <Text style={styles.actionBtnLabel}>Share</Text>
         </TouchableOpacity>

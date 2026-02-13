@@ -332,10 +332,10 @@ export default function ProfileScreen() {
     >
       {/* Header */}
       <View style={[styles.header, dynamicStyles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
           <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, dynamicStyles.title]}>Profile</Text>
+        <Text accessibilityRole="header" style={[styles.title, dynamicStyles.title]}>Profile</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -352,6 +352,7 @@ export default function ProfileScreen() {
                 onChangeText={setFullName}
                 placeholder="Enter your name"
                 placeholderTextColor={theme.textMuted}
+                accessibilityLabel="Full name"
               />
             </View>
 
@@ -373,6 +374,7 @@ export default function ProfileScreen() {
                 onChangeText={setBusinessName}
                 placeholder="Your company name"
                 placeholderTextColor={theme.textMuted}
+                accessibilityLabel="Business name"
               />
             </View>
 
@@ -384,6 +386,7 @@ export default function ProfileScreen() {
                 onChangeText={setBusinessType}
                 placeholder="e.g., LLC, Sole Proprietor"
                 placeholderTextColor={theme.textMuted}
+                accessibilityLabel="Business type"
               />
             </View>
 
@@ -398,6 +401,7 @@ export default function ProfileScreen() {
                 onChangeText={setBusinessStreet}
                 placeholder="Street Address"
                 placeholderTextColor={theme.textMuted}
+                accessibilityLabel="Business street address"
               />
             </View>
             <View style={styles.fieldRow}>
@@ -408,11 +412,14 @@ export default function ProfileScreen() {
                   onChangeText={setBusinessCity}
                   placeholder="City"
                   placeholderTextColor={theme.textMuted}
+                  accessibilityLabel="Business city"
                 />
               </View>
               <TouchableOpacity 
                 style={[styles.field, { flex: 1 }]}
                 onPress={() => openStateModal('business')}
+                accessibilityRole="button"
+                accessibilityLabel={`Business state: ${businessState || 'not selected'}`}
               >
                 <View style={[styles.input, dynamicStyles.input, styles.dropdownInput]}>
                   <Text style={{ color: businessState ? theme.text : theme.textMuted }}>
@@ -430,6 +437,7 @@ export default function ProfileScreen() {
                 placeholder="ZIP Code"
                 placeholderTextColor={theme.textMuted}
                 keyboardType="numeric"
+                accessibilityLabel="Business ZIP code"
               />
             </View>
 
@@ -438,7 +446,7 @@ export default function ProfileScreen() {
             {/* Phone Numbers */}
             <View style={styles.rowBetween}>
               <Text style={[styles.subSectionTitle, { color: theme.text }]}>Phone Numbers</Text>
-              <TouchableOpacity onPress={addPhoneNumber}>
+              <TouchableOpacity onPress={addPhoneNumber} accessibilityRole="button" accessibilityLabel="Add phone number">
                 <Text style={{ color: colors.primary[500], fontWeight: '600' }}>+ Add</Text>
               </TouchableOpacity>
             </View>
@@ -477,7 +485,7 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => removePhoneNumber(index)} style={styles.deleteButton}>
+                <TouchableOpacity onPress={() => removePhoneNumber(index)} style={styles.deleteButton} accessibilityRole="button" accessibilityLabel="Remove phone number">
                   <Ionicons name="trash-outline" size={20} color={colors.loss.main} />
                 </TouchableOpacity>
               </View>
@@ -579,6 +587,7 @@ export default function ProfileScreen() {
                 placeholderTextColor={theme.textMuted}
                 multiline
                 numberOfLines={4}
+                accessibilityLabel="Bio"
               />
             </View>
 
@@ -586,6 +595,9 @@ export default function ProfileScreen() {
               style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
               onPress={handleSaveAccount}
               disabled={isSaving}
+              accessibilityRole="button"
+              accessibilityLabel="Save account information"
+              accessibilityState={{ disabled: isSaving, busy: isSaving }}
             >
               {isSaving ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -797,6 +809,9 @@ export default function ProfileScreen() {
               style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
               onPress={handleSaveProfile}
               disabled={isSaving}
+              accessibilityRole="button"
+              accessibilityLabel="Save investor profile"
+              accessibilityState={{ disabled: isSaving, busy: isSaving }}
             >
               {isSaving ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -814,6 +829,9 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={styles.menuItem}
               onPress={() => setShowPasswordChange(!showPasswordChange)}
+              accessibilityRole="button"
+              accessibilityLabel="Change password"
+              accessibilityState={{ expanded: showPasswordChange }}
             >
               <View
                 style={[styles.menuIcon, { backgroundColor: isDark ? colors.info.dark + '30' : colors.info.light }]}
@@ -837,6 +855,7 @@ export default function ProfileScreen() {
                   placeholder="Current password"
                   placeholderTextColor={theme.textMuted}
                   secureTextEntry
+                  accessibilityLabel="Current password"
                 />
                 <TextInput
                   style={[styles.input, dynamicStyles.input, { marginBottom: 12 }]}
@@ -845,6 +864,7 @@ export default function ProfileScreen() {
                   placeholder="New password"
                   placeholderTextColor={theme.textMuted}
                   secureTextEntry
+                  accessibilityLabel="New password"
                 />
                 <TextInput
                   style={[styles.input, dynamicStyles.input, { marginBottom: 12 }]}
@@ -853,11 +873,15 @@ export default function ProfileScreen() {
                   placeholder="Confirm new password"
                   placeholderTextColor={theme.textMuted}
                   secureTextEntry
+                  accessibilityLabel="Confirm new password"
                 />
                 <TouchableOpacity
                   style={[styles.saveButton, isChangingPassword && styles.saveButtonDisabled]}
                   onPress={handlePasswordChange}
                   disabled={isChangingPassword}
+                  accessibilityRole="button"
+                  accessibilityLabel="Update password"
+                  accessibilityState={{ disabled: isChangingPassword }}
                 >
                   {isChangingPassword ? (
                     <ActivityIndicator size="small" color="#fff" />
@@ -874,7 +898,7 @@ export default function ProfileScreen() {
         <View style={styles.sectionWrapper}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>DANGER ZONE</Text>
           <View style={[styles.section, dynamicStyles.section]}>
-            <TouchableOpacity style={styles.menuItem} onPress={handleDeleteAccount}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleDeleteAccount} accessibilityRole="button" accessibilityLabel="Delete account permanently">
               <View
                 style={[
                   styles.menuIcon,
@@ -906,7 +930,7 @@ export default function ProfileScreen() {
             <Text style={[styles.modalTitle, { color: theme.text }]}>
               {stateModalType === 'target' ? 'Select Target Markets' : 'Select State'}
             </Text>
-            <TouchableOpacity onPress={() => setShowStateModal(false)}>
+            <TouchableOpacity onPress={() => setShowStateModal(false)} accessibilityRole="button" accessibilityLabel="Done selecting">
               <Text style={{ color: colors.primary[500], fontSize: 16 }}>Done</Text>
             </TouchableOpacity>
           </View>

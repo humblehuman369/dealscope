@@ -103,19 +103,19 @@ export default function HomeScreen() {
             <View style={s.navRight}>
               {isAuthenticated && user ? (
                 <>
-                  <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={() => router.push('/search' as any)}>
+                  <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={() => router.push('/search' as any)} accessibilityRole="button" accessibilityLabel="Search properties">
                     <Ionicons name="search" size={18} color={c.white} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={() => router.push('/profile' as any)}>
+                  <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={() => router.push('/profile' as any)} accessibilityRole="button" accessibilityLabel="Your profile">
                     <Ionicons name="person" size={18} color={c.white} />
                   </TouchableOpacity>
                 </>
               ) : (
-                <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                <TouchableOpacity onPress={() => router.push('/auth/login')} accessibilityRole="link" accessibilityLabel="Login or Register">
                   <Text style={[s.loginText, { color: c.dim }]}>Login/Register</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={toggleTheme}>
+              <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={toggleTheme} accessibilityRole="button" accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
                 <Ionicons name={isDark ? 'sunny' : 'moon'} size={16} color={c.white} />
               </TouchableOpacity>
             </View>
@@ -144,7 +144,7 @@ export default function HomeScreen() {
               activeOpacity={0.8}
               onPress={() => inputRef.current?.focus()}
             >
-              <Ionicons name="location" size={18} color={c.dim} style={{ marginLeft: 4 }} />
+              <Ionicons name="location" size={18} color={c.dim} style={{ marginLeft: 4 }} accessibilityElementsHidden />
               <TextInput
                 ref={inputRef}
                 style={[s.searchInput, { color: c.white }]}
@@ -154,11 +154,16 @@ export default function HomeScreen() {
                 onChangeText={setSearchAddress}
                 onSubmitEditing={handleAnalyze}
                 returnKeyType="search"
+                accessibilityLabel="Property address"
+                accessibilityHint="Enter an address to analyze investment potential"
               />
               <TouchableOpacity
                 style={[s.analyzeBtn, { backgroundColor: c.blue }, !searchAddress.trim() && { opacity: 0.4 }]}
                 onPress={handleAnalyze}
                 disabled={!searchAddress.trim() || isSearching}
+                accessibilityRole="button"
+                accessibilityLabel={isSearching ? 'Analyzing property' : 'Analyze property'}
+                accessibilityState={{ disabled: !searchAddress.trim() || isSearching, busy: isSearching }}
               >
                 {isSearching ? (
                   <ActivityIndicator color="#fff" size="small" />
@@ -172,6 +177,9 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={[s.scanBtn, { backgroundColor: c.panel, borderColor: c.borderLight }]}
               onPress={handleScanPress}
+              accessibilityRole="button"
+              accessibilityLabel="Scan Property"
+              accessibilityHint="Use your camera to scan a property for instant analysis"
             >
               <Ionicons name="scan-outline" size={20} color={c.white} />
               <Text style={[s.scanBtnText, { color: c.white }]}>Scan Property</Text>

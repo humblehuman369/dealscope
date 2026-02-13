@@ -67,7 +67,7 @@ export default function ForgotPasswordScreen() {
             <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: isDark ? '#052e1633' : '#f0fdf4', justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
               <Ionicons name="checkmark-circle" size={32} color="#22c55e" />
             </View>
-            <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>
+            <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>
               Check Your Email
             </Text>
             <Text style={{ fontSize: 14, color: mutedColor, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
@@ -86,6 +86,8 @@ export default function ForgotPasswordScreen() {
 
             <TouchableOpacity
               onPress={() => router.replace('/auth/login')}
+              accessibilityRole="button"
+              accessibilityLabel="Back to login"
               style={{ backgroundColor: accentColor, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center', width: '100%' }}
             >
               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Back to Login</Text>
@@ -103,7 +105,7 @@ export default function ForgotPasswordScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
 
           {/* Back button */}
-          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 24 }}>
+          <TouchableOpacity onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 24 }}>
             <Ionicons name="arrow-back" size={18} color={mutedColor} />
             <Text style={{ color: mutedColor, fontSize: 14 }}>Back</Text>
           </TouchableOpacity>
@@ -115,7 +117,7 @@ export default function ForgotPasswordScreen() {
               <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: isDark ? '#0d948833' : '#f0fdfa', justifyContent: 'center', alignItems: 'center', marginBottom: 12 }}>
                 <Ionicons name="mail-outline" size={28} color={accentColor} />
               </View>
-              <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 4 }}>
+              <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 4 }}>
                 Forgot Password?
               </Text>
               <Text style={{ fontSize: 14, color: mutedColor, textAlign: 'center' }}>
@@ -144,6 +146,7 @@ export default function ForgotPasswordScreen() {
                 keyboardType="email-address"
                 autoComplete="email"
                 autoFocus
+                accessibilityLabel="Email address"
                 style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
               />
             </View>
@@ -152,6 +155,9 @@ export default function ForgotPasswordScreen() {
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={status === 'loading' || !email.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Send reset link"
+              accessibilityState={{ disabled: status === 'loading' || !email.trim() }}
               style={{
                 backgroundColor: accentColor,
                 borderRadius: 12,
@@ -178,7 +184,7 @@ export default function ForgotPasswordScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, gap: 4 }}>
             <Text style={{ fontSize: 14, color: mutedColor }}>Remember your password?</Text>
             <Link href="/auth/login" asChild>
-              <TouchableOpacity>
+              <TouchableOpacity accessibilityRole="link" accessibilityLabel="Back to login">
                 <Text style={{ fontSize: 14, color: accentColor, fontWeight: '600' }}>Back to login</Text>
               </TouchableOpacity>
             </Link>

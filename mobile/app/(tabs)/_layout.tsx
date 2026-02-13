@@ -45,6 +45,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'Home tab',
         }}
       />
       <Tabs.Screen
@@ -54,6 +55,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'DealHub IQ dashboard tab',
         }}
       />
       <Tabs.Screen
@@ -63,6 +65,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="scan-outline" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'Scan a property tab',
         }}
       />
       {/* Map is hidden from tab bar but accessible from More/Settings */}
@@ -79,6 +82,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'Search history tab',
         }}
       />
       <Tabs.Screen
@@ -88,6 +92,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'Saved properties portfolio tab',
         }}
       />
       <Tabs.Screen
@@ -97,6 +102,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ellipsis-horizontal" size={size} color={color} />
           ),
+          tabBarAccessibilityLabel: 'Settings and more options tab',
         }}
       />
     </Tabs>
