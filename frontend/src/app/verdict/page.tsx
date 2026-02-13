@@ -635,6 +635,10 @@ function VerdictContent() {
   const monthlyRent = property.monthlyRent || Math.round(property.price * 0.007)
   const discountPct = analysis.discountPercent || 0
 
+  // Price label adapts to listing status — "Asking" for listed properties, "Market" for off-market
+  const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
+  const priceLabel = isListed ? 'Asking' : 'Market'
+
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
 
@@ -749,7 +753,7 @@ function VerdictContent() {
             <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>What Should You Pay?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
-              Every investment property has three price levels. The gap between asking price and your target buy price is what makes or breaks this deal.
+              Every investment property has three price levels. The gap between {isListed ? 'asking price' : 'market value'} and your target buy price is what makes or breaks this deal.
             </p>
 
             <div className="flex gap-2.5">
@@ -778,7 +782,7 @@ function VerdictContent() {
                   { label: 'Wholesale', price: wholesalePrice, dotColor: colors.brand.teal },
                   { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
                   { label: 'Breakeven', price: breakevenPrice, dotColor: colors.brand.gold },
-                  { label: 'Asking', price: property.price, dotColor: colors.status.negative },
+                  { label: priceLabel, price: property.price, dotColor: colors.status.negative },
                 ].sort((a, b) => a.price - b.price)
 
                 const allPrices = markers.map(m => m.price).filter(p => p > 0)
@@ -884,7 +888,7 @@ function VerdictContent() {
           {/* CTA → Strategy — copy adapts to verdict score */}
           <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>
-              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : 'The numbers don\'t work at asking price'}
+              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'market value'}`}
             </p>
             <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>
               {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
