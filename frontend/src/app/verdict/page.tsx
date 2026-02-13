@@ -395,7 +395,7 @@ function VerdictContent() {
           const analysisResult: IQAnalysisResult = {
             propertyId: data?.property_id || propertyData?.id, // Include property ID for exports
             analyzedAt: new Date().toISOString(),
-            dealScore: analysisData.deal_score ?? analysisData.dealScore,
+            dealScore: Math.min(95, Math.max(0, analysisData.deal_score ?? analysisData.dealScore ?? 0)),
             dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
             verdictDescription: analysisData.verdict_description ?? analysisData.verdictDescription,
             discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
