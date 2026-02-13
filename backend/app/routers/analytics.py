@@ -7,10 +7,9 @@ Extracted from main.py as part of Phase 2 Architecture Cleanup.
 import logging
 from typing import Optional, List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
-
-from fastapi import Query
 
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK, WHOLESALE, GROWTH,
@@ -628,7 +627,7 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
         ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
 
-        return IQVerdictResponse(
+        result = IQVerdictResponse(
             deal_score=deal_score, deal_verdict=deal_verdict,
             verdict_description=_get_verdict_description(deal_score, top_strategy),
             discount_percent=round(discount_pct, 1),
@@ -661,10 +660,16 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             ),
         )
 
-        # Force explicit serialization with by_alias=True to guarantee camelCase keys
-        # This avoids Pydantic v2/FastAPI serialization ambiguity
+        # Explicit serialization with by_alias=True guarantees camelCase keys.
+        # Returning JSONResponse bypasses FastAPI's response_model re-processing,
+        # eliminating Pydantic v2 serialization ambiguity entirely.
         response_dict = result.model_dump(mode='json', by_alias=True)
-        return response_dict
+        logger.info(
+            "IQ Verdict response — dealScore=%s, componentScores=%s",
+            response_dict.get("dealScore"),
+            response_dict.get("componentScores"),
+        )
+        return JSONResponse(content=response_dict)
     except Exception as e:
         logger.error(f"IQ Verdict analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -388,9 +388,10 @@ function VerdictContent() {
           setProperty({ ...propertyData })
         }
           
-        // Log the full response for debugging
-        console.log('[IQ Verdict] Backend response:', analysisData)
-        console.log('[IQ Verdict] componentScores raw:', (analysisData as Record<string, unknown>).componentScores ?? (analysisData as Record<string, unknown>).component_scores ?? 'NOT FOUND')
+        // Diagnostic logging — traces exact key formats from backend
+        console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
+        console.log('[IQ Verdict] dealScore (camel):', (analysisData as any).dealScore, '| deal_score (snake):', (analysisData as any).deal_score)
+        console.log('[IQ Verdict] componentScores (camel):', (analysisData as any).componentScores, '| component_scores (snake):', (analysisData as any).component_scores)
           
         // Convert backend response to frontend IQAnalysisResult format
         // Backend now returns camelCase for new fields via Pydantic alias_generator
