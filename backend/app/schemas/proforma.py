@@ -327,6 +327,13 @@ class FinancialProforma(BaseModel):
     
     # Data Sources
     sources: DataSources
+    
+    # Strategy-specific detailed breakdown (populated by the appropriate calculator)
+    # Keys vary by strategy: ltr, str, brrrr, flip, house_hack, wholesale
+    strategy_breakdown: Optional[Dict[str, Any]] = None
+    
+    # Strategy methodology text for reports
+    strategy_methodology: Optional[str] = None
 
 
 class ProformaRequest(BaseModel):
