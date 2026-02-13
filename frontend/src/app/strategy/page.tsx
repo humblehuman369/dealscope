@@ -165,63 +165,10 @@ function StrategyContent() {
       address: addressParam,
       openDealMaker: '1',
     })
-    if (activeStrategyId) params.set('strategy', activeStrategyId)
+    if (selectedStrategyId) params.set('strategy', selectedStrategyId)
     router.push(`/verdict?${params.toString()}`)
-  }, [router, addressParam, activeStrategyId])
+  }, [router, addressParam, selectedStrategyId])
 
-
-  const handleExcelDownload = async () => {
-    setIsExporting('excel')
-    try {
-      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
-      const params = new URLSearchParams({
-        address: addressParam,
-        strategy: activeStrategyId,
-      })
-      // Include user adjustments so the export reflects what's on screen
-      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
-        params.set('purchase_price', String(targetPrice))
-      }
-      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
-      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
-      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
-      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
-      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
-      const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
-
-      const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
-      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-
-      const response = await fetch(url, { headers, credentials: 'include' })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || 'Failed to generate Excel report')
-      }
-
-      const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = 'InvestIQ_Strategy_Report.xlsx'
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/)
-        if (match) filename = match[1]
-      }
-
-      const blob = await response.blob()
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(downloadUrl)
-    } catch (err) {
-      console.error('Excel download failed:', err)
-    } finally {
-      setIsExporting(null)
-    }
-  }
 
   if (isLoading) {
     return (
@@ -361,6 +308,58 @@ function StrategyContent() {
       window.open(url, '_blank')
     } catch (err) {
       console.error('PDF report failed:', err)
+    } finally {
+      setIsExporting(null)
+    }
+  }
+
+  const handleExcelDownload = async () => {
+    setIsExporting('excel')
+    try {
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
+      const params = new URLSearchParams({
+        address: addressParam,
+        strategy: activeStrategyId,
+      })
+      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
+        params.set('purchase_price', String(targetPrice))
+      }
+      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
+      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
+      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
+      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
+      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
+      const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
+
+      const headers: Record<string, string> = {}
+      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+
+      const response = await fetch(url, { headers, credentials: 'include' })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Failed to generate Excel report')
+      }
+
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let filename = 'InvestIQ_Strategy_Report.xlsx'
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/)
+        if (match) filename = match[1]
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (err) {
+      console.error('Excel download failed:', err)
     } finally {
       setIsExporting(null)
     }
