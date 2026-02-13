@@ -556,7 +556,7 @@ export default function SettingsScreen() {
           <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Linking.openURL('mailto:support@investiq.com?subject=InvestIQ%20Help%20Request')}
+              onPress={() => router.push('/help')}
               accessibilityRole="button"
               accessibilityLabel="Help Center"
             >
