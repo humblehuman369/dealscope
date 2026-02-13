@@ -323,6 +323,7 @@ function StrategyContent() {
         address: addressParam,
         strategy: activeStrategyId,
       })
+      // Always pass user-adjusted values so the export matches what's on screen
       if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
         params.set('purchase_price', String(targetPrice))
       }
@@ -331,6 +332,11 @@ function StrategyContent() {
       if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
       if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
       if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
+      // Wholesale-specific: pass AMV and rent for the deal proforma
+      if (activeStrategyId === 'wholesale') {
+        params.set('amv', String(listPrice))
+        params.set('monthly_rent', String(monthlyRent))
+      }
       const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
 
       const headers: Record<string, string> = {}
@@ -409,7 +415,7 @@ function StrategyContent() {
               style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
             >
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-              <span>Worksheet</span>
+              <span>{activeStrategyId === 'wholesale' ? 'Deal Proforma' : 'Worksheet'}</span>
             </button>
           </div>
         </section>
