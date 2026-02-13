@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -230,6 +231,16 @@ export default function SavedPropertiesPage() {
               {totalSaved === 1 ? 'property' : 'properties'} in your portfolio
             </p>
           </div>
+          {totalSaved >= 2 && (
+            <Link
+              href="/compare"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold no-underline transition-all hover:opacity-90"
+              style={{ background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', color: '#38bdf8' }}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Compare
+            </Link>
+          )}
           <button
             onClick={() => setShowSearchModal(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"

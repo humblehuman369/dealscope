@@ -174,8 +174,29 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
 
         <p className="hero-note">
-          <strong>60-second analysis</strong> · No credit card required
+          <strong>60-second analysis</strong> · 6 strategies · No credit card required
         </p>
+
+        {/* Social Proof */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2rem',
+          marginTop: '2.5rem',
+          flexWrap: 'wrap',
+        }}>
+          {[
+            { value: '6', label: 'Investment Strategies' },
+            { value: '<60s', label: 'Analysis Time' },
+            { value: 'Free', label: 'During Beta' },
+          ].map((stat, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '1.25rem', fontWeight: 800, color: i === 0 ? '#38bdf8' : i === 1 ? '#2dd4bf' : '#fbbf24', margin: 0 }}>{stat.value}</p>
+              <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 500, margin: 0, marginTop: '0.15rem' }}>{stat.label}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* VERDICT DEMO */}
@@ -553,31 +574,32 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </section>
 
-      {/* BETA CREDIBILITY */}
+      {/* CREDIBILITY — Why Trust InvestIQ */}
       <section style={{ padding: '4rem 1.5rem', borderTop: '1px solid rgba(148,163,184,0.08)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#14b8a6', marginBottom: '1rem' }}>
-            Early Access
+            Built by Investors, for Investors
           </p>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.3, marginBottom: '1rem' }}>
-            We&apos;re building InvestIQ in public — and your feedback drives what ships next.
+            From the founder of Foreclosure.com — the most trusted name in distressed real estate.
           </h2>
           <p style={{ fontSize: '0.95rem', color: '#94a3b8', lineHeight: 1.7, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            InvestIQ is in beta. Every analysis you run, every deal you save, and every feature request you make helps us build the tool serious investors actually need.
+            20+ years of real estate data, 2M+ properties analyzed, and the same analytical rigor — now available to every investor. InvestIQ is in beta and your feedback drives what ships next.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', maxWidth: '480px', margin: '0 auto' }}>
-            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.12)' }}>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8', marginBottom: '0.25rem' }}>6</p>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Investment Strategies</p>
-            </div>
-            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.12)' }}>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2dd4bf', marginBottom: '0.25rem' }}>60s</p>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Analysis Time</p>
-            </div>
-            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.12)' }}>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.25rem' }}>Free</p>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>During Beta</p>
-            </div>
+
+          {/* Trust Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', maxWidth: '560px', margin: '0 auto' }}>
+            {[
+              { val: '20+', label: 'Years in RE Data', color: '#38bdf8' },
+              { val: '2M+', label: 'Properties Indexed', color: '#2dd4bf' },
+              { val: '6', label: 'Strategy Models', color: '#a78bfa' },
+              { val: 'Free', label: 'Beta Access', color: '#fbbf24' },
+            ].map((m, i) => (
+              <div key={i} style={{ padding: '1rem', borderRadius: '12px', background: `${m.color}08`, border: `1px solid ${m.color}18` }}>
+                <p style={{ fontSize: '1.3rem', fontWeight: 800, color: m.color, marginBottom: '0.2rem' }}>{m.val}</p>
+                <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 500, lineHeight: 1.3 }}>{m.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -590,8 +612,11 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       >
         <div className="cta-inner">
           <h2 className="cta-title">Stop wondering. Start knowing.</h2>
-          <p className="cta-desc">Built by the founder of Foreclosure.com. Now in beta — try it free and help shape what it becomes.</p>
-          <button className="btn-cta" onClick={handleStartAnalysis}>Start Free Analysis</button>
+          <p className="cta-desc">Every hour spent on a bad deal is an hour you could spend closing a great one. Run your first analysis in 60 seconds — free.</p>
+          <button className="btn-cta" onClick={handleStartAnalysis}>Analyze Your First Property</button>
+          <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#64748b' }}>
+            Free during beta · <a href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</a>
+          </p>
         </div>
       </section>
 
@@ -615,6 +640,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
                 <a href="#strategies" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Strategies</a>
                 <a href="#toolkit" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Toolkit</a>
                 <a href="#workflow" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Workflow</a>
+                <a href="/pricing" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Pricing</a>
               </div>
             </div>
 
@@ -631,6 +657,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             <div>
               <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Support</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a href="/help" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Help Center</a>
                 <a href="mailto:support@investiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>support@investiq.com</a>
               </div>
             </div>

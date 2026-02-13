@@ -23,8 +23,7 @@ const tabs = [
   { id: 'account' as TabType, label: 'Account', icon: User },
   { id: 'business' as TabType, label: 'Business Profile', icon: Building2 },
   { id: 'investor' as TabType, label: 'Investor Profile', icon: TrendingUp },
-  // Preferences tab hidden until Notifications/Appearance/Security are implemented
-  // { id: 'preferences' as TabType, label: 'Preferences', icon: Bell },
+  { id: 'preferences' as TabType, label: 'Preferences', icon: Bell },
 ]
 
 export default function ProfilePage() {
@@ -189,7 +188,9 @@ export default function ProfilePage() {
             />
           )}
 
-          {/* Preferences tab content hidden — re-enable when features are ready */}
+          {activeTab === 'preferences' && (
+            <PreferencesTab />
+          )}
         </div>
       </div>
     </div>
