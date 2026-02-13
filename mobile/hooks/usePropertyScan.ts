@@ -227,21 +227,19 @@ export function usePropertyScan() {
         isRecommended: index === 0, // First one (highest confidence) is recommended
       }));
 
-      // If we have multiple candidates with similar confidence, show selection UI
-      const topConfidence = propertyCandidates[0]?.confidence || 0;
-      const hasCloseCompetitors = propertyCandidates.length > 1 && 
-        propertyCandidates[1]?.confidence > topConfidence - 15;
-
-      if (hasCloseCompetitors && propertyCandidates.length > 1) {
-        // Multiple good candidates - let user choose
-        console.log(`[ImprovedScan] Multiple candidates with similar confidence - showing selection`);
+      // Always show disambiguation when 2+ candidates exist.
+      // This prevents auto-selecting the wrong property on first use,
+      // which breaks trust immediately. The user confirms, even if
+      // there's a clear "Best Match."
+      if (propertyCandidates.length > 1) {
+        console.log(`[ImprovedScan] ${propertyCandidates.length} candidates found — showing disambiguation`);
         setCandidates(propertyCandidates);
         setShowCandidates(true);
         setIsScanning(false);
         return; // Wait for user selection
       }
 
-      // Single clear winner - proceed with that property
+      // Single result — proceed directly
       const matchedParcel = properties[0];
       const bestConfidence = matchedParcel.confidence || 0.8;
 
@@ -462,6 +460,14 @@ export function usePropertyScan() {
     setShowCandidates(false);
   }, []);
 
+  /** Re-open disambiguation sheet from the result screen ("Not the right property?") */
+  const reopenCandidates = useCallback(() => {
+    if (candidates.length > 0) {
+      setResult(null);
+      setShowCandidates(true);
+    }
+  }, [candidates]);
+
   return {
     scanner,
     isScanning,
@@ -475,5 +481,6 @@ export function usePropertyScan() {
     clearResult,
     clearError,
     clearCandidates,
+    reopenCandidates,
   };
 }

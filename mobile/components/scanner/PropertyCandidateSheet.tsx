@@ -38,8 +38,8 @@ export function PropertyCandidateSheet({
       transparent
       onRequestClose={onCancel}
     >
-      <Pressable style={styles.overlay} onPress={onCancel}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+      <Pressable style={styles.overlay} onPress={onCancel} accessibilityLabel="Close property selection">
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()} accessibilityViewIsModal>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerIcon}>

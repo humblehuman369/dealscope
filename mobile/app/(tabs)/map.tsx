@@ -35,12 +35,12 @@ interface MapProperty {
   state?: string;
 }
 
-// Default region (South Florida)
+// Default region — continental US center (never biased to a specific city)
 const DEFAULT_REGION = {
-  latitude: 26.6683,
-  longitude: -80.2683,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
+  latitude: 39.8283,
+  longitude: -98.5795,
+  latitudeDelta: 40,
+  longitudeDelta: 40,
 };
 
 // Strategy name mapping
@@ -102,6 +102,7 @@ export default function MapScreen() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [locationDenied, setLocationDenied] = useState(false);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -153,6 +154,7 @@ export default function MapScreen() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
+          setLocationDenied(true);
           setIsLoadingLocation(false);
           return;
         }
@@ -286,12 +288,18 @@ export default function MapScreen() {
             key={property.id}
             coordinate={{ latitude: property.lat, longitude: property.lng }}
             onPress={() => handlePropertyPress(property)}
+            tracksViewChanges={false}
           >
-            <View style={[
-              styles.marker,
-              property.monthlyProfit > 0 ? styles.markerProfit : styles.markerLoss,
-              selectedProperty?.id === property.id && styles.markerSelected,
-            ]}>
+            <View
+              style={[
+                styles.marker,
+                property.monthlyProfit > 0 ? styles.markerProfit : styles.markerLoss,
+                selectedProperty?.id === property.id && styles.markerSelected,
+              ]}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`${property.address}, ${property.monthlyProfit > 0 ? 'profitable' : 'loss'}, ${formatCurrency(property.monthlyProfit)} per month, ${property.strategy}`}
+            >
               <Text style={[styles.markerText, dynamicStyles.markerText]}>
                 {formatCurrency(property.monthlyProfit)}
               </Text>
@@ -343,6 +351,16 @@ export default function MapScreen() {
         <View style={[styles.loadingContainer, dynamicStyles.loadingContainer]}>
           <ActivityIndicator size="small" color={colors.primary[600]} />
           <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Finding your location...</Text>
+        </View>
+      )}
+
+      {/* Location Denied Banner */}
+      {locationDenied && !isLoadingLocation && (
+        <View style={[styles.loadingContainer, dynamicStyles.loadingContainer, { gap: 6 }]}>
+          <Ionicons name="location-outline" size={16} color={isDark ? colors.gray[400] : colors.gray[500]} />
+          <Text style={[styles.loadingText, dynamicStyles.loadingText]}>
+            Enable location to see properties near you
+          </Text>
         </View>
       )}
 

@@ -75,11 +75,13 @@ export function ScanHelpTooltip({ visible, onClose }: ScanHelpTooltipProps) {
       transparent
       onRequestClose={onClose}
     >
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} accessibilityViewIsModal>
         <TouchableOpacity 
           style={styles.backdropTouchable} 
           activeOpacity={1} 
           onPress={onClose}
+          accessibilityLabel="Close help"
+          accessibilityRole="button"
         />
         <Animated.View 
           style={[

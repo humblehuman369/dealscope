@@ -61,6 +61,7 @@ export default function ScanScreen() {
     clearResult, 
     clearError,
     clearCandidates,
+    reopenCandidates,
   } = usePropertyScan();
   
   // Animations
@@ -438,8 +439,9 @@ export default function ScanScreen() {
               style={styles.errorContainer}
               onPress={clearError}
               activeOpacity={0.8}
-              accessibilityRole="button"
+              accessibilityRole="alert"
               accessibilityLabel={`Error: ${error || scanner.error}. Tap to dismiss`}
+              accessibilityLiveRegion="assertive"
             >
               <View style={styles.errorContent}>
                 <Ionicons name="alert-circle" size={18} color={colors.loss.main} />
@@ -463,6 +465,7 @@ export default function ScanScreen() {
           result={result}
           onClose={clearResult}
           onViewDetails={handleViewDetails}
+          onWrongProperty={candidates.length > 0 ? reopenCandidates : undefined}
         />
       )}
 

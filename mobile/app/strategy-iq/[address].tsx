@@ -59,6 +59,7 @@ import {
 import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
 import { PropertyData } from '../../components/analytics/redesign/types';
 import { VerdictFooter } from '../../components/verdict-iq/VerdictCTA';
+import { useAddPortfolioProperty } from '../../hooks/useDatabase';
 
 // =============================================================================
 // HELPERS
@@ -242,6 +243,7 @@ export default function StrategyIQScreen() {
   const isOnline = useIsOnline();
   const [currentStrategy, setCurrentStrategy] = useState('Long-Term Rental');
   const setActiveStrategy = useUIStore((s) => s.setActiveStrategy);
+  const addToPortfolio = useAddPortfolioProperty();
 
   // Sync strategy selection to UI store for cross-screen consistency
   const handleSetStrategy = useCallback((name: string) => {
@@ -415,10 +417,35 @@ export default function StrategyIQScreen() {
     }
   }, [handleSetStrategy]);
 
-  const handleSignUp = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Create Account', 'Sign up flow coming soon');
-  }, []);
+  const handleSaveToPortfolio = useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Map display name to DB key
+    const strategyKeyMap: Record<string, string> = {
+      'Long-Term Rental': 'long_term_rental',
+      'Short-Term Rental': 'short_term_rental',
+      'BRRRR': 'brrrr',
+      'Fix & Flip': 'fix_and_flip',
+      'House Hack': 'house_hack',
+      'Wholesale': 'wholesale',
+    };
+    addToPortfolio.mutate({
+      address: decodedAddress,
+      city: city || null,
+      state: state || null,
+      zip: zip || null,
+      purchasePrice: targetPrice || listPrice,
+      purchaseDate: Math.floor(Date.now() / 1000),
+      strategy: strategyKeyMap[currentStrategy] || 'long_term_rental',
+      propertyData: propertyData as any,
+    }, {
+      onSuccess: () => {
+        Alert.alert('Saved to Portfolio', `${decodedAddress} has been added to your portfolio.`);
+      },
+      onError: () => {
+        Alert.alert('Save Failed', 'Could not save to portfolio. Please try again.');
+      },
+    });
+  }, [decodedAddress, city, state, zip, targetPrice, listPrice, currentStrategy, propertyData, addToPortfolio]);
 
   const handleDeepDive = useCallback((tool: DeepDiveTool) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -683,7 +710,7 @@ export default function StrategyIQScreen() {
           </View>
 
           {/* Save CTA */}
-          <SaveCTA onPress={handleSignUp} />
+          <SaveCTA onPress={handleSaveToPortfolio} />
 
           {/* Footer */}
           <VerdictFooter />

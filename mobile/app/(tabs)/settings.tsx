@@ -554,7 +554,12 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Support</Text>
           <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => Linking.openURL('mailto:support@investiq.com?subject=InvestIQ%20Help%20Request')}
+              accessibilityRole="button"
+              accessibilityLabel="Help Center"
+            >
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="help-circle" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
@@ -564,7 +569,12 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => Linking.openURL('mailto:support@investiq.com?subject=InvestIQ%20Support%20Request')}
+              accessibilityRole="button"
+              accessibilityLabel="Contact Support"
+            >
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="mail" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
@@ -574,7 +584,12 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => Alert.alert('Coming Soon', 'Rate InvestIQ will be available once the app is published to the App Store.')}
+              accessibilityRole="button"
+              accessibilityLabel="Rate InvestIQ"
+            >
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="star" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
