@@ -211,16 +211,16 @@ export function usePropertyAnalysis(
     setError(null);
 
     try {
-      // Build the verdict input from property data
-      const input: VerdictInput = {
-        listPrice: property.listPrice,
-        monthlyRent: assumptions?.monthlyRent ?? property.monthlyRent,
-        propertyTaxes: property.propertyTaxes,
-        insurance: property.insurance,
-        arv: property.arv,
-        averageDailyRate: assumptions?.averageDailyRate ?? property.averageDailyRate,
-        occupancyRate: assumptions?.occupancyRate ?? property.occupancyRate,
-        bedrooms: property.bedrooms,
+      // Build the verdict input in snake_case to match backend schema
+      const input = {
+        list_price: property.listPrice,
+        monthly_rent: assumptions?.monthlyRent ?? property.monthlyRent ?? undefined,
+        property_taxes: property.propertyTaxes ?? undefined,
+        insurance: property.insurance ?? undefined,
+        arv: property.arv ?? undefined,
+        average_daily_rate: assumptions?.averageDailyRate ?? property.averageDailyRate ?? undefined,
+        occupancy_rate: assumptions?.occupancyRate ?? property.occupancyRate ?? undefined,
+        bedrooms: property.bedrooms ?? 3,
       };
 
       // Fetch verdict and analytics in parallel
