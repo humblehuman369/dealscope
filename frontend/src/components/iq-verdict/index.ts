@@ -33,6 +33,8 @@ export { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMe
 
 // Decision-Grade UI Components
 export { PropertyContextBar } from './PropertyContextBar'
+export { PropertyAddressBar } from './PropertyAddressBar'
+export { VerdictScoreCard } from './VerdictScoreCard'
 export { NavTabs } from './NavTabs'
 
 // Fresh VerdictIQ Components (v2 Design System)

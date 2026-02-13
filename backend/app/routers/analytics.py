@@ -607,12 +607,6 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             motivation_score=motivation_score,
         )
 
-        # TEMPORARY TEST — hardcode known component scores to verify full pipeline
-        # Expected frontend labels: Excellent(80), Strong(70), Good(50), Fair(30)
-        # Remove this block after verifying the pipeline works end-to-end
-        comp_gap, comp_return, comp_market, comp_prob = 80, 70, 50, 30
-        logger.warning("⚠️  TEMPORARY TEST VALUES ACTIVE — remove after verification")
-
         # Legacy discount_pct for backward compatibility
         discount_pct = max(0, ((list_price - breakeven) / list_price) * 100) if list_price > 0 else 0
         deal_verdict = (
