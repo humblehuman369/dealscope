@@ -8,10 +8,40 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:ios": "eas build --platform ios",
-    "build:android": "eas build --platform android",
+
+    "build:dev": "eas build --profile development --platform all",
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "build:dev:android": "eas build --profile development --platform android",
+    "build:dev-device": "eas build --profile development-device --platform all",
+
+    "build:preview": "eas build --profile preview --platform all",
+    "build:preview:ios": "eas build --profile preview --platform ios",
+    "build:preview:android": "eas build --profile preview --platform android",
+
+    "build:beta": "eas build --profile beta --platform all",
+    "build:beta:ios": "eas build --profile beta --platform ios",
+    "build:beta:android": "eas build --profile beta --platform android",
+
+    "build:production": "eas build --profile production --platform all",
+    "build:production:ios": "eas build --profile production --platform ios",
+    "build:production:android": "eas build --profile production --platform android",
+
+    "submit:ios": "eas submit --platform ios --profile production",
+    "submit:android": "eas submit --platform android --profile production",
+    "submit:all": "eas submit --platform all --profile production",
+
+    "update:preview": "eas update --channel preview",
+    "update:beta": "eas update --channel beta",
+    "update:production": "eas update --channel production",
+
+    "credentials:ios": "eas credentials --platform ios",
+    "credentials:android": "eas credentials --platform android",
+    "devices": "eas device:list",
+    "devices:register": "eas device:create",
+
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest"
+    "test": "jest",
+    "doctor": "npx expo-doctor"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

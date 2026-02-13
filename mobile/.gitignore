@@ -30,13 +30,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build outputs
+# Build outputs & signing credentials
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
+*.keystore
+google-services-key.json
+google-services.json
 
 # Metro
 .metro-health-check*
