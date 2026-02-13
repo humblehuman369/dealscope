@@ -1,9 +1,19 @@
 FROM python:3.11-slim
 
-# Slim image is all we need — PDF generation now uses browser print-to-PDF
-# instead of WeasyPrint, eliminating system library dependencies entirely.
-# Only fonts are added for any potential server-side rendering fallback.
+# System libraries required by WeasyPrint for server-side PDF generation
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libgobject-2.0-0 \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libpangoft2-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libharfbuzz0b \
+    libfontconfig1 \
+    libfreetype6 \
+    libffi-dev \
+    shared-mime-info \
     fonts-liberation2 \
     && rm -rf /var/lib/apt/lists/*
 
