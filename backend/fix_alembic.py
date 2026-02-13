@@ -342,4 +342,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        log.error("fix_alembic.py crashed (non-fatal): %s", e)
+    # Always exit 0 so uvicorn can start regardless of DB state
+    sys.exit(0)
