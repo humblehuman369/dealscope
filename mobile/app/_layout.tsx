@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { OfflineBanner } from '../components/OfflineBanner';
+import { useDeepLinking } from '../hooks/useDeepLinking';
 import NetInfo from '@react-native-community/netinfo';
 
 // Initialize Sentry for error tracking
@@ -121,6 +122,9 @@ function AppContent({
   onAnimationComplete: () => void;
 }) {
   const { theme } = useTheme();
+
+  // Handle deep links / universal links from shared property URLs
+  useDeepLinking();
 
   return (
     <>

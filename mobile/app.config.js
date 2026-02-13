@@ -22,6 +22,10 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.investiq.mobile",
       buildNumber: "19",
+      associatedDomains: [
+        "applinks:investiq.guru",
+        "applinks:www.investiq.guru"
+      ],
       infoPlist: {
         NSCameraUsageDescription: "InvestIQ needs camera access to scan properties for instant investment analysis.",
         NSLocationWhenInUseUsageDescription: "InvestIQ needs your location to identify properties you're looking at and show nearby investment opportunities.",
@@ -45,6 +49,31 @@ export default {
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.RECORD_AUDIO"
+      ],
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/verdict" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/property" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/strategy" },
+            { scheme: "https", host: "investiq.guru", pathPrefix: "/search" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/verdict" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/property" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/strategy" },
+            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/search" },
+          ],
+          category: ["BROWSABLE", "DEFAULT"]
+        }
       ],
       config: {
         googleMaps: {
