@@ -130,8 +130,8 @@ export default function HomeScreen() {
             </View>
 
             <Text style={[s.heroTitle, { color: c.white }]}>
-              Stop Researching Deals{'\n'}That Were{' '}
-              <Text style={{ color: c.teal }}>Never Going{'\n'}to Work.</Text>
+              Stop Researching Deals That Were{' '}
+              <Text style={{ color: c.teal }}>Never Going to Work.</Text>
             </Text>
 
             <Text style={[s.heroSub, { color: c.text }]}>
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, borderWidth: 1, marginBottom: 24 },
   badgeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#34d399' },
   badgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
-  heroTitle: { fontSize: 30, fontWeight: '800', textAlign: 'center', lineHeight: 36, letterSpacing: -1, marginBottom: 16 },
+  heroTitle: { fontSize: 27, fontWeight: '800', textAlign: 'center', lineHeight: 34, letterSpacing: -0.8, marginBottom: 16 },
   heroSub: { fontSize: 15, lineHeight: 24, textAlign: 'center', marginBottom: 28, maxWidth: 340 },
 
   // Search
