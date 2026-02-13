@@ -114,7 +114,11 @@ export function VerdictHero({
         </View>
 
         {/* Arc Gauge - Centered hero */}
-        <View style={styles.gaugeContainer}>
+        <View 
+          style={styles.gaugeContainer}
+          accessibilityLabel={`Deal score ${score} out of 100`}
+          accessibilityRole="text"
+        >
           <ArcGauge score={score} color={verdictColor} size={120} strokeWidth={10} />
         </View>
 
@@ -127,7 +131,12 @@ export function VerdictHero({
           </View>
           <Text style={styles.verdictSubtitle}>{verdictSubtitle}</Text>
           <View style={styles.verdictLinks}>
-            <TouchableOpacity onPress={onHowItWorksPress}>
+            <TouchableOpacity 
+              onPress={onHowItWorksPress}
+              accessibilityRole="button"
+              accessibilityLabel="How Verdict Score Works"
+              accessibilityHint="Opens information about how the verdict score is calculated"
+            >
               <Text style={styles.verdictLink}>How Verdict Score Works</Text>
             </TouchableOpacity>
           </View>

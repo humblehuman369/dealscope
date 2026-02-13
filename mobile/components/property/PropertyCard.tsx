@@ -64,6 +64,17 @@ export default function PropertyCard({
     ? { backgroundColor: getColorValue(property.color_label) }
     : null;
 
+  const cashFlowLabel = property.best_cash_flow !== null
+    ? `Cash flow ${formatCurrency(property.best_cash_flow)} per month`
+    : 'Cash flow not available';
+  const cocLabel = property.best_coc_return !== null
+    ? `Cash on cash return ${formatPercent(property.best_coc_return)}`
+    : 'Cash on cash return not available';
+  const strategyLabel = property.best_strategy
+    ? `Best strategy ${property.best_strategy.toUpperCase()}`
+    : '';
+  const a11yLabel = `${displayName}${cityState ? ', ' + cityState : ''}. ${cashFlowLabel}. ${cocLabel}. ${strategyLabel}`;
+
   return (
     <TouchableOpacity
       style={[
@@ -77,6 +88,10 @@ export default function PropertyCard({
       onPress={handlePress}
       onLongPress={handleLongPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={a11yLabel}
+      accessibilityHint="Double tap to view property details"
+      accessibilityState={{ selected }}
     >
       {/* Color Label */}
       {colorLabelStyle && <View style={[styles.colorLabel, colorLabelStyle]} />}

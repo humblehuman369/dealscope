@@ -296,6 +296,9 @@ export default function OnboardingScreen() {
         <TouchableOpacity
           onPress={handleSkip}
           disabled={isSaving}
+          accessibilityRole="button"
+          accessibilityLabel="Skip onboarding"
+          accessibilityHint="Skips setup and goes to dashboard"
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
         >
           <Ionicons name="arrow-forward" size={16} color={accentColor} />
@@ -309,6 +312,7 @@ export default function OnboardingScreen() {
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <View
               key={i}
+              accessibilityLabel={`Step ${i + 1} of ${TOTAL_STEPS}${i <= currentStep ? ', completed' : ''}`}
               style={{
                 flex: 1,
                 height: 4,
@@ -350,6 +354,9 @@ export default function OnboardingScreen() {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setFormData((prev) => ({ ...prev, investment_experience: level.value }));
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${level.label}: ${level.desc}`}
+                    accessibilityState={{ selected: isSelected }}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -387,6 +394,9 @@ export default function OnboardingScreen() {
                   <TouchableOpacity
                     key={strategy.id}
                     onPress={() => toggleStrategy(strategy.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${strategy.label}: ${strategy.desc}`}
+                    accessibilityState={{ selected: isSelected }}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -429,6 +439,9 @@ export default function OnboardingScreen() {
                   <TouchableOpacity
                     key={financing.id}
                     onPress={() => selectFinancing(financing)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${financing.label}: ${financing.desc}`}
+                    accessibilityState={{ selected: isSelected }}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -616,6 +629,9 @@ export default function OnboardingScreen() {
         <TouchableOpacity
           onPress={handleBack}
           disabled={currentStep === 0}
+          accessibilityRole="button"
+          accessibilityLabel="Go to previous step"
+          accessibilityState={{ disabled: currentStep === 0 }}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 12, paddingHorizontal: 16, opacity: currentStep === 0 ? 0.4 : 1 }}
         >
           <Ionicons name="chevron-back" size={20} color={currentStep === 0 ? mutedColor : textColor} />
@@ -625,6 +641,9 @@ export default function OnboardingScreen() {
         <TouchableOpacity
           onPress={handleNext}
           disabled={!canContinue || isSaving}
+          accessibilityRole="button"
+          accessibilityLabel={currentStep === TOTAL_STEPS - 1 ? "Complete setup" : "Continue to next step"}
+          accessibilityState={{ disabled: !canContinue || isSaving }}
           style={{
             flexDirection: 'row',
             alignItems: 'center',

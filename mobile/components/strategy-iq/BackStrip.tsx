@@ -17,7 +17,14 @@ interface BackStripProps {
 export function BackStrip({ address, onBack }: BackStripProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backLink} onPress={onBack} activeOpacity={0.7}>
+      <TouchableOpacity 
+        style={styles.backLink} 
+        onPress={onBack} 
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+        accessibilityHint="Returns to the VerdictIQ screen"
+      >
         <Ionicons name="chevron-back" size={rf(16)} color={verdictDark.teal} />
         <Text style={styles.backText}>Back to Verdict</Text>
       </TouchableOpacity>

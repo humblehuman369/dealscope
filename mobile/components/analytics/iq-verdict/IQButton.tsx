@@ -78,6 +78,9 @@ export function IQButton({
       activeOpacity={0.7}
       disabled={disabled}
       style={[...getButtonStyle(), style]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled }}
     >
       <Text style={[...getTextStyle(), textStyle]}>{title}</Text>
     </TouchableOpacity>

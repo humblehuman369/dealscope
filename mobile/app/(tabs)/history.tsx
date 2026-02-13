@@ -131,6 +131,9 @@ function RecentSearchesSection({ router, isDark }: { router: ReturnType<typeof u
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push(`/analyzing/${search.propertyId}` as any);
           }}
+          accessibilityRole="button"
+          accessibilityLabel={`View ${decodeURIComponent(search.address)}`}
+          accessibilityHint="Opens property analysis"
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -242,6 +245,8 @@ export default function HistoryScreen() {
       <TouchableOpacity 
         style={styles.deleteAction}
         onPress={() => handleDelete(id, address)}
+        accessibilityRole="button"
+        accessibilityLabel={`Delete ${address} from history`}
       >
         <Ionicons name="trash-outline" size={24} color="#fff" />
         <Text style={styles.deleteActionText}>Delete</Text>
@@ -314,6 +319,9 @@ export default function HistoryScreen() {
         style={[styles.propertyCard, dynamicStyles.card]}
         onPress={() => handlePropertyPress(item)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.address}, ${item.city}, ${item.state}. Top strategy: ${item.topStrategy}`}
+        accessibilityHint="Opens property analysis"
       >
         <View style={styles.cardHeader}>
           <View style={styles.addressContainer}>
@@ -328,6 +336,8 @@ export default function HistoryScreen() {
             style={styles.favoriteButton}
             onPress={() => handleToggleFavorite(item.id)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <Ionicons 
               name={item.isFavorite ? "heart" : "heart-outline"} 
@@ -400,7 +410,7 @@ export default function HistoryScreen() {
 
       {/* Header */}
       <View style={[styles.header, dynamicStyles.header]}>
-        <Text style={[styles.title, dynamicStyles.title]}>Scan History</Text>
+        <Text accessibilityRole="header" style={[styles.title, dynamicStyles.title]}>Scan History</Text>
         <View style={styles.filterTabs}>
           <TouchableOpacity 
             style={[
@@ -408,6 +418,9 @@ export default function HistoryScreen() {
               filter === 'all' ? styles.tabActive : dynamicStyles.tabInactive
             ]}
             onPress={() => setFilter('all')}
+            accessibilityRole="button"
+            accessibilityLabel="Show all scans"
+            accessibilityState={{ selected: filter === 'all' }}
           >
             <Text style={[
               styles.tabText,
@@ -420,6 +433,9 @@ export default function HistoryScreen() {
               filter === 'favorites' ? styles.tabActive : dynamicStyles.tabInactive
             ]}
             onPress={() => setFilter('favorites')}
+            accessibilityRole="button"
+            accessibilityLabel="Show favorites only"
+            accessibilityState={{ selected: filter === 'favorites' }}
           >
             <Ionicons 
               name="heart" 
@@ -473,6 +489,8 @@ export default function HistoryScreen() {
               <TouchableOpacity 
                 style={styles.viewAllButton}
                 onPress={() => setFilter('all')}
+                accessibilityRole="button"
+                accessibilityLabel="View all scans"
               >
                 <Text style={styles.viewAllButtonText}>View All Scans</Text>
               </TouchableOpacity>

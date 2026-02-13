@@ -126,8 +126,8 @@ export default function PortfolioScreen() {
     <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={[styles.header, dynamicStyles.header]}>
-        <Text style={[styles.title, dynamicStyles.title]}>Portfolio</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddProperty}>
+        <Text accessibilityRole="header" style={[styles.title, dynamicStyles.title]}>Portfolio</Text>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddProperty} accessibilityRole="button" accessibilityLabel="Add property to portfolio">
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -191,12 +191,12 @@ export default function PortfolioScreen() {
             <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? colors.navy[800] : colors.gray[100] }]}>
               <Ionicons name="briefcase-outline" size={64} color={isDark ? colors.gray[500] : colors.gray[300]} />
             </View>
-            <Text style={[styles.emptyTitle, dynamicStyles.emptyTitle]}>Build Your Portfolio</Text>
+            <Text accessibilityRole="header" style={[styles.emptyTitle, dynamicStyles.emptyTitle]}>Build Your Portfolio</Text>
             <Text style={[styles.emptyText, dynamicStyles.emptyText]}>
               Add properties you've purchased to track your investment performance over time.
             </Text>
             
-            <TouchableOpacity style={styles.emptyButton} onPress={handleAddProperty}>
+            <TouchableOpacity style={styles.emptyButton} onPress={handleAddProperty} accessibilityRole="button" accessibilityLabel="Add your first property">
               <Ionicons name="add-circle-outline" size={20} color={colors.primary[isDark ? 400 : 600]} />
               <Text style={[styles.emptyButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>Add Your First Property</Text>
             </TouchableOpacity>
@@ -243,6 +243,9 @@ function PropertyCard({ property, onPress, onDelete, theme, isDark }: PropertyCa
       ]} 
       onPress={onPress} 
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${property.address}, ${[property.city, property.state].filter(Boolean).join(', ')}`}
+      accessibilityHint="Opens property analysis"
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardAddressContainer}>
@@ -258,6 +261,8 @@ function PropertyCard({ property, onPress, onDelete, theme, isDark }: PropertyCa
             onDelete();
           }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${property.address} from portfolio`}
         >
           <Ionicons name="trash-outline" size={18} color={theme.textMuted} />
         </TouchableOpacity>
@@ -400,11 +405,11 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
         <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
           {/* Modal Header */}
           <View style={[styles.modalHeader, modalTheme.header]}>
-            <TouchableOpacity onPress={handleClose}>
+            <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Cancel">
               <Text style={[styles.modalCancelText, modalTheme.cancelText]}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, modalTheme.title]}>Add Property</Text>
-            <TouchableOpacity onPress={handleSubmit} disabled={isLoading}>
+            <Text accessibilityRole="header" style={[styles.modalTitle, modalTheme.title]}>Add Property</Text>
+            <TouchableOpacity onPress={handleSubmit} disabled={isLoading} accessibilityRole="button" accessibilityLabel="Save property" accessibilityState={{ disabled: isLoading }}>
               {isLoading ? (
                 <ActivityIndicator size="small" color={colors.primary[600]} />
               ) : (
@@ -428,6 +433,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                 value={address}
                 onChangeText={setAddress}
                 autoCapitalize="words"
+                accessibilityLabel="Street address"
               />
             </View>
 
@@ -442,6 +448,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                   value={city}
                   onChangeText={setCity}
                   autoCapitalize="words"
+                  accessibilityLabel="City"
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -454,6 +461,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                   onChangeText={setState}
                   autoCapitalize="characters"
                   maxLength={2}
+                  accessibilityLabel="State"
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1.2 }]}>
@@ -466,6 +474,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                   onChangeText={setZip}
                   keyboardType="number-pad"
                   maxLength={5}
+                  accessibilityLabel="ZIP code"
                 />
               </View>
             </View>
@@ -482,6 +491,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                   value={purchasePrice}
                   onChangeText={setPurchasePrice}
                   keyboardType="number-pad"
+                  accessibilityLabel="Buy price"
                 />
               </View>
             </View>
@@ -492,6 +502,9 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
               <TouchableOpacity
                 style={[styles.strategySelector, modalTheme.textInput]}
                 onPress={() => setShowStrategyPicker(!showStrategyPicker)}
+                accessibilityRole="button"
+                accessibilityLabel={`Investment strategy: ${STRATEGY_OPTIONS.find(s => s.value === strategy)?.label || 'Select strategy'}`}
+                accessibilityHint="Opens strategy picker"
               >
                 <Text style={[
                   styles.strategySelectorText,

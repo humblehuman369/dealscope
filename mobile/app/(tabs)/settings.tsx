@@ -231,8 +231,8 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, dynamicStyles.header]}>
-        <Text style={[styles.title, dynamicStyles.title]}>Settings</Text>
+      <View style={[styles.header, dynamicStyles.header]} accessibilityRole="header">
+        <Text style={[styles.title, dynamicStyles.title]} accessibilityRole="header">Settings</Text>
       </View>
 
       <ScrollView 
@@ -260,6 +260,9 @@ export default function SettingsScreen() {
             style={[styles.syncButton, syncStatus.isSyncing && styles.syncButtonDisabled]}
             onPress={handleSync}
             disabled={syncStatus.isSyncing || !syncStatus.isOnline}
+            accessibilityRole="button"
+            accessibilityLabel={syncStatus.isSyncing ? 'Syncing data' : 'Sync now'}
+            accessibilityState={{ disabled: syncStatus.isSyncing || !syncStatus.isOnline }}
           >
             {syncStatus.isSyncing ? (
               <ActivityIndicator size="small" color="#fff" />
@@ -279,6 +282,9 @@ export default function SettingsScreen() {
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => router.push('/(tabs)/map')}
+              accessibilityRole="button"
+              accessibilityLabel="Property Map"
+              accessibilityHint="Explore properties on an interactive map"
             >
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="map" size={18} color={colors.primary[isDark ? 300 : 600]} />
@@ -310,7 +316,7 @@ export default function SettingsScreen() {
                   </View>
                 </View>
                 <View style={[styles.divider, dynamicStyles.divider]} />
-                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                <TouchableOpacity style={styles.menuItem} onPress={handleLogout} accessibilityRole="button" accessibilityLabel="Sign Out">
                   <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.loss.dark + '30' : colors.loss.light }]}>
                     <Ionicons name="log-out" size={18} color={colors.loss.main} />
                   </View>
@@ -322,6 +328,9 @@ export default function SettingsScreen() {
               <TouchableOpacity 
                 style={styles.menuItem}
                 onPress={() => router.push('/auth/login')}
+                accessibilityRole="button"
+                accessibilityLabel="Sign In or Create Account"
+                accessibilityHint="Sync your data across devices"
               >
                 <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                   <Ionicons name="person" size={18} color={colors.primary[isDark ? 300 : 600]} />
@@ -350,6 +359,9 @@ export default function SettingsScreen() {
                       themeMode === option.value && { backgroundColor: isDark ? colors.primary[800] : colors.primary[50] }
                     ]}
                     onPress={() => handleThemeChange(option.value)}
+                    accessibilityRole="radio"
+                    accessibilityLabel={`${option.label} theme`}
+                    accessibilityState={{ checked: themeMode === option.value }}
                   >
                     <Ionicons 
                       name={option.icon as any} 
@@ -489,7 +501,7 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={handleClearCache}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleClearCache} accessibilityRole="button" accessibilityLabel="Clear All Data" accessibilityHint="Remove all local data">
               <View style={[styles.menuIcon, dynamicStyles.menuIcon]}>
                 <Ionicons name="trash" size={18} color={theme.textTertiary} />
               </View>
@@ -508,7 +520,7 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Learn</Text>
           <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/national-averages' as any)}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/national-averages' as any)} accessibilityRole="button" accessibilityLabel="National Averages">
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="bar-chart-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
@@ -518,7 +530,7 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/search-history' as any)}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/search-history' as any)} accessibilityRole="button" accessibilityLabel="Search History">
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="time-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
@@ -528,7 +540,7 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/learn/ltr' as any)}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/learn/ltr' as any)} accessibilityRole="button" accessibilityLabel="Strategy Education">
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="school-outline" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
@@ -579,6 +591,8 @@ export default function SettingsScreen() {
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => router.push('/privacy')}
+              accessibilityRole="link"
+              accessibilityLabel="Privacy Policy"
             >
               <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Privacy Policy</Text>
               <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
@@ -589,6 +603,8 @@ export default function SettingsScreen() {
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => router.push('/terms')}
+              accessibilityRole="link"
+              accessibilityLabel="Terms of Service"
             >
               <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Terms of Service</Text>
               <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />

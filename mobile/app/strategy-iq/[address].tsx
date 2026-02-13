@@ -481,7 +481,13 @@ export default function StrategyIQScreen() {
           <Text style={styles.loadingText}>
             {!isOnline ? 'Connect to the internet to view this analysis.' : String(error)}
           </Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => analysisResult.refetch()}>
+          <TouchableOpacity 
+            style={styles.retryBtn} 
+            onPress={() => analysisResult.refetch()}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+            accessibilityHint="Retries loading the strategy analysis"
+          >
             <Text style={styles.retryBtnText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -499,10 +505,19 @@ export default function StrategyIQScreen() {
             Invest<Text style={styles.logoIQ}>IQ</Text>
           </Text>
           <View style={styles.navRight}>
-            <TouchableOpacity onPress={() => router.push('/search')}>
+            <TouchableOpacity 
+              onPress={() => router.push('/search')}
+              accessibilityRole="button"
+              accessibilityLabel="Search"
+              accessibilityHint="Opens the search screen"
+            >
               <Ionicons name="search-outline" size={rf(21)} color={verdictDark.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Profile"
+              accessibilityHint="Opens your profile"
+            >
               <Ionicons name="person-outline" size={rf(21)} color={verdictDark.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -522,7 +537,7 @@ export default function StrategyIQScreen() {
               <Ionicons name="desktop-outline" size={rf(14)} color={verdictDark.blue} />{' '}
               FULL BREAKDOWN
             </Text>
-            <Text style={styles.sectionTitle}>Where Does the Money Go?</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">Where Does the Money Go?</Text>
             <Text style={styles.sectionSub}>
               Every dollar in and out — so you can see exactly whether this property pays for itself.
             </Text>
@@ -579,7 +594,7 @@ export default function StrategyIQScreen() {
               <Ionicons name="bar-chart-outline" size={rf(14)} color={verdictDark.blue} />{' '}
               INVESTOR BENCHMARKS
             </Text>
-            <Text style={styles.sectionTitle}>How Does This Stack Up?</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">How Does This Stack Up?</Text>
             <Text style={styles.sectionSub}>
               We compare this deal against the numbers experienced investors actually look for before buying.
             </Text>
@@ -604,7 +619,7 @@ export default function StrategyIQScreen() {
               <Ionicons name="shield-checkmark-outline" size={rf(14)} color={verdictDark.blue} />{' '}
               DATA QUALITY
             </Text>
-            <Text style={styles.sectionTitle}>How Reliable Is This Analysis?</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">How Reliable Is This Analysis?</Text>
             <Text style={styles.sectionSub}>
               No analysis is perfect. These scores show you how much data we had to work with.
             </Text>
@@ -618,7 +633,7 @@ export default function StrategyIQScreen() {
               <Ionicons name="apps-outline" size={rf(14)} color={verdictDark.teal} />{' '}
               ANALYSIS TOOLS
             </Text>
-            <Text style={styles.sectionTitle}>Go Deeper</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">Go Deeper</Text>
             <Text style={styles.sectionSub}>
               Explore detailed worksheets, comps, and what-if scenarios.
             </Text>
@@ -628,6 +643,9 @@ export default function StrategyIQScreen() {
                   key={tool.route}
                   onPress={() => handleDeepDive(tool)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={tool.label}
+                  accessibilityHint={tool.desc}
                   style={{
                     width: '48%',
                     backgroundColor: verdictDark.surface,
@@ -659,7 +677,7 @@ export default function StrategyIQScreen() {
 
           {/* Next Steps Section */}
           <View style={[styles.section, styles.sectionAlt]}>
-            <Text style={styles.sectionTitle}>What's Your Next Move?</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">What's Your Next Move?</Text>
             <Text style={styles.sectionSub}>Ready to act? Here's where to start.</Text>
             <NextSteps steps={NEXT_STEPS} />
           </View>
