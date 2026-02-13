@@ -14,6 +14,8 @@ import { AnimatedSplash } from '../components/AnimatedSplash';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { useDeepLinking } from '../hooks/useDeepLinking';
+import { useRegisterPushToken } from '../hooks/useRegisterPushToken';
+import { useAuth } from '../context/AuthContext';
 import NetInfo from '@react-native-community/netinfo';
 
 // Initialize Sentry for error tracking
@@ -122,9 +124,13 @@ function AppContent({
   onAnimationComplete: () => void;
 }) {
   const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
 
   // Handle deep links / universal links from shared property URLs
   useDeepLinking();
+
+  // Register push token with backend when authenticated
+  useRegisterPushToken(isAuthenticated);
 
   return (
     <>

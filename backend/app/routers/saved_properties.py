@@ -6,7 +6,7 @@ import logging
 from typing import Optional, List
 import sys
 
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Query
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
@@ -258,6 +258,7 @@ async def save_property(
     data: SavedPropertyCreate,
     current_user: CurrentUser,
     db: DbSession,
+    background_tasks: BackgroundTasks,
 ):
     """
     Save a property to the user's portfolio.
@@ -341,6 +342,23 @@ async def save_property(
                 logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
         
+        # Send push notification in background (non-blocking)
+        try:
+            from app.services.push_notification_service import push_service
+            address_display = saved.full_address or saved.address_street or "Property"
+            background_tasks.add_task(
+                push_service.send_to_user,
+                db,
+                current_user.id,
+                title="Property Saved",
+                body=f"{address_display} added to your watchlist.",
+                data={"type": "property", "address": saved.full_address or saved.address_street},
+                category="property_alerts",
+                channel_id="property-alerts",
+            )
+        except Exception as notify_exc:
+            logger.warning("Failed to queue save notification: %s", notify_exc)
+
         # Build response
         try:
             return _build_saved_property_response(saved, deal_maker=deal_maker)

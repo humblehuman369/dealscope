@@ -107,7 +107,14 @@ export default {
           motionPermission: "Allow InvestIQ to access motion sensors for compass heading."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          icon: "./assets/icon.png",
+          color: "#4F46E5"
+        }
+      ]
     ],
     experiments: {
       typedRoutes: true

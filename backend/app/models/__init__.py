@@ -14,6 +14,7 @@ from app.models.session import UserSession
 from app.models.role import Role, Permission, RolePermission, UserRole
 from app.models.audit_log import AuditLog, AuditAction
 from app.models.verification_token import VerificationToken, TokenType
+from app.models.device_token import DeviceToken, DevicePlatform
 
 __all__ = [
     "User",
@@ -41,4 +42,6 @@ __all__ = [
     "AuditAction",
     "VerificationToken",
     "TokenType",
+    "DeviceToken",
+    "DevicePlatform",
 ]
