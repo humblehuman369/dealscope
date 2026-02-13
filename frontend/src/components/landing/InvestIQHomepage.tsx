@@ -553,6 +553,11 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       <footer className="iq-footer">
         <div className="footer-logo">Invest<span>IQ</span></div>
         <p className="footer-tagline">Professional Real Estate Intelligence for Everyone.</p>
+        <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', margin: '0.75rem 0' }}>
+          <Link href="/privacy" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/terms" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Terms</Link>
+          <a href="mailto:support@investiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Contact</a>
+        </div>
         <p className="footer-copy">&copy; 2026 InvestIQ. All rights reserved.<br />Professional use only. Not a lender.</p>
       </footer>
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import './investiq-gateway.css';
 
 type Step = 'start' | 'address' | 'scan';
@@ -148,14 +149,13 @@ export function InvestIQGateway({ initialStep = 'start', onClose, onScanProperty
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <input
-                  type="text"
+                <AddressAutocomplete
                   className="gw-address-input"
                   style={{ paddingLeft: 48 }}
                   placeholder="Enter property address..."
                   value={addressInput}
-                  onChange={(e) => setAddressInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleGenerateBaseline(); }}
+                  onChange={setAddressInput}
+                  onPlaceSelect={setAddressInput}
                   autoFocus
                 />
               </div>

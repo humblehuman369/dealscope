@@ -215,7 +215,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       </button>
 
       <p className="text-xs text-center" style={{ color: '#64748B' }}>
-        By creating an account, you agree to our Terms of Service and Privacy Policy.
+        By creating an account, you agree to our{' '}
+        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0891B2' }}>Terms of Service</a>
+        {' '}and{' '}
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0891B2' }}>Privacy Policy</a>.
       </p>
 
       {/* Switch to login */}

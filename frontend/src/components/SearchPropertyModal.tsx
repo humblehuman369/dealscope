@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Search, X, ArrowLeft } from 'lucide-react';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 
 interface SearchPropertyModalProps {
   isOpen: boolean;
@@ -178,24 +179,16 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   size={20} 
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" 
                 />
-                <input
-                  type="text"
+                <AddressAutocomplete
                   placeholder="Enter property address..."
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={setAddress}
+                  onPlaceSelect={setAddress}
                   autoFocus
                   className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#0891b2';
-                    e.currentTarget.style.background = 'rgba(8, 145, 178, 0.05)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
                   }}
                 />
               </div>
