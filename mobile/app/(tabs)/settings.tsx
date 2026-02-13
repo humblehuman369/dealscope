@@ -8,11 +8,14 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
+  Linking,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as Notifications from 'expo-notifications';
 
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +23,7 @@ import { useTheme, ThemeMode } from '../../context/ThemeContext';
 import { useDatabaseStats, useClearAllData, useDatabaseInit } from '../../hooks/useDatabase';
 import { useSyncStatus } from '../../services/syncManager';
 import { getSetting, setSetting } from '../../database';
+import { getUserProfile, updateUserProfile } from '../../services/userService';
 
 const THEME_OPTIONS: { label: string; value: ThemeMode; icon: string }[] = [
   { label: 'Light', value: 'light', icon: 'sunny' },
@@ -37,37 +41,73 @@ export default function SettingsScreen() {
   const clearAllData = useClearAllData();
   const syncStatus = useSyncStatus();
   
-  // Settings state
-  const [notifications, setNotifications] = useState(true);
+  // Notification preference state
+  const [notifPrefs, setNotifPrefs] = useState({
+    push_enabled: true,
+    property_alerts: true,
+    subscription_alerts: true,
+    marketing: true,
+  });
+  const [systemPermission, setSystemPermission] = useState<boolean | null>(null);
 
-  // Load settings from database
+  // Load notification preferences from backend (and check OS permission)
   useEffect(() => {
-    async function loadSettings() {
-      if (!dbReady) return;
+    async function loadNotifPrefs() {
+      // Check OS-level permission
       try {
-        const notifSetting = await getSetting('notifications');
-        if (notifSetting !== null) setNotifications(notifSetting === 'true');
+        const { status } = await Notifications.getPermissionsAsync();
+        setSystemPermission(status === 'granted');
+      } catch {
+        setSystemPermission(null);
+      }
+
+      // Load user preferences from backend
+      if (!isAuthenticated) return;
+      try {
+        const profile = await getUserProfile();
+        if (profile?.notification_preferences) {
+          const prefs = profile.notification_preferences as Record<string, boolean>;
+          setNotifPrefs((prev) => ({
+            push_enabled: prefs.push_enabled ?? prev.push_enabled,
+            property_alerts: prefs.property_alerts ?? prev.property_alerts,
+            subscription_alerts: prefs.subscription_alerts ?? prev.subscription_alerts,
+            marketing: prefs.marketing ?? prev.marketing,
+          }));
+        }
       } catch (error) {
-        console.warn('Failed to load settings:', error);
+        console.warn('Failed to load notification preferences:', error);
       }
     }
-    loadSettings();
-  }, [dbReady]);
+    loadNotifPrefs();
+  }, [isAuthenticated]);
 
-  // Save setting to database
-  const saveSetting = useCallback(async (key: string, value: boolean) => {
+  // Update a single notification preference
+  const updateNotifPref = useCallback(async (key: string, value: boolean) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const updated = { ...notifPrefs, [key]: value };
+    setNotifPrefs(updated);
+
+    // Persist to backend
+    if (isAuthenticated) {
+      try {
+        await updateUserProfile({ notification_preferences: updated });
+      } catch (error) {
+        console.warn('Failed to save notification preference:', error);
+      }
+    }
+    // Also persist locally as fallback
     try {
-      await setSetting(key, String(value));
-    } catch (error) {
-      console.warn('Failed to save setting:', error);
+      await setSetting('notifications', String(updated.push_enabled));
+    } catch {}
+  }, [notifPrefs, isAuthenticated]);
+
+  const openSystemNotificationSettings = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
     }
   }, []);
-
-  const handleNotificationsChange = useCallback(async (value: boolean) => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setNotifications(value);
-    saveSetting('notifications', value);
-  }, [saveSetting]);
 
   const handleThemeChange = useCallback(async (newMode: ThemeMode) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -336,22 +376,93 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Preferences Section */}
+        {/* Notifications Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Notifications</Text>
           <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
+            {/* System permission banner */}
+            {systemPermission === false && (
+              <TouchableOpacity
+                style={[styles.permissionBanner, { backgroundColor: isDark ? colors.warning.dark + '20' : colors.warning.light }]}
+                onPress={openSystemNotificationSettings}
+              >
+                <Ionicons name="warning" size={18} color={colors.warning.main} />
+                <Text style={[styles.permissionText, { color: colors.warning.main }]}>
+                  Notifications are blocked. Tap to open Settings.
+                </Text>
+                <Ionicons name="open-outline" size={16} color={colors.warning.main} />
+              </TouchableOpacity>
+            )}
+
+            {/* Global toggle */}
             <View style={styles.settingItem}>
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.info.dark + '30' : colors.info.light }]}>
                 <Ionicons name="notifications" size={18} color={colors.info.main} />
               </View>
               <Text style={[styles.settingTitle, dynamicStyles.settingTitle]}>Push Notifications</Text>
               <Switch
-                value={notifications}
-                onValueChange={handleNotificationsChange}
+                value={notifPrefs.push_enabled}
+                onValueChange={(v) => updateNotifPref('push_enabled', v)}
                 trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
-                thumbColor={notifications ? '#fff' : isDark ? colors.gray[400] : '#fff'}
+                thumbColor={notifPrefs.push_enabled ? '#fff' : isDark ? colors.gray[400] : '#fff'}
               />
             </View>
+
+            {/* Category toggles (only shown when push is enabled) */}
+            {notifPrefs.push_enabled && (
+              <>
+                <View style={[styles.divider, dynamicStyles.divider]} />
+                <View style={styles.settingItem}>
+                  <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.profit.dark + '30' : colors.profit.light }]}>
+                    <Ionicons name="home" size={18} color={colors.profit.main} />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={[styles.settingTitle, dynamicStyles.settingTitle]}>Property Alerts</Text>
+                    <Text style={[styles.menuSubtitle, dynamicStyles.menuSubtitle]}>Saved properties & watchlist</Text>
+                  </View>
+                  <Switch
+                    value={notifPrefs.property_alerts}
+                    onValueChange={(v) => updateNotifPref('property_alerts', v)}
+                    trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
+                    thumbColor={notifPrefs.property_alerts ? '#fff' : isDark ? colors.gray[400] : '#fff'}
+                  />
+                </View>
+
+                <View style={[styles.divider, dynamicStyles.divider]} />
+                <View style={styles.settingItem}>
+                  <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                    <Ionicons name="card" size={18} color={colors.primary[isDark ? 300 : 600]} />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={[styles.settingTitle, dynamicStyles.settingTitle]}>Subscription</Text>
+                    <Text style={[styles.menuSubtitle, dynamicStyles.menuSubtitle]}>Billing & plan changes</Text>
+                  </View>
+                  <Switch
+                    value={notifPrefs.subscription_alerts}
+                    onValueChange={(v) => updateNotifPref('subscription_alerts', v)}
+                    trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
+                    thumbColor={notifPrefs.subscription_alerts ? '#fff' : isDark ? colors.gray[400] : '#fff'}
+                  />
+                </View>
+
+                <View style={[styles.divider, dynamicStyles.divider]} />
+                <View style={styles.settingItem}>
+                  <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.info.dark + '30' : colors.info.light }]}>
+                    <Ionicons name="megaphone" size={18} color={colors.info.main} />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={[styles.settingTitle, dynamicStyles.settingTitle]}>Tips & Updates</Text>
+                    <Text style={[styles.menuSubtitle, dynamicStyles.menuSubtitle]}>New features & market tips</Text>
+                  </View>
+                  <Switch
+                    value={notifPrefs.marketing}
+                    onValueChange={(v) => updateNotifPref('marketing', v)}
+                    trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
+                    thumbColor={notifPrefs.marketing ? '#fff' : isDark ? colors.gray[400] : '#fff'}
+                  />
+                </View>
+              </>
+            )}
           </View>
         </View>
 
@@ -660,6 +771,20 @@ const styles = StyleSheet.create({
   themeOptionText: {
     flex: 1,
     fontSize: 15,
+    fontWeight: '500',
+  },
+  permissionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    marginHorizontal: 12,
+    marginTop: 12,
+    borderRadius: 10,
+  },
+  permissionText: {
+    flex: 1,
+    fontSize: 13,
     fontWeight: '500',
   },
   settingItem: {

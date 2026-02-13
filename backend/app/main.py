@@ -328,6 +328,7 @@ _routers = [
     ("Billing",          "app.routers.billing"),
     ("Sync",             "app.routers.sync"),
     ("Defaults",         "app.routers.defaults"),
+    ("Devices",          "app.routers.devices"),
 ]
 
 for name, path in _routers:

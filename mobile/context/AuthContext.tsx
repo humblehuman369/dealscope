@@ -20,6 +20,7 @@ import {
   type MFAChallengeResponse,
   type LoginResponse,
 } from '../services/authService';
+import { unregisterPushToken } from '../hooks/useRegisterPushToken';
 
 interface AuthState {
   user: User | null;
@@ -142,6 +143,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
+    // Unregister push token before clearing auth (best-effort)
+    await unregisterPushToken().catch(() => {});
     await authLogout();
     setState({
       user: null,

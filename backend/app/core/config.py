@@ -147,6 +147,11 @@ class Settings(BaseSettings):
     ALLOWED_FILE_TYPES: str = "pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,webp"
     
     # ===========================================
+    # Push Notifications (Expo)
+    # ===========================================
+    EXPO_ACCESS_TOKEN: str = ""  # Optional — improves throughput; get from https://expo.dev/accounts/[account]/settings/access-tokens
+    
+    # ===========================================
     # Email (Resend)
     # ===========================================
     RESEND_API_KEY: str = ""
