@@ -114,8 +114,13 @@ function buildEmptyAnalysis(): IQAnalysisResult {
   };
 }
 
+/** Max displayable score — no deal is ever 100% certain */
+const SCORE_CAP = 95;
+
 function mapResponse(res: BackendVerdictResponse): IQAnalysisResult {
-  const dealScore = res.deal_score ?? res.dealScore ?? 0;
+  const rawScore = res.deal_score ?? res.dealScore ?? 0;
+  // Hard-cap: no property should ever show 100 — there is always risk
+  const dealScore = Math.min(SCORE_CAP, Math.max(0, rawScore));
   const dealVerdict = (res.deal_verdict ?? res.dealVerdict ?? localGetDealVerdict(dealScore)) as IQDealVerdict;
   const verdictDescription = res.verdict_description ?? res.verdictDescription ?? '';
 
