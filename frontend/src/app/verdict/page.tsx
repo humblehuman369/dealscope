@@ -22,9 +22,10 @@ import {
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
-  PropertyContextBar,
 } from '@/components/iq-verdict'
-import { colors, typography, tw, getScoreColor } from '@/components/iq-verdict/verdict-design-tokens'
+import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
+import { VerdictScoreCard } from '@/components/iq-verdict/VerdictScoreCard'
+import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
@@ -58,6 +59,46 @@ interface BackendAnalysisResponse {
   deal_probability_score?: number; dealProbabilityScore?: number
   // Allow additional camelCase fields from alias generator
   [key: string]: unknown
+}
+
+/**
+ * Bulletproof component score extraction.
+ * Handles ALL four backend response shapes:
+ *   1. Flat camelCase:  { dealGapScore: 80 }
+ *   2. Flat snake_case: { deal_gap_score: 80 }
+ *   3. Nested camelCase: { componentScores: { dealGapScore: 80 } }
+ *   4. Nested snake_case: { component_scores: { deal_gap_score: 80 } }
+ * Returns clean numbers (0 fallback) regardless of backend version.
+ */
+function extractComponentScores(data: Record<string, unknown>): {
+  dealGap: number
+  returnQuality: number
+  marketAlignment: number
+  dealProbability: number
+} {
+  const nested = (data.componentScores ?? data.component_scores) as Record<string, unknown> | undefined
+
+  const result = {
+    dealGap: Number(
+      data.dealGapScore ?? data.deal_gap_score
+      ?? nested?.dealGapScore ?? nested?.deal_gap_score ?? 0
+    ),
+    returnQuality: Number(
+      data.returnQualityScore ?? data.return_quality_score
+      ?? nested?.returnQualityScore ?? nested?.return_quality_score ?? 0
+    ),
+    marketAlignment: Number(
+      data.marketAlignmentScore ?? data.market_alignment_score
+      ?? nested?.marketAlignmentScore ?? nested?.market_alignment_score ?? 0
+    ),
+    dealProbability: Number(
+      data.dealProbabilityScore ?? data.deal_probability_score
+      ?? nested?.dealProbabilityScore ?? nested?.deal_probability_score ?? 0
+    ),
+  }
+
+  console.log('[IQ Verdict] extractComponentScores result:', result)
+  return result
 }
 
 // Helper to get strategy icon
@@ -392,14 +433,9 @@ function VerdictContent() {
         }
           
         // Diagnostic logging — traces exact key formats from backend
+        console.log('[IQ Verdict] Raw backend response:', JSON.stringify(analysisData).slice(0, 500))
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
         console.log('[IQ Verdict] dealScore:', (analysisData as any).dealScore ?? (analysisData as any).deal_score)
-        console.log('[IQ Verdict] Component scores (flat):', {
-          dealGapScore: (analysisData as any).dealGapScore ?? (analysisData as any).deal_gap_score,
-          returnQualityScore: (analysisData as any).returnQualityScore ?? (analysisData as any).return_quality_score,
-          marketAlignmentScore: (analysisData as any).marketAlignmentScore ?? (analysisData as any).market_alignment_score,
-          dealProbabilityScore: (analysisData as any).dealProbabilityScore ?? (analysisData as any).deal_probability_score,
-        })
           
         // Convert backend response to frontend IQAnalysisResult format
         // Backend now returns camelCase for new fields via Pydantic alias_generator
@@ -432,13 +468,16 @@ function VerdictContent() {
             opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
             returnRating: analysisData.return_rating ?? analysisData.returnRating,
             returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            // Component scores — flat top-level fields from backend (no nesting)
-            componentScores: {
-              dealGapScore: Number(analysisData.dealGapScore ?? analysisData.deal_gap_score ?? 0),
-              returnQualityScore: Number(analysisData.returnQualityScore ?? analysisData.return_quality_score ?? 0),
-              marketAlignmentScore: Number(analysisData.marketAlignmentScore ?? analysisData.market_alignment_score ?? 0),
-              dealProbabilityScore: Number(analysisData.dealProbabilityScore ?? analysisData.deal_probability_score ?? 0),
-            },
+            // Component scores — bulletproof extraction handles flat OR nested, camelCase OR snake_case
+            componentScores: (() => {
+              const cs = extractComponentScores(analysisData as Record<string, unknown>)
+              return {
+                dealGapScore: cs.dealGap,
+                returnQualityScore: cs.returnQuality,
+                marketAlignmentScore: cs.marketAlignment,
+                dealProbabilityScore: cs.dealProbability,
+              }
+            })(),
           }
           setAnalysis(analysisResult)
         } catch (analysisErr) {
@@ -628,7 +667,6 @@ function VerdictContent() {
 
   // Derived values for display
   const score = analysis.dealScore
-  const scoreColor = getScoreColor(score)
   const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'Marginal Deal' : score >= 30 ? 'Unlikely Deal' : 'Pass'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const breakevenPrice = analysis.breakevenPrice || property.price
@@ -654,18 +692,14 @@ function VerdictContent() {
     { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
   ]
 
-  // Component scores from backend composite scorer (0-90 scale)
+  // Component scores for VerdictScoreCard (0-90 scale)
   const cs = analysis.componentScores
-  const compDealGap = cs?.dealGapScore ?? 0
-  const compReturnQuality = cs?.returnQualityScore ?? 0
-  const compMarketAlignment = cs?.marketAlignmentScore ?? 0
-  const compDealProbability = cs?.dealProbabilityScore ?? 0
-
-  // Qualitative label for component scores (0-90 scale)
-  const componentLabel = (v: number) =>
-    v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak'
-  const componentColor = (v: number) =>
-    v >= 75 ? colors.brand.teal : v >= 55 ? '#38bdf8' : v >= 40 ? colors.brand.gold : v >= 20 ? '#f97316' : colors.status.negative
+  const verdictComponentScores = {
+    dealGap: cs?.dealGapScore ?? 0,
+    returnQuality: cs?.returnQualityScore ?? 0,
+    marketAlignment: cs?.marketAlignmentScore ?? 0,
+    dealProbability: cs?.dealProbabilityScore ?? 0,
+  }
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -681,9 +715,9 @@ function VerdictContent() {
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         <AnalysisNav />
 
-        {/* Property address context bar */}
+        {/* Property address bar — link to profile + expandable details */}
         {property && (
-          <PropertyContextBar
+          <PropertyAddressBar
             address={property.address}
             city={property.city}
             state={property.state}
@@ -692,84 +726,21 @@ function VerdictContent() {
             baths={property.baths}
             sqft={property.sqft}
             price={property.price}
-            imageUrl={property.imageUrl}
-            status={
-              property.listingStatus === 'FOR_SALE' ? 'active'
-              : property.listingStatus === 'PENDING' ? 'pending'
-              : property.listingStatus === 'SOLD' ? 'sold'
-              : 'off-market'
-            }
+            listingStatus={property.listingStatus}
+            zpid={property.zpid || propertyIdParam || undefined}
           />
         )}
 
         {/* Responsive container: mobile-first single column, desktop 2-column */}
         <div className="max-w-[520px] lg:max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_380px] lg:gap-0">
-          {/* Score Hero */}
-          <section className="px-5 pt-10 pb-8" style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}` }}>
-            {/* The Verdict label */}
-            <p className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6" style={{ color: colors.text.muted }}>The Verdict</p>
-
-            {/* Score gauge + badge row */}
-            <div className="flex items-center justify-center gap-5 mb-5">
-              {/* Score gauge */}
-              <div className="relative flex-shrink-0 w-32 h-32">
-                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360)} ${2 * Math.PI * 52 * (120/360)}`} strokeLinecap="round"/>
-                  <circle cx="60" cy="60" r="52" fill="none" stroke={scoreColor} strokeWidth="10" strokeDasharray={`${2 * Math.PI * 52 * (240/360) * (score/100)} ${2 * Math.PI * 52 - 2 * Math.PI * 52 * (240/360) * (score/100)}`} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}40)` }}/>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[2.8rem] font-bold tabular-nums" style={{ color: scoreColor, lineHeight: 1 }}>{score}</span>
-                  <span className="text-xs font-medium mt-0.5" style={{ color: colors.text.secondary }}>/100</span>
-                </div>
-              </div>
-
-              {/* Verdict badge — centered vertically with gauge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style={{ border: `1px solid ${scoreColor}40`, background: `${scoreColor}15` }}>
-                {score >= 65 ? (
-                  <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : (
-                  <svg width="14" height="14" fill="none" stroke={scoreColor} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                  </svg>
-                )}
-                <span className="text-[0.82rem] font-bold" style={{ color: scoreColor }}>{verdictLabel}</span>
-              </div>
-            </div>
-
-            {/* Verdict description — centered below score + badge */}
-            <p className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4" style={{ color: colors.text.body }}>{analysis.verdictDescription || 'Calculating deal metrics...'}</p>
-
-            <div className="flex justify-center mt-2">
-              <button onClick={handleShowMethodology} className="text-[0.82rem] font-medium" style={{ color: colors.brand.teal }}>How Verdict Score Works</button>
-            </div>
-
-            {/* Score Components — real backend values that feed the headline score */}
-            <div className="mt-6 text-left max-w-sm mx-auto">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: colors.text.secondary }}>Score Components</p>
-              {[
-                { label: 'Deal Gap', value: compDealGap, weight: '35%' },
-                { label: 'Return Quality', value: compReturnQuality, weight: '30%' },
-                { label: 'Market Alignment', value: compMarketAlignment, weight: '20%' },
-                { label: 'Deal Probability', value: compDealProbability, weight: '15%' },
-              ].map((m, i) => {
-                const clr = componentColor(m.value)
-                const lbl = componentLabel(m.value)
-                // Bar width: score / 90 (max per component) mapped to visual width
-                const barPct = Math.min(100, (m.value / 90) * 100)
-                return (
-                <div key={i} className="flex items-center gap-2.5 mb-2.5">
-                  <span className="text-xs font-medium w-28 shrink-0" style={{ color: colors.text.body }}>{m.label}</span>
-                  <div className="flex-1 h-1.5 rounded" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <div className="h-full rounded transition-all" style={{ width: `${barPct}%`, background: clr }} />
-                  </div>
-                  <span className="text-xs font-bold w-16 text-right" style={{ color: clr }}>{lbl}</span>
-                </div>
-                )
-              })}
-            </div>
-          </section>
+          {/* VerdictIQ Score Card — clean standalone component */}
+          <VerdictScoreCard
+            score={score}
+            verdictLabel={verdictLabel}
+            description={analysis.verdictDescription || 'Calculating deal metrics...'}
+            componentScores={verdictComponentScores}
+            onHowItWorks={handleShowMethodology}
+          />
 
           {/* Price Targets */}
           <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
