@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
@@ -16,9 +15,6 @@ import {
   ListingInfo,
   LocationMap,
 } from './index'
-import { FileText, Share2, Search } from 'lucide-react'
-import Link from 'next/link'
-import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyDetailsClientProps {
@@ -37,34 +33,11 @@ interface PropertyDetailsClientProps {
  */
 export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
-  const [showSearchModal, setShowSearchModal] = useState(false)
-
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
-
-  const [shareMessage, setShareMessage] = useState<string | null>(null)
-
-  // Handle share
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${property.address.streetAddress} - InvestIQ`,
-          text: `Check out this property: ${fullAddress}`,
-          url: window.location.href
-        })
-      } catch {
-        // User cancelled
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href)
-      setShareMessage('Link copied!')
-      setTimeout(() => setShareMessage(null), 2000)
-    }
-  }
 
   return (
     <div
-      className="min-h-screen pb-24 font-['Inter',sans-serif]"
+      className="min-h-screen pb-8 font-['Inter',sans-serif]"
       style={{ backgroundColor: colors.background.base }}
     >
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
@@ -149,65 +122,6 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         </div>
       </div>
 
-      {/* Toast Message */}
-      {shareMessage && (
-        <div
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 text-white text-sm font-medium rounded-lg shadow-lg z-50 animate-fade-in"
-          style={{ backgroundColor: colors.background.cardUp }}
-        >
-          {shareMessage}
-        </div>
-      )}
-
-      {/* Fixed Action Bar */}
-      <div
-        className="fixed bottom-0 left-0 right-0 py-4 px-6 z-50 backdrop-blur-xl"
-        style={{
-          backgroundColor: 'rgba(12,18,32,0.95)',
-          borderTop: `1px solid ${colors.ui.border}`,
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 sm:gap-4">
-          {/* Search New Property */}
-          <button
-            onClick={() => setShowSearchModal(true)}
-            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full transition-colors hover:bg-white/5"
-            style={{ border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
-          >
-            <Search size={18} />
-            <span className="text-sm font-medium hidden sm:inline">Search</span>
-          </button>
-
-          {/* Analyze Property Button - Primary CTA */}
-          <Link
-            href={`/property?address=${encodeURIComponent(fullAddress)}`}
-            className="flex items-center gap-2 px-6 sm:px-8 py-3 rounded-full text-white font-bold transition-all hover:brightness-110"
-            style={{
-              backgroundColor: colors.brand.blueDeep,
-              boxShadow: colors.shadow.ctaBtn,
-            }}
-          >
-            <FileText size={18} />
-            <span className="text-sm font-bold">Analyze Property</span>
-          </Link>
-
-          {/* Share Button */}
-          <button 
-            onClick={handleShare}
-            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full transition-colors hover:bg-white/5"
-            style={{ border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
-          >
-            <Share2 size={18} />
-            <span className="text-sm font-medium hidden sm:inline">Share</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search Modal */}
-      <SearchPropertyModal 
-        isOpen={showSearchModal} 
-        onClose={() => setShowSearchModal(false)} 
-      />
     </div>
   )
 }
