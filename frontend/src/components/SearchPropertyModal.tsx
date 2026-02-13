@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Search, X, ArrowLeft } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { InfoDialog } from '@/components/ui/ConfirmDialog';
 
 interface SearchPropertyModalProps {
   isOpen: boolean;
@@ -14,14 +15,12 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
   const router = useRouter();
   const [address, setAddress] = useState('');
   const [showAddressInput, setShowAddressInput] = useState(false);
+  const [showScanInfo, setShowScanInfo] = useState(false);
 
   if (!isOpen) return null;
 
   const handleScanProperty = () => {
-    onClose();
-    // For now, show a message that scan is mobile-only
-    // In the future, this could open a camera interface or redirect to mobile app
-    alert('Scan Property is available on the mobile app. Please use "Enter Address" on desktop.');
+    setShowScanInfo(true);
   };
 
   const handleAddressSubmit = (e: React.FormEvent) => {
@@ -227,6 +226,13 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
           )}
         </div>
       </div>
+
+      <InfoDialog
+        open={showScanInfo}
+        onClose={() => setShowScanInfo(false)}
+        title="Scan is a Mobile Feature"
+        description="Point your phone camera at any property for instant analysis. On desktop, use 'Enter Address' to search by location."
+      />
     </>
   );
 }

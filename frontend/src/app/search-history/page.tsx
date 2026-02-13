@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { 
   History, Search, MapPin, Building2, Clock, Trash2, 
   ExternalLink, TrendingUp, Filter,
@@ -75,6 +76,8 @@ export default function SearchHistoryPage() {
   const [error, setError] = useState<string | null>(null)
   const [filterSuccessful, setFilterSuccessful] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [showClearAll, setShowClearAll] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -107,28 +110,29 @@ export default function SearchHistoryPage() {
     }
   }, [isAuthenticated, fetchData])
 
-  // Delete single entry
-  const deleteEntry = async (entryId: string) => {
-    if (!confirm('Delete this search from history?')) return
-
+  // Delete single entry (triggered by ConfirmDialog)
+  const confirmDeleteEntry = async () => {
+    if (!deleteTarget) return
     try {
-      await api.delete(`/api/v1/search-history/${entryId}`)
-      setHistory(prev => prev.filter(h => h.id !== entryId))
+      await api.delete(`/api/v1/search-history/${deleteTarget}`)
+      setHistory(prev => prev.filter(h => h.id !== deleteTarget))
     } catch (err) {
       console.error('Failed to delete entry:', err)
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
-  // Clear all history
-  const clearAllHistory = async () => {
-    if (!confirm('Are you sure you want to clear all search history? This cannot be undone.')) return
-
+  // Clear all history (triggered by ConfirmDialog)
+  const confirmClearAll = async () => {
     try {
       await api.delete('/api/v1/search-history')
       setHistory([])
       await fetchData()
     } catch (err) {
       console.error('Failed to clear history:', err)
+    } finally {
+      setShowClearAll(false)
     }
   }
 
@@ -205,7 +209,7 @@ export default function SearchHistoryPage() {
             </button>
             {history.length > 0 && (
               <button
-                onClick={clearAllHistory}
+                onClick={() => setShowClearAll(true)}
                 className="px-4 py-2.5 text-red-400 hover:bg-red-400/10 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -435,7 +439,7 @@ export default function SearchHistoryPage() {
                         </Link>
                       )}
                       <button
-                        onClick={() => deleteEntry(item.id)}
+                        onClick={() => setDeleteTarget(item.id)}
                         className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                         title="Delete from history"
                       >
@@ -449,6 +453,28 @@ export default function SearchHistoryPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Single Entry Confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Search Entry"
+        description="Remove this search from your history?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteEntry}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* Clear All Confirmation */}
+      <ConfirmDialog
+        open={showClearAll}
+        title="Clear All History"
+        description="This will permanently delete all your search history. This cannot be undone."
+        variant="danger"
+        confirmLabel="Clear Everything"
+        onConfirm={confirmClearAll}
+        onCancel={() => setShowClearAll(false)}
+      />
     </div>
   )
 }

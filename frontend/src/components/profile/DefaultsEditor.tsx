@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useUserAssumptions } from '@/hooks/useDefaults'
 import { defaultsService } from '@/services/defaults'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { AllAssumptions } from '@/stores/index'
 
 interface SliderConfig {
@@ -188,6 +189,7 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   
   // Fetch system defaults for comparison
   useEffect(() => {
@@ -242,10 +244,7 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
   }, [localChanges, hasUnsavedChanges, updateAssumptions])
   
   const handleReset = useCallback(async () => {
-    if (!confirm('Reset all defaults to system values? This will remove all your customizations.')) {
-      return
-    }
-    
+    setShowResetConfirm(false)
     setIsSaving(true)
     setSaveError(null)
     
@@ -403,7 +402,7 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
         {/* Action Buttons */}
         <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
           <button
-            onClick={handleReset}
+            onClick={() => setShowResetConfirm(true)}
             disabled={isSaving || (!hasCustomizations && !hasUnsavedChanges)}
             className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
@@ -429,6 +428,16 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        title="Reset All Defaults"
+        description="This will remove all your customizations and restore system defaults."
+        variant="danger"
+        confirmLabel="Reset Everything"
+        onConfirm={handleReset}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   )
 }

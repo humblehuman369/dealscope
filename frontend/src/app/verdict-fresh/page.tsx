@@ -178,7 +178,7 @@ export default function VerdictFreshPage() {
     setIsExporting(true)
     setTimeout(() => {
       setIsExporting(false)
-      alert('Export complete! (Demo mode - no file downloaded)')
+      // Demo page — export is non-functional
     }, 1500)
   }
 

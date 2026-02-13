@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 // ===========================================
 // Types
@@ -88,6 +89,7 @@ export default function DocumentUpload({
   const [selectedType, setSelectedType] = useState('other')
   const [description, setDescription] = useState('')
   
+  const [deleteDocTarget, setDeleteDocTarget] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Fetch existing documents
@@ -194,15 +196,16 @@ export default function DocumentUpload({
     }
   }
 
-  // Delete document
-  const deleteDocument = async (docId: string) => {
-    if (!confirm('Delete this document?')) return
-
+  // Delete document (triggered by ConfirmDialog)
+  const confirmDeleteDocument = async () => {
+    if (!deleteDocTarget) return
     try {
-      await api.delete(`/api/v1/documents/${docId}`)
-      setDocuments(prev => prev.filter(d => d.id !== docId))
+      await api.delete(`/api/v1/documents/${deleteDocTarget}`)
+      setDocuments(prev => prev.filter(d => d.id !== deleteDocTarget))
     } catch (err) {
       console.error('Delete failed:', err)
+    } finally {
+      setDeleteDocTarget(null)
     }
   }
 
@@ -355,7 +358,7 @@ export default function DocumentUpload({
                     <Download className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => deleteDocument(doc.id)}
+                    onClick={() => setDeleteDocTarget(doc.id)}
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                     title="Delete"
                   >
@@ -367,7 +370,16 @@ export default function DocumentUpload({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteDocTarget}
+        title="Delete Document"
+        description="This document will be permanently removed."
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteDocument}
+        onCancel={() => setDeleteDocTarget(null)}
+      />
     </div>
   )
 }
-
