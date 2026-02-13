@@ -28,10 +28,129 @@ from app.schemas.proforma import (
     DataSources,
 )
 from app.schemas.property import PropertyResponse
-from app.services.calculators import calculate_monthly_mortgage, calculate_ltr
+from app.services.calculators import (
+    calculate_monthly_mortgage, calculate_ltr, calculate_str,
+    calculate_brrrr, calculate_flip, calculate_house_hack, calculate_wholesale,
+)
 
 # Import centralized defaults
 from app.core.defaults import FINANCING, OPERATING, GROWTH
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+# ============================================
+# STRATEGY METHODOLOGY DESCRIPTIONS
+# ============================================
+
+STRATEGY_METHODOLOGY = {
+    "ltr": """**Long-Term Rental (LTR)** — Buy and hold for steady monthly cash flow.
+You purchase the property, secure long-term tenants (12-month leases), and earn
+rental income minus operating expenses and debt service. Key metrics: Cap Rate,
+Cash-on-Cash Return, DSCR. This strategy prioritizes predictable income and
+long-term appreciation. Ideal for investors seeking passive income with moderate
+risk. The financial model projects 10-year cash flows with rent growth, expense
+inflation, and equity buildup through loan amortization and appreciation.""",
+
+    "str": """**Short-Term Rental (STR)** — Maximize revenue through nightly bookings.
+You operate the property as a vacation or short-term rental on platforms like
+Airbnb and VRBO. Revenue is driven by Average Daily Rate (ADR) × Occupancy Rate.
+Higher revenue potential comes with higher management intensity: cleaning costs,
+platform fees (15-20%), furnishing, and active management. Key metrics: Revenue
+per Available Night (RevPAN), Break-Even Occupancy, Cash-on-Cash Return. The
+model includes seasonality adjustments and platform fee structures.""",
+
+    "brrrr": """**BRRRR** — Buy, Rehab, Rent, Refinance, Repeat.
+You purchase a distressed property below market value, renovate to increase its
+value (to ARV — After Repair Value), rent it out, then refinance based on the
+new higher value to pull out most or all of your initial investment. Key metrics:
+Capital Recycled %, Post-Refi Cash-on-Cash, Cash Left in Deal. The goal is to
+recycle your capital into the next deal, achieving "infinite ROI" when you
+recover 100% of your cash. The model tracks 5 phases: Buy → Rehab → Rent →
+Refinance → Repeat.""",
+
+    "flip": """**Fix & Flip** — Buy low, renovate, sell high for a one-time profit.
+You purchase a distressed property, complete renovations within a target timeline
+(typically 3-6 months), and sell at or above ARV. Profit = Sale Price - Purchase
+- Rehab - Holding Costs - Selling Costs. Key metrics: Net Profit, ROI, Annualized
+ROI, 70% Rule compliance. The model accounts for hard money financing, holding
+costs (taxes, insurance, utilities during renovation), and selling costs (6%
+commission + closing). Risk factors: renovation budget overruns, extended timelines,
+and market shifts during the hold period.""",
+
+    "house_hack": """**House Hack** — Live in part of the property, rent the rest.
+You purchase a property (often with FHA 3.5% down), live in one unit or bedroom,
+and rent out the remaining space to offset your housing costs. This dramatically
+reduces your personal housing expense while building equity. Key metrics: Housing
+Cost Offset %, Monthly Savings vs. Renting, Live-Free Threshold. Two scenarios
+are modeled: Scenario A (rent individual rooms) and Scenario B (duplex conversion).
+Ideal for first-time investors who want to start building wealth while minimizing
+out-of-pocket housing costs.""",
+
+    "wholesale": """**Wholesale** — Earn assignment fees without owning the property.
+You find off-market deals, put them under contract, then assign the contract to
+an end buyer (typically a rehabber or investor) for an assignment fee. No
+renovation, no tenants, no financing needed — just deal-finding skill and
+marketing. Key metrics: Assignment Fee, ROI on Earnest Money, Deals Needed for
+Target Income. The model calculates Maximum Allowable Offer (MAO) using the 70%
+Rule: MAO = ARV × 70% - Rehab Costs - Your Fee. Lowest capital requirement of
+any strategy but requires volume and marketing investment.""",
+}
+
+
+def _run_strategy_calculator(
+    strategy: str,
+    purchase_price: float,
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
+    arv: float = 0,
+    bedrooms: int = 3,
+) -> dict:
+    """Run the full strategy calculator and return results as a dict."""
+    try:
+        if strategy == "ltr":
+            return calculate_ltr(
+                purchase_price=purchase_price, monthly_rent=monthly_rent,
+                property_taxes_annual=property_taxes, hoa_monthly=0,
+            )
+        elif strategy == "str":
+            adr = monthly_rent * 12 / 365 * 1.8  # Approximate ADR from monthly rent
+            return calculate_str(
+                purchase_price=purchase_price, average_daily_rate=adr,
+                occupancy_rate=0.65, property_taxes_annual=property_taxes, hoa_monthly=0,
+            )
+        elif strategy == "brrrr":
+            rehab_cost = purchase_price * 0.15
+            return calculate_brrrr(
+                market_value=purchase_price, arv=arv or purchase_price * 1.25,
+                monthly_rent_post_rehab=monthly_rent, property_taxes_annual=property_taxes,
+                renovation_budget=rehab_cost,
+            )
+        elif strategy == "flip":
+            rehab_cost = purchase_price * 0.15
+            return calculate_flip(
+                market_value=purchase_price, arv=arv or purchase_price * 1.3,
+                property_taxes_annual=property_taxes, insurance_annual=insurance,
+                renovation_budget=rehab_cost,
+            )
+        elif strategy == "house_hack":
+            return calculate_house_hack(
+                purchase_price=purchase_price, monthly_rent_per_room=monthly_rent / max(bedrooms, 2),
+                rooms_rented=max(1, bedrooms - 1), property_taxes_annual=property_taxes,
+                owner_unit_market_rent=monthly_rent,
+            )
+        elif strategy == "wholesale":
+            rehab_cost = purchase_price * 0.15
+            return calculate_wholesale(
+                arv=arv or purchase_price * 1.3, estimated_rehab_costs=rehab_cost,
+            )
+        else:
+            return {}
+    except Exception as e:
+        logger.warning(f"Strategy calculator error for {strategy}: {e}")
+        return {"error": str(e)}
 
 
 # ============================================
@@ -1029,4 +1148,18 @@ async def generate_proforma_data(
             market_data_source="RentCast",
             data_freshness=datetime.now().strftime("%Y-%m-%d"),
         ),
+        
+        # Strategy-specific detailed breakdown from full calculator
+        strategy_breakdown=_run_strategy_calculator(
+            strategy=strategy,
+            purchase_price=purchase_price,
+            monthly_rent=monthly_rent,
+            property_taxes=property_taxes,
+            insurance=insurance,
+            arv=purchase_price,  # Default ARV to purchase price
+            bedrooms=(details.bedrooms if details else None) or 3,
+        ),
+        
+        # Strategy methodology description for reports
+        strategy_methodology=STRATEGY_METHODOLOGY.get(strategy, ""),
     )

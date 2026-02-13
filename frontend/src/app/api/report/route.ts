@@ -33,6 +33,8 @@ interface Proforma {
   sensitivity: { purchase_price: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; interest_rate: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; rent: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; vacancy: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; appreciation: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }> }
   deal_score: { score: number; grade: string; verdict: string; breakeven_price: number; discount_required: number }
   sources: { rent_estimate_source: string; property_value_source: string; tax_data_source: string; market_data_source: string; data_freshness: string }
+  strategy_breakdown?: Record<string, any>
+  strategy_methodology?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -238,6 +240,11 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <div class="hero-item"><div class="hero-val">${d.metrics.dscr.toFixed(2)}x</div><div class="hero-lbl">DSCR</div></div>
   </div>
   <p class="narrative">${narrativeCover(d)}</p>
+  ${d.strategy_methodology ? `
+  <div class="card mt-14" style="border-left:3px solid ${p.brand}">
+    <div class="card-hd">Strategy Methodology: ${d.strategy_type.toUpperCase()}</div>
+    <p class="narrative" style="margin:8px 0 0">${d.strategy_methodology.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')}</p>
+  </div>` : ''}
   <div class="sec-divider"></div>
   <div class="sec-tag">01</div>
   <h2 class="sec-title">Property Details &amp; Capital Structure</h2>
@@ -409,6 +416,87 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       </div>
     </div>
   </div>
+  ${d.strategy_breakdown && !d.strategy_breakdown.error ? `
+  <div class="card mt-14">
+    <div class="card-hd">${d.strategy_type.toUpperCase()} Strategy Breakdown</div>
+    <div class="grid2">
+      ${(() => {
+        const b = d.strategy_breakdown!
+        const st = d.strategy_type
+        if (st === 'brrrr') return `
+          <div>
+            ${kv('Purchase Price', $(b.purchase?.purchase_price || b.phase1_buy?.purchase_price || 0))}
+            ${kv('Renovation Budget', $(b.renovation?.renovation_budget || b.phase2_rehab?.renovation_budget || 0))}
+            ${kv('ARV', $(b.refinance?.arv || b.phase3_rent?.arv || 0))}
+            ${kv('Refinance Loan', $(b.refinance?.refinance_loan_amount || b.phase4_refinance?.refinance_loan_amount || 0))}
+          </div>
+          <div>
+            ${kv('Capital Recycled', pct(b.repeat?.capital_recycled_pct || b.phase5_repeat?.capital_recycled_pct || 0))}
+            ${kv('Cash Left in Deal', $(b.repeat?.cash_left_in_deal || b.phase5_repeat?.cash_left_in_deal || 0))}
+            ${kv('Post-Refi Cash Flow', sign$(b.post_refinance?.post_refi_monthly_cash_flow || 0) + '/mo')}
+            ${kv('Infinite ROI?', (b.post_refinance?.infinite_roi_achieved || b.repeat?.capital_recycled_pct >= 100) ? 'Yes' : 'No')}
+          </div>`
+        if (st === 'flip') return `
+          <div>
+            ${kv('Purchase Price', $(b.acquisition?.purchase_price || 0))}
+            ${kv('Renovation', $(b.renovation?.total_renovation || 0))}
+            ${kv('Holding Costs', $(b.holding_costs?.total_holding_costs || 0))}
+            ${kv('Total Project Cost', $(b.profit_analysis?.total_project_cost || 0))}
+          </div>
+          <div>
+            ${kv('ARV (Sale Price)', $(b.sale?.arv || 0))}
+            ${kv('Selling Costs', $(b.sale?.total_selling_costs || 0))}
+            ${kv('Net Profit', sign$(b.profit_analysis?.net_profit_after_tax || b.profit_analysis?.net_profit_before_tax || 0))}
+            ${kv('ROI', pct(b.key_metrics?.roi || 0))}
+          </div>`
+        if (st === 'wholesale') return `
+          <div>
+            ${kv('ARV', $(b.deal_analysis?.arv || 0))}
+            ${kv('Contract Price', $(b.deal_structure?.contract_price || 0))}
+            ${kv('End Buyer Price', $(b.deal_structure?.end_buyer_price || 0))}
+          </div>
+          <div>
+            ${kv('Assignment Fee', $(b.profit?.net_profit || b.deal_structure?.assignment_fee || 0))}
+            ${kv('Earnest Money', $(b.deal_structure?.earnest_money || 0))}
+            ${kv('ROI', pct(b.key_metrics?.roi || 0))}
+          </div>`
+        if (st === 'str') return `
+          <div>
+            ${kv('ADR', $(b.revenue?.average_daily_rate || 0))}
+            ${kv('Occupancy', pct((b.revenue?.occupancy_rate || 0) * 100))}
+            ${kv('Annual Revenue', $(b.revenue?.total_gross_revenue || 0))}
+          </div>
+          <div>
+            ${kv('Platform Fees', $(b.expenses?.platform_fees || 0))}
+            ${kv('Cleaning Costs', $(b.expenses?.cleaning_costs || 0))}
+            ${kv('Cash-on-Cash', pct(b.metrics?.cash_on_cash_return || 0))}
+          </div>`
+        if (st === 'house_hack') return `
+          <div>
+            ${kv('Rooms Rented', String(b.scenario_a?.rooms_rented || 0))}
+            ${kv('Monthly Rental Income', $(b.scenario_a?.total_monthly_income || 0))}
+            ${kv('Housing Cost Offset', pct(b.key_metrics?.housing_cost_offset_pct || 0))}
+          </div>
+          <div>
+            ${kv('Net Housing Cost', $(b.scenario_a?.net_housing_cost_scenario_a || 0) + '/mo')}
+            ${kv('Annual Savings', $(b.key_metrics?.roi_on_savings || b.scenario_a?.annual_savings_a || 0))}
+            ${kv('Live Free?', (b.key_metrics?.housing_cost_offset_pct || 0) >= 100 ? 'Yes' : 'Working toward it')}
+          </div>`
+        // Default: LTR - already covered by main report
+        return `
+          <div>
+            ${kv('Monthly Rent', $(b.income?.monthly_rent || d.income.monthly_rent))}
+            ${kv('NOI', $(b.metrics?.noi || d.metrics.net_operating_income))}
+            ${kv('Cap Rate', pct(b.metrics?.cap_rate || d.metrics.cap_rate))}
+          </div>
+          <div>
+            ${kv('Cash-on-Cash', pct(b.metrics?.cash_on_cash_return || d.metrics.cash_on_cash_return))}
+            ${kv('DSCR', (b.metrics?.dscr || d.metrics.dscr).toFixed(2) + 'x')}
+            ${kv('Monthly Cash Flow', sign$(b.metrics?.monthly_cash_flow || d.metrics.monthly_cash_flow))}
+          </div>`
+      })()}
+    </div>
+  </div>` : ''}
   <div class="disclaimer">
     <h4>Data Sources</h4>
     <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
