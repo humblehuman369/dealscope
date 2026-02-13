@@ -83,7 +83,11 @@ export function useRegisterPushToken(isAuthenticated: boolean): void {
 
     let cancelled = false;
 
-    const register = async () => {
+    /**
+     * Initial registration on mount — guarded to prevent duplicate
+     * calls from React strict-mode or rapid re-renders.
+     */
+    const registerInitial = async () => {
       if (registeredRef.current) return;
       const token = await registerWithBackend();
       if (!cancelled && token) {
@@ -92,12 +96,40 @@ export function useRegisterPushToken(isAuthenticated: boolean): void {
       }
     };
 
-    register();
+    /**
+     * Re-registration on app resume — always re-acquires the token
+     * from Expo and compares to the last-known value.  If the token
+     * rotated while the app was suspended, we send the new token to
+     * the backend.  If it hasn't changed, this is a no-op.
+     */
+    const registerOnResume = async () => {
+      try {
+        await notificationService.initialize();
+        const pushToken = notificationService.getPushToken();
 
-    // Re-register when app resumes from background (token can rotate)
+        if (!pushToken || cancelled) return;
+
+        // Token unchanged — nothing to do
+        if (pushToken.token === tokenRef.current) return;
+
+        // Token rotated (or first resume after a failed initial attempt)
+        const token = await registerWithBackend();
+        if (!cancelled && token) {
+          registeredRef.current = true;
+          tokenRef.current = token;
+        }
+      } catch {
+        // Non-critical
+        console.warn('[PushToken] Resume re-registration failed (non-fatal)');
+      }
+    };
+
+    registerInitial();
+
+    // Re-check on every foreground resume (tokens can rotate)
     const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active' && isAuthenticated) {
-        register();
+        registerOnResume();
       }
     });
 
