@@ -2,15 +2,22 @@
 InvestIQ - Real Estate Investment Analytics API
 Main FastAPI application entry point.
 """
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Query, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import Optional, List
-from datetime import datetime, timezone
-import logging
-import os
-import sys
+# Bare print BEFORE any imports — visible even if imports crash
+import sys, os, traceback as _tb  # noqa: E401
+print(">>> MAIN.PY LOADING — Python", sys.version_info[:2], "PORT", os.environ.get("PORT"), flush=True)
+
+try:
+    from contextlib import asynccontextmanager
+    from fastapi import FastAPI, HTTPException, Query, Depends
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse
+    from typing import Optional, List
+    from datetime import datetime, timezone
+    import logging
+except Exception as _e:
+    print(f">>> FATAL IMPORT ERROR: {_e}", flush=True)
+    _tb.print_exc()
+    sys.exit(1)
 
 # Configure structured JSON logging for production, human-readable for dev
 _log_level = logging.INFO
@@ -356,7 +363,12 @@ for name, path in _routers:
 # The primary /health endpoint lives in app.routers.health (always returns 200).
 # If that router failed to load, register a minimal fallback here so Railway's
 # healthcheck never gets a 404.
-if not any(r.path == "/health" for r in app.routes):
+try:
+    _has_health = any(getattr(r, "path", "") == "/health" for r in app.routes)
+except Exception:
+    _has_health = False
+
+if not _has_health:
     @app.get("/health")
     async def health_fallback():
         """Minimal fallback healthcheck (health router failed to load)."""
