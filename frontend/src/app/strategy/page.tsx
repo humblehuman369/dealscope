@@ -67,11 +67,36 @@ function StrategyContent() {
   const addressParam = searchParams.get('address') || ''
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
+  const strategyParam = searchParams.get('strategy')
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState<string | null>(null)
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
+
+  // Read DealMaker adjustments from sessionStorage (saved by Verdict page)
+  const [dealMakerOverrides, setDealMakerOverrides] = useState<Record<string, any> | null>(null)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !addressParam) return
+    try {
+      const sessionKey = `dealMaker_${encodeURIComponent(addressParam)}`
+      const stored = sessionStorage.getItem(sessionKey)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
+          console.log('[StrategyIQ] Loaded DealMaker overrides from sessionStorage:', parsed)
+          setDealMakerOverrides(parsed)
+          // If sessionStorage has a strategy and no URL param, use it
+          if (!strategyParam && parsed.strategy) {
+            setSelectedStrategyId(parsed.strategy)
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
+    }
+  }, [addressParam, strategyParam])
 
   // Scroll to top on mount — prevents opening mid-page after navigation
   useEffect(() => {
@@ -134,11 +159,19 @@ function StrategyContent() {
     setIsExporting('excel')
     try {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
-      const topId = data?.strategies?.length ? [...data.strategies].sort((a, b) => b.score - a.score)[0]?.id || 'ltr' : 'ltr'
       const params = new URLSearchParams({
         address: addressParam,
-        strategy: topId,
+        strategy: activeStrategyId,
       })
+      // Include user adjustments so the export reflects what's on screen
+      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
+        params.set('purchase_price', String(targetPrice))
+      }
+      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
+      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
+      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
+      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
+      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
       const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
 
       const headers: Record<string, string> = {}
@@ -199,38 +232,56 @@ function StrategyContent() {
     )
   }
 
-  // Top strategy — derive from backend data, never hardcode
-  const topStrategy = data.strategies?.length
-    ? [...data.strategies].sort((a, b) => b.score - a.score)[0]
-    : null
+  // Strategy selection — user-chosen > URL param > highest score
+  const sortedStrategies = data.strategies?.length
+    ? [...data.strategies].sort((a, b) => b.score - a.score)
+    : []
+  const topStrategy = selectedStrategyId
+    ? sortedStrategies.find(s => s.id === selectedStrategyId) || sortedStrategies[0] || null
+    : sortedStrategies[0] || null
   const topStrategyName = topStrategy?.name || 'Long-Term Rental'
+  const activeStrategyId = topStrategy?.id || 'ltr'
 
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
   const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 350000
-  const targetPrice = data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
-  const monthlyRent = propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
-  const propertyTaxes = propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
-  const insurance = propertyInfo?.insurance || Math.round(listPrice * 0.01)
+  // DealMaker overrides take priority, then backend data, then defaults
+  const targetPrice = dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice
+    || data.purchase_price || (data as any).purchasePrice || Math.round(listPrice * 0.85)
+  const monthlyRent = dealMakerOverrides?.monthlyRent
+    || propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
+  const propertyTaxes = dealMakerOverrides?.propertyTaxes
+    || propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
+  const insurance = dealMakerOverrides?.insurance
+    || propertyInfo?.insurance || Math.round(listPrice * 0.01)
   const parsed = parseAddressString(addressParam)
 
   // Condition / location adjustments for display
-  const rehabCost = conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0
+  const rehabCost = dealMakerOverrides?.rehabBudget
+    || (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
 
-  // Financial calcs
-  const downPayment = targetPrice * 0.20
-  const closingCosts = targetPrice * 0.03
-  const loanAmount = targetPrice * 0.80
-  const rate = 0.06; const term = 360
+  // Financial calcs — use DealMaker values when available
+  const downPaymentPct = (dealMakerOverrides?.downPayment || 20) / 100
+  const closingCostsPct = (dealMakerOverrides?.closingCosts || 3) / 100
+  const downPayment = targetPrice * downPaymentPct
+  const closingCosts = targetPrice * closingCostsPct
+  const loanAmount = targetPrice * (1 - downPaymentPct)
+  const rate = (dealMakerOverrides?.interestRate || 6) / 100
+  const loanTermYears = dealMakerOverrides?.loanTerm || 30
+  const term = loanTermYears * 12
   const monthlyRate = rate / 12
   const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1)
+  const vacancyPct = (dealMakerOverrides?.vacancyRate || 5) / 100
+  const mgmtPct = (dealMakerOverrides?.managementRate || 8) / 100
+  const maintPct = 0.05
+  const reservesPct = 0.05
   const annualRent = monthlyRent * 12
-  const vacancyLoss = annualRent * 0.05
+  const vacancyLoss = annualRent * vacancyPct
   const effectiveIncome = annualRent - vacancyLoss
-  const mgmt = annualRent * 0.08
-  const maint = annualRent * 0.05
-  const reserves = annualRent * 0.05
+  const mgmt = annualRent * mgmtPct
+  const maint = annualRent * maintPct
+  const reserves = annualRent * reservesPct
   const totalExpenses = propertyTaxes + insurance + mgmt + maint + reserves
   const noi = effectiveIncome - totalExpenses
   const annualDebt = monthlyPI * 12
@@ -260,10 +311,19 @@ function StrategyContent() {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
       const params = new URLSearchParams({
         address: addressParam,
-        strategy: topStrategy?.id || 'ltr',
+        strategy: activeStrategyId,
         theme,
         propertyId,
       })
+      // Include user adjustments so the report reflects what's on screen
+      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
+        params.set('purchase_price', String(targetPrice))
+      }
+      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
+      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
+      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
+      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
+      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
       // Open the Vercel-hosted HTML report in a new tab
       // The report auto-triggers window.print() for Save as PDF
       const url = `/api/report?${params}`
@@ -290,7 +350,7 @@ function StrategyContent() {
           {/* VerdictIQ reference badge */}
           <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: colors.accentBg.green, border: '1px solid rgba(52,211,153,0.2)', color: colors.status.positive }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-            VerdictIQ Score: {verdictScore} · {topStrategyName} recommended
+            VerdictIQ Score: {verdictScore} · {topStrategyName}{selectedStrategyId && selectedStrategyId !== sortedStrategies[0]?.id ? '' : ' recommended'}
           </div>
 
           {/* Top Action Buttons — always 3 across */}
@@ -338,8 +398,8 @@ function StrategyContent() {
               {[
                 ['Market Price', formatCurrency(listPrice), true],
                 ['Your Target Price', formatCurrency(targetPrice), false, colors.brand.blue],
-                ['Down Payment (20%)', formatCurrency(downPayment)],
-                ['Closing Costs (3%)', formatCurrency(closingCosts)],
+                [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
+                [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
                 ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
               ].map(([label, value, strike, color], i) => (
                 <div key={i} className="flex justify-between py-1.5">
@@ -362,8 +422,8 @@ function StrategyContent() {
               </div>
               {[
                 ['Loan Amount', formatCurrency(loanAmount)],
-                ['Interest Rate', '6.0%'],
-                ['Loan Term', '30 years'],
+                ['Interest Rate', `${(rate * 100).toFixed(1)}%`],
+                ['Loan Term', `${loanTermYears} years`],
               ].map(([label, value], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
@@ -395,7 +455,7 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between py-1.5">
-                <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss (5%)</span>
+                <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(vacancyPct * 100)}%)</span>
                 <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(vacancyLoss)})</span>
               </div>
               <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
@@ -414,9 +474,9 @@ function StrategyContent() {
               {[
                 ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
                 ['Insurance', `${formatCurrency(insurance)}/yr`],
-                ['Management (8%)', `${formatCurrency(mgmt)}/yr`],
-                ['Maintenance (5%)', `${formatCurrency(maint)}/yr`],
-                ['Reserves (5%)', `${formatCurrency(reserves)}/yr`],
+                [`Management (${Math.round(mgmtPct * 100)}%)`, `${formatCurrency(mgmt)}/yr`],
+                [`Maintenance (${Math.round(maintPct * 100)}%)`, `${formatCurrency(maint)}/yr`],
+                [`Reserves (${Math.round(reservesPct * 100)}%)`, `${formatCurrency(reserves)}/yr`],
               ].map(([label, value], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
@@ -472,15 +532,27 @@ function StrategyContent() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
             </div>
             <div>
-              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>{topStrategyName} isn&apos;t the only path.</p>
-              <p className="text-[13px] leading-relaxed mb-3" style={{ color: colors.text.body }}>This property scored well across multiple strategies. See how the numbers change with a different approach.</p>
+              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>Try a different strategy.</p>
+              <p className="text-[13px] leading-relaxed mb-3" style={{ color: colors.text.body }}>This property scored well across multiple strategies. Tap one to see how the numbers change.</p>
               <div className="flex flex-wrap gap-1.5">
-                {(data.strategies || [])
-                  .filter(s => s.name !== topStrategyName)
-                  .slice(0, 4)
-                  .map((s) => (
-                    <span key={s.id} className="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors" style={{ background: colors.background.cardUp, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}>{s.name}</span>
-                  ))}
+                {sortedStrategies.map((s) => {
+                  const isActive = s.id === activeStrategyId
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedStrategyId(s.id)}
+                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer transition-all"
+                      style={{
+                        background: isActive ? colors.brand.teal : colors.background.cardUp,
+                        border: `1px solid ${isActive ? colors.brand.teal : colors.ui.border}`,
+                        color: isActive ? '#fff' : colors.text.body,
+                      }}
+                    >
+                      {s.name}
+                      <span className="ml-1 opacity-60">{s.score}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
