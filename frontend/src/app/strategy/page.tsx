@@ -111,26 +111,36 @@ function StrategyContent() {
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
         let price = propData.valuations?.current_value_avm || propData.valuations?.zestimate || 350000
         let monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
-        const propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
-        const insurance = propData.expenses?.insurance_annual || Math.round(price * 0.01)
+        let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
+        let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)
 
         // Apply condition / location slider adjustments (from IQ Gateway)
         if (conditionParam) {
           const cond = getConditionAdjustment(Number(conditionParam))
-          price += cond.pricePremium // Turnkey premium increases market value
+          price += cond.pricePremium
         }
         if (locationParam) {
           const loc = getLocationAdjustment(Number(locationParam))
           monthlyRent = Math.round(monthlyRent * loc.rentMultiplier)
         }
 
-        setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance })
+        // Apply DealMaker overrides (saved from Verdict page)
+        if (dealMakerOverrides) {
+          if (dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice) {
+            price = dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice
+          }
+          if (dealMakerOverrides.monthlyRent) monthlyRent = dealMakerOverrides.monthlyRent
+          if (dealMakerOverrides.propertyTaxes) propertyTaxes = dealMakerOverrides.propertyTaxes
+          if (dealMakerOverrides.insurance) insuranceVal = dealMakerOverrides.insurance
+        }
+
+        setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal })
 
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', {
           list_price: price,
           monthly_rent: monthlyRent,
           property_taxes: propertyTaxes,
-          insurance,
+          insurance: insuranceVal,
           bedrooms: propData.details?.bedrooms || 3,
           bathrooms: propData.details?.bathrooms || 2,
           sqft: propData.details?.square_footage || 1500,
@@ -144,15 +154,20 @@ function StrategyContent() {
     }
     fetchData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressParam, conditionParam, locationParam])
+  }, [addressParam, conditionParam, locationParam, dealMakerOverrides])
 
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(addressParam)}`)
   }, [router, addressParam])
 
   const handleOpenDealMaker = useCallback(() => {
-    router.push(`/verdict?address=${encodeURIComponent(addressParam)}&openDealMaker=1`)
-  }, [router, addressParam])
+    const params = new URLSearchParams({
+      address: addressParam,
+      openDealMaker: '1',
+    })
+    if (activeStrategyId) params.set('strategy', activeStrategyId)
+    router.push(`/verdict?${params.toString()}`)
+  }, [router, addressParam, activeStrategyId])
 
 
   const handleExcelDownload = async () => {
@@ -288,16 +303,32 @@ function StrategyContent() {
   const annualCashFlow = noi - annualDebt
   const monthlyCashFlow = annualCashFlow / 12
 
-  // Benchmarks
-  const capRateRaw = data.return_factors?.capRate ?? (data as any).returnFactors?.capRate
-  const cocRaw = data.return_factors?.cashOnCash ?? (data as any).returnFactors?.cashOnCash
-  const capRate = normalizePercentMetric(capRateRaw)
-  const coc = normalizePercentMetric(cocRaw)
-  const benchmarks = [
-    { metric: 'Cap Rate', value: capRate !== null ? `${capRate.toFixed(1)}%` : '—', target: '6.0%', status: (capRate !== null && capRate >= 6.0) ? 'good' : 'poor' },
-    { metric: 'Cash-on-Cash', value: coc !== null ? `${coc.toFixed(1)}%` : '—', target: '8.0%', status: (coc !== null && coc >= 8.0) ? 'good' : 'poor' },
-    { metric: 'Monthly Cash Flow', value: formatCurrency(monthlyCashFlow), target: '+$300', status: monthlyCashFlow >= 300 ? 'good' : 'poor' },
-  ]
+  // Benchmarks — use per-strategy metrics from the backend, fall back to local calcs
+  const strategyCapRate = topStrategy?.cap_rate ?? null
+  const strategyCoc = topStrategy?.cash_on_cash ?? null
+  const strategyDscr = topStrategy?.dscr ?? null
+  const strategyCashFlow = topStrategy?.monthly_cash_flow ?? monthlyCashFlow
+  const strategyAnnualCashFlow = topStrategy?.annual_cash_flow ?? annualCashFlow
+
+  // Local calc benchmarks as fallback (always LTR style)
+  const capRateLocal = normalizePercentMetric(data.return_factors?.capRate ?? (data as any).returnFactors?.capRate)
+  const cocLocal = normalizePercentMetric(data.return_factors?.cashOnCash ?? (data as any).returnFactors?.cashOnCash)
+
+  const capRateVal = strategyCapRate ?? capRateLocal
+  const cocVal = strategyCoc ?? cocLocal
+
+  const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
+  const benchmarks = isFlipOrWholesale
+    ? [
+        { metric: 'ROI', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', target: '20%', status: (cocVal !== null && cocVal >= 20) ? 'good' : 'poor' },
+        { metric: 'Profit', value: formatCurrency(strategyAnnualCashFlow), target: '+$30K', status: strategyAnnualCashFlow >= 30000 ? 'good' : 'poor' },
+      ]
+    : [
+        { metric: 'Cap Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—', target: '6.0%', status: (capRateVal !== null && capRateVal >= 6.0) ? 'good' : 'poor' },
+        { metric: 'Cash-on-Cash', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', target: '8.0%', status: (cocVal !== null && cocVal >= 8.0) ? 'good' : 'poor' },
+        { metric: 'Monthly Cash Flow', value: formatCurrency(strategyCashFlow), target: '+$300', status: strategyCashFlow >= 300 ? 'good' : 'poor' },
+        ...(strategyDscr != null ? [{ metric: 'DSCR', value: strategyDscr.toFixed(2), target: '1.25', status: strategyDscr >= 1.25 ? 'good' : 'poor' }] : []),
+      ]
 
   // Confidence
   const of = data.opportunity_factors || (data as any).opportunityFactors
@@ -491,37 +522,65 @@ function StrategyContent() {
             </div>
           </div>
 
-          {/* Summary Cards — aligned row above action buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
-            {/* Before Your Loan (NOI) Card */}
-            <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
-              <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
-              <div className="flex justify-between items-baseline mt-1">
-                <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
-                <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
+          {/* Summary Cards — use per-strategy metrics when available */}
+          {isFlipOrWholesale ? (
+            /* Flip & Wholesale: Profit-oriented cards */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
+              <div className="rounded-xl p-4" style={{ background: strategyAnnualCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyAnnualCashFlow >= 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>{activeStrategyId === 'wholesale' ? 'Assignment Fee' : 'Net Profit'}</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Estimated</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>{formatCurrency(strategyAnnualCashFlow)}</p>
+                </div>
               </div>
-              <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
-            </div>
-
-            {/* What You'd Pocket Card */}
-            <div className="rounded-xl p-4" style={{ background: colors.accentBg.red, border: `1px solid rgba(248,113,113,0.2)` }}>
-              <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You'd Pocket</p>
-              <div className="flex justify-between items-baseline mt-1">
-                <p className="text-xs font-medium" style={{ color: colors.status.negative }}>Net</p>
-                <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(annualCashFlow))})</p>
+              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>ROI</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>Return</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}</p>
+                </div>
               </div>
-              <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.negative }}>({formatCurrency(Math.abs(Math.round(monthlyCashFlow)))})/mo</p>
             </div>
-          </div>
+          ) : (
+            /* Rental strategies: Income/Cash Flow cards */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
+              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
+                </div>
+                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
+              </div>
+              <div className="rounded-xl p-4" style={{ background: strategyCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyCashFlow >= 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }}>
+                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You&apos;d Pocket</p>
+                <div className="flex justify-between items-baseline mt-1">
+                  <p className="text-xs font-medium" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Net</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
+                    {strategyCashFlow >= 0 ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
+                  </p>
+                </div>
+                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
+                  {strategyCashFlow >= 0 ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{strategyCashFlow >= 0 ? '' : ')'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* The Bottom Line */}
           <div className="mt-7 p-5 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: `rgba(56,189,248,0.12)`, borderLeftColor: colors.brand.blue }}>
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
             <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
-              {monthlyCashFlow >= 0 ? (
-                <>At the Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.status.positive, fontWeight: 600 }}>generate about {formatCurrency(Math.round(monthlyCashFlow))}/mo in cash flow</strong> as a {topStrategyName.toLowerCase()}. The numbers work — verify the assumptions with your own due diligence before making an offer.</>
+              {isFlipOrWholesale ? (
+                strategyAnnualCashFlow >= 0 ? (
+                  <>At {formatCurrency(targetPrice)}, this {topStrategyName.toLowerCase()} deal projects an estimated <strong style={{ color: colors.status.positive, fontWeight: 600 }}>profit of {formatCurrency(strategyAnnualCashFlow)}</strong>. Verify rehab costs, ARV, and timeline with your own due diligence.</>
+                ) : (
+                  <>At the current numbers, this {topStrategyName.toLowerCase()} deal <strong style={{ color: colors.text.primary, fontWeight: 600 }}>doesn&apos;t pencil out</strong>. You&apos;d need a lower purchase price or higher ARV to make the numbers work.</>
+                )
+              ) : strategyCashFlow >= 0 ? (
+                <>At the Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.status.positive, fontWeight: 600 }}>generate about {formatCurrency(Math.round(strategyCashFlow))}/mo in cash flow</strong> as a {topStrategyName.toLowerCase()}. The numbers work — verify the assumptions with your own due diligence before making an offer.</>
               ) : (
-                <>Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(monthlyCashFlow)))}/mo out of pocket</strong> as a {topStrategyName.toLowerCase()}. That doesn&apos;t mean it&apos;s a bad investment — but it means your returns come from appreciation and equity, not cashflow. Consider whether that fits your strategy.</>
+                <>Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo out of pocket</strong> as a {topStrategyName.toLowerCase()}. That doesn&apos;t mean it&apos;s a bad investment — but it means your returns come from appreciation and equity, not cashflow. Consider whether that fits your strategy.</>
               )}
             </p>
           </div>
