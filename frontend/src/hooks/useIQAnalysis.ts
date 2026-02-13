@@ -85,8 +85,8 @@ function mapVerdictToIQTarget(
         ? ((listPrice - breakevenPrice) / listPrice) * 100
         : 0,
     rationale: `Buy at $${Math.round(targetPrice).toLocaleString()} for optimal returns`,
-    highlightedMetric: strat?.metric_value ?? strat?.metricValue ?? '',
-    secondaryMetric: strat?.metric_label ?? strat?.metricLabel ?? '',
+    highlightedMetric: String(strat?.metric_value ?? strat?.metricValue ?? ''),
+    secondaryMetric: String(strat?.metric_label ?? strat?.metricLabel ?? ''),
     monthlyCashFlow: strat?.monthly_cash_flow ?? strat?.monthlyCashFlow ?? 0,
     cashOnCash: (strat?.cash_on_cash ?? strat?.cashOnCash ?? 0) * 100,
     capRate: (strat?.cap_rate ?? strat?.capRate ?? 0) * 100,
