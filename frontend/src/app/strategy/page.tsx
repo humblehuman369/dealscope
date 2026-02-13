@@ -134,9 +134,10 @@ function StrategyContent() {
     setIsExporting('excel')
     try {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
+      const topId = data?.strategies?.length ? [...data.strategies].sort((a, b) => b.score - a.score)[0]?.id || 'ltr' : 'ltr'
       const params = new URLSearchParams({
         address: addressParam,
-        strategy: 'ltr',
+        strategy: topId,
       })
       const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
 
@@ -198,6 +199,15 @@ function StrategyContent() {
     )
   }
 
+  // Top strategy — derive from backend data, never hardcode
+  const topStrategy = data.strategies?.length
+    ? [...data.strategies].sort((a, b) => b.score - a.score)[0]
+    : null
+  const topStrategyName = topStrategy?.name || 'Long-Term Rental'
+
+  // Score — capped at 95 (no deal is 100% certain)
+  const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
+
   const listPrice = data.list_price || propertyInfo?.price || 350000
   const targetPrice = data.purchase_price || Math.round(listPrice * 0.85)
   const monthlyRent = propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
@@ -250,7 +260,7 @@ function StrategyContent() {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
       const params = new URLSearchParams({
         address: addressParam,
-        strategy: 'ltr',
+        strategy: topStrategy?.id || 'ltr',
         theme,
         propertyId,
       })
@@ -280,7 +290,7 @@ function StrategyContent() {
           {/* VerdictIQ reference badge */}
           <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: colors.accentBg.green, border: '1px solid rgba(52,211,153,0.2)', color: colors.status.positive }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-            VerdictIQ Score: {data.deal_score ?? (data as any).dealScore ?? '—'} · Long-Term Rental recommended
+            VerdictIQ Score: {verdictScore} · {topStrategyName} recommended
           </div>
 
           {/* Top Action Buttons — always 3 across */}
@@ -448,7 +458,11 @@ function StrategyContent() {
           <div className="mt-7 p-5 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: `rgba(56,189,248,0.12)`, borderLeftColor: colors.brand.blue }}>
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
             <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
-              Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(monthlyCashFlow)))} per month out of pocket</strong> as a long-term rental. That doesn&apos;t mean it&apos;s a bad investment — but it means your returns come from appreciation and equity, not cashflow. Consider whether that fits your strategy.
+              {monthlyCashFlow >= 0 ? (
+                <>At the Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.status.positive, fontWeight: 600 }}>generate about {formatCurrency(Math.round(monthlyCashFlow))}/mo in cash flow</strong> as a {topStrategyName.toLowerCase()}. The numbers work — verify the assumptions with your own due diligence before making an offer.</>
+              ) : (
+                <>Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this property would <strong style={{ color: colors.text.primary, fontWeight: 600 }}>cost you about {formatCurrency(Math.abs(Math.round(monthlyCashFlow)))}/mo out of pocket</strong> as a {topStrategyName.toLowerCase()}. That doesn&apos;t mean it&apos;s a bad investment — but it means your returns come from appreciation and equity, not cashflow. Consider whether that fits your strategy.</>
+              )}
             </p>
           </div>
 
@@ -458,12 +472,15 @@ function StrategyContent() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
             </div>
             <div>
-              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>Long-Term Rental isn&apos;t the only path.</p>
+              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>{topStrategyName} isn&apos;t the only path.</p>
               <p className="text-[13px] leading-relaxed mb-3" style={{ color: colors.text.body }}>This property scored well across multiple strategies. See how the numbers change with a different approach.</p>
               <div className="flex flex-wrap gap-1.5">
-                {['BRRRR', 'Short-Term', 'House Hack', 'Fix & Flip'].map((label) => (
-                  <span key={label} className="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors" style={{ background: colors.background.cardUp, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}>{label}</span>
-                ))}
+                {(data.strategies || [])
+                  .filter(s => s.name !== topStrategyName)
+                  .slice(0, 4)
+                  .map((s) => (
+                    <span key={s.id} className="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors" style={{ background: colors.background.cardUp, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}>{s.name}</span>
+                  ))}
               </div>
             </div>
           </div>
