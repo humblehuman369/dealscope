@@ -1,5 +1,5 @@
 """
-Wholesale Deal Proforma — Excel Exporter
+Wholesale Deal Proforma — Excel Exporter  (v1.0)
 
 Generates a professional, single-transaction financial proforma tailored
 for wholesale real-estate deals.  No multi-year projections, no loan
