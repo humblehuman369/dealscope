@@ -1,69 +1,132 @@
 {
   "cli": {
-    "version": ">= 5.0.0",
-    "appVersionSource": "local"
+    "version": ">= 13.0.0",
+    "appVersionSource": "local",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
+    "base": {
+      "node": "20.18.0",
+      "env": {
+        "EXPO_PUBLIC_WEB_APP_URL": "https://investiq.guru"
+      }
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "resourceClass": "medium"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://localhost:8000"
+        "EXPO_PUBLIC_API_URL": "http://localhost:8000",
+        "APP_ENV": "development"
       }
     },
     "development-device": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "resourceClass": "medium"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app",
+        "APP_ENV": "development"
       }
     },
     "preview": {
+      "extends": "base",
       "distribution": "internal",
       "channel": "preview",
-      "android": {
-        "buildType": "apk"
-      },
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "medium"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app",
+        "APP_ENV": "preview"
       }
     },
     "beta": {
+      "extends": "base",
       "distribution": "internal",
       "channel": "beta",
       "autoIncrement": true,
-      "android": {
-        "buildType": "apk"
-      },
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "medium"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app",
+        "APP_ENV": "beta"
       }
     },
     "production": {
+      "extends": "base",
       "distribution": "store",
       "channel": "production",
       "autoIncrement": true,
+      "ios": {
+        "simulator": false,
+        "resourceClass": "m-medium",
+        "credentialsSource": "remote"
+      },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "resourceClass": "medium",
+        "credentialsSource": "remote"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app",
+        "APP_ENV": "production"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "APPLE_ID_PLACEHOLDER",
+        "ascAppId": "ASC_APP_ID_PLACEHOLDER",
+        "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
+        "sku": "com.investiq.mobile",
+        "language": "en-US"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-services-key.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    },
+    "beta": {
+      "ios": {
+        "appleId": "APPLE_ID_PLACEHOLDER",
+        "ascAppId": "ASC_APP_ID_PLACEHOLDER",
+        "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
+        "sku": "com.investiq.mobile",
+        "language": "en-US"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-services-key.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }
