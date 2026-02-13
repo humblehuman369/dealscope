@@ -343,13 +343,17 @@ for name, path in _routers:
 
 
 # ============================================
-# HEALTH CHECK
+# HEALTH CHECK FALLBACK
 # ============================================
-# The lightweight /health endpoint lives in app.routers.health (always returns 200).
-# Deep dependency checks are at /health/ready and /health/deep.
-# Do NOT define @app.get("/health") here — it would override the router's
-# fast-responding endpoint, causing Railway healthcheck timeouts when
-# the database or Redis is slow to connect on cold starts.
+# The primary /health endpoint lives in app.routers.health (always returns 200).
+# If that router failed to load, register a minimal fallback here so Railway's
+# healthcheck never gets a 404.
+if not any(r.path == "/health" for r in app.routes):
+    @app.get("/health")
+    async def health_fallback():
+        """Minimal fallback healthcheck (health router failed to load)."""
+        return {"status": "healthy", "fallback": True}
+    logger.warning("Health router did not load — registered fallback /health endpoint")
 
 
 @app.get("/")
