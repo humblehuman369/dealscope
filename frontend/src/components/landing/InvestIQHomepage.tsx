@@ -124,6 +124,23 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </nav>
 
+      {/* BETA BANNER */}
+      <div style={{
+        background: 'linear-gradient(90deg, rgba(14,165,233,0.12) 0%, rgba(20,184,166,0.08) 100%)',
+        borderBottom: '1px solid rgba(14,165,233,0.15)',
+        padding: '0.5rem 1rem',
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 40,
+      }}>
+        <p style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 500, margin: 0 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(14,165,233,0.2)', padding: '0.15rem 0.6rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: '0.5rem' }}>
+            Beta
+          </span>
+          Free early access — help shape the future of real estate analytics
+        </p>
+      </div>
+
       {/* HERO */}
       <section className="hero hero-centered">
         <div className="hero-badge"><span className="badge-dot" /> Real estate investment intelligence</div>
@@ -444,12 +461,12 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       {/* INVESTMENT OS */}
       <section
         className={`section section-alt ${fadeClass(4)}`}
-        id="dealhub"
+        id="workflow"
         data-idx="4"
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
       >
         <div className="section-inner">
-          <div className="os-grid">
+          <div className="os-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '640px', margin: '0 auto' }}>
             <div>
               <div className="os-label">02 — Workflow OS</div>
               <h2 className="os-title">Your Investment<br />Operating System.</h2>
@@ -536,6 +553,35 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </section>
 
+      {/* BETA CREDIBILITY */}
+      <section style={{ padding: '4rem 1.5rem', borderTop: '1px solid rgba(148,163,184,0.08)' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#14b8a6', marginBottom: '1rem' }}>
+            Early Access
+          </p>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.3, marginBottom: '1rem' }}>
+            We&apos;re building InvestIQ in public — and your feedback drives what ships next.
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: '#94a3b8', lineHeight: 1.7, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
+            InvestIQ is in beta. Every analysis you run, every deal you save, and every feature request you make helps us build the tool serious investors actually need.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', maxWidth: '480px', margin: '0 auto' }}>
+            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.12)' }}>
+              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8', marginBottom: '0.25rem' }}>6</p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Investment Strategies</p>
+            </div>
+            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.12)' }}>
+              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2dd4bf', marginBottom: '0.25rem' }}>60s</p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Analysis Time</p>
+            </div>
+            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.12)' }}>
+              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.25rem' }}>Free</p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>During Beta</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section
         className={`cta-section ${fadeClass(6)}`}
@@ -551,14 +597,50 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
 
       {/* FOOTER */}
       <footer className="iq-footer">
-        <div className="footer-logo">Invest<span>IQ</span></div>
-        <p className="footer-tagline">Professional Real Estate Intelligence for Everyone.</p>
-        <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', margin: '0.75rem 0' }}>
-          <Link href="/privacy" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Privacy</Link>
-          <Link href="/terms" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Terms</Link>
-          <a href="mailto:support@investiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Contact</a>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1.5rem' }}>
+          {/* Footer grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem', textAlign: 'left' }}>
+            {/* Brand column */}
+            <div>
+              <div className="footer-logo" style={{ marginBottom: '0.75rem' }}>Invest<span>IQ</span></div>
+              <p style={{ color: 'rgba(148,163,184,0.6)', fontSize: '0.8rem', lineHeight: 1.7 }}>
+                Professional real estate intelligence for every investor.
+              </p>
+            </div>
+
+            {/* Product column */}
+            <div>
+              <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Product</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a href="#strategies" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Strategies</a>
+                <a href="#toolkit" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Toolkit</a>
+                <a href="#workflow" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Workflow</a>
+              </div>
+            </div>
+
+            {/* Legal column */}
+            <div>
+              <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Legal</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <Link href="/privacy" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Privacy Policy</Link>
+                <Link href="/terms" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Terms of Service</Link>
+              </div>
+            </div>
+
+            {/* Support column */}
+            <div>
+              <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Support</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a href="mailto:support@investiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>support@investiq.com</a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ borderTop: '1px solid rgba(148,163,184,0.1)', paddingTop: '1.5rem', textAlign: 'center' }}>
+            <p className="footer-copy">&copy; 2026 InvestIQ. All rights reserved. Professional use only. Not a lender.</p>
+          </div>
         </div>
-        <p className="footer-copy">&copy; 2026 InvestIQ. All rights reserved.<br />Professional use only. Not a lender.</p>
       </footer>
 
       {/* Gateway Modal */}

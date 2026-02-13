@@ -18,6 +18,7 @@ import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { usePropertyScan } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
+import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
@@ -50,6 +51,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [showAddressSearch, setShowAddressSearch] = useState(false);
   const [addressInput, setAddressInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   
   const scanner = usePropertyScan();
 
@@ -105,15 +107,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       }
     } catch (error) {
       console.error('Location error:', error);
-      // If geolocation fails, show a message but still let them use the app
       if (error instanceof GeolocationPositionError) {
         if (error.code === error.PERMISSION_DENIED) {
-          alert('Location access denied. Please enable location services and try again, or use the address search.');
+          setLocationError('Location access denied. Please enable location services and try again, or use the address search.');
         } else {
-          alert('Could not determine your location. Please try the address search instead.');
+          setLocationError('Could not determine your location. Please try the address search instead.');
         }
       } else {
-        alert('Could not find a property at your location. Please try the address search.');
+        setLocationError('Could not find a property at your location. Please try the address search.');
       }
     } finally {
       setIsGettingLocation(false);
@@ -516,6 +517,13 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
           onViewDetails={handleViewDetails}
         />
       )}
+
+      <InfoDialog
+        open={!!locationError}
+        onClose={() => setLocationError(null)}
+        title="Location Unavailable"
+        description={locationError || ''}
+      />
     </div>
   );
 }

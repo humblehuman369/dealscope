@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
   Bookmark, Search, MapPin, Building2, Clock, Trash2,
   TrendingUp, Star, AlertCircle,
@@ -94,6 +95,7 @@ export default function SavedPropertiesPage() {
   const [filterStatus, setFilterStatus] = useState<PropertyStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchModal, setShowSearchModal] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -132,15 +134,16 @@ export default function SavedPropertiesPage() {
     }
   }, [isAuthenticated, fetchData])
 
-  // Delete a saved property
-  const deleteProperty = async (propertyId: string) => {
-    if (!confirm('Remove this property from your saved list?')) return
-
+  // Delete a saved property (triggered by ConfirmDialog)
+  const confirmDeleteProperty = async () => {
+    if (!deleteTarget) return
     try {
-      await api.delete(`/api/v1/properties/saved/${propertyId}`)
-      setProperties(prev => prev.filter(p => p.id !== propertyId))
+      await api.delete(`/api/v1/properties/saved/${deleteTarget}`)
+      setProperties(prev => prev.filter(p => p.id !== deleteTarget))
     } catch (err) {
       console.error('Failed to delete property:', err)
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -473,7 +476,7 @@ export default function SavedPropertiesPage() {
                           <ChevronRight className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => deleteProperty(property.id)}
+                          onClick={() => setDeleteTarget(property.id)}
                           className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                           title="Remove from saved"
                         >
@@ -491,6 +494,17 @@ export default function SavedPropertiesPage() {
 
       {/* Search Modal */}
       <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Remove Property"
+        description="Remove this property from your saved list? You can always re-add it later."
+        variant="danger"
+        confirmLabel="Remove"
+        onConfirm={confirmDeleteProperty}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
