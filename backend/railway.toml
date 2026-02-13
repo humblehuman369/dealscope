@@ -4,7 +4,7 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 # Fix alembic version mismatch, then start server
-startCommand = "python fix_alembic.py && python start.py"
+startCommand = "python fix_alembic.py ; echo '>>> SHELL: Starting app...' ; python start.py"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

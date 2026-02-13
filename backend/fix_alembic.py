@@ -346,5 +346,8 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         log.error("fix_alembic.py crashed (non-fatal): %s", e)
-    # Always exit 0 so uvicorn can start regardless of DB state
-    sys.exit(0)
+    # Diagnostic: confirm we reach the exit point
+    print(">>> fix_alembic.py DONE — exiting with code 0", flush=True)
+    # Don't use sys.exit() — it raises SystemExit which can confuse
+    # signal handlers. Just let the script end naturally with code 0.
+    # sys.exit(0)
