@@ -12,7 +12,8 @@ import { rf, rs } from '../verdict-iq/responsive';
 
 export interface ConfidenceMetric {
   label: string;
-  value: number; // 0–100
+  value: number; // 0–90 (max per component)
+  qualLabel?: string;
   color: 'blue' | 'teal';
 }
 
@@ -30,6 +31,10 @@ export function DataQuality({ metrics }: DataQualityProps) {
     <View style={styles.container}>
       {metrics.map((m, i) => {
         const c = BAR_COLORS[m.color];
+        // Bar width: score / 90 (max per component) mapped to visual width
+        const barPct = Math.min(100, (m.value / 90) * 100);
+        // Qualitative label (use provided or compute)
+        const label = m.qualLabel ?? (m.value >= 75 ? 'Excellent' : m.value >= 55 ? 'Strong' : m.value >= 40 ? 'Good' : m.value >= 20 ? 'Fair' : 'Weak');
         return (
           <View key={i} style={styles.row}>
             <Text style={styles.label}>{m.label}</Text>
@@ -39,11 +44,11 @@ export function DataQuality({ metrics }: DataQualityProps) {
                   colors={[c.start, c.end]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={[styles.barFill, { width: `${m.value}%` }]}
+                  style={[styles.barFill, { width: `${barPct}%` }]}
                 />
               </View>
             </View>
-            <Text style={[styles.pct, { color: c.text }]}>{m.value}%</Text>
+            <Text style={[styles.pct, { color: c.text }]}>{label}</Text>
           </View>
         );
       })}
@@ -80,9 +85,9 @@ const styles = StyleSheet.create({
   },
   pct: {
     ...verdictTypography.financial,
-    fontSize: rf(15),
+    fontSize: rf(13),
     fontWeight: '700',
-    width: rs(50),
+    width: rs(68),
     textAlign: 'right',
   },
 });

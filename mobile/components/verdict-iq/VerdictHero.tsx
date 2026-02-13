@@ -28,6 +28,7 @@ import { ArcGauge } from './ArcGauge';
 export interface ConfidenceMetric {
   label: string;
   value: number;
+  qualLabel?: string;
   color: 'teal' | 'amber' | 'negative';
 }
 
@@ -174,6 +175,8 @@ export function VerdictHero({
           <Text style={styles.confidenceHeader}>SCORE COMPONENTS</Text>
           {confidenceMetrics.map((metric, index) => {
             const metricColor = getHarmonizedColor(metric.color);
+            // Bar width: score / 90 (max per component) mapped to visual width
+            const barPct = Math.min(100, (metric.value / 90) * 100);
             return (
               <View key={index} style={styles.confidenceRow}>
                 <Text style={styles.confidenceLabel}>{metric.label}</Text>
@@ -181,12 +184,12 @@ export function VerdictHero({
                   <View
                     style={[
                       styles.confidenceFill,
-                      { width: `${metric.value}%`, backgroundColor: metricColor },
+                      { width: `${barPct}%`, backgroundColor: metricColor },
                     ]}
                   />
                 </View>
                 <Text style={[styles.confidenceValue, { color: metricColor }]}>
-                  {metric.value}%
+                  {metric.qualLabel ?? (metric.value >= 75 ? 'Excellent' : metric.value >= 55 ? 'Strong' : metric.value >= 40 ? 'Good' : metric.value >= 20 ? 'Fair' : 'Weak')}
                 </Text>
               </View>
             );
@@ -376,10 +379,9 @@ const styles = StyleSheet.create({
     borderRadius: rs(3),
   },
   confidenceValue: {
-    fontSize: rf(13),
+    fontSize: rf(12),
     fontWeight: '700',
-    fontVariant: ['tabular-nums'],
-    width: rs(40),
+    width: rs(62),
     textAlign: 'right',
   },
 });

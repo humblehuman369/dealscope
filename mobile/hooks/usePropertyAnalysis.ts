@@ -229,6 +229,21 @@ export function usePropertyAnalysis(
         fetchAnalyticsData(property, assumptions, growthAssumptions),
       ]);
 
+      // Normalize component scores — handle both snake_case and camelCase from backend
+      if (!verdictResponse.componentScores) {
+        const raw = (verdictResponse as Record<string, unknown>).component_scores as
+          | { deal_gap_score?: number; return_quality_score?: number; market_alignment_score?: number; deal_probability_score?: number; dealGapScore?: number; returnQualityScore?: number; marketAlignmentScore?: number; dealProbabilityScore?: number }
+          | undefined;
+        if (raw) {
+          verdictResponse.componentScores = {
+            dealGapScore: raw.dealGapScore ?? raw.deal_gap_score ?? 0,
+            returnQualityScore: raw.returnQualityScore ?? raw.return_quality_score ?? 0,
+            marketAlignmentScore: raw.marketAlignmentScore ?? raw.market_alignment_score ?? 0,
+            dealProbabilityScore: raw.dealProbabilityScore ?? raw.deal_probability_score ?? 0,
+          };
+        }
+      }
+
       setData(verdictResponse);
       setProjections(analyticsResponse);
     } catch (err) {
