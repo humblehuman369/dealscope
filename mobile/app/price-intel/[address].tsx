@@ -4,6 +4,9 @@
  * Params: address, price, beds, baths, sqft
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,

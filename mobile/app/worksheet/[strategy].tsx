@@ -9,6 +9,9 @@
  * decimals (0.20) but displayed as whole numbers (20) in the input fields.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
