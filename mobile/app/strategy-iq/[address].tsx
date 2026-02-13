@@ -25,6 +25,8 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
 export { ErrorBoundary };
@@ -363,6 +365,45 @@ export default function StrategyIQScreen() {
     }
   }, [currentStrategy, decodedAddress, listPrice, targetPrice, monthlyRent, bedroomCount, bathroomCount, sqftValue]);
 
+  // ── PDF Export: download and share a lender-ready report ──
+  const handlePDFExport = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+      const strategyMap: Record<string, string> = {
+        'Long-Term Rental': 'ltr', 'Short-Term Rental': 'str', 'BRRRR': 'brrrr',
+        'Fix & Flip': 'flip', 'House Hack': 'house_hack', 'Wholesale': 'wholesale',
+      };
+      const strategy = strategyMap[currentStrategy] || 'ltr';
+      const propertyId = raw?.property_id || 'general';
+      const params = new URLSearchParams({
+        address: decodedAddress,
+        strategy,
+        theme: 'light',
+      });
+      const pdfUrl = `${API_BASE}/api/v1/proforma/property/${propertyId}/pdf?${params}`;
+      const safeAddress = decodedAddress.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+      const fileUri = `${FileSystem.cacheDirectory}InvestIQ_${safeAddress}.pdf`;
+
+      const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri);
+
+      if (downloadResult.status !== 200) {
+        Alert.alert('Export Failed', 'Could not generate the report. Please try again.');
+        return;
+      }
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
+      } else {
+        Alert.alert('Report Saved', `PDF saved to ${fileUri}`);
+      }
+    } catch (err) {
+      console.error('PDF export error:', err);
+      Alert.alert('Export Failed', 'Something went wrong. Please check your connection and try again.');
+    }
+  }, [decodedAddress, currentStrategy, raw]);
+
   // ── Change Terms: navigate to worksheet for the active strategy ──
   const handleChangeTerms = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -572,6 +613,7 @@ export default function StrategyIQScreen() {
             <ActionBar
               currentStrategy={currentStrategy}
               onExport={handleExport}
+              onPDFExport={handlePDFExport}
               onChangeTerms={handleChangeTerms}
               onStrategyPress={handleStrategyPress}
             />

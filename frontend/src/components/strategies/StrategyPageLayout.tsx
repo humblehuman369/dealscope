@@ -1,10 +1,104 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
+
+/* ───────────────── Property Context (from active analysis) ───────────────── */
+
+interface PropertyContext {
+  address?: string;
+  price?: number;
+  beds?: number;
+  baths?: number;
+  sqft?: number;
+}
+
+function usePropertyContext(): PropertyContext | null {
+  const [ctx, setCtx] = useState<PropertyContext | null>(null);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('dealMakerOverrides');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      // Require at minimum a price to consider this a valid context
+      if (parsed.price) {
+        setCtx({
+          address: parsed.address || undefined,
+          price: parsed.price,
+          beds: parsed.beds,
+          baths: parsed.baths,
+          sqft: parsed.sqft,
+        });
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+  return ctx;
+}
+
+function PropertyContextCard({
+  strategyName,
+  accentColor,
+  ctx,
+}: {
+  strategyName: string;
+  accentColor: string;
+  ctx: PropertyContext;
+}) {
+  const address = ctx.address || 'Your Property';
+  const price = ctx.price ? `$${ctx.price.toLocaleString()}` : '—';
+  const details = [
+    ctx.beds ? `${ctx.beds} bed` : null,
+    ctx.baths ? `${ctx.baths} bath` : null,
+    ctx.sqft ? `${ctx.sqft.toLocaleString()} sqft` : null,
+  ].filter(Boolean).join(' · ');
+
+  const addressEncoded = encodeURIComponent(address);
+
+  return (
+    <div
+      style={{
+        background: `${accentColor}08`,
+        border: `1px solid ${accentColor}20`,
+        borderRadius: 16,
+        padding: '2rem',
+        marginBottom: '1.5rem',
+      }}
+    >
+      <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: accentColor, margin: '0 0 0.75rem' }}>
+        Active Analysis
+      </p>
+      <h3 style={{ fontWeight: 700, fontSize: '1.25rem', color: '#F1F5F9', margin: '0 0 0.25rem' }}>
+        How {address.split(',')[0]} performs as a {strategyName}
+      </h3>
+      <p style={{ color: '#94A3B8', fontSize: '0.9rem', margin: '0 0 1.25rem' }}>
+        {details ? `${details} · ` : ''}Listed at {price}
+      </p>
+      <Link
+        href={`/verdict?address=${addressEncoded}`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.75rem 1.5rem',
+          background: accentColor,
+          color: '#000',
+          fontWeight: 700,
+          fontSize: '0.875rem',
+          borderRadius: 10,
+          textDecoration: 'none',
+        }}
+      >
+        Run Full Analysis
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+      </Link>
+    </div>
+  );
+}
 
 /* ───────────────── Types ───────────────── */
 
@@ -154,6 +248,7 @@ export function StrategyPageLayout({
   const { user, isAuthenticated } = useSession();
   const { openAuthModal } = useAuthModal();
   const logoutMutation = useLogout();
+  const propertyCtx = usePropertyContext();
 
   return (
     <div
@@ -412,6 +507,11 @@ export function StrategyPageLayout({
             Start Analyzing Properties
           </Link>
         </div>
+
+        {/* Property Context — shown when user arrived from an active analysis */}
+        {propertyCtx && (
+          <PropertyContextCard strategyName={name} accentColor={accentColor} ctx={propertyCtx} />
+        )}
 
         {/* Benefits Card */}
         <div

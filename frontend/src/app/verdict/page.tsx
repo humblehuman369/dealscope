@@ -206,24 +206,15 @@ function VerdictContent() {
           address: addressParam,
         })
 
-        // Fetch photos if zpid is available
-        let photoUrl: string | undefined = SAMPLE_PHOTOS[0]
-        
-        if (data.zpid) {
-          try {
-            const photosData = await api.get<{ success: boolean; photos: Array<{ url: string }> }>(
+        // Start photo fetch in parallel (resolved later after property data is built)
+        const photoPromise = data.zpid
+          ? api.get<{ success: boolean; photos: Array<{ url: string }> }>(
               `/api/v1/photos?zpid=${data.zpid}`,
-            )
-            if (photosData.success && photosData.photos && photosData.photos.length > 0) {
-              const firstPhoto = photosData.photos[0]
-              if (firstPhoto?.url) {
-                photoUrl = firstPhoto.url
-              }
-            }
-          } catch (photoErr) {
-            console.warn('Failed to fetch photos, using fallback:', photoErr)
-          }
-        }
+            ).catch((err: unknown) => {
+              console.warn('Failed to fetch photos, using fallback:', err)
+              return null
+            })
+          : Promise.resolve(null)
 
         // Get monthly rent (used for estimating price if needed)
         const monthlyRentLTR = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || null
@@ -269,7 +260,7 @@ function VerdictContent() {
           baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
           sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
           price: Math.round(price),
-          imageUrl: photoUrl,
+          imageUrl: SAMPLE_PHOTOS[0], // Placeholder until photo promise resolves
           yearBuilt: data.details?.year_built,
           lotSize: data.details?.lot_size,
           propertyType: data.details?.property_type,
@@ -372,28 +363,41 @@ function VerdictContent() {
           rentForCalc = Math.round(rentForCalc * loc.rentMultiplier)
         }
         
+        // Fire analysis + photo resolution in parallel (both depend on property
+        // search response, but not on each other)
+        const analysisPromise = api.post<BackendAnalysisResponse & Record<string, any>>(
+          '/api/v1/analysis/verdict',
+          {
+            list_price: listPriceForCalc,
+            monthly_rent: rentForCalc,
+            property_taxes: taxesForCalc,
+            insurance: insuranceForCalc,
+            bedrooms: propertyData.beds,
+            bathrooms: propertyData.baths,
+            sqft: propertyData.sqft,
+            arv: arvForCalc,
+            average_daily_rate: propertyData.averageDailyRate,
+            occupancy_rate: propertyData.occupancyRate,
+          },
+        )
+
+        const [analysisData, photosResult] = await Promise.all([
+          analysisPromise,
+          photoPromise,
+        ])
+
+        // Update property photo if we got a real one
+        if (photosResult?.success && photosResult.photos?.length > 0 && photosResult.photos[0]?.url) {
+          propertyData.imageUrl = photosResult.photos[0].url
+          setProperty({ ...propertyData })
+        }
+          
+        // Log the full response for debugging
+        console.log('[IQ Verdict] Backend response:', analysisData)
+          
+        // Convert backend response to frontend IQAnalysisResult format
+        // Backend now returns camelCase for new fields via Pydantic alias_generator
         try {
-          const analysisData = await api.post<BackendAnalysisResponse & Record<string, any>>(
-            '/api/v1/analysis/verdict',
-            {
-              list_price: listPriceForCalc,
-              monthly_rent: rentForCalc,
-              property_taxes: taxesForCalc,
-              insurance: insuranceForCalc,
-              bedrooms: propertyData.beds,
-              bathrooms: propertyData.baths,
-              sqft: propertyData.sqft,
-              arv: arvForCalc,
-              average_daily_rate: propertyData.averageDailyRate,
-              occupancy_rate: propertyData.occupancyRate,
-            },
-          )
-          
-          // Log the full response for debugging
-          console.log('[IQ Verdict] Backend response:', analysisData)
-          
-          // Convert backend response to frontend IQAnalysisResult format
-          // Backend now returns camelCase for new fields via Pydantic alias_generator
           const analysisResult: IQAnalysisResult = {
             propertyId: data?.property_id || propertyData?.id, // Include property ID for exports
             analyzedAt: new Date().toISOString(),
@@ -506,8 +510,17 @@ function VerdictContent() {
     }
   }, [property, propertyIdParam, router])
 
-  // Export — deferred to Phase 4 (backend PDF exporter exists, frontend wiring pending)
-  // const handleExport = useCallback(() => {}, [])
+  // Export — opens the HTML report in a new tab with auto-print for Save-as-PDF
+  const handleExport = useCallback((theme: 'light' | 'dark' = 'light') => {
+    const propertyId = analysis?.propertyId || 'general'
+    const params = new URLSearchParams({
+      address: addressParam || '',
+      strategy: 'ltr',
+      theme,
+      propertyId: String(propertyId),
+    })
+    window.open(`/api/report?${params}`, '_blank')
+  }, [analysis?.propertyId, addressParam])
 
   // Handle change terms - navigate to Deal Maker to adjust assumptions
   const handleChangeTerms = useCallback(() => {
@@ -812,6 +825,18 @@ function VerdictContent() {
                 </p>
               </div>
             </div>
+          </section>
+
+          {/* Export Report Button */}
+          <section className="px-5 pb-6">
+            <button
+              onClick={() => handleExport('light')}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[12px] text-[0.85rem] font-semibold transition-all hover:opacity-90"
+              style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Export Full Report
+            </button>
           </section>
 
           {/* CTA → Strategy — copy adapts to verdict score */}
