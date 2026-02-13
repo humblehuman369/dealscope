@@ -243,7 +243,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${d.strategy_methodology ? `
   <div class="card mt-14" style="border-left:3px solid ${p.brand}">
     <div class="card-hd">Strategy Methodology: ${d.strategy_type.toUpperCase()}</div>
-    <p class="narrative" style="margin:8px 0 0">${d.strategy_methodology.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')}</p>
+    <p class="narrative" style="margin:8px 0 0">${d.strategy_methodology.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, ' ')}</p>
   </div>` : ''}
   <div class="sec-divider"></div>
   <div class="sec-tag">01</div>
