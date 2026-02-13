@@ -80,14 +80,12 @@ def get_engine() -> AsyncEngine:
         
         if is_serverless:
             # Serverless: Use NullPool to avoid connection pool issues
-            # connect_timeout=10 prevents indefinite hangs on Railway cold starts
             logger.info("Connection pooling: NullPool (serverless environment)")
             _engine = create_async_engine(
                 db_url,
                 echo=settings.DEBUG,
                 pool_pre_ping=True,
                 poolclass=NullPool,
-                connect_args={"connect_timeout": 10},
             )
         else:
             # Standard deployment: Use QueuePool for connection reuse
