@@ -15,7 +15,7 @@ import {
 } from '../../components/analytics/iq-verdict';
 import { usePropertyStore } from '../../stores';
 import { useProgressiveProfiling } from '../../hooks/useProgressiveProfiling';
-import { ProgressiveProfilingPrompt } from '../../components/ProgressiveProfilingPrompt';
+import ProgressiveProfilingPrompt from '../../components/ProgressiveProfilingPrompt';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
