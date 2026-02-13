@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, onlineManager } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
@@ -12,6 +12,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { OfflineBanner } from '../components/OfflineBanner';
+import NetInfo from '@react-native-community/netinfo';
 
 // Initialize Sentry for error tracking
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -39,11 +41,27 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // Splash screen may already be hidden in Expo Go
 });
 
+// Wire NetInfo into React Query so it pauses fetching when offline
+// and auto-refetches when back online.
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected && state.isInternetReachable !== false);
+  });
+});
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,      // Data fresh for 5 min — prevents re-fetching on back-nav
+      gcTime: 1000 * 60 * 30,         // Keep unused cache for 30 min (offline fallback window)
       retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000), // exponential: 1s, 2s, 4s…10s
+      refetchOnReconnect: 'always',   // Always refresh stale data when coming back online
+      networkMode: 'offlineFirst',    // Return cached data immediately, refetch in background
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+      retry: 1,
     },
   },
 });
@@ -236,6 +254,9 @@ function AppContent({
         />
       </Stack>
       
+      {/* Offline connectivity banner — slides down when no internet */}
+      <OfflineBanner />
+
       {/* Animated Splash Screen with pulsating logo */}
       {appReady && showAnimatedSplash && (
         <AnimatedSplash onAnimationComplete={onAnimationComplete} />
