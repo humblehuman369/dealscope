@@ -85,6 +85,13 @@ export interface IQAnalysisResult {
   dealVerdict: IQDealVerdict;
   verdictDescription: string;
   strategies: IQStrategy[];   // Sorted by rank (1-6)
+  // Composite verdict component scores (0-90 each)
+  componentScores?: {
+    dealGapScore: number;
+    returnQualityScore: number;
+    marketAlignmentScore: number;
+    dealProbabilityScore: number;
+  };
   // NEW: Profit Score (0-100) based on 5 financial metrics
   profitScore?: number;
   profitGrade?: ProfitGrade;

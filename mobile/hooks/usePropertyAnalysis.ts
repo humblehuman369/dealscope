@@ -76,7 +76,12 @@ export interface IQVerdictResponse {
   opportunityFactors: OpportunityFactorsResponse;
   returnRating: ScoreDisplayResponse;
   returnFactors: ReturnFactorsResponse;
-  // Composite verdict component scores
+  // Component scores — flat top-level fields from backend
+  dealGapScore?: number;
+  returnQualityScore?: number;
+  marketAlignmentScore?: number;
+  dealProbabilityScore?: number;
+  // Legacy nested format (kept for backward compat)
   componentScores?: {
     dealGapScore: number;
     returnQualityScore: number;
@@ -229,19 +234,15 @@ export function usePropertyAnalysis(
         fetchAnalyticsData(property, assumptions, growthAssumptions),
       ]);
 
-      // Normalize component scores — handle both snake_case and camelCase from backend
+      // Build componentScores from flat top-level fields returned by backend
       if (!verdictResponse.componentScores) {
-        const raw = (verdictResponse as Record<string, unknown>).component_scores as
-          | { deal_gap_score?: number; return_quality_score?: number; market_alignment_score?: number; deal_probability_score?: number; dealGapScore?: number; returnQualityScore?: number; marketAlignmentScore?: number; dealProbabilityScore?: number }
-          | undefined;
-        if (raw) {
-          verdictResponse.componentScores = {
-            dealGapScore: raw.dealGapScore ?? raw.deal_gap_score ?? 0,
-            returnQualityScore: raw.returnQualityScore ?? raw.return_quality_score ?? 0,
-            marketAlignmentScore: raw.marketAlignmentScore ?? raw.market_alignment_score ?? 0,
-            dealProbabilityScore: raw.dealProbabilityScore ?? raw.deal_probability_score ?? 0,
-          };
-        }
+        const v = verdictResponse as Record<string, unknown>;
+        verdictResponse.componentScores = {
+          dealGapScore: Number(v.dealGapScore ?? v.deal_gap_score ?? 0),
+          returnQualityScore: Number(v.returnQualityScore ?? v.return_quality_score ?? 0),
+          marketAlignmentScore: Number(v.marketAlignmentScore ?? v.market_alignment_score ?? 0),
+          dealProbabilityScore: Number(v.dealProbabilityScore ?? v.deal_probability_score ?? 0),
+        };
       }
 
       setData(verdictResponse);

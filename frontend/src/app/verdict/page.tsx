@@ -22,6 +22,7 @@ import {
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
+  PropertyContextBar,
 } from '@/components/iq-verdict'
 import { colors, typography, tw, getScoreColor } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
@@ -50,9 +51,11 @@ interface BackendAnalysisResponse {
   purchase_price?: number; purchasePrice?: number
   breakeven_price?: number; breakevenPrice?: number
   list_price?: number; listPrice?: number
-  // Component scores (nested — both key formats)
-  component_scores?: Record<string, number>
-  componentScores?: Record<string, number>
+  // Component scores — flat top-level fields (both key formats for safety)
+  deal_gap_score?: number; dealGapScore?: number
+  return_quality_score?: number; returnQualityScore?: number
+  market_alignment_score?: number; marketAlignmentScore?: number
+  deal_probability_score?: number; dealProbabilityScore?: number
   // Allow additional camelCase fields from alias generator
   [key: string]: unknown
 }
@@ -390,8 +393,13 @@ function VerdictContent() {
           
         // Diagnostic logging — traces exact key formats from backend
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
-        console.log('[IQ Verdict] dealScore (camel):', (analysisData as any).dealScore, '| deal_score (snake):', (analysisData as any).deal_score)
-        console.log('[IQ Verdict] componentScores (camel):', (analysisData as any).componentScores, '| component_scores (snake):', (analysisData as any).component_scores)
+        console.log('[IQ Verdict] dealScore:', (analysisData as any).dealScore ?? (analysisData as any).deal_score)
+        console.log('[IQ Verdict] Component scores (flat):', {
+          dealGapScore: (analysisData as any).dealGapScore ?? (analysisData as any).deal_gap_score,
+          returnQualityScore: (analysisData as any).returnQualityScore ?? (analysisData as any).return_quality_score,
+          marketAlignmentScore: (analysisData as any).marketAlignmentScore ?? (analysisData as any).market_alignment_score,
+          dealProbabilityScore: (analysisData as any).dealProbabilityScore ?? (analysisData as any).deal_probability_score,
+        })
           
         // Convert backend response to frontend IQAnalysisResult format
         // Backend now returns camelCase for new fields via Pydantic alias_generator
@@ -424,20 +432,13 @@ function VerdictContent() {
             opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
             returnRating: analysisData.return_rating ?? analysisData.returnRating,
             returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            // Composite verdict component scores — handle any key format from backend
-            componentScores: (() => {
-              // Try every possible key format (camelCase from alias, snake_case from field name)
-              const raw = (analysisData as Record<string, unknown>).componentScores
-                ?? (analysisData as Record<string, unknown>).component_scores
-              if (!raw || typeof raw !== 'object') return undefined
-              const r = raw as Record<string, unknown>
-              return {
-                dealGapScore: Number(r.dealGapScore ?? r.deal_gap_score ?? 0),
-                returnQualityScore: Number(r.returnQualityScore ?? r.return_quality_score ?? 0),
-                marketAlignmentScore: Number(r.marketAlignmentScore ?? r.market_alignment_score ?? 0),
-                dealProbabilityScore: Number(r.dealProbabilityScore ?? r.deal_probability_score ?? 0),
-              }
-            })(),
+            // Component scores — flat top-level fields from backend (no nesting)
+            componentScores: {
+              dealGapScore: Number(analysisData.dealGapScore ?? analysisData.deal_gap_score ?? 0),
+              returnQualityScore: Number(analysisData.returnQualityScore ?? analysisData.return_quality_score ?? 0),
+              marketAlignmentScore: Number(analysisData.marketAlignmentScore ?? analysisData.market_alignment_score ?? 0),
+              dealProbabilityScore: Number(analysisData.dealProbabilityScore ?? analysisData.deal_probability_score ?? 0),
+            },
           }
           setAnalysis(analysisResult)
         } catch (analysisErr) {
@@ -679,6 +680,28 @@ function VerdictContent() {
     <>
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         <AnalysisNav />
+
+        {/* Property address context bar */}
+        {property && (
+          <PropertyContextBar
+            address={property.address}
+            city={property.city}
+            state={property.state}
+            zip={property.zip}
+            beds={property.beds}
+            baths={property.baths}
+            sqft={property.sqft}
+            price={property.price}
+            imageUrl={property.imageUrl}
+            status={
+              property.listingStatus === 'FOR_SALE' ? 'active'
+              : property.listingStatus === 'PENDING' ? 'pending'
+              : property.listingStatus === 'SOLD' ? 'sold'
+              : 'off-market'
+            }
+          />
+        )}
+
         {/* Responsive container: mobile-first single column, desktop 2-column */}
         <div className="max-w-[520px] lg:max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_380px] lg:gap-0">
           {/* Score Hero */}
