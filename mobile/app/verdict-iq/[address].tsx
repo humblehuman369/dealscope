@@ -52,6 +52,7 @@ import {
 } from '../../components/verdict-iq';
 import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
 import { PropertyData } from '../../components/analytics/redesign/types';
+import { useAddPortfolioProperty } from '../../hooks/useDatabase';
 
 // =============================================================================
 // CONSTANTS
@@ -224,6 +225,8 @@ export default function VerdictIQScreen() {
   const isOnline = useIsOnline();
   const [currentStrategy, setCurrentStrategy] = useState('Long-term Rental');
   const [selectedIQPrice, setSelectedIQPrice] = useState<IQPriceId>('target');
+  const [isSaved, setIsSaved] = useState(false);
+  const addToPortfolio = useAddPortfolioProperty();
 
   const decodedAddress = decodeURIComponent(address || '');
   const listPrice = price ? parseFloat(price) : 350000;
@@ -322,6 +325,28 @@ export default function VerdictIQScreen() {
       // user cancelled
     }
   }, [decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, city, state]);
+
+  const handleSaveToPortfolio = useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    addToPortfolio.mutate({
+      address: decodedAddress,
+      city: city || null,
+      state: state || null,
+      zip: zip || null,
+      purchasePrice: listPrice,
+      purchaseDate: Math.floor(Date.now() / 1000),
+      strategy: 'long_term_rental',
+      propertyData: propertyData as any,
+    }, {
+      onSuccess: () => {
+        setIsSaved(true);
+        Alert.alert('Saved to Portfolio', `${decodedAddress} has been added to your portfolio.`);
+      },
+      onError: () => {
+        Alert.alert('Save Failed', 'Could not save to portfolio. Please try again.');
+      },
+    });
+  }, [decodedAddress, city, state, zip, listPrice, propertyData, addToPortfolio]);
 
   const handleHowVerdictWorks = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -449,12 +474,13 @@ export default function VerdictIQScreen() {
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.saveBtn}
+              onPress={handleSaveToPortfolio}
               accessibilityRole="button"
-              accessibilityLabel="Save property"
-              accessibilityHint="Saves this property to your list"
+              accessibilityLabel="Save property to portfolio"
+              accessibilityHint="Saves this property to your portfolio"
             >
-              <Ionicons name="bookmark-outline" size={rf(14)} color={verdictDark.textBody} />
-              <Text style={styles.saveBtnText}>Save</Text>
+              <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={rf(14)} color={isSaved ? verdictDark.blue : verdictDark.textBody} />
+              <Text style={[styles.saveBtnText, isSaved && { color: verdictDark.blue }]}>{isSaved ? 'Saved' : 'Save'}</Text>
             </TouchableOpacity>
           </View>
         </View>

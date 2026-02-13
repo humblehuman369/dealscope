@@ -38,6 +38,8 @@ interface ScanResultSheetProps {
   onViewDetails: () => void;
   /** Enable the new IQ Verdict flow (Analyze → Verdict → Worksheet) */
   useIQVerdictFlow?: boolean;
+  /** Called when user taps "Not the right property?" to re-open disambiguation */
+  onWrongProperty?: () => void;
 }
 
 /**
@@ -53,6 +55,7 @@ export function ScanResultSheet({
   onClose, 
   onViewDetails,
   useIQVerdictFlow = true, // Default to new flow
+  onWrongProperty,
 }: ScanResultSheetProps) {
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(0);
@@ -246,6 +249,9 @@ export function ScanResultSheet({
           sheetStyle,
           { paddingBottom: insets.bottom + 20, backgroundColor: theme.background }
         ]}
+        accessibilityViewIsModal
+        accessibilityRole="dialog"
+        accessibilityLabel="Property scan result"
       >
         {/* Handle */}
         <View style={styles.handleContainer}>
@@ -354,6 +360,15 @@ export function ScanResultSheet({
               </Text>
               <Ionicons name="arrow-forward" size={20} color="#fff" />
             </Pressable>
+
+            {/* Recovery link to re-open disambiguation */}
+            {onWrongProperty && (
+              <Pressable onPress={onWrongProperty} style={{ paddingVertical: 12, alignItems: 'center' }}>
+                <Text style={{ color: '#94A3B8', fontSize: 13, fontWeight: '500' }}>
+                  Not the right property?
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
 
