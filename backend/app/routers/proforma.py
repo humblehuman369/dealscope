@@ -20,6 +20,7 @@ from app.services.proforma_generator import generate_proforma_data
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_pdf_exporter import ProformaPDFExporter, WEASYPRINT_AVAILABLE
 from app.services.property_report_pdf import PropertyReportPDFExporter
+from app.services.wholesale_exporter import WholesaleExcelExporter
 from app.services.property_service import property_service
 from app.core.deps import CurrentUser, OptionalUser
 
@@ -208,19 +209,32 @@ async def download_proforma_excel(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
+    # User override params (from DealMaker adjustments)
+    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
+    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
+    interest_rate: Optional[float] = Query(None, description="Override interest rate (%)"),
+    down_payment_pct: Optional[float] = Query(None, description="Override down payment (%)"),
+    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
+    insurance: Optional[float] = Query(None, description="Override annual insurance"),
+    # Wholesale-specific params
+    wholesale_fee: Optional[float] = Query(None, description="Wholesale assignment fee override"),
+    amv: Optional[float] = Query(None, description="After-market value override"),
 ):
     """
     Download a comprehensive Excel financial proforma.
     
-    The Excel file includes 8 tabs:
-    1. Property Summary - Asset details and acquisition costs
-    2. Income & Expenses - Year 1 operating statement
-    3. Cash Flow Projection - Multi-year after-tax projections
-    4. Loan Amortization - Full payment schedule
-    5. Depreciation - Tax depreciation schedule
-    6. Exit Analysis - Capital gains and after-tax proceeds
-    7. Returns Summary - IRR, equity multiple, key metrics
-    8. Assumptions - All inputs and data sources
+    For **wholesale** strategy, generates a deal-specific proforma with:
+    1. Deal Summary — property + strategy overview
+    2. Deal Structure — MAO, contract price, assignment fee
+    3. Costs & Profit — earnest money, marketing, net profit, ROI
+    4. Buyer Analysis — rent estimate, AMV, buyer's numbers
+    5. Deal Viability — spread, viability grade, income targets
+    6. Assumptions — all inputs + data sources
+    
+    For all other strategies, generates a standard 8-tab proforma:
+    1. Property Summary  2. Income & Expenses  3. Cash Flow Projection
+    4. Loan Amortization 5. Depreciation  6. Exit Analysis
+    7. Returns Summary   8. Assumptions
     """
     try:
         # Fetch property data using address
@@ -240,15 +254,26 @@ async def download_proforma_excel(
             marginal_tax_rate=marginal_tax_rate,
             capital_gains_tax_rate=capital_gains_tax_rate,
             hold_period_years=hold_period_years,
+            purchase_price_override=purchase_price,
+            monthly_rent_override=monthly_rent,
         )
         
-        # Generate Excel file
-        exporter = ProformaExcelExporter(proforma)
+        # Dispatch to strategy-specific exporter
+        if strategy == "wholesale":
+            exporter = WholesaleExcelExporter(
+                proforma,
+                rent_estimate=monthly_rent,
+                amv=amv,
+                wholesale_fee=wholesale_fee,
+            )
+        else:
+            exporter = ProformaExcelExporter(proforma)
+
         buffer = exporter.generate()
         
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
-        filename = f"Proforma_{address_slug}_{strategy.upper()}_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        filename = f"InvestIQ_{strategy.upper()}_Proforma_{address_slug}_{datetime.now().strftime('%Y%m%d')}.xlsx"
         
         return StreamingResponse(
             buffer,
