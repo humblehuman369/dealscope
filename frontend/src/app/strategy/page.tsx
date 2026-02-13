@@ -208,8 +208,8 @@ function StrategyContent() {
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
-  const listPrice = data.list_price || propertyInfo?.price || 350000
-  const targetPrice = data.purchase_price || Math.round(listPrice * 0.85)
+  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 350000
+  const targetPrice = data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const monthlyRent = propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
   const propertyTaxes = propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
   const insurance = propertyInfo?.insurance || Math.round(listPrice * 0.01)

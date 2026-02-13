@@ -660,6 +660,11 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
                 deal_probability_score=comp_prob,
             ),
         )
+
+        # Force explicit serialization with by_alias=True to guarantee camelCase keys
+        # This avoids Pydantic v2/FastAPI serialization ambiguity
+        response_dict = result.model_dump(mode='json', by_alias=True)
+        return response_dict
     except Exception as e:
         logger.error(f"IQ Verdict analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

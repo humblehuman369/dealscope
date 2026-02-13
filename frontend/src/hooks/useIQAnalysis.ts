@@ -26,28 +26,28 @@ const WORKSHEET_ENDPOINTS: Record<string, string> = {
   wholesale: '/api/v1/worksheet/wholesale/calculate',
 }
 
-// Backend verdict response shape
+// Backend verdict response shape — supports both snake_case and camelCase from Pydantic
 interface VerdictResponse {
-  deal_score: number
-  deal_verdict: string
-  discount_percent: number
-  purchase_price: number
-  breakeven_price: number
-  list_price: number
+  deal_score?: number; dealScore?: number
+  deal_verdict?: string; dealVerdict?: string
+  discount_percent?: number; discountPercent?: number
+  purchase_price?: number; purchasePrice?: number
+  breakeven_price?: number; breakevenPrice?: number
+  list_price?: number; listPrice?: number
   strategies: Array<{
     id: string
     name: string
     score: number
     badge: string | null
-    cap_rate: number
-    cash_on_cash: number
-    dscr: number
-    annual_cash_flow: number
-    monthly_cash_flow: number
-    metric_label: string
-    metric_value: string
+    cap_rate?: number; capRate?: number
+    cash_on_cash?: number; cashOnCash?: number
+    dscr?: number
+    annual_cash_flow?: number; annualCashFlow?: number
+    monthly_cash_flow?: number; monthlyCashFlow?: number
+    metric_label?: string; metricLabel?: string
+    metric_value?: string | number; metricValue?: string | number
   }>
-  inputs_used: Record<string, unknown>
+  inputs_used?: Record<string, unknown>; inputsUsed?: Record<string, unknown>
 }
 
 /**
@@ -69,7 +69,8 @@ function mapVerdictToIQTarget(
       (strategyId === 'wholesale' && s.id === 'wholesale'),
   )
 
-  const targetPrice = verdict.purchase_price
+  const targetPrice = verdict.purchase_price ?? verdict.purchasePrice ?? 0
+  const breakevenPrice = verdict.breakeven_price ?? verdict.breakevenPrice ?? 0
   const listPrice = assumptions.listPrice
   const discount = listPrice - targetPrice
   const discountPct = listPrice > 0 ? discount / listPrice : 0
@@ -78,18 +79,18 @@ function mapVerdictToIQTarget(
     targetPrice,
     discountFromList: discount,
     discountPercent: discountPct * 100,
-    breakeven: verdict.breakeven_price,
+    breakeven: breakevenPrice,
     breakevenPercent:
       listPrice > 0
-        ? ((listPrice - verdict.breakeven_price) / listPrice) * 100
+        ? ((listPrice - breakevenPrice) / listPrice) * 100
         : 0,
     rationale: `Buy at $${Math.round(targetPrice).toLocaleString()} for optimal returns`,
-    highlightedMetric: strat?.metric_value || '',
-    secondaryMetric: strat?.metric_label || '',
-    monthlyCashFlow: strat?.monthly_cash_flow || 0,
-    cashOnCash: (strat?.cash_on_cash || 0) * 100,
-    capRate: (strat?.cap_rate || 0) * 100,
-    dscr: strat?.dscr || 0,
+    highlightedMetric: strat?.metric_value ?? strat?.metricValue ?? '',
+    secondaryMetric: strat?.metric_label ?? strat?.metricLabel ?? '',
+    monthlyCashFlow: strat?.monthly_cash_flow ?? strat?.monthlyCashFlow ?? 0,
+    cashOnCash: (strat?.cash_on_cash ?? strat?.cashOnCash ?? 0) * 100,
+    capRate: (strat?.cap_rate ?? strat?.capRate ?? 0) * 100,
+    dscr: strat?.dscr ?? 0,
   }
 }
 

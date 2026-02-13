@@ -202,19 +202,19 @@ export function useBackendStrategies(
         };
 
         const response = await post<{
-          deal_score: number;
+          deal_score?: number; dealScore?: number;
           strategies: Array<{
             id: string;
             name: string;
             score: number;
             badge: string;
-            cap_rate: number;
-            cash_on_cash: number;
-            dscr: number;
-            annual_cash_flow: number;
-            monthly_cash_flow: number;
-            metric_label: string;
-            metric_value: string;
+            cap_rate?: number; capRate?: number;
+            cash_on_cash?: number; cashOnCash?: number;
+            dscr?: number;
+            annual_cash_flow?: number; annualCashFlow?: number;
+            monthly_cash_flow?: number; monthlyCashFlow?: number;
+            metric_label?: string; metricLabel?: string;
+            metric_value?: string; metricValue?: string;
           }>;
         }>('/api/v1/analysis/verdict', payload);
 
@@ -229,7 +229,8 @@ export function useBackendStrategies(
           allTypes.push(frontendType);
           const info = STRATEGY_INFO[frontendType];
           const grade = getGrade(backendStrat.score);
-          const viable = backendStrat.monthly_cash_flow > 0 || backendStrat.score >= 40;
+          const mcf = backendStrat.monthly_cash_flow ?? backendStrat.monthlyCashFlow ?? 0;
+          const viable = mcf > 0 || backendStrat.score >= 40;
 
           strategies[frontendType] = {
             strategy: frontendType,
@@ -246,13 +247,13 @@ export function useBackendStrategies(
               grade,
               color: getGradeColor(grade),
               metrics: {
-                monthlyCashFlow: backendStrat.monthly_cash_flow,
-                annualCashFlow: backendStrat.annual_cash_flow,
-                cashOnCash: backendStrat.cash_on_cash * 100,
-                capRate: backendStrat.cap_rate * 100,
-                dscr: backendStrat.dscr,
-                metricLabel: backendStrat.metric_label,
-                metricValue: backendStrat.metric_value,
+                monthlyCashFlow: mcf,
+                annualCashFlow: backendStrat.annual_cash_flow ?? backendStrat.annualCashFlow ?? 0,
+                cashOnCash: (backendStrat.cash_on_cash ?? backendStrat.cashOnCash ?? 0) * 100,
+                capRate: (backendStrat.cap_rate ?? backendStrat.capRate ?? 0) * 100,
+                dscr: backendStrat.dscr ?? 0,
+                metricLabel: backendStrat.metric_label ?? backendStrat.metricLabel ?? '',
+                metricValue: backendStrat.metric_value ?? backendStrat.metricValue ?? '',
               },
               insights: [],
               isViable: viable,

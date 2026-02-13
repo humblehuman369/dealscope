@@ -34,31 +34,27 @@ import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologyS
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 
-// Backend analysis response type
+// Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
-  deal_score: number
-  deal_verdict: string
-  verdict_description: string
-  discount_percent: number
+  // Core fields (snake_case from Pydantic field names, camelCase from alias generator)
+  deal_score?: number; dealScore?: number
+  deal_verdict?: string; dealVerdict?: string
+  verdict_description?: string; verdictDescription?: string
+  discount_percent?: number; discountPercent?: number
   strategies: Array<{
-    id: string
-    name: string
-    metric: string
-    metric_label: string
-    metric_value: number
-    score: number
-    rank: number
-    badge: string | null
+    id: string; name: string; metric: string
+    metric_label?: string; metricLabel?: string
+    metric_value?: number; metricValue?: number
+    score: number; rank: number; badge: string | null
   }>
-  purchase_price: number  // Recommended purchase price (95% of breakeven)
-  breakeven_price: number
-  list_price: number
-  component_scores?: {
-    deal_gap_score: number
-    return_quality_score: number
-    market_alignment_score: number
-    deal_probability_score: number
-  }
+  purchase_price?: number; purchasePrice?: number
+  breakeven_price?: number; breakevenPrice?: number
+  list_price?: number; listPrice?: number
+  // Component scores (nested — both key formats)
+  component_scores?: Record<string, number>
+  componentScores?: Record<string, number>
+  // Allow additional camelCase fields from alias generator
+  [key: string]: unknown
 }
 
 // Helper to get strategy icon
@@ -394,6 +390,7 @@ function VerdictContent() {
           
         // Log the full response for debugging
         console.log('[IQ Verdict] Backend response:', analysisData)
+        console.log('[IQ Verdict] componentScores raw:', (analysisData as Record<string, unknown>).componentScores ?? (analysisData as Record<string, unknown>).component_scores ?? 'NOT FOUND')
           
         // Convert backend response to frontend IQAnalysisResult format
         // Backend now returns camelCase for new fields via Pydantic alias_generator
@@ -403,20 +400,20 @@ function VerdictContent() {
             analyzedAt: new Date().toISOString(),
             dealScore: Math.min(95, Math.max(0, analysisData.deal_score ?? analysisData.dealScore ?? 0)),
             dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
-            verdictDescription: analysisData.verdict_description ?? analysisData.verdictDescription,
+            verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
             discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
             purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
             breakevenPrice: analysisData.breakeven_price ?? analysisData.breakevenPrice,
             listPrice: analysisData.list_price ?? analysisData.listPrice,
             // Include inputs used for transparency
             inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
-            strategies: analysisData.strategies.map((s: BackendAnalysisResponse['strategies'][0]) => ({
+            strategies: analysisData.strategies.map((s) => ({
               id: s.id as IQStrategy['id'],
               name: s.name,
               icon: getStrategyIcon(s.id),
               metric: s.metric,
-              metricLabel: s.metric_label,
-              metricValue: s.metric_value,
+              metricLabel: (s.metric_label ?? s.metricLabel ?? '') as string,
+              metricValue: (s.metric_value ?? s.metricValue ?? 0) as number,
               score: s.score,
               rank: s.rank,
               badge: s.badge as IQStrategy['badge'],
@@ -426,15 +423,18 @@ function VerdictContent() {
             opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
             returnRating: analysisData.return_rating ?? analysisData.returnRating,
             returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            // NEW: Composite verdict component scores (handle both snake_case and camelCase from backend)
+            // Composite verdict component scores — handle any key format from backend
             componentScores: (() => {
-              const raw = analysisData.component_scores ?? analysisData.componentScores
-              if (!raw) return undefined
+              // Try every possible key format (camelCase from alias, snake_case from field name)
+              const raw = (analysisData as Record<string, unknown>).componentScores
+                ?? (analysisData as Record<string, unknown>).component_scores
+              if (!raw || typeof raw !== 'object') return undefined
+              const r = raw as Record<string, unknown>
               return {
-                dealGapScore: raw.dealGapScore ?? raw.deal_gap_score ?? 0,
-                returnQualityScore: raw.returnQualityScore ?? raw.return_quality_score ?? 0,
-                marketAlignmentScore: raw.marketAlignmentScore ?? raw.market_alignment_score ?? 0,
-                dealProbabilityScore: raw.dealProbabilityScore ?? raw.deal_probability_score ?? 0,
+                dealGapScore: Number(r.dealGapScore ?? r.deal_gap_score ?? 0),
+                returnQualityScore: Number(r.returnQualityScore ?? r.return_quality_score ?? 0),
+                marketAlignmentScore: Number(r.marketAlignmentScore ?? r.market_alignment_score ?? 0),
+                dealProbabilityScore: Number(r.dealProbabilityScore ?? r.deal_probability_score ?? 0),
               }
             })(),
           }
@@ -753,9 +753,9 @@ function VerdictContent() {
 
             <div className="flex gap-2.5">
               {[
-                { label: 'Breakeven', value: breakevenPrice, sub: 'Max price for $0 cashflow', active: false },
-                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true },
                 { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false },
+                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true },
+                { label: 'Breakeven', value: breakevenPrice, sub: 'Max price for $0 cashflow', active: false },
               ].map((card, i) => (
                 <div key={i} className="flex-1 rounded-xl py-3 px-2 text-center transition-all" style={{
                   background: card.active ? colors.background.cardUp : colors.background.card,
@@ -769,33 +769,53 @@ function VerdictContent() {
               ))}
             </div>
 
-            {/* Price Scale Bar — data-driven positions */}
+            {/* Price Scale Bar — proportional positions with legend */}
             <div className="mt-6">
-              <div className="flex justify-between mb-2">
-                <span className="text-[0.82rem] font-medium" style={{ color: colors.text.body }}>
-                  Asking: <span className="font-bold" style={{ color: colors.status.negative }}>{fmtShort(property.price)}</span>
-                </span>
-              </div>
               {(() => {
-                // Calculate real positions based on actual price relationships
-                const scaleMin = wholesalePrice * 0.95
-                const scaleMax = Math.max(property.price * 1.08, breakevenPrice * 1.05)
+                // All price points sorted for the scale
+                const markers = [
+                  { label: 'Wholesale', price: wholesalePrice, dotColor: colors.brand.teal },
+                  { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
+                  { label: 'Breakeven', price: breakevenPrice, dotColor: colors.brand.gold },
+                  { label: 'Asking', price: property.price, dotColor: colors.status.negative },
+                ].sort((a, b) => a.price - b.price)
+
+                const allPrices = markers.map(m => m.price).filter(p => p > 0)
+                const scaleMin = Math.min(...allPrices) * 0.95
+                const scaleMax = Math.max(...allPrices) * 1.05
                 const range = scaleMax - scaleMin
-                const clamp = (v: number) => Math.min(96, Math.max(4, ((v - scaleMin) / range) * 100))
-                const targetPos = clamp(purchasePrice)
-                const askingPos = clamp(property.price)
+                const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
+
                 return (
-                  <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}, ${colors.brand.blue}, ${colors.brand.gold})` }}>
-                    <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: `${targetPos}%`, background: colors.brand.blue, boxShadow: `0 0 8px ${colors.brand.blue}80` }} />
-                    <div className="absolute w-3.5 h-3.5 rounded-full border-[2.5px] border-white -top-1" style={{ left: `${askingPos}%`, background: colors.status.negative, boxShadow: `0 0 6px ${colors.status.negative}60` }} />
-                  </div>
+                  <>
+                    {/* Bar with proportionally-positioned dots */}
+                    <div className="relative h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}30, ${colors.brand.blue}30, ${colors.brand.gold}30, ${colors.status.negative}25)` }}>
+                      {markers.map((m, i) => (
+                        <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
+                          style={{
+                            left: `${pos(m.price)}%`,
+                            transform: 'translateX(-50%)',
+                            background: m.dotColor,
+                            borderColor: colors.background.card,
+                            boxShadow: `0 0 6px ${m.dotColor}60`,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Legend — sorted by price (matches left-to-right dot order) */}
+                    <div className="flex flex-wrap justify-between mt-3 gap-y-1.5">
+                      {markers.map((m, i) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
+                          <span className="text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                          <span className="text-[0.7rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )
               })()}
-              <div className="flex justify-between mt-2">
-                {['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶'].map((l, i) => (
-                  <span key={i} className="text-[0.68rem] font-semibold" style={{ color: i === 3 ? colors.status.negative : colors.text.secondary }}>{l}</span>
-                ))}
-              </div>
               <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
                 Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </p>
