@@ -9,11 +9,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../../../services/apiClient';
 import { AnalyticsInputs } from '../types';
-import {
+import type {
   IQAnalysisResult,
   IQStrategy,
   IQStrategyBadge,
   IQDealVerdict,
+} from './types';
+import {
   STRATEGY_INFO,
   getDealVerdict as localGetDealVerdict,
 } from './types';
@@ -51,18 +53,11 @@ interface BackendVerdictResponse {
   breakevenPrice?: number;
   list_price?: number;
   listPrice?: number;
-  component_scores?: {
-    deal_gap_score: number;
-    return_quality_score: number;
-    market_alignment_score: number;
-    deal_probability_score: number;
-  };
-  componentScores?: {
-    dealGapScore: number;
-    returnQualityScore: number;
-    marketAlignmentScore: number;
-    dealProbabilityScore: number;
-  };
+  // Component scores — flat top-level fields from backend (both key formats)
+  deal_gap_score?: number; dealGapScore?: number;
+  return_quality_score?: number; returnQualityScore?: number;
+  market_alignment_score?: number; marketAlignmentScore?: number;
+  deal_probability_score?: number; dealProbabilityScore?: number;
 }
 
 // ============================================
@@ -130,6 +125,12 @@ function mapResponse(res: BackendVerdictResponse): IQAnalysisResult {
     dealVerdict,
     verdictDescription,
     strategies: mapStrategies(res.strategies),
+    componentScores: {
+      dealGapScore: Number(res.dealGapScore ?? res.deal_gap_score ?? 0),
+      returnQualityScore: Number(res.returnQualityScore ?? res.return_quality_score ?? 0),
+      marketAlignmentScore: Number(res.marketAlignmentScore ?? res.market_alignment_score ?? 0),
+      dealProbabilityScore: Number(res.dealProbabilityScore ?? res.deal_probability_score ?? 0),
+    },
   };
 }
 

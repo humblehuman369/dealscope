@@ -114,16 +114,6 @@ class ScoreDisplayResponse(BaseModel):
     color: str
 
 
-class VerdictComponentScores(BaseModel):
-    """Individual component scores that feed the composite verdict."""
-    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
-
-    deal_gap_score: int
-    return_quality_score: int
-    market_alignment_score: int
-    deal_probability_score: int
-
-
 class IQVerdictResponse(BaseModel):
     """Response from IQ Verdict analysis."""
     model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
@@ -142,7 +132,12 @@ class IQVerdictResponse(BaseModel):
     opportunity_factors: OpportunityFactorsResponse
     return_rating: ScoreDisplayResponse
     return_factors: ReturnFactorsResponse
-    component_scores: Optional[VerdictComponentScores] = None
+    # Component scores — flat top-level fields (no nested model)
+    # to eliminate Pydantic v2 nested-model serialization ambiguity
+    deal_gap_score: int = 0
+    return_quality_score: int = 0
+    market_alignment_score: int = 0
+    deal_probability_score: int = 0
 
 
 class DealScoreInput(BaseModel):
@@ -612,6 +607,12 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             motivation_score=motivation_score,
         )
 
+        # TEMPORARY TEST — hardcode known component scores to verify full pipeline
+        # Expected frontend labels: Excellent(80), Strong(70), Good(50), Fair(30)
+        # Remove this block after verifying the pipeline works end-to-end
+        comp_gap, comp_return, comp_market, comp_prob = 80, 70, 50, 30
+        logger.warning("⚠️  TEMPORARY TEST VALUES ACTIVE — remove after verification")
+
         # Legacy discount_pct for backward compatibility
         discount_pct = max(0, ((list_price - breakeven) / list_price) * 100) if list_price > 0 else 0
         deal_verdict = (
@@ -652,12 +653,10 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
                 dscr=top_strategy.get("dscr"), annual_roi=top_strategy.get("annual_cash_flow"),
                 annual_profit=top_strategy.get("annual_cash_flow"), strategy_name=top_strategy["name"],
             ),
-            component_scores=VerdictComponentScores(
-                deal_gap_score=comp_gap,
-                return_quality_score=comp_return,
-                market_alignment_score=comp_market,
-                deal_probability_score=comp_prob,
-            ),
+            deal_gap_score=comp_gap,
+            return_quality_score=comp_return,
+            market_alignment_score=comp_market,
+            deal_probability_score=comp_prob,
         )
 
         # Explicit serialization with by_alias=True guarantees camelCase keys.
@@ -665,9 +664,13 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         # eliminating Pydantic v2 serialization ambiguity entirely.
         response_dict = result.model_dump(mode='json', by_alias=True)
         logger.info(
-            "IQ Verdict response — dealScore=%s, componentScores=%s",
+            "IQ Verdict response — dealScore=%s, dealGapScore=%s, returnQualityScore=%s, "
+            "marketAlignmentScore=%s, dealProbabilityScore=%s",
             response_dict.get("dealScore"),
-            response_dict.get("componentScores"),
+            response_dict.get("dealGapScore"),
+            response_dict.get("returnQualityScore"),
+            response_dict.get("marketAlignmentScore"),
+            response_dict.get("dealProbabilityScore"),
         )
         return JSONResponse(content=response_dict)
     except Exception as e:
