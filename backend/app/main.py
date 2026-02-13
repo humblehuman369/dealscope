@@ -343,65 +343,13 @@ for name, path in _routers:
 
 
 # ============================================
-# HEALTH CHECK (enhanced with dependency checks)
+# HEALTH CHECK
 # ============================================
-
-async def check_database_connection() -> dict:
-    """Check database connectivity."""
-    try:
-        from app.db.session import get_engine
-        from sqlalchemy import text
-        engine = get_engine()
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-        return {"status": "ok", "latency_ms": None}
-    except Exception as e:
-        logger.error(f"Database health check failed: {e}")
-        return {"status": "error", "error": str(e)}
-
-
-async def check_redis_connection() -> dict:
-    """Check Redis connectivity."""
-    try:
-        from app.services.cache_service import cache_service
-        if cache_service.use_redis and cache_service.redis_client:
-            await cache_service.redis_client.ping()
-            return {"status": "ok"}
-        else:
-            return {"status": "unavailable", "note": "using in-memory cache"}
-    except Exception as e:
-        logger.error(f"Redis health check failed: {e}")
-        return {"status": "error", "error": str(e)}
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint with dependency status."""
-    db_status = await check_database_connection()
-    redis_status = await check_redis_connection()
-    
-    db_ok = db_status.get("status") == "ok"
-    redis_ok = redis_status.get("status") in ["ok", "unavailable"]
-    
-    if db_ok and redis_ok:
-        overall_status = "healthy"
-    elif db_ok:
-        overall_status = "degraded"
-    else:
-        overall_status = "unhealthy"
-    
-    return {
-        "status": overall_status,
-        "version": settings.APP_VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "dependencies": {"database": db_status, "redis": redis_status},
-        "features": {
-            "auth_required": settings.FEATURE_AUTH_REQUIRED,
-            "dashboard_enabled": settings.FEATURE_DASHBOARD_ENABLED,
-            "document_upload": settings.FEATURE_DOCUMENT_UPLOAD_ENABLED,
-            "sharing": settings.FEATURE_SHARING_ENABLED,
-        },
-    }
+# The lightweight /health endpoint lives in app.routers.health (always returns 200).
+# Deep dependency checks are at /health/ready and /health/deep.
+# Do NOT define @app.get("/health") here — it would override the router's
+# fast-responding endpoint, causing Railway healthcheck timeouts when
+# the database or Redis is slow to connect on cold starts.
 
 
 @app.get("/")
