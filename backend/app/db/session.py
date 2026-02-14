@@ -150,25 +150,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def init_db() -> None:
-    """
-    Initialize database tables.
-    Called on application startup if needed.
-    
-    Note: In production, use Alembic migrations instead.
-    """
-    from app.db.base import Base
-    
-    engine = get_engine()
-    async with engine.begin() as conn:
-        # Import all models to register them
-        from app.models import user, saved_property, document  # noqa
-        
-        # Create tables (only for development)
-        # await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database initialized")
-
-
 async def close_db() -> None:
     """Close database connections on shutdown."""
     global _engine

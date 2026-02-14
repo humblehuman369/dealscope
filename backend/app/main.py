@@ -311,50 +311,14 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # ============================================
 # INCLUDE ALL ROUTERS
 # ============================================
+# Router manifest and import logic live in app.routers.__init__.
+# No special-casing — every router defines its own prefix.
 
-def _try_load_router(name: str, import_path: str):
-    """Load a router module, returning None on failure."""
-    try:
-        import importlib
-        mod = importlib.import_module(import_path)
-        logger.info(f"{name} router loaded successfully")
-        return mod.router
-    except Exception as e:
-        logger.warning(f"{name} router failed to load: {e}")
-        return None
+from app.routers import get_all_routers
 
-
-# Core routers (always attempt)
-_routers = [
-    ("Auth",             "app.routers.auth"),
-    ("Users",            "app.routers.users"),
-    ("Saved Properties", "app.routers.saved_properties"),
-    ("Admin",            "app.routers.admin"),
-    ("Property",         "app.routers.property"),
-    ("Health",           "app.routers.health"),
-    ("Analytics",        "app.routers.analytics"),
-    ("Worksheet",        "app.routers.worksheet"),
-    ("Comparison",       "app.routers.comparison"),
-    ("LOI",              "app.routers.loi"),
-    ("Search History",   "app.routers.search_history"),
-    ("Reports",          "app.routers.reports"),
-    ("Proforma",         "app.routers.proforma"),
-    ("Documents",        "app.routers.documents"),
-    ("Billing",          "app.routers.billing"),
-    ("Sync",             "app.routers.sync"),
-    ("Defaults",         "app.routers.defaults"),
-    ("Devices",          "app.routers.devices"),
-]
-
-for name, path in _routers:
-    _r = _try_load_router(name, path)
-    if _r is not None:
-        # LOI router uses a prefix override
-        if name == "LOI":
-            app.include_router(_r, prefix="/api/v1")
-        else:
-            app.include_router(_r)
-        logger.info(f"{name} router included")
+for _name, _r in get_all_routers():
+    app.include_router(_r)
+    logger.info(f"{_name} router included")
 
 
 # ============================================
