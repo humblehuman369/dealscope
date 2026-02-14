@@ -39,6 +39,15 @@ import {
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
 import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
+import {
+  buildInitialState,
+  buildLTRState,
+  buildSTRState,
+  buildBRRRRState,
+  buildFlipState,
+  buildHouseHackState,
+  buildWholesaleState,
+} from './strategyDefaults'
 
 // Re-export for consumers that import from this file
 export type { DealMakerPropertyData }
@@ -192,131 +201,21 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   // Determine if we're in "saved property mode" (use store) or "unsaved mode" (use local state)
   const isSavedPropertyMode = !!savedPropertyId
   
-  // Initialize LTR local state for unsaved properties
-  const getInitialLTRState = (): LTRDealMakerState => {
-    return {
-      buyPrice: listPrice ?? property.price ?? 350000,
-      downPaymentPercent: 0.20,
-      closingCostsPercent: 0.03,
-      interestRate: 0.06,
-      loanTermYears: 30,
-      rehabBudget: 0,
-      arv: (listPrice ?? property.price ?? 350000) * 1.0,
-      monthlyRent: property.rent ?? 2800,
-      otherIncome: 0,
-      vacancyRate: 0.01,
-      maintenanceRate: 0.05,
-      managementRate: 0.00,
-      annualPropertyTax: property.propertyTax || 4200,
-      annualInsurance: property.insurance || 1800,
-      monthlyHoa: 0,
-    }
-  }
-
-  // Initialize STR local state for unsaved properties
-  const getInitialSTRState = (): STRDealMakerState => {
-    const basePrice = listPrice ?? property.price ?? 350000
-    return {
-      ...DEFAULT_STR_DEAL_MAKER_STATE,
-      buyPrice: basePrice,
-      arv: basePrice * 1.0,
-      annualPropertyTax: property.propertyTax || 4200,
-      annualInsurance: (property.insurance || 1800) * 1.5, // Higher for STR
-    }
-  }
-
-  // Initialize BRRRR local state for unsaved properties
-  const getInitialBRRRRState = (): BRRRRDealMakerState => {
-    const basePrice = listPrice ?? property.price ?? 350000
-    // BRRRR typically purchases at 20-30% below ARV
-    const discountedPrice = basePrice * 0.85
-    return {
-      ...DEFAULT_BRRRR_DEAL_MAKER_STATE,
-      purchasePrice: discountedPrice,
-      arv: basePrice * 1.15, // Assume ARV is 15% above list
-      postRehabMonthlyRent: property.rent ? property.rent * 1.1 : 2800, // 10% rent increase after rehab
-      annualPropertyTax: property.propertyTax || 4200,
-      annualInsurance: property.insurance || 1800,
-    }
-  }
-
-  // Initialize Flip local state for unsaved properties
-  const getInitialFlipState = (): FlipDealMakerState => {
-    const basePrice = listPrice ?? property.price ?? 350000
-    // Flip typically purchases at 20-30% below ARV
-    const discountedPrice = basePrice * 0.75
-    return {
-      ...DEFAULT_FLIP_DEAL_MAKER_STATE,
-      purchasePrice: discountedPrice,
-      arv: basePrice * 1.10, // Assume ARV is 10% above list after rehab
-      holdingCostsMonthly: (property.propertyTax || 4200) / 12 + (property.insurance || 1800) / 12 + 200, // Taxes + insurance + utilities
-    }
-  }
-
-  // Initialize HouseHack local state for unsaved properties
-  const getInitialHouseHackState = (): HouseHackDealMakerState => {
-    const basePrice = listPrice ?? property.price ?? 400000
-    return {
-      ...DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
-      purchasePrice: basePrice,
-      ownerUnitMarketRent: property.rent ? Math.round(property.rent / 4) : 1500, // Assume 4 units, owner gets 1
-      avgRentPerUnit: property.rent ? Math.round(property.rent / 4) : 1500,
-      annualPropertyTax: property.propertyTax || 6000,
-      annualInsurance: property.insurance || 2400,
-    }
-  }
-
-  // Initialize Wholesale local state for unsaved properties
-  const getInitialWholesaleState = (): WholesaleDealMakerState => {
-    const basePrice = listPrice ?? property.price ?? 300000
-    // Estimate ARV as 15% above list price
-    const estimatedArv = basePrice * 1.15
-    // Estimate repairs based on property condition (10-20% of ARV)
-    const estimatedRepairs = estimatedArv * 0.15
-    // MAO calculation: ARV × 70% - Repairs
-    const mao = (estimatedArv * 0.70) - estimatedRepairs
-    // Contract should be at or below MAO
-    const contractPrice = Math.min(basePrice * 0.85, mao * 0.95)
-    
-    return {
-      ...DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
-      arv: estimatedArv,
-      estimatedRepairs,
-      contractPrice,
-      squareFootage: property.sqft || 1500,
-    }
-  }
-
-  // Get initial state based on strategy
-  const getInitialLocalState = (strategy: StrategyType): AnyStrategyState => {
-    if (strategy === 'str') {
-      return getInitialSTRState()
-    }
-    if (strategy === 'brrrr') {
-      return getInitialBRRRRState()
-    }
-    if (strategy === 'flip') {
-      return getInitialFlipState()
-    }
-    if (strategy === 'house_hack') {
-      return getInitialHouseHackState()
-    }
-    if (strategy === 'wholesale') {
-      return getInitialWholesaleState()
-    }
-    return getInitialLTRState()
-  }
+  // Get initial state for a strategy (unsaved property mode).
+  // Logic extracted to ./strategyDefaults.ts for maintainability.
+  const getInitialLocalState = (strategy: StrategyType): AnyStrategyState =>
+    buildInitialState(strategy, property, listPrice)
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
   const strategyType = getStrategyType(currentStrategy)
-  const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(getInitialLTRState)
-  const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
-  const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(getInitialFlipState)
-  const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(getInitialHouseHackState)
-  const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(getInitialWholesaleState)
-  const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(getInitialBRRRRState)
+  const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(() => buildLTRState(property, listPrice))
+  const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(() => buildSTRState(property, listPrice))
+  const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(() => buildFlipState(property, listPrice))
+  const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(() => buildHouseHackState(property, listPrice))
+  const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(() => buildWholesaleState(property, listPrice))
+  const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(() => buildBRRRRState(property, listPrice))
   
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
