@@ -1,11 +1,8 @@
-# Nixpacks configuration for Railway deployment
+# Nixpacks configuration for Railway deployment (PRIMARY builder)
 # Adds system-level dependencies required by WeasyPrint for PDF report generation
 #
 # Using aptPkgs (not nixPkgs) so libraries install to standard /usr/lib paths
 # where WeasyPrint's cffi/ctypes bindings can discover them at runtime.
-#
-# NOTE: Railway is configured to use the Dockerfile (see railway.toml).
-# This file serves as a fallback if the builder is switched to Nixpacks.
 
 [phases.setup]
 aptPkgs = [
