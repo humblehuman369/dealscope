@@ -76,7 +76,7 @@ class SearchHistory(Base):
     
     # Timestamps
     searched_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc)
     )
     

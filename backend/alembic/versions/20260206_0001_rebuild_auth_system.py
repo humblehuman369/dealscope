@@ -154,8 +154,22 @@ def upgrade() -> None:
 
 
 def _seed_roles_and_permissions() -> None:
-    """Insert the default roles and permissions."""
+    """Insert the default roles and permissions.
+
+    Uses deterministic UUIDs (uuid5 with a fixed namespace) so that
+    downgrade → upgrade cycles produce the same IDs.  Without this,
+    every upgrade would insert duplicate rows because uuid4() generates
+    a new random ID each time.
+    """
     from sqlalchemy import text
+
+    # Fixed namespace for deterministic seed UUIDs.
+    # Generated once, never change: uuid.uuid5(uuid.NAMESPACE_DNS, "dealscope.seed")
+    _NS = uuid.UUID("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
+
+    def _seed_id(*parts: str) -> uuid.UUID:
+        """Deterministic UUID from parts, e.g. _seed_id('role', 'owner')."""
+        return uuid.uuid5(_NS, ":".join(parts))
 
     conn = op.get_bind()
 
@@ -168,7 +182,7 @@ def _seed_roles_and_permissions() -> None:
     }
     role_ids = {}
     for name, description in roles.items():
-        role_id = uuid.uuid4()
+        role_id = _seed_id("role", name)
         conn.execute(
             text("INSERT INTO roles (id, name, description) VALUES (:id, :name, :desc)"),
             {"id": str(role_id), "name": name, "desc": description},
@@ -197,7 +211,7 @@ def _seed_roles_and_permissions() -> None:
     ]
     perm_ids = {}
     for codename, description in perms:
-        perm_id = uuid.uuid4()
+        perm_id = _seed_id("perm", codename)
         conn.execute(
             text("INSERT INTO permissions (id, codename, description) VALUES (:id, :codename, :desc)"),
             {"id": str(perm_id), "codename": codename, "desc": description},
@@ -225,7 +239,7 @@ def _seed_roles_and_permissions() -> None:
     }
     for role_name, perm_codenames in role_perm_map.items():
         for codename in perm_codenames:
-            rp_id = uuid.uuid4()
+            rp_id = _seed_id("role_perm", role_name, codename)
             conn.execute(
                 text("INSERT INTO role_permissions (id, role_id, permission_id) VALUES (:id, :rid, :pid)"),
                 {"id": str(rp_id), "rid": str(role_ids[role_name]), "pid": str(perm_ids[codename])},

@@ -42,6 +42,12 @@ def upgrade() -> None:
     if row:
         owner_role_id = row[0]
 
+    # Fixed namespace for deterministic seed UUIDs (matches 20260206_0001).
+    _NS = uuid.UUID("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
+
+    def _seed_id(*parts: str) -> uuid.UUID:
+        return uuid.uuid5(_NS, ":".join(parts))
+
     for codename, description in MISSING_PERMS:
         # Skip if permission already exists
         existing = conn.execute(
@@ -52,14 +58,14 @@ def upgrade() -> None:
         if existing:
             perm_id = existing[0]
         else:
-            perm_id = uuid.uuid4()
+            perm_id = _seed_id("perm", codename)
             conn.execute(
                 text("INSERT INTO permissions (id, codename, description) VALUES (:id, :codename, :desc)"),
                 {"id": str(perm_id), "codename": codename, "desc": description},
             )
 
         # Assign to admin and owner roles
-        for role_id in [admin_role_id, owner_role_id]:
+        for role_name, role_id in [("admin", admin_role_id), ("owner", owner_role_id)]:
             if role_id is None:
                 continue
             already = conn.execute(
@@ -69,7 +75,7 @@ def upgrade() -> None:
             if not already:
                 conn.execute(
                     text("INSERT INTO role_permissions (id, role_id, permission_id) VALUES (:id, :rid, :pid)"),
-                    {"id": str(uuid.uuid4()), "rid": str(role_id), "pid": str(perm_id)},
+                    {"id": str(_seed_id("role_perm", role_name, codename)), "rid": str(role_id), "pid": str(perm_id)},
                 )
 
 

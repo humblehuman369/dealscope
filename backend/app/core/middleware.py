@@ -150,10 +150,16 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     """
 
     SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+
+    # Only pre-authentication endpoints should be exempt from CSRF.
+    # These paths accept credentials (username/password, refresh token)
+    # before a session cookie exists, so CSRF protection is N/A.
+    # Infrastructure paths (/health, /docs) are inherently GET/HEAD
+    # and already skipped by the SAFE_METHODS check above.
     EXEMPT_PREFIXES = (
-        "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh",
-        "/api/v1/properties/search", "/api/v1/analysis/",
-        "/health", "/docs", "/redoc", "/openapi.json",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/refresh",
     )
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
