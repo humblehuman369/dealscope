@@ -15,6 +15,7 @@ import {
   ChevronRight, BarChart3, Eye, X,
   ChevronLeft,
 } from 'lucide-react'
+import type { PropertyStatus } from '@/types/savedProperty'
 
 // ===========================================
 // Saved Properties Page — Dark Fintech Theme
@@ -31,15 +32,6 @@ import {
 // ===========================================
 // Types
 // ===========================================
-
-type PropertyStatus =
-  | 'watching'
-  | 'analyzing'
-  | 'contacted'
-  | 'under_contract'
-  | 'owned'
-  | 'passed'
-  | 'archived'
 
 interface SavedPropertySummary {
   id: string

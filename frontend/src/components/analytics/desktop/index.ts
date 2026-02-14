@@ -1,5 +1,4 @@
 // Desktop Analytics Components
-export { DesktopHeader } from './DesktopHeader'
 export { DesktopBottomNav } from './DesktopBottomNav'
 export { DesktopSpectrumBar, DesktopMiniSpectrum } from './DesktopSpectrumBar'
 export { DesktopIQTargetHero } from './DesktopIQTargetHero'

@@ -3,6 +3,7 @@
  */
 
 export * from './types'
+export * from './strategyDefaults'
 export * from './DealMakerSlider'
 export * from './ScoreBadge'
 export * from './MetricsHeader'
