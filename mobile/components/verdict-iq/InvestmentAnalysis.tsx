@@ -141,10 +141,15 @@ export function InvestmentAnalysis({
                     {option.label}
                   </Text>
 
-                  <Text style={[
-                    styles.iqOptionValue,
-                    isSelected && styles.iqOptionValueSelected,
-                  ]}>
+                  <Text
+                    style={[
+                      styles.iqOptionValue,
+                      isSelected && styles.iqOptionValueSelected,
+                    ]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
+                  >
                     {formatPrice(option.value)}
                   </Text>
 
@@ -175,8 +180,8 @@ export function InvestmentAnalysis({
           {metrics.map((metric, index) => (
             <View key={index} style={styles.metricCard}>
               <View style={styles.metricAccent} />
-              <Text style={styles.metricLabel}>{metric.label}</Text>
-              <Text style={styles.metricValue}>{metric.value}</Text>
+              <Text style={styles.metricLabel} numberOfLines={1}>{metric.label}</Text>
+              <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{metric.value}</Text>
             </View>
           ))}
         </View>
@@ -382,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: rs(2),
   },
   iqOptionValueSelected: {
-    fontSize: rf(20),
+    fontSize: rf(17),
     fontWeight: '700',
     color: verdictDark.blue,
   },
@@ -457,7 +462,7 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     ...verdictTypography.financial,
-    fontSize: rf(17),
+    fontSize: rf(15),
     fontWeight: '700',
     color: verdictDark.blue,
   },
