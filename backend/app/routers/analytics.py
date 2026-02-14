@@ -45,6 +45,7 @@ def _to_camel(string: str) -> str:
 class IQVerdictInput(BaseModel):
     """Input for IQ Verdict multi-strategy analysis."""
     list_price: float = Field(..., description="Property list price")
+    purchase_price: Optional[float] = Field(None, description="User-override purchase price (bypasses buy_price calculation)")
     monthly_rent: Optional[float] = Field(None, description="Monthly rent (estimated if not provided)")
     property_taxes: Optional[float] = Field(None, description="Annual property taxes")
     insurance: Optional[float] = Field(None, description="Annual insurance")
@@ -564,7 +565,8 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         bedrooms = input_data.bedrooms
 
         breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
-        buy_price = calculate_buy_price(list_price, monthly_rent, property_taxes, insurance)
+        # Use user-override purchase price if provided, otherwise calculate
+        buy_price = input_data.purchase_price or calculate_buy_price(list_price, monthly_rent, property_taxes, insurance)
 
         strategies = [
             _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance),

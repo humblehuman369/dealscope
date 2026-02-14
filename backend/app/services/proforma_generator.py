@@ -883,6 +883,10 @@ async def generate_proforma_data(
     hold_period_years: int = 10,
     purchase_price_override: Optional[float] = None,
     monthly_rent_override: Optional[float] = None,
+    interest_rate_override: Optional[float] = None,
+    down_payment_pct_override: Optional[float] = None,
+    property_taxes_override: Optional[float] = None,
+    insurance_override: Optional[float] = None,
 ) -> FinancialProforma:
     """Generate complete financial proforma from property data."""
     
@@ -896,12 +900,12 @@ async def generate_proforma_data(
     list_price = (listing.list_price if listing and listing.list_price else None) or purchase_price
     monthly_rent = monthly_rent_override or (rentals.monthly_rent_ltr if rentals else None) or 0
     annual_gross_rent = monthly_rent * 12
-    property_taxes = (market.property_taxes_annual if market else None) or (purchase_price * 0.01)
+    property_taxes = property_taxes_override or (market.property_taxes_annual if market else None) or (purchase_price * 0.01)
     hoa_fees = ((market.hoa_fees_monthly if market else None) or 0) * 12
     
-    # Financing parameters
-    down_payment_pct = FINANCING.down_payment_pct
-    interest_rate = FINANCING.interest_rate
+    # Financing parameters — user overrides take priority over defaults
+    down_payment_pct = down_payment_pct_override or FINANCING.down_payment_pct
+    interest_rate = interest_rate_override or FINANCING.interest_rate
     loan_term_years = FINANCING.loan_term_years
     closing_costs_pct = FINANCING.closing_costs_pct
     
@@ -916,7 +920,7 @@ async def generate_proforma_data(
     vacancy_rate = OPERATING.vacancy_rate * 100  # Convert to percent
     management_pct = OPERATING.property_management_pct
     maintenance_pct = OPERATING.maintenance_pct
-    insurance = purchase_price * OPERATING.insurance_pct
+    insurance = insurance_override or (purchase_price * OPERATING.insurance_pct)
     utilities = OPERATING.utilities_monthly * 12
     landscaping = OPERATING.landscaping_annual
     pest_control = OPERATING.pest_control_annual

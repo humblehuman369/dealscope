@@ -159,6 +159,10 @@ async def get_proforma(
     hold_period_years: int = Query(10, ge=1, le=30, description="Investment hold period in years"),
     purchase_price: Optional[float] = Query(None, description="Override purchase price"),
     monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
+    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
+    insurance: Optional[float] = Query(None, description="Override annual insurance"),
 ):
     """
     Get financial proforma data for a property as JSON.
@@ -186,6 +190,10 @@ async def get_proforma(
             hold_period_years=hold_period_years,
             purchase_price_override=purchase_price,
             monthly_rent_override=monthly_rent,
+            interest_rate_override=interest_rate,
+            down_payment_pct_override=down_payment_pct,
+            property_taxes_override=property_taxes,
+            insurance_override=insurance,
         )
         
         return proforma
@@ -260,6 +268,10 @@ async def download_proforma_excel(
             hold_period_years=hold_period_years,
             purchase_price_override=purchase_price,
             monthly_rent_override=monthly_rent,
+            interest_rate_override=interest_rate,
+            down_payment_pct_override=down_payment_pct,
+            property_taxes_override=property_taxes,
+            insurance_override=insurance,
         )
         
         # Dispatch to strategy-specific exporter
@@ -320,6 +332,13 @@ async def download_proforma_pdf(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
+    # User override params (from DealMaker adjustments)
+    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
+    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
+    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
+    insurance: Optional[float] = Query(None, description="Override annual insurance"),
 ):
     """
     Download an InvestIQ Property Investment Report as PDF.
@@ -362,6 +381,12 @@ async def download_proforma_pdf(
             marginal_tax_rate=marginal_tax_rate,
             capital_gains_tax_rate=capital_gains_tax_rate,
             hold_period_years=hold_period_years,
+            purchase_price_override=purchase_price,
+            monthly_rent_override=monthly_rent,
+            interest_rate_override=interest_rate,
+            down_payment_pct_override=down_payment_pct,
+            property_taxes_override=property_taxes,
+            insurance_override=insurance,
         )
         
         # Generate PDF using new InvestIQ report exporter
@@ -413,6 +438,13 @@ async def view_proforma_report(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
+    # User override params (from DealMaker adjustments)
+    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
+    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
+    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
+    insurance: Optional[float] = Query(None, description="Override annual insurance"),
 ):
     """
     Render the InvestIQ Property Investment Report as a browser-viewable HTML page.
@@ -442,6 +474,12 @@ async def view_proforma_report(
             marginal_tax_rate=marginal_tax_rate,
             capital_gains_tax_rate=capital_gains_tax_rate,
             hold_period_years=hold_period_years,
+            purchase_price_override=purchase_price,
+            monthly_rent_override=monthly_rent,
+            interest_rate_override=interest_rate,
+            down_payment_pct_override=down_payment_pct,
+            property_taxes_override=property_taxes,
+            insurance_override=insurance,
         )
 
         exporter = PropertyReportPDFExporter(proforma, theme=theme)
