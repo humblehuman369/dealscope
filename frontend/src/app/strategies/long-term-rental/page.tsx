@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Home, DollarSign, TrendingUp, Shield } from 'lucide-react';
 import {

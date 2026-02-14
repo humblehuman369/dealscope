@@ -2,6 +2,42 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
+/**
+ * Trap keyboard focus inside a container element.
+ * Returns a keydown handler to attach to the container.
+ */
+function useFocusTrap(containerRef: React.RefObject<HTMLElement | null>, active: boolean) {
+  useEffect(() => {
+    if (!active || !containerRef.current) return
+    const el = containerRef.current
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    )
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    el.addEventListener('keydown', handler)
+    return () => el.removeEventListener('keydown', handler)
+  }, [containerRef, active])
+}
+
 export interface ConfirmDialogProps {
   open: boolean
   onConfirm: () => void
@@ -38,6 +74,7 @@ export function ConfirmDialog({
   variant = 'info',
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   // Focus confirm button on open, trap Escape key
   useEffect(() => {
@@ -50,6 +87,9 @@ export function ConfirmDialog({
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [open, onCancel])
+
+  // Keyboard focus trap — Tab cycles within the dialog
+  useFocusTrap(panelRef, open)
 
   const handleBackdrop = useCallback(
     (e: React.MouseEvent) => {
@@ -72,6 +112,7 @@ export function ConfirmDialog({
       aria-labelledby="confirm-dialog-title"
     >
       <div
+        ref={panelRef}
         className="w-full max-w-sm rounded-2xl p-6"
         style={{
           background: '#0f172a',
@@ -142,6 +183,8 @@ export function InfoDialog({
   closeLabel?: string
   children?: React.ReactNode
 }) {
+  const infoPanelRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!open) return
     const handleKey = (e: KeyboardEvent) => {
@@ -150,6 +193,8 @@ export function InfoDialog({
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [open, onClose])
+
+  useFocusTrap(infoPanelRef, open)
 
   const handleBackdrop = useCallback(
     (e: React.MouseEvent) => {
@@ -170,6 +215,7 @@ export function InfoDialog({
       aria-labelledby="info-dialog-title"
     >
       <div
+        ref={infoPanelRef}
         className="w-full max-w-sm rounded-2xl p-6"
         style={{
           background: '#0f172a',

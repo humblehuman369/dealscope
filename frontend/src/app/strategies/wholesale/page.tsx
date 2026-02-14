@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Repeat, DollarSign, Clock, FileText } from 'lucide-react';
 import {

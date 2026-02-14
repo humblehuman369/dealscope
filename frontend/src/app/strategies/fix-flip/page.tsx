@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Hammer, Zap, DollarSign } from 'lucide-react';
 import {

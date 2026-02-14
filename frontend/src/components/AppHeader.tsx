@@ -671,10 +671,10 @@ export function AppHeader({
                   <button
                     onClick={handleSaveToggle}
                     disabled={isSaving}
+                    aria-label={isSaved ? 'Unsave property' : 'Save property'}
                     className={`p-1.5 rounded transition-all ${
                       isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10'
                     }`}
-                    aria-label={isSaved ? 'Unsave property' : 'Save property'}
                     title={isSaved ? 'Saved — click to remove' : 'Save property'}
                   >
                     <Bookmark

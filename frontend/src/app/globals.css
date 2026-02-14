@@ -14,7 +14,7 @@
 /* ==========================================
    CSS Imports (must be at top before @tailwind)
    ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Source+Sans+3:wght@400;600;700&display=swap');
+/* Fonts are self-hosted via next/font in layout.tsx — no external @import needed. */
 @import '../components/landing/landing.css';
 
 @tailwind base;

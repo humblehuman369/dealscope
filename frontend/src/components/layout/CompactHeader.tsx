@@ -344,6 +344,7 @@ export function CompactHeader({
                   router.push(route);
                 }}
                 title={tooltipText}
+                aria-label={tooltipText}
                 disabled={isDisabled}
               >
                 <IconComponent active={isActive} />
