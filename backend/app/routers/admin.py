@@ -6,18 +6,20 @@ The legacy ``SuperUser`` dependency is no longer used here.
 """
 
 import logging
-from typing import Optional, List, Any
+from typing import Optional, List
 from pathlib import Path
 import json
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
-from pydantic import BaseModel, EmailStr
 from app.core.deps import DbSession, require_permission
 from app.models.user import User
 from app.models.audit_log import AuditAction
 from app.repositories.audit_repository import audit_repo
 from app.services.admin_service import admin_service
+from app.schemas.admin import (
+    AdminUserResponse, AdminUserUpdate, PlatformStats,
+    AdminAssumptionsResponse, MetricsGlossaryResponse,
+)
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import (
     get_assumptions_record,
@@ -28,58 +30,6 @@ from app.services.assumptions_service import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
-
-
-# ===========================================
-# Schemas
-# ===========================================
-
-class AdminUserResponse(BaseModel):
-    """User response for admin view."""
-    id: str
-    email: str
-    full_name: Optional[str]
-    avatar_url: Optional[str]
-    is_active: bool
-    is_verified: bool
-    is_superuser: bool
-    created_at: datetime
-    last_login: Optional[datetime]
-    saved_properties_count: int = 0
-    
-    class Config:
-        from_attributes = True
-
-
-class AdminUserUpdate(BaseModel):
-    """Schema for admin updating a user."""
-    full_name: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_verified: Optional[bool] = None
-    is_superuser: Optional[bool] = None
-
-
-class PlatformStats(BaseModel):
-    """Platform statistics."""
-    total_users: int
-    active_users: int
-    total_properties_saved: int
-    new_users_30d: int
-    verified_users: int
-    admin_users: int
-
-
-class AdminAssumptionsResponse(BaseModel):
-    """Response for admin assumption defaults."""
-    assumptions: AllAssumptions
-    updated_at: Optional[datetime] = None
-    updated_by: Optional[str] = None
-    updated_by_email: Optional[EmailStr] = None
-
-
-class MetricsGlossaryResponse(BaseModel):
-    """Metrics glossary payload."""
-    data: Any
 
 
 # ===========================================

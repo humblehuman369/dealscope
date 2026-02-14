@@ -22,7 +22,7 @@ from app.core.deps import get_current_user_optional
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/loi", tags=["Letter of Intent"])
+router = APIRouter(prefix="/api/v1/loi", tags=["Letter of Intent"])
 
 
 # ============================================
