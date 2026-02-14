@@ -698,8 +698,16 @@ export async function GET(request: NextRequest) {
   if (!address) return NextResponse.json({ detail: 'address parameter is required' }, { status: 400 })
 
   try {
+    // Forward all DealMaker financial overrides to the backend proforma endpoint
+    const backendParams = new URLSearchParams({ address, strategy })
+    const overrideKeys = ['purchase_price', 'monthly_rent', 'interest_rate', 'down_payment_pct', 'property_taxes', 'insurance']
+    for (const key of overrideKeys) {
+      const val = searchParams.get(key)
+      if (val) backendParams.set(key, val)
+    }
+
     const [proformaRes, photosRes] = await Promise.all([
-      fetch(`${BACKEND_URL}/api/v1/proforma/property/${propertyId}?${new URLSearchParams({ address, strategy })}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }),
+      fetch(`${BACKEND_URL}/api/v1/proforma/property/${propertyId}?${backendParams}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }),
       fetch(`${BACKEND_URL}/api/v1/photos?zpid=${propertyId}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
     ])
 

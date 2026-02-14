@@ -348,8 +348,9 @@ function VerdictContent() {
         
         if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
           // Use values from DealMakerRecord (single source of truth for saved properties)
+          // list_price stays as market price; purchase_price override is sent separately
           const record = dealMakerStore.record
-          listPriceForCalc = record.buy_price
+          listPriceForCalc = propertyData.price
           rentForCalc = record.monthly_rent
           taxesForCalc = record.annual_property_tax
           insuranceForCalc = record.annual_insurance
@@ -365,9 +366,8 @@ function VerdictContent() {
           })
         } else {
           // Legacy mode: use URL param overrides or property data
-          listPriceForCalc = overridePurchasePrice 
-            ? parseFloat(overridePurchasePrice) 
-            : propertyData.price
+          // list_price stays as the original market/asking price
+          listPriceForCalc = propertyData.price
           rentForCalc = overrideMonthlyRent 
             ? parseFloat(overrideMonthlyRent) 
             : (propertyData.monthlyRent || (listPriceForCalc * 0.007)) // 0.7% rule
@@ -405,10 +405,19 @@ function VerdictContent() {
         
         // Fire analysis + photo resolution in parallel (both depend on property
         // search response, but not on each other)
+        // Send user's purchase price override separately so the backend
+        // keeps list_price as market/asking price for deal gap calculation
+        const purchasePriceOverride = overridePurchasePrice
+          ? parseFloat(overridePurchasePrice)
+          : (isSavedPropertyMode && hasRecord && dealMakerStore.record)
+            ? dealMakerStore.record.buy_price
+            : undefined
+
         const analysisPromise = api.post<BackendAnalysisResponse & Record<string, any>>(
           '/api/v1/analysis/verdict',
           {
             list_price: listPriceForCalc,
+            purchase_price: purchasePriceOverride,
             monthly_rent: rentForCalc,
             property_taxes: taxesForCalc,
             insurance: insuranceForCalc,
