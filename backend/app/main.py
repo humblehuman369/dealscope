@@ -19,7 +19,9 @@ except Exception as _e:
     _tb.print_exc()
     sys.exit(1)
 
-# Configure structured JSON logging for production, human-readable for dev
+# Configure structured JSON logging for production, human-readable for dev.
+# The RequestIDLogFilter (attached below) injects `request_id` into every
+# record so logs can be correlated across a single HTTP request.
 _log_level = logging.INFO
 
 try:
@@ -28,7 +30,7 @@ try:
     _json_handler = logging.StreamHandler(sys.stdout)
     _json_handler.setFormatter(
         jsonlogger.JsonFormatter(
-            fmt="%(asctime)s %(name)s %(levelname)s %(message)s",
+            fmt="%(asctime)s %(name)s %(levelname)s %(request_id)s %(message)s",
             rename_fields={"asctime": "timestamp", "levelname": "level"},
         )
     )
@@ -38,9 +40,13 @@ except ImportError:
     # Fallback to plain text if python-json-logger is not installed
     logging.basicConfig(
         level=_log_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="%(asctime)s - %(name)s - %(levelname)s - [%(request_id)s] %(message)s",
         stream=sys.stdout,
     )
+
+# Attach correlation-ID filter to root logger so every module gets it
+from app.core.middleware import RequestIDLogFilter  # noqa: E402
+logging.root.addFilter(RequestIDLogFilter())
 
 logger = logging.getLogger(__name__)
 
