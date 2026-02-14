@@ -125,8 +125,15 @@ def get_session_factory() -> async_sessionmaker:
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency that provides a database session.
-    
-    Usage:
+
+    **Transaction policy**: This dependency does NOT auto-commit.
+    Services are responsible for calling ``await db.commit()`` explicitly
+    after successful mutations.  If the request raises an exception the
+    session is rolled back automatically, ensuring no partial state is
+    persisted.
+
+    Usage::
+
         @app.get("/users")
         async def get_users(db: AsyncSession = Depends(get_db)):
             result = await db.execute(select(User))
@@ -136,7 +143,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with session_factory() as session:
         try:
             yield session
-            await session.commit()
         except Exception:
             await session.rollback()
             raise

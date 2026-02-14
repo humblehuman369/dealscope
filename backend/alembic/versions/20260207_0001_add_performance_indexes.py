@@ -27,13 +27,9 @@ def upgrade() -> None:
     """Add performance indexes for common query patterns."""
 
     # 1. Composite index on saved_properties(user_id, status)
-    #    Used by: list_properties filtered by status (most common query)
-    op.create_index(
-        "ix_saved_properties_user_status",
-        "saved_properties",
-        ["user_id", "status"],
-        unique=False,
-    )
+    #    SKIPPED — already created in migration 20260130_0002
+    #    (add_missing_indexes_constraints).  Duplicate CREATE INDEX would
+    #    fail on databases where 20260130_0002 already ran.
 
     # 2. Index on payment_history.stripe_invoice_id
     #    Used by: webhook handlers looking up payments by Stripe invoice
@@ -98,4 +94,5 @@ def downgrade() -> None:
     op.drop_index("ix_role_permissions_role_id", table_name="role_permissions")
     op.drop_index("ix_payment_history_stripe_payment_intent_id", table_name="payment_history")
     op.drop_index("ix_payment_history_stripe_invoice_id", table_name="payment_history")
-    op.drop_index("ix_saved_properties_user_status", table_name="saved_properties")
+    # NOTE: ix_saved_properties_user_status is NOT dropped here — it is
+    # owned by migration 20260130_0002 (add_missing_indexes_constraints).

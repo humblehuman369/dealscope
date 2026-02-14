@@ -99,36 +99,17 @@ def upgrade() -> None:
     # Create index on user_id for faster lookups
     op.create_index('ix_payment_history_user_id', 'payment_history', ['user_id'])
     
-    # ===========================================
-    # Search History Table (if not exists)
-    # ===========================================
-    # Check if search_history table exists, create if not
-    # This handles the case where search_history was added but not migrated
-    conn = op.get_bind()
-    inspector = sa.inspect(conn)
-    if 'search_history' not in inspector.get_table_names():
-        op.create_table(
-            'search_history',
-            sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
-            sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
-            sa.Column('query', sa.String(), nullable=False),
-            sa.Column('search_type', sa.String(50), nullable=True),
-            sa.Column('results_count', sa.Integer(), nullable=True),
-            sa.Column('search_params', postgresql.JSON(), nullable=True),
-            sa.Column('searched_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
-        )
-        op.create_index('ix_search_history_user_id', 'search_history', ['user_id'])
+    # NOTE: search_history table creation removed from this migration.
+    # The authoritative schema is defined in migration 20250112_0001
+    # (add_search_history_business_profile) which runs after this one.
+    # Having two conflicting CREATE TABLE definitions caused failures
+    # on fresh databases.
 
 
 def downgrade() -> None:
     # Drop tables in reverse order
-    conn = op.get_bind()
-    inspector = sa.inspect(conn)
-    
-    if 'search_history' in inspector.get_table_names():
-        op.drop_index('ix_search_history_user_id', table_name='search_history')
-        op.drop_table('search_history')
-    
+    # NOTE: search_history is NOT dropped here — it is owned by migration
+    # 20250112_0001 (add_search_history_business_profile).
     op.drop_index('ix_payment_history_user_id', table_name='payment_history')
     op.drop_table('payment_history')
     

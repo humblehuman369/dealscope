@@ -342,20 +342,36 @@ async def save_property(
                 logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
         
-        # Send push notification in background (non-blocking)
+        # Send push notification in background (non-blocking).
+        # IMPORTANT: Background tasks run AFTER the response is sent, so the
+        # request-scoped ``db`` session is already closed.  We must create a
+        # fresh session inside the task.
         try:
             from app.services.push_notification_service import push_service
             address_display = saved.full_address or saved.address_street or "Property"
-            background_tasks.add_task(
-                push_service.send_to_user,
-                db,
-                current_user.id,
-                title="Property Saved",
-                body=f"{address_display} added to your watchlist.",
-                data={"type": "property", "address": saved.full_address or saved.address_street},
-                category="property_alerts",
-                channel_id="property-alerts",
-            )
+            _user_id = current_user.id
+            _full_address = saved.full_address or saved.address_street
+
+            async def _send_save_notification():
+                from app.db.session import get_session_factory
+                factory = get_session_factory()
+                async with factory() as task_db:
+                    try:
+                        await push_service.send_to_user(
+                            task_db,
+                            _user_id,
+                            title="Property Saved",
+                            body=f"{address_display} added to your watchlist.",
+                            data={"type": "property", "address": _full_address},
+                            category="property_alerts",
+                            channel_id="property-alerts",
+                        )
+                        await task_db.commit()
+                    except Exception as exc:
+                        await task_db.rollback()
+                        logger.warning("Background save notification failed: %s", exc)
+
+            background_tasks.add_task(_send_save_notification)
         except Exception as notify_exc:
             logger.warning("Failed to queue save notification: %s", notify_exc)
 
@@ -456,8 +472,10 @@ async def get_saved_property(
             detail="Property not found"
         )
     
-    # Update last viewed
-    saved.last_viewed_at = saved.updated_at  # We'll update this properly later
+    # Update last viewed timestamp
+    from datetime import datetime, timezone
+    saved.last_viewed_at = datetime.now(timezone.utc)
+    await db.commit()
     
     doc_count = len(saved.documents) if saved.documents else 0
     

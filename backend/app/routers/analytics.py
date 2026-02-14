@@ -43,25 +43,29 @@ def _to_camel(string: str) -> str:
 # ===========================================
 
 class IQVerdictInput(BaseModel):
-    """Input for IQ Verdict multi-strategy analysis."""
-    list_price: float = Field(..., description="Property list price")
-    purchase_price: Optional[float] = Field(None, description="User-override purchase price (bypasses buy_price calculation)")
-    monthly_rent: Optional[float] = Field(None, description="Monthly rent (estimated if not provided)")
-    property_taxes: Optional[float] = Field(None, description="Annual property taxes")
-    insurance: Optional[float] = Field(None, description="Annual insurance")
-    bedrooms: int = Field(3, description="Number of bedrooms")
-    bathrooms: float = Field(2, description="Number of bathrooms")
-    sqft: Optional[int] = Field(None, description="Square footage")
-    arv: Optional[float] = Field(None, description="After Repair Value")
-    average_daily_rate: Optional[float] = Field(None, description="STR average daily rate")
-    occupancy_rate: Optional[float] = Field(None, description="STR occupancy rate (0.0-1.0)")
-    listing_status: Optional[str] = Field(None, description="Listing status")
-    seller_type: Optional[str] = Field(None, description="Seller type")
+    """Input for IQ Verdict multi-strategy analysis.
+
+    All financial inputs are bounds-checked to prevent garbage-in/garbage-out
+    on calculations that drive investment decisions.
+    """
+    list_price: float = Field(..., gt=0, le=100_000_000, description="Property list price")
+    purchase_price: Optional[float] = Field(None, gt=0, le=100_000_000, description="User-override purchase price (bypasses buy_price calculation)")
+    monthly_rent: Optional[float] = Field(None, ge=0, le=1_000_000, description="Monthly rent (estimated if not provided)")
+    property_taxes: Optional[float] = Field(None, ge=0, le=1_000_000, description="Annual property taxes")
+    insurance: Optional[float] = Field(None, ge=0, le=1_000_000, description="Annual insurance")
+    bedrooms: int = Field(3, ge=0, le=100, description="Number of bedrooms")
+    bathrooms: float = Field(2, ge=0, le=100, description="Number of bathrooms")
+    sqft: Optional[int] = Field(None, gt=0, le=1_000_000, description="Square footage")
+    arv: Optional[float] = Field(None, gt=0, le=100_000_000, description="After Repair Value")
+    average_daily_rate: Optional[float] = Field(None, ge=0, le=100_000, description="STR average daily rate")
+    occupancy_rate: Optional[float] = Field(None, ge=0.0, le=1.0, description="STR occupancy rate (0.0-1.0)")
+    listing_status: Optional[str] = Field(None, max_length=50, description="Listing status")
+    seller_type: Optional[str] = Field(None, max_length=50, description="Seller type")
     is_foreclosure: Optional[bool] = Field(False, description="Is foreclosure property")
     is_bank_owned: Optional[bool] = Field(False, description="Is bank-owned/REO")
     is_fsbo: Optional[bool] = Field(False, description="For Sale By Owner")
-    days_on_market: Optional[int] = Field(None, description="Days on market")
-    market_temperature: Optional[str] = Field(None, description="Market temperature: cold, warm, hot")
+    days_on_market: Optional[int] = Field(None, ge=0, le=10_000, description="Days on market")
+    market_temperature: Optional[str] = Field(None, max_length=20, description="Market temperature: cold, warm, hot")
 
 
 class StrategyResult(BaseModel):

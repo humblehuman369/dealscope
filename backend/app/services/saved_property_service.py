@@ -39,19 +39,16 @@ class SavedPropertyService:
     ) -> SavedProperty:
         """
         Save a new property for a user.
+
+        Relies on database-level unique constraints to prevent duplicates
+        atomically (no TOCTOU race).  The partial unique index
+        ``uq_saved_properties_user_zpid`` catches zpid duplicates, and
+        ``uq_saved_properties_user_address`` catches address duplicates.
+        An ``IntegrityError`` is re-raised as a ``ValueError`` for the
+        router layer to translate into HTTP 409.
         """
-        # Check if already saved (by external_property_id or address)
-        existing = await self.get_by_address_or_id(
-            db, 
-            user_id, 
-            external_id=data.external_property_id,
-            address=data.full_address or data.address_street
-        )
-        
-        if existing:
-            logger.info(f"Property already saved: {data.address_street}")
-            raise ValueError("This property is already in your saved list")
-        
+        from sqlalchemy.exc import IntegrityError
+
         # Convert DealMakerRecord to dict if provided
         deal_maker_dict = None
         if data.deal_maker_record:
@@ -66,7 +63,7 @@ class SavedPropertyService:
             except Exception as e:
                 logger.error(f"Failed to convert deal_maker_record to dict: {e}", exc_info=True)
                 # Continue without deal_maker_record rather than failing the save
-        
+
         # Create the saved property
         saved_property = SavedProperty(
             user_id=user_id,
@@ -86,11 +83,22 @@ class SavedPropertyService:
             priority=data.priority,
             notes=data.notes,
         )
-        
+
         db.add(saved_property)
-        await db.commit()
+        try:
+            await db.commit()
+        except IntegrityError as e:
+            await db.rollback()
+            error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+            if "uq_saved_properties_user_zpid" in error_msg or \
+               "uq_saved_properties_user_address" in error_msg or \
+               "duplicate" in error_msg.lower() or \
+               "unique" in error_msg.lower():
+                logger.info(f"Duplicate property save rejected by DB constraint: {data.address_street}")
+                raise ValueError("This property is already in your saved list") from e
+            raise
         await db.refresh(saved_property)
-        
+
         logger.info(f"Property saved: {saved_property.id} - {data.address_street}")
         return saved_property
     
