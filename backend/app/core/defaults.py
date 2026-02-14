@@ -193,6 +193,22 @@ def get_all_defaults() -> Dict[str, Any]:
     }
 
 
+def _clamp(value: float, lo: float, hi: float, name: str) -> float:
+    """Clamp a value to [lo, hi], logging a warning if it was out of range."""
+    import logging
+    if value < lo:
+        logging.getLogger(__name__).warning(
+            "Input '%s' = %s below minimum %s — clamped", name, value, lo
+        )
+        return lo
+    if value > hi:
+        logging.getLogger(__name__).warning(
+            "Input '%s' = %s above maximum %s — clamped", name, value, hi
+        )
+        return hi
+    return value
+
+
 def estimate_breakeven_price(
     monthly_rent: float,
     property_taxes: float,
@@ -207,56 +223,81 @@ def estimate_breakeven_price(
     """
     Estimate breakeven purchase price for LTR.
     Breakeven is where monthly cash flow = $0 (NOI = Debt Service).
-    
+
     Returns the purchase price at which the property breaks even.
+    Returns 0 when the property cannot break even or inputs are invalid.
+
+    All inputs are bounds-checked and clamped to prevent nonsensical results
+    from garbage inputs (negative prices, rates > 100%, etc.).
     """
-    # Use defaults if not provided
+    # ── Input validation ──────────────────────────────────────────────
+    if monthly_rent is None or monthly_rent < 0:
+        return 0
+    if property_taxes is None or property_taxes < 0:
+        property_taxes = 0
+    if insurance is None or insurance < 0:
+        insurance = 0
+
+    # Use defaults if not provided, then clamp to sane ranges
     down_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    down_pct = _clamp(down_pct, 0.0, 1.0, "down_payment_pct")
+
     rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    rate = _clamp(rate, 0.0, 0.30, "interest_rate")  # max 30%
+
     term = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    term = max(1, min(term, 50))  # 1–50 years
+
     vacancy = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
+    vacancy = _clamp(vacancy, 0.0, 1.0, "vacancy_rate")
+
     maint_pct = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
+    maint_pct = _clamp(maint_pct, 0.0, 1.0, "maintenance_pct")
+
     mgmt_pct = management_pct if management_pct is not None else OPERATING.property_management_pct
-    
-    # Calculate annual income
+    mgmt_pct = _clamp(mgmt_pct, 0.0, 1.0, "management_pct")
+
+    # ── Calculation ───────────────────────────────────────────────────
     annual_gross_rent = monthly_rent * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy)
-    
-    # Calculate operating expenses (not including debt service)
+
+    # Operating expenses (not including debt service)
     annual_maintenance = effective_gross_income * maint_pct
     annual_management = effective_gross_income * mgmt_pct
     operating_expenses = property_taxes + insurance + annual_maintenance + annual_management
-    
+
     # NOI = Effective Gross Income - Operating Expenses
     noi = effective_gross_income - operating_expenses
-    
+
     if noi <= 0:
         # Property can't break even at any price
         return 0
-    
-    # Calculate mortgage constant (annual payment per $ of loan)
+
+    # Mortgage constant (annual payment per $ of loan)
     monthly_rate = rate / 12
     num_payments = term * 12
     ltv_ratio = 1 - down_pct
-    
+
     if monthly_rate > 0:
-        mortgage_constant = (
-            monthly_rate * (1 + monthly_rate) ** num_payments
-        ) / ((1 + monthly_rate) ** num_payments - 1) * 12
+        compounded = (1 + monthly_rate) ** num_payments
+        # Guard against float overflow (extremely high rates / terms)
+        if compounded <= 1:
+            return 0
+        mortgage_constant = (monthly_rate * compounded) / (compounded - 1) * 12
     else:
-        mortgage_constant = 1 / term
-    
+        # 0% interest — annual payment = loan / term
+        mortgage_constant = 1 / term if term > 0 else 0
+
     # At breakeven: NOI = Purchase Price × LTV × Mortgage Constant
     # Therefore: Purchase Price = NOI / (LTV × Mortgage Constant)
     denominator = ltv_ratio * mortgage_constant
     if denominator <= 0:
         # 100% cash purchase (no debt service) — breakeven is NOI / cap rate
-        # With no mortgage, any price where NOI > 0 technically works,
-        # so return NOI divided by a reasonable cap rate floor (5%)
+        # Use a reasonable cap rate floor of 5%
         return round(noi / 0.05)
-    
+
     breakeven = noi / denominator
-    
+
     return round(breakeven)
 
 
@@ -269,17 +310,25 @@ def calculate_buy_price(
 ) -> float:
     """
     Calculate buy price as breakeven minus the buy discount.
-    
+
     Formula: Buy Price = Breakeven × (1 - Buy Discount %)
-    
+
     This is the recommended purchase price that ensures profitability.
     Returns the lesser of the calculated buy price or list_price.
+    Returns 0 if list_price is invalid.
     """
+    if list_price is None or list_price <= 0:
+        return 0
+    if monthly_rent is None or monthly_rent < 0:
+        return list_price
+
     discount_pct = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
+    discount_pct = _clamp(discount_pct, 0.0, 0.50, "buy_discount_pct")  # max 50% discount
+
     breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
-    
+
     if breakeven <= 0:
         return list_price
-    
+
     buy_price = round(breakeven * (1 - discount_pct))
     return min(buy_price, list_price)

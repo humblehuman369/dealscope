@@ -85,14 +85,60 @@ async def archive_old_audit_logs(days: int | None = None) -> int:
             return 0
 
 
+async def encrypt_plaintext_mfa_secrets() -> int:
+    """Encrypt any MFA secrets stored as plaintext (legacy data).
+
+    MFA secrets created before field-level encryption was introduced may
+    be stored as plaintext base32 strings.  Encrypted values carry the
+    ``enc:`` prefix so we can detect and skip already-encrypted rows.
+
+    Safe to run multiple times (idempotent).
+    """
+    from sqlalchemy import text as sa_text
+    from app.core.encryption import encrypt_value, is_encrypted
+
+    factory = get_session_factory()
+    async with factory() as db:
+        try:
+            result = await db.execute(
+                sa_text(
+                    "SELECT id, mfa_secret FROM users "
+                    "WHERE mfa_secret IS NOT NULL "
+                    "  AND mfa_secret != '' "
+                    "  AND mfa_secret NOT LIKE 'enc:%'"
+                )
+            )
+            rows = result.fetchall()
+            if not rows:
+                return 0
+
+            for row in rows:
+                user_id, plaintext = row[0], row[1]
+                encrypted = encrypt_value(plaintext)
+                await db.execute(
+                    sa_text("UPDATE users SET mfa_secret = :secret WHERE id = :uid"),
+                    {"secret": encrypted, "uid": user_id},
+                )
+
+            await db.commit()
+            logger.info("Encrypted %d legacy plaintext MFA secrets", len(rows))
+            return len(rows)
+        except Exception:
+            await db.rollback()
+            logger.exception("Failed to encrypt MFA secrets")
+            return 0
+
+
 async def run_all_cleanup() -> dict:
     """Run all cleanup tasks and return counts."""
     sessions = await cleanup_expired_sessions()
     tokens = await cleanup_expired_tokens()
     audit = await archive_old_audit_logs()
+    mfa = await encrypt_plaintext_mfa_secrets()
     return {
         "expired_sessions_removed": sessions,
         "expired_tokens_removed": tokens,
         "old_audit_logs_archived": audit,
+        "mfa_secrets_encrypted": mfa,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
