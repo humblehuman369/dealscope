@@ -1,8 +1,9 @@
 """
 Middleware stack: rate limiting, security headers, CSRF protection,
-request timing, and request-ID injection.
+request timing, request-ID injection, and correlation-ID logging.
 """
 
+import contextvars
 import logging
 import secrets
 import time
@@ -17,6 +18,28 @@ from starlette.responses import JSONResponse
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Correlation / Request-ID context (async-safe via contextvars)
+# ---------------------------------------------------------------------------
+
+request_id_ctx: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "request_id", default="-"
+)
+
+
+class RequestIDLogFilter(logging.Filter):
+    """Inject the current ``request_id`` into every log record.
+
+    Attach this filter to the root logger so all messages automatically
+    include a ``request_id`` field — useful for correlating logs across
+    a single HTTP request in both human-readable and JSON formats.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = request_id_ctx.get("-")  # type: ignore[attr-defined]
+        return True
 
 
 # ============================================
@@ -237,11 +260,22 @@ class RequestTimingMiddleware(BaseHTTPMiddleware):
 # ============================================
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
-    """Inject a unique request ID for tracing."""
+    """Inject a unique request ID for tracing.
+
+    The ID is stored in three places so it's universally accessible:
+      1. ``request.state.request_id`` — for route handlers.
+      2. ``X-Request-ID`` response header — for client correlation.
+      3. ``request_id_ctx`` context-var — for the ``RequestIDLogFilter``
+         so every log line emitted during this request contains the ID.
+    """
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
-        request.state.request_id = request_id
-        response = await call_next(request)
-        response.headers["X-Request-ID"] = request_id
-        return response
+        rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = rid
+        token = request_id_ctx.set(rid)
+        try:
+            response = await call_next(request)
+            response.headers["X-Request-ID"] = rid
+            return response
+        finally:
+            request_id_ctx.reset(token)
