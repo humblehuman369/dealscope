@@ -558,7 +558,15 @@ def calculate_investment_returns(
         payback_period_months = len(annual_cash_flows) * 12
     
     average_annual_return = (total_cash_flows / len(annual_cash_flows)) / initial_investment * 100 if annual_cash_flows and initial_investment > 0 else 0
-    cagr = ((equity_multiple ** (1 / len(annual_cash_flows))) - 1) * 100 if annual_cash_flows else 0
+    # CAGR: guard against negative equity_multiple which produces complex numbers
+    # when raised to a fractional power (e.g. (-2) ** 0.1 → complex in Python)
+    if annual_cash_flows and equity_multiple > 0:
+        cagr = ((equity_multiple ** (1 / len(annual_cash_flows))) - 1) * 100
+    elif annual_cash_flows and equity_multiple < 0:
+        # Negative equity multiple means total loss exceeds investment — express as negative CAGR
+        cagr = -((abs(equity_multiple) ** (1 / len(annual_cash_flows))) - 1) * 100
+    else:
+        cagr = 0
     
     return InvestmentReturns(
         irr=irr,
