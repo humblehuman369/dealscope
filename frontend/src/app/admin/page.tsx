@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
 import {
   BarChart3,
   SlidersHorizontal,
@@ -9,7 +8,7 @@ import {
   Users,
   ShieldCheck,
 } from 'lucide-react'
-import { useSession } from '@/hooks/useSession'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { PlatformStatsSection } from '@/features/admin/components/PlatformStats'
 import { AdminAssumptionsSection } from '@/features/admin/components/AdminAssumptions'
 import { MetricsGlossarySection } from '@/features/admin/components/MetricsGlossary'
@@ -31,26 +30,9 @@ const tabs: { id: AdminTab; label: string; icon: typeof BarChart3 }[] = [
   { id: 'users', label: 'Users', icon: Users },
 ]
 
-export default function AdminDashboardPage() {
+function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview')
-  const { isAdmin, isLoading, isAuthenticated } = useSession()
-  const router = useRouter()
 
-  // ── Auth guard ──────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
-      </div>
-    )
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    router.replace('/search')
-    return null
-  }
-
-  // ── Render ──────────────────────────────────
   return (
     <div
       className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
@@ -102,5 +84,23 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// ===========================================
+// Page export — AuthGuard with requireAdmin
+// ===========================================
+
+export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+      </div>
+    }>
+      <AuthGuard requireAdmin>
+        <AdminDashboardContent />
+      </AuthGuard>
+    </Suspense>
   )
 }
