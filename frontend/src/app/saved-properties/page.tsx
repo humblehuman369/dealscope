@@ -1,21 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useSession } from '@/hooks/useSession'
 import { useDebounce } from '@/hooks/useDebounce'
-import { api } from '@/lib/api-client'
+import {
+  useSavedProperties,
+  useSavedPropertyStats,
+  useDeleteSavedProperty,
+} from '@/hooks/useSavedProperties'
 import { AuthGuard } from '@/components/auth/AuthGuard'
+import { DataBoundary } from '@/components/ui/DataBoundary'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
   Bookmark, Search, MapPin, Building2, Clock, Trash2,
-  TrendingUp, Star, AlertCircle,
-  ChevronRight, BarChart3, Eye, X,
-  ChevronLeft,
+  TrendingUp, Star, Eye,
+  ChevronRight, BarChart3, ChevronLeft,
 } from 'lucide-react'
-import type { PropertyStatus } from '@/types/savedProperty'
+import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 
 // ===========================================
 // Saved Properties Page — Dark Fintech Theme
@@ -25,37 +28,7 @@ import type { PropertyStatus } from '@/types/savedProperty'
 // Accents: sky-400 (primary), teal-400 (positive), amber-400 (caution),
 //          red-400 (negative), emerald-400 (success/income)
 // Theme: true black base, #0C1220 cards, 7% white borders
-// Status colors carry meaning: sky=watching, teal=analyzing,
-//          amber=in-progress, emerald=success, slate=inactive
 // ===========================================
-
-// ===========================================
-// Types
-// ===========================================
-
-interface SavedPropertySummary {
-  id: string
-  address_street: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  nickname?: string
-  status: PropertyStatus
-  tags?: string[]
-  color_label?: string
-  priority?: number
-  best_strategy?: string
-  best_cash_flow?: number
-  best_coc_return?: number
-  saved_at: string
-  last_viewed_at?: string
-  updated_at: string
-}
-
-interface SavedPropertyStats {
-  total: number
-  by_status: Record<string, number>
-}
 
 // Semantic status colors — color carries meaning, not decoration
 const STATUS_CONFIG: Record<PropertyStatus, { label: string; color: string; bg: string }> = {
@@ -80,83 +53,93 @@ const STRATEGY_LABELS: Record<string, string> = {
 const PAGE_SIZE = 20
 
 // ===========================================
+// Helpers
+// ===========================================
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  })
+}
+
+function formatCurrency(value?: number) {
+  if (value === undefined || value === null) return '—'
+  if (Math.abs(value) >= 1000) {
+    return `$${(value / 1000).toFixed(1)}K`
+  }
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatPercent(value?: number) {
+  if (value === undefined || value === null) return '—'
+  return `${(value * 100).toFixed(1)}%`
+}
+
+// ===========================================
 // Inner content (wrapped by AuthGuard)
 // ===========================================
 
 function SavedPropertiesContent() {
   const router = useRouter()
-  const [properties, setProperties] = useState<SavedPropertySummary[]>([])
-  const [stats, setStats] = useState<SavedPropertyStats | null>(null)
-  const [isLoadingData, setIsLoadingData] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+  // ── UI state ──────────────────────────────────
   const [filterStatus, setFilterStatus] = useState<PropertyStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-
-  // Pagination
   const [page, setPage] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
 
   // Debounce search — waits 300 ms after the user stops typing
   const debouncedSearch = useDebounce(searchQuery, 300)
 
   // Reset to page 0 when filters or search change
-  useEffect(() => {
-    setPage(0)
-  }, [filterStatus, debouncedSearch])
+  useEffect(() => { setPage(0) }, [filterStatus, debouncedSearch])
 
-  // Fetch saved properties
-  const fetchData = useCallback(async () => {
-    setIsLoadingData(true)
-    try {
-      const offset = page * PAGE_SIZE
-      const params = new URLSearchParams({
-        limit: String(PAGE_SIZE),
-        offset: String(offset),
-      })
-      if (filterStatus !== 'all') params.set('status', filterStatus)
-      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
+  // ── React Query ───────────────────────────────
+  const propertiesQuery = useSavedProperties({
+    page,
+    pageSize: PAGE_SIZE,
+    status: filterStatus,
+    search: debouncedSearch,
+  })
+  const statsQuery = useSavedPropertyStats()
+  const deleteMutation = useDeleteSavedProperty()
 
-      const [propertiesRes, statsData] = await Promise.all([
-        // The backend returns items via the body and X-Total-Count header.
-        // api.get doesn't expose headers, so we fetch properties as an array.
-        api.get<SavedPropertySummary[]>(`/api/v1/properties/saved?${params.toString()}`),
-        api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
-      ])
+  // ── Derived values ────────────────────────────
+  const properties = propertiesQuery.data ?? []
+  const stats = statsQuery.data ?? null
+  const statusCounts = stats?.by_status ?? {}
+  const totalSaved = stats?.total ?? 0
+  const totalCount = stats?.total ?? properties.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const hasNextPage = page < totalPages - 1
+  const hasPrevPage = page > 0
 
-      setProperties(propertiesRes || [])
-      setStats(statsData)
-      // Use stats.total as the authoritative total when available
-      setTotalCount(statsData?.total ?? (propertiesRes?.length || 0))
-      setError(null)
-    } catch (err) {
-      console.error('Failed to fetch saved properties:', err)
-      setError('Failed to load saved properties')
-    } finally {
-      setIsLoadingData(false)
-    }
-  }, [filterStatus, debouncedSearch, page])
+  // ── Handlers ──────────────────────────────────
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  // Delete a saved property (triggered by ConfirmDialog)
-  const confirmDeleteProperty = async () => {
-    if (!deleteTarget) return
-    try {
-      await api.delete(`/api/v1/properties/saved/${deleteTarget}`)
-      setProperties(prev => prev.filter(p => p.id !== deleteTarget))
-      setTotalCount(prev => Math.max(0, prev - 1))
-    } catch (err) {
-      console.error('Failed to delete property:', err)
-    } finally {
-      setDeleteTarget(null)
-    }
+  const handleConfirmDelete = () => {
+    if (deleteTarget) deleteMutation.mutate(deleteTarget)
+    setDeleteTarget(null)
   }
 
-  // Navigate to property analysis
   const goToProperty = (property: SavedPropertySummary) => {
     const fullAddress = [
       property.address_street,
@@ -164,54 +147,19 @@ function SavedPropertiesContent() {
       property.address_state,
       property.address_zip,
     ].filter(Boolean).join(', ')
-
     router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
+  // ── Empty state config ────────────────────────
+  const hasActiveFilters = filterStatus !== 'all' || !!debouncedSearch
+  const emptyTitle = hasActiveFilters
+    ? 'No properties match your filters'
+    : 'No saved properties yet'
+  const emptyDescription = hasActiveFilters
+    ? 'Try adjusting your filters or search terms'
+    : 'Save properties from any analysis page using the bookmark icon in the address bar'
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    })
-  }
-
-  const formatCurrency = (value?: number) => {
-    if (value === undefined || value === null) return '—'
-    if (Math.abs(value) >= 1000) {
-      return `$${(value / 1000).toFixed(1)}K`
-    }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  const formatPercent = (value?: number) => {
-    if (value === undefined || value === null) return '—'
-    return `${(value * 100).toFixed(1)}%`
-  }
-
-  const statusCounts = stats?.by_status || {}
-  const totalSaved = stats?.total || totalCount
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
-  const hasNextPage = page < totalPages - 1
-  const hasPrevPage = page > 0
-
-  // ── Render ───────────────────────────────────
+  // ── Render ────────────────────────────────────
 
   return (
     <div
@@ -353,37 +301,18 @@ function SavedPropertiesContent() {
           </div>
         </div>
 
-        {/* ── Error State ───────────────────────── */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-400/10 border border-red-400/20 rounded-xl text-red-400 flex items-center gap-2 text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            {error}
-          </div>
-        )}
-
         {/* ── Properties List ───────────────────── */}
         <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] overflow-hidden">
-          {isLoadingData ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
-            </div>
-          ) : properties.length === 0 ? (
-            /* ── Empty State ─────────────────────── */
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-5">
-                <Bookmark className="w-8 h-8 text-slate-600" />
-              </div>
-              <h4 className="text-lg font-semibold text-slate-100 mb-2">
-                {filterStatus !== 'all' || debouncedSearch
-                  ? 'No properties match your filters'
-                  : 'No saved properties yet'}
-              </h4>
-              <p className="text-slate-400 mb-6 max-w-sm">
-                {filterStatus !== 'all' || debouncedSearch
-                  ? 'Try adjusting your filters or search terms'
-                  : 'Save properties from any analysis page using the bookmark icon in the address bar'}
-              </p>
-              {filterStatus === 'all' && !debouncedSearch && (
+          <DataBoundary
+            isLoading={propertiesQuery.isLoading}
+            error={propertiesQuery.isError ? 'Failed to load saved properties' : null}
+            onRetry={() => propertiesQuery.refetch()}
+            isEmpty={properties.length === 0}
+            emptyIcon={<Bookmark className="w-8 h-8 text-slate-600" />}
+            emptyTitle={emptyTitle}
+            emptyDescription={emptyDescription}
+            emptyAction={
+              !hasActiveFilters ? (
                 <button
                   onClick={() => setShowSearchModal(true)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
@@ -391,10 +320,10 @@ function SavedPropertiesContent() {
                   <Search className="w-4 h-4" />
                   Search Properties
                 </button>
-              )}
-            </div>
-          ) : (
-            /* ── Property Items ──────────────────── */
+              ) : undefined
+            }
+          >
+            {/* ── Property Items ──────────────────── */}
             <div className="divide-y divide-white/[0.07]">
               {properties.map((property) => {
                 const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.watching
@@ -500,10 +429,10 @@ function SavedPropertiesContent() {
                 )
               })}
             </div>
-          )}
+          </DataBoundary>
 
           {/* ── Pagination Controls ───────────────── */}
-          {totalCount > PAGE_SIZE && (
+          {totalCount > PAGE_SIZE && !propertiesQuery.isLoading && !propertiesQuery.isError && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07]">
               <p className="text-sm text-slate-500 tabular-nums">
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
@@ -544,7 +473,7 @@ function SavedPropertiesContent() {
         description="Remove this property from your saved list? You can always re-add it later."
         variant="danger"
         confirmLabel="Remove"
-        onConfirm={confirmDeleteProperty}
+        onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
     </div>

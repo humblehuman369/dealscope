@@ -53,6 +53,32 @@ export interface PropertyDataSnapshot {
   zestimate?: number  // Estimated value for off-market properties
 }
 
+/** Light-weight summary returned by GET /api/v1/properties/saved (list endpoint). */
+export interface SavedPropertySummary {
+  id: string
+  address_street: string
+  address_city?: string
+  address_state?: string
+  address_zip?: string
+  nickname?: string
+  status: PropertyStatus
+  tags?: string[]
+  color_label?: string
+  priority?: number
+  best_strategy?: string
+  best_cash_flow?: number
+  best_coc_return?: number
+  saved_at: string
+  last_viewed_at?: string
+  updated_at: string
+}
+
+/** Stats returned by GET /api/v1/properties/saved/stats. */
+export interface SavedPropertyStats {
+  total: number
+  by_status: Record<string, number>
+}
+
 export interface SavedProperty {
   // Core identification
   id: string
