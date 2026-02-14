@@ -34,6 +34,23 @@ function formatShortPrice(price: number): string {
   return `$${price.toLocaleString()}`
 }
 
+/** Safely decode a string that might be URL-encoded (single or double). */
+function safeDecode(s: string | undefined): string {
+  if (!s) return ''
+  try {
+    let decoded = s
+    // Decode up to two levels of encoding (%2520 → %20 → space)
+    for (let i = 0; i < 2; i++) {
+      const next = decodeURIComponent(decoded)
+      if (next === decoded) break
+      decoded = next
+    }
+    return decoded
+  } catch {
+    return s
+  }
+}
+
 export function PropertyAddressBar({
   address,
   city,
@@ -48,7 +65,13 @@ export function PropertyAddressBar({
 }: PropertyAddressBarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const fullAddress = [address, city, [state, zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+  // Defensively decode all address parts in case URL-encoded text leaks through
+  const cleanAddress = safeDecode(address)
+  const cleanCity = safeDecode(city)
+  const cleanState = safeDecode(state)
+  const cleanZip = safeDecode(zip)
+
+  const fullAddress = [cleanAddress, cleanCity, [cleanState, cleanZip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const encodedAddress = encodeURIComponent(fullAddress)
 
   // Determine price label and status from listing status
