@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { RefreshCw, TrendingUp, Zap } from 'lucide-react';
 import {

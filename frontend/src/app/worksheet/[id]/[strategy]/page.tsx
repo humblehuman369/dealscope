@@ -2,17 +2,48 @@
 
 import { useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
-import { LTRWorksheet } from '@/components/worksheet/ltr/LTRWorksheet'
-import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
-import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
-import { FlipWorksheet } from '@/components/worksheet/flip/FlipWorksheet'
-import { HouseHackWorksheet } from '@/components/worksheet/househack/HouseHackWorksheet'
-import { WholesaleWorksheet } from '@/components/worksheet/wholesale/WholesaleWorksheet'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
+
+// ── Dynamic imports — each worksheet is 800-2000+ lines. ──
+// Only the active strategy is loaded; the rest are code-split out.
+const WorksheetSkeleton = () => (
+  <div className="flex items-center justify-center min-h-screen bg-[var(--ws-bg)]">
+    <div className="text-center">
+      <Loader2 className="w-8 h-8 animate-spin text-[var(--ws-accent)] mx-auto mb-4" />
+      <p className="text-[var(--ws-text-secondary)]">Loading worksheet…</p>
+    </div>
+  </div>
+)
+
+const LTRWorksheet = dynamic(
+  () => import('@/components/worksheet/ltr/LTRWorksheet').then(m => ({ default: m.LTRWorksheet })),
+  { loading: WorksheetSkeleton },
+)
+const StrWorksheet = dynamic(
+  () => import('@/components/worksheet/str/StrWorksheet').then(m => ({ default: m.StrWorksheet })),
+  { loading: WorksheetSkeleton },
+)
+const BrrrrWorksheet = dynamic(
+  () => import('@/components/worksheet/brrrr/BrrrrWorksheet').then(m => ({ default: m.BrrrrWorksheet })),
+  { loading: WorksheetSkeleton },
+)
+const FlipWorksheet = dynamic(
+  () => import('@/components/worksheet/flip/FlipWorksheet').then(m => ({ default: m.FlipWorksheet })),
+  { loading: WorksheetSkeleton },
+)
+const HouseHackWorksheet = dynamic(
+  () => import('@/components/worksheet/househack/HouseHackWorksheet').then(m => ({ default: m.HouseHackWorksheet })),
+  { loading: WorksheetSkeleton },
+)
+const WholesaleWorksheet = dynamic(
+  () => import('@/components/worksheet/wholesale/WholesaleWorksheet').then(m => ({ default: m.WholesaleWorksheet })),
+  { loading: WorksheetSkeleton },
+)
 
 export default function StrategyWorksheetPage() {
   const params = useParams()

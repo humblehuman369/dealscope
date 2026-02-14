@@ -28,17 +28,18 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // Scripts: self + unsafe-inline for Next.js hydration, unsafe-eval for dynamic imports/code splitting
-              // Added Sentry, Vercel analytics, Google Maps, and common CDNs
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com",
-              // Styles: self + unsafe-inline for Tailwind CSS and inline styles + Google Fonts
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              // Scripts: self + unsafe-inline for Next.js hydration scripts.
+              // unsafe-eval is NOT needed for production Next.js builds.
+              "script-src 'self' 'unsafe-inline' https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com",
+              // Styles: self + unsafe-inline for Tailwind CSS and inline styles
+              // (Google Fonts removed — fonts are self-hosted via next/font)
+              "style-src 'self' 'unsafe-inline'",
               // Connections: self + HTTPS for API calls + Sentry + Vercel + Google Maps + localhost for dev
               "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* https://*.sentry.io https://*.vercel-insights.com https://maps.googleapis.com https://*.google.com",
               // Images: allow any source for property photos
               "img-src * data: blob:",
-              // Fonts: self + data URIs + Google Fonts
-              "font-src 'self' data: https://fonts.gstatic.com",
+              // Fonts: self + data URIs (Google Fonts no longer needed — self-hosted)
+              "font-src 'self' data:",
               // Prevent embedding in frames (clickjacking protection)
               "frame-ancestors 'none'",
               // Workers for service workers if needed

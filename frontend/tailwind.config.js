@@ -188,9 +188,9 @@ module.exports = {
       //  the data/prose distinction.
       // ==========================================
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['Inter', '-apple-system', 'sans-serif'],
-        logo: ['"Source Sans 3"', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
+        logo: ['var(--font-source-sans)', '"Source Sans 3"', 'sans-serif'],
       },
       fontSize: {
         'display-xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],

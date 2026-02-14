@@ -1,9 +1,26 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
+
+// ── Self-hosted fonts via next/font ────────────────
+// Eliminates render-blocking requests to fonts.googleapis.com.
+// Fonts are downloaded at build time and served from the same origin.
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-source-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'InvestIQ - Real Estate Investment Analytics',
@@ -27,12 +44,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark antialiased">
-      <head>
-        {/* Preconnect to Google Fonts for faster loading */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="en" className={`dark antialiased ${inter.variable} ${sourceSans.variable}`}>
       <body className="font-sans bg-black text-slate-body transition-colors duration-300">
         <SentryInit />
         <Providers>
