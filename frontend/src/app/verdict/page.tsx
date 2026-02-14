@@ -519,7 +519,8 @@ function VerdictContent() {
 
     fetchPropertyData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient])
+  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient,
+      overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv])
 
   // Analysis is now fetched from backend API (stored in state)
   // No local calculations are performed

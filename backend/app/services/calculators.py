@@ -2155,6 +2155,13 @@ def calculate_ltr_breakeven(
     
     # Solve for purchase price: NOI = PurchasePrice * LTV * MortgageConstant
     # PurchasePrice = NOI / (LTV * MortgageConstant)
-    breakeven = noi / (ltv_ratio * mortgage_constant)
+    denominator = ltv_ratio * mortgage_constant
+    if denominator <= 0:
+        # 100% cash purchase (no debt service) — breakeven is NOI / cap rate
+        # With no mortgage, any price where NOI > 0 technically works,
+        # so return NOI divided by a reasonable cap rate floor (5%)
+        return round(noi / 0.05)
+    
+    breakeven = noi / denominator
     
     return round(breakeven)

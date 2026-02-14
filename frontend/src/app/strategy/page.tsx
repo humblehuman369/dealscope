@@ -316,9 +316,14 @@ function StrategyContent() {
   }
 
   const handleExcelDownload = async () => {
+    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+    if (!propertyId) {
+      alert('Property data is still loading. Please wait a moment and try again.')
+      return
+    }
+
     setIsExporting('excel')
     try {
-      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
       const params = new URLSearchParams({
         address: addressParam,
         strategy: activeStrategyId,
@@ -368,6 +373,7 @@ function StrategyContent() {
       window.URL.revokeObjectURL(downloadUrl)
     } catch (err) {
       console.error('Excel download failed:', err)
+      alert(err instanceof Error ? err.message : 'Failed to generate worksheet. Please try again.')
     } finally {
       setIsExporting(null)
     }
