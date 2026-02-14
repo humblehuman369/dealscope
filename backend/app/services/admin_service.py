@@ -80,6 +80,20 @@ class AdminService:
             "admin_users": admin_users
         }
     
+    def _apply_user_filters(self, query, search, is_active, is_superuser):
+        """Apply shared WHERE clauses for user list / count queries."""
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.where(
+                (User.email.ilike(search_pattern)) |
+                (User.full_name.ilike(search_pattern))
+            )
+        if is_active is not None:
+            query = query.where(User.is_active == is_active)
+        if is_superuser is not None:
+            query = query.where(User.is_superuser == is_superuser)
+        return query
+
     async def list_users(
         self,
         db: AsyncSession,
@@ -89,39 +103,21 @@ class AdminService:
         limit: int = 50,
         offset: int = 0,
         order_by: str = "created_at_desc"
-    ) -> List[Dict[str, Any]]:
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """List users with optional filtering, ordering, and pagination.
+
+        Returns ``(items, total_count)`` so the caller can set an
+        ``X-Total-Count`` response header for the frontend.
         """
-        List users with optional filtering, ordering, and pagination.
-        
-        Args:
-            db: Database session
-            search: Search by email or name
-            is_active: Filter by active status
-            is_superuser: Filter by admin status
-            limit: Max results
-            offset: Skip count
-            order_by: Order by field
-            
-        Returns:
-            List of user dictionaries with saved property counts
-        """
-        query = select(User)
-        
-        # Apply filters
-        if search:
-            search_pattern = f"%{search}%"
-            query = query.where(
-                (User.email.ilike(search_pattern)) |
-                (User.full_name.ilike(search_pattern))
-            )
-        
-        if is_active is not None:
-            query = query.where(User.is_active == is_active)
-        
-        if is_superuser is not None:
-            query = query.where(User.is_superuser == is_superuser)
-        
-        # Apply ordering
+        # -- Total count (same filters, no pagination) --
+        count_q = self._apply_user_filters(
+            select(func.count(User.id)), search, is_active, is_superuser,
+        )
+        total = (await db.execute(count_q)).scalar() or 0
+
+        # -- Data query --
+        query = self._apply_user_filters(select(User), search, is_active, is_superuser)
+
         order_mapping = {
             "created_at_desc": User.created_at.desc(),
             "created_at_asc": User.created_at.asc(),
@@ -129,17 +125,14 @@ class AdminService:
             "last_login_desc": User.last_login.desc().nullsfirst()
         }
         query = query.order_by(order_mapping.get(order_by, User.created_at.desc()))
-        
-        # Apply pagination
         query = query.limit(limit).offset(offset)
-        
+
         result = await db.execute(query)
         users = result.scalars().all()
-        
-        # Get saved property counts for each user
+
         counts_map = await self._get_user_property_counts(db, [user.id for user in users])
-        
-        return [
+
+        items = [
             {
                 "id": str(user.id),
                 "email": user.email,
@@ -154,6 +147,7 @@ class AdminService:
             }
             for user in users
         ]
+        return items, total
     
     async def _get_user_property_counts(
         self,

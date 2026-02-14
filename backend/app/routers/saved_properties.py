@@ -6,7 +6,7 @@ import logging
 from typing import Optional, List
 import sys
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Response, status, Query
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
@@ -132,6 +132,9 @@ async def check_property_saved(
 # List & Stats
 # ===========================================
 
+_MAX_OFFSET = 10_000  # Hard ceiling to prevent deep-pagination perf degradation
+
+
 @router.get(
     "",
     response_model=List[SavedPropertySummary],
@@ -140,21 +143,23 @@ async def check_property_saved(
 async def list_saved_properties(
     current_user: CurrentUser,
     db: DbSession,
+    response: Response,
     status: Optional[PropertyStatus] = Query(None, description="Filter by status"),
     tags: Optional[str] = Query(None, description="Filter by tags (comma-separated)"),
     search: Optional[str] = Query(None, description="Search in address, nickname, notes"),
     order_by: str = Query("saved_at_desc", description="Order by field"),
     limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=_MAX_OFFSET),
 ):
     """
     List all saved properties for the current user.
-    
+
     Supports filtering by status, tags, and free-text search.
+    Returns ``X-Total-Count`` header for frontend pagination.
     """
     tag_list = tags.split(",") if tags else None
-    
-    properties = await saved_property_service.list_properties(
+
+    properties, total = await saved_property_service.list_properties(
         db=db,
         user_id=str(current_user.id),
         status=status,
@@ -164,8 +169,9 @@ async def list_saved_properties(
         offset=offset,
         order_by=order_by,
     )
-    
-    # Convert to summary responses
+
+    response.headers["X-Total-Count"] = str(total)
+
     return [
         SavedPropertySummary(
             id=str(p.id),

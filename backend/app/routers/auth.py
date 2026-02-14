@@ -85,15 +85,31 @@ def _clear_auth_cookies(response: Response) -> None:
 
 
 async def _build_user_response(db: AsyncSession, user) -> UserResponse:
-    """Build a UserResponse with roles and permissions."""
-    perms = await role_repo.get_user_permissions(db, user.id)
-    user_roles = await role_repo.get_user_roles(db, user.id)
-    role_names = [ur.role.name for ur in user_roles]
-    # Check profile without triggering lazy-load (which breaks async).
-    # If the relationship was eagerly loaded, it's in __dict__; otherwise query.
+    """Build a UserResponse with roles and permissions.
+
+    Optimised to avoid redundant queries: ``get_current_user`` already
+    loads user_roles → role → role_permissions → permission via
+    ``selectinload`` (one query).  We extract roles and permissions
+    from the already-loaded relationship graph.  Only fall back to a
+    DB query if the relationships were not eagerly loaded.
+    """
+    # -- Roles & permissions from pre-loaded relationship graph --
+    user_roles_loaded = user.__dict__.get("user_roles")
+    if user_roles_loaded is not None:
+        role_names = [ur.role.name for ur in user_roles_loaded]
+        perms: set[str] = set()
+        for ur in user_roles_loaded:
+            for rp in ur.role.role_permissions:
+                perms.add(rp.permission.codename)
+    else:
+        # Fallback: relationships not loaded — query (should rarely happen)
+        perms = await role_repo.get_user_permissions(db, user.id)
+        _user_roles = await role_repo.get_user_roles(db, user.id)
+        role_names = [ur.role.name for ur in _user_roles]
+
+    # -- Profile from pre-loaded relationship or fallback query --
     profile = user.__dict__.get("profile")
     if profile is None and "profile" not in user.__dict__:
-        # Not loaded — query separately
         from app.repositories.user_repository import user_repo
         profile_user = await user_repo.get_by_id(db, user.id, load_profile=True)
         profile = profile_user.profile if profile_user else None

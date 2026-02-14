@@ -10,7 +10,7 @@ from typing import Optional, List
 from pathlib import Path
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Query
 from app.core.deps import DbSession, require_permission
 from app.models.user import User
 from app.models.audit_log import AuditAction
@@ -54,6 +54,9 @@ async def get_platform_stats(
 # User Management
 # ===========================================
 
+_MAX_OFFSET = 10_000  # Hard ceiling to prevent deep-pagination perf degradation
+
+
 @router.get(
     "/users",
     response_model=List[AdminUserResponse],
@@ -62,15 +65,20 @@ async def get_platform_stats(
 )
 async def list_users(
     db: DbSession,
+    response: Response,
     search: Optional[str] = Query(None, description="Search by email or name"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     is_superuser: Optional[bool] = Query(None, description="Filter by admin status"),
     limit: int = Query(50, ge=1, le=500),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=_MAX_OFFSET),
     order_by: str = Query("created_at_desc", description="Order by field"),
 ):
-    """List all users with optional filtering. Requires ``admin:users`` permission."""
-    users = await admin_service.list_users(
+    """List all users with optional filtering.
+
+    Requires ``admin:users`` permission.
+    Returns ``X-Total-Count`` header for frontend pagination.
+    """
+    users, total = await admin_service.list_users(
         db=db,
         search=search,
         is_active=is_active,
@@ -79,6 +87,7 @@ async def list_users(
         offset=offset,
         order_by=order_by,
     )
+    response.headers["X-Total-Count"] = str(total)
     return [AdminUserResponse(**user) for user in users]
 
 
