@@ -135,17 +135,17 @@ export const typography = {
 export const colors = {
   // Brand
   brand: {
-    /** #38bdf8 - Sky blue — primary accent */
-    blue: '#38bdf8',
-    /** #0EA5E9 - Deep sky — CTA buttons */
-    blueDeep: '#0EA5E9',
+    /** #4dd0e1 - RealVestIQ cyan — primary accent */
+    blue: '#4dd0e1',
+    /** #00acc1 - Deep cyan — CTA buttons */
+    blueDeep: '#00acc1',
     /** #2dd4bf - Teal — positive / interactive */
     teal: '#2dd4bf',
     /** #fbbf24 - Gold — caution / moderate */
     gold: '#fbbf24',
     // Legacy aliases
-    tealBright: '#38bdf8',
-    cyan: '#38bdf8',
+    tealBright: '#4dd0e1',
+    cyan: '#4dd0e1',
   },
 
   // Text — Four-tier Slate hierarchy

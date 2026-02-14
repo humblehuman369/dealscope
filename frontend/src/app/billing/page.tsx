@@ -84,7 +84,7 @@ function BillingContent() {
   // Check for success/cancel from Stripe
   useEffect(() => {
     if (searchParams.get('success')) {
-      setMessage({ type: 'success', text: 'Subscription successful! Welcome to InvestIQ Pro.' })
+      setMessage({ type: 'success', text: 'Subscription successful! Welcome to RealVestIQ Pro.' })
     } else if (searchParams.get('canceled')) {
       setMessage({ type: 'error', text: 'Checkout was canceled. You can try again when ready.' })
     }
@@ -430,7 +430,7 @@ function BillingContent() {
                     </button>
                   ) : plan.tier === 'enterprise' ? (
                     <a
-                      href="mailto:sales@investiq.app?subject=Enterprise%20Inquiry"
+                      href="mailto:sales@realvestiq.com?subject=Enterprise%20Inquiry"
                       className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity"
                     >
                       Contact Sales

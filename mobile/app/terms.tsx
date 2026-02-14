@@ -20,7 +20,7 @@ export default function TermsOfServiceScreen() {
   const { theme, isDark } = useTheme();
 
   const handleContactPress = () => {
-    Linking.openURL('mailto:legal@investiq.app');
+    Linking.openURL('mailto:legal@realvestiq.com');
   };
 
   // Dynamic styles based on theme
@@ -170,7 +170,7 @@ export default function TermsOfServiceScreen() {
           </Text>
           <TouchableOpacity style={[styles.contactButton, dynamicStyles.contactButton]} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
-            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>legal@investiq.app</Text>
+            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>legal@realvestiq.com</Text>
           </TouchableOpacity>
         </Section>
 

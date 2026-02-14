@@ -221,7 +221,7 @@ export default function ScanScreen() {
         <Ionicons name="camera-outline" size={64} color={theme.textMuted} />
         <Text accessibilityRole="header" style={[styles.permissionTitle, { color: theme.text }]}>Camera Access Required</Text>
         <Text accessibilityRole="text" style={[styles.permissionText, { color: theme.textSecondary }]}>
-          InvestIQ needs camera access to scan properties and provide instant investment analytics.
+          RealVestIQ needs camera access to scan properties and provide instant investment analytics.
         </Text>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermission} accessibilityRole="button" accessibilityLabel="Enable camera access">
           <Text style={styles.permissionButtonText}>Enable Camera</Text>
@@ -240,7 +240,7 @@ export default function ScanScreen() {
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <View style={styles.headerContent}>
-            <Text style={styles.logo}>InvestIQ</Text>
+            <Text style={styles.logo}>RealVestIQ</Text>
             <View style={styles.headerRight}>
               {/* Help Button */}
               <TouchableOpacity 

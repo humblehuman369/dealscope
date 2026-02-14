@@ -20,7 +20,7 @@ export default function PrivacyPolicyScreen() {
   const { theme, isDark } = useTheme();
 
   const handleContactPress = () => {
-    Linking.openURL('mailto:privacy@investiq.app');
+    Linking.openURL('mailto:privacy@realvestiq.com');
   };
 
   // Dynamic styles based on theme
@@ -150,7 +150,7 @@ export default function PrivacyPolicyScreen() {
           </Text>
           <TouchableOpacity style={[styles.contactButton, dynamicStyles.contactButton]} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
-            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>privacy@investiq.app</Text>
+            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>privacy@realvestiq.com</Text>
           </TouchableOpacity>
         </Section>
 

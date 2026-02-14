@@ -355,7 +355,7 @@ export default function StrategyIQScreen() {
       rent: monthlyRent,
     });
     const summary = [
-      `InvestIQ — ${currentStrategy} Analysis`,
+      `RealVestIQ — ${currentStrategy} Analysis`,
       `Property: ${decodedAddress}`,
       `List Price: $${listPrice.toLocaleString()}`,
       `Target Price: $${(targetPrice ?? listPrice).toLocaleString()}`,
@@ -388,7 +388,7 @@ export default function StrategyIQScreen() {
       });
       const pdfUrl = `${API_BASE}/api/v1/proforma/property/${propertyId}/pdf?${params}`;
       const safeAddress = decodedAddress.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
-      const fileUri = `${FileSystem.cacheDirectory}InvestIQ_${safeAddress}.pdf`;
+      const fileUri = `${FileSystem.cacheDirectory}RealVestIQ_${safeAddress}.pdf`;
 
       const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri);
 

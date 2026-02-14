@@ -13,23 +13,23 @@ const FAQ_DATA: FAQItem[] = [
   // Getting Started
   {
     category: 'Getting Started',
-    question: 'What is InvestIQ?',
-    answer: 'InvestIQ is a real estate investment analysis platform that evaluates properties across 6 investment strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a VerdictIQ score (0-95) that tells you whether a deal is worth pursuing, plus a full financial breakdown so you can see exactly what you\'d pay and what you\'d earn.',
+    question: 'What is RealVestIQ?',
+    answer: 'RealVestIQ is a real estate investment analysis platform that evaluates properties across 6 investment strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a VerdictIQ score (0-95) that tells you whether a deal is worth pursuing, plus a full financial breakdown so you can see exactly what you\'d pay and what you\'d earn.',
   },
   {
     category: 'Getting Started',
     question: 'How do I analyze a property?',
-    answer: 'On the web, click "Analyze a Property" on the homepage and enter an address. On mobile, you can either enter an address or point your phone\'s camera at any property to scan it. InvestIQ will pull real market data and run a full financial analysis in about 60 seconds.',
+    answer: 'On the web, click "Analyze a Property" on the homepage and enter an address. On mobile, you can either enter an address or point your phone\'s camera at any property to scan it. RealVestIQ will pull real market data and run a full financial analysis in about 60 seconds.',
   },
   {
     category: 'Getting Started',
-    question: 'Do I need an account to use InvestIQ?',
+    question: 'Do I need an account to use RealVestIQ?',
     answer: 'No — you can analyze properties without an account. However, creating a free account lets you save properties, build a portfolio, track your search history, and customize your default investment assumptions.',
   },
   {
     category: 'Getting Started',
-    question: 'Is InvestIQ free?',
-    answer: 'Yes. InvestIQ is currently in free beta. All features — including unlimited analyses, PDF reports, and portfolio tracking — are free during the beta period. We\'ll announce paid tiers before they launch, and beta users will get early-access pricing.',
+    question: 'Is RealVestIQ free?',
+    answer: 'Yes. RealVestIQ is currently in free beta. All features — including unlimited analyses, PDF reports, and portfolio tracking — are free during the beta period. We\'ll announce paid tiers before they launch, and beta users will get early-access pricing.',
   },
   // Analysis & Scoring
   {
@@ -39,8 +39,8 @@ const FAQ_DATA: FAQItem[] = [
   },
   {
     category: 'Analysis & Scoring',
-    question: 'Where does InvestIQ get its data?',
-    answer: 'InvestIQ pulls from multiple data sources including public property records, MLS listings, tax assessor data, rental market comps, short-term rental platforms, and comparable sales. We combine these sources to give you the most accurate picture possible.',
+    question: 'Where does RealVestIQ get its data?',
+    answer: 'RealVestIQ pulls from multiple data sources including public property records, MLS listings, tax assessor data, rental market comps, short-term rental platforms, and comparable sales. We combine these sources to give you the most accurate picture possible.',
   },
   {
     category: 'Analysis & Scoring',
@@ -50,7 +50,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Analysis & Scoring',
     question: 'What are the 6 investment strategies?',
-    answer: 'InvestIQ analyzes every property across: (1) Long-Term Rental — buy and hold with annual leases, (2) Short-Term Rental — Airbnb/VRBO style income, (3) BRRRR — Buy, Rehab, Rent, Refinance, Repeat, (4) Fix & Flip — buy, renovate, sell for profit, (5) House Hack — live in part, rent the rest, (6) Wholesale — contract and assign for a fee. Each strategy uses different financial models and metrics.',
+    answer: 'RealVestIQ analyzes every property across: (1) Long-Term Rental — buy and hold with annual leases, (2) Short-Term Rental — Airbnb/VRBO style income, (3) BRRRR — Buy, Rehab, Rent, Refinance, Repeat, (4) Fix & Flip — buy, renovate, sell for profit, (5) House Hack — live in part, rent the rest, (6) Wholesale — contract and assign for a fee. Each strategy uses different financial models and metrics.',
   },
   // Reports & Export
   {
@@ -106,12 +106,12 @@ export default function HelpCenterPage() {
         {/* Header */}
         <div className="mb-10">
           <Link href="/" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
-            &larr; Back to InvestIQ
+            &larr; Back to RealVestIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Help Center</h1>
           <p className="text-slate-400">
-            Find answers to common questions about InvestIQ. Can&apos;t find what you need?{' '}
-            <a href="mailto:support@investiq.com" className="text-sky-400 hover:text-sky-300 underline">Contact support</a>.
+            Find answers to common questions about RealVestIQ. Can&apos;t find what you need?{' '}
+            <a href="mailto:support@realvestiq.com" className="text-sky-400 hover:text-sky-300 underline">Contact support</a>.
           </p>
         </div>
 
@@ -187,7 +187,7 @@ export default function HelpCenterPage() {
             Our team typically responds within 24 hours during business days.
           </p>
           <a
-            href="mailto:support@investiq.com?subject=InvestIQ%20Support%20Request"
+            href="mailto:support@realvestiq.com?subject=RealVestIQ%20Support%20Request"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/25 hover:bg-sky-500/25 transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -197,7 +197,7 @@ export default function HelpCenterPage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 InvestIQ LLC. All rights reserved.</p>
+          <p>&copy; 2026 RealVestIQ LLC. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>

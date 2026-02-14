@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # ===========================================
     # Application
     # ===========================================
-    APP_NAME: str = "InvestIQ"
+    APP_NAME: str = "RealVestIQ"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "development"  # development, staging, production
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # ===========================================
     # Can be provided as postgres://, postgresql://, or postgresql+asyncpg://
     # Railway provides postgres:// - we convert to asyncpg format automatically
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/investiq"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/realvestiq"
     
     @property
     def async_database_url(self) -> str:
@@ -90,7 +90,7 @@ class Settings(BaseSettings):
     # ===========================================
     COOKIE_SECURE: bool = True  # Set to False for local dev without HTTPS
     # SameSite=none is required when frontend and backend are on different
-    # domains (e.g. investiq.guru + dealscope-production.up.railway.app).
+    # domains (e.g. realvestiq.com + dealscope-production.up.railway.app).
     # CSRF middleware provides equivalent protection.
     COOKIE_SAMESITE: str = "none"  # lax, strict, or none
     COOKIE_DOMAIN: Optional[str] = None  # Set for cross-subdomain cookies
@@ -110,7 +110,7 @@ class Settings(BaseSettings):
     # ===========================================
     # MFA
     # ===========================================
-    MFA_ISSUER_NAME: str = "InvestIQ"
+    MFA_ISSUER_NAME: str = "RealVestIQ"
     MFA_ENCRYPTION_KEY: str = ""  # Optional Fernet key override for MFA secret encryption
     
     # Password Reset
@@ -132,14 +132,14 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "us-east-1"
-    S3_BUCKET_NAME: str = "investiq-documents"
+    S3_BUCKET_NAME: str = "realvestiq-documents"
     S3_ENDPOINT_URL: Optional[str] = None  # For R2: https://{account_id}.r2.cloudflarestorage.com
     
     # Cloudflare R2 (S3-compatible)
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
-    R2_BUCKET_NAME: str = "investiq-documents"
+    R2_BUCKET_NAME: str = "realvestiq-documents"
     R2_PUBLIC_URL: str = ""  # Public URL for accessing files
     
     # File upload limits
@@ -155,8 +155,8 @@ class Settings(BaseSettings):
     # Email (Resend)
     # ===========================================
     RESEND_API_KEY: str = ""
-    EMAIL_FROM: str = "noreply@investiq.app"
-    EMAIL_FROM_NAME: str = "InvestIQ"
+    EMAIL_FROM: str = "noreply@realvestiq.com"
+    EMAIL_FROM_NAME: str = "RealVestIQ"
     
     # Email templates base URL (for links in emails)
     FRONTEND_URL: str = "http://localhost:3000"
@@ -194,7 +194,7 @@ class Settings(BaseSettings):
     # ===========================================
     # CORS
     # ===========================================
-    CORS_ORIGINS_STR: str = "https://investiq.guru,https://www.investiq.guru,http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081,http://localhost:19006,http://127.0.0.1:19006,http://localhost:19000,http://127.0.0.1:19000"
+    CORS_ORIGINS_STR: str = "https://realvestiq.com,https://www.realvestiq.com,http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081,http://localhost:19006,http://127.0.0.1:19006,http://localhost:19000,http://127.0.0.1:19000"
     
     @property
     def CORS_ORIGINS(self) -> List[str]:

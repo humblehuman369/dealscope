@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { Search, User } from 'lucide-react';
-import { InvestIQGateway } from './InvestIQGateway';
+import { RealVestIQGateway } from './RealVestIQGateway';
 import './investiq-homepage.css';
 
-interface InvestIQHomepageProps {
+interface RealVestIQHomepageProps {
   onPointAndScan?: () => void;
 }
 
@@ -35,7 +35,7 @@ function AuthParamHandler({ onOpenGateway }: { onOpenGateway?: () => void }) {
   return null;
 }
 
-export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
+export function RealVestIQHomepage({ onPointAndScan }: RealVestIQHomepageProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useSession();
   const { openAuthModal } = useAuthModal();
@@ -94,7 +94,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
       <nav className="iq-nav">
         <div className="nav-inner">
           <a href="/" className="logo" onClick={(e) => { e.preventDefault(); router.push('/'); }}>
-            <div className="logo-text">Invest<span>IQ</span></div>
+            <div className="logo-text">RealVest<span>IQ</span></div>
           </a>
           <div className="nav-links" />
           <div className="nav-actions">
@@ -209,7 +209,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
           <div className="verdict-header">
             <div className="section-label">IQ Verdict</div>
             <h2>One Scan. Four Signals.<br />Your Answer.</h2>
-            <p>InvestIQ evaluates every property in 60 seconds across four key factors that determine if a deal is worth pursuing.</p>
+            <p>RealVestIQ evaluates every property in 60 seconds across four key factors that determine if a deal is worth pursuing.</p>
           </div>
 
           {/* Four Signal Cards */}
@@ -346,7 +346,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               <div className="founder-role">Founder, Foreclosure.com</div>
             </div>
             <div className="founder-quote-text">
-              &ldquo;I built the infrastructure behind <strong>HomePath.com</strong> (Fannie Mae) and <strong>HomeSteps.com</strong> (Freddie Mac). InvestIQ isn&apos;t a calculator; it&apos;s 35 years of institutional intelligence, now in your hands.&rdquo;
+              &ldquo;I built the infrastructure behind <strong>HomePath.com</strong> (Fannie Mae) and <strong>HomeSteps.com</strong> (Freddie Mac). RealVestIQ isn&apos;t a calculator; it&apos;s 35 years of institutional intelligence, now in your hands.&rdquo;
             </div>
           </div>
           <div className="val-panel">
@@ -574,7 +574,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
         </div>
       </section>
 
-      {/* CREDIBILITY — Why Trust InvestIQ */}
+      {/* CREDIBILITY — Why Trust RealVestIQ */}
       <section style={{ padding: '4rem 1.5rem', borderTop: '1px solid rgba(148,163,184,0.08)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#14b8a6', marginBottom: '1rem' }}>
@@ -584,7 +584,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
             From the founder of Foreclosure.com — the most trusted name in distressed real estate.
           </h2>
           <p style={{ fontSize: '0.95rem', color: '#94a3b8', lineHeight: 1.7, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            20+ years of real estate data, 2M+ properties analyzed, and the same analytical rigor — now available to every investor. InvestIQ is in beta and your feedback drives what ships next.
+            20+ years of real estate data, 2M+ properties analyzed, and the same analytical rigor — now available to every investor. RealVestIQ is in beta and your feedback drives what ships next.
           </p>
 
           {/* Trust Metrics */}
@@ -627,7 +627,7 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem', textAlign: 'left' }}>
             {/* Brand column */}
             <div>
-              <div className="footer-logo" style={{ marginBottom: '0.75rem' }}>Invest<span>IQ</span></div>
+              <div className="footer-logo" style={{ marginBottom: '0.75rem' }}>RealVest<span>IQ</span></div>
               <p style={{ color: 'rgba(148,163,184,0.6)', fontSize: '0.8rem', lineHeight: 1.7 }}>
                 Professional real estate intelligence for every investor.
               </p>
@@ -658,21 +658,21 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
               <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Support</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <a href="/help" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Help Center</a>
-                <a href="mailto:support@investiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>support@investiq.com</a>
+                <a href="mailto:support@realvestiq.com" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>support@realvestiq.com</a>
               </div>
             </div>
           </div>
 
           {/* Bottom bar */}
           <div style={{ borderTop: '1px solid rgba(148,163,184,0.1)', paddingTop: '1.5rem', textAlign: 'center' }}>
-            <p className="footer-copy">&copy; 2026 InvestIQ. All rights reserved. Professional use only. Not a lender.</p>
+            <p className="footer-copy">&copy; 2026 RealVestIQ. All rights reserved. Professional use only. Not a lender.</p>
           </div>
         </div>
       </footer>
 
       {/* Gateway Modal */}
       {gatewayOpen && (
-        <InvestIQGateway
+        <RealVestIQGateway
           key={gatewayStep}
           initialStep={gatewayStep}
           onClose={() => setGatewayOpen(false)}
@@ -683,4 +683,4 @@ export function InvestIQHomepage({ onPointAndScan }: InvestIQHomepageProps) {
   );
 }
 
-export default InvestIQHomepage;
+export default RealVestIQHomepage;

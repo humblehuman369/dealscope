@@ -9,7 +9,7 @@ export default function TermsOfServicePage() {
         {/* Header */}
         <div className="mb-12">
           <Link href="/" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
-            &larr; Back to InvestIQ
+            &larr; Back to RealVestIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Terms of Service</h1>
           <p className="text-sm text-slate-500">Last updated: February 13, 2026</p>
@@ -19,21 +19,21 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using InvestIQ (&ldquo;the Service&rdquo;), operated by InvestIQ LLC (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.
+              By accessing or using RealVestIQ (&ldquo;the Service&rdquo;), operated by RealVestIQ LLC (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">2. Description of Service</h2>
             <p>
-              InvestIQ provides real estate investment analytics tools, including property analysis across multiple investment strategies, deal scoring, price target calculations, and related features. The Service is available via web application and mobile application.
+              RealVestIQ provides real estate investment analytics tools, including property analysis across multiple investment strategies, deal scoring, price target calculations, and related features. The Service is available via web application and mobile application.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">3. Not Financial Advice</h2>
             <p className="font-semibold text-amber-400/90">
-              InvestIQ is an analytics tool, not a financial advisor, lender, or real estate broker. The information provided by the Service is for informational and educational purposes only and does not constitute financial, investment, legal, or tax advice.
+              RealVestIQ is an analytics tool, not a financial advisor, lender, or real estate broker. The information provided by the Service is for informational and educational purposes only and does not constitute financial, investment, legal, or tax advice.
             </p>
             <p className="mt-3">
               You should consult qualified professionals before making any investment decisions. We make no guarantees about the accuracy, completeness, or timeliness of any data, calculations, or recommendations provided by the Service.
@@ -63,21 +63,21 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">6. Data Sources & Accuracy</h2>
             <p>
-              InvestIQ aggregates data from third-party sources including public records, MLS feeds, and proprietary APIs. While we strive for accuracy, data may be incomplete, delayed, or contain errors. Property values, rental estimates, and market conditions are approximations and should not be relied upon as the sole basis for investment decisions.
+              RealVestIQ aggregates data from third-party sources including public records, MLS feeds, and proprietary APIs. While we strive for accuracy, data may be incomplete, delayed, or contain errors. Property values, rental estimates, and market conditions are approximations and should not be relied upon as the sole basis for investment decisions.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">7. Intellectual Property</h2>
             <p>
-              All content, features, and functionality of the Service — including text, graphics, logos, algorithms, and software — are owned by InvestIQ LLC and are protected by copyright, trademark, and other intellectual property laws.
+              All content, features, and functionality of the Service — including text, graphics, logos, algorithms, and software — are owned by RealVestIQ LLC and are protected by copyright, trademark, and other intellectual property laws.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">8. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, InvestIQ LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or business opportunities arising from your use of the Service. Our total liability shall not exceed the amount you paid for the Service in the 12 months preceding the claim.
+              To the maximum extent permitted by law, RealVestIQ LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or business opportunities arising from your use of the Service. Our total liability shall not exceed the amount you paid for the Service in the 12 months preceding the claim.
             </p>
           </section>
 
@@ -113,8 +113,8 @@ export default function TermsOfServicePage() {
             <h2 className="text-lg font-semibold text-white mb-3">13. Contact</h2>
             <p>
               For questions about these Terms, contact us at{' '}
-              <a href="mailto:support@investiq.com" className="text-sky-400 hover:text-sky-300 underline">
-                support@investiq.com
+              <a href="mailto:support@realvestiq.com" className="text-sky-400 hover:text-sky-300 underline">
+                support@realvestiq.com
               </a>
             </p>
           </section>
@@ -122,7 +122,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 InvestIQ LLC. All rights reserved.</p>
+          <p>&copy; 2026 RealVestIQ LLC. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>

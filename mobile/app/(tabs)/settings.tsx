@@ -571,7 +571,7 @@ export default function SettingsScreen() {
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Linking.openURL('mailto:support@investiq.com?subject=InvestIQ%20Support%20Request')}
+              onPress={() => Linking.openURL('mailto:support@realvestiq.com?subject=InvestIQ%20Support%20Request')}
               accessibilityRole="button"
               accessibilityLabel="Contact Support"
             >

@@ -277,7 +277,7 @@ export default function HomeScreen() {
             <View style={s.footerLinks}>
               <TouchableOpacity onPress={() => router.push('/privacy' as any)}><Text style={s.footerLink}>Privacy</Text></TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/terms' as any)}><Text style={s.footerLink}>Terms</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@investiq.com')}><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@realvestiq.com')}><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
             </View>
             <Text style={s.footerCopy}>© 2026 InvestIQ. All rights reserved.{'\n'}Professional use only. Not a lender.</Text>
           </View>

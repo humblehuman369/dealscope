@@ -392,7 +392,7 @@ class FlipExcelExporter:
         r = self._section_header(ws, r, "REPORT METADATA")
         r = self._label_value(ws, r, "Generated", datetime.now().strftime("%B %d, %Y at %I:%M %p"))
         r = self._label_value(ws, r, "Strategy", "Fix & Flip")
-        r = self._label_value(ws, r, "Engine", "InvestIQ StrategyIQ")
+        r = self._label_value(ws, r, "Engine", "RealVestIQ StrategyIQ")
 
         self._auto_width(ws)
 

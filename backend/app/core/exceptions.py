@@ -1,18 +1,18 @@
 """
-Custom exceptions for InvestIQ API.
+Custom exceptions for RealVestIQ API.
 
 Centralizes exception definitions and provides consistent error handling patterns.
 """
 from typing import Any, Dict, Optional
 
 
-class InvestIQError(Exception):
-    """Base exception for all InvestIQ errors."""
+class RealVestIQError(Exception):
+    """Base exception for all RealVestIQ errors."""
     
     def __init__(
         self, 
         message: str, 
-        code: str = "INVESTIQ_ERROR",
+        code: str = "REALVESTIQ_ERROR",
         details: Optional[Dict[str, Any]] = None
     ):
         super().__init__(message)
@@ -31,7 +31,7 @@ class InvestIQError(Exception):
         }
 
 
-class NotFoundError(InvestIQError):
+class NotFoundError(RealVestIQError):
     """Resource not found."""
     
     def __init__(self, resource: str, identifier: str, details: Optional[Dict[str, Any]] = None):
@@ -58,7 +58,7 @@ class UserNotFoundError(NotFoundError):
         super().__init__(resource="User", identifier=user_id)
 
 
-class ValidationError(InvestIQError):
+class ValidationError(RealVestIQError):
     """Validation error for input data."""
     
     def __init__(self, message: str, field: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
@@ -70,7 +70,7 @@ class ValidationError(InvestIQError):
         self.field = field
 
 
-class AuthenticationError(InvestIQError):
+class AuthenticationError(RealVestIQError):
     """Authentication failed."""
     
     def __init__(self, message: str = "Authentication failed", details: Optional[Dict[str, Any]] = None):
@@ -81,7 +81,7 @@ class AuthenticationError(InvestIQError):
         )
 
 
-class AuthorizationError(InvestIQError):
+class AuthorizationError(RealVestIQError):
     """Authorization/permission denied."""
     
     def __init__(self, message: str = "Permission denied", details: Optional[Dict[str, Any]] = None):
@@ -92,7 +92,7 @@ class AuthorizationError(InvestIQError):
         )
 
 
-class ExternalAPIError(InvestIQError):
+class ExternalAPIError(RealVestIQError):
     """Error from external API (RentCast, AXESSO, Stripe, etc.)."""
     
     def __init__(
@@ -111,7 +111,7 @@ class ExternalAPIError(InvestIQError):
         self.status_code = status_code
 
 
-class RateLimitError(InvestIQError):
+class RateLimitError(RealVestIQError):
     """Rate limit exceeded."""
     
     def __init__(self, retry_after: Optional[int] = None, details: Optional[Dict[str, Any]] = None):
@@ -123,7 +123,7 @@ class RateLimitError(InvestIQError):
         self.retry_after = retry_after
 
 
-class SubscriptionError(InvestIQError):
+class SubscriptionError(RealVestIQError):
     """Subscription-related error."""
     
     def __init__(self, message: str, tier_required: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
@@ -155,7 +155,7 @@ class SubscriptionLimitError(SubscriptionError):
         self.limit = limit
 
 
-class StorageError(InvestIQError):
+class StorageError(RealVestIQError):
     """File storage error."""
     
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
@@ -166,7 +166,7 @@ class StorageError(InvestIQError):
         )
 
 
-class ConfigurationError(InvestIQError):
+class ConfigurationError(RealVestIQError):
     """Configuration/setup error."""
     
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
