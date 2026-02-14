@@ -93,14 +93,14 @@ export function AnalysisNav() {
           {/* Secondary text links */}
           <Link
             href={propertyHref}
-            className="hidden sm:inline text-[11px] font-medium transition-colors hover:text-slate-200"
+            className="text-[11px] font-medium transition-colors hover:text-slate-200"
             style={{ color: colors.text.muted }}
           >
             Property
           </Link>
           <Link
             href={priceHref}
-            className="hidden sm:inline text-[11px] font-medium transition-colors hover:text-slate-200"
+            className="text-[11px] font-medium transition-colors hover:text-slate-200"
             style={{ color: colors.text.muted }}
           >
             Price
