@@ -1,5 +1,10 @@
 """
 Document Service for managing user document uploads.
+
+File upload security:
+- Validates MIME type against allowlist
+- Validates file magic bytes match declared content type
+- Enforces file size limits
 """
 
 import logging
@@ -31,6 +36,49 @@ ALLOWED_TYPES = {
 }
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+# ──────────────────────────────────────────────
+# Magic-byte signatures for file type validation
+# ──────────────────────────────────────────────
+# Maps expected content-type to (offset, magic_bytes) tuples.
+# We read the first few bytes of the upload and verify they match
+# the declared MIME type, preventing renamed-executable attacks.
+
+_MAGIC_SIGNATURES: dict[str, list[bytes]] = {
+    "application/pdf": [b"%PDF"],
+    "image/jpeg": [b"\xff\xd8\xff"],
+    "image/png": [b"\x89PNG\r\n\x1a\n"],
+    "image/gif": [b"GIF87a", b"GIF89a"],
+    "image/webp": [b"RIFF"],  # RIFF....WEBP
+    # ZIP-based Office formats (xlsx, docx) share PK signature
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [b"PK\x03\x04"],
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [b"PK\x03\x04"],
+    # Legacy Office formats use OLE2 compound file signature
+    "application/vnd.ms-excel": [b"\xd0\xcf\x11\xe0"],
+    "application/msword": [b"\xd0\xcf\x11\xe0"],
+}
+
+
+def _validate_magic_bytes(file: BinaryIO, declared_content_type: str) -> bool:
+    """Check that the file's leading bytes match the declared MIME type.
+
+    Returns True if the content type has no known signature (text/plain,
+    text/csv) or if the magic bytes match.  Returns False on mismatch.
+    The file's read position is restored after checking.
+    """
+    signatures = _MAGIC_SIGNATURES.get(declared_content_type)
+    if signatures is None:
+        # No signature defined for this type (e.g. text/plain) — allow
+        return True
+
+    pos = file.tell()
+    try:
+        header = file.read(16)
+        if not header:
+            return False
+        return any(header.startswith(sig) for sig in signatures)
+    finally:
+        file.seek(pos)
 
 
 class DocumentService:
@@ -65,13 +113,25 @@ class DocumentService:
         Returns:
             Created Document record
         """
-        # Validate file type
+        # Validate declared MIME type against allowlist
         if content_type not in ALLOWED_TYPES:
             raise ValueError(f"File type {content_type} is not allowed")
         
         # Validate file size
         if file_size > MAX_FILE_SIZE:
             raise ValueError(f"File size exceeds maximum of {MAX_FILE_SIZE / 1024 / 1024:.0f} MB")
+
+        # Validate magic bytes match declared content type
+        # Prevents renamed-executable attacks (e.g. malware.exe → report.pdf)
+        if not _validate_magic_bytes(file, content_type):
+            logger.warning(
+                "Magic-byte mismatch: declared=%s filename=%s user=%s",
+                content_type, filename, user_id,
+            )
+            raise ValueError(
+                f"File content does not match declared type {content_type}. "
+                "The file may be corrupted or incorrectly named."
+            )
         
         # Upload to storage
         path_prefix = f"documents/{user_id}"

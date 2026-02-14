@@ -271,6 +271,14 @@ def validate_settings(settings: Settings) -> None:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
             errors.append("DATABASE_URL must be set to a production database in production mode")
 
+        # Redis is mandatory in production — in-memory rate limiting doesn't
+        # survive multi-worker deployments, allowing unlimited requests.
+        if not settings.REDIS_URL or settings.REDIS_URL == "redis://localhost:6379/0":
+            errors.append(
+                "REDIS_URL must be set to a production Redis instance. "
+                "In-memory rate limiting is not safe with multiple workers."
+            )
+
         # Warn about missing API keys — app starts without them but
         # related features (property data, billing, email) will be unavailable.
         _prod_keys = [

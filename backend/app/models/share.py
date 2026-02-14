@@ -99,14 +99,14 @@ class SharedLink(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Expiration
-    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc)
     )
-    last_accessed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    last_accessed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Relationships
     user: Mapped["User"] = relationship("User")

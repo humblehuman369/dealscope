@@ -6,7 +6,7 @@ UserProfile stores investment preferences and UI settings.
 Business profile fields are kept on User for simplicity.
 """
 
-from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer
+from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer, Numeric
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List, TYPE_CHECKING
@@ -100,9 +100,9 @@ class User(Base):
     # New code uses the verification_tokens table.
     # ==========================================
     verification_token: Mapped[Optional[str]] = mapped_column(String(255))
-    verification_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    verification_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     reset_token: Mapped[Optional[str]] = mapped_column(String(255))
-    reset_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    reset_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     # ==========================================
     # Timestamps
@@ -195,12 +195,12 @@ class UserProfile(Base):
     target_markets: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
 
     # Budget
-    investment_budget_min: Mapped[Optional[float]] = mapped_column(Float)
-    investment_budget_max: Mapped[Optional[float]] = mapped_column(Float)
+    investment_budget_min: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    investment_budget_max: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
 
     # Target Returns
-    target_cash_on_cash: Mapped[Optional[float]] = mapped_column(Float)
-    target_cap_rate: Mapped[Optional[float]] = mapped_column(Float)
+    target_cash_on_cash: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))
+    target_cap_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))
 
     # Risk Tolerance
     risk_tolerance: Mapped[Optional[str]] = mapped_column(String(20))

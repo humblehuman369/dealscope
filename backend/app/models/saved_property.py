@@ -3,7 +3,7 @@ SavedProperty and PropertyAdjustment models.
 Handles user's saved properties with custom adjustments and tracking.
 """
 
-from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer, Numeric, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List, TYPE_CHECKING
@@ -95,12 +95,14 @@ class SavedProperty(Base):
     display_order: Mapped[Optional[int]] = mapped_column(Integer)  # For manual sorting
     
     # Custom Value Adjustments (user overrides)
-    custom_purchase_price: Mapped[Optional[float]] = mapped_column(Float)
-    custom_rent_estimate: Mapped[Optional[float]] = mapped_column(Float)
-    custom_arv: Mapped[Optional[float]] = mapped_column(Float)
-    custom_rehab_budget: Mapped[Optional[float]] = mapped_column(Float)
-    custom_daily_rate: Mapped[Optional[float]] = mapped_column(Float)  # STR
-    custom_occupancy_rate: Mapped[Optional[float]] = mapped_column(Float)  # STR
+    # Dollar amounts use Numeric(12,2) to avoid IEEE 754 rounding.
+    # Percentages use Numeric(5,4) for precision to 0.01%.
+    custom_purchase_price: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    custom_rent_estimate: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    custom_arv: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    custom_rehab_budget: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    custom_daily_rate: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))  # STR
+    custom_occupancy_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))  # STR
     
     # Custom Strategy Assumptions (JSON per strategy)
     custom_assumptions: Mapped[Optional[dict]] = mapped_column(
@@ -129,25 +131,25 @@ class SavedProperty(Base):
     last_analytics_result: Mapped[Optional[dict]] = mapped_column(
         JSON
     )  # Cached AnalyticsResponse
-    analytics_calculated_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    analytics_calculated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Best Strategy (cached for sorting/filtering)
     best_strategy: Mapped[Optional[str]] = mapped_column(String(20))
-    best_cash_flow: Mapped[Optional[float]] = mapped_column(Float)
-    best_coc_return: Mapped[Optional[float]] = mapped_column(Float)
+    best_cash_flow: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    best_coc_return: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))
     
     # Timestamps
     saved_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc)
     )
-    last_viewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    last_viewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
         onupdate=lambda: datetime.now(timezone.utc)
     )
-    data_refreshed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    data_refreshed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="saved_properties")
@@ -210,7 +212,7 @@ class PropertyAdjustment(Base):
     
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc)
     )
     

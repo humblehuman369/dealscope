@@ -129,7 +129,7 @@ class Document(Base):
     )
     
     # Document Date (e.g., date of inspection, not upload date)
-    document_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    document_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Access Control
     is_private: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -145,11 +145,11 @@ class Document(Base):
     
     # Timestamps
     uploaded_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc)
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
         onupdate=lambda: datetime.now(timezone.utc)
     )

@@ -43,9 +43,10 @@ class SavedPropertyCreate(SavedPropertyBase):
     # Property identification
     external_property_id: Optional[str] = Field(
         None, 
+        max_length=100,
         description="ID from property service cache"
     )
-    zpid: Optional[str] = Field(None, description="Zillow property ID")
+    zpid: Optional[str] = Field(None, max_length=50, description="Zillow property ID")
     
     # Address (required)
     address_street: str = Field(..., max_length=255)
@@ -54,21 +55,51 @@ class SavedPropertyCreate(SavedPropertyBase):
     address_zip: Optional[str] = Field(None, max_length=20)
     full_address: Optional[str] = Field(None, max_length=500)
     
-    # Property data snapshot
+    # Property data snapshot — capped to prevent oversized payloads.
+    # A typical property snapshot is ~5-15 KB; 512 KB is generous headroom.
     property_data_snapshot: Optional[Dict[str, Any]] = Field(
         None,
-        description="Full property data at time of save"
+        description="Full property data at time of save (max ~512 KB serialized)",
     )
     
     # Deal Maker Record - the central analysis data structure
     # If provided, will be stored as-is. If not, will be created from property data + defaults
     deal_maker_record: Optional[DealMakerRecord] = Field(
         None,
-        description="Central analysis record with property data + assumptions + adjustments"
+        description="Central analysis record with property data + assumptions + adjustments",
     )
     
     # Initial status
     status: PropertyStatus = PropertyStatus.WATCHING
+
+    @classmethod
+    def _check_json_size(cls, v: Optional[Dict], field_name: str, max_bytes: int = 524_288) -> Optional[Dict]:
+        """Reject JSON payloads exceeding *max_bytes* (default 512 KB)."""
+        if v is not None:
+            import json
+            size = len(json.dumps(v, default=str))
+            if size > max_bytes:
+                raise ValueError(
+                    f"{field_name} payload is {size:,} bytes — "
+                    f"max allowed is {max_bytes:,} bytes"
+                )
+        return v
+
+    from pydantic import model_validator
+
+    @model_validator(mode="after")
+    def _enforce_json_limits(self) -> "SavedPropertyCreate":
+        """Validate that JSON blob fields don't exceed size limits."""
+        self._check_json_size(self.property_data_snapshot, "property_data_snapshot")
+        if self.deal_maker_record is not None:
+            import json
+            size = len(json.dumps(self.deal_maker_record.model_dump(mode="json"), default=str))
+            if size > 524_288:
+                raise ValueError(
+                    f"deal_maker_record payload is {size:,} bytes — "
+                    f"max allowed is 524,288 bytes"
+                )
+        return self
 
 
 class SavedPropertyUpdate(SavedPropertyBase):
@@ -78,11 +109,11 @@ class SavedPropertyUpdate(SavedPropertyBase):
     display_order: Optional[int] = None
     
     # Custom value adjustments (DEPRECATED - use deal_maker_record)
-    custom_purchase_price: Optional[float] = Field(None, ge=0)
-    custom_rent_estimate: Optional[float] = Field(None, ge=0)
-    custom_arv: Optional[float] = Field(None, ge=0)
-    custom_rehab_budget: Optional[float] = Field(None, ge=0)
-    custom_daily_rate: Optional[float] = Field(None, ge=0)
+    custom_purchase_price: Optional[float] = Field(None, ge=0, le=100_000_000)
+    custom_rent_estimate: Optional[float] = Field(None, ge=0, le=1_000_000)
+    custom_arv: Optional[float] = Field(None, ge=0, le=100_000_000)
+    custom_rehab_budget: Optional[float] = Field(None, ge=0, le=100_000_000)
+    custom_daily_rate: Optional[float] = Field(None, ge=0, le=100_000)
     custom_occupancy_rate: Optional[float] = Field(None, ge=0, le=1)
     
     # Custom assumptions per strategy (DEPRECATED - use deal_maker_record)
@@ -94,8 +125,27 @@ class SavedPropertyUpdate(SavedPropertyBase):
     # Deal Maker Record - the central analysis data structure
     deal_maker_record: Optional[DealMakerRecord] = Field(
         None,
-        description="Central analysis record - replaces custom_assumptions and worksheet_assumptions"
+        description="Central analysis record - replaces custom_assumptions and worksheet_assumptions",
     )
+
+    from pydantic import model_validator
+
+    @model_validator(mode="after")
+    def _enforce_json_limits(self) -> "SavedPropertyUpdate":
+        """Validate that JSON blob fields don't exceed 512 KB."""
+        import json
+        _max = 524_288
+        for field_name in ("custom_assumptions", "worksheet_assumptions"):
+            val = getattr(self, field_name, None)
+            if val is not None:
+                size = len(json.dumps(val, default=str))
+                if size > _max:
+                    raise ValueError(f"{field_name} payload is {size:,} bytes — max is {_max:,}")
+        if self.deal_maker_record is not None:
+            size = len(json.dumps(self.deal_maker_record.model_dump(mode="json"), default=str))
+            if size > _max:
+                raise ValueError(f"deal_maker_record payload is {size:,} bytes — max is {_max:,}")
+        return self
 
 
 class SavedPropertySummary(BaseModel):
