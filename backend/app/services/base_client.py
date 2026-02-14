@@ -167,32 +167,35 @@ class BaseAPIClient(ABC, Generic[T]):
         json_data: Optional[Dict[str, Any]] = None,
         **response_kwargs
     ) -> T:
+        """Make an authenticated HTTP request with retries, error handling,
+        and performance logging.
+
+        Every call emits a structured ``ext_api`` log at INFO level with
+        ``provider``, ``endpoint``, ``status``, ``latency_ms``, and
+        ``attempt`` so external-call performance is observable in log
+        aggregators and dashboards.
         """
-        Make an authenticated HTTP request with retries and error handling.
-        
-        Args:
-            endpoint: API endpoint path
-            params: Query parameters
-            method: HTTP method (GET, POST, etc.)
-            json_data: JSON body for POST/PUT requests
-            **response_kwargs: Additional kwargs to pass to _create_response
-            
-        Returns:
-            Provider-specific response object
-        """
+        import time as _time
+
         provider = self._get_provider_name()
-        
+
         # Check circuit breaker
         if self.circuit_breaker and not self.circuit_breaker.can_execute():
+            logger.warning(
+                "ext_api provider=%s endpoint=%s status=circuit_open",
+                provider, endpoint,
+            )
             return self._create_circuit_open_response()
-        
+
         headers = self._get_headers()
         url = f"{self.base_url}/{endpoint}"
-        
+
         # Clean params - remove None values
         if params:
             params = {k: v for k, v in params.items() if v is not None}
-        
+
+        t0 = _time.monotonic()
+
         for attempt in range(self.max_retries):
             try:
                 async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -206,10 +209,16 @@ class BaseAPIClient(ABC, Generic[T]):
                         response = await client.delete(url, headers=headers, params=params)
                     else:
                         raise ValueError(f"Unsupported HTTP method: {method}")
-                    
+
+                    latency = (_time.monotonic() - t0) * 1000  # ms
+
                     if response.status_code == 200:
                         data = response.json()
                         self._record_success()
+                        logger.info(
+                            "ext_api provider=%s endpoint=%s status=%s latency_ms=%.1f attempt=%d",
+                            provider, endpoint, response.status_code, latency, attempt + 1,
+                        )
                         return self._create_response(
                             success=True,
                             data=data,
@@ -218,31 +227,40 @@ class BaseAPIClient(ABC, Generic[T]):
                             raw_response=data,
                             **response_kwargs
                         )
-                    
+
                     elif response.status_code == 429:
-                        # Rate limited - exponential backoff
                         wait_time = 2 ** attempt
-                        logger.warning(f"{provider} rate limited, waiting {wait_time}s")
+                        logger.warning(
+                            "ext_api provider=%s endpoint=%s status=429 latency_ms=%.1f attempt=%d retry_after=%ds",
+                            provider, endpoint, latency, attempt + 1, wait_time,
+                        )
                         await asyncio.sleep(wait_time)
+                        t0 = _time.monotonic()  # reset for next attempt
                         continue
-                    
+
                     elif response.status_code == 404:
-                        # Not found - may be valid (resource doesn't exist)
+                        logger.info(
+                            "ext_api provider=%s endpoint=%s status=404 latency_ms=%.1f attempt=%d",
+                            provider, endpoint, latency, attempt + 1,
+                        )
                         return self._create_response(
                             success=False,
                             data=None,
-                            error=f"Resource not found",
+                            error="Resource not found",
                             status_code=response.status_code,
                             **response_kwargs
                         )
-                    
+
                     else:
                         error_msg = f"{provider} API error: {response.status_code}"
                         try:
                             error_msg += f" - {response.text[:200]}"
                         except Exception:
                             pass
-                        logger.error(error_msg)
+                        logger.error(
+                            "ext_api provider=%s endpoint=%s status=%s latency_ms=%.1f attempt=%d error=%s",
+                            provider, endpoint, response.status_code, latency, attempt + 1, error_msg,
+                        )
                         self._record_failure()
                         return self._create_response(
                             success=False,
@@ -251,13 +269,22 @@ class BaseAPIClient(ABC, Generic[T]):
                             status_code=response.status_code,
                             **response_kwargs
                         )
-                        
+
             except httpx.TimeoutException:
-                logger.warning(f"{provider} timeout on {endpoint}, attempt {attempt + 1}")
+                latency = (_time.monotonic() - t0) * 1000
+                logger.warning(
+                    "ext_api provider=%s endpoint=%s status=timeout latency_ms=%.1f attempt=%d",
+                    provider, endpoint, latency, attempt + 1,
+                )
                 await asyncio.sleep(2 ** attempt)
-                
+                t0 = _time.monotonic()
+
             except Exception as e:
-                logger.error(f"{provider} error: {str(e)}")
+                latency = (_time.monotonic() - t0) * 1000
+                logger.error(
+                    "ext_api provider=%s endpoint=%s status=error latency_ms=%.1f attempt=%d error=%s",
+                    provider, endpoint, latency, attempt + 1, e,
+                )
                 self._record_failure()
                 return self._create_response(
                     success=False,
@@ -266,7 +293,12 @@ class BaseAPIClient(ABC, Generic[T]):
                     status_code=None,
                     **response_kwargs
                 )
-        
+
+        total_latency = (_time.monotonic() - t0) * 1000
+        logger.error(
+            "ext_api provider=%s endpoint=%s status=max_retries latency_ms=%.1f attempts=%d",
+            provider, endpoint, total_latency, self.max_retries,
+        )
         self._record_failure()
         return self._create_response(
             success=False,
