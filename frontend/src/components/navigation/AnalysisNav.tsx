@@ -63,46 +63,75 @@ export function AnalysisNav() {
         borderColor: colors.ui.border,
       }}
     >
-      <div className="max-w-5xl mx-auto flex items-center px-3 sm:px-4 h-11 gap-3 sm:gap-4">
+      <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
         {/* Logo / home link */}
-        <Link href="/" className="flex items-center gap-0.5 text-[13px] font-bold shrink-0" style={{ color: colors.text.secondary }}>
+        <Link href="/" className="flex items-center gap-0.5 text-sm font-bold shrink-0" style={{ color: colors.text.secondary }}>
           <span style={{ color: colors.text.body }}>Invest</span>
           <span style={{ color: colors.brand.blue }}>IQ</span>
         </Link>
 
-        {/* Primary pill toggle */}
-        <div className="flex items-center gap-0.5 bg-slate-900/60 rounded-full p-0.5">
-          {primaryTabs.map((tab) => (
-            <Link
-              key={tab.label}
-              href={tab.href}
-              className="flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold transition-all"
-              style={{
-                background: tab.active ? colors.brand.blueDeep : 'transparent',
-                color: tab.active ? '#fff' : colors.text.muted,
-              }}
-            >
-              {tab.icon}
-              {tab.label}
-            </Link>
-          ))}
-        </div>
+        {/* Center: pill toggle + secondary text links */}
+        <div className="flex items-center gap-5">
+          {/* Primary pill toggle */}
+          <div className="flex items-center gap-0.5 bg-slate-900/60 rounded-full p-0.5">
+            {primaryTabs.map((tab) => (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                style={{
+                  background: tab.active ? colors.brand.blueDeep : 'transparent',
+                  color: tab.active ? '#fff' : colors.text.muted,
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            ))}
+          </div>
 
-        {/* Secondary text links — always visible */}
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+          {/* Secondary text links */}
           <Link
             href={propertyHref}
-            className="text-[10px] sm:text-[11px] font-medium transition-colors hover:text-slate-200 whitespace-nowrap"
+            className="hidden sm:block text-[11px] font-medium transition-colors hover:text-slate-200"
             style={{ color: colors.text.muted }}
           >
             Property
           </Link>
           <Link
             href={priceHref}
-            className="text-[10px] sm:text-[11px] font-medium transition-colors hover:text-slate-200"
+            className="hidden sm:block text-[11px] font-medium transition-colors hover:text-slate-200"
             style={{ color: colors.text.muted }}
           >
             Price
+          </Link>
+        </div>
+
+        {/* Right: icon actions */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/search"
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/5"
+            style={{ color: colors.text.muted }}
+            aria-label="Search"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </Link>
+          <Link
+            href="/search"
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/5"
+            style={{ color: colors.text.muted }}
+            aria-label="Dashboard"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
           </Link>
         </div>
       </div>
@@ -111,14 +140,14 @@ export function AnalysisNav() {
 }
 
 const verdictIcon = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>
 )
 
 const strategyIcon = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <line x1="18" y1="20" x2="18" y2="10" />
     <line x1="12" y1="20" x2="12" y2="4" />
     <line x1="6" y1="20" x2="6" y2="14" />
