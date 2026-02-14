@@ -69,7 +69,6 @@ class AuthFlowUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        self.email = _random_email()
         self.password = "LoadTest1234!"
         self.token = None
         self.refresh_token = None
@@ -77,11 +76,15 @@ class AuthFlowUser(HttpUser):
     @task(3)
     @tag("auth")
     def register_and_login(self):
+        # Use a single email for the register→login pair so the login
+        # actually hits a valid account.
+        email = _random_email()
+
         # Register
         resp = self.client.post(
             "/api/v1/auth/register",
             json={
-                "email": _random_email(),
+                "email": email,
                 "password": self.password,
                 "full_name": "Load Tester",
             },
@@ -89,10 +92,10 @@ class AuthFlowUser(HttpUser):
         if resp.status_code not in (200, 201, 409):
             return
 
-        # Login
+        # Login with the same email we just registered
         resp = self.client.post(
             "/api/v1/auth/login",
-            json={"email": self.email, "password": self.password},
+            json={"email": email, "password": self.password},
         )
         if resp.status_code == 200:
             data = resp.json()
