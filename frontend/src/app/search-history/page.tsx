@@ -1,17 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useSession } from '@/hooks/useSession'
-import { api } from '@/lib/api-client'
+import {
+  useSearchHistory,
+  useSearchHistoryStats,
+  useDeleteSearchHistoryEntry,
+  useClearSearchHistory,
+  type SearchHistoryItem,
+} from '@/hooks/useSearchHistory'
 import { AuthGuard } from '@/components/auth/AuthGuard'
+import { DataBoundary } from '@/components/ui/DataBoundary'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
   History, Search, MapPin, Building2, Clock, Trash2,
   ExternalLink, TrendingUp, Filter,
-  Calendar, BarChart3, Star, AlertCircle, X,
+  Calendar, BarChart3, Star, X,
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
@@ -25,161 +30,87 @@ import {
 // Theme: true black base, #0C1220 cards, 7% white borders
 // ===========================================
 
-// ===========================================
-// Types
-// ===========================================
-
-interface SearchHistoryItem {
-  id: string
-  user_id?: string
-  search_query: string
-  address_street?: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  property_cache_id?: string
-  zpid?: string
-  result_summary?: {
-    property_type?: string
-    bedrooms?: number
-    bathrooms?: number
-    square_footage?: number
-    estimated_value?: number
-    rent_estimate?: number
-  }
-  search_source?: string
-  was_successful: boolean
-  was_saved: boolean
-  searched_at: string
-}
-
-interface SearchStats {
-  total_searches: number
-  successful_searches: number
-  saved_from_search: number
-  searches_this_week: number
-  searches_this_month: number
-  top_markets: { state: string; count: number }[]
-  recent_searches: SearchHistoryItem[]
-}
-
 const PAGE_SIZE = 20
+
+// ===========================================
+// Helpers
+// ===========================================
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  })
+}
+
+function formatCurrency(value?: number) {
+  if (!value) return 'N/A'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
 
 // ===========================================
 // Inner content (wrapped by AuthGuard)
 // ===========================================
 
 function SearchHistoryContent() {
-  const router = useRouter()
-  const [history, setHistory] = useState<SearchHistoryItem[]>([])
-  const [stats, setStats] = useState<SearchStats | null>(null)
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // ── UI state ──────────────────────────────────
   const [filterSuccessful, setFilterSuccessful] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [showClearAll, setShowClearAll] = useState(false)
-
-  // Pagination
   const [page, setPage] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
 
   // Reset to page 0 when filter changes
-  useEffect(() => {
-    setPage(0)
-  }, [filterSuccessful])
+  useEffect(() => { setPage(0) }, [filterSuccessful])
 
-  // Fetch history and stats
-  const fetchData = useCallback(async () => {
-    setIsLoadingHistory(true)
-    try {
-      const offset = page * PAGE_SIZE
-      const [historyData, statsData] = await Promise.all([
-        api.get<{ items: SearchHistoryItem[] }>(
-          `/api/v1/search-history?limit=${PAGE_SIZE}&offset=${offset}&successful_only=${filterSuccessful}`
-        ),
-        api.get<SearchStats>('/api/v1/search-history/stats'),
-      ])
+  // ── React Query ───────────────────────────────
+  const historyQuery = useSearchHistory({
+    page,
+    pageSize: PAGE_SIZE,
+    successfulOnly: filterSuccessful,
+  })
+  const statsQuery = useSearchHistoryStats()
+  const deleteEntryMutation = useDeleteSearchHistoryEntry()
+  const clearAllMutation = useClearSearchHistory()
 
-      setHistory(historyData.items || [])
-      setStats(statsData)
-      setTotalCount(statsData?.total_searches ?? (historyData.items?.length || 0))
-      setError(null)
-    } catch (err) {
-      console.error('Failed to fetch search history:', err)
-      setError('Failed to load search history')
-    } finally {
-      setIsLoadingHistory(false)
-    }
-  }, [filterSuccessful, page])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  // Delete single entry (triggered by ConfirmDialog)
-  const confirmDeleteEntry = async () => {
-    if (!deleteTarget) return
-    try {
-      await api.delete(`/api/v1/search-history/${deleteTarget}`)
-      setHistory(prev => prev.filter(h => h.id !== deleteTarget))
-      setTotalCount(prev => Math.max(0, prev - 1))
-    } catch (err) {
-      console.error('Failed to delete entry:', err)
-    } finally {
-      setDeleteTarget(null)
-    }
-  }
-
-  // Clear all history (triggered by ConfirmDialog)
-  const confirmClearAll = async () => {
-    try {
-      await api.delete('/api/v1/search-history')
-      setHistory([])
-      setTotalCount(0)
-      setPage(0)
-      await fetchData()
-    } catch (err) {
-      console.error('Failed to clear history:', err)
-    } finally {
-      setShowClearAll(false)
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    })
-  }
-
-  const formatCurrency = (value?: number) => {
-    if (!value) return 'N/A'
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
+  // ── Derived values ────────────────────────────
+  const history = historyQuery.data ?? []
+  const stats = statsQuery.data ?? null
+  const totalCount = stats?.total_searches ?? history.length
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const hasNextPage = page < totalPages - 1
   const hasPrevPage = page > 0
 
-  // ── Render ───────────────────────────────────
+  // ── Handlers ──────────────────────────────────
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) deleteEntryMutation.mutate(deleteTarget)
+    setDeleteTarget(null)
+  }
+
+  const handleConfirmClearAll = () => {
+    clearAllMutation.mutate()
+    setShowClearAll(false)
+  }
+
+  // ── Render ────────────────────────────────────
 
   return (
     <div
@@ -301,14 +232,6 @@ function SearchHistoryContent() {
           </div>
         )}
 
-        {/* ── Error State ───────────────────────── */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-400/10 border border-red-400/20 rounded-xl text-red-400 flex items-center gap-2 text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            {error}
-          </div>
-        )}
-
         {/* ── Search History List ────────────────── */}
         <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] overflow-hidden">
           <div className="px-6 py-4 border-b border-white/[0.07]">
@@ -317,22 +240,15 @@ function SearchHistoryContent() {
             </h3>
           </div>
 
-          {isLoadingHistory ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
-            </div>
-          ) : history.length === 0 ? (
-            /* ── Empty State ─────────────────────── */
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-5">
-                <Search className="w-8 h-8 text-slate-600" />
-              </div>
-              <h4 className="text-lg font-semibold text-slate-100 mb-2">
-                No search history yet
-              </h4>
-              <p className="text-slate-400 mb-6 max-w-sm">
-                Start searching for properties to build your history
-              </p>
+          <DataBoundary
+            isLoading={historyQuery.isLoading}
+            error={historyQuery.isError ? 'Failed to load search history' : null}
+            onRetry={() => historyQuery.refetch()}
+            isEmpty={history.length === 0}
+            emptyIcon={<Search className="w-8 h-8 text-slate-600" />}
+            emptyTitle="No search history yet"
+            emptyDescription="Start searching for properties to build your history"
+            emptyAction={
               <button
                 onClick={() => setShowSearchModal(true)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
@@ -340,12 +256,11 @@ function SearchHistoryContent() {
                 <Search className="w-4 h-4" />
                 Search Properties
               </button>
-              <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
-            </div>
-          ) : (
-            /* ── History Items ────────────────────── */
+            }
+          >
+            {/* ── History Items ────────────────────── */}
             <div className="divide-y divide-white/[0.07]">
-              {history.map((item) => (
+              {history.map((item: SearchHistoryItem) => (
                 <div
                   key={item.id}
                   className="px-6 py-4 hover:bg-white/[0.02] transition-colors"
@@ -454,10 +369,10 @@ function SearchHistoryContent() {
                 </div>
               ))}
             </div>
-          )}
+          </DataBoundary>
 
           {/* ── Pagination Controls ───────────────── */}
-          {totalCount > PAGE_SIZE && (
+          {totalCount > PAGE_SIZE && !historyQuery.isLoading && !historyQuery.isError && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07]">
               <p className="text-sm text-slate-500 tabular-nums">
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
@@ -488,6 +403,9 @@ function SearchHistoryContent() {
         </div>
       </div>
 
+      {/* Search Modal (from empty state) */}
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+
       {/* Delete Single Entry Confirmation */}
       <ConfirmDialog
         open={!!deleteTarget}
@@ -495,7 +413,7 @@ function SearchHistoryContent() {
         description="Remove this search from your history?"
         variant="danger"
         confirmLabel="Delete"
-        onConfirm={confirmDeleteEntry}
+        onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
 
@@ -506,7 +424,7 @@ function SearchHistoryContent() {
         description="This will permanently delete all your search history. This cannot be undone."
         variant="danger"
         confirmLabel="Clear Everything"
-        onConfirm={confirmClearAll}
+        onConfirm={handleConfirmClearAll}
         onCancel={() => setShowClearAll(false)}
       />
     </div>
