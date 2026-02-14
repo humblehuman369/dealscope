@@ -1,16 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
+import { useDebounce } from '@/hooks/useDebounce'
 import { api } from '@/lib/api-client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
   Bookmark, Search, MapPin, Building2, Clock, Trash2,
   TrendingUp, Star, AlertCircle,
-  ChevronRight, BarChart3, Eye, X
+  ChevronRight, BarChart3, Eye, X,
+  ChevronLeft,
 } from 'lucide-react'
 
 // ===========================================
@@ -82,12 +85,13 @@ const STRATEGY_LABELS: Record<string, string> = {
   subject_to: 'Subject-To',
 }
 
+const PAGE_SIZE = 20
+
 // ===========================================
-// Main Component
+// Inner content (wrapped by AuthGuard)
 // ===========================================
 
-export default function SavedPropertiesPage() {
-  const { isAuthenticated, isLoading } = useSession()
+function SavedPropertiesContent() {
   const router = useRouter()
   const [properties, setProperties] = useState<SavedPropertySummary[]>([])
   const [stats, setStats] = useState<SavedPropertyStats | null>(null)
@@ -98,28 +102,41 @@ export default function SavedPropertiesPage() {
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  // Redirect if not authenticated
+  // Pagination
+  const [page, setPage] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+
+  // Debounce search — waits 300 ms after the user stops typing
+  const debouncedSearch = useDebounce(searchQuery, 300)
+
+  // Reset to page 0 when filters or search change
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/')
-    }
-  }, [isLoading, isAuthenticated, router])
+    setPage(0)
+  }, [filterStatus, debouncedSearch])
 
   // Fetch saved properties
   const fetchData = useCallback(async () => {
     setIsLoadingData(true)
     try {
-      const params = new URLSearchParams({ limit: '50', offset: '0' })
+      const offset = page * PAGE_SIZE
+      const params = new URLSearchParams({
+        limit: String(PAGE_SIZE),
+        offset: String(offset),
+      })
       if (filterStatus !== 'all') params.set('status', filterStatus)
-      if (searchQuery.trim()) params.set('search', searchQuery.trim())
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
 
-      const [propertiesData, statsData] = await Promise.all([
+      const [propertiesRes, statsData] = await Promise.all([
+        // The backend returns items via the body and X-Total-Count header.
+        // api.get doesn't expose headers, so we fetch properties as an array.
         api.get<SavedPropertySummary[]>(`/api/v1/properties/saved?${params.toString()}`),
         api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
       ])
 
-      setProperties(propertiesData || [])
+      setProperties(propertiesRes || [])
       setStats(statsData)
+      // Use stats.total as the authoritative total when available
+      setTotalCount(statsData?.total ?? (propertiesRes?.length || 0))
       setError(null)
     } catch (err) {
       console.error('Failed to fetch saved properties:', err)
@@ -127,13 +144,11 @@ export default function SavedPropertiesPage() {
     } finally {
       setIsLoadingData(false)
     }
-  }, [filterStatus, searchQuery])
+  }, [filterStatus, debouncedSearch, page])
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated, fetchData])
+    fetchData()
+  }, [fetchData])
 
   // Delete a saved property (triggered by ConfirmDialog)
   const confirmDeleteProperty = async () => {
@@ -141,6 +156,7 @@ export default function SavedPropertiesPage() {
     try {
       await api.delete(`/api/v1/properties/saved/${deleteTarget}`)
       setProperties(prev => prev.filter(p => p.id !== deleteTarget))
+      setTotalCount(prev => Math.max(0, prev - 1))
     } catch (err) {
       console.error('Failed to delete property:', err)
     } finally {
@@ -197,18 +213,11 @@ export default function SavedPropertiesPage() {
     return `${(value * 100).toFixed(1)}%`
   }
 
-  // ── Loading / auth gate ──────────────────────
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
-      </div>
-    )
-  }
-
   const statusCounts = stats?.by_status || {}
-  const totalSaved = stats?.total || properties.length
+  const totalSaved = stats?.total || totalCount
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const hasNextPage = page < totalPages - 1
+  const hasPrevPage = page > 0
 
   // ── Render ───────────────────────────────────
 
@@ -339,7 +348,7 @@ export default function SavedPropertiesPage() {
             )
           })}
 
-          {/* Search input */}
+          {/* Search input (debounced) */}
           <div className="relative flex-1 min-w-[200px] ml-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
@@ -373,16 +382,16 @@ export default function SavedPropertiesPage() {
                 <Bookmark className="w-8 h-8 text-slate-600" />
               </div>
               <h4 className="text-lg font-semibold text-slate-100 mb-2">
-                {filterStatus !== 'all' || searchQuery
+                {filterStatus !== 'all' || debouncedSearch
                   ? 'No properties match your filters'
                   : 'No saved properties yet'}
               </h4>
               <p className="text-slate-400 mb-6 max-w-sm">
-                {filterStatus !== 'all' || searchQuery
+                {filterStatus !== 'all' || debouncedSearch
                   ? 'Try adjusting your filters or search terms'
                   : 'Save properties from any analysis page using the bookmark icon in the address bar'}
               </p>
-              {filterStatus === 'all' && !searchQuery && (
+              {filterStatus === 'all' && !debouncedSearch && (
                 <button
                   onClick={() => setShowSearchModal(true)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
@@ -500,6 +509,36 @@ export default function SavedPropertiesPage() {
               })}
             </div>
           )}
+
+          {/* ── Pagination Controls ───────────────── */}
+          {totalCount > PAGE_SIZE && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07]">
+              <p className="text-sm text-slate-500 tabular-nums">
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={!hasPrevPage}
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm text-slate-400 tabular-nums px-2">
+                  Page {page + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={!hasNextPage}
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -517,5 +556,23 @@ export default function SavedPropertiesPage() {
         onCancel={() => setDeleteTarget(null)}
       />
     </div>
+  )
+}
+
+// ===========================================
+// Page export — wrapped in AuthGuard + Suspense
+// ===========================================
+
+export default function SavedPropertiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+      </div>
+    }>
+      <AuthGuard>
+        <SavedPropertiesContent />
+      </AuthGuard>
+    </Suspense>
   )
 }

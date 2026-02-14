@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
 import { api } from '@/lib/api-client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { 
-  History, Search, MapPin, Building2, Clock, Trash2, 
+import {
+  History, Search, MapPin, Building2, Clock, Trash2,
   ExternalLink, TrendingUp, Filter,
-  Calendar, BarChart3, Star, AlertCircle, X
+  Calendar, BarChart3, Star, AlertCircle, X,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
 // ===========================================
@@ -22,8 +24,6 @@ import {
 //          red-400 (negative), emerald-400 (success/income)
 // Theme: true black base, #0C1220 cards, 7% white borders
 // ===========================================
-
-// Use relative URLs to go through Next.js API routes (which proxy to backend)
 
 // ===========================================
 // Types
@@ -63,12 +63,13 @@ interface SearchStats {
   recent_searches: SearchHistoryItem[]
 }
 
+const PAGE_SIZE = 20
+
 // ===========================================
-// Main Component
+// Inner content (wrapped by AuthGuard)
 // ===========================================
 
-export default function SearchHistoryPage() {
-  const { isAuthenticated, isLoading } = useSession()
+function SearchHistoryContent() {
   const router = useRouter()
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [stats, setStats] = useState<SearchStats | null>(null)
@@ -79,36 +80,42 @@ export default function SearchHistoryPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [showClearAll, setShowClearAll] = useState(false)
 
-  // Redirect if not authenticated
+  // Pagination
+  const [page, setPage] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+
+  // Reset to page 0 when filter changes
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/')
-    }
-  }, [isLoading, isAuthenticated, router])
+    setPage(0)
+  }, [filterSuccessful])
 
   // Fetch history and stats
   const fetchData = useCallback(async () => {
+    setIsLoadingHistory(true)
     try {
+      const offset = page * PAGE_SIZE
       const [historyData, statsData] = await Promise.all([
-        api.get<{ items: SearchHistoryItem[] }>(`/api/v1/search-history?limit=50&successful_only=${filterSuccessful}`),
-        api.get<SearchStats>('/api/v1/search-history/stats')
+        api.get<{ items: SearchHistoryItem[] }>(
+          `/api/v1/search-history?limit=${PAGE_SIZE}&offset=${offset}&successful_only=${filterSuccessful}`
+        ),
+        api.get<SearchStats>('/api/v1/search-history/stats'),
       ])
 
       setHistory(historyData.items || [])
       setStats(statsData)
+      setTotalCount(statsData?.total_searches ?? (historyData.items?.length || 0))
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch search history:', err)
       setError('Failed to load search history')
     } finally {
       setIsLoadingHistory(false)
     }
-  }, [filterSuccessful])
+  }, [filterSuccessful, page])
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated, fetchData])
+    fetchData()
+  }, [fetchData])
 
   // Delete single entry (triggered by ConfirmDialog)
   const confirmDeleteEntry = async () => {
@@ -116,6 +123,7 @@ export default function SearchHistoryPage() {
     try {
       await api.delete(`/api/v1/search-history/${deleteTarget}`)
       setHistory(prev => prev.filter(h => h.id !== deleteTarget))
+      setTotalCount(prev => Math.max(0, prev - 1))
     } catch (err) {
       console.error('Failed to delete entry:', err)
     } finally {
@@ -128,6 +136,8 @@ export default function SearchHistoryPage() {
     try {
       await api.delete('/api/v1/search-history')
       setHistory([])
+      setTotalCount(0)
+      setPage(0)
       await fetchData()
     } catch (err) {
       console.error('Failed to clear history:', err)
@@ -148,11 +158,11 @@ export default function SearchHistoryPage() {
     if (diffMins < 60) return `${diffMins}m ago`
     if (diffHours < 24) return `${diffHours}h ago`
     if (diffDays < 7) return `${diffDays}d ago`
-    
+
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     })
   }
 
@@ -161,19 +171,13 @@ export default function SearchHistoryPage() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(value)
   }
 
-  // ── Loading / auth gate ──────────────────────
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
-      </div>
-    )
-  }
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const hasNextPage = page < totalPages - 1
+  const hasPrevPage = page > 0
 
   // ── Render ───────────────────────────────────
 
@@ -351,8 +355,8 @@ export default function SearchHistoryPage() {
                       <div className="flex items-center gap-3">
                         {/* Status Icon */}
                         <div className={`p-2 rounded-lg flex-shrink-0 ${
-                          item.was_successful 
-                            ? 'bg-emerald-400/10' 
+                          item.was_successful
+                            ? 'bg-emerald-400/10'
                             : 'bg-red-400/10'
                         }`}>
                           {item.was_successful ? (
@@ -451,6 +455,36 @@ export default function SearchHistoryPage() {
               ))}
             </div>
           )}
+
+          {/* ── Pagination Controls ───────────────── */}
+          {totalCount > PAGE_SIZE && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07]">
+              <p className="text-sm text-slate-500 tabular-nums">
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={!hasPrevPage}
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm text-slate-400 tabular-nums px-2">
+                  Page {page + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={!hasNextPage}
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -476,5 +510,23 @@ export default function SearchHistoryPage() {
         onCancel={() => setShowClearAll(false)}
       />
     </div>
+  )
+}
+
+// ===========================================
+// Page export — wrapped in AuthGuard + Suspense
+// ===========================================
+
+export default function SearchHistoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+      </div>
+    }>
+      <AuthGuard>
+        <SearchHistoryContent />
+      </AuthGuard>
+    </Suspense>
   )
 }
