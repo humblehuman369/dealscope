@@ -66,7 +66,7 @@ export function AnalysisNav() {
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
         {/* Logo / home link */}
         <Link href="/" className="flex items-center gap-0.5 text-sm font-bold shrink-0" style={{ color: colors.text.secondary }}>
-          <span style={{ color: colors.text.body }}>Invest</span>
+          <span style={{ color: colors.text.body }}>RealVest</span>
           <span style={{ color: colors.brand.blue }}>IQ</span>
         </Link>
 

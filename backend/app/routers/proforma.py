@@ -105,7 +105,7 @@ async def generate_proforma(
             )
         
         elif request.format == "pdf":
-            # Generate PDF report using new InvestIQ report exporter
+            # Generate PDF report using new RealVestIQ report exporter
             # WeasyPrint is lazy-loaded on first call to generate()
             try:
                 exporter = PropertyReportPDFExporter(proforma, theme="light")
@@ -117,7 +117,7 @@ async def generate_proforma(
                     detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
                 )
             
-            filename = f"InvestIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            filename = f"RealVestIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
             
             return StreamingResponse(
                 buffer,
@@ -298,7 +298,7 @@ async def download_proforma_excel(
         
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
-        filename = f"InvestIQ_{strategy.upper()}_Proforma_{address_slug}_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        filename = f"RealVestIQ_{strategy.upper()}_Proforma_{address_slug}_{datetime.now().strftime('%Y%m%d')}.xlsx"
         
         return StreamingResponse(
             buffer,
@@ -341,7 +341,7 @@ async def download_proforma_pdf(
     insurance: Optional[float] = Query(None, description="Override annual insurance"),
 ):
     """
-    Download an InvestIQ Property Investment Report as PDF.
+    Download an RealVestIQ Property Investment Report as PDF.
     
     The 11-page report includes:
     - Cover page with property summary
@@ -351,7 +351,7 @@ async def download_proforma_pdf(
     - Year 1 income statement with waterfall
     - Operating expense breakdown with donut chart
     - Key investment metrics (Cap Rate, CoC, DSCR, IRR)
-    - Deal score and InvestIQ verdict
+    - Deal score and RealVestIQ verdict
     - 10-year financial projections with charts
     - Exit strategy and tax implications
     - Sensitivity analysis and data sources
@@ -389,7 +389,7 @@ async def download_proforma_pdf(
             insurance_override=insurance,
         )
         
-        # Generate PDF using new InvestIQ report exporter
+        # Generate PDF using new RealVestIQ report exporter
         try:
             exporter = PropertyReportPDFExporter(proforma, theme=theme)
             buffer = exporter.generate()
@@ -403,7 +403,7 @@ async def download_proforma_pdf(
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
         theme_suffix = f"_{theme}" if theme == "dark" else ""
-        filename = f"InvestIQ_Report_{address_slug}_{strategy.upper()}{theme_suffix}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        filename = f"RealVestIQ_Report_{address_slug}_{strategy.upper()}{theme_suffix}_{datetime.now().strftime('%Y%m%d')}.pdf"
         
         return StreamingResponse(
             buffer,
@@ -447,7 +447,7 @@ async def view_proforma_report(
     insurance: Optional[float] = Query(None, description="Override annual insurance"),
 ):
     """
-    Render the InvestIQ Property Investment Report as a browser-viewable HTML page.
+    Render the RealVestIQ Property Investment Report as a browser-viewable HTML page.
 
     The page is styled for print-to-PDF: open in a new tab, then use Cmd/Ctrl+P
     to save as PDF. If ``auto_print=true`` (default) the browser print dialog

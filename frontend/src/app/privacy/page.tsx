@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
         {/* Header */}
         <div className="mb-12">
           <Link href="/" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
-            &larr; Back to InvestIQ
+            &larr; Back to RealVestIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Privacy Policy</h1>
           <p className="text-sm text-slate-500">Last updated: February 13, 2026</p>
@@ -95,8 +95,8 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p className="mt-3">
               To exercise these rights, contact us at{' '}
-              <a href="mailto:support@investiq.com" className="text-sky-400 hover:text-sky-300 underline">
-                support@investiq.com
+              <a href="mailto:support@realvestiq.com" className="text-sky-400 hover:text-sky-300 underline">
+                support@realvestiq.com
               </a>
             </p>
           </section>
@@ -126,8 +126,8 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-white mb-3">10. Contact</h2>
             <p>
               For questions about this Privacy Policy, contact us at{' '}
-              <a href="mailto:support@investiq.com" className="text-sky-400 hover:text-sky-300 underline">
-                support@investiq.com
+              <a href="mailto:support@realvestiq.com" className="text-sky-400 hover:text-sky-300 underline">
+                support@realvestiq.com
               </a>
             </p>
           </section>
@@ -135,7 +135,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 InvestIQ LLC. All rights reserved.</p>
+          <p>&copy; 2026 RealVestIQ LLC. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>

@@ -143,7 +143,7 @@ export default function HelpScreen() {
             </Text>
             <TouchableOpacity
               style={[styles.contactButton, { borderColor: `${accentColor}30` }]}
-              onPress={() => Linking.openURL('mailto:support@investiq.com?subject=InvestIQ%20Support%20Request')}
+              onPress={() => Linking.openURL('mailto:support@realvestiq.com?subject=InvestIQ%20Support%20Request')}
               accessibilityRole="button"
               accessibilityLabel="Email support"
             >

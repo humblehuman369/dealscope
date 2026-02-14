@@ -8,7 +8,7 @@
     "base": {
       "node": "20.18.0",
       "env": {
-        "EXPO_PUBLIC_WEB_APP_URL": "https://investiq.guru"
+        "EXPO_PUBLIC_WEB_APP_URL": "https://realvestiq.com"
       }
     },
     "development": {

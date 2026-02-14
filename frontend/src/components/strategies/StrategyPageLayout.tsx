@@ -328,7 +328,7 @@ export function StrategyPageLayout({
                 letterSpacing: '-0.02em',
               }}
             >
-              Invest<span style={{ color: '#38bdf8' }}>IQ</span>
+              RealVest<span style={{ color: '#4dd0e1' }}>IQ</span>
             </span>
           </Link>
           <nav className="strat-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -597,10 +597,10 @@ export function StrategyPageLayout({
               letterSpacing: '-0.02em',
             }}
           >
-            Invest<span style={{ color: '#38bdf8' }}>IQ</span>
+            RealVest<span style={{ color: '#4dd0e1' }}>IQ</span>
           </span>
           <p style={{ color: '#64748B', fontSize: '0.8125rem', margin: 0 }}>
-            &copy; 2026 InvestIQ. All rights reserved.
+            &copy; 2026 RealVestIQ. All rights reserved.
           </p>
         </div>
       </footer>

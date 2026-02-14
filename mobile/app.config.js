@@ -42,8 +42,8 @@ export default {
       buildNumber: "19",
 
       associatedDomains: [
-        "applinks:investiq.guru",
-        "applinks:www.investiq.guru"
+        "applinks:realvestiq.com",
+        "applinks:www.realvestiq.com"
       ],
 
       infoPlist: {
@@ -162,22 +162,22 @@ export default {
           action: "VIEW",
           autoVerify: true,
           data: [
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/verdict" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/property" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/deal-gap" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/deal-maker" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/worksheet" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/price-intel" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/strategy" },
-            { scheme: "https", host: "investiq.guru", pathPrefix: "/search" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/verdict" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/property" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/deal-gap" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/deal-maker" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/worksheet" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/price-intel" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/strategy" },
-            { scheme: "https", host: "www.investiq.guru", pathPrefix: "/search" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/verdict" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/property" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/strategy" },
+            { scheme: "https", host: "realvestiq.com", pathPrefix: "/search" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/verdict" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/property" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/strategy" },
+            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/search" },
           ],
           category: ["BROWSABLE", "DEFAULT"],
         },
@@ -259,7 +259,7 @@ export default {
       eas: {
         projectId: "c8258f15-a554-499a-a55f-adfc32d569d2",
       },
-      webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://investiq.guru",
+      webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://realvestiq.com",
     },
 
     // ─── OTA Updates ──────────────────────────────────────────────

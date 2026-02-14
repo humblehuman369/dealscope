@@ -114,7 +114,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = '@investiq_theme_mode';
+const THEME_STORAGE_KEY = '@realvestiq_theme_mode';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
