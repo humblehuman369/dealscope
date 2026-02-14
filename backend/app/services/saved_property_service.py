@@ -147,6 +147,32 @@ class SavedPropertyService:
         )
         return result.scalar_one_or_none()
     
+    def _apply_list_filters(
+        self,
+        query,
+        user_id: str,
+        status: Optional[PropertyStatus] = None,
+        tags: Optional[List[str]] = None,
+        search: Optional[str] = None,
+    ):
+        """Apply shared WHERE clauses for list / count queries."""
+        query = query.where(SavedProperty.user_id == uuid.UUID(user_id))
+        if status:
+            query = query.where(SavedProperty.status == status)
+        if tags:
+            for tag in tags:
+                query = query.where(SavedProperty.tags.contains([tag]))
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.where(
+                or_(
+                    SavedProperty.full_address.ilike(search_pattern),
+                    SavedProperty.nickname.ilike(search_pattern),
+                    SavedProperty.notes.ilike(search_pattern),
+                )
+            )
+        return query
+
     async def list_properties(
         self,
         db: AsyncSession,
@@ -157,41 +183,27 @@ class SavedPropertyService:
         limit: int = 50,
         offset: int = 0,
         order_by: str = "saved_at_desc"
-    ) -> List[SavedProperty]:
+    ) -> tuple[List[SavedProperty], int]:
+        """List saved properties with filtering and pagination.
+
+        Returns ``(items, total_count)`` so the caller can set
+        ``X-Total-Count`` for the frontend paginator.
         """
-        List saved properties with filtering and pagination.
-        """
-        # Defer the large property_data_snapshot blob (50KB+ per row).
-        # Do NOT defer last_analytics_result — it is small and accessed
-        # by the router to populate best_strategy / best_cash_flow / best_coc_return.
-        query = (
-            select(SavedProperty)
-            .options(
-                defer(SavedProperty.property_data_snapshot),
-            )
-            .where(SavedProperty.user_id == uuid.UUID(user_id))
+        # -- Total count (same filters, no pagination) --
+        count_q = self._apply_list_filters(
+            select(func.count(SavedProperty.id)),
+            user_id, status, tags, search,
         )
-        
-        # Apply filters
-        if status:
-            query = query.where(SavedProperty.status == status)
-        
-        if tags:
-            # Filter properties that have all specified tags
-            for tag in tags:
-                query = query.where(SavedProperty.tags.contains([tag]))
-        
-        if search:
-            search_pattern = f"%{search}%"
-            query = query.where(
-                or_(
-                    SavedProperty.full_address.ilike(search_pattern),
-                    SavedProperty.nickname.ilike(search_pattern),
-                    SavedProperty.notes.ilike(search_pattern),
-                )
-            )
-        
-        # Apply ordering
+        total = (await db.execute(count_q)).scalar() or 0
+
+        # -- Data query --
+        # Defer the large property_data_snapshot blob (50KB+ per row).
+        query = self._apply_list_filters(
+            select(SavedProperty).options(defer(SavedProperty.property_data_snapshot)),
+            user_id, status, tags, search,
+        )
+
+        # Ordering
         if order_by == "saved_at_desc":
             query = query.order_by(SavedProperty.saved_at.desc())
         elif order_by == "saved_at_asc":
@@ -202,12 +214,11 @@ class SavedPropertyService:
             query = query.order_by(SavedProperty.status)
         elif order_by == "address":
             query = query.order_by(SavedProperty.address_street)
-        
-        # Apply pagination
+
         query = query.offset(offset).limit(limit)
-        
+
         result = await db.execute(query)
-        return list(result.scalars().all())
+        return list(result.scalars().all()), total
     
     async def count_properties(
         self,

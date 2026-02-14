@@ -143,8 +143,26 @@ def get_market_adjustments(zip_code: str) -> Dict[str, Any]:
     }
 
 
+_ASSUMPTIONS_CACHE_KEY = "defaults:assumptions"
+_ASSUMPTIONS_TTL = 600  # 10 minutes — assumptions change very rarely
+
+
 async def get_default_assumptions(db: AsyncSession) -> AllAssumptions:
-    """Fetch default assumptions from DB or fall back to schema defaults."""
+    """Fetch default assumptions from DB or fall back to schema defaults.
+
+    Results are cached for 10 minutes via the global CacheService to
+    avoid hitting the database on every analytics call.
+    """
+    from app.services.cache_service import get_cache_service
+
+    cache = get_cache_service()
+    cached = await cache.get(_ASSUMPTIONS_CACHE_KEY)
+    if cached is not None:
+        try:
+            return AllAssumptions.model_validate(cached)
+        except Exception:
+            logger.debug("Stale/corrupt assumptions cache entry — falling through to DB")
+
     result = await db.execute(
         select(AdminAssumptionDefaults).order_by(AdminAssumptionDefaults.updated_at.desc()).limit(1)
     )
@@ -152,11 +170,15 @@ async def get_default_assumptions(db: AsyncSession) -> AllAssumptions:
 
     if record and record.assumptions:
         try:
-            return AllAssumptions.model_validate(record.assumptions)
+            assumptions = AllAssumptions.model_validate(record.assumptions)
+            await cache.set(_ASSUMPTIONS_CACHE_KEY, assumptions.model_dump(), _ASSUMPTIONS_TTL)
+            return assumptions
         except Exception as exc:
             logger.warning(f"Failed to parse stored assumptions, falling back to defaults: {exc}")
 
-    return AllAssumptions()
+    defaults = AllAssumptions()
+    await cache.set(_ASSUMPTIONS_CACHE_KEY, defaults.model_dump(), _ASSUMPTIONS_TTL)
+    return defaults
 
 
 async def get_assumptions_record(db: AsyncSession) -> Optional[AdminAssumptionDefaults]:
@@ -172,7 +194,11 @@ async def upsert_default_assumptions(
     assumptions: AllAssumptions,
     updated_by: Optional[uuid.UUID] = None,
 ) -> AdminAssumptionDefaults:
-    """Create or update the stored default assumptions."""
+    """Create or update the stored default assumptions.
+
+    Invalidates the assumptions cache so the next read picks up
+    the fresh values immediately.
+    """
     record = await get_assumptions_record(db)
 
     if record is None:
@@ -187,4 +213,9 @@ async def upsert_default_assumptions(
 
     await db.commit()
     await db.refresh(record)
+
+    # Invalidate cache so subsequent reads see the new values
+    from app.services.cache_service import get_cache_service
+    await get_cache_service().delete(_ASSUMPTIONS_CACHE_KEY)
+
     return record
