@@ -21,6 +21,10 @@ from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_pdf_exporter import ProformaPDFExporter, WEASYPRINT_AVAILABLE
 from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.wholesale_exporter import WholesaleExcelExporter
+from app.services.flip_exporter import FlipExcelExporter
+from app.services.brrrr_exporter import BRRRRExcelExporter
+from app.services.str_exporter import STRExcelExporter
+from app.services.house_hack_exporter import HouseHackExcelExporter
 from app.services.property_service import property_service
 from app.core.deps import CurrentUser, OptionalUser
 
@@ -259,15 +263,22 @@ async def download_proforma_excel(
         )
         
         # Dispatch to strategy-specific exporter
-        logger.info(f"[PROFORMA EXPORT] strategy={strategy!r} — NEW CODE V2 ACTIVE")
+        logger.info(f"[PROFORMA EXPORT] strategy={strategy!r}")
         if strategy == "wholesale":
-            logger.info("[PROFORMA EXPORT] Using WholesaleExcelExporter")
             exporter = WholesaleExcelExporter(
                 proforma,
                 rent_estimate=monthly_rent,
                 amv=amv,
                 wholesale_fee=wholesale_fee,
             )
+        elif strategy == "flip":
+            exporter = FlipExcelExporter(proforma)
+        elif strategy == "brrrr":
+            exporter = BRRRRExcelExporter(proforma)
+        elif strategy == "str":
+            exporter = STRExcelExporter(proforma)
+        elif strategy == "house_hack":
+            exporter = HouseHackExcelExporter(proforma)
         else:
             exporter = ProformaExcelExporter(proforma)
 
