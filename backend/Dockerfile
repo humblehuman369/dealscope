@@ -23,6 +23,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Bust Docker layer cache — change this value to force COPY rebuild
+ARG CACHE_BUST=2026-02-14-v2
+
 # Copy application code
 COPY . .
 

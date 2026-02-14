@@ -259,7 +259,9 @@ async def download_proforma_excel(
         )
         
         # Dispatch to strategy-specific exporter
+        logger.info(f"[PROFORMA EXPORT] strategy={strategy!r} — NEW CODE V2 ACTIVE")
         if strategy == "wholesale":
+            logger.info("[PROFORMA EXPORT] Using WholesaleExcelExporter")
             exporter = WholesaleExcelExporter(
                 proforma,
                 rent_estimate=monthly_rent,
