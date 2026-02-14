@@ -1,6 +1,6 @@
 export { ResponsiveLandingPage } from './ResponsiveLandingPage';
-export { InvestIQHomepage } from './InvestIQHomepage';
-export { InvestIQGateway } from './InvestIQGateway';
+export { RealVestIQHomepage } from './InvestIQHomepage';
+export { RealVestIQGateway } from './InvestIQGateway';
 export { AnimatedPhoneMockup } from './AnimatedPhoneMockup';
 export { FloatingDataCards } from './FloatingDataCards';
 export { StrategyCard } from './StrategyCard';

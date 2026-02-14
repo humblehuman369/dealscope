@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { Search, User } from 'lucide-react';
-import { RealVestIQGateway } from './RealVestIQGateway';
+import { RealVestIQGateway } from './InvestIQGateway';
 import './investiq-homepage.css';
 
 interface RealVestIQHomepageProps {
