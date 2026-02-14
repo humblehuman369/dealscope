@@ -814,11 +814,13 @@ function VerdictContent() {
                     </div>
 
                     {/* Legend — sorted by price (matches left-to-right dot order) */}
-                    <div className="flex flex-wrap justify-between mt-3 gap-y-1.5">
+                    <div className="flex justify-between mt-3">
                       {markers.map((m, i) => (
-                        <div key={i} className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
-                          <span className="text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                        <div key={i} className="flex flex-col items-center gap-0.5">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
+                            <span className="text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                          </div>
                           <span className="text-[0.7rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
                         </div>
                       ))}
@@ -850,14 +852,12 @@ function VerdictContent() {
               <span className="text-[0.68rem] font-bold uppercase tracking-wider block" style={{ color: colors.text.primary }}>Market Snapshot</span>
               <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>Key signals from your 60-second screen</p>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
               {signals.map((s, i) => (
-                <div key={i} className="flex justify-between items-center rounded-xl py-3 px-3.5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.text.body }}>{s.label}</p>
-                    <p className="text-xs font-medium" style={{ color: s.color }}>{s.sub}</p>
-                  </div>
-                  <span className="text-lg font-bold tabular-nums" style={{ color: s.color }}>{s.value}</span>
+                <div key={i} className="flex flex-col rounded-xl py-3 px-3" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-wide" style={{ color: colors.text.body }}>{s.label}</p>
+                  <p className="text-[0.65rem] font-medium mt-0.5" style={{ color: s.color }}>{s.sub}</p>
+                  <span className="text-base font-bold tabular-nums mt-1.5" style={{ color: s.color }}>{s.value}</span>
                 </div>
               ))}
             </div>
