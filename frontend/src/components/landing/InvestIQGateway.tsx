@@ -81,13 +81,6 @@ export function RealVestIQGateway({ initialStep = 'start', onClose, onScanProper
       <div className="gw-grid-bg" />
 
       <div className="gw-card">
-        {/* Close button — absolute top-right */}
-        <button className="gw-close-btn" onClick={onClose} aria-label="Close">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
         {/* Body */}
         <div className="gw-body" style={{ padding: '2rem' }}>
 
@@ -138,8 +131,7 @@ export function RealVestIQGateway({ initialStep = 'start', onClose, onScanProper
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>I&apos;m IQ, your investment analyst.</h3>
-                  <p>Adjust property indicators below and I'll sharpen my analysis.</p>
+                  <h3>Institutional Grade Underwriting Engine.</h3>
                 </div>
               </div>
 
@@ -222,8 +214,7 @@ export function RealVestIQGateway({ initialStep = 'start', onClose, onScanProper
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>I&apos;m IQ, your investment analyst.</h3>
-                  <p>Adjust the property details below so I can give you a more accurate valuation.</p>
+                  <h3>Institutional Grade Underwriting Engine.</h3>
                 </div>
               </div>
 
