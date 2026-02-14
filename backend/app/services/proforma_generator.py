@@ -912,8 +912,15 @@ async def generate_proforma_data(
     hoa_fees = ((market.hoa_fees_monthly if market else None) or 0) * 12
     
     # Financing parameters — user overrides take priority over defaults
+    # Normalize: callers may send percentages (20, 6) instead of decimals (0.20, 0.06).
+    # Defaults from FINANCING are always decimals (e.g., 0.20, 0.065).
+    # Heuristic: if > 1, the value is a percentage → divide by 100.
     down_payment_pct = down_payment_pct_override or FINANCING.down_payment_pct
+    if down_payment_pct > 1:
+        down_payment_pct = down_payment_pct / 100
     interest_rate = interest_rate_override or FINANCING.interest_rate
+    if interest_rate > 1:
+        interest_rate = interest_rate / 100
     loan_term_years = FINANCING.loan_term_years
     closing_costs_pct = FINANCING.closing_costs_pct
     
