@@ -459,9 +459,9 @@ export default function VerdictIQScreen() {
         <View style={styles.addressStrip}>
           <View style={styles.addressLeft}>
             <Ionicons name="home-outline" size={rf(16)} color={verdictDark.blue} />
-            <View>
-              <Text style={styles.addressText}>{property.street}</Text>
-              <Text style={styles.addressDetails}>
+            <View style={{ flexShrink: 1 }}>
+              <Text style={styles.addressText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{property.street}</Text>
+              <Text style={styles.addressDetails} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>
                 {property.beds} bed · {property.baths} bath · {property.sqft.toLocaleString()} sqft · Listed {formatCurrency(property.price)}
               </Text>
             </View>
