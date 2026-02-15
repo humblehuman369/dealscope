@@ -157,6 +157,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 </svg>
                 Try Again
               </button>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error replaces the entire HTML shell; next/link is unavailable */}
               <a
                 href="/"
                 style={{

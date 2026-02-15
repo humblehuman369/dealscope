@@ -68,7 +68,7 @@ const formatValue = (value: number, format: FormatType, prefix?: string, suffix?
 
 const parseValue = (input: string, format: FormatType): number => {
   // Remove all non-numeric characters except decimal point and minus
-  let cleaned = input.replace(/[^0-9.-]/g, '')
+  const cleaned = input.replace(/[^0-9.-]/g, '')
   let value = parseFloat(cleaned) || 0
   
   // Convert percent input back to decimal

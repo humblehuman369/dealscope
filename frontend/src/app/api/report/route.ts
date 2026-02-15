@@ -88,7 +88,7 @@ function narrativeCover(d: Proforma): string {
 
 function narrativeOverview(d: Proforma): string {
   const coc = d.metrics.cash_on_cash_return, pr = d.property, ac = d.acquisition, inc = d.income
-  let assess = coc >= 8 ? 'a strong cash-flowing investment opportunity' : coc >= 0 ? 'a moderate investment opportunity with positive returns' : 'a wealth-building investment opportunity focused on long-term appreciation'
+  const assess = coc >= 8 ? 'a strong cash-flowing investment opportunity' : coc >= 0 ? 'a moderate investment opportunity with positive returns' : 'a wealth-building investment opportunity focused on long-term appreciation'
   let t = `This ${ptypeLabel(pr.property_type)} represents ${assess} in ${pr.city}'s residential market. With a list price of ${$(ac.list_price)} and a projected monthly rent of ${$(inc.monthly_rent)}, the property `
   if (d.metrics.price_per_sqft > 0) t += `carries a price per square foot of $${fmt(d.metrics.price_per_sqft)}. `
   t += `The rent-to-price ratio and location fundamentals position this property for sustained investor interest.`

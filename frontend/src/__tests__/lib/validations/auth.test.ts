@@ -54,8 +54,8 @@ describe('Auth Validation Schemas', () => {
     const validRegistration = {
       fullName: 'John Doe',
       email: 'john@example.com',
-      password: 'Password123',
-      confirmPassword: 'Password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
     }
 
     it('validates a correct registration', () => {
@@ -114,7 +114,7 @@ describe('Auth Validation Schemas', () => {
     it('rejects mismatched passwords', () => {
       const result = registerSchema.safeParse({
         ...validRegistration,
-        confirmPassword: 'DifferentPassword123',
+        confirmPassword: 'DifferentPassword123!',
       })
       expect(result.success).toBe(false)
       if (!result.success) {
@@ -153,16 +153,16 @@ describe('Auth Validation Schemas', () => {
   describe('resetPasswordSchema', () => {
     it('validates matching passwords', () => {
       const result = resetPasswordSchema.safeParse({
-        password: 'NewPassword123',
-        confirmPassword: 'NewPassword123',
+        password: 'NewPassword123!',
+        confirmPassword: 'NewPassword123!',
       })
       expect(result.success).toBe(true)
     })
 
     it('rejects mismatched passwords', () => {
       const result = resetPasswordSchema.safeParse({
-        password: 'NewPassword123',
-        confirmPassword: 'DifferentPassword123',
+        password: 'NewPassword123!',
+        confirmPassword: 'DifferentPassword123!',
       })
       expect(result.success).toBe(false)
       if (!result.success) {

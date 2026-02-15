@@ -156,7 +156,7 @@ function StrategyContent() {
       }
     }
     fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [addressParam, conditionParam, locationParam, dealMakerOverrides])
 
   const handleBack = useCallback(() => {
