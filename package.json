@@ -4,7 +4,6 @@
   "private": true,
   "workspaces": [
     "frontend",
-    "mobile",
     "shared"
   ],
   "scripts": {
@@ -14,7 +13,7 @@
     "lint": "cd frontend && npm run lint",
     "parity-check": "bash scripts/parity-check.sh",
     "typecheck:shared": "cd shared && npx tsc --noEmit",
-    "postinstall": "cd frontend && npm install"
+    "install:mobile": "cd mobile && npm install"
   },
   "dependencies": {
     "next": "14.2.35"
