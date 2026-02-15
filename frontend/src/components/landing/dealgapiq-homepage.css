@@ -163,17 +163,25 @@
   background: linear-gradient(135deg, var(--cyan) 0%, var(--teal) 60%, var(--green) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+/* Hero Body — shared container so subtitle matches input width */
+.iq-landing .hero-body {
+  width: 100%; max-width: 620px;
+  animation: iqFadeUp 0.8s ease-out;
+}
 .iq-landing .hero-subtitle {
   font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.6;
-  color: var(--text); max-width: 580px; margin-bottom: 2rem;
+  color: var(--text); margin-bottom: 1.5rem;
   text-align: left; width: 100%;
-  animation: iqFadeUp 0.8s ease-out;
+}
+.iq-landing .hero-cta-line {
+  font-weight: 600; color: var(--teal); text-align: center;
+  margin-top: -0.5rem; margin-bottom: 2rem;
 }
 
 /* Hero Inputs */
 .iq-landing .hero-inputs {
   display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
-  animation: iqFadeUp 0.9s ease-out;
+  width: 100%;
 }
 .iq-landing .input-group {
   display: flex; align-items: center;
@@ -688,7 +696,8 @@
 @media (max-width: 640px) {
   .iq-landing .hero.hero-centered { padding: 1.5rem 1.25rem 2.5rem; min-height: auto; }
   .iq-landing .section { padding: 4rem 1.25rem; }
-  .iq-landing .hero-inputs { flex-direction: column; width: 100%; max-width: 400px; }
+  .iq-landing .hero-body { max-width: 100%; }
+  .iq-landing .hero-inputs { flex-direction: column; width: 100%; }
   .iq-landing .input-placeholder { width: 100%; }
   .iq-landing .nav-links { display: none; }
   .iq-landing .signals-grid { grid-template-columns: 1fr; }
