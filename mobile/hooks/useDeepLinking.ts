@@ -27,6 +27,27 @@ import * as ExpoLinking from 'expo-linking';
 
 // ─── URL → Route mapping ─────────────────────────────────────────
 
+/** Max length for an address param — well beyond any real US address */
+const MAX_ADDRESS_LENGTH = 500;
+
+/**
+ * Sanitize an address coming from an external deep link.
+ * Rejects null bytes, HTML tags, excessively long strings, and
+ * trims leading/trailing whitespace.  Returns empty string on failure
+ * so the caller's existing `if (!addr)` guard redirects to home.
+ */
+function sanitizeAddress(raw: string): string {
+  if (!raw || raw.length > MAX_ADDRESS_LENGTH) return '';
+  // Strip null bytes and HTML/script tags
+  let clean = raw.replace(/\0/g, '').replace(/<[^>]*>/g, '');
+  // Collapse whitespace and trim
+  clean = clean.replace(/\s+/g, ' ').trim();
+  // Only allow printable ASCII + common address chars (letters, digits,
+  // spaces, commas, periods, hashes, hyphens, apostrophes, plus signs)
+  if (!/^[a-zA-Z0-9\s,.\-#'+/]+$/.test(clean)) return '';
+  return clean;
+}
+
 interface ParsedRoute {
   pathname: string;
   params: Record<string, string>;
@@ -42,7 +63,7 @@ function parseDeepLink(url: string): ParsedRoute | null {
     const path = (parsed.path || '').replace(/^\//, '').replace(/\/$/, '');
     const q = parsed.queryParams || {};
 
-    // Extract common property params from query string
+    // Extract common property params from query string (sanitized)
     const propertyParams = (addr: string) => ({
       address: addr,
       ...(q.price ? { price: String(q.price) } : {}),
@@ -63,21 +84,21 @@ function parseDeepLink(url: string): ParsedRoute | null {
 
     // Verdict
     if (path === 'verdict' || path === 'verdict-iq') {
-      const addr = String(q.address || '');
+      const addr = sanitizeAddress(String(q.address || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/verdict-iq/[address]', params: propertyParams(addr) };
     }
 
     // Strategy / Analysis
     if (path === 'strategy' || path === 'strategy-iq') {
-      const addr = String(q.address || '');
+      const addr = sanitizeAddress(String(q.address || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/strategy-iq/[address]', params: propertyParams(addr) };
     }
 
     // Analyzing
     if (path === 'analyzing') {
-      const addr = String(q.address || '');
+      const addr = sanitizeAddress(String(q.address || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/analyzing/[address]', params: propertyParams(addr) };
     }
@@ -85,14 +106,14 @@ function parseDeepLink(url: string): ParsedRoute | null {
     // Property — /property?address=X or /property/[zpid]
     if (path === 'property' || path.startsWith('property/')) {
       const zpid = path.split('/')[1];
-      const addr = String(q.address || zpid || '');
+      const addr = sanitizeAddress(String(q.address || zpid || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/property-details/[address]', params: propertyParams(addr) };
     }
 
     // Deal Gap
     if (path === 'deal-gap') {
-      const addr = String(q.address || '');
+      const addr = sanitizeAddress(String(q.address || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/deal-gap/[address]', params: propertyParams(addr) };
     }
@@ -100,7 +121,7 @@ function parseDeepLink(url: string): ParsedRoute | null {
     // Deal Maker — /deal-maker/[address] or /deal-maker?address=X
     if (path === 'deal-maker' || path.startsWith('deal-maker/')) {
       const pathAddr = path.split('/')[1];
-      const addr = String(q.address || pathAddr || '');
+      const addr = sanitizeAddress(String(q.address || pathAddr || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/deal-maker/[address]', params: { address: addr } };
     }
@@ -109,18 +130,19 @@ function parseDeepLink(url: string): ParsedRoute | null {
     if (path === 'worksheet' || path.startsWith('worksheet/')) {
       const parts = path.split('/');
       const strategy = String(q.strategy || parts[2] || parts[1] || 'ltr');
+      const wsAddr = q.address ? sanitizeAddress(String(q.address)) : '';
       return {
         pathname: '/worksheet/[strategy]',
         params: {
           strategy,
-          ...(q.address ? propertyParams(String(q.address)) : {}),
+          ...(wsAddr ? propertyParams(wsAddr) : {}),
         },
       };
     }
 
     // Price Intel
     if (path === 'price-intel') {
-      const addr = String(q.address || '');
+      const addr = sanitizeAddress(String(q.address || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/price-intel/[address]', params: propertyParams(addr) };
     }
@@ -152,7 +174,7 @@ function parseDeepLink(url: string): ParsedRoute | null {
 
     // Photos
     if (path === 'photos') {
-      const addr = String(q.address || q.zpid || '');
+      const addr = sanitizeAddress(String(q.address || q.zpid || ''));
       if (!addr) return { pathname: '/(tabs)/home', params: {} };
       return { pathname: '/photos/[zpid]', params: { zpid: addr, address: addr } };
     }

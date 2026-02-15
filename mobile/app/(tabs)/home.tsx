@@ -265,6 +265,9 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: c.blue }]}
               onPress={() => inputRef.current?.focus()}
+              accessibilityRole="button"
+              accessibilityLabel="Start free analysis"
+              accessibilityHint="Focuses the address search input"
             >
               <Text style={s.ctaBtnText}>Start Free Analysis</Text>
             </TouchableOpacity>
@@ -275,9 +278,9 @@ export default function HomeScreen() {
             <Text style={s.footerLogo}>Invest<Text style={{ color: c.blue }}>IQ</Text></Text>
             <Text style={s.footerTag}>Professional Real Estate Intelligence for Everyone.</Text>
             <View style={s.footerLinks}>
-              <TouchableOpacity onPress={() => router.push('/privacy' as any)}><Text style={s.footerLink}>Privacy</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/terms' as any)}><Text style={s.footerLink}>Terms</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@realvestiq.com')}><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/privacy' as any)} accessibilityRole="link" accessibilityLabel="Privacy policy"><Text style={s.footerLink}>Privacy</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/terms' as any)} accessibilityRole="link" accessibilityLabel="Terms of service"><Text style={s.footerLink}>Terms</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@realvestiq.com')} accessibilityRole="link" accessibilityLabel="Contact support"><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
             </View>
             <Text style={s.footerCopy}>© 2026 InvestIQ. All rights reserved.{'\n'}Professional use only. Not a lender.</Text>
           </View>

@@ -53,27 +53,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
     error: null,
   });
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount — fast-path first, then background refresh.
+  //
+  // 1. Immediately load cached user data from SecureStore (no network).
+  //    This lets the app render authenticated UI within milliseconds.
+  // 2. In the background, refresh the access token and pull fresh user
+  //    data from the API.  If the refresh fails (token expired, network
+  //    down), we clear the state so the user is redirected to login.
   useEffect(() => {
+    let cancelled = false;
+
     async function init() {
+      // ── Fast path: cached user data from SecureStore ──
+      const hasRefreshToken = !!(await getRefreshToken());
+      if (!hasRefreshToken) {
+        // No stored session — go straight to logged-out state
+        setState({ user: null, isLoading: false, isAuthenticated: false, error: null });
+        return;
+      }
+
+      const cachedUser = await getStoredUserData();
+      if (cachedUser && !cancelled) {
+        // Show the cached profile immediately so screens render fast
+        setState({ user: cachedUser, isLoading: false, isAuthenticated: true, error: null });
+      }
+
+      // ── Background refresh: get a fresh access token + user profile ──
       try {
-        const user = await initializeAuth();
-        setState({
-          user,
-          isLoading: false,
-          isAuthenticated: !!user,
-          error: null,
-        });
+        const freshUser = await initializeAuth();
+        if (cancelled) return;
+        if (freshUser) {
+          setState({ user: freshUser, isLoading: false, isAuthenticated: true, error: null });
+        } else if (!cachedUser) {
+          // No cached data AND refresh failed → logged out
+          setState({ user: null, isLoading: false, isAuthenticated: false, error: null });
+        }
       } catch {
-        setState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false,
-          error: null,
-        });
+        if (cancelled) return;
+        if (!cachedUser) {
+          setState({ user: null, isLoading: false, isAuthenticated: false, error: null });
+        }
+        // If we had cached data, keep showing it — the next API call
+        // will trigger a 401 → refreshWithMutex → onAuthStateChange flow.
       }
     }
     init();
+    return () => { cancelled = true; };
   }, []);
 
   // Listen for unexpected token clears (e.g. refresh failure in the
