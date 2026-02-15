@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -30,6 +30,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   // MFA state
   const [mfaChallenge, setMfaChallenge] = useState<string | null>(null);
@@ -205,6 +206,9 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoComplete="email"
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current?.focus()}
+                blurOnSubmit={false}
                 style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
                 accessibilityLabel="Email address"
                 textContentType="emailAddress"
@@ -216,12 +220,15 @@ export default function LoginScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 12 }}>
               <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} accessibilityElementsHidden />
               <TextInput
+                ref={passwordRef}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
                 placeholderTextColor={mutedColor}
                 secureTextEntry={!showPassword}
                 autoComplete="password"
+                returnKeyType="go"
+                onSubmitEditing={handleLogin}
                 style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
                 accessibilityLabel="Password"
                 textContentType="password"
