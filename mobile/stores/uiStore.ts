@@ -9,10 +9,9 @@
  */
 
 import { create } from 'zustand';
+import type { StrategyId } from '../types/analytics';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
 
 interface UIStore {
   // Active strategy (used across analysis, worksheet, and verdict screens)

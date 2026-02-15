@@ -26,7 +26,7 @@ import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../context/ThemeContext';
 import { usePropertyAnalysis } from '../../hooks/usePropertyAnalysis';
-import type { PropertyData } from '../../components/analytics/redesign/types';
+import type { PropertyData } from '../../types/analytics';
 
 function formatPrice(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;

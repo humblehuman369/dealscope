@@ -51,7 +51,7 @@ import {
   rs,
 } from '../../components/verdict-iq';
 import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
-import { PropertyData } from '../../components/analytics/redesign/types';
+import { PropertyData } from '../../types/analytics';
 import { useAddPortfolioProperty } from '../../hooks/useDatabase';
 
 // =============================================================================

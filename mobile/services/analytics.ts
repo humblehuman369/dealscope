@@ -684,36 +684,21 @@ export async function checkBackendHealth(): Promise<{
   }
 }
 
-/**
- * Format currency for display.
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+// ─── Formatters (re-exported from canonical utils/formatters) ────────────────
+// New code should import directly from 'utils/formatters'.
+
+export { formatCurrency, formatCompact } from '../utils/formatters';
+import { formatDecimalAsPercent } from '../utils/formatters';
 
 /**
- * Format percentage for display.
+ * Format a decimal ratio as a percentage for display.
+ * Takes a decimal (0.085) and returns "8.5%".
+ *
+ * NOTE: This wraps formatDecimalAsPercent to preserve the existing
+ * public API where callers pass raw decimals from the backend.
  */
 export function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-/**
- * Format compact number (e.g., $1.2M, $500K).
- */
-export function formatCompact(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
-  }
-  return formatCurrency(value);
+  return formatDecimalAsPercent(value);
 }
 
 /**

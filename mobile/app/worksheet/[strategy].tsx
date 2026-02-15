@@ -31,12 +31,12 @@ import * as Haptics from 'expo-haptics';
 import { api } from '../../services/apiClient';
 import { useTheme } from '../../context/ThemeContext';
 import { useAssumptionsStore, useWorksheetStore } from '../../stores';
+import type { StrategyId } from '../../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type InputFormat = 'currency' | 'percent' | 'number' | 'months';
 type ResultFormat = 'currency' | 'percent' | 'number' | 'boolean' | 'score';
-type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
 
 interface FieldConfig {
   key: string;
