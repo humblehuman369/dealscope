@@ -188,6 +188,7 @@ export function useIQAnalysis(
   const [metricsAtList, setMetricsAtList] = useState<Record<string, unknown> | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     if (!strategyId) {
@@ -196,6 +197,14 @@ export function useIQAnalysis(
       setMetricsAtList(null)
       return
     }
+
+    // Cancel any in-flight request from the previous render
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
     const timer = setTimeout(async () => {
       setIsLoading(true)
@@ -216,7 +225,11 @@ export function useIQAnalysis(
         const verdict = await api.post<VerdictResponse>(
           '/api/v1/analysis/verdict',
           verdictPayload,
+          { signal: controller.signal },
         )
+
+        // Bail out if aborted between calls
+        if (controller.signal.aborted) return
 
         const target = mapVerdictToIQTarget(verdict, strategyId, assumptions)
         setIqTarget(target)
@@ -228,10 +241,12 @@ export function useIQAnalysis(
             api.post<Record<string, unknown>>(
               endpoint,
               buildWorksheetPayload(strategyId, target.targetPrice, assumptions),
+              { signal: controller.signal },
             ),
             api.post<Record<string, unknown>>(
               endpoint,
               buildWorksheetPayload(strategyId, assumptions.listPrice, assumptions),
+              { signal: controller.signal },
             ),
           ])
 
@@ -239,6 +254,8 @@ export function useIQAnalysis(
           setMetricsAtList(listResult)
         }
       } catch (err) {
+        // Ignore aborted requests
+        if (err instanceof Error && err.name === 'AbortError') return
         const message =
           err instanceof Error
             ? err.message
@@ -249,7 +266,10 @@ export function useIQAnalysis(
       }
     }, DEBOUNCE_MS)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [strategyId, assumptions])
 
   return { iqTarget, metricsAtTarget, metricsAtList, isLoading, error }
