@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,9 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [requiresVerification, setRequiresVerification] = useState(true);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const passwordValidation = password.length > 0 ? validatePassword(password) : null;
 
@@ -135,21 +138,21 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Full Name</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
               <Ionicons name="person-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={fullName} onChangeText={setFullName} placeholder="John Doe" placeholderTextColor={mutedColor} autoComplete="name" accessibilityLabel="Full name" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput value={fullName} onChangeText={setFullName} placeholder="John Doe" placeholderTextColor={mutedColor} autoComplete="name" accessibilityLabel="Full name" returnKeyType="next" onSubmitEditing={() => emailRef.current?.focus()} blurOnSubmit={false} style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Email */}
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Email</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
               <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={mutedColor} autoCapitalize="none" keyboardType="email-address" autoComplete="email" accessibilityLabel="Email address" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput ref={emailRef} value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={mutedColor} autoCapitalize="none" keyboardType="email-address" autoComplete="email" accessibilityLabel="Email address" returnKeyType="next" onSubmitEditing={() => passwordRef.current?.focus()} blurOnSubmit={false} style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Password */}
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Password</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 8 }}>
               <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={password} onChangeText={setPassword} placeholder="Create a strong password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput ref={passwordRef} value={password} onChangeText={setPassword} placeholder="Create a strong password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Password" returnKeyType="next" onSubmitEditing={() => confirmPasswordRef.current?.focus()} blurOnSubmit={false} style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)} accessibilityRole="button" accessibilityLabel={showPassword ? "Hide password" : "Show password"} style={{ paddingRight: 14 }}>
                 <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={mutedColor} />
               </TouchableOpacity>
@@ -171,7 +174,7 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Confirm Password</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 20 }}>
               <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
-              <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Confirm password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TextInput ref={confirmPasswordRef} value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" accessibilityLabel="Confirm password" returnKeyType="go" onSubmitEditing={handleRegister} style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
             </View>
 
             {/* Submit */}

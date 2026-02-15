@@ -8,6 +8,7 @@ import {
   Dimensions,
   Platform,
   Easing,
+  Linking,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
@@ -201,7 +202,7 @@ export default function ScanScreen() {
 
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
       const route = `/analyzing/${encodedAddress}?${queryParams.toString()}`;
-      console.log('[IQ Verdict] Navigating to:', route);
+      if (__DEV__) console.log('[IQ Verdict] Navigating to:', route);
       router.push(route as any);
     }
   }, [result, router]);
@@ -216,16 +217,36 @@ export default function ScanScreen() {
   }
 
   if (!permission.granted) {
+    const permanentlyDenied = !permission.canAskAgain;
     return (
       <View style={[styles.permissionContainer, { backgroundColor: theme.background }]}>
         <Ionicons name="camera-outline" size={64} color={theme.textMuted} />
         <Text accessibilityRole="header" style={[styles.permissionTitle, { color: theme.text }]}>Camera Access Required</Text>
         <Text accessibilityRole="text" style={[styles.permissionText, { color: theme.textSecondary }]}>
-          RealVestIQ needs camera access to scan properties and provide instant investment analytics.
+          {permanentlyDenied
+            ? 'Camera permission was denied. Please enable it in your device settings to scan properties.'
+            : 'RealVestIQ needs camera access to scan properties and provide instant investment analytics.'}
         </Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission} accessibilityRole="button" accessibilityLabel="Enable camera access">
-          <Text style={styles.permissionButtonText}>Enable Camera</Text>
-        </TouchableOpacity>
+        {permanentlyDenied ? (
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => Linking.openSettings()}
+            accessibilityRole="button"
+            accessibilityLabel="Open device settings"
+          >
+            <Ionicons name="settings-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={styles.permissionButtonText}>Open Settings</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={requestPermission}
+            accessibilityRole="button"
+            accessibilityLabel="Enable camera access"
+          >
+            <Text style={styles.permissionButtonText}>Enable Camera</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -767,6 +788,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   permissionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primary[600],
     paddingVertical: 14,
     paddingHorizontal: 32,
