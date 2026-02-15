@@ -23,6 +23,7 @@ import { useDeepLinking } from '../hooks/useDeepLinking';
 import { useRegisterPushToken } from '../hooks/useRegisterPushToken';
 import { useAuth } from '../context/AuthContext';
 import { syncManager } from '../services/syncManager';
+import { migrateAsyncStorageKeys } from '../utils/storageMigration';
 import NetInfo from '@react-native-community/netinfo';
 
 // Initialize Sentry for error tracking
@@ -79,6 +80,7 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const [showAnimatedSplash, setShowAnimatedSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
+  const migrationRan = useRef(false);
 
   // Load Inter font family — matches frontend typography (Inter 400/600/700)
   const [fontsLoaded] = useFonts({
@@ -86,6 +88,14 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  // One-time storage key migration (rebrand: investiq → dealgapiq).
+  // Runs before stores hydrate so Zustand picks up the migrated data.
+  useEffect(() => {
+    if (migrationRan.current) return;
+    migrationRan.current = true;
+    migrateAsyncStorageKeys();
+  }, []);
 
   useEffect(() => {
     // Wait for fonts before showing the app

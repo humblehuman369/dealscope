@@ -1,6 +1,37 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+// ─── One-time localStorage key migration (rebrand: investiq → dealgapiq) ─────
+// Zustand persist uses `name` as the localStorage key.  Changing the key
+// orphans previously-saved data.  This block runs once, synchronously, before
+// any store hydrates — copying old-key data to the new key and removing the
+// old entry so the migration is idempotent.
+if (typeof window !== 'undefined') {
+  const keyMigrations: [string, string][] = [
+    // Zustand persist stores
+    ['investiq-assumptions', 'dealgapiq-assumptions'],
+    ['investiq-property', 'dealgapiq-property'],
+    // Raw localStorage keys
+    ['investiq-progressive-profile', 'dealgapiq-progressive-profile'],
+    ['investiq_defaults', 'dealgapiq_defaults'],
+    ['investiq_defaults_timestamp', 'dealgapiq_defaults_timestamp'],
+    ['investiq-scenarios', 'dealgapiq-scenarios'],
+    ['investiq-comparisons', 'dealgapiq-comparisons'],
+    ['investiq_loi_buyer', 'dealgapiq_loi_buyer'],
+  ]
+  for (const [oldKey, newKey] of keyMigrations) {
+    try {
+      const oldData = localStorage.getItem(oldKey)
+      if (oldData !== null && localStorage.getItem(newKey) === null) {
+        localStorage.setItem(newKey, oldData)
+        localStorage.removeItem(oldKey)
+      }
+    } catch {
+      // Storage access can throw in private/sandboxed contexts — safe to ignore
+    }
+  }
+}
+
 /**
  * IMPORTANT: Default Assumptions Architecture
  * 
