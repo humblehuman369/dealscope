@@ -136,7 +136,42 @@ else
   log_warn "Test fixtures missing"
 fi
 
-# ── 6. Debounce Timing Alignment ──────────────────────────────────────────
+# ── 6. Score Grading Alignment ──────────────────────────────────────────
+echo ""
+echo "── Score Grading ──"
+
+# Count grade thresholds in usePropertyAnalysis scoreToGrade (should be 6-grade: A+, A, B, C, D, F)
+MB_GRADE_COUNT=$(grep -A 8 "function scoreToGrade" mobile/hooks/usePropertyAnalysis.ts 2>/dev/null | grep "return '" | wc -l || echo 0)
+
+if [ "$MB_GRADE_COUNT" -le 6 ] && [ "$MB_GRADE_COUNT" -gt 0 ] 2>/dev/null; then
+  log_pass "Score grading uses 6-grade system (${MB_GRADE_COUNT} grades)"
+else
+  log_fail "Score grading may still use 11-grade system ($MB_GRADE_COUNT return statements)"
+fi
+
+# ── 7. Dynamic Metrics Engine ──────────────────────────────────────────
+echo ""
+echo "── Engine Parity ──"
+
+if [ -f "mobile/lib/dynamicMetrics.ts" ]; then
+  log_pass "Dynamic metrics engine ported to mobile"
+else
+  log_fail "Dynamic metrics engine missing on mobile (mobile/lib/dynamicMetrics.ts)"
+fi
+
+if [ -f "mobile/config/strategyMetrics.ts" ]; then
+  log_pass "Strategy metrics config ported to mobile"
+else
+  log_fail "Strategy metrics config missing on mobile (mobile/config/strategyMetrics.ts)"
+fi
+
+if [ -f "mobile/lib/projections.ts" ]; then
+  log_pass "10-year projections engine ported to mobile"
+else
+  log_fail "Projections engine missing on mobile (mobile/lib/projections.ts)"
+fi
+
+# ── 8. Debounce Timing Alignment ──────────────────────────────────────────
 echo ""
 echo "── Behavior Alignment ──"
 
@@ -147,6 +182,22 @@ if [ "$FE_DEBOUNCE" = "$MB_DEBOUNCE" ] && [ "$FE_DEBOUNCE" != "NOT FOUND" ]; the
   log_pass "Calculation debounce timing matches (${FE_DEBOUNCE}ms)"
 elif [ "$FE_DEBOUNCE" != "NOT FOUND" ] && [ "$MB_DEBOUNCE" != "NOT FOUND" ]; then
   log_warn "Calculation debounce differs (frontend: ${FE_DEBOUNCE}ms, mobile: ${MB_DEBOUNCE}ms)"
+fi
+
+# Check AbortController in mobile usePropertyAnalysis
+MB_ABORT=$(grep -c "AbortController" mobile/hooks/usePropertyAnalysis.ts 2>/dev/null || echo 0)
+if [ "$MB_ABORT" -gt 0 ]; then
+  log_pass "AbortController present in usePropertyAnalysis"
+else
+  log_fail "AbortController missing in usePropertyAnalysis"
+fi
+
+# Check parallel worksheet fetches in mobile usePropertyAnalysis
+MB_WORKSHEET=$(grep -c "WORKSHEET_ENDPOINTS" mobile/hooks/usePropertyAnalysis.ts 2>/dev/null || echo 0)
+if [ "$MB_WORKSHEET" -gt 0 ]; then
+  log_pass "Parallel worksheet fetches in usePropertyAnalysis"
+else
+  log_fail "Parallel worksheet fetches missing in usePropertyAnalysis"
 fi
 
 # ── Summary ────────────────────────────────────────────────────────────────
