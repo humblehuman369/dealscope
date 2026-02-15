@@ -75,6 +75,51 @@ jobs:
         run: npm run test:run
 
   # ════════════════════════════════════════════
+  # MOBILE (Expo / React Native)
+  # ════════════════════════════════════════════
+
+  # ────────────────────────────────────────────
+  # Mobile: type-check, lint & test
+  # ────────────────────────────────────────────
+  mobile-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: https://placeholder.example.com
+      EXPO_PUBLIC_WEB_APP_URL: https://placeholder.example.com
+      EXPO_PUBLIC_GOOGLE_MAPS_API_KEY: placeholder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+        continue-on-error: true  # Pre-existing errors; will enforce once clean
+
+      - name: Jest tests
+        run: npm run test:ci
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-coverage
+          path: mobile/coverage/
+
+  # ════════════════════════════════════════════
   # BACKEND
   # ════════════════════════════════════════════
 
