@@ -143,15 +143,21 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* HERO */}
       <section className="hero hero-centered">
-        <div className="hero-badge"><span className="badge-dot" /> Real estate investment intelligence</div>
+        <div className="hero-badge"><span className="badge-dot" /> Real Analytics for Real Estate Investors</div>
 
         <h1 className="hero-headline">
-          Stop Researching Deals<br />
-          That Were <span className="grad">Never Going<br />to Work.</span>
+          Every Home Is an Opportunity<br />
+          at the <span className="grad">Right Price.</span>
         </h1>
+        <p className="hero-tagline" style={{ fontSize: '1.15rem', color: '#94a3b8', fontWeight: 500, marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
+          Many are closer than you think.
+        </p>
 
         <p className="hero-subtitle">
-          Scan any property and know in 60 seconds if it&apos;s worth your time — before you waste a weekend running numbers.
+          DealGapIQ analyzes the local market to establish your <strong style={{ color: '#2dd4bf' }}>Breakeven Price</strong>, your <strong style={{ color: '#2dd4bf' }}>Target Buy</strong>, and your <strong style={{ color: '#2dd4bf' }}>Deal Gap</strong> for any property — then layers in seller motivation to show you the real probability of closing the deal at your price.
+        </p>
+        <p className="hero-subtitle" style={{ fontWeight: 600, color: '#2dd4bf', marginTop: '0.25rem' }}>
+          Scan any property. Know your number.
         </p>
 
         <div className="hero-inputs">
