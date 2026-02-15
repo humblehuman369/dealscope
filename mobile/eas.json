@@ -110,8 +110,9 @@
       },
       "android": {
         "serviceAccountKeyPath": "./google-services-key.json",
-        "track": "internal",
-        "releaseStatus": "draft"
+        "track": "production",
+        "releaseStatus": "completed",
+        "changesNotSentForReview": false
       }
     },
     "beta": {

@@ -8,39 +8,32 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-
     "build:dev": "eas build --profile development --platform all",
     "build:dev:ios": "eas build --profile development --platform ios",
     "build:dev:android": "eas build --profile development --platform android",
     "build:dev-device": "eas build --profile development-device --platform all",
-
     "build:preview": "eas build --profile preview --platform all",
     "build:preview:ios": "eas build --profile preview --platform ios",
     "build:preview:android": "eas build --profile preview --platform android",
-
     "build:beta": "eas build --profile beta --platform all",
     "build:beta:ios": "eas build --profile beta --platform ios",
     "build:beta:android": "eas build --profile beta --platform android",
-
     "build:production": "eas build --profile production --platform all",
     "build:production:ios": "eas build --profile production --platform ios",
     "build:production:android": "eas build --profile production --platform android",
-
     "submit:ios": "eas submit --platform ios --profile production",
     "submit:android": "eas submit --platform android --profile production",
     "submit:all": "eas submit --platform all --profile production",
-
     "update:preview": "eas update --channel preview",
     "update:beta": "eas update --channel beta",
     "update:production": "eas update --channel production",
-
     "credentials:ios": "eas credentials --platform ios",
     "credentials:android": "eas credentials --platform android",
     "devices": "eas device:list",
     "devices:register": "eas device:create",
-
-    "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest",
+    "lint": "eslint .",
+    "test": "jest --passWithNoTests",
+    "test:ci": "jest --ci --coverage --passWithNoTests",
     "doctor": "npx expo-doctor"
   },
   "dependencies": {
@@ -94,11 +87,16 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "jest": "^29.7.0",
+    "jest-expo": "^54.0.17",
     "typescript": "~5.9.2"
   },
   "private": true
