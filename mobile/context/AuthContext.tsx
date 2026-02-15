@@ -16,6 +16,7 @@ import {
   getStoredUserData,
   initializeAuth,
   getRefreshToken,
+  onAuthStateChange,
   AuthError,
   type MFAChallengeResponse,
   type LoginResponse,
@@ -73,6 +74,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     init();
+  }, []);
+
+  // Listen for unexpected token clears (e.g. refresh failure in the
+  // API interceptor) and reset the auth state so the user is
+  // redirected to login instead of seeing a broken logged-in UI.
+  useEffect(() => {
+    onAuthStateChange((event) => {
+      if (event === 'tokens_cleared') {
+        setState({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+          error: null,
+        });
+      }
+    });
+    return () => onAuthStateChange(null);
   }, []);
 
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
