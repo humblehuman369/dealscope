@@ -698,7 +698,7 @@ export function VerdictIQCombined({
             fontWeight: 600,
             color: 'var(--dg-text-tertiary)',
           }}>
-            by Invest<span style={{ color: 'var(--dg-pacific-teal)' }}>IQ</span>
+            by DealGap<span style={{ color: 'var(--dg-pacific-teal)' }}>IQ</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

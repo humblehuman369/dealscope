@@ -1,18 +1,18 @@
 """
-Custom exceptions for RealVestIQ API.
+Custom exceptions for DealGapIQ API.
 
 Centralizes exception definitions and provides consistent error handling patterns.
 """
 from typing import Any, Dict, Optional
 
 
-class RealVestIQError(Exception):
-    """Base exception for all RealVestIQ errors."""
+class DealGapIQError(Exception):
+    """Base exception for all DealGapIQ errors."""
     
     def __init__(
         self, 
         message: str, 
-        code: str = "REALVESTIQ_ERROR",
+        code: str = "DEALGAPIQ_ERROR",
         details: Optional[Dict[str, Any]] = None
     ):
         super().__init__(message)
@@ -31,7 +31,7 @@ class RealVestIQError(Exception):
         }
 
 
-class NotFoundError(RealVestIQError):
+class NotFoundError(DealGapIQError):
     """Resource not found."""
     
     def __init__(self, resource: str, identifier: str, details: Optional[Dict[str, Any]] = None):
@@ -58,7 +58,7 @@ class UserNotFoundError(NotFoundError):
         super().__init__(resource="User", identifier=user_id)
 
 
-class ValidationError(RealVestIQError):
+class ValidationError(DealGapIQError):
     """Validation error for input data."""
     
     def __init__(self, message: str, field: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
@@ -70,7 +70,7 @@ class ValidationError(RealVestIQError):
         self.field = field
 
 
-class AuthenticationError(RealVestIQError):
+class AuthenticationError(DealGapIQError):
     """Authentication failed."""
     
     def __init__(self, message: str = "Authentication failed", details: Optional[Dict[str, Any]] = None):
@@ -81,7 +81,7 @@ class AuthenticationError(RealVestIQError):
         )
 
 
-class AuthorizationError(RealVestIQError):
+class AuthorizationError(DealGapIQError):
     """Authorization/permission denied."""
     
     def __init__(self, message: str = "Permission denied", details: Optional[Dict[str, Any]] = None):
@@ -92,7 +92,7 @@ class AuthorizationError(RealVestIQError):
         )
 
 
-class ExternalAPIError(RealVestIQError):
+class ExternalAPIError(DealGapIQError):
     """Error from external API (RentCast, AXESSO, Stripe, etc.)."""
     
     def __init__(
@@ -111,7 +111,7 @@ class ExternalAPIError(RealVestIQError):
         self.status_code = status_code
 
 
-class RateLimitError(RealVestIQError):
+class RateLimitError(DealGapIQError):
     """Rate limit exceeded."""
     
     def __init__(self, retry_after: Optional[int] = None, details: Optional[Dict[str, Any]] = None):
@@ -123,7 +123,7 @@ class RateLimitError(RealVestIQError):
         self.retry_after = retry_after
 
 
-class SubscriptionError(RealVestIQError):
+class SubscriptionError(DealGapIQError):
     """Subscription-related error."""
     
     def __init__(self, message: str, tier_required: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
@@ -155,7 +155,7 @@ class SubscriptionLimitError(SubscriptionError):
         self.limit = limit
 
 
-class StorageError(RealVestIQError):
+class StorageError(DealGapIQError):
     """File storage error."""
     
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
@@ -166,7 +166,7 @@ class StorageError(RealVestIQError):
         )
 
 
-class ConfigurationError(RealVestIQError):
+class ConfigurationError(DealGapIQError):
     """Configuration/setup error."""
     
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):

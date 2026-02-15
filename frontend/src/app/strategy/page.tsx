@@ -357,7 +357,7 @@ function StrategyContent() {
       }
 
       const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = 'InvestIQ_Strategy_Report.xlsx'
+      let filename = 'DealGapIQ_Strategy_Report.xlsx'
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/)
         if (match) filename = match[1]

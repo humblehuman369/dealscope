@@ -23,7 +23,7 @@ import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
-import { RealVestIQHomepage } from '@/components/landing';
+import { DealGapIQHomepage } from '@/components/landing';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -33,8 +33,8 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // Use the new InvestIQ homepage
-  return <RealVestIQHomepage onPointAndScan={() => setMode('camera')} />;
+  // Use the new DealGapIQ homepage
+  return <DealGapIQHomepage onPointAndScan={() => setMode('camera')} />;
 }
 
 /**
@@ -342,7 +342,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="flex items-center justify-between p-4 pt-safe bg-gradient-to-b from-black/60 to-transparent">
           <div className="flex items-center gap-2">
             <span className="text-white font-bold text-lg font-display">
-              Invest<span className="text-brand-500">IQ</span>
+              DealGap<span className="text-brand-500">IQ</span>
             </span>
           </div>
           

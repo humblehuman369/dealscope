@@ -1,5 +1,5 @@
 """
-Load testing with Locust for InvestIQ API.
+Load testing with Locust for DealGapIQ API.
 
 Usage:
     pip install locust

@@ -140,7 +140,7 @@ export const founderStats: FounderStat[] = [
 
 export const founderInfo = {
   name: 'Brad Geisen',
-  title: 'Founder, InvestIQ • Real Estate Technology Pioneer',
+  title: 'Founder, DealGapIQ • Real Estate Technology Pioneer',
   quote: 'I built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac. Founded Foreclosure.com before data platforms existed and spent 35 years building the infrastructure institutions depend on. DealMakerIQ puts that same intelligence in your hands.',
   credentials: ['Fannie Mae', 'Freddie Mac', 'HUD'],
 };
@@ -313,13 +313,13 @@ export const howItWorksSteps: HowItWorksStep[] = [
   {
     number: 1,
     title: 'Point & Scan',
-    description: 'Open InvestIQ and point your camera at any address, For Sale sign, or MLS listing. Our AI reads it instantly.',
+    description: 'Open DealGapIQ and point your camera at any address, For Sale sign, or MLS listing. Our AI reads it instantly.',
     color: '#0891B2',
   },
   {
     number: 2,
     title: 'Instant Analysis',
-    description: 'InvestIQ pulls real-time market data and runs comprehensive analysis across all six investment strategies.',
+    description: 'DealGapIQ pulls real-time market data and runs comprehensive analysis across all six investment strategies.',
     color: '#8b5cf6',
   },
   {
@@ -340,7 +340,7 @@ export interface Testimonial {
 
 export const testimonials: Testimonial[] = [
   {
-    text: "I analyzed 47 properties during a single Saturday driving around neighborhoods. InvestIQ found me a BRRRR deal that everyone else missed.",
+    text: "I analyzed 47 properties during a single Saturday driving around neighborhoods. DealGapIQ found me a BRRRR deal that everyone else missed.",
     authorName: 'Marcus Chen',
     authorTitle: 'Portfolio Investor • Denver, CO',
     initials: 'MC',

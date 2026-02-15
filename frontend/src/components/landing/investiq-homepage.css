@@ -1,4 +1,4 @@
-/* InvestIQ Homepage — Scoped Styles
+/* DealGapIQ Homepage — Scoped Styles
  * All selectors scoped under .iq-landing to avoid conflicts with Tailwind/globals */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Source+Sans+3:wght@400;600;700&display=swap');

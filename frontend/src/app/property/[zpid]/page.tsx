@@ -330,7 +330,7 @@ export async function generateMetadata({ params }: PageProps) {
   // We could fetch property data here for dynamic metadata,
   // but to avoid double fetching, we'll use a generic title
   return {
-    title: `Property Details - ${zpid} | InvestIQ`,
+    title: `Property Details - ${zpid} | DealGapIQ`,
     description: 'View comprehensive property details, features, price history, and nearby schools.',
   }
 }

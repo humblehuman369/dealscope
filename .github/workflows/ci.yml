@@ -11,7 +11,7 @@ env:
   NODE_VERSION: "20"
   ENVIRONMENT: test
   SECRET_KEY: ci-test-secret-key-at-least-32-characters-long-for-ci
-  DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/test_investiq
+  DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/test_dealgapiq
 
 jobs:
   # ════════════════════════════════════════════
@@ -180,7 +180,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_investiq
+          POSTGRES_DB: test_dealgapiq
         ports:
           - 5432:5432
         options: >-

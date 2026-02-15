@@ -59,7 +59,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center px-5 py-3 lg:px-12 lg:py-5 max-w-7xl mx-auto">
         <div className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Invest<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
+          DealGap<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
         </div>
         
         <div className="flex items-center gap-3 lg:gap-4">
@@ -305,7 +305,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       {/* Footer */}
       <footer className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-white'}`}>
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          © 2026 InvestIQ. All rights reserved.
+          © 2026 DealGapIQ. All rights reserved.
         </p>
         <p className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           Invest like a Guru!

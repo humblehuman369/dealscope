@@ -98,7 +98,7 @@ function VerifyEmailContent() {
                 </Link>
                 <p className="text-sm text-gray-400">
                   Need help?{' '}
-                  <a href="mailto:support@realvestiq.com" className="text-brand-500 hover:text-brand-600">
+                  <a href="mailto:support@dealgapiq.com" className="text-brand-500 hover:text-brand-600">
                     Contact Support
                   </a>
                 </p>

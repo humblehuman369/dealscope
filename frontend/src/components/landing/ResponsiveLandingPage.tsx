@@ -91,7 +91,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
         <div className="container nav-inner">
           <div className="nav-brand font-display">
             DealMaker<span className="iq-cyan">IQ</span>
-            <span className="nav-sub">by InvestIQ</span>
+            <span className="nav-sub">by DealGapIQ</span>
           </div>
           <div className="nav-actions">
             {isAuthenticated ? (

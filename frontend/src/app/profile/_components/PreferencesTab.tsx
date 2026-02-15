@@ -160,7 +160,7 @@ export function PreferencesTab() {
             checked={prefs.marketing_emails}
             onChange={(v) => updatePref('marketing_emails', v)}
             label="Product Updates"
-            description="New features, tips, and RealVestIQ news"
+            description="New features, tips, and DealGapIQ news"
           />
         </div>
       </div>
@@ -204,7 +204,7 @@ export function PreferencesTab() {
               <p className="text-xs text-slate-500">Last changed: Never</p>
             </div>
             <a
-              href="mailto:support@realvestiq.com?subject=Password%20Reset%20Request"
+              href="mailto:support@dealgapiq.com?subject=Password%20Reset%20Request"
               className="text-xs font-semibold text-sky-400 hover:text-sky-300 transition-colors"
             >
               Request Change

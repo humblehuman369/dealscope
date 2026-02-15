@@ -8,7 +8,7 @@
     "base": {
       "node": "20.18.0",
       "env": {
-        "EXPO_PUBLIC_WEB_APP_URL": "https://realvestiq.com"
+        "EXPO_PUBLIC_WEB_APP_URL": "https://dealgapiq.com"
       }
     },
     "development": {
@@ -105,7 +105,7 @@
         "appleId": "APPLE_ID_PLACEHOLDER",
         "ascAppId": "ASC_APP_ID_PLACEHOLDER",
         "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
-        "sku": "com.investiq.mobile",
+        "sku": "com.dealgapiq.mobile",
         "language": "en-US"
       },
       "android": {
@@ -120,7 +120,7 @@
         "appleId": "APPLE_ID_PLACEHOLDER",
         "ascAppId": "ASC_APP_ID_PLACEHOLDER",
         "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
-        "sku": "com.investiq.mobile",
+        "sku": "com.dealgapiq.mobile",
         "language": "en-US"
       },
       "android": {

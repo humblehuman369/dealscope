@@ -54,7 +54,7 @@ export default function DownloadReportButton({
       
       // Get filename from Content-Disposition header or generate one
       const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = `InvestIQ_Report.${format === 'excel' ? 'xlsx' : 'csv'}`
+      let filename = `DealGapIQ_Report.${format === 'excel' ? 'xlsx' : 'csv'}`
       
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)

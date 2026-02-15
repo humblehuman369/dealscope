@@ -1,5 +1,5 @@
 """
-Database module for InvestIQ.
+Database module for DealGapIQ.
 Provides async database session management and base model.
 """
 

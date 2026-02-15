@@ -23,7 +23,7 @@ const sourceSans = Source_Sans_3({
 })
 
 export const metadata: Metadata = {
-  title: 'InvestIQ - Real Estate Investment Analytics',
+  title: 'DealGapIQ - Real Estate Investment Analytics',
   description: 'Analyze properties across 6 investment strategies: Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, and Wholesale',
   icons: {
     icon: '/images/investiq-logo-icon.png',
