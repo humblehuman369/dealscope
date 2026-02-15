@@ -1,22 +1,25 @@
-# Nixpacks configuration for Railway deployment (PRIMARY builder)
-# Adds system-level dependencies required by WeasyPrint for PDF report generation
+# Nixpacks configuration for Railway deployment
 #
-# Using aptPkgs (not nixPkgs) so libraries install to standard /usr/lib paths
-# where WeasyPrint's cffi/ctypes bindings can discover them at runtime.
+# WeasyPrint requires system shared libraries (GLib/Cairo/Pango/etc.)
+# loadable via cffi.dlopen() / ctypes.util.find_library().
+#
+# nixLibs  — installs Nix packages AND adds them to LD_LIBRARY_PATH
+#            so ctypes/cffi can locate them at runtime.
+# nixPkgs  — installs Nix packages for data files (fonts, MIME DB)
+#            that don't need to be on the library search path.
 
 [phases.setup]
-aptPkgs = [
-  "libglib2.0-0",
-  "libgobject-2.0-0",
-  "libcairo2",
-  "libpango-1.0-0",
-  "libpangocairo-1.0-0",
-  "libpangoft2-1.0-0",
-  "libgdk-pixbuf2.0-0",
-  "libharfbuzz0b",
-  "libfontconfig1",
-  "libfreetype6",
-  "libffi-dev",
-  "shared-mime-info",
-  "fonts-liberation2",
+nixLibs = [
+  "glib",          # libgobject-2.0, libglib-2.0
+  "cairo",         # libcairo
+  "pango",         # libpango-1.0, libpangocairo-1.0, libpangoft2-1.0
+  "gdk-pixbuf",    # libgdk_pixbuf-2.0
+  "harfbuzz",      # libharfbuzz
+  "fontconfig",    # libfontconfig
+  "freetype",      # libfreetype
+  "libffi",        # libffi
+]
+nixPkgs = [
+  "shared-mime-info",  # MIME type database
+  "liberation_ttf",    # Liberation font family (print-quality)
 ]
