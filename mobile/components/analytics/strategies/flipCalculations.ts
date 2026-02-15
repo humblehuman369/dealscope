@@ -7,7 +7,7 @@ import { FlipInputs, FlipMetrics, Insight, StrategyAnalysis } from '../types';
 export const DEFAULT_FLIP_INPUTS: FlipInputs = {
   // Purchase
   purchasePrice: 200000,
-  closingCostsPercent: 0.02,
+  closingCostsPercent: 2,        // percentage
   
   // Rehab
   rehabBudget: 50000,
@@ -17,12 +17,12 @@ export const DEFAULT_FLIP_INPUTS: FlipInputs = {
   // Financing
   financingType: 'hardMoney',
   loanAmount: 175000,
-  interestRate: 0.12,
-  points: 2,
+  interestRate: 12,              // percentage (hard money rate)
+  points: 2,                     // already a percentage value
   
   // Sale
   arv: 325000,
-  sellingCostsPercent: 0.08, // Agent fees + closing
+  sellingCostsPercent: 8,        // percentage — Agent fees + closing
   daysOnMarket: 30,
 };
 
@@ -46,7 +46,7 @@ export function calculateFlipMetrics(inputs: FlipInputs): FlipMetrics {
   } = inputs;
 
   // Purchase costs
-  const purchaseClosing = purchasePrice * closingCostsPercent;
+  const purchaseClosing = purchasePrice * (closingCostsPercent / 100);
   const purchaseCosts = purchasePrice + purchaseClosing;
 
   // Rehab costs
@@ -60,18 +60,26 @@ export function calculateFlipMetrics(inputs: FlipInputs): FlipMetrics {
   let financingCosts = 0;
   if (financingType !== 'cash') {
     const pointsCost = loanAmount * (points / 100);
-    const interestCost = loanAmount * (interestRate / 12) * totalHoldingMonths;
+    const interestCost = loanAmount * (interestRate / 100 / 12) * totalHoldingMonths;
     financingCosts = pointsCost + interestCost;
   }
 
   // Selling costs
-  const sellingCosts = arv * sellingCostsPercent;
+  const sellingCosts = arv * (sellingCostsPercent / 100);
 
-  // Total costs
+  // Total costs (before tax)
   const totalCost = purchaseCosts + rehabCosts + holdingCosts + financingCosts + sellingCosts;
 
-  // Net profit
-  const netProfit = arv - totalCost;
+  // Gross profit (before tax)
+  const grossProfit = arv - totalCost;
+
+  // Capital gains tax — flips held < 12 months are taxed as short-term
+  // (ordinary income). Use a conservative 25% rate as default.
+  const capitalGainsTaxRate = 0.25;
+  const capitalGainsTax = grossProfit > 0 ? grossProfit * capitalGainsTaxRate : 0;
+
+  // Net profit (after tax — matches frontend)
+  const netProfit = grossProfit - capitalGainsTax;
 
   // Cash required
   const cashRequired = financingType === 'cash' 
@@ -174,11 +182,11 @@ export function generateFlipInsights(inputs: FlipInputs, metrics: FlipMetrics): 
   }
 
   // Financing efficiency
-  if (inputs.financingType === 'hardMoney' && inputs.interestRate > 0.14) {
+  if (inputs.financingType === 'hardMoney' && inputs.interestRate > 14) {
     insights.push({
       type: 'tip',
       icon: '💡',
-      text: `${(inputs.interestRate * 100).toFixed(0)}% hard money rate is high — shop for better terms`,
+      text: `${inputs.interestRate.toFixed(0)}% hard money rate is high — shop for better terms`,
     });
   }
 

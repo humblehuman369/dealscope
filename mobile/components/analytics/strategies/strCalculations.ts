@@ -8,13 +8,13 @@ import { calculateMortgagePayment } from '../calculations';
 
 export const DEFAULT_STR_INPUTS: STRInputs = {
   purchasePrice: 400000,
-  downPaymentPercent: 0.25,
-  closingCostsPercent: 0.03,
-  interestRate: 0.0725,
+  downPaymentPercent: 25,        // percentage (25 = 25%)
+  closingCostsPercent: 3,        // percentage
+  interestRate: 7.25,            // percentage
   loanTermYears: 30,
   
   averageDailyRate: 200,
-  occupancyRate: 0.70,
+  occupancyRate: 70,             // percentage (70 = 70%)
   cleaningFee: 150,
   cleaningCostPerTurn: 100,
   averageStayLength: 3,
@@ -23,9 +23,9 @@ export const DEFAULT_STR_INPUTS: STRInputs = {
   annualInsurance: 2400,
   monthlyHoa: 0,
   utilities: 300,
-  maintenanceRate: 0.08,
-  managementRate: 0.20,
-  platformFeeRate: 0.03,
+  maintenanceRate: 8,            // percentage
+  managementRate: 20,            // percentage
+  platformFeeRate: 15,           // percentage — matches frontend (Airbnb effective rate ~14-16%)
   
   furnishingBudget: 25000,
 };
@@ -56,15 +56,15 @@ export function calculateSTRMetrics(inputs: STRInputs): STRMetrics {
   } = inputs;
 
   // Loan calculations
-  const downPayment = purchasePrice * downPaymentPercent;
-  const closingCosts = purchasePrice * closingCostsPercent;
+  const downPayment = purchasePrice * (downPaymentPercent / 100);
+  const closingCosts = purchasePrice * (closingCostsPercent / 100);
   const loanAmount = purchasePrice - downPayment;
   const totalCashRequired = downPayment + closingCosts + furnishingBudget;
   const mortgagePayment = calculateMortgagePayment(loanAmount, interestRate, loanTermYears);
 
   // Revenue calculations
   const daysPerMonth = 30.44;
-  const occupiedNightsPerMonth = daysPerMonth * occupancyRate;
+  const occupiedNightsPerMonth = daysPerMonth * (occupancyRate / 100);
   const turnsPerMonth = occupiedNightsPerMonth / averageStayLength;
   
   const nightlyRevenue = occupiedNightsPerMonth * averageDailyRate;
@@ -78,9 +78,9 @@ export function calculateSTRMetrics(inputs: STRInputs): STRMetrics {
   // Expense calculations
   const monthlyTaxes = annualPropertyTax / 12;
   const monthlyInsurance = annualInsurance / 12;
-  const monthlyMaintenance = monthlyGrossRevenue * maintenanceRate;
-  const monthlyManagement = monthlyGrossRevenue * managementRate;
-  const monthlyPlatformFees = monthlyGrossRevenue * platformFeeRate;
+  const monthlyMaintenance = monthlyGrossRevenue * (maintenanceRate / 100);
+  const monthlyManagement = monthlyGrossRevenue * (managementRate / 100);
+  const monthlyPlatformFees = monthlyGrossRevenue * (platformFeeRate / 100);
   const monthlyCleaning = turnsPerMonth * cleaningCostPerTurn;
 
   const monthlyExpenses = {
@@ -131,18 +131,18 @@ export function generateSTRInsights(inputs: STRInputs, metrics: STRMetrics): Ins
   const insights: Insight[] = [];
 
   // Occupancy analysis
-  if (inputs.occupancyRate >= 0.75) {
+  if (inputs.occupancyRate >= 75) {
     insights.push({
       type: 'strength',
       icon: '✅',
-      text: `Strong ${Math.round(inputs.occupancyRate * 100)}% occupancy rate`,
+      text: `Strong ${Math.round(inputs.occupancyRate)}% occupancy rate`,
       highlight: 'above market average',
     });
-  } else if (inputs.occupancyRate < 0.60) {
+  } else if (inputs.occupancyRate < 60) {
     insights.push({
       type: 'concern',
       icon: '⚠️',
-      text: `Low ${Math.round(inputs.occupancyRate * 100)}% occupancy may indicate seasonality or pricing issues`,
+      text: `Low ${Math.round(inputs.occupancyRate)}% occupancy may indicate seasonality or pricing issues`,
     });
   }
 
@@ -171,11 +171,11 @@ export function generateSTRInsights(inputs: STRInputs, metrics: STRMetrics): Ins
   }
 
   // Management fee analysis
-  if (inputs.managementRate > 0.25) {
+  if (inputs.managementRate > 25) {
     insights.push({
       type: 'concern',
       icon: '⚠️',
-      text: `${Math.round(inputs.managementRate * 100)}% management fee is high - consider self-managing`,
+      text: `${Math.round(inputs.managementRate)}% management fee is high - consider self-managing`,
     });
   }
 
@@ -205,7 +205,7 @@ export function calculateSTRScore(metrics: STRMetrics, inputs: STRInputs): numbe
   else score += Math.max(0, metrics.cashOnCash);
 
   // Occupancy (max 20 points)
-  const occScore = Math.min(20, (inputs.occupancyRate / 0.80) * 20);
+  const occScore = Math.min(20, (inputs.occupancyRate / 80) * 20);
   score += occScore;
 
   // RevPAR (max 20 points)
@@ -253,7 +253,7 @@ export function analyzeSTR(inputs: STRInputs): StrategyAnalysis<STRMetrics> {
     color,
     metrics,
     insights,
-    isViable: metrics.monthlyCashFlow > 0 && inputs.occupancyRate >= 0.50,
+    isViable: metrics.monthlyCashFlow > 0 && inputs.occupancyRate >= 50,
   };
 }
 

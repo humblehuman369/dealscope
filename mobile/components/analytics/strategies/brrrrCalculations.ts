@@ -9,7 +9,7 @@ import { calculateMortgagePayment } from '../calculations';
 export const DEFAULT_BRRRR_INPUTS: BRRRRInputs = {
   // Purchase
   purchasePrice: 200000,
-  closingCostsPercent: 0.02,
+  closingCostsPercent: 2,        // percentage
   
   // Rehab
   rehabBudget: 50000,
@@ -20,16 +20,16 @@ export const DEFAULT_BRRRR_INPUTS: BRRRRInputs = {
   arv: 300000,
   
   // Refinance
-  refinanceLTV: 0.75,
-  refinanceRate: 0.0725,
+  refinanceLTV: 75,              // percentage (75 = 75% LTV)
+  refinanceRate: 6.0,            // percentage — matches frontend default
   refinanceTermYears: 30,
   refinanceCosts: 4000,
   
   // Rental
   monthlyRent: 2200,
-  vacancyRate: 0.05,
-  maintenanceRate: 0.08,
-  managementRate: 0.10,
+  vacancyRate: 5,                // percentage
+  maintenanceRate: 8,            // percentage
+  managementRate: 10,            // percentage
   annualPropertyTax: 3600,
   annualInsurance: 1800,
   monthlyHoa: 0,
@@ -60,16 +60,19 @@ export function calculateBRRRRMetrics(inputs: BRRRRInputs): BRRRRMetrics {
   } = inputs;
 
   // Initial investment calculations
-  const purchaseCosts = purchasePrice + (purchasePrice * closingCostsPercent);
+  const purchaseCosts = purchasePrice + (purchasePrice * (closingCostsPercent / 100));
   const rehabCosts = rehabBudget;
   const holdingCosts = holdingCostsMonthly * rehabTimeMonths;
   const totalInitialInvestment = purchaseCosts + rehabCosts + holdingCosts;
 
   // Refinance calculations
-  const refinanceLoanAmount = arv * refinanceLTV;
+  const refinanceLoanAmount = arv * (refinanceLTV / 100);
   const cashOutAmount = refinanceLoanAmount - refinanceCosts;
   const cashLeftInDeal = Math.max(0, totalInitialInvestment - cashOutAmount);
-  const cashRecoupPercent = (cashOutAmount / totalInitialInvestment) * 100;
+  // Cash recoup — measures % of YOUR initial cash recovered (matches frontend)
+  const cashRecoupPercent = totalInitialInvestment > 0
+    ? ((totalInitialInvestment - cashLeftInDeal) / totalInitialInvestment) * 100
+    : 0;
   const infiniteReturn = cashRecoupPercent >= 100;
 
   // Equity calculations
@@ -84,9 +87,9 @@ export function calculateBRRRRMetrics(inputs: BRRRRInputs): BRRRRMetrics {
   );
 
   // Monthly income/expenses (post-refinance)
-  const effectiveRent = monthlyRent * (1 - vacancyRate);
-  const maintenance = monthlyRent * maintenanceRate;
-  const management = monthlyRent * managementRate;
+  const effectiveRent = monthlyRent * (1 - vacancyRate / 100);
+  const maintenance = monthlyRent * (maintenanceRate / 100);
+  const management = monthlyRent * (managementRate / 100);
   const propertyTax = annualPropertyTax / 12;
   const insurance = annualInsurance / 12;
 
@@ -177,11 +180,11 @@ export function generateBRRRRInsights(inputs: BRRRRInputs, metrics: BRRRRMetrics
   }
 
   // LTV analysis
-  if (inputs.refinanceLTV <= 0.70) {
+  if (inputs.refinanceLTV <= 70) {
     insights.push({
       type: 'tip',
       icon: '💡',
-      text: `Conservative ${(inputs.refinanceLTV * 100).toFixed(0)}% LTV — consider 75% for more cash out`,
+      text: `Conservative ${inputs.refinanceLTV.toFixed(0)}% LTV — consider 75% for more cash out`,
     });
   }
 

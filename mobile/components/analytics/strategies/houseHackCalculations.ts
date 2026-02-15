@@ -14,23 +14,23 @@ import {
 import { calculateMetrics, calculateMortgagePayment } from '../calculations';
 
 export const DEFAULT_HOUSE_HACK_INPUTS: HouseHackInputs = {
-  // Base analytics inputs
+  // Base analytics inputs — all percentages as whole numbers (e.g. 3.5 = 3.5%)
   purchasePrice: 500000,
-  downPaymentPercent: 0.05, // FHA/low down payment
-  closingCostsPercent: 0.03,
-  interestRate: 0.0685,
+  downPaymentPercent: 3.5,       // FHA minimum down payment
+  closingCostsPercent: 3,        // percentage
+  interestRate: 6.0,             // percentage — matches frontend default
   loanTermYears: 30,
   monthlyRent: 0, // Calculated from units
   otherIncome: 0,
-  vacancyRate: 0.05,
-  maintenanceRate: 0.05,
-  managementRate: 0, // Self-managed
+  vacancyRate: 5,                // percentage
+  maintenanceRate: 5,            // percentage
+  managementRate: 0,             // Self-managed
   annualPropertyTax: 6000,
   annualInsurance: 2400,
   monthlyHoa: 0,
-  appreciationRate: 0.03,
-  rentGrowthRate: 0.03,
-  expenseGrowthRate: 0.02,
+  appreciationRate: 3,           // percentage
+  rentGrowthRate: 3,             // percentage
+  expenseGrowthRate: 2,          // percentage
   
   // House hack specific
   totalUnits: 4,
@@ -127,11 +127,11 @@ export function generateHouseHackInsights(
   }
 
   // Low down payment advantage
-  if (inputs.downPaymentPercent <= 0.05) {
+  if (inputs.downPaymentPercent <= 5) {
     insights.push({
       type: 'strength',
       icon: '✅',
-      text: `Only ${(inputs.downPaymentPercent * 100).toFixed(0)}% down with owner-occupant loan`,
+      text: `Only ${inputs.downPaymentPercent.toFixed(1)}% down with owner-occupant loan`,
     });
   }
 
@@ -204,10 +204,10 @@ export function calculateHouseHackScore(
   else score += Math.max(0, metrics.cashOnCash * 1.2);
 
   // Down payment efficiency (max 15 points) - lower is better
-  if (inputs.downPaymentPercent <= 0.035) score += 15;
-  else if (inputs.downPaymentPercent <= 0.05) score += 12;
-  else if (inputs.downPaymentPercent <= 0.10) score += 8;
-  else if (inputs.downPaymentPercent <= 0.20) score += 4;
+  if (inputs.downPaymentPercent <= 3.5) score += 15;
+  else if (inputs.downPaymentPercent <= 5) score += 12;
+  else if (inputs.downPaymentPercent <= 10) score += 8;
+  else if (inputs.downPaymentPercent <= 20) score += 4;
 
   // Scale/unit potential (max 15 points)
   if (inputs.rentedUnits >= 3) score += 15;

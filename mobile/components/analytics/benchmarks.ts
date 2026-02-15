@@ -110,13 +110,13 @@ export const EXPENSE_BENCHMARKS = {
 // =============================================================================
 
 export const MARKET_DEFAULTS = {
-  interestRate: 0.0685, // 6.85%
-  appreciationRate: 0.03, // 3% annual
-  rentGrowthRate: 0.03, // 3% annual
-  expenseGrowthRate: 0.02, // 2% annual
-  closingCosts: 0.03, // 3% of purchase
-  sellingCosts: 0.06, // 6% of sale
-  inflation: 0.02, // 2% annual
+  interestRate: 6.0, // 6.0% — matches frontend default
+  appreciationRate: 3, // 3% annual
+  rentGrowthRate: 3, // 3% annual
+  expenseGrowthRate: 2, // 2% annual
+  closingCosts: 3, // 3% of purchase
+  sellingCosts: 6, // 6% of sale
+  inflation: 2, // 2% annual
 } as const;
 
 // =============================================================================
