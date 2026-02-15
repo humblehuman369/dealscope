@@ -47,6 +47,7 @@ export interface CalculatedMetrics {
   capRate: number;
   dscr: number;
   onePercentRule: number;
+  grossRentMultiplier: number;
   
   // Investment
   totalCashRequired: number;
@@ -55,6 +56,7 @@ export interface CalculatedMetrics {
   // Year 1 projections
   yearOneEquityGrowth: number;
   breakEvenVacancy: number;
+  breakEvenRent: number;
 }
 
 export interface ScoreBreakdown {
@@ -133,23 +135,27 @@ export interface SliderGroup {
   sliders: SliderConfig[];
 }
 
+/**
+ * Default analytics inputs — all rate/percentage fields use whole-number
+ * percentages (e.g. 20 = 20 %, 6.0 = 6 %) matching the frontend convention.
+ */
 export const DEFAULT_INPUTS: AnalyticsInputs = {
   purchasePrice: 400000,
-  downPaymentPercent: 0.20,
-  closingCostsPercent: 0.03,
-  interestRate: 0.0685,
+  downPaymentPercent: 20,        // 20%
+  closingCostsPercent: 3,        // 3%
+  interestRate: 6.0,             // 6.0% — matches frontend default
   loanTermYears: 30,
   monthlyRent: 2500,
   otherIncome: 0,
-  vacancyRate: 0.05,
-  maintenanceRate: 0.05,
+  vacancyRate: 5,                // 5%
+  maintenanceRate: 5,            // 5%
   managementRate: 0,
   annualPropertyTax: 4800,
   annualInsurance: 1800,
   monthlyHoa: 0,
-  appreciationRate: 0.03,
-  rentGrowthRate: 0.03,
-  expenseGrowthRate: 0.02,
+  appreciationRate: 3,           // 3%
+  rentGrowthRate: 3,             // 3%
+  expenseGrowthRate: 2,          // 2%
 };
 
 export const SLIDER_GROUPS: SliderGroup[] = [
@@ -159,8 +165,8 @@ export const SLIDER_GROUPS: SliderGroup[] = [
     icon: '1',
     sliders: [
       { id: 'purchasePrice', label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency' },
-      { id: 'downPaymentPercent', label: 'Down Payment', min: 0.05, max: 0.40, step: 0.05, format: 'percentage' },
-      { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage' },
+      { id: 'downPaymentPercent', label: 'Down Payment', min: 5, max: 40, step: 5, format: 'percentage' },
+      { id: 'closingCostsPercent', label: 'Closing Costs', min: 2, max: 5, step: 0.5, format: 'percentage' },
     ],
   },
   {
@@ -168,7 +174,7 @@ export const SLIDER_GROUPS: SliderGroup[] = [
     title: 'Financing',
     icon: '2',
     sliders: [
-      { id: 'interestRate', label: 'Interest Rate', min: 0.04, max: 0.10, step: 0.00125, format: 'percentage' },
+      { id: 'interestRate', label: 'Interest Rate', min: 4, max: 10, step: 0.125, format: 'percentage' },
       { id: 'loanTermYears', label: 'Loan Term', min: 15, max: 30, step: 5, format: 'years' },
     ],
   },
@@ -186,9 +192,9 @@ export const SLIDER_GROUPS: SliderGroup[] = [
     title: 'Operating Expenses',
     icon: '4',
     sliders: [
-      { id: 'vacancyRate', label: 'Vacancy Rate', min: 0, max: 0.15, step: 0.01, format: 'percentage' },
-      { id: 'maintenanceRate', label: 'Maintenance', min: 0.03, max: 0.10, step: 0.01, format: 'percentage' },
-      { id: 'managementRate', label: 'Property Management', min: 0, max: 0.12, step: 0.01, format: 'percentage' },
+      { id: 'vacancyRate', label: 'Vacancy Rate', min: 0, max: 15, step: 1, format: 'percentage' },
+      { id: 'maintenanceRate', label: 'Maintenance', min: 3, max: 10, step: 1, format: 'percentage' },
+      { id: 'managementRate', label: 'Property Management', min: 0, max: 12, step: 1, format: 'percentage' },
     ],
   },
 ];

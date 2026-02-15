@@ -57,8 +57,8 @@ export function calculateWholesaleMetrics(inputs: WholesaleInputs): WholesaleMet
   // Spread between MAO and contract
   const endBuyerSpread = endBuyerMaxProfit;
 
-  // 70% Rule
-  const maxAllowableOffer = (arv * 0.70) - estimatedRepairs;
+  // 70% Rule — MAO accounts for repairs AND wholesale fee (matches frontend)
+  const maxAllowableOffer = (arv * 0.70) - estimatedRepairs - assignmentFee;
   const meetsSeventyPercentRule = endBuyerAllInPrice <= maxAllowableOffer;
 
   return {

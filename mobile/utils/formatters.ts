@@ -107,7 +107,12 @@ export function formatShortDate(date: Date): string {
 
 // ─── Slider ──────────────────────────────────────────────────────────────────
 
-/** Format slider value based on type */
+/**
+ * Format slider value based on type.
+ *
+ * Percentage values are expected as whole-number percentages (e.g. 7.25 for 7.25 %),
+ * matching the frontend convention. No multiplication is needed.
+ */
 export function formatSliderValue(
   value: number,
   format: 'currency' | 'percentage' | 'years' | 'months' | 'decimal',
@@ -116,7 +121,7 @@ export function formatSliderValue(
     case 'currency':
       return formatCurrency(value);
     case 'percentage':
-      return formatPercent(value * 100);
+      return formatPercent(value);
     case 'years':
       return formatYears(value);
     case 'months':

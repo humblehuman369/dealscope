@@ -31,16 +31,19 @@ import {
 
 /**
  * Calculate monthly mortgage payment (P&I)
+ *
+ * @param annualRate — percentage, e.g. 7.0 for 7 %
  */
 export function calculateMortgagePayment(
   principal: number,
   annualRate: number,
   termYears: number
 ): number {
-  const monthlyRate = annualRate / 12;
+  if (principal <= 0 || termYears <= 0) return 0;
+  if (annualRate <= 0) return principal / (termYears * 12);
+
+  const monthlyRate = annualRate / 100 / 12;
   const numPayments = termYears * 12;
-  
-  if (monthlyRate === 0) return principal / numPayments;
   
   return principal * 
     (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
@@ -49,6 +52,10 @@ export function calculateMortgagePayment(
 
 /**
  * Calculate all metrics from inputs
+ *
+ * All percentage fields (downPaymentPercent, interestRate, vacancyRate, etc.)
+ * are expected as whole-number percentages, e.g. 20 for 20 %, matching the
+ * frontend convention.
  */
 export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
   const {
@@ -69,8 +76,8 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
   } = inputs;
 
   // Loan calculations
-  const downPayment = purchasePrice * downPaymentPercent;
-  const closingCosts = purchasePrice * closingCostsPercent;
+  const downPayment = purchasePrice * (downPaymentPercent / 100);
+  const closingCosts = purchasePrice * (closingCostsPercent / 100);
   const loanAmount = purchasePrice - downPayment;
   const totalCashRequired = downPayment + closingCosts;
   
@@ -81,9 +88,9 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
   const grossMonthlyIncome = monthlyRent + otherIncome;
   
   // Monthly expenses (operating)
-  const vacancy = grossMonthlyIncome * vacancyRate;
-  const maintenance = grossMonthlyIncome * maintenanceRate;
-  const management = grossMonthlyIncome * managementRate;
+  const vacancy = grossMonthlyIncome * (vacancyRate / 100);
+  const maintenance = grossMonthlyIncome * (maintenanceRate / 100);
+  const management = grossMonthlyIncome * (managementRate / 100);
   const propertyTax = annualPropertyTax / 12;
   const insurance = annualInsurance / 12;
   
@@ -100,26 +107,32 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
   // Returns
   const cashOnCash = totalCashRequired > 0 ? (annualCashFlow / totalCashRequired) * 100 : 0;
   const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
-  const dscr = mortgagePayment > 0 ? (grossMonthlyIncome - operatingExpenses + mortgagePayment) / mortgagePayment / 12 * 12 : 0;
-  
-  // Actually, DSCR = (Gross Income - Operating Expenses) / Debt Service
-  const monthlyNOI = grossMonthlyIncome - vacancy - maintenance - management - propertyTax - insurance - monthlyHoa;
-  const correctDscr = mortgagePayment > 0 ? monthlyNOI / mortgagePayment : 0;
+
+  // DSCR — matches frontend formula (includes vacancy adjustment)
+  const dscr = mortgagePayment > 0
+    ? (grossMonthlyIncome - operatingExpenses + mortgagePayment * (vacancyRate / 100)) / mortgagePayment
+    : Infinity;
   
   // 1% Rule
   const onePercentRule = purchasePrice > 0 ? (monthlyRent / purchasePrice) * 100 : 0;
+
+  // Gross Rent Multiplier
+  const grossRentMultiplier = monthlyRent > 0
+    ? purchasePrice / (monthlyRent * 12)
+    : Infinity;
   
   // Year 1 equity growth (appreciation + principal paydown)
-  const yearOneAppreciation = purchasePrice * appreciationRate;
+  const yearOneAppreciation = purchasePrice * (appreciationRate / 100);
   const yearOnePrincipal = calculateYearOnePrincipal(loanAmount, interestRate, loanTermYears);
   const yearOneEquityGrowth = yearOneAppreciation + yearOnePrincipal;
   
-  // Break-even vacancy
-  const fixedExpenses = propertyTax + insurance + monthlyHoa + mortgagePayment;
-  const variableExpenseRate = maintenance + management; // as rate of rent
-  const breakEvenVacancy = grossMonthlyIncome > 0 
-    ? ((grossMonthlyIncome - fixedExpenses) / grossMonthlyIncome) - variableExpenseRate
+  // Break-even occupancy (matches frontend)
+  const breakEvenVacancy = mortgagePayment > 0
+    ? ((totalMonthlyExpenses - vacancy) / grossMonthlyIncome) * 100
     : 0;
+
+  // Break-even rent
+  const breakEvenRent = totalMonthlyExpenses / (1 - vacancyRate / 100);
 
   return {
     grossMonthlyIncome,
@@ -130,12 +143,14 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
     noi,
     cashOnCash,
     capRate,
-    dscr: correctDscr,
+    dscr,
     onePercentRule,
+    grossRentMultiplier,
     totalCashRequired,
     loanAmount,
     yearOneEquityGrowth,
-    breakEvenVacancy: Math.max(0, breakEvenVacancy) * 100,
+    breakEvenVacancy: Math.max(0, breakEvenVacancy),
+    breakEvenRent,
   };
 }
 
@@ -144,11 +159,11 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
  */
 function calculateYearOnePrincipal(
   principal: number,
-  annualRate: number,
+  annualRate: number, // percentage, e.g. 7.0
   termYears: number
 ): number {
   const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears);
-  const monthlyRate = annualRate / 12;
+  const monthlyRate = annualRate / 100 / 12;
   
   let balance = principal;
   let totalPrincipal = 0;
@@ -381,13 +396,13 @@ export function generateInsights(metrics: CalculatedMetrics, inputs: AnalyticsIn
   }
   
   // Tips
-  if (inputs.downPaymentPercent > 0.25) {
-    const lowerDown = 0.20;
-    const newLoan = inputs.purchasePrice * (1 - lowerDown);
+  if (inputs.downPaymentPercent > 25) {
+    const lowerDown = 20;
+    const newLoan = inputs.purchasePrice * (1 - lowerDown / 100);
     const newPayment = calculateMortgagePayment(newLoan, inputs.interestRate, inputs.loanTermYears);
-    const currentLoan = inputs.purchasePrice * (1 - inputs.downPaymentPercent);
+    const currentLoan = inputs.purchasePrice * (1 - inputs.downPaymentPercent / 100);
     const currentPayment = calculateMortgagePayment(currentLoan, inputs.interestRate, inputs.loanTermYears);
-    const cashSaved = (inputs.downPaymentPercent - lowerDown) * inputs.purchasePrice;
+    const cashSaved = ((inputs.downPaymentPercent - lowerDown) / 100) * inputs.purchasePrice;
     
     insights.push({
       type: 'tip',
@@ -424,14 +439,14 @@ export function projectTenYears(inputs: AnalyticsInputs, metrics: CalculatedMetr
   
   for (let year = 1; year <= 10; year++) {
     // Appreciation
-    propertyValue *= (1 + inputs.appreciationRate);
+    propertyValue *= (1 + inputs.appreciationRate / 100);
     
     // Rent growth
-    monthlyRent *= (1 + inputs.rentGrowthRate);
+    monthlyRent *= (1 + inputs.rentGrowthRate / 100);
     
     // Recalculate annual cash flow with new rent
     const annualRent = monthlyRent * 12;
-    const operatingExpenses = annualRent * (inputs.vacancyRate + inputs.maintenanceRate + inputs.managementRate) +
+    const operatingExpenses = annualRent * ((inputs.vacancyRate + inputs.maintenanceRate + inputs.managementRate) / 100) +
                               inputs.annualPropertyTax + inputs.annualInsurance + (inputs.monthlyHoa * 12);
     const annualMortgage = metrics.mortgagePayment * 12;
     const cashFlow = annualRent - operatingExpenses - annualMortgage;
@@ -462,26 +477,30 @@ export function projectTenYears(inputs: AnalyticsInputs, metrics: CalculatedMetr
 }
 
 /**
- * Calculate remaining loan balance after N years
+ * Calculate remaining loan balance after N years using closed-form formula.
+ * More accurate than iterative approach (no floating-point accumulation error).
  */
 function calculateRemainingBalance(
   principal: number,
-  annualRate: number,
+  annualRate: number, // percentage, e.g. 7.0
   termYears: number,
   yearsElapsed: number
 ): number {
-  const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears);
-  const monthlyRate = annualRate / 12;
-  
-  let balance = principal;
-  const payments = yearsElapsed * 12;
-  
-  for (let i = 0; i < payments; i++) {
-    const interest = balance * monthlyRate;
-    const principalPaid = monthlyPayment - interest;
-    balance -= principalPaid;
+  if (yearsElapsed >= termYears) return 0;
+  if (annualRate <= 0) {
+    return principal * (1 - yearsElapsed / termYears);
   }
-  
+
+  const monthlyRate = annualRate / 100 / 12;
+  const totalPayments = termYears * 12;
+  const paymentsMade = yearsElapsed * 12;
+
+  const balance =
+    principal *
+    ((Math.pow(1 + monthlyRate, totalPayments) -
+      Math.pow(1 + monthlyRate, paymentsMade)) /
+      (Math.pow(1 + monthlyRate, totalPayments) - 1));
+
   return Math.max(0, balance);
 }
 
@@ -490,11 +509,11 @@ function calculateRemainingBalance(
  */
 export function calculateAmortizationSchedule(
   principal: number,
-  annualRate: number,
+  annualRate: number, // percentage, e.g. 7.0
   termYears: number
 ): AmortizationRow[] {
   const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears);
-  const monthlyRate = annualRate / 12;
+  const monthlyRate = annualRate / 100 / 12;
   
   let balance = principal;
   const schedule: AmortizationRow[] = [];
