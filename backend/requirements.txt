@@ -67,6 +67,11 @@ resend==0.7.0
 stripe==7.0.0
 
 # ===========================================
+# Redis (rate limiting, token blacklist, caching)
+# ===========================================
+redis[hiredis]>=5.0,<6.0
+
+# ===========================================
 # Observability (Production Readiness)
 # ===========================================
 sentry-sdk[fastapi]==1.40.0
