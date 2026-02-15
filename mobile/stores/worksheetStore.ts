@@ -77,7 +77,7 @@ const STRATEGY_ENDPOINTS: Record<StrategyId, string> = {
 
 // ─── Debounce ───────────────────────────────────────────────────────────────
 
-const CALC_DEBOUNCE_MS = 500;
+const CALC_DEBOUNCE_MS = 200;
 const SAVE_DEBOUNCE_MS = 2000;
 let calcTimeout: ReturnType<typeof setTimeout> | null = null;
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;

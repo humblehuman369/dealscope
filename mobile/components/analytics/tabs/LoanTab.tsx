@@ -2,11 +2,13 @@
  * LoanTab - Loan details, amortization, and payoff timeline
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { AnalyticsInputs, CalculatedMetrics, AmortizationRow } from '../types';
 import { formatCurrency, formatCompact, formatPercent, calculateAmortizationSchedule, aggregateAmortizationByYear } from '../calculations';
+
+type AmortizationView = 'yearly' | 'monthly';
 
 interface LoanTabProps {
   inputs: AnalyticsInputs;
@@ -15,19 +17,35 @@ interface LoanTabProps {
 }
 
 export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
-  const monthlySchedule = calculateAmortizationSchedule(
-    metrics.loanAmount,
-    inputs.interestRate,
-    inputs.loanTermYears
+  const [amortView, setAmortView] = useState<AmortizationView>('yearly');
+
+  const monthlySchedule = useMemo(
+    () => calculateAmortizationSchedule(metrics.loanAmount, inputs.interestRate, inputs.loanTermYears),
+    [metrics.loanAmount, inputs.interestRate, inputs.loanTermYears],
   );
-  const annualSchedule = aggregateAmortizationByYear(monthlySchedule);
+  const annualSchedule = useMemo(
+    () => aggregateAmortizationByYear(monthlySchedule),
+    [monthlySchedule],
+  );
 
   const totalInterest = monthlySchedule.reduce((sum, row) => sum + row.interest, 0);
   const totalPaid = metrics.loanAmount + totalInterest;
   const principalPercent = (metrics.loanAmount / totalPaid) * 100;
 
-  // Get key years for display
+  // Key years for annual view
   const keyYears = [0, 1, 4, 9, inputs.loanTermYears - 1].map(i => annualSchedule[i]).filter(Boolean);
+
+  // Key months for monthly view (first 12 months + every 12th month thereafter)
+  const keyMonths = useMemo(() => {
+    if (amortView !== 'monthly') return [];
+    const result: AmortizationRow[] = [];
+    for (let i = 0; i < monthlySchedule.length; i++) {
+      if (i < 12 || (i + 1) % 12 === 0) {
+        result.push(monthlySchedule[i]);
+      }
+    }
+    return result;
+  }, [amortView, monthlySchedule]);
 
   // Donut chart dimensions
   const size = 100;
@@ -146,24 +164,57 @@ export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
         backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
         borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
       }]}>
-        <Text style={[styles.cardTitle, { color: isDark ? '#fff' : '#07172e' }]}>
-          Amortization
-        </Text>
+        {/* Header row with toggle */}
+        <View style={styles.amortHeader}>
+          <Text style={[styles.cardTitle, { color: isDark ? '#fff' : '#07172e', marginBottom: 0 }]}>
+            Amortization
+          </Text>
+          <View style={[styles.toggleRow, { 
+            backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.06)',
+          }]}>
+            <TouchableOpacity
+              style={[styles.toggleBtn, amortView === 'yearly' && styles.toggleBtnActive]}
+              onPress={() => setAmortView('yearly')}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.toggleText,
+                { color: amortView === 'yearly' ? '#fff' : '#6b7280' },
+              ]}>
+                Yearly
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleBtn, amortView === 'monthly' && styles.toggleBtnActive]}
+              onPress={() => setAmortView('monthly')}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.toggleText,
+                { color: amortView === 'monthly' ? '#fff' : '#6b7280' },
+              ]}>
+                Monthly
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         
         {/* Table Header */}
         <View style={[styles.tableRow, styles.tableHeader, { 
           borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
         }]}>
-          <Text style={[styles.tableHeaderCell, { color: '#6b7280' }]}>Year</Text>
+          <Text style={[styles.tableHeaderCell, { color: '#6b7280' }]}>
+            {amortView === 'yearly' ? 'Year' : 'Mo'}
+          </Text>
           <Text style={[styles.tableHeaderCell, { color: '#6b7280' }]}>Principal</Text>
           <Text style={[styles.tableHeaderCell, { color: '#6b7280' }]}>Interest</Text>
           <Text style={[styles.tableHeaderCell, { color: '#6b7280' }]}>Balance</Text>
         </View>
         
-        {/* Table Rows */}
-        {keyYears.map((row, index) => (
+        {/* Yearly View */}
+        {amortView === 'yearly' && keyYears.map((row, index) => (
           <View 
-            key={index} 
+            key={`yr-${index}`} 
             style={[styles.tableRow, { 
               borderColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.04)',
             }]}
@@ -176,6 +227,29 @@ export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
             </Text>
             <Text style={[styles.tableCell, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
               {formatCompact(row.interest)}
+            </Text>
+            <Text style={[styles.tableCell, { color: isDark ? '#fff' : '#07172e' }]}>
+              {formatCompact(row.balance)}
+            </Text>
+          </View>
+        ))}
+
+        {/* Monthly View */}
+        {amortView === 'monthly' && keyMonths.map((row) => (
+          <View 
+            key={`mo-${row.month}`} 
+            style={[styles.tableRow, { 
+              borderColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.04)',
+            }]}
+          >
+            <Text style={[styles.tableCell, { color: isDark ? '#fff' : '#07172e' }]}>
+              {row.month}
+            </Text>
+            <Text style={[styles.tableCell, { color: '#0465f2' }]}>
+              {formatCurrency(row.principal)}
+            </Text>
+            <Text style={[styles.tableCell, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+              {formatCurrency(row.interest)}
             </Text>
             <Text style={[styles.tableCell, { color: isDark ? '#fff' : '#07172e' }]}>
               {formatCompact(row.balance)}
@@ -294,6 +368,29 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  amortHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    borderRadius: 8,
+    padding: 2,
+  },
+  toggleBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  toggleBtnActive: {
+    backgroundColor: '#0465f2',
+  },
+  toggleText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   tableRow: {
     flexDirection: 'row',
