@@ -42,9 +42,9 @@ async function initializeDatabase(database: SQLite.SQLiteDatabase): Promise<void
     // Check and run migrations
     await runMigrations(database);
     
-    console.log('Database initialized successfully');
+    if (__DEV__) console.log('Database initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    if (__DEV__) console.error('Failed to initialize database:', error);
     throw error;
   }
 }
@@ -72,20 +72,46 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
  * Apply a specific migration version.
  */
 async function applyMigration(database: SQLite.SQLiteDatabase, version: number): Promise<void> {
-  console.log(`Applying migration to version ${version}`);
+  if (__DEV__) console.log(`Applying migration to version ${version}`);
   
   // Version 1 is the initial schema (already applied via CREATE_TABLES_SQL)
   // Future migrations would be added here as cases
   switch (version) {
     case 1:
-      // Initial schema - no additional SQL needed
+      // Initial schema — no additional SQL needed
       break;
-    // Add future migrations here:
-    // case 2:
-    //   await database.execAsync('ALTER TABLE scanned_properties ADD COLUMN new_field TEXT');
-    //   break;
+
+    case 2:
+      // Added synced tables (saved_properties, search_history, documents, etc.)
+      // These are created via CREATE TABLE IF NOT EXISTS, so no extra SQL here.
+      break;
+
+    case 3: {
+      // Add last_modified_at for offline conflict detection.
+      // NULL = clean (matches server). Non-NULL = local edit pending sync.
+      // Each ALTER is separate + guarded because CREATE_TABLES_SQL already
+      // includes the column for fresh installs — only upgrades need migration.
+      const v3Tables = [
+        'saved_properties',
+        'search_history',
+        'documents',
+        'deal_maker_records',
+        'loi_history',
+      ];
+      for (const table of v3Tables) {
+        try {
+          await database.execAsync(
+            `ALTER TABLE ${table} ADD COLUMN last_modified_at INTEGER`
+          );
+        } catch {
+          // Column already exists (fresh install) — safe to ignore.
+        }
+      }
+      break;
+    }
+
     default:
-      console.warn(`Unknown migration version: ${version}`);
+      if (__DEV__) console.warn(`Unknown migration version: ${version}`);
   }
   
   // Record the migration
@@ -104,7 +130,7 @@ export async function closeDatabase(): Promise<void> {
     await db.closeAsync();
     db = null;
     isInitialized = false;
-    console.log('Database closed');
+    if (__DEV__) console.log('Database closed');
   }
 }
 
@@ -114,7 +140,7 @@ export async function closeDatabase(): Promise<void> {
 export async function deleteDatabase(): Promise<void> {
   await closeDatabase();
   await SQLite.deleteDatabaseAsync(DATABASE_NAME);
-  console.log('Database deleted');
+  if (__DEV__) console.log('Database deleted');
 }
 
 /**

@@ -23,17 +23,15 @@ export type {
   WholesaleAssumptions,
 } from './assumptionsStore';
 
-// Property store — current property + search history with persistence
+// Property store — current property + recent searches (transient nav + lightweight history)
+// NOTE: Saved/pipeline properties live in SQLite via syncManager, not Zustand.
 export {
   usePropertyStore,
   useRecentSearches,
-  useSavedByStatus,
-  useIsPropertySaved,
 } from './propertyStore';
 export type {
   CurrentPropertyInfo,
   RecentSearch,
-  SavedProperty,
 } from './propertyStore';
 
 // UI store — transient application UI state (no persistence)
@@ -62,7 +60,6 @@ export {
   useWorksheetDerived,
 } from './worksheetStore';
 export type {
-  StrategyId as WorksheetStrategyId,
   WorksheetMetrics,
   WorksheetEntry,
 } from './worksheetStore';

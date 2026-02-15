@@ -117,8 +117,8 @@ export async function syncSavedProperties(
            (id, user_id, address_street, address_city, address_state, address_zip, 
             list_price, status, nickname, notes, color_label, is_priority, tags,
             best_strategy, best_cash_flow, best_coc_return, deal_maker_id, 
-            last_analysis_at, synced_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            last_analysis_at, synced_at, last_modified_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           prop.id,
           null, // user_id not in summary
           prop.address_street,
@@ -138,6 +138,7 @@ export async function syncSavedProperties(
           prop.deal_maker_id,
           prop.last_analysis_at ? new Date(prop.last_analysis_at).getTime() / 1000 : null,
           now,
+          null, // last_modified_at = NULL → clean, matches server
           prop.created_at ? new Date(prop.created_at).getTime() / 1000 : now,
           prop.updated_at ? new Date(prop.updated_at).getTime() / 1000 : now
         );
@@ -148,12 +149,13 @@ export async function syncSavedProperties(
       }
     }
 
-    // Remove local properties that no longer exist on server
+    // Remove local properties that no longer exist on server,
+    // but preserve any that have pending local modifications (last_modified_at IS NOT NULL).
     const serverIds = properties.map((p) => p.id);
     if (serverIds.length > 0) {
       const placeholders = serverIds.map(() => '?').join(',');
       await db.runAsync(
-        `DELETE FROM saved_properties WHERE id NOT IN (${placeholders}) AND synced_at IS NOT NULL`,
+        `DELETE FROM saved_properties WHERE id NOT IN (${placeholders}) AND synced_at IS NOT NULL AND last_modified_at IS NULL`,
         ...serverIds
       );
     }
@@ -195,8 +197,8 @@ export async function syncSearchHistory(
           `INSERT OR REPLACE INTO search_history 
            (id, user_id, search_type, query, results_count, source, 
             location_city, location_state, property_types, 
-            price_range_min, price_range_max, synced_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            price_range_min, price_range_max, synced_at, last_modified_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           entry.id,
           null,
           entry.search_type,
@@ -209,6 +211,7 @@ export async function syncSearchHistory(
           entry.price_range?.min,
           entry.price_range?.max,
           now,
+          null, // last_modified_at = NULL → clean
           entry.created_at ? new Date(entry.created_at).getTime() / 1000 : now
         );
         itemsSynced++;
@@ -254,8 +257,8 @@ export async function syncDocuments(
         await db.runAsync(
           `INSERT OR REPLACE INTO documents 
            (id, user_id, saved_property_id, document_type, original_filename, 
-            file_size, mime_type, description, synced_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            file_size, mime_type, description, synced_at, last_modified_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           doc.id,
           null,
           doc.saved_property_id,
@@ -265,6 +268,7 @@ export async function syncDocuments(
           doc.mime_type,
           doc.description,
           now,
+          null, // last_modified_at = NULL → clean
           doc.created_at ? new Date(doc.created_at).getTime() / 1000 : now,
           doc.updated_at ? new Date(doc.updated_at).getTime() / 1000 : now
         );
@@ -312,8 +316,8 @@ export async function syncLOIHistory(
           `INSERT OR REPLACE INTO loi_history 
            (id, user_id, saved_property_id, property_address, offer_price, 
             earnest_money, inspection_days, closing_days, status, pdf_url, 
-            synced_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            synced_at, last_modified_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           loi.id,
           null,
           loi.saved_property_id,
@@ -325,6 +329,7 @@ export async function syncLOIHistory(
           loi.status,
           loi.pdf_url,
           now,
+          null, // last_modified_at = NULL → clean
           loi.created_at ? new Date(loi.created_at).getTime() / 1000 : now
         );
         itemsSynced++;

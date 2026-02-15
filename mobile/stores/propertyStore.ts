@@ -1,11 +1,13 @@
 /**
- * Property Store — Current property tracking and search history.
+ * Property Store — Current property tracking and recent search history.
  *
- * Mirrors frontend/src/stores/index.ts (usePropertyStore).
+ * Persisted to AsyncStorage so recent searches survive app restarts.
+ * Keeps the last 20 searches.
  *
- * Persisted to AsyncStorage so search history survives app restarts.
- * Keeps the last 20 searches (mobile gets more since users may not
- * have easy access to browser history).
+ * NOTE: Saved/pipeline properties are NOT stored here — they live in
+ * SQLite (saved_properties table) synced via syncManager. This store
+ * only manages transient navigation state and the lightweight
+ * recently-viewed list.
  */
 
 import { create } from 'zustand';
@@ -38,30 +40,17 @@ export interface RecentSearch {
   baths?: number | null;
 }
 
-export interface SavedProperty {
-  id: string;
-  address: string;
-  price: number;
-  status: 'watching' | 'analyzing' | 'offer_sent' | 'under_contract' | 'closed' | 'passed';
-  savedAt: number;
-  notes?: string;
-  thumbnailUrl?: string | null;
-}
-
 const MAX_RECENT_SEARCHES = 20;
 
 // ─── Store ───────────────────────────────────────────────────────────────────
 
 interface PropertyStore {
-  // Current property being viewed
+  // Current property being viewed (transient navigation state)
   currentPropertyId: string | null;
   currentProperty: CurrentPropertyInfo | null;
 
-  // Recent searches
+  // Recent searches (lightweight recently-viewed list)
   recentSearches: RecentSearch[];
-
-  // Saved / pipeline properties
-  savedProperties: SavedProperty[];
 
   // Actions — Current property
   setCurrentProperty: (propertyId: string) => void;
@@ -72,13 +61,6 @@ interface PropertyStore {
   addRecentSearch: (search: Omit<RecentSearch, 'timestamp'>) => void;
   removeRecentSearch: (propertyId: string) => void;
   clearRecentSearches: () => void;
-
-  // Actions — Saved properties
-  saveProperty: (property: Omit<SavedProperty, 'savedAt'>) => void;
-  updatePropertyStatus: (id: string, status: SavedProperty['status']) => void;
-  updatePropertyNotes: (id: string, notes: string) => void;
-  removeProperty: (id: string) => void;
-  clearSavedProperties: () => void;
 }
 
 export const usePropertyStore = create<PropertyStore>()(
@@ -87,7 +69,6 @@ export const usePropertyStore = create<PropertyStore>()(
       currentPropertyId: null,
       currentProperty: null,
       recentSearches: [],
-      savedProperties: [],
 
       // ── Current property ──────────────────────────────────────────
 
@@ -124,48 +105,6 @@ export const usePropertyStore = create<PropertyStore>()(
 
       clearRecentSearches: () =>
         set({ recentSearches: [] }),
-
-      // ── Saved properties ──────────────────────────────────────────
-
-      saveProperty: (property) =>
-        set((state) => {
-          const exists = state.savedProperties.find((p) => p.id === property.id);
-          if (exists) {
-            return {
-              savedProperties: state.savedProperties.map((p) =>
-                p.id === property.id ? { ...p, ...property, savedAt: Date.now() } : p
-              ),
-            };
-          }
-          return {
-            savedProperties: [
-              { ...property, savedAt: Date.now() },
-              ...state.savedProperties,
-            ],
-          };
-        }),
-
-      updatePropertyStatus: (id, status) =>
-        set((state) => ({
-          savedProperties: state.savedProperties.map((p) =>
-            p.id === id ? { ...p, status } : p
-          ),
-        })),
-
-      updatePropertyNotes: (id, notes) =>
-        set((state) => ({
-          savedProperties: state.savedProperties.map((p) =>
-            p.id === id ? { ...p, notes } : p
-          ),
-        })),
-
-      removeProperty: (id) =>
-        set((state) => ({
-          savedProperties: state.savedProperties.filter((p) => p.id !== id),
-        })),
-
-      clearSavedProperties: () =>
-        set({ savedProperties: [] }),
     }),
     {
       name: 'investiq-property',
@@ -179,15 +118,3 @@ export const usePropertyStore = create<PropertyStore>()(
 /** Get recent searches sorted by most recent first */
 export const useRecentSearches = () =>
   usePropertyStore((state) => state.recentSearches);
-
-/** Get saved properties filtered by status */
-export const useSavedByStatus = (status: SavedProperty['status']) =>
-  usePropertyStore((state) =>
-    state.savedProperties.filter((p) => p.status === status)
-  );
-
-/** Check if a property is saved */
-export const useIsPropertySaved = (propertyId: string) =>
-  usePropertyStore((state) =>
-    state.savedProperties.some((p) => p.id === propertyId)
-  );
