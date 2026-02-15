@@ -677,7 +677,7 @@ function VerdictContent() {
 
   // Derived values for display
   const score = analysis.dealScore
-  const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'Marginal Deal' : score >= 30 ? 'Unlikely Deal' : 'Pass'
+  const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'High Deal Gap' : score >= 30 ? 'Unlikely Deal' : 'Pass'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const breakevenPrice = analysis.breakevenPrice || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
@@ -903,7 +903,7 @@ function VerdictContent() {
               {score >= 65
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
                 : score >= 40
-                ? 'The margins are tight, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
+                ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work.'}
             </p>
             <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
