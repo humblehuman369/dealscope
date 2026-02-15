@@ -205,81 +205,25 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </section>
 
-      {/* VERDICT DEMO */}
+      {/* DEAL GAP EXPLAINER */}
       <section
         className={`verdict-section ${fadeClass(0)}`}
         data-idx="0"
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[0] = el; }}
       >
         <div className="verdict-container">
-          <div className="verdict-header">
-            <div className="section-label">IQ Verdict</div>
-            <h2>One Scan. Four Signals.<br />Your Answer.</h2>
-            <p>DealGapIQ evaluates every property in 60 seconds across four key factors that determine if a deal is worth pursuing.</p>
-          </div>
-
-          {/* Four Signal Cards */}
-          <div className="signals-grid">
-            <div className="signal-card">
-              <div className="signal-icon cyan-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-                </svg>
-              </div>
-              <h4>Deal Gap</h4>
-              <p>Distance between market value and your target buy price</p>
-              <div className="signal-value cyan">$38K</div>
-            </div>
-            <div className="signal-card">
-              <div className="signal-icon teal-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-              </div>
-              <h4>Rental Income</h4>
-              <p>Annual income analysis to determine breakeven price</p>
-              <div className="signal-value teal">$2,180/mo</div>
-            </div>
-            <div className="signal-card">
-              <div className="signal-icon green-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
-                </svg>
-              </div>
-              <h4>Target Price</h4>
-              <p>The price you&apos;d need to pay to make money</p>
-              <div className="signal-value green">$312K</div>
-            </div>
-            <div className="signal-card">
-              <div className="signal-icon gold-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              </div>
-              <h4>Seller Urgency</h4>
-              <p>Signals indicating motivation to negotiate</p>
-              <div className="signal-value gold">Medium</div>
-            </div>
-          </div>
-
-          {/* Verdict Result */}
-          <div className="verdict-result">
-            <div className="verdict-gauge">
-              <div className="gauge-ring" />
-              <div className="gauge-progress" />
-              <div className="gauge-inner">
-                <div className="gauge-score">53</div>
-                <div className="gauge-label">Deal Score</div>
-              </div>
-            </div>
-            <div className="verdict-content">
-              <div className="verdict-tag gold">&#9888; Marginal Deal</div>
-              <h3>Possible, but the margins are tight.</h3>
-              <p>There&apos;s potential here depending on your strategy and terms. The deal gap is narrow, which means your negotiation and financing approach will make or break this one.</p>
-              <button className="verdict-cta" onClick={handleStartAnalysis}>
-                Run full analysis to find the angle that works &rarr;
-              </button>
-            </div>
+          <div className="deal-gap-explainer">
+            <h2 className="explainer-headline">Find Deals Everyone Else Is Missing.</h2>
+            <p>
+              Most investors search the same listings, use the same filters, and chase the same narrow pool of &ldquo;deals&rdquo; — competing on speed instead of strategy. That race is over.
+            </p>
+            <p>
+              DealGapIQ takes a fundamentally different approach. Instead of filtering for properties that <em>look</em> like deals, we analyze every property to find the ones that actually <em>are</em> deals — by calculating the exact price that delivers your target return.
+            </p>
+            <p>
+              We call that distance between the asking price and your ideal buy price the <strong style={{ color: '#2dd4bf' }}>Deal Gap.</strong> It&apos;s the one metric that tells you whether a deal is worth pursuing — and no other platform calculates it.
+            </p>
+            <p className="explainer-cta">Find Your Deal. Close Your Gap.</p>
           </div>
         </div>
       </section>
