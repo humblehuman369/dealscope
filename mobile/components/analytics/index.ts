@@ -12,9 +12,6 @@ export * from './calculations';
 export * from './formatters';
 export * from './benchmarks';
 
-// Hooks
-export * from './hooks';
-
 // Strategy Calculations
 export * from './strategies';
 
@@ -39,12 +36,5 @@ export { WhatIfTab } from './tabs/WhatIfTab';
 export { LoanTab } from './tabs/LoanTab';
 export { CompareTab } from './tabs/CompareTab';
 
-// Strategy Components
-export {
-  StrategyHeader,
-  MetricCard,
-  CostBreakdownChart,
-  TimelineCard,
-  InsightsSection,
-} from './strategies/components';
+// Strategy components were removed — individual strategy screens use inline components.
 

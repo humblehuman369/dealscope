@@ -4,7 +4,7 @@
  */
 
 export const DATABASE_NAME = 'investiq.db';
-export const DATABASE_VERSION = 2; // Incremented for new tables
+export const DATABASE_VERSION = 3; // v3: added last_modified_at for conflict detection
 
 /**
  * SQL statements to create all tables.
@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS saved_properties (
   deal_maker_id TEXT,
   last_analysis_at INTEGER,
   synced_at INTEGER,
+  last_modified_at INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
   updated_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -133,6 +134,7 @@ CREATE TABLE IF NOT EXISTS search_history (
   price_range_min REAL,
   price_range_max REAL,
   synced_at INTEGER,
+  last_modified_at INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -150,6 +152,7 @@ CREATE TABLE IF NOT EXISTS documents (
   mime_type TEXT NOT NULL,
   description TEXT,
   synced_at INTEGER,
+  last_modified_at INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
   updated_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -165,6 +168,7 @@ CREATE TABLE IF NOT EXISTS deal_maker_records (
   cached_metrics TEXT,
   last_calculated_at INTEGER,
   synced_at INTEGER,
+  last_modified_at INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
   updated_at INTEGER DEFAULT (strftime('%s', 'now')),
   FOREIGN KEY (saved_property_id) REFERENCES saved_properties(id) ON DELETE CASCADE
@@ -186,6 +190,7 @@ CREATE TABLE IF NOT EXISTS loi_history (
   status TEXT DEFAULT 'draft',
   pdf_url TEXT,
   synced_at INTEGER,
+  last_modified_at INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -318,6 +323,8 @@ export interface CachedSavedProperty {
   deal_maker_id: string | null;
   last_analysis_at: number | null;
   synced_at: number | null;
+  /** Set to epoch seconds when the user modifies locally; NULL after sync. */
+  last_modified_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -338,6 +345,8 @@ export interface CachedSearchHistory {
   price_range_min: number | null;
   price_range_max: number | null;
   synced_at: number | null;
+  /** Set to epoch seconds when the user modifies locally; NULL after sync. */
+  last_modified_at: number | null;
   created_at: number;
 }
 
@@ -354,6 +363,8 @@ export interface CachedDocument {
   mime_type: string;
   description: string | null;
   synced_at: number | null;
+  /** Set to epoch seconds when the user modifies locally; NULL after sync. */
+  last_modified_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -368,6 +379,8 @@ export interface CachedDealMakerRecord {
   cached_metrics: string | null; // JSON object
   last_calculated_at: number | null;
   synced_at: number | null;
+  /** Set to epoch seconds when the user modifies locally; NULL after sync. */
+  last_modified_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -387,6 +400,8 @@ export interface CachedLOIHistory {
   status: string;
   pdf_url: string | null;
   synced_at: number | null;
+  /** Set to epoch seconds when the user modifies locally; NULL after sync. */
+  last_modified_at: number | null;
   created_at: number;
 }
 

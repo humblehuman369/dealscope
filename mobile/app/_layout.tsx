@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -16,6 +16,7 @@ import { OfflineBanner } from '../components/OfflineBanner';
 import { useDeepLinking } from '../hooks/useDeepLinking';
 import { useRegisterPushToken } from '../hooks/useRegisterPushToken';
 import { useAuth } from '../context/AuthContext';
+import { syncManager } from '../services/syncManager';
 import NetInfo from '@react-native-community/netinfo';
 
 // Initialize Sentry for error tracking
@@ -131,6 +132,31 @@ function AppContent({
 
   // Register push token with backend when authenticated
   useRegisterPushToken(isAuthenticated);
+
+  // ── Offline → Online reconnection: flush queue & sync ──────────
+  const wasOfflineRef = useRef(false);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const isOnline = !!state.isConnected && state.isInternetReachable !== false;
+
+      if (isOnline && wasOfflineRef.current && isAuthenticated) {
+        // Device just came back online — flush queued mutations, then pull fresh data
+        if (__DEV__) console.log('[sync] Reconnected — processing offline queue');
+        syncManager.processOfflineQueue().then((result) => {
+          if (__DEV__) console.log('[sync] Offline queue processed:', result.itemsSynced, 'items');
+        });
+        // Pull latest server state in the background
+        syncManager.syncAll().catch(() => {
+          /* non-critical — React Query will retry on next access */
+        });
+      }
+
+      wasOfflineRef.current = !isOnline;
+    });
+
+    return unsubscribe;
+  }, [isAuthenticated]);
 
   return (
     <>
