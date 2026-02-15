@@ -571,7 +571,7 @@ export default function SettingsScreen() {
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Linking.openURL('mailto:support@realvestiq.com?subject=InvestIQ%20Support%20Request')}
+              onPress={() => Linking.openURL('mailto:support@dealgapiq.com?subject=DealGapIQ%20Support%20Request')}
               accessibilityRole="button"
               accessibilityLabel="Contact Support"
             >
@@ -586,14 +586,14 @@ export default function SettingsScreen() {
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Alert.alert('Coming Soon', 'Rate InvestIQ will be available once the app is published to the App Store.')}
+              onPress={() => Alert.alert('Coming Soon', 'Rate DealGapIQ will be available once the app is published to the App Store.')}
               accessibilityRole="button"
-              accessibilityLabel="Rate InvestIQ"
+              accessibilityLabel="Rate DealGapIQ"
             >
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
                 <Ionicons name="star" size={18} color={colors.primary[isDark ? 300 : 600]} />
               </View>
-              <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Rate InvestIQ</Text>
+              <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Rate DealGapIQ</Text>
               <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
             </TouchableOpacity>
           </View>
@@ -628,7 +628,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Version */}
-        <Text style={[styles.version, dynamicStyles.version]}>InvestIQ v1.0.0</Text>
+        <Text style={[styles.version, dynamicStyles.version]}>DealGapIQ v1.0.0</Text>
       </ScrollView>
     </View>
   );

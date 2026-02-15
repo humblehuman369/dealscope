@@ -99,7 +99,7 @@ async def generate_excel_report(
     address = property_dict.get("address", {})
     street = address.get("street", "property").replace(" ", "_").replace(",", "")[:30]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"InvestIQ_{street}_{timestamp}.xlsx"
+    filename = f"DealGapIQ_{street}_{timestamp}.xlsx"
     
     return StreamingResponse(
         BytesIO(excel_bytes),
@@ -179,7 +179,7 @@ async def generate_financial_statements_report(
     address = property_dict.get("address", {})
     street = address.get("street", "property").replace(" ", "_").replace(",", "")[:30]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"InvestIQ_Financial_Statements_{street}_{timestamp}.xlsx"
+    filename = f"DealGapIQ_Financial_Statements_{street}_{timestamp}.xlsx"
     
     return StreamingResponse(
         BytesIO(excel_bytes),
@@ -273,7 +273,7 @@ async def generate_csv_report(
         street = address.get("street", "property")
     street = street.replace(" ", "_").replace(",", "")[:30]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"InvestIQ_{street}_{timestamp}.csv"
+    filename = f"DealGapIQ_{street}_{timestamp}.csv"
     
     return StreamingResponse(
         BytesIO(csv_content.encode('utf-8')),
@@ -351,7 +351,7 @@ async def generate_saved_property_report(
     # Generate filename
     street = (saved.nickname or saved.address_street).replace(" ", "_").replace(",", "")[:30]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"InvestIQ_{street}_{timestamp}.xlsx"
+    filename = f"DealGapIQ_{street}_{timestamp}.xlsx"
     
     return StreamingResponse(
         BytesIO(excel_bytes),

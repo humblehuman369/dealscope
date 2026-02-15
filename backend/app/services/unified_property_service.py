@@ -1,5 +1,5 @@
 """
-InvestIQ Unified Property Service
+DealGapIQ Unified Property Service
 
 Orchestrates data fetching from RentCast and Zillow (AXESSO), normalizes the data,
 and provides a single interface for investment analysis.
@@ -18,7 +18,7 @@ from pathlib import Path
 from .api_clients import RentCastClient, create_api_clients, APIProvider
 from .zillow_client import ZillowClient, create_zillow_client, ZillowAPIResponse
 from .data_normalizer import (
-    InvestIQNormalizer, NormalizedProperty, DataSource, ConfidenceLevel
+    DealGapIQNormalizer, NormalizedProperty, DataSource, ConfidenceLevel
 )
 from .calculators import calculate_seller_motivation, extract_condition_keywords
 
@@ -46,7 +46,7 @@ class UnifiedPropertyService:
     ):
         self.rentcast = RentCastClient(rentcast_api_key, rentcast_url)
         self.zillow = create_zillow_client(axesso_api_key, axesso_url)
-        self.normalizer = InvestIQNormalizer()
+        self.normalizer = DealGapIQNormalizer()
     
     async def get_property(
         self,
@@ -443,7 +443,7 @@ class UnifiedPropertyService:
         rows = []
         
         # Header section
-        rows.append(["INVESTIQ PROPERTY ANALYSIS REPORT", "", ""])
+        rows.append(["DEALGAPIQ PROPERTY ANALYSIS REPORT", "", ""])
         rows.append(["Generated", datetime.now(timezone.utc).isoformat(), ""])
         rows.append(["Address", address, ""])
         rows.append(["Data Quality Score", f"{quality['score']}%", ""])

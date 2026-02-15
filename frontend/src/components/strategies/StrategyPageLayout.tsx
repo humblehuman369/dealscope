@@ -322,7 +322,7 @@ export function StrategyPageLayout({
                 letterSpacing: '-0.02em',
               }}
             >
-              RealVest<span style={{ color: '#4dd0e1' }}>IQ</span>
+              DealGap<span style={{ color: '#4dd0e1' }}>IQ</span>
             </span>
           </Link>
           <nav className="strat-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -591,7 +591,7 @@ export function StrategyPageLayout({
               letterSpacing: '-0.02em',
             }}
           >
-            RealVest<span style={{ color: '#4dd0e1' }}>IQ</span>
+            DealGap<span style={{ color: '#4dd0e1' }}>IQ</span>
           </span>
           <p style={{ color: '#64748B', fontSize: '0.8125rem', margin: 0 }}>
             &copy; 2026 DealGapIQ. All rights reserved.

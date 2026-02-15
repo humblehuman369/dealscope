@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Property Analytics - Calculations
+// DealGapIQ Property Analytics - Calculations
 // ============================================
 
 import {

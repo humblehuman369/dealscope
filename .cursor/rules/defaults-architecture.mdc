@@ -1,6 +1,6 @@
 # Defaults Architecture Rule
 
-This rule enforces the centralized defaults architecture for InvestIQ.
+This rule enforces the centralized defaults architecture for DealGapIQ.
 
 ## CRITICAL: Never Hardcode Financial Defaults
 
@@ -170,7 +170,7 @@ If you find hardcoded defaults during development:
 
 > Every property can be a good investment at the right price.
 > 
-> InvestIQ answers two questions:
+> DealGapIQ answers two questions:
 > 1. **What price makes this deal work?** (Breakeven) - based on user's financing terms
 > 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
 

@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Financial Proforma Types
+// DealGapIQ Financial Proforma Types
 // Accounting-Standard Export Data Structures
 // ============================================
 

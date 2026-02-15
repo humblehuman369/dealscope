@@ -11,7 +11,7 @@ const footerLinks = {
     { label: 'Pricing', href: '#' },
   ],
   company: [
-    { label: 'About InvestIQ', href: '#founder' },
+    { label: 'About DealGapIQ', href: '#founder' },
     { label: 'Blog', href: '#' },
     { label: 'Contact', href: '#' },
   ],
@@ -32,7 +32,7 @@ export function Footer() {
               <span className="logo-text font-display">
                 DealMaker<span className="iq">IQ</span>
               </span>
-              <span className="logo-subtext">by InvestIQ</span>
+              <span className="logo-subtext">by DealGapIQ</span>
             </Link>
             <p className="footer-tagline">
               Know exactly what to offer in 60 seconds. Price<span className="iq">IQ</span> gives you the three numbers that define every deal.
@@ -77,7 +77,7 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <div>© 2026 InvestIQ. All rights reserved.</div>
+          <div>© 2026 DealGapIQ. All rights reserved.</div>
           <div className="footer-legal">
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>

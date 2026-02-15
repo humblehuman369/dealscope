@@ -20,18 +20,18 @@ interface FAQItem {
 const FAQ_DATA: FAQItem[] = [
   {
     category: 'Getting Started',
-    question: 'What is InvestIQ?',
-    answer: 'InvestIQ is a real estate investment analysis platform that evaluates properties across 6 strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a VerdictIQ score (0-95) that tells you whether a deal is worth pursuing.',
+    question: 'What is DealGapIQ?',
+    answer: 'DealGapIQ is a real estate investment analysis platform that evaluates properties across 6 strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a VerdictIQ score (0-95) that tells you whether a deal is worth pursuing.',
   },
   {
     category: 'Getting Started',
     question: 'How do I analyze a property?',
-    answer: 'Point your phone camera at any property to scan it, or enter an address manually. InvestIQ pulls real market data and runs a full financial analysis in under 15 seconds.',
+    answer: 'Point your phone camera at any property to scan it, or enter an address manually. DealGapIQ pulls real market data and runs a full financial analysis in under 15 seconds.',
   },
   {
     category: 'Getting Started',
-    question: 'Is InvestIQ free?',
-    answer: 'Yes. InvestIQ is currently in free beta. All features — including unlimited analyses, PDF reports, and portfolio tracking — are free during the beta period.',
+    question: 'Is DealGapIQ free?',
+    answer: 'Yes. DealGapIQ is currently in free beta. All features — including unlimited analyses, PDF reports, and portfolio tracking — are free during the beta period.',
   },
   {
     category: 'Analysis',
@@ -45,7 +45,7 @@ const FAQ_DATA: FAQItem[] = [
   },
   {
     category: 'Analysis',
-    question: 'Where does InvestIQ get its data?',
+    question: 'Where does DealGapIQ get its data?',
     answer: 'We pull from multiple sources including public property records, MLS listings, tax assessor data, rental comps, short-term rental platforms, and comparable sales.',
   },
   {
@@ -95,7 +95,7 @@ export default function HelpScreen() {
           {/* Header */}
           <Text style={[styles.title, { color: textColor }]}>Help Center</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
-            Find answers to common questions about InvestIQ
+            Find answers to common questions about DealGapIQ
           </Text>
 
           {/* FAQ Items */}
@@ -143,7 +143,7 @@ export default function HelpScreen() {
             </Text>
             <TouchableOpacity
               style={[styles.contactButton, { borderColor: `${accentColor}30` }]}
-              onPress={() => Linking.openURL('mailto:support@realvestiq.com?subject=InvestIQ%20Support%20Request')}
+              onPress={() => Linking.openURL('mailto:support@dealgapiq.com?subject=DealGapIQ%20Support%20Request')}
               accessibilityRole="button"
               accessibilityLabel="Email support"
             >

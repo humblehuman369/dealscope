@@ -3,7 +3,7 @@
 /**
  * Generate Letter of Intent (LOI) Modal
  * 
- * This is InvestIQ's competitive edge: Analysis → Action in one click.
+ * This is DealGapIQ's competitive edge: Analysis → Action in one click.
  * Allows users to generate professional LOIs directly from wholesale analysis.
  */
 
@@ -76,7 +76,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
   
   // Load saved preferences on mount
   useEffect(() => {
-    const savedBuyer = localStorage.getItem('investiq_loi_buyer')
+    const savedBuyer = localStorage.getItem('dealgapiq_loi_buyer')
     if (savedBuyer) {
       try {
         const buyer = JSON.parse(savedBuyer)
@@ -118,7 +118,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
     setIsGenerating(true)
     
     // Save buyer info for future use
-    localStorage.setItem('investiq_loi_buyer', JSON.stringify({
+    localStorage.setItem('dealgapiq_loi_buyer', JSON.stringify({
       name: buyerName,
       company: buyerCompany,
       email: buyerEmail,

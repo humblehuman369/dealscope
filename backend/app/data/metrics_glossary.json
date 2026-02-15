@@ -81,8 +81,8 @@
       "iq_estimate": {
         "formula": "iq_estimate = (rental_rentcast_estimate + rental_zillow_estimate) / 2; if only one source available, uses that value",
         "inputs": ["rental_rentcast_estimate", "rental_zillow_estimate"],
-        "description": "InvestIQ proprietary rent estimate. Averages RentCast and Zillow estimates when both are available to provide a more balanced estimate. When only one source is available, uses that value with reduced confidence.",
-        "notes": "This is a unique InvestIQ metric that combines the best data from both sources."
+        "description": "DealGapIQ proprietary rent estimate. Averages RentCast and Zillow estimates when both are available to provide a more balanced estimate. When only one source is available, uses that value with reduced confidence.",
+        "notes": "This is a unique DealGapIQ metric that combines the best data from both sources."
       },
       "market_avg_rent": {
         "formula": "market_avg_rent = rentalData.averageRent",

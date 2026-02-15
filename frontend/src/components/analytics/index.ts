@@ -1,5 +1,5 @@
 /**
- * InvestIQ Analytics Component Library
+ * DealGapIQ Analytics Component Library
  * 
  * A comprehensive set of components for the redesigned property analytics UI.
  * These components support all 6 investment strategies with their specific metrics,

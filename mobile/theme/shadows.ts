@@ -1,5 +1,5 @@
 /**
- * InvestIQ Mobile Shadow System
+ * DealGapIQ Mobile Shadow System
  * Matches frontend Tailwind boxShadow + VerdictIQ design tokens
  *
  * React Native shadows differ from CSS:

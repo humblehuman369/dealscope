@@ -1,5 +1,5 @@
 /**
- * IQButton - Branded button component for InvestIQ
+ * IQButton - Branded button component for DealGapIQ
  * Matches verdict section color scheme with soft teal styling
  */
 

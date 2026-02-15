@@ -1,6 +1,6 @@
-# InvestIQ Design System
+# DealGapIQ Design System
 
-This document outlines the design tokens and component classes available throughout the InvestIQ application.
+This document outlines the design tokens and component classes available throughout the DealGapIQ application.
 
 ---
 
@@ -208,7 +208,7 @@ For text, borders, and backgrounds.
 ### Text Gradient
 
 ```jsx
-<span className="text-gradient">InvestIQ</span>
+<span className="text-gradient">DealGapIQ</span>
 ```
 
 ### Shadows
@@ -312,7 +312,7 @@ Dark mode is toggled via the `dark` class on the `<html>` element.
 </section>
 
 // Brand gradient text
-<span className="text-gradient font-bold">InvestIQ</span>
+<span className="text-gradient font-bold">DealGapIQ</span>
 
 // Metric display
 <div className="metric-card">

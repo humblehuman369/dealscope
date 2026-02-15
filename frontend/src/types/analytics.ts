@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Property Analytics - TypeScript Types
+// DealGapIQ Property Analytics - TypeScript Types
 // ============================================
 
 // ============================================

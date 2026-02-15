@@ -1,5 +1,5 @@
 """
-Alembic environment configuration for InvestIQ.
+Alembic environment configuration for DealGapIQ.
 Supports async migrations with SQLAlchemy 2.0.
 """
 

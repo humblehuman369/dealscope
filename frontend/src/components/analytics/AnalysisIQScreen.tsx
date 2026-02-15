@@ -11,7 +11,7 @@
  * - At-a-Glance performance bars
  * - CTA button + Export link
  * 
- * Uses InvestIQ Universal Style Guide colors
+ * Uses DealGapIQ Universal Style Guide colors
  */
 
 import React, { useState, useMemo, useEffect } from 'react'

@@ -1,7 +1,7 @@
 /**
  * CompactHeader Component
  * 
- * A space-efficient header for InvestIQ analysis pages with:
+ * A space-efficient header for DealGapIQ analysis pages with:
  * - App bar with logo and actions
  * - Address with accordion dropdown for property details
  * - Page title + Strategy selector in one compact row
@@ -169,7 +169,7 @@ export function CompactHeader({
       {/* App Header - White bar with logo */}
       <View style={[styles.appHeader, { paddingTop: insets.top }]}>
         <View style={styles.logo}>
-          <Text style={styles.logoInvest}>Invest</Text>
+          <Text style={styles.logoDealGap}>DealGap</Text>
           <Text style={styles.logoIQ}>IQ</Text>
         </View>
         <View style={styles.headerActions}>
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   logo: {
     flexDirection: 'row',
   },
-  logoInvest: {
+  logoDealGap: {
     fontSize: 18,
     fontWeight: '800',
     color: '#0A1628',

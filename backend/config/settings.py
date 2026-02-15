@@ -62,7 +62,7 @@ TEMPLATES = [
 # Database - use DATABASE_URL or individual env vars
 # Converts postgres:// or postgresql+asyncpg:// to postgresql:// for Django
 _db_url = os.environ.get(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/investiq"
+    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/dealgapiq"
 )
 if _db_url.startswith("postgres://"):
     _db_url = _db_url.replace("postgres://", "postgresql://", 1)
@@ -72,7 +72,7 @@ elif "+asyncpg" in _db_url or "+psycopg" in _db_url:
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "investiq"),
+        "NAME": os.environ.get("DB_NAME", "dealgapiq"),
         "USER": os.environ.get("DB_USER", "postgres"),
         "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),

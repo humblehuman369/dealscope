@@ -1,5 +1,5 @@
 /**
- * InvestIQ — Projections & Comparison Engine
+ * DealGapIQ — Projections & Comparison Engine
  * Matches frontend/src/lib/projections.ts
  *
  * 10-year projections, scenario comparison, and multi-property analysis.
@@ -329,8 +329,8 @@ export function getDefaultProjectionAssumptions(
 // SCENARIO MANAGEMENT
 // ============================================
 
-const SCENARIOS_STORAGE_KEY = 'investiq-scenarios';
-const COMPARISONS_STORAGE_KEY = 'investiq-comparisons';
+const SCENARIOS_STORAGE_KEY = 'dealgapiq-scenarios';
+const COMPARISONS_STORAGE_KEY = 'dealgapiq-comparisons';
 
 export function createScenario(name: string, assumptions: ProjectionAssumptions): Scenario {
   const projections = calculate10YearProjections(assumptions);

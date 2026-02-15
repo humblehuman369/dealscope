@@ -213,7 +213,7 @@ export const useDealMakerStore = create<DealMakerState>()(
       },
     }),
     {
-      name: 'investiq-deal-maker',
+      name: 'dealgapiq-deal-maker',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
       partialize: (state) => ({

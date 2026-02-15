@@ -304,7 +304,7 @@ export const useWorksheetStore = create<WorksheetState>()(
       },
     }),
     {
-      name: 'investiq-worksheets',
+      name: 'dealgapiq-worksheets',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
       partialize: (state) => ({

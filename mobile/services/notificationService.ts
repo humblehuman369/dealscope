@@ -286,7 +286,7 @@ export function useNotifications() {
   const sendTestNotification = useCallback(() => {
     return notificationService.scheduleLocalNotification(
       'Test Notification',
-      'This is a test notification from InvestIQ!',
+      'This is a test notification from DealGapIQ!',
       { type: 'test' }
     );
   }, []);

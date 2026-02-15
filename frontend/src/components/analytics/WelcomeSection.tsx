@@ -29,7 +29,7 @@ export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
       {!isCollapsed && (
         <>
           <h3 className="text-lg font-bold text-brand-500 dark:text-[#4dd0e1] mb-4">
-            Welcome to InvestIQ
+            Welcome to DealGapIQ
           </h3>
           <p className="text-[15px] text-gray-700 dark:text-white/85 leading-relaxed mb-4">
             IQ analyzed the deal, local market, then generated 6 investment strategies for you that reveal 6 methods to profit.

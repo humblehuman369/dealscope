@@ -55,7 +55,7 @@ export interface RentalMarketStats {
   // Property-specific estimates
   rentcastEstimate?: number    // RentCast rent estimate
   zillowEstimate?: number      // Zillow rentZestimate
-  iqEstimate?: number          // InvestIQ proprietary: avg of both
+  iqEstimate?: number          // DealGapIQ proprietary: avg of both
   
   // Estimate range
   estimateLow?: number

@@ -69,15 +69,15 @@ export const defaultsService = {
       
       // Also cache in localStorage for offline access
       if (typeof window !== 'undefined') {
-        localStorage.setItem('investiq_defaults', JSON.stringify(response))
-        localStorage.setItem('investiq_defaults_timestamp', String(Date.now()))
+        localStorage.setItem('dealgapiq_defaults', JSON.stringify(response))
+        localStorage.setItem('dealgapiq_defaults_timestamp', String(Date.now()))
       }
       
       return response
     } catch (error) {
       // Fallback to localStorage cache on error
       if (typeof window !== 'undefined') {
-        const cached = localStorage.getItem('investiq_defaults')
+        const cached = localStorage.getItem('dealgapiq_defaults')
         if (cached) {
           console.warn('Using cached defaults due to API error:', error)
           return JSON.parse(cached)
@@ -137,8 +137,8 @@ export const defaultsService = {
     defaultsCache = null
     cacheTimestamp = 0
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('investiq_defaults')
-      localStorage.removeItem('investiq_defaults_timestamp')
+      localStorage.removeItem('dealgapiq_defaults')
+      localStorage.removeItem('dealgapiq_defaults_timestamp')
     }
   },
   

@@ -10,7 +10,7 @@
  * - Accordion sections for inputs (Buy Price, Financing, Rehab, Income, Expenses)
  * - Interactive sliders for all values
  * 
- * Uses InvestIQ Universal Style Guide colors
+ * Uses DealGapIQ Universal Style Guide colors
  * 
  * ARCHITECTURE: This component now uses the centralized dealMakerStore.
  * - For SAVED properties: Load from backend via dealMakerStore.loadRecord(propertyId)

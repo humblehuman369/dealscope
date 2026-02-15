@@ -30,8 +30,8 @@ class EmailService:
     
     def __init__(self):
         self.api_key = os.getenv("RESEND_API_KEY")
-        self.from_email = os.getenv("EMAIL_FROM", "RealVestIQ <noreply@realvestiq.com>")
-        self.frontend_url = os.getenv("FRONTEND_URL", "https://realvestiq.com")
+        self.from_email = os.getenv("EMAIL_FROM", "DealGapIQ <noreply@dealgapiq.com>")
+        self.frontend_url = os.getenv("FRONTEND_URL", "https://dealgapiq.com")
         self.is_configured = bool(self.api_key and RESEND_AVAILABLE)
         
         if self.is_configured:
@@ -100,7 +100,7 @@ class EmailService:
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RealVestIQ</title>
+    <title>DealGapIQ</title>
     <!--[if mso]>
     <style type="text/css">
         table {{ border-collapse: collapse; }}
@@ -124,7 +124,7 @@ class EmailService:
                             <table role="presentation" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="background: linear-gradient(135deg, #0891b2 0%, #00e5ff 100%); border-radius: 12px; padding: 12px 20px;">
-                                        <span style="font-size: 24px; font-weight: bold; color: white; letter-spacing: -0.5px;">RealVestIQ</span>
+                                        <span style="font-size: 24px; font-weight: bold; color: white; letter-spacing: -0.5px;">DealGapIQ</span>
                                     </td>
                                 </tr>
                             </table>
@@ -148,10 +148,10 @@ class EmailService:
                     <tr>
                         <td align="center" style="padding-top: 30px;">
                             <p style="font-size: 13px; color: #71717a; margin: 0 0 8px 0;">
-                                © {datetime.now().year} RealVestIQ. All rights reserved.
+                                © {datetime.now().year} DealGapIQ. All rights reserved.
                             </p>
                             <p style="font-size: 12px; color: #a1a1aa; margin: 0;">
-                                You're receiving this email because you have an RealVestIQ account.
+                                You're receiving this email because you have an DealGapIQ account.
                             </p>
                         </td>
                     </tr>
@@ -198,13 +198,13 @@ class EmailService:
     Hi {user_name or "there"},
 </p>
 <p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Thanks for signing up for RealVestIQ! Please verify your email address by clicking the button below.
+    Thanks for signing up for DealGapIQ! Please verify your email address by clicking the button below.
 </p>
 
 {self._button("Verify Email Address", verification_url)}
 
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
-    If you didn't create an account with RealVestIQ, you can safely ignore this email.
+    If you didn't create an account with DealGapIQ, you can safely ignore this email.
 </p>
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
     This link will expire in {settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours.
@@ -218,11 +218,11 @@ class EmailService:
 </p>
 '''
         
-        html = self._base_template(content, "Verify your email to get started with RealVestIQ")
+        html = self._base_template(content, "Verify your email to get started with DealGapIQ")
         
         return await self.send_email(
             to=to,
-            subject="Verify your email address - RealVestIQ",
+            subject="Verify your email address - DealGapIQ",
             html=html,
         )
     
@@ -243,7 +243,7 @@ class EmailService:
     Hi {user_name or "there"},
 </p>
 <p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    We received a request to reset the password for your RealVestIQ account. Click the button below to create a new password.
+    We received a request to reset the password for your DealGapIQ account. Click the button below to create a new password.
 </p>
 
 {self._button("Reset Password", reset_url, "#dc2626")}
@@ -263,11 +263,11 @@ class EmailService:
 </p>
 '''
         
-        html = self._base_template(content, "Reset your RealVestIQ password")
+        html = self._base_template(content, "Reset your DealGapIQ password")
         
         return await self.send_email(
             to=to,
-            subject="Reset your password - RealVestIQ",
+            subject="Reset your password - DealGapIQ",
             html=html,
         )
     
@@ -282,7 +282,7 @@ class EmailService:
         
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
-    Welcome to RealVestIQ! 🎉
+    Welcome to DealGapIQ! 🎉
 </h1>
 <p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 16px 0;">
     Hi {user_name or "there"},
@@ -352,11 +352,11 @@ class EmailService:
 </p>
 '''
         
-        html = self._base_template(content, "Your RealVestIQ account is ready!")
+        html = self._base_template(content, "Your DealGapIQ account is ready!")
         
         return await self.send_email(
             to=to,
-            subject="Welcome to RealVestIQ! 🎉",
+            subject="Welcome to DealGapIQ! 🎉",
             html=html,
         )
     
@@ -374,7 +374,7 @@ class EmailService:
     Hi {user_name or "there"},
 </p>
 <p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your RealVestIQ password was successfully changed. If you made this change, you can safely ignore this email.
+    Your DealGapIQ password was successfully changed. If you made this change, you can safely ignore this email.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -393,11 +393,11 @@ class EmailService:
 </p>
 '''
         
-        html = self._base_template(content, "Your RealVestIQ password was changed")
+        html = self._base_template(content, "Your DealGapIQ password was changed")
         
         return await self.send_email(
             to=to,
-            subject="Your password was changed - RealVestIQ",
+            subject="Your password was changed - DealGapIQ",
             html=html,
         )
     
@@ -439,7 +439,7 @@ class EmailService:
         
         return await self.send_email(
             to=to,
-            subject=f"Property Alert: {alert_type} - RealVestIQ",
+            subject=f"Property Alert: {alert_type} - DealGapIQ",
             html=html,
         )
 

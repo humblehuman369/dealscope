@@ -1,4 +1,4 @@
-# InvestIQ Mobile
+# DealGapIQ Mobile
 
 > Point. Scan. Invest with Confidence.
 
@@ -145,7 +145,7 @@ Investment tracking:
 
 ## API Integration
 
-The app connects to the InvestIQ backend API:
+The app connects to the DealGapIQ backend API:
 
 ```
 POST /api/v1/analyze         # Full property analysis

@@ -3,7 +3,7 @@
  * Defines table structures for offline storage.
  */
 
-export const DATABASE_NAME = 'investiq.db';
+export const DATABASE_NAME = 'dealgapiq.db';
 export const DATABASE_VERSION = 3; // v3: added last_modified_at for conflict detection
 
 /**

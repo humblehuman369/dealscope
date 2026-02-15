@@ -107,7 +107,7 @@ export const usePropertyStore = create<PropertyStore>()(
         set({ recentSearches: [] }),
     }),
     {
-      name: 'investiq-property',
+      name: 'dealgapiq-property',
       storage: createJSONStorage(() => AsyncStorage),
     }
   )

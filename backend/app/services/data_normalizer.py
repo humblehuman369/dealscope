@@ -1,5 +1,5 @@
 """
-InvestIQ Data Normalizer
+DealGapIQ Data Normalizer
 
 Intelligent data merging and normalization layer that combines RentCast and Zillow (AXESSO)
 data into a unified schema optimized for real estate investment analysis.
@@ -115,7 +115,7 @@ class NormalizedProperty:
     # Rental Market Statistics - Extended for investor analysis
     rental_rentcast_estimate: Optional[float] = None  # RentCast property estimate
     rental_zillow_estimate: Optional[float] = None    # Zillow rentZestimate
-    rental_iq_estimate: Optional[float] = None        # InvestIQ proprietary (avg of both)
+    rental_iq_estimate: Optional[float] = None        # DealGapIQ proprietary (avg of both)
     rental_market_avg: Optional[float] = None         # Market average rent
     rental_market_median: Optional[float] = None      # Market median rent
     rental_market_min: Optional[float] = None         # Market minimum rent
@@ -211,7 +211,7 @@ class NormalizedProperty:
     conflict_fields: List[str] = field(default_factory=list)
 
 
-class InvestIQNormalizer:
+class DealGapIQNormalizer:
     """
     Main normalization engine that combines RentCast and Zillow data.
     
@@ -1307,7 +1307,7 @@ class InvestIQNormalizer:
         result.missing_fields = [f for f in critical_fields if getattr(result, f) is None]
 
 
-def create_normalizer() -> InvestIQNormalizer:
+def create_normalizer() -> DealGapIQNormalizer:
     """Factory function for normalizer."""
-    return InvestIQNormalizer()
+    return DealGapIQNormalizer()
 

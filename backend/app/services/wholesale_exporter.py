@@ -28,7 +28,7 @@ from app.schemas.proforma import FinancialProforma
 
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"   # RealVestIQ blue
+_BRAND     = "0A84FF"   # DealGapIQ blue
 _DARK_BG   = "111827"   # near-black
 _CARD_BG   = "1A2332"   # dark card
 _HEADER_BG = "1F4E79"
@@ -432,7 +432,7 @@ class WholesaleExcelExporter:
         r = self._section_header(ws, r, "REPORT METADATA")
         r = self._label_value(ws, r, "Generated", datetime.now().strftime("%B %d, %Y at %I:%M %p"))
         r = self._label_value(ws, r, "Strategy", "Wholesale (Assignment)")
-        r = self._label_value(ws, r, "Engine", "RealVestIQ StrategyIQ")
+        r = self._label_value(ws, r, "Engine", "DealGapIQ StrategyIQ")
 
         self._auto_width(ws)
 

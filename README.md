@@ -1,4 +1,4 @@
-# InvestIQ - Real Estate Investment Analytics Platform
+# DealGapIQ - Real Estate Investment Analytics Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" />

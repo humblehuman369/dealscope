@@ -1,5 +1,5 @@
 /**
- * Home Screen — matches new frontend InvestIQHomepage design
+ * Home Screen — matches new frontend DealGapIQHomepage design
  *
  * Clean hero with single search bar, scan button, verdict demo,
  * four-signal cards, toolkit section, and CTA.
@@ -98,7 +98,7 @@ export default function HomeScreen() {
           {/* ─── NAV ─────────────────────────────────────────────────── */}
           <View style={[s.nav, { borderBottomColor: c.border }]}>
             <Text style={[s.logo, { color: c.white }]}>
-              Invest<Text style={{ color: c.blue }}>IQ</Text>
+              DealGap<Text style={{ color: c.blue }}>IQ</Text>
             </Text>
             <View style={s.navRight}>
               {isAuthenticated && user ? (
@@ -196,7 +196,7 @@ export default function HomeScreen() {
             <Text style={[s.sLabel, { color: c.blue }]}>IQ Verdict</Text>
             <Text style={[s.sTitle, { color: c.white }]}>One Scan. Four Signals. Your Answer.</Text>
             <Text style={[s.sDesc, { color: c.text }]}>
-              InvestIQ evaluates every property across four key factors that determine if a deal is worth pursuing.
+              DealGapIQ evaluates every property across four key factors that determine if a deal is worth pursuing.
             </Text>
 
             <View style={s.signalGrid}>
@@ -260,7 +260,7 @@ export default function HomeScreen() {
           <View style={[s.cta, { borderTopColor: c.border }]}>
             <Text style={[s.ctaTitle, { color: c.white }]}>Stop wondering. Start knowing.</Text>
             <Text style={[s.ctaDesc, { color: c.text }]}>
-              Join thousands of serious investors using InvestIQ to uncover value others miss.
+              Join thousands of serious investors using DealGapIQ to uncover value others miss.
             </Text>
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: c.blue }]}
@@ -275,14 +275,14 @@ export default function HomeScreen() {
 
           {/* ─── FOOTER ──────────────────────────────────────────────── */}
           <View style={[s.footer, { backgroundColor: isDark ? '#000' : '#0f172a', borderTopColor: c.border }]}>
-            <Text style={s.footerLogo}>Invest<Text style={{ color: c.blue }}>IQ</Text></Text>
+            <Text style={s.footerLogo}>DealGap<Text style={{ color: c.blue }}>IQ</Text></Text>
             <Text style={s.footerTag}>Professional Real Estate Intelligence for Everyone.</Text>
             <View style={s.footerLinks}>
               <TouchableOpacity onPress={() => router.push('/privacy' as any)} accessibilityRole="link" accessibilityLabel="Privacy policy"><Text style={s.footerLink}>Privacy</Text></TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/terms' as any)} accessibilityRole="link" accessibilityLabel="Terms of service"><Text style={s.footerLink}>Terms</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@realvestiq.com')} accessibilityRole="link" accessibilityLabel="Contact support"><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@dealgapiq.com')} accessibilityRole="link" accessibilityLabel="Contact support"><Text style={s.footerLink}>Contact</Text></TouchableOpacity>
             </View>
-            <Text style={s.footerCopy}>© 2026 InvestIQ. All rights reserved.{'\n'}Professional use only. Not a lender.</Text>
+            <Text style={s.footerCopy}>© 2026 DealGapIQ. All rights reserved.{'\n'}Professional use only. Not a lender.</Text>
           </View>
 
           <View style={{ height: insets.bottom + 20 }} />

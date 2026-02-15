@@ -45,7 +45,7 @@ import {
 } from './types';
 
 // Persistence key prefix for deal-maker state
-const DM_STORAGE_PREFIX = 'investiq-dm-state::';
+const DM_STORAGE_PREFIX = 'dealgapiq-dm-state::';
 
 export function DealMakerScreen({
   propertyAddress,
@@ -167,7 +167,7 @@ export function DealMakerScreen({
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      {/* InvestIQ Header */}
+      {/* DealGapIQ Header */}
       <View style={[styles.investIQHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity 
           style={styles.investIQBackBtn} 
@@ -181,7 +181,7 @@ export function DealMakerScreen({
         </TouchableOpacity>
         
         <View style={styles.investIQLogo}>
-          <Text style={styles.logoInvest}>Invest</Text>
+          <Text style={styles.logoInvest}>DealGap</Text>
           <Text style={styles.logoIQ}>IQ</Text>
         </View>
         

@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ProfileQuestion } from '../components/profile/ProgressiveProfilingPrompt'
 import { api } from '@/lib/api-client'
 
-const STORAGE_KEY = 'investiq-progressive-profile'
+const STORAGE_KEY = 'dealgapiq-progressive-profile'
 
 interface ProgressiveProfileState {
   analysisCount: number

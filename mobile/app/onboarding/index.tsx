@@ -291,7 +291,7 @@ export default function OnboardingScreen() {
           <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: accentColor + '22', justifyContent: 'center', alignItems: 'center' }}>
             <Ionicons name="sparkles" size={20} color={accentColor} />
           </View>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: textColor }}>RealVestIQ</Text>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: textColor }}>DealGapIQ</Text>
         </View>
         <TouchableOpacity
           onPress={handleSkip}
@@ -342,8 +342,8 @@ export default function OnboardingScreen() {
         {/* Step 1: Experience */}
         {currentStep === 0 && (
           <View>
-            <Text style={{ fontSize: 24, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>Welcome to RealVestIQ! 👋</Text>
-            <Text style={{ fontSize: 15, color: mutedColor, textAlign: 'center', marginBottom: 24 }}>Let's personalize RealVestIQ for you. How much investing have you done?</Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>Welcome to DealGapIQ! 👋</Text>
+            <Text style={{ fontSize: 15, color: mutedColor, textAlign: 'center', marginBottom: 24 }}>Let's personalize DealGapIQ for you. How much investing have you done?</Text>
             <View style={{ gap: 12 }}>
               {EXPERIENCE_LEVELS.map((level) => {
                 const isSelected = formData.investment_experience === level.value;

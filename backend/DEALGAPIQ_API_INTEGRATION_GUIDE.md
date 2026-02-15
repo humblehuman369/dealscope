@@ -1,4 +1,4 @@
-# InvestIQ API Integration Architecture
+# DealGapIQ API Integration Architecture
 
 ## Overview
 

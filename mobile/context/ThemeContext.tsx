@@ -1,5 +1,5 @@
 /**
- * Theme context provider for InvestIQ Mobile.
+ * Theme context provider for DealGapIQ Mobile.
  * Manages light/dark mode theme across the app.
  */
 
@@ -114,7 +114,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = '@realvestiq_theme_mode';
+const THEME_STORAGE_KEY = '@dealgapiq_theme_mode';
 
 interface ThemeProviderProps {
   children: React.ReactNode;

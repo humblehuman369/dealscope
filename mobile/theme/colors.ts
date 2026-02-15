@@ -1,5 +1,5 @@
 /**
- * InvestIQ Mobile Color System
+ * DealGapIQ Mobile Color System
  * Aligned with frontend Tailwind config & VerdictIQ 3.3 design system
  * 
  * Brand Colors:

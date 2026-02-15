@@ -43,7 +43,7 @@ export function KPIRow({
 
   return (
     <div>
-      {/* KPI Strip - 6 metrics in colored pills matching InvestIQ style */}
+      {/* KPI Strip - 6 metrics in colored pills matching DealGapIQ style */}
       <div className="grid grid-cols-6 gap-3">
         <KPIBox 
           label={priceLabel} 

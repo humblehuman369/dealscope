@@ -197,7 +197,7 @@ class RentalMarketStatistics(BaseModel):
     # Property-specific estimates
     rentcast_estimate: Optional[float] = None     # RentCast rent estimate
     zillow_estimate: Optional[float] = None       # Zillow rentZestimate
-    iq_estimate: Optional[float] = None           # InvestIQ proprietary: avg of both
+    iq_estimate: Optional[float] = None           # DealGapIQ proprietary: avg of both
     
     # Estimate range (from RentCast)
     estimate_low: Optional[float] = None

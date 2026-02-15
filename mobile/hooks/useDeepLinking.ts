@@ -2,8 +2,8 @@
  * useDeepLinking — Handles incoming URLs and routes to the correct mobile screen.
  *
  * Supports:
- *   - Custom scheme: investiq://verdict?address=123+Main+St&price=350000
- *   - Universal links: https://realvestiq.com/verdict?address=123+Main+St&price=350000
+ *   - Custom scheme: dealgapiq://verdict?address=123+Main+St&price=350000
+ *   - Universal links: https://dealgapiq.com/verdict?address=123+Main+St&price=350000
  *   - Both cold start (app was closed) and warm open (app was backgrounded)
  *
  * Frontend → Mobile route mapping:
@@ -228,7 +228,7 @@ export function useDeepLinking() {
 
 // ─── Helpers for generating shareable URLs ───────────────────────
 
-const WEB_BASE = 'https://realvestiq.com';
+const WEB_BASE = 'https://dealgapiq.com';
 
 export function buildShareUrl(
   route: 'verdict' | 'property' | 'deal-gap' | 'strategy' | 'deal-maker' | 'worksheet' | 'price-intel',

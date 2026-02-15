@@ -1,4 +1,4 @@
-# InvestIQ Mobile App - Build & Distribution Guide
+# DealGapIQ Mobile App - Build & Distribution Guide
 
 ## Prerequisites
 

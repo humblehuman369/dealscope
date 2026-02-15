@@ -110,7 +110,7 @@ export default function VerifyEmailScreen() {
               >
                 <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Go to Login</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@realvestiq.com')}>
+              <TouchableOpacity onPress={() => Linking.openURL('mailto:support@dealgapiq.com')}>
                 <Text style={{ fontSize: 13, color: mutedColor }}>
                   Need help?{' '}
                   <Text style={{ color: accentColor }}>Contact Support</Text>

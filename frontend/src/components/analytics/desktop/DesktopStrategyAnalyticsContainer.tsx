@@ -243,7 +243,7 @@ export function DesktopStrategyAnalyticsContainer({
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
-        title: 'InvestIQ Analysis',
+        title: 'DealGapIQ Analysis',
         text: `Check out this property analysis for ${property.address}`,
         url: window.location.href
       })

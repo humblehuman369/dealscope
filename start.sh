@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# InvestIQ Startup Script
+# DealGapIQ Startup Script
 # Usage: ./start.sh [backend|frontend|all]
 
 set -e

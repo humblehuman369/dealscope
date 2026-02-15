@@ -1,6 +1,6 @@
 // ============================================
 // VERDICT LOGIC - Deal Score Assessment
-// InvestIQ Design System - Uses Teal for positive scores
+// DealGapIQ Design System - Uses Teal for positive scores
 // ============================================
 
 export type VerdictType = 'STRONG' | 'GOOD' | 'CONSIDER' | 'WEAK' | 'POOR'
@@ -14,7 +14,7 @@ export interface VerdictConfig {
   darkBgClass: string
 }
 
-// InvestIQ uses Teal (#0891B2) for positive values, not green
+// DealGapIQ uses Teal (#0891B2) for positive values, not green
 const VERDICT_CONFIGS: VerdictConfig[] = [
   {
     label: 'STRONG',

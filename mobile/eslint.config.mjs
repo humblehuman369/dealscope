@@ -1,5 +1,5 @@
 /**
- * ESLint flat config for InvestIQ Mobile (Expo / React Native).
+ * ESLint flat config for DealGapIQ Mobile (Expo / React Native).
  *
  * Mirrors the frontend conventions (single quotes, no-console, etc.)
  * with React Native–specific adjustments.

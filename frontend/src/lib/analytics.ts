@@ -1,5 +1,5 @@
 /**
- * InvestIQ - Deal Scoring & Sensitivity Analysis
+ * DealGapIQ - Deal Scoring & Sensitivity Analysis
  * 
  * Deal Score is based on Investment Opportunity - how much discount from 
  * list price is needed to reach breakeven. Lower discount = better opportunity.
