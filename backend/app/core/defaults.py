@@ -1,5 +1,5 @@
 """
-Centralized Default Assumptions for RealVestIQ
+Centralized Default Assumptions for DealGapIQ
 All investment calculation defaults are defined here and used across the application.
 
 These values align with the frontend stores/index.ts DEFAULT_ASSUMPTIONS.

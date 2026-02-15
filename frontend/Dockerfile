@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────
-#  InvestIQ Frontend — Multi-stage Production Dockerfile
+#  DealGapIQ Frontend — Multi-stage Production Dockerfile
 #
 #  Three stages:
 #    1. deps      — install production dependencies
@@ -7,10 +7,10 @@
 #    3. runner    — minimal production image
 #
 #  Build:
-#    docker build -t investiq-frontend .
+#    docker build -t dealgapiq-frontend .
 #
 #  Run:
-#    docker run -p 3000:3000 investiq-frontend
+#    docker run -p 3000:3000 dealgapiq-frontend
 # ─────────────────────────────────────────────────────────
 
 # ── Stage 1: Install dependencies ──────────────────────

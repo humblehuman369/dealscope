@@ -12,7 +12,7 @@
  * Layout:
  * ┌─────────────────────────────────────────────────┐
  * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
- * │  by RealVestIQ                                    │
+ * │  by DealGapIQ                                    │
  * ├─────────────────────────────────────────────────┤
  * │  [Analyze]  Details  PriceCheckerIQ  Dashboard         │  ← White tab bar
  * ├─────────────────────────────────────────────────┤
@@ -514,7 +514,7 @@ export function AppHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property') ? 'RealVest' : pathname?.startsWith('/price-intel') ? 'Price' : 'Verdict'}
+              {pathname?.startsWith('/strategy') ? 'Strategy' : pathname?.startsWith('/property') ? 'DealGap' : pathname?.startsWith('/price-intel') ? 'Price' : 'Verdict'}
             </span>
             <span 
               className="text-lg font-bold tracking-tight"

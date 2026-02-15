@@ -9,7 +9,7 @@ module.exports = {
   theme: {
     extend: {
       // ==========================================
-      // INVESTIQ DESIGN SYSTEM — Dark Fintech
+      // DEALGAPIQ DESIGN SYSTEM — Dark Fintech
       // Style Guide v2.0 — February 2026
       //
       // Palette philosophy:

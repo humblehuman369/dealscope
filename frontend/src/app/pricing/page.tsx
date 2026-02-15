@@ -105,7 +105,7 @@ export default function PricingPage() {
       <header className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-white no-underline" style={{ letterSpacing: '-0.02em' }}>
-            RealVest<span className="text-sky-400">IQ</span>
+            DealGap<span className="text-sky-400">IQ</span>
           </Link>
           <Link
             href="/"
@@ -194,7 +194,7 @@ export default function PricingPage() {
                   }
                   onClick={() => {
                     if (tier.name === 'Team') {
-                      window.location.href = 'mailto:sales@realvestiq.com?subject=RealVestIQ%20Team%20Plan%20Inquiry'
+                      window.location.href = 'mailto:sales@dealgapiq.com?subject=DealGapIQ%20Team%20Plan%20Inquiry'
                     }
                     // Stripe checkout will be wired here
                   }}
@@ -223,14 +223,14 @@ export default function PricingPage() {
           <h2 className="text-xl font-bold text-white mb-2">Questions?</h2>
           <p className="text-sm text-slate-400 mb-4">
             Check our <Link href="/help" className="text-sky-400 hover:text-sky-300 underline">Help Center</Link> or{' '}
-            <a href="mailto:support@realvestiq.com" className="text-sky-400 hover:text-sky-300 underline">email us</a>.
+            <a href="mailto:support@dealgapiq.com" className="text-sky-400 hover:text-sky-300 underline">email us</a>.
           </p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t py-6 text-center text-xs text-slate-500" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <p>&copy; 2026 RealVestIQ LLC. All rights reserved.</p>
+        <p>&copy; 2026 DealGapIQ LLC. All rights reserved.</p>
         <div className="flex justify-center gap-6 mt-3">
           <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>

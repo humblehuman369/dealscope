@@ -43,7 +43,7 @@ export function ActionBar({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Property Details - InvestIQ',
+          title: 'Property Details - DealGapIQ',
           url: window.location.href
         })
       } catch (err) {

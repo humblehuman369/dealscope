@@ -1,4 +1,4 @@
-# InvestIQ Backend Requirements
+# DealGapIQ Backend Requirements
 
 # Django & DRF (assumptions admin app)
 Django>=5.0,<6.0

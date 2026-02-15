@@ -594,7 +594,7 @@ export function StrategyPageLayout({
             RealVest<span style={{ color: '#4dd0e1' }}>IQ</span>
           </span>
           <p style={{ color: '#64748B', fontSize: '0.8125rem', margin: 0 }}>
-            &copy; 2026 RealVestIQ. All rights reserved.
+            &copy; 2026 DealGapIQ. All rights reserved.
           </p>
         </div>
       </footer>

@@ -1,5 +1,5 @@
 /**
- * RealVestIQ Property Investment Report — Vercel Serverless Function
+ * DealGapIQ Property Investment Report — Vercel Serverless Function
  *
  * Generates a professional, full-page, print-ready HTML investment report.
  * Each section makes a statement with bold typography, AI-written narrative
@@ -146,7 +146,7 @@ function narrativeDealScore(d: Proforma): string {
   else if (ds.score >= 60) { assess = 'a moderate opportunity with upside potential'; action = 'Consider negotiating toward the breakeven price to improve returns.' }
   else if (ds.score >= 40) { assess = 'a marginal opportunity requiring careful evaluation'; action = 'Significant price negotiation would be needed to achieve target returns.' }
   else { assess = 'a challenging investment at current pricing'; action = 'The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies.' }
-  let t = `The RealVestIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
+  let t = `The DealGapIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
   if (ds.breakeven_price > 0 && ds.discount_required !== 0) t += `The breakeven price is calculated at ${$(ds.breakeven_price)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
   return t + action
 }
@@ -215,15 +215,15 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   const photoHTML = ph.length > 0 ? `<div class="photos photos-${Math.min(ph.length,5)}">${ph.map((u,i) => `<div class="ph${i===0?' ph-main':''}"><img src="${u}" alt=""/></div>`).join('')}</div>` : ''
 
   const N = 6
-  const pgHdr = `<div class="pg-hdr"><div class="logo-sm">RealVest<span class="iq">IQ</span></div><div class="pg-hdr-title">${d.property_address}</div></div>`
-  const pgFt = (n: number) => `<div class="pg-foot"><span>RealVestIQ Property Report</span><span>${dateStr}</span><span>Page ${n} of ${N}</span></div>`
+  const pgHdr = `<div class="pg-hdr"><div class="logo-sm">DealGap<span class="iq">IQ</span></div><div class="pg-hdr-title">${d.property_address}</div></div>`
+  const pgFt = (n: number) => `<div class="pg-foot"><span>DealGapIQ Property Report</span><span>${dateStr}</span><span>Page ${n} of ${N}</span></div>`
 
   const pages = `
 <!-- ===== PAGE 1: COVER + PROPERTY DETAILS ===== -->
 <div class="page">
   <div class="brand-bar"></div>
   <div class="cover-top">
-    <div class="logo-lg">RealVest<span class="iq">IQ</span></div>
+    <div class="logo-lg">DealGap<span class="iq">IQ</span></div>
     <div class="cover-type">Property Investment Report</div>
     <div class="cover-date">${dateStr} &bull; ${d.strategy_type.toUpperCase()} Strategy</div>
   </div>
@@ -502,7 +502,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
     <h4 class="mt-6">Disclaimer</h4>
     <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
-    <p class="mt-4">&copy; ${now.getFullYear()} RealVestIQ. All rights reserved.</p>
+    <p class="mt-4">&copy; ${now.getFullYear()} DealGapIQ. All rights reserved.</p>
   </div>
   ${pgFt(4)}
 </div>
@@ -557,7 +557,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${pgFt(6)}
 </div>`
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>RealVestIQ Property Report — ${d.property_address}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DealGapIQ Property Report — ${d.property_address}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
 }
 
 // ---------------------------------------------------------------------------

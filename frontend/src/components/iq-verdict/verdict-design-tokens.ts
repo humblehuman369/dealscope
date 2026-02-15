@@ -135,7 +135,7 @@ export const typography = {
 export const colors = {
   // Brand
   brand: {
-    /** #4dd0e1 - RealVestIQ cyan — primary accent */
+    /** #4dd0e1 - DealGapIQ cyan — primary accent */
     blue: '#4dd0e1',
     /** #00acc1 - Deep cyan — CTA buttons */
     blueDeep: '#00acc1',

@@ -1,7 +1,7 @@
 [project]
-name = "investiq-backend"
+name = "dealgapiq-backend"
 version = "1.0.0"
-description = "InvestIQ Real Estate Investment Analytics API"
+description = "DealGapIQ Real Estate Investment Analytics API"
 requires-python = ">=3.11"
 
 # ─────────────────────────────────────

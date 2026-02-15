@@ -86,7 +86,7 @@ async def register_device(
             push_service.send_to_tokens,
             db,
             [body.token],
-            title="Welcome to InvestIQ!",
+            title="Welcome to DealGapIQ!",
             body="Scan any property to get instant investment analysis across 6 strategies.",
             data={"type": "scan"},
         )

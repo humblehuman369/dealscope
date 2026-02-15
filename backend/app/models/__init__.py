@@ -1,5 +1,5 @@
 """
-SQLAlchemy models for InvestIQ.
+SQLAlchemy models for DealGapIQ.
 All models are imported here for Alembic auto-discovery.
 """
 

@@ -10,7 +10,7 @@
  * Based on the design system tokens and reference layout:
  * ┌─────────────────────────────────────────────────┐
  * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
- * │  by InvestIQ                                    │
+ * │  by DealGapIQ                                    │
  * ├─────────────────────────────────────────────────┤
  * │  [Analyze]  Details  Sale Comps  Rent Comps  Dashboard│  ← White tab bar
  * └─────────────────────────────────────────────────┘
@@ -94,7 +94,7 @@ export function VerdictHeader({
             className="text-[12px] font-medium -mt-0.5 text-left"
             style={{ color: colors.text.white }}
           >
-            by InvestIQ
+            by DealGapIQ
           </span>
         </button>
 

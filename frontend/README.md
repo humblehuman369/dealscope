@@ -1,4 +1,4 @@
-# InvestIQ Frontend
+# DealGapIQ Frontend
 
 Next.js 16 web application for real estate investment analysis across 6 strategies.
 
@@ -165,10 +165,10 @@ The frontend uses **relative API paths** (`/api/v1/...`) at runtime. The `NEXT_P
 
 ```bash
 # Production build
-docker build -t investiq-frontend .
+docker build -t dealgapiq-frontend .
 
 # Run production image
-docker run -p 3000:3000 investiq-frontend
+docker run -p 3000:3000 dealgapiq-frontend
 
 # Development via docker-compose (from repo root)
 docker-compose up frontend

@@ -4,11 +4,11 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
-    container_name: investiq-db
+    container_name: dealgapiq-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: investiq
+      POSTGRES_DB: dealgapiq
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -22,7 +22,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: investiq-redis
+    container_name: dealgapiq-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -36,9 +36,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: investiq-backend
+    container_name: dealgapiq-backend
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/investiq
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/dealgapiq
       - REDIS_URL=redis://redis:6379/0
       - RENTCAST_API_KEY=${RENTCAST_API_KEY}
       - RENTCAST_URL=https://api.rentcast.io/v1
@@ -61,7 +61,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: deps
-    container_name: investiq-frontend
+    container_name: dealgapiq-frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     ports:

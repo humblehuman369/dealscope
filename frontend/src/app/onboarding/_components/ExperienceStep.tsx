@@ -13,7 +13,7 @@ export function ExperienceStep({ formData, updateFormData }: ExperienceStepProps
     <div className="animate-fade-in">
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-          Welcome to InvestIQ! 👋
+          Welcome to DealGapIQ! 👋
         </h1>
         <p className="text-gray-400 text-lg">
           Let&apos;s personalize your experience. What&apos;s your investment experience?

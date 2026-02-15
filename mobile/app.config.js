@@ -17,13 +17,13 @@ const IS_BETA = process.env.APP_ENV === 'beta';
 
 export default {
   expo: {
-    name: IS_BETA ? "InvestIQ (Beta)" : "InvestIQ",
-    slug: "investiq",
-    owner: "investiq",
+    name: IS_BETA ? "DealGapIQ (Beta)" : "DealGapIQ",
+    slug: "dealgapiq",
+    owner: "dealgapiq",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
-    scheme: "investiq",
+    scheme: "dealgapiq",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 
@@ -38,24 +38,24 @@ export default {
     // ─── iOS ──────────────────────────────────────────────────────
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.investiq.mobile",
+      bundleIdentifier: "com.dealgapiq.mobile",
       buildNumber: "19",
 
       associatedDomains: [
-        "applinks:realvestiq.com",
-        "applinks:www.realvestiq.com"
+        "applinks:dealgapiq.com",
+        "applinks:www.dealgapiq.com"
       ],
 
       infoPlist: {
         // Camera & location permissions
         NSCameraUsageDescription:
-          "InvestIQ needs camera access to scan properties for instant investment analysis.",
+          "DealGapIQ needs camera access to scan properties for instant investment analysis.",
         NSLocationWhenInUseUsageDescription:
-          "InvestIQ needs your location to identify properties you're looking at and show nearby investment opportunities.",
+          "DealGapIQ needs your location to identify properties you're looking at and show nearby investment opportunities.",
         NSLocationAlwaysAndWhenInUseUsageDescription:
-          "InvestIQ uses your location to identify properties and provide real-time investment analytics.",
+          "DealGapIQ uses your location to identify properties and provide real-time investment analytics.",
         NSMotionUsageDescription:
-          "InvestIQ uses the compass to determine which direction you're facing when scanning properties.",
+          "DealGapIQ uses the compass to determine which direction you're facing when scanning properties.",
 
         // App Transport Security — disable for dev only
         ...(!IS_PRODUCTION && !IS_BETA
@@ -145,7 +145,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#0A0F1C"
       },
-      package: "com.investiq.mobile",
+      package: "com.dealgapiq.mobile",
       versionCode: 12,
 
       permissions: [
@@ -161,22 +161,22 @@ export default {
           action: "VIEW",
           autoVerify: true,
           data: [
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/verdict" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/property" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/deal-gap" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/deal-maker" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/worksheet" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/price-intel" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/strategy" },
-            { scheme: "https", host: "realvestiq.com", pathPrefix: "/search" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/verdict" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/property" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/deal-gap" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/deal-maker" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/worksheet" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/price-intel" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/strategy" },
-            { scheme: "https", host: "www.realvestiq.com", pathPrefix: "/search" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/verdict" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/property" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/strategy" },
+            { scheme: "https", host: "dealgapiq.com", pathPrefix: "/search" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/verdict" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/property" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/deal-gap" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/deal-maker" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/worksheet" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/price-intel" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/strategy" },
+            { scheme: "https", host: "www.dealgapiq.com", pathPrefix: "/search" },
           ],
           category: ["BROWSABLE", "DEFAULT"],
         },
@@ -203,23 +203,23 @@ export default {
         "expo-camera",
         {
           cameraPermission:
-            "Allow InvestIQ to access your camera to scan properties.",
+            "Allow DealGapIQ to access your camera to scan properties.",
         },
       ],
       [
         "expo-location",
         {
           locationAlwaysAndWhenInUsePermission:
-            "Allow InvestIQ to use your location to identify properties.",
+            "Allow DealGapIQ to use your location to identify properties.",
           locationWhenInUsePermission:
-            "Allow InvestIQ to use your location to identify properties.",
+            "Allow DealGapIQ to use your location to identify properties.",
         },
       ],
       [
         "expo-sensors",
         {
           motionPermission:
-            "Allow InvestIQ to access motion sensors for compass heading.",
+            "Allow DealGapIQ to access motion sensors for compass heading.",
         },
       ],
       "expo-sqlite",
@@ -237,8 +237,8 @@ export default {
             [
               "@sentry/react-native/expo",
               {
-                organization: process.env.SENTRY_ORG || "investiq",
-                project: process.env.SENTRY_PROJECT || "investiq-mobile",
+                organization: process.env.SENTRY_ORG || "dealgapiq",
+                project: process.env.SENTRY_PROJECT || "dealgapiq-mobile",
               },
             ],
           ]
@@ -258,7 +258,7 @@ export default {
       eas: {
         projectId: "c8258f15-a554-499a-a55f-adfc32d569d2",
       },
-      webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://realvestiq.com",
+      webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://dealgapiq.com",
     },
 
     // ─── OTA Updates ──────────────────────────────────────────────

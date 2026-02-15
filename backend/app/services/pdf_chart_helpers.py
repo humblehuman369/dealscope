@@ -1,5 +1,5 @@
 """
-PDF Chart Helpers — SVG chart generators for the InvestIQ Property Report PDF.
+PDF Chart Helpers — SVG chart generators for the DealGapIQ Property Report PDF.
 
 Generates inline SVG strings for:
 - Donut chart (expense breakdown)

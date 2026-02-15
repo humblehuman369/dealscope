@@ -1,5 +1,5 @@
 """
-PDF Narrative Engine — Data-driven contextual text for the InvestIQ Property Report.
+PDF Narrative Engine — Data-driven contextual text for the DealGapIQ Property Report.
 
 Generates investor-oriented narrative paragraphs for each report section
 based on the actual financial data. The tone is professional, concise,
@@ -338,7 +338,7 @@ def deal_score_narrative(data: FinancialProforma) -> str:
         action = "The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies."
 
     parts = [
-        f"The InvestIQ Deal Score of {ds.score} ({ds.grade}) indicates this is {assessment}. "
+        f"The DealGapIQ Deal Score of {ds.score} ({ds.grade}) indicates this is {assessment}. "
         f'{ds.verdict}. '
     ]
 

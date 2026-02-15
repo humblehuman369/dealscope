@@ -7,7 +7,7 @@ import './investiq-gateway.css';
 
 type Step = 'start' | 'address' | 'scan';
 
-interface RealVestIQGatewayProps {
+interface DealGapIQGatewayProps {
   /** Which step to open to (skip "start" if user already chose) */
   initialStep?: Step;
   onClose: () => void;
@@ -25,7 +25,7 @@ const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, cl
   />
 );
 
-export function RealVestIQGateway({ initialStep = 'start', onClose, onScanProperty }: RealVestIQGatewayProps) {
+export function DealGapIQGateway({ initialStep = 'start', onClose, onScanProperty }: DealGapIQGatewayProps) {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState<Step>(initialStep);
   const [addressInput, setAddressInput] = useState('');
@@ -274,4 +274,4 @@ export function RealVestIQGateway({ initialStep = 'start', onClose, onScanProper
   );
 }
 
-export default RealVestIQGateway;
+export default DealGapIQGateway;

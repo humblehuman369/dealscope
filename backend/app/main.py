@@ -1,5 +1,5 @@
 """
-RealVestIQ - Real Estate Investment Analytics API
+DealGapIQ - Real Estate Investment Analytics API
 Main FastAPI application entry point.
 """
 # Bare print BEFORE any imports — visible even if imports crash
@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 # Log startup immediately
 logger.info("=" * 50)
-logger.info("REALVESTIQ API LOADING...")
+logger.info("DEALGAPIQ API LOADING...")
 logger.info(f"Python version: {sys.version}")
 logger.info(f"PORT env: {os.environ.get('PORT', 'not set')}")
 logger.info("=" * 50)
@@ -107,7 +107,7 @@ except Exception as e:
 async def lifespan(app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
     # Startup
-    logger.info("Starting RealVestIQ API lifespan...")
+    logger.info("Starting DealGapIQ API lifespan...")
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
@@ -166,7 +166,7 @@ async def lifespan(app: FastAPI):
     yield  # Application runs here
     
     # Shutdown
-    logger.info("Shutting down RealVestIQ API...")
+    logger.info("Shutting down DealGapIQ API...")
     if close_db:
         await close_db()
         logger.info("Database connections closed")
@@ -174,7 +174,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app with lifespan
 app = FastAPI(
-    title="RealVestIQ API",
+    title="DealGapIQ API",
     description="""
     Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies.
     
@@ -199,7 +199,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_origin_regex=r"https://realvestiq[a-z0-9-]*\.vercel\.app",
+    allow_origin_regex=r"https://dealgapiq[a-z0-9-]*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -251,7 +251,7 @@ except Exception as e:
 # ============================================
 
 from app.core.exceptions import (
-    RealVestIQError,
+    DealGapIQError,
     NotFoundError,
     ValidationError,
     AuthenticationError,
@@ -264,9 +264,9 @@ from fastapi import Request
 from fastapi import status as http_status
 
 
-@app.exception_handler(RealVestIQError)
-async def investiq_error_handler(request: Request, exc: RealVestIQError):
-    """Handle all RealVestIQ custom exceptions with canonical error shape."""
+@app.exception_handler(DealGapIQError)
+async def dealgapiq_error_handler(request: Request, exc: DealGapIQError):
+    """Handle all DealGapIQ custom exceptions with canonical error shape."""
     status_code = http_status.HTTP_500_INTERNAL_SERVER_ERROR
     
     if isinstance(exc, NotFoundError):
@@ -351,7 +351,7 @@ if not _has_health:
 async def root():
     """API root endpoint."""
     return {
-        "name": "RealVestIQ API",
+        "name": "DealGapIQ API",
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "strategies": ["Long-Term Rental", "Short-Term Rental", "BRRRR", "Fix & Flip", "House Hacking", "Wholesale"],

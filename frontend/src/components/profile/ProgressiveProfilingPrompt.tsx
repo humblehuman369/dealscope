@@ -6,7 +6,7 @@
  * Shows a single question prompt after analysis to collect profile info incrementally.
  * Part of progressive profiling flow - asks one question at a time based on analysis count.
  *
- * Dark Fintech Theme — aligned with InvestIQ Design System v2.0
+ * Dark Fintech Theme — aligned with DealGapIQ Design System v2.0
  */
 
 import React, { useState } from 'react'

@@ -3,7 +3,7 @@
 /**
  * CompactHeader Component
  * 
- * A space-efficient header for InvestIQ analysis pages with:
+ * A space-efficient header for DealGapIQ analysis pages with:
  * - Top bar with DealMakerIQ branding, search, dashboard, and user avatar
  * - Page title row with back arrow and strategy selector
  * - Pill-style address selector with property accordion
@@ -196,7 +196,7 @@ export function CompactHeader({
               <span className="text-[#0A1628]">Maker</span>
               <span className="text-[#0891B2]">IQ</span>
             </div>
-            <span className="text-[10px] text-[#64748B] tracking-wide font-medium">by InvestIQ</span>
+            <span className="text-[10px] text-[#64748B] tracking-wide font-medium">by DealGapIQ</span>
           </Link>
           <div className="flex items-center gap-3">
             <button 

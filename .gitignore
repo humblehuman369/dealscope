@@ -57,4 +57,4 @@ htmlcov/
 # Uncomment below to ignore generated Excel/CSV exports
 # *.xlsx
 # *.csv
-backend/investiq_property_data_*.json
+backend/dealgapiq_property_data_*.json
