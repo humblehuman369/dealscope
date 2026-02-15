@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   title: 'DealGapIQ - Real Estate Investment Analytics',
   description: 'Analyze properties across 6 investment strategies: Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, and Wholesale',
   icons: {
-    icon: '/images/investiq-logo-icon.png',
-    apple: '/images/investiq-logo-icon.png',
+    icon: '/images/dealgapiq-logo-icon.png',
+    apple: '/images/dealgapiq-logo-icon.png',
   },
 }
 

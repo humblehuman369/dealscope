@@ -1,6 +1,6 @@
 export { ResponsiveLandingPage } from './ResponsiveLandingPage';
-export { DealGapIQHomepage } from './InvestIQHomepage';
-export { DealGapIQGateway } from './InvestIQGateway';
+export { DealGapIQHomepage } from './DealGapIQHomepage';
+export { DealGapIQGateway } from './DealGapIQGateway';
 export { AnimatedPhoneMockup } from './AnimatedPhoneMockup';
 export { FloatingDataCards } from './FloatingDataCards';
 export { StrategyCard } from './StrategyCard';
