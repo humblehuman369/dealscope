@@ -175,7 +175,7 @@ export function PropertyDetailsScreen({
             });
           }
         } catch (error) {
-          console.log('Geocoding failed:', error);
+          if (__DEV__) console.log('Geocoding failed:', error);
         }
       })();
     }

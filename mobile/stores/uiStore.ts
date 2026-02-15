@@ -44,6 +44,11 @@ interface UIStore {
 
 // ─── Store ───────────────────────────────────────────────────────────────────
 
+// Track the toast auto-dismiss timer outside the store to avoid leaks.
+// Clearing the previous timer before setting a new one prevents a rapid
+// sequence of toasts from prematurely dismissing the latest one.
+let _toastTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useUIStore = create<UIStore>((set) => ({
   activeStrategy: 'ltr',
   showAssumptionsPanel: false,
@@ -71,13 +76,26 @@ export const useUIStore = create<UIStore>((set) => ({
     set({ activeBottomSheet: null }),
 
   showToast: (message, type = 'info') => {
+    // Clear any pending auto-dismiss timer to prevent premature clearing
+    if (_toastTimer) {
+      clearTimeout(_toastTimer);
+      _toastTimer = null;
+    }
     set({ toast: { message, type } });
     // Auto-dismiss after 3 seconds
-    setTimeout(() => set({ toast: null }), 3000);
+    _toastTimer = setTimeout(() => {
+      _toastTimer = null;
+      set({ toast: null });
+    }, 3000);
   },
 
-  clearToast: () =>
-    set({ toast: null }),
+  clearToast: () => {
+    if (_toastTimer) {
+      clearTimeout(_toastTimer);
+      _toastTimer = null;
+    }
+    set({ toast: null });
+  },
 }));
 
 // ─── Selectors ───────────────────────────────────────────────────────────────

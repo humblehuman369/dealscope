@@ -101,7 +101,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           setTiltCompensationState(settings.tiltCompensation);
         }
       } catch (e) {
-        console.log('Failed to load calibration settings:', e);
+        if (__DEV__) console.log('Failed to load calibration settings:', e);
       }
     }
     loadCalibration();
@@ -131,9 +131,9 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
         lastCalibrated: new Date().toISOString(),
       };
       await SecureStore.setItemAsync(CALIBRATION_STORAGE_KEY, JSON.stringify(settings));
-      console.log('Calibration saved:', settings);
+      if (__DEV__) console.log('Calibration saved:', settings);
     } catch (e) {
-      console.log('Failed to save calibration:', e);
+      if (__DEV__) console.log('Failed to save calibration:', e);
     }
   }, [headingOffset, tiltCompensation]);
 
@@ -160,7 +160,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
         // Set a safety timeout - if we don't get location in 15 seconds, show error
         locationTimeoutId = setTimeout(() => {
           if (!locationAcquired) {
-            console.log('Location acquisition timed out after 15 seconds');
+            if (__DEV__) console.log('Location acquisition timed out after 15 seconds');
             setState(prev => {
               // Only set error if we still don't have a location
               if (!prev.isLocationReady) {
@@ -178,7 +178,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
         // STEP 1: Try to use last known location IMMEDIATELY (instant)
         const lastKnown = await Location.getLastKnownPositionAsync();
         if (lastKnown) {
-          console.log('Using last known location for instant start');
+          if (__DEV__) console.log('Using last known location for instant start');
           locationAcquired = true;
           setState(prev => ({
             ...prev,
@@ -213,7 +213,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
             }));
           }
         } catch (e) {
-          console.log('Fast location timed out, continuing with watch...');
+          if (__DEV__) console.log('Fast location timed out, continuing with watch...');
         }
 
         // Then try to get high accuracy location (but don't block)
@@ -230,7 +230,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
             error: null,
           }));
         }).catch(e => {
-          console.log('High accuracy location failed:', e);
+          if (__DEV__) console.log('High accuracy location failed:', e);
         });
 
         // Subscribe to location updates with high precision
@@ -331,7 +331,7 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           });
         } else {
           // Fallback: Use location heading if available
-          console.log('Magnetometer not available, using location heading');
+          if (__DEV__) console.log('Magnetometer not available, using location heading');
         }
       } catch (error) {
         setState(prev => ({

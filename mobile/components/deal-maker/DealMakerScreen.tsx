@@ -132,7 +132,7 @@ export function DealMakerScreen({
   }, []);
 
   const handleFinish = useCallback(() => {
-    console.log('Deal saved:', { state, metrics });
+    if (__DEV__) console.log('Deal saved:', { state, metrics });
   }, [state, metrics]);
 
   // Tab configs with status

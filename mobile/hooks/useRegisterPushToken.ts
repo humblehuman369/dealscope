@@ -39,7 +39,7 @@ async function registerWithBackend(): Promise<string | null> {
       device_name: `${Platform.OS} ${Platform.Version}`,
     });
 
-    console.log('[PushToken] Registered with backend:', pushToken.token.slice(0, 30) + '…');
+    if (__DEV__) console.log('[PushToken] Registered with backend');
     return pushToken.token;
   } catch (error) {
     // Non-critical — app works fine without push
@@ -57,7 +57,7 @@ export async function unregisterPushToken(): Promise<void> {
     const pushToken = notificationService.getPushToken();
     if (pushToken) {
       await del(`/api/v1/devices/${encodeURIComponent(pushToken.token)}`);
-      console.log('[PushToken] Unregistered from backend');
+      if (__DEV__) console.log('[PushToken] Unregistered from backend');
     }
   } catch (error) {
     // Best-effort — if this fails the token will just go stale

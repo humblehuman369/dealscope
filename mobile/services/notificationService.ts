@@ -48,7 +48,7 @@ class NotificationService {
       this.handleNotificationResponse
     );
 
-    console.log('[NotificationService] Initialized');
+    if (__DEV__) console.log('[NotificationService] Initialized');
   }
 
   /**
@@ -63,7 +63,7 @@ class NotificationService {
       this.responseListener.remove();
       this.responseListener = null;
     }
-    console.log('[NotificationService] Destroyed');
+    if (__DEV__) console.log('[NotificationService] Destroyed');
   }
 
   /**
@@ -72,7 +72,7 @@ class NotificationService {
   async registerForPushNotifications(): Promise<PushToken | null> {
     // Only works on physical devices
     if (!Device.isDevice) {
-      console.log('[NotificationService] Push notifications require a physical device');
+      if (__DEV__) console.log('[NotificationService] Push notifications require a physical device');
       return null;
     }
 
@@ -88,7 +88,7 @@ class NotificationService {
       }
 
       if (finalStatus !== 'granted') {
-        console.log('[NotificationService] Permission not granted');
+        if (__DEV__) console.log('[NotificationService] Permission not granted');
         return null;
       }
 
@@ -104,7 +104,7 @@ class NotificationService {
         type: 'expo',
       };
 
-      console.log('[NotificationService] Push token:', this.pushToken.token);
+      if (__DEV__) console.log('[NotificationService] Push token acquired');
 
       // Configure Android channel
       if (Platform.OS === 'android') {
@@ -135,7 +135,7 @@ class NotificationService {
    * Handle notification received while app is in foreground.
    */
   private handleNotificationReceived = (notification: Notifications.Notification): void => {
-    console.log('[NotificationService] Received:', notification.request.content.title);
+    if (__DEV__) console.log('[NotificationService] Received:', notification.request.content.title);
     // The notification will be shown by the OS based on our handler config
   };
 
@@ -147,7 +147,7 @@ class NotificationService {
     response: Notifications.NotificationResponse
   ): void => {
     const data = response.notification.request.content.data;
-    console.log('[NotificationService] Response data:', data);
+    if (__DEV__) console.log('[NotificationService] Response data:', data);
 
     // Handle deep linking based on notification data
     if (data?.type === 'property' && data?.address) {
@@ -206,7 +206,7 @@ class NotificationService {
       },
       trigger: trigger || null, // null means immediate
     });
-    console.log('[NotificationService] Scheduled notification:', id);
+    if (__DEV__) console.log('[NotificationService] Scheduled notification:', id);
     return id;
   }
 
@@ -215,7 +215,7 @@ class NotificationService {
    */
   async cancelNotification(id: string): Promise<void> {
     await Notifications.cancelScheduledNotificationAsync(id);
-    console.log('[NotificationService] Cancelled notification:', id);
+    if (__DEV__) console.log('[NotificationService] Cancelled notification:', id);
   }
 
   /**
@@ -223,7 +223,7 @@ class NotificationService {
    */
   async cancelAllNotifications(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
-    console.log('[NotificationService] Cancelled all notifications');
+    if (__DEV__) console.log('[NotificationService] Cancelled all notifications');
   }
 
   /**
