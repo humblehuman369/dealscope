@@ -6,7 +6,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { AnalyticsInputs, CalculatedMetrics, AmortizationRow } from '../types';
-import { formatCurrency, formatCompact, formatPercent, calculateAmortizationSchedule } from '../calculations';
+import { formatCurrency, formatCompact, formatPercent, calculateAmortizationSchedule, aggregateAmortizationByYear } from '../calculations';
 
 interface LoanTabProps {
   inputs: AnalyticsInputs;
@@ -15,18 +15,19 @@ interface LoanTabProps {
 }
 
 export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
-  const schedule = calculateAmortizationSchedule(
+  const monthlySchedule = calculateAmortizationSchedule(
     metrics.loanAmount,
     inputs.interestRate,
     inputs.loanTermYears
   );
+  const annualSchedule = aggregateAmortizationByYear(monthlySchedule);
 
-  const totalInterest = schedule.reduce((sum, row) => sum + row.interest, 0);
+  const totalInterest = monthlySchedule.reduce((sum, row) => sum + row.interest, 0);
   const totalPaid = metrics.loanAmount + totalInterest;
   const principalPercent = (metrics.loanAmount / totalPaid) * 100;
 
   // Get key years for display
-  const keyYears = [0, 1, 4, 9, inputs.loanTermYears - 1].map(i => schedule[i]).filter(Boolean);
+  const keyYears = [0, 1, 4, 9, inputs.loanTermYears - 1].map(i => annualSchedule[i]).filter(Boolean);
 
   // Donut chart dimensions
   const size = 100;
@@ -51,7 +52,7 @@ export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
         />
         <SummaryBox 
           label="Interest Rate" 
-          value={formatPercent(inputs.interestRate * 100)} 
+          value={formatPercent(inputs.interestRate)} 
           isDark={isDark} 
         />
         <SummaryBox 
@@ -177,7 +178,7 @@ export function LoanTab({ inputs, metrics, isDark = true }: LoanTabProps) {
               {formatCompact(row.interest)}
             </Text>
             <Text style={[styles.tableCell, { color: isDark ? '#fff' : '#07172e' }]}>
-              {formatCompact(row.endingBalance)}
+              {formatCompact(row.balance)}
             </Text>
           </View>
         ))}

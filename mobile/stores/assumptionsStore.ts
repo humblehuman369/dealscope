@@ -182,6 +182,8 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
 interface AssumptionsStore {
   assumptions: AllAssumptions;
   propertyOverrides: Record<string, Partial<AllAssumptions>>;
+  /** True once the store has been hydrated from the defaults API */
+  isHydrated: boolean;
 
   // Actions
   setAssumption: <K extends keyof AllAssumptions>(
@@ -194,6 +196,12 @@ interface AssumptionsStore {
   resetToDefaults: () => void;
   resetPropertyOverrides: (propertyId: string) => void;
   bulkUpdate: (updates: Partial<AllAssumptions>) => void;
+  /**
+   * Hydrate the store from the defaults API response.
+   * Called once on app launch (or when ZIP code changes) to replace the
+   * hardcoded fallback values with the server-resolved defaults.
+   */
+  hydrateFromAPI: (resolved: AllAssumptions) => void;
 }
 
 function deepMerge<T>(target: T, source: Partial<T>): T {
@@ -228,6 +236,10 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
     (set, get) => ({
       assumptions: DEFAULT_ASSUMPTIONS,
       propertyOverrides: {},
+      isHydrated: false,
+
+      hydrateFromAPI: (resolved) =>
+        set({ assumptions: resolved, isHydrated: true }),
 
       setAssumption: (category, key, value) =>
         set((state) => ({

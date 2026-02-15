@@ -110,10 +110,21 @@ export function useProgressiveProfiling() {
       setShowPrompt(false);
 
       try {
+        // Payload keys match frontend convention (useProgressiveProfiling.ts)
         const payload: Record<string, unknown> = {};
-        if (questionId === 'experience') payload.experience_level = answer;
-        if (questionId === 'strategies') payload.strategy_interests = answer;
-        if (questionId === 'budget') payload.investment_budget = answer;
+        if (questionId === 'experience') payload.investment_experience = answer;
+        if (questionId === 'strategies') payload.preferred_strategies = answer;
+        if (questionId === 'budget') {
+          // Frontend sends min/max separately
+          if (typeof answer === 'object' && answer !== null) {
+            const budgetAnswer = answer as { min?: number; max?: number };
+            payload.investment_budget_min = budgetAnswer.min;
+            payload.investment_budget_max = budgetAnswer.max;
+          } else {
+            payload.investment_budget_min = answer;
+            payload.investment_budget_max = answer;
+          }
+        }
 
         await api.patch('/api/v1/users/me/profile', payload);
       } catch {
