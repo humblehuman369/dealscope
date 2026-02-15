@@ -1,17 +1,21 @@
 /**
  * InvestIQ Mobile Color System
- * Consistent with web app branding
+ * Aligned with frontend Tailwind config & VerdictIQ 3.3 design system
  * 
  * Brand Colors:
- * - Navy/Black-Blue: #07172e
+ * - Navy: #0A1628 (aligned with frontend Tailwind navy-900)
  * - Medium Blue (Primary): #0465f2
- * - Soft Cyan (Accent Dark Mode): #4dd0e1 (updated from #00e5ff for premium feel)
- * - Pacific Teal (Accent Light Mode): #007ea7
+ * - Sky Blue (Dark Mode Highlight): #38bdf8 (Tailwind sky-400)
+ * - Cyan (Functional Accent): #06B6D4 (Tailwind cyan-500)
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
  * 
- * UPDATED:
- * - Softened dark mode accent from #00e5ff → #4dd0e1 (less harsh, more premium)
+ * UPDATED (Phase 5 — Design Token Alignment):
+ * - Accent palette → Tailwind Cyan (was Material Teal)
+ * - Added sky semantic accent (#38bdf8) for primary dark-mode highlights
+ * - Navy.900 → #0A1628 (aligned with frontend Tailwind config)
+ * - Added purple accent (#a78bfa) matching frontend
+ * - Brand gradient endpoint → #38bdf8 (was #4dd0e1)
  * - Strategy colors shifted to avoid conflicts with profit/loss/warning status colors
  */
 
@@ -34,20 +38,28 @@ export const colors = {
     900: '#01216e',
   },
 
-  // Accent - Cyan/Teal (Theme-aware)
-  // Dark Mode: #4dd0e1 (Soft Cyan) | Light Mode: #007ea7 (Pacific Teal)
+  // Accent - Tailwind Cyan (functional interactive elements)
+  // Matches frontend tailwind.config.js accent palette
   accent: {
-    50: '#e0f7fa',
-    100: '#b2ebf2',
-    200: '#80deea',
-    300: '#4dd0e1',  // Softened - use for highlights
-    400: '#26c6da',
-    500: '#4dd0e1',  // Dark mode accent (Soft Cyan - was #00e5ff)
-    light: '#007ea7', // Light mode accent (Pacific Teal)
-    600: '#00acc1',
-    700: '#0097a7',
-    800: '#00838f',
-    900: '#006064',
+    50: '#ecfeff',
+    100: '#cffafe',
+    200: '#a5f3fc',
+    300: '#67e8f9',
+    400: '#22d3ee',
+    500: '#06B6D4',   // Tailwind cyan-500 (was Material Teal #4dd0e1)
+    light: '#06B6D4',  // Consistent across modes (was #007ea7)
+    600: '#0891B2',
+    700: '#0E7490',
+    800: '#155e75',
+    900: '#164e63',
+  },
+
+  // Sky - Primary accent for dark mode highlights & key data
+  // Matches frontend tailwind.config.js sky semantic accent
+  sky: {
+    DEFAULT: '#38bdf8',     // Tailwind sky-400 — primary highlight
+    deep: '#0EA5E9',        // Sky-500 — CTA buttons
+    dim: 'rgba(56,189,248,0.10)',
   },
 
   // Navy - Dark backgrounds & text
@@ -61,7 +73,7 @@ export const colors = {
     600: '#15446c',
     700: '#103351',
     800: '#0b2236',
-    900: '#07172e',  // Primary dark navy
+    900: '#0A1628',  // Primary dark navy (aligned with frontend Tailwind config)
     950: '#030b17',
   },
 
@@ -161,37 +173,44 @@ export const colors = {
     },
   },
 
+  // Purple accent (matches frontend Tailwind config)
+  purple: {
+    DEFAULT: '#a78bfa',
+    dim: 'rgba(167,139,250,0.10)',
+  },
+
   // Special colors
   white: '#ffffff',
   black: '#000000',
   transparent: 'transparent',
-  overlay: 'rgba(7, 23, 46, 0.5)',  // Navy-based overlay
-  overlayLight: 'rgba(7, 23, 46, 0.3)',
+  overlay: 'rgba(10, 22, 40, 0.5)',   // Navy-based overlay (#0A1628)
+  overlayLight: 'rgba(10, 22, 40, 0.3)',
 
-  // Scanner-specific (updated to soft cyan for premium feel)
+  // Scanner-specific (aligned with sky accent for design system consistency)
   scanner: {
-    target: '#4dd0e1',        // Dark mode (was #00e5ff)
-    targetLight: '#007ea7',   // Light mode
-    targetActive: '#26c6da',
+    target: '#38bdf8',        // Sky blue (was #4dd0e1)
+    targetLight: '#06B6D4',   // Cyan-500 (was #007ea7)
+    targetActive: '#0EA5E9',  // Sky-500
     reticle: 'rgba(255, 255, 255, 0.8)',
-    compass: '#4dd0e1',       // Dark mode (was #00e5ff)
-    compassLight: '#007ea7',  // Light mode
+    compass: '#38bdf8',       // Sky blue (was #4dd0e1)
+    compassLight: '#06B6D4',  // Cyan-500 (was #007ea7)
   },
 
   // Background colors
   background: {
     primary: '#ffffff',
     secondary: '#f8fafc',
-    tertiary: '#e1e8ed',  // Icy Silver
-    dark: '#07172e',      // Navy
-    darkAlt: '#0f2744',   // Elevated dark surface
-    darkElevated: '#1a3a5c', // Cards on dark
+    tertiary: '#e1e8ed',      // Icy Silver
+    dark: '#0A1628',          // Navy (aligned with frontend)
+    darkAlt: '#0f2744',       // Elevated dark surface
+    darkElevated: '#1a3a5c',  // Cards on dark
+    panelHover: '#152238',    // Panel hover state (matches frontend base.panel-hover)
   },
 
   // Text colors (with mobile-adaptive secondary)
   // WCAG AA: ≥ 4.5:1 on #ffffff for normal text, ≥ 3:1 for large (18pt+)
   text: {
-    primary: '#07172e',   // Navy                          — 16.5:1
+    primary: '#0A1628',   // Navy (aligned with frontend)   — 15.8:1
     secondary: isMobile ? '#6b7280' : '#4b5563', // Mobile  —  4.8:1 / Desktop 7.4:1
     tertiary: '#6b7280',  //                               —  4.8:1
     muted: isMobile ? '#737373' : '#8b8b8b',     // Bumped from #9ca3af (2.5:1) → 4.6:1
@@ -205,6 +224,9 @@ export const colors = {
     default: '#d1d9e0',
     dark: '#aab2bd',      // Cool Gray
     focus: '#0465f2',     // Brand blue for focus states
+    // Dark mode borders (matches frontend border tokens)
+    darkSubtle: 'rgba(255,255,255,0.07)',   // 7% white (matches frontend border.DEFAULT)
+    darkLight: 'rgba(255,255,255,0.12)',    // 12% white (matches frontend border.light)
   },
 } as const;
 
@@ -213,12 +235,12 @@ export const colors = {
 // =============================================================================
 
 export const gradients = {
-  /** CTA buttons, hero elements - dark mode */
-  brandDark: ['#0465f2', '#4dd0e1'] as const,
+  /** CTA buttons, hero elements - dark mode (matches frontend gradient-brand) */
+  brandDark: ['#0465f2', '#38bdf8'] as const,
   /** CTA buttons, hero elements - light mode */
-  brandLight: ['#0465f2', '#007ea7'] as const,
+  brandLight: ['#0465f2', '#06B6D4'] as const,
   /** Dark mode backgrounds */
-  backgroundDark: ['#07172e', '#1f2937'] as const,
+  backgroundDark: ['#0A1628', '#1f2937'] as const,
   /** Light mode backgrounds */
   backgroundLight: ['#e8eef3', '#f9fafb'] as const,
 };
@@ -277,7 +299,7 @@ export const a11y = {
 
 export const decisionGrade = {
   // Core Brand - Per Style Guide
-  deepNavy: '#07172e',      // Header backgrounds
+  deepNavy: '#0A1628',      // Header backgrounds (aligned with navy.900)
   pacificTeal: '#0891B2',   // Intelligence markers, positive signals
   tealLight: '#0891B2',     // Interactive states (matching header)
   electricCyan: '#00D4FF',  // Dark mode accents

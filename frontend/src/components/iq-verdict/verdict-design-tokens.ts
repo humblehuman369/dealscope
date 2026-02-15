@@ -156,10 +156,10 @@ export const colors = {
     body: '#CBD5E1',
     /** #94A3B8 - Secondary (muted but legible) */
     secondary: '#94A3B8',
-    /** #64748B - Labels (smallest, still solid) */
-    tertiary: '#64748B',
-    /** #64748B - Alias for label tier */
-    muted: '#64748B',
+    /** #7C8CA0 - Labels (smallest, WCAG AA ≥ 4.5:1 on card bg) */
+    tertiary: '#7C8CA0',
+    /** #7C8CA0 - Alias for label tier */
+    muted: '#7C8CA0',
     /** #FFFFFF */
     white: '#FFFFFF',
   },
