@@ -156,7 +156,7 @@ function StrategyContent() {
       }
     }
     fetchData()
-   
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- api.post is a stable module-level reference
   }, [addressParam, conditionParam, locationParam, dealMakerOverrides])
 
   const handleBack = useCallback(() => {
