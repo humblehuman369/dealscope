@@ -153,7 +153,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <p className="hero-subtitle">
           DealGapIQ analyzes the local market to establish your <strong style={{ color: '#2dd4bf' }}>Breakeven Price</strong>, your <strong style={{ color: '#2dd4bf' }}>Target Buy</strong>, and your <strong style={{ color: '#2dd4bf' }}>Deal Gap</strong> for any property — then layers in seller motivation to show you the real probability of closing the deal at your price.
         </p>
-        <p className="hero-subtitle" style={{ fontWeight: 600, color: '#2dd4bf', marginTop: '0.25rem' }}>
+        <p className="hero-subtitle" style={{ fontWeight: 600, color: '#2dd4bf', marginTop: '0.25rem', textAlign: 'center' }}>
           Scan any property. Know your number.
         </p>
 
