@@ -40,7 +40,7 @@
   --text-heading: #F1F5F9;      /* Tier 1: near-white headings */
   --text-body: #CBD5E1;          /* Tier 2: solid grey body */
   --text-secondary: #94A3B8;     /* Tier 3: mid-slate secondary */
-  --text-label: #64748B;         /* Tier 4: smallest labels */
+  --text-label: #7C8CA0;         /* Tier 4: smallest labels (WCAG AA ≥ 4.5:1 on #0C1220) */
 
   /* ---- Five Semantic Accent Colors ---- */
   --color-sky: #38bdf8;          /* Primary actions & key data */

@@ -33,7 +33,7 @@ module.exports = {
           heading: '#F1F5F9',     // Tier 1 – headings / near-white
           body: '#CBD5E1',        // Tier 2 – body text
           secondary: '#94A3B8',   // Tier 3 – secondary / dimmed
-          label: '#64748B',       // Tier 4 – smallest labels
+          label: '#7C8CA0',       // Tier 4 – smallest labels (WCAG AA ≥ 4.5:1 on #0C1220)
         },
 
         // ---- Five semantic accent colors ----

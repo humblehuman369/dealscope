@@ -3,7 +3,7 @@
  * 
  * RULES:
  * 1. Minimum font size is 13px (applies to icons too)
- * 2. Dark mode: font color is white, unless colored (blue, red, green, orange)
+ * 2. Dark mode: four-tier slate hierarchy (F1F5F9 → CBD5E1 → 94A3B8 → 7C8CA0)
  * 3. Light mode: font color is black or dark grey, unless colored
  */
 
@@ -17,14 +17,14 @@ export const MIN_ICON_SIZE = 13;
 // Text colors based on theme
 export const textColors = {
   light: {
-    primary: colors.navy[900],      // #07172e - dark navy (not grey)
+    primary: colors.navy[900],      // #0A1628 - dark navy (not grey)
     secondary: colors.gray[700],    // #374151 - dark grey (not light grey)
     muted: colors.gray[600],        // #4b5563 - medium-dark grey
   },
   dark: {
-    primary: colors.white,          // #ffffff - white
-    secondary: colors.white,        // #ffffff - white (no grey in dark mode)
-    muted: colors.white,            // #ffffff - white (no grey in dark mode)
+    primary: '#F1F5F9',             // Slate heading — near-white (matches frontend four-tier hierarchy)
+    secondary: '#CBD5E1',           // Slate body — solid readable grey
+    muted: '#94A3B8',              // Slate secondary — muted but legible
   },
 };
 
@@ -34,7 +34,7 @@ export const semanticColors = {
   loss: colors.loss.main,           // #ef4444 - red
   warning: colors.warning.main,     // #f59e0b - orange
   info: colors.primary[500],        // #0465f2 - blue
-  accent: colors.accent[500],       // #4dd0e1 - soft cyan (was #00e5ff)
+  accent: colors.accent[500],       // #06B6D4 - Tailwind cyan-500 (was #4dd0e1)
 };
 
 // Helper to get text color based on dark mode
@@ -62,22 +62,22 @@ export const baseTextStyles = {
   },
   h3: {
     fontSize: 20,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,   // Aligned with frontend (was 600)
     lineHeight: 26,
   },
   h4: {
     fontSize: 18,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,   // Aligned with frontend (was 600)
     lineHeight: 24,
   },
   h5: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,   // Aligned with frontend (was 600)
     lineHeight: 22,
   },
   h6: {
     fontSize: 14,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,   // Aligned with frontend (was 600)
     lineHeight: 20,
   },
   

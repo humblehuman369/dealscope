@@ -7,6 +7,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
@@ -74,7 +80,17 @@ export default function RootLayout() {
   const [showAnimatedSplash, setShowAnimatedSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
 
+  // Load Inter font family — matches frontend typography (Inter 400/600/700)
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
   useEffect(() => {
+    // Wait for fonts before showing the app
+    if (!fontsLoaded) return;
+
     // Hide native splash screen immediately to show our animated one
     const hideNativeSplash = async () => {
       try {
@@ -88,7 +104,10 @@ export default function RootLayout() {
     // Small delay to ensure smooth transition
     const timer = setTimeout(hideNativeSplash, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [fontsLoaded]);
+
+  // Don't render until fonts are loaded to prevent FOUT
+  if (!fontsLoaded) return null;
 
   const handleAnimationComplete = useCallback(() => {
     setShowAnimatedSplash(false);
