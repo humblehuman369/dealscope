@@ -406,9 +406,7 @@ export function usePropertyAnalysis(
       setError(errorMessage);
       console.error('[usePropertyAnalysis] Error:', err);
     } finally {
-      if (!controller.signal.aborted) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   }, [property, assumptions, growthAssumptions, strategyId]);
 
