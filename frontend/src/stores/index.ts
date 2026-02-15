@@ -249,7 +249,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         }),
     }),
     {
-      name: 'investiq-assumptions',
+      name: 'dealgapiq-assumptions',
       version: 2, // Increment version to trigger migration
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as AssumptionsStore
@@ -436,7 +436,7 @@ export const usePropertyStore = create<PropertyStore>()(
         set({ recentSearches: [] }),
     }),
     {
-      name: 'investiq-property',
+      name: 'dealgapiq-property',
     }
   )
 )

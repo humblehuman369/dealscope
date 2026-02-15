@@ -1,8 +1,8 @@
-# InvestIQ Mobile - Comprehensive Design Document
+# DealGapIQ Mobile - Comprehensive Design Document
 
 ## Executive Summary
 
-InvestIQ Mobile transforms real estate investment analysis by enabling investors to **point their phone at any property and receive instant investment analytics**. This document outlines the architecture, technology stack, and implementation strategy for building a best-in-class mobile application.
+DealGapIQ Mobile transforms real estate investment analysis by enabling investors to **point their phone at any property and receive instant investment analytics**. This document outlines the architecture, technology stack, and implementation strategy for building a best-in-class mobile application.
 
 ---
 
@@ -497,7 +497,7 @@ Since the phone cannot directly measure distance to a building, we use multiple 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           InvestIQ Mobile                                │
+│                           DealGapIQ Mobile                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                           │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
@@ -538,7 +538,7 @@ Since the phone cannot directly measure distance to a building, we use multiple 
 │                          BACKEND SERVICES                                 │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐   │
-│  │   InvestIQ   │ │   Parcel     │ │  Property    │ │   Market     │   │
+│  │   DealGapIQ   │ │   Parcel     │ │  Property    │ │   Market     │   │
 │  │     API      │ │   Data API   │ │   Data API   │ │   Data API   │   │
 │  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -866,7 +866,7 @@ export async function preCacheParcels(
 import axios from 'axios';
 import { cacheManager } from '../cache';
 
-const API_BASE_URL = 'https://api.investiq.com/v1';
+const API_BASE_URL = 'https://api.dealgapiq.com/v1';
 
 class APIGateway {
   private client = axios.create({
@@ -1037,7 +1037,7 @@ export const typography = {
 
 ```
 ┌─────────────────────────────────────┐
-│ ◀ InvestIQ            📍 Wellington │
+│ ◀ DealGapIQ            📍 Wellington │
 ├─────────────────────────────────────┤
 │                                      │
 │         ┌─────────────────┐          │
@@ -1371,7 +1371,7 @@ GET /api/v1/sync/pull
 
 ## Conclusion
 
-This design document provides a comprehensive blueprint for building InvestIQ Mobile - a best-in-class real estate investment analysis app with innovative point-and-scan capabilities. The architecture prioritizes:
+This design document provides a comprehensive blueprint for building DealGapIQ Mobile - a best-in-class real estate investment analysis app with innovative point-and-scan capabilities. The architecture prioritizes:
 
 1. **User Experience**: Instant results with minimal interaction
 2. **Reliability**: Offline-first design ensures functionality anywhere
@@ -1385,5 +1385,5 @@ The phased approach allows for iterative development with continuous user feedba
 
 *Document Version: 1.0*
 *Last Updated: December 2024*
-*Author: InvestIQ Engineering Team*
+*Author: DealGapIQ Engineering Team*
 

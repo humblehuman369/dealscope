@@ -74,7 +74,7 @@ start_docker() {
     echo "  • Frontend:  http://localhost:3000"
     echo "  • Backend:   http://localhost:8000"
     echo "  • API Docs:  http://localhost:8000/docs"
-    echo "  • Database:  postgresql://localhost:5432/investiq"
+    echo "  • Database:  postgresql://localhost:5432/dealgapiq"
     echo "  • Redis:     redis://localhost:6379"
     echo ""
     echo -e "${YELLOW}View logs: docker-compose logs -f${NC}"
