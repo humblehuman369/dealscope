@@ -1,8 +1,9 @@
 /**
  * useDealMakerBackendCalc — Debounced backend calculation for Deal Maker
  *
- * Replaces local calculateDealMakerMetrics() with a backend call to
- * POST /api/v1/worksheet/ltr/calculate.
+ * Multi-strategy hook that routes to the correct worksheet endpoint
+ * based on the active strategy type. Matches the frontend's
+ * useDealMakerBackendCalc architecture.
  *
  * Architecture: All financial calculations run on the backend.
  * The client only provides inputs and displays results.
@@ -11,11 +12,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { post } from '../services/apiClient';
 import { DealMakerState, DealMakerMetrics } from '../components/deal-maker/types';
+import { StrategyType } from '../types/api';
 
 const DEBOUNCE_MS = 150;
 
+// ─── Endpoint mapping (matches frontend) ────────────────────────────────────
+
+const WORKSHEET_ENDPOINTS: Record<StrategyType, string> = {
+  ltr: '/api/v1/worksheet/ltr/calculate',
+  str: '/api/v1/worksheet/str/calculate',
+  brrrr: '/api/v1/worksheet/brrrr/calculate',
+  flip: '/api/v1/worksheet/flip/calculate',
+  house_hack: '/api/v1/worksheet/househack/calculate',
+  wholesale: '/api/v1/worksheet/wholesale/calculate',
+};
+
+// ─── Backend result types ───────────────────────────────────────────────────
+
 interface BackendLTRResult {
-  // Fields returned by POST /api/v1/worksheet/ltr/calculate
   gross_income: number;
   annual_gross_rent: number;
   vacancy_loss: number;
@@ -52,32 +66,119 @@ interface BackendLTRResult {
   deal_score: number;
 }
 
-/**
- * Map DealMaker UI state to the backend LTR worksheet payload.
- * The backend expects snake_case fields with specific semantics.
- */
-function buildPayload(state: DealMakerState): Record<string, unknown> {
+// ─── Payload builders (per-strategy, matches frontend) ──────────────────────
+
+function buildPayload(
+  strategyType: StrategyType,
+  state: DealMakerState & Record<string, unknown>,
+): Record<string, unknown> {
+  // LTR — default / most common
+  if (strategyType === 'ltr') {
+    return {
+      purchase_price: state.buyPrice,
+      monthly_rent: state.monthlyRent + (state.otherIncome || 0),
+      down_payment_pct: state.downPaymentPercent,
+      interest_rate: state.interestRate * 100, // Backend expects percentage (6.0 not 0.06)
+      loan_term_years: state.loanTermYears,
+      closing_costs: state.buyPrice * state.closingCostsPercent,
+      rehab_costs: state.rehabBudget,
+      arv: state.arv,
+      vacancy_rate: state.vacancyRate,
+      property_management_pct: state.managementRate,
+      maintenance_pct: state.maintenanceRate,
+      property_taxes_annual: state.annualPropertyTax,
+      insurance_annual: state.annualInsurance,
+      hoa_monthly: state.monthlyHoa,
+    };
+  }
+
+  // STR
+  if (strategyType === 'str') {
+    return {
+      purchase_price: state.buyPrice,
+      average_daily_rate: state['averageDailyRate'] || 200,
+      occupancy_rate: state['occupancyRate'] || 0.70,
+      down_payment_pct: state.downPaymentPercent * 100,
+      interest_rate: state.interestRate * 100,
+      loan_term_years: state.loanTermYears,
+      closing_costs: state.buyPrice * state.closingCostsPercent,
+      furnishing_budget: state['furnitureSetupCost'] || state['furnishingBudget'] || 0,
+      platform_fees_pct: state['platformFeesPct'] || 0.03,
+      property_management_pct: state['strManagementRate'] || state.managementRate || 0.20,
+      cleaning_cost_per_turn: state['cleaningCostPerTurnover'] || 75,
+      property_taxes_annual: state.annualPropertyTax,
+      insurance_annual: state.annualInsurance,
+      maintenance_pct: state.maintenanceRate || 0.05,
+    };
+  }
+
+  // BRRRR
+  if (strategyType === 'brrrr') {
+    return {
+      purchase_price: state.buyPrice,
+      rehab_costs: state.rehabBudget || 0,
+      arv: state.arv || 0,
+      monthly_rent: state.monthlyRent || 0,
+      down_payment_pct: state.downPaymentPercent * 100,
+      interest_rate: state.interestRate * 100,
+      holding_months: state['holdingPeriodMonths'] || 6,
+      refi_ltv: (state['refinanceLtv'] || 0.75) * 100,
+      refi_interest_rate: (state['refinanceInterestRate'] || state.interestRate || 0.06) * 100,
+      refi_loan_term: state['refinanceLoanTerm'] || 30,
+      property_taxes_annual: state.annualPropertyTax,
+      insurance_annual: state.annualInsurance,
+      vacancy_rate: state.vacancyRate || 0.05,
+      property_management_pct: state.managementRate || 0.08,
+      maintenance_pct: state.maintenanceRate || 0.05,
+    };
+  }
+
+  // Flip
+  if (strategyType === 'flip') {
+    return {
+      purchase_price: state.buyPrice,
+      rehab_costs: state.rehabBudget || 0,
+      arv: state.arv || 0,
+      down_payment_pct: state.downPaymentPercent * 100,
+      interest_rate: state.interestRate * 100,
+      holding_months: state['holdingPeriodMonths'] || 6,
+      selling_costs_pct: (state['sellingCostsPct'] || 0.08) * 100,
+      capital_gains_rate: (state['capitalGainsRate'] || 0.15) * 100,
+      property_taxes_annual: state.annualPropertyTax,
+      insurance_annual: state.annualInsurance,
+    };
+  }
+
+  // House Hack
+  if (strategyType === 'house_hack') {
+    return {
+      purchase_price: state.buyPrice,
+      unit_rents: state['unitRents'] || [state['avgRentPerUnit'] || 1500],
+      down_payment_pct: state.downPaymentPercent * 100,
+      interest_rate: state.interestRate * 100,
+      loan_term_years: state.loanTermYears,
+      property_taxes_annual: state.annualPropertyTax,
+      insurance_annual: state.annualInsurance,
+      vacancy_rate: state.vacancyRate || 0.05,
+      maintenance_pct: state.maintenanceRate || 0.05,
+    };
+  }
+
+  // Wholesale
   return {
-    purchase_price: state.buyPrice,
-    monthly_rent: state.monthlyRent + state.otherIncome,
-    down_payment_pct: state.downPaymentPercent,
-    interest_rate: state.interestRate * 100, // Backend expects percentage (6.0 not 0.06)
-    loan_term_years: state.loanTermYears,
-    closing_costs: state.buyPrice * state.closingCostsPercent,
-    rehab_costs: state.rehabBudget,
-    arv: state.arv,
-    vacancy_rate: state.vacancyRate,
-    property_management_pct: state.managementRate,
-    maintenance_pct: state.maintenanceRate,
-    property_taxes_annual: state.annualPropertyTax,
-    insurance_annual: state.annualInsurance,
-    hoa_monthly: state.monthlyHoa,
+    arv: state.arv || 0,
+    contract_price: state['contractPrice'] || 0,
+    investor_price:
+      state['investorPrice'] ||
+      (state['contractPrice'] || 0) + (state['assignmentFee'] || 10000),
+    rehab_costs: state['estimatedRepairs'] || state.rehabBudget || 0,
+    assignment_fee: state['assignmentFee'] || 10000,
+    earnest_money: state['earnestMoney'] || 1000,
   };
 }
 
-/**
- * Map backend LTR result to the DealMakerMetrics shape the UI expects.
- */
+// ─── Result mapper (LTR) ───────────────────────────────────────────────────
+
 function mapResultToMetrics(
   result: BackendLTRResult,
   state: DealMakerState,
@@ -105,13 +206,15 @@ function mapResultToMetrics(
     monthlyOperatingExpenses: result.gross_expenses / 12,
     dealGap,
     annualProfit: result.annual_cash_flow,
-    capRate: result.cap_rate * 100, // UI shows percentage
-    cocReturn: result.cash_on_cash_return * 100, // UI shows percentage
+    capRate: result.cap_rate * 100,
+    cocReturn: result.cash_on_cash_return * 100,
     dealScore: score,
     dealGrade: getDealGrade(score),
     profitQuality: getProfitQualityGrade(result.cash_on_cash_return),
   };
 }
+
+// ─── Grade helpers ──────────────────────────────────────────────────────────
 
 function getDealGrade(
   score: number,
@@ -136,6 +239,8 @@ function getProfitQualityGrade(
   return 'F';
 }
 
+// ─── Local fallback ─────────────────────────────────────────────────────────
+
 /**
  * Local fallback calculation used only while the first backend call is in
  * flight (to avoid a blank screen on mount). Once the backend responds,
@@ -150,7 +255,6 @@ function calculateLocalFallback(
   const cashNeeded = downPaymentAmount + closingCostsAmount;
   const loanAmount = state.buyPrice - downPaymentAmount;
 
-  // Simple mortgage payment for initial render only
   const monthlyRate = state.interestRate / 12;
   const numPayments = state.loanTermYears * 12;
   const monthlyPayment =
@@ -198,15 +302,25 @@ function calculateLocalFallback(
   };
 }
 
+// ─── Hook exports ───────────────────────────────────────────────────────────
+
 export interface UseDealMakerBackendCalcReturn {
   metrics: DealMakerMetrics;
   isCalculating: boolean;
   error: string | null;
 }
 
+/**
+ * Multi-strategy debounced backend calculation hook.
+ *
+ * @param state      Current DealMaker form state
+ * @param listPrice  Original list price (for deal-gap calculation)
+ * @param strategy   Active strategy type (defaults to 'ltr' for backward compatibility)
+ */
 export function useDealMakerBackendCalc(
   state: DealMakerState,
   listPrice?: number,
+  strategy: StrategyType = 'ltr',
 ): UseDealMakerBackendCalcReturn {
   const [metrics, setMetrics] = useState<DealMakerMetrics>(() =>
     calculateLocalFallback(state, listPrice),
@@ -221,23 +335,22 @@ export function useDealMakerBackendCalc(
       setMetrics(calculateLocalFallback(state, listPrice));
     }
 
+    const endpoint = WORKSHEET_ENDPOINTS[strategy];
+
     const timer = setTimeout(async () => {
       setIsCalculating(true);
       setError(null);
 
       try {
-        const payload = buildPayload(state);
-        const result = await post<BackendLTRResult>(
-          '/api/v1/worksheet/ltr/calculate',
-          payload,
-        );
+        const payload = buildPayload(strategy, state as DealMakerState & Record<string, unknown>);
+        const result = await post<BackendLTRResult>(endpoint, payload);
         hasReceivedBackend.current = true;
         setMetrics(mapResultToMetrics(result, state, listPrice));
       } catch (err) {
         const message =
           err instanceof Error
             ? err.message
-            : 'Failed to calculate worksheet metrics';
+            : `Failed to calculate ${strategy} worksheet metrics`;
         setError(message);
         // Keep showing fallback metrics on error
       } finally {
@@ -246,7 +359,55 @@ export function useDealMakerBackendCalc(
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [state, listPrice]);
+  }, [state, listPrice, strategy]);
 
   return { metrics, isCalculating, error };
+}
+
+// ─── Generic multi-strategy hook ────────────────────────────────────────────
+
+/**
+ * Generic version that returns the raw backend response for any strategy.
+ * Use this when consuming strategy-specific result shapes directly.
+ */
+export interface UseStrategyCalcReturn<T> {
+  result: T | null;
+  isCalculating: boolean;
+  error: string | null;
+}
+
+export function useStrategyCalc<T>(
+  strategyType: StrategyType,
+  state: Record<string, unknown>,
+): UseStrategyCalcReturn<T> {
+  const [result, setResult] = useState<T | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const endpoint = WORKSHEET_ENDPOINTS[strategyType];
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      setIsCalculating(true);
+      setError(null);
+
+      try {
+        const payload = buildPayload(strategyType, state as DealMakerState & Record<string, unknown>);
+        const data = await post<T>(endpoint, payload);
+        setResult(data);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : `Failed to calculate ${strategyType} worksheet metrics`;
+        setError(message);
+      } finally {
+        setIsCalculating(false);
+      }
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [strategyType, state, endpoint]);
+
+  return { result, isCalculating, error };
 }

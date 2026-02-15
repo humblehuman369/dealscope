@@ -82,21 +82,21 @@ export function CashFlowTab({ inputs, metrics, isDark = true }: CashFlowTabProps
         </Text>
         
         <FlowRow 
-          label={`Vacancy (${formatPercent(vacancyRate * 100, 0)})`} 
+          label={`Vacancy (${formatPercent(vacancyRate, 0)})`} 
           value={vacancy} 
           type="expense" 
           isDark={isDark} 
         />
         {management > 0 && (
           <FlowRow 
-            label={`Property Management (${formatPercent(managementRate * 100, 0)})`} 
+            label={`Property Management (${formatPercent(managementRate, 0)})`} 
             value={management} 
             type="expense" 
             isDark={isDark} 
           />
         )}
         <FlowRow 
-          label={`Maintenance (${formatPercent(maintenanceRate * 100, 0)})`} 
+          label={`Maintenance (${formatPercent(maintenanceRate, 0)})`} 
           value={maintenance} 
           type="expense" 
           isDark={isDark} 

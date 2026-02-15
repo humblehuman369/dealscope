@@ -131,6 +131,12 @@ export interface ResolvedDefaultsResponse {
   region: string | null;
 }
 
+export interface UserAssumptionsResponse {
+  assumptions: Partial<AllDefaults>;
+  has_customizations: boolean;
+  updated_at: string | null;
+}
+
 /**
  * Fallback defaults used when API is unavailable.
  * These should match backend/app/core/defaults.py
@@ -346,11 +352,44 @@ export const defaultsService = {
   },
   
   /**
+   * Get user's saved default assumptions (requires auth).
+   * Matches frontend: defaultsService.getUserAssumptions()
+   */
+  async getUserAssumptions(): Promise<UserAssumptionsResponse> {
+    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
+      requireAuth: true,
+    });
+  },
+
+  /**
+   * Update user's default assumptions (requires auth).
+   * Supports partial updates — only include fields to change.
+   */
+  async updateUserAssumptions(
+    assumptions: Partial<AllDefaults>,
+  ): Promise<UserAssumptionsResponse> {
+    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
+      method: 'PUT',
+      body: { assumptions },
+      requireAuth: true,
+    });
+  },
+
+  /**
+   * Reset user's default assumptions to system defaults (requires auth).
+   */
+  async resetUserAssumptions(): Promise<UserAssumptionsResponse> {
+    return apiRequest<UserAssumptionsResponse>('/api/v1/users/me/assumptions', {
+      method: 'DELETE',
+      requireAuth: true,
+    });
+  },
+
+  /**
    * Check if user is authenticated.
    */
-  async isAuthenticated(): Promise<boolean> {
-    const token = await getAuthToken();
-    return !!token;
+  isAuthenticated(): boolean {
+    return !!getAuthToken();
   },
   
   /**
@@ -366,7 +405,8 @@ export const defaultsService = {
 
 /**
  * React hook for accessing centralized defaults.
- * 
+ * Matches frontend useDefaults (hooks/useDefaults.ts).
+ *
  * @param zipCode - Optional ZIP code for market-specific adjustments
  */
 export function useDefaults(zipCode?: string): {
@@ -377,6 +417,7 @@ export function useDefaults(zipCode?: string): {
   hasUserCustomizations: boolean;
   region: string | null;
   refetch: () => Promise<void>;
+  isUserOverride: (category: keyof AllDefaults, field: string) => boolean;
 } {
   const [defaults, setDefaults] = useState<AllDefaults>(FALLBACK_DEFAULTS);
   const [fullResponse, setFullResponse] = useState<ResolvedDefaultsResponse | null>(null);
@@ -405,6 +446,17 @@ export function useDefaults(zipCode?: string): {
   useEffect(() => {
     fetchDefaults();
   }, [fetchDefaults]);
+
+  // Check if a specific field is from user override (matches frontend)
+  const isUserOverride = useCallback(
+    (category: keyof AllDefaults, field: string): boolean => {
+      if (!fullResponse?.user_overrides) return false;
+      const categoryOverrides = fullResponse.user_overrides[category];
+      if (!categoryOverrides || typeof categoryOverrides !== 'object') return false;
+      return Object.prototype.hasOwnProperty.call(categoryOverrides, field);
+    },
+    [fullResponse],
+  );
   
   return {
     defaults,
@@ -414,6 +466,123 @@ export function useDefaults(zipCode?: string): {
     hasUserCustomizations: !!fullResponse?.user_overrides,
     region: fullResponse?.region ?? null,
     refetch: fetchDefaults,
+    isUserOverride,
+  };
+}
+
+/**
+ * Hook for accessing system defaults only (no market/user adjustments).
+ * Matches frontend useSystemDefaults.
+ */
+export function useSystemDefaults(): {
+  defaults: AllDefaults | null;
+  loading: boolean;
+  error: Error | null;
+} {
+  const [defaults, setDefaults] = useState<AllDefaults | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    defaultsService
+      .getDefaults()
+      .then(setDefaults)
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err : new Error('Failed to fetch defaults')),
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { defaults, loading, error };
+}
+
+/**
+ * Hook for managing user's default assumptions (requires auth).
+ * Matches frontend useUserAssumptions.
+ */
+export function useUserAssumptions(): {
+  assumptions: Partial<AllDefaults> | null;
+  hasCustomizations: boolean;
+  loading: boolean;
+  error: Error | null;
+  updateAssumptions: (updates: Partial<AllDefaults>) => Promise<void>;
+  resetToDefaults: () => Promise<void>;
+} {
+  const [assumptions, setAssumptions] = useState<Partial<AllDefaults> | null>(null);
+  const [hasCustomizations, setHasCustomizations] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchAssumptions = useCallback(async () => {
+    if (!defaultsService.isAuthenticated()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await defaultsService.getUserAssumptions();
+      setAssumptions(response.assumptions);
+      setHasCustomizations(response.has_customizations);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch user assumptions'));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAssumptions();
+  }, [fetchAssumptions]);
+
+  const updateAssumptions = useCallback(async (updates: Partial<AllDefaults>) => {
+    if (!defaultsService.isAuthenticated()) {
+      throw new Error('Authentication required');
+    }
+
+    setLoading(true);
+    try {
+      const response = await defaultsService.updateUserAssumptions(updates);
+      setAssumptions(response.assumptions);
+      setHasCustomizations(response.has_customizations);
+
+      // Clear the defaults cache so next fetch gets updated values
+      await defaultsService.clearCache();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err : new Error('Failed to update assumptions'));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const resetToDefaults = useCallback(async () => {
+    if (!defaultsService.isAuthenticated()) {
+      throw new Error('Authentication required');
+    }
+
+    setLoading(true);
+    try {
+      const response = await defaultsService.resetUserAssumptions();
+      setAssumptions(response.assumptions);
+      setHasCustomizations(response.has_customizations);
+
+      // Clear the defaults cache
+      await defaultsService.clearCache();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err : new Error('Failed to reset assumptions'));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    assumptions,
+    hasCustomizations,
+    loading,
+    error,
+    updateAssumptions,
+    resetToDefaults,
   };
 }
 

@@ -215,13 +215,20 @@ export function calculateDealScore(
   // Determine grade, label, verdict based on discount percentage
   const { grade, label, verdict, color } = getOpportunityGrade(discountPercent);
   
-  // Build breakdown showing the discount needed
+  // Build breakdown showing the discount needed (includes description + status per frontend)
+  const discountPoints = Math.round(100 - discountPercent);
   const breakdown: ScoreBreakdown[] = [
     {
       category: 'Discount Required',
-      points: Math.round(100 - discountPercent),
+      points: discountPoints,
       maxPoints: 100,
       icon: '📉',
+      description: discountPercent <= 5
+        ? 'Minimal negotiation needed'
+        : discountPercent <= 15
+          ? 'Moderate discount required'
+          : 'Significant discount needed',
+      status: discountPoints >= 80 ? 'excellent' : discountPoints >= 60 ? 'good' : discountPoints >= 40 ? 'average' : 'poor',
     }
   ];
   
@@ -505,7 +512,11 @@ function calculateRemainingBalance(
 }
 
 /**
- * Calculate amortization schedule
+ * Calculate amortization schedule — monthly granularity (matches frontend).
+ *
+ * Returns one row per month over the full loan term, including cumulative
+ * totals. Use {@link aggregateAmortizationByYear} when the UI only needs
+ * annual summaries.
  */
 export function calculateAmortizationSchedule(
   principal: number,
@@ -514,32 +525,56 @@ export function calculateAmortizationSchedule(
 ): AmortizationRow[] {
   const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears);
   const monthlyRate = annualRate / 100 / 12;
-  
+  const totalMonths = termYears * 12;
+
   let balance = principal;
+  let cumulativePrincipal = 0;
+  let cumulativeInterest = 0;
   const schedule: AmortizationRow[] = [];
-  
-  for (let year = 1; year <= termYears; year++) {
-    let yearPrincipal = 0;
-    let yearInterest = 0;
-    
-    for (let month = 1; month <= 12; month++) {
-      const interestPayment = balance * monthlyRate;
-      const principalPayment = monthlyPayment - interestPayment;
-      
-      yearPrincipal += principalPayment;
-      yearInterest += interestPayment;
-      balance -= principalPayment;
-    }
-    
+
+  for (let m = 1; m <= totalMonths; m++) {
+    const interestPayment = balance * monthlyRate;
+    const principalPayment = monthlyPayment - interestPayment;
+
+    cumulativePrincipal += principalPayment;
+    cumulativeInterest += interestPayment;
+    balance -= principalPayment;
+
     schedule.push({
-      year,
-      principal: yearPrincipal,
-      interest: yearInterest,
-      endingBalance: Math.max(0, balance),
+      month: m,
+      year: Math.ceil(m / 12),
+      payment: monthlyPayment,
+      principal: principalPayment,
+      interest: interestPayment,
+      balance: Math.max(0, balance),
+      cumulativePrincipal,
+      cumulativeInterest,
     });
   }
-  
+
   return schedule;
+}
+
+/**
+ * Aggregate a monthly amortization schedule into annual summaries.
+ * Useful for the LoanTab display which shows per-year rows.
+ */
+export function aggregateAmortizationByYear(
+  schedule: AmortizationRow[]
+): { year: number; principal: number; interest: number; balance: number }[] {
+  const byYear = new Map<number, { principal: number; interest: number; balance: number }>();
+
+  for (const row of schedule) {
+    const entry = byYear.get(row.year) ?? { principal: 0, interest: 0, balance: 0 };
+    entry.principal += row.principal;
+    entry.interest += row.interest;
+    entry.balance = row.balance; // last month's ending balance
+    byYear.set(row.year, entry);
+  }
+
+  return Array.from(byYear.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([year, data]) => ({ year, ...data }));
 }
 
 // =============================================================================

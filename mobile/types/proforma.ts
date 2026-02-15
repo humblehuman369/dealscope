@@ -392,3 +392,19 @@ export interface ProformaExportResponse {
   format: string;
   file_size_bytes?: number | null;
 }
+
+// ===========================================
+// Proforma Defaults (matches frontend PROFORMA_DEFAULTS)
+// ===========================================
+export const PROFORMA_DEFAULTS = {
+  land_value_percent: 0.20,
+  marginal_tax_rate: 0.24,
+  capital_gains_tax_rate: 0.15,
+  hold_period_years: 10,
+  depreciation_years_residential: 27.5,
+  depreciation_years_commercial: 39,
+  broker_commission_percent: 0.06,
+  seller_closing_costs_percent: 0.015,
+  cap_ex_reserve_percent: 0.05,
+  depreciation_recapture_rate: 0.25,
+} as const;

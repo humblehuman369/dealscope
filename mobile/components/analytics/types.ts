@@ -64,6 +64,8 @@ export interface ScoreBreakdown {
   points: number;
   maxPoints: number;
   icon: string;
+  description: string;
+  status: 'excellent' | 'good' | 'average' | 'poor';
 }
 
 export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
@@ -104,10 +106,15 @@ export interface YearProjection {
 }
 
 export interface AmortizationRow {
+  // Monthly-granularity fields (matches frontend)
+  month: number;
   year: number;
+  payment: number;
   principal: number;
   interest: number;
-  endingBalance: number;
+  balance: number;
+  cumulativePrincipal: number;
+  cumulativeInterest: number;
 }
 
 export interface Scenario {

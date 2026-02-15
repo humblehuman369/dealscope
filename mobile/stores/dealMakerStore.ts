@@ -15,99 +15,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/apiClient';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+//
+// Types are imported from the canonical types/dealMaker.ts which matches the
+// backend schema exactly. This ensures the store handles ALL strategy-specific
+// fields (STR, BRRRR, Flip, HouseHack, Wholesale) — not just LTR.
+
+import type {
+  DealMakerRecord,
+  DealMakerRecordUpdate,
+  CachedMetrics,
+  DealMakerResponse,
+} from '../types/dealMaker';
+
+// Re-export for backward compatibility with existing consumers
+export type { DealMakerRecord, CachedMetrics };
+
+// Alias DealMakerRecordUpdate → DealMakerUpdate (matches frontend export name)
+export type DealMakerUpdate = DealMakerRecordUpdate;
 
 export type PriceTarget = 'breakeven' | 'targetBuy' | 'wholesale';
-
-export interface CachedMetrics {
-  cap_rate: number | null;
-  cash_on_cash: number | null;
-  monthly_cash_flow: number | null;
-  annual_cash_flow: number | null;
-  loan_amount: number | null;
-  down_payment: number | null;
-  closing_costs: number | null;
-  monthly_payment: number | null;
-  total_cash_needed: number | null;
-  gross_income: number | null;
-  vacancy_loss: number | null;
-  total_expenses: number | null;
-  noi: number | null;
-  dscr: number | null;
-  ltv: number | null;
-  one_percent_rule: number | null;
-  grm: number | null;
-  equity: number | null;
-  equity_after_rehab: number | null;
-  deal_gap_pct: number | null;
-  breakeven_price: number | null;
-  calculated_at?: string;
-}
-
-export interface DealMakerRecord {
-  // Property data
-  list_price: number;
-  rent_estimate: number;
-  property_taxes: number;
-  insurance: number;
-  arv_estimate: number | null;
-  sqft: number | null;
-  bedrooms: number | null;
-  bathrooms: number | null;
-
-  // User adjustments (shared)
-  buy_price: number;
-  down_payment_pct: number;
-  closing_costs_pct: number;
-  interest_rate: number;
-  loan_term_years: number;
-  rehab_budget: number;
-  arv: number;
-  maintenance_pct: number;
-  capex_pct: number;
-  annual_property_tax: number;
-  annual_insurance: number;
-  monthly_hoa: number;
-  monthly_utilities: number;
-
-  // LTR-specific
-  monthly_rent: number;
-  other_income: number;
-  vacancy_rate: number;
-  management_pct: number;
-
-  // Strategy type
-  strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
-
-  // Cached metrics
-  cached_metrics: CachedMetrics | null;
-
-  // Metadata
-  version: number;
-}
-
-export type DealMakerUpdate = Partial<
-  Pick<
-    DealMakerRecord,
-    | 'buy_price'
-    | 'down_payment_pct'
-    | 'closing_costs_pct'
-    | 'interest_rate'
-    | 'loan_term_years'
-    | 'rehab_budget'
-    | 'arv'
-    | 'maintenance_pct'
-    | 'capex_pct'
-    | 'annual_property_tax'
-    | 'annual_insurance'
-    | 'monthly_hoa'
-    | 'monthly_utilities'
-    | 'monthly_rent'
-    | 'other_income'
-    | 'vacancy_rate'
-    | 'management_pct'
-    | 'strategy_type'
-  >
->;
 
 // ─── Debounce ───────────────────────────────────────────────────────────────
 
@@ -164,7 +90,7 @@ export const useDealMakerStore = create<DealMakerState>()(
         set({ isLoading: true, error: null });
 
         try {
-          const data = await api.get<{ record: DealMakerRecord }>(
+          const data = await api.get<DealMakerResponse>(
             `/api/v1/properties/saved/${propertyId}/deal-maker`
           );
 
@@ -216,7 +142,7 @@ export const useDealMakerStore = create<DealMakerState>()(
         set({ isSaving: true });
 
         try {
-          const data = await api.patch<{ record: DealMakerRecord }>(
+          const data = await api.patch<DealMakerResponse>(
             `/api/v1/properties/saved/${propertyId}/deal-maker`,
             pendingUpdates
           );
