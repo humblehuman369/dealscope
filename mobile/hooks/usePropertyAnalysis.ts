@@ -10,9 +10,21 @@
  * This replaces the frontend mock calculations with real backend data.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../services/apiClient';
 import { StrategyId, TargetAssumptions, PropertyData } from '../types/analytics';
+
+const DEBOUNCE_MS = 200;
+
+// Worksheet endpoint mapping — matches frontend WORKSHEET_ENDPOINTS
+const WORKSHEET_ENDPOINTS: Record<string, string> = {
+  ltr: '/api/v1/worksheet/ltr/calculate',
+  str: '/api/v1/worksheet/str/calculate',
+  brrrr: '/api/v1/worksheet/brrrr/calculate',
+  flip: '/api/v1/worksheet/flip/calculate',
+  house_hack: '/api/v1/worksheet/househack/calculate',
+  wholesale: '/api/v1/worksheet/wholesale/calculate',
+};
 
 // ============================================
 // API RESPONSE TYPES (matches backend IQVerdictResponse)
@@ -177,6 +189,9 @@ export interface PropertyAnalysisResult {
   returnFactors: ReturnFactorsResponse | null;
   // Strategy-specific metrics
   strategies: StrategyResultResponse[];
+  // Worksheet metrics at target price AND list price (matches frontend)
+  metricsAtTarget: Record<string, unknown> | null;
+  metricsAtList: Record<string, unknown> | null;
   // Projections data (from analytics/proforma endpoints)
   projections: ProjectionsData | null;
   // Loading state
@@ -195,22 +210,115 @@ export interface GrowthAssumptions {
   expenseGrowthRate: number;
 }
 
+/**
+ * Build a worksheet payload for a specific strategy at a given price.
+ * Matches frontend buildWorksheetPayload().
+ */
+function buildWorksheetPayload(
+  strategyId: StrategyId,
+  purchasePrice: number,
+  assumptions: Partial<TargetAssumptions>,
+  property: PropertyData,
+): Record<string, unknown> {
+  const base = {
+    purchase_price: purchasePrice,
+    down_payment_pct: (assumptions.downPaymentPct ?? 0.20) * 100,
+    interest_rate: (assumptions.interestRate ?? 0.073) * 100,
+    loan_term_years: assumptions.loanTermYears ?? 30,
+    closing_costs: purchasePrice * (assumptions.closingCostsPct ?? 0.03),
+    property_taxes_annual: assumptions.propertyTaxes ?? property.propertyTaxes ?? 3600,
+    insurance_annual: assumptions.insurance ?? property.insurance ?? 1500,
+    vacancy_rate: assumptions.vacancyRate ?? 0.05,
+    property_management_pct: assumptions.managementPct ?? 0.08,
+    maintenance_pct: assumptions.maintenancePct ?? 0.05,
+  };
+
+  switch (strategyId) {
+    case 'ltr':
+      return {
+        ...base,
+        monthly_rent: assumptions.monthlyRent ?? property.monthlyRent,
+        rehab_costs: assumptions.rehabCost ?? 0,
+        arv: assumptions.arv ?? property.arv ?? 0,
+      };
+    case 'str':
+      return {
+        ...base,
+        average_daily_rate: assumptions.averageDailyRate ?? property.averageDailyRate ?? 200,
+        occupancy_rate: assumptions.occupancyRate ?? property.occupancyRate ?? 0.65,
+        platform_fees_pct: 0.03,
+        cleaning_cost_per_turn: 75,
+      };
+    case 'brrrr':
+      return {
+        ...base,
+        rehab_costs: assumptions.rehabCost ?? 0,
+        arv: assumptions.arv ?? property.arv ?? 0,
+        monthly_rent: assumptions.monthlyRent ?? property.monthlyRent,
+        holding_months: assumptions.holdingPeriodMonths ?? 6,
+        refi_ltv: 75,
+        refi_interest_rate: (assumptions.interestRate ?? 0.073) * 100,
+        refi_loan_term: 30,
+      };
+    case 'flip':
+      return {
+        ...base,
+        rehab_costs: assumptions.rehabCost ?? 0,
+        arv: assumptions.arv ?? property.arv ?? 0,
+        holding_months: assumptions.holdingPeriodMonths ?? 6,
+        selling_costs_pct: (assumptions.sellingCostsPct ?? 0.08) * 100,
+        capital_gains_rate: 15,
+      };
+    case 'house_hack':
+      return {
+        ...base,
+        monthly_rent: assumptions.monthlyRent ?? property.monthlyRent,
+        unit_rents: [assumptions.monthlyRent ?? property.monthlyRent],
+      };
+    case 'wholesale':
+      return {
+        arv: assumptions.arv ?? property.arv ?? 0,
+        contract_price: purchasePrice,
+        investor_price: purchasePrice * 1.03,
+        rehab_costs: assumptions.rehabCost ?? 0,
+        assignment_fee: purchasePrice * (assumptions.wholesaleFeePct ?? 0.05),
+        earnest_money: 1000,
+      };
+    default:
+      return base;
+  }
+}
+
 export function usePropertyAnalysis(
   property: PropertyData | null,
   assumptions?: Partial<TargetAssumptions>,
-  growthAssumptions?: GrowthAssumptions
+  growthAssumptions?: GrowthAssumptions,
+  strategyId?: StrategyId,
 ): PropertyAnalysisResult & { refetch: () => Promise<void> } {
   const [data, setData] = useState<IQVerdictResponse | null>(null);
+  const [metricsAtTarget, setMetricsAtTarget] = useState<Record<string, unknown> | null>(null);
+  const [metricsAtList, setMetricsAtList] = useState<Record<string, unknown> | null>(null);
   const [projections, setProjections] = useState<ProjectionsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchAnalysis = useCallback(async () => {
     if (!property) {
       setData(null);
+      setMetricsAtTarget(null);
+      setMetricsAtList(null);
       setProjections(null);
       return;
     }
+
+    // Cancel any in-flight request from the previous render
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setIsLoading(true);
     setError(null);
@@ -230,9 +338,14 @@ export function usePropertyAnalysis(
 
       // Fetch verdict and analytics in parallel
       const [verdictResponse, analyticsResponse] = await Promise.all([
-        api.post<IQVerdictResponse>('/api/v1/analysis/verdict', input),
+        api.post<IQVerdictResponse>('/api/v1/analysis/verdict', input, {
+          signal: controller.signal,
+        }),
         fetchAnalyticsData(property, assumptions, growthAssumptions),
       ]);
+
+      // Bail out if aborted between calls
+      if (controller.signal.aborted) return;
 
       // Build componentScores from flat top-level fields returned by backend
       if (!verdictResponse.componentScores) {
@@ -247,22 +360,74 @@ export function usePropertyAnalysis(
 
       setData(verdictResponse);
       setProjections(analyticsResponse);
+
+      // Parallel worksheet fetches at target price AND list price (matches frontend)
+      const activeStrategy = strategyId || 'ltr';
+      const endpoint = WORKSHEET_ENDPOINTS[activeStrategy];
+      if (endpoint && verdictResponse.purchasePrice > 0) {
+        try {
+          const mergedAssumptions: Partial<TargetAssumptions> = {
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            arv: property.arv,
+            averageDailyRate: property.averageDailyRate ?? 200,
+            occupancyRate: property.occupancyRate ?? 0.65,
+            ...assumptions,
+          };
+
+          const [targetResult, listResult] = await Promise.all([
+            api.post<Record<string, unknown>>(
+              endpoint,
+              buildWorksheetPayload(activeStrategy, verdictResponse.purchasePrice, mergedAssumptions, property),
+              { signal: controller.signal },
+            ),
+            api.post<Record<string, unknown>>(
+              endpoint,
+              buildWorksheetPayload(activeStrategy, property.listPrice, mergedAssumptions, property),
+              { signal: controller.signal },
+            ),
+          ]);
+
+          if (!controller.signal.aborted) {
+            setMetricsAtTarget(targetResult);
+            setMetricsAtList(listResult);
+          }
+        } catch (worksheetErr) {
+          // Ignore aborted requests; log others as warnings
+          if (worksheetErr instanceof Error && worksheetErr.name === 'AbortError') return;
+          console.warn('[usePropertyAnalysis] Worksheet fetch failed (non-blocking):', worksheetErr);
+        }
+      }
     } catch (err) {
+      // Ignore aborted requests
+      if (err instanceof Error && err.name === 'AbortError') return;
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis';
       setError(errorMessage);
       console.error('[usePropertyAnalysis] Error:', err);
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  }, [property, assumptions, growthAssumptions]);
+  }, [property, assumptions, growthAssumptions, strategyId]);
 
-  // Fetch on mount and when dependencies change
+  // Debounced fetch on mount and when dependencies change
   useEffect(() => {
-    fetchAnalysis();
+    const timer = setTimeout(() => {
+      fetchAnalysis();
+    }, DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timer);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchAnalysis]);
 
   // Convert API response to component-friendly format
-  const result = convertToComponentData(data, projections, property, isLoading, error);
+  const result = convertToComponentData(data, metricsAtTarget, metricsAtList, projections, property, isLoading, error);
 
   return {
     ...result,
@@ -455,10 +620,12 @@ function generateAmortizationFromApi(
 
 function convertToComponentData(
   data: IQVerdictResponse | null,
+  metricsAtTarget: Record<string, unknown> | null,
+  metricsAtList: Record<string, unknown> | null,
   projections: ProjectionsData | null,
   property: PropertyData | null,
   isLoading: boolean,
-  error: string | null
+  error: string | null,
 ): PropertyAnalysisResult {
   // Default/fallback values when no data
   const defaultGrades: StrategyGrades = {
@@ -486,6 +653,8 @@ function convertToComponentData(
       opportunityFactors: null,
       returnFactors: null,
       strategies: [],
+      metricsAtTarget: null,
+      metricsAtList: null,
       projections: null,
       isLoading,
       error,
@@ -519,6 +688,8 @@ function convertToComponentData(
     opportunityFactors: data.opportunityFactors,
     returnFactors: data.returnFactors,
     strategies: data.strategies,
+    metricsAtTarget,
+    metricsAtList,
     projections,
     isLoading,
     error,
@@ -529,16 +700,15 @@ function convertToComponentData(
 // HELPER: Convert score to letter grade
 // ============================================
 
+/**
+ * Convert numeric score to letter grade — 6-grade system.
+ * Matches frontend and useStrategyWorksheet grading.
+ */
 function scoreToGrade(score: number): string {
   if (score >= 85) return 'A+';
   if (score >= 70) return 'A';
-  if (score >= 60) return 'A-';
-  if (score >= 55) return 'B+';
-  if (score >= 50) return 'B';
-  if (score >= 45) return 'B-';
-  if (score >= 40) return 'C+';
-  if (score >= 35) return 'C';
-  if (score >= 30) return 'C-';
+  if (score >= 55) return 'B';
+  if (score >= 40) return 'C';
   if (score >= 25) return 'D';
   return 'F';
 }
