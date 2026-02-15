@@ -23,3 +23,14 @@ nixPkgs = [
   "shared-mime-info",  # MIME type database
   "liberation_ttf",    # Liberation font family (print-quality)
 ]
+# Nix Python packages expose `python3` but not `python`.
+# Create the symlink so Nixpacks' auto-generated venv step works.
+cmds = ["ln -sf $(which python3) /usr/bin/python 2>/dev/null || true"]
+
+# Override the install phase to use `python3` explicitly, in case the
+# symlink above runs before Python is on PATH.
+[phases.install]
+cmds = [
+  "python3 -m venv --copies /opt/venv",
+  ". /opt/venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt",
+]
