@@ -14,9 +14,7 @@ import * as Sharing from 'expo-sharing';
 import { APIError } from '../types';
 import {
   getAccessToken,
-  getRefreshToken,
-  storeTokens,
-  clearTokens,
+  refreshWithMutex,
 } from './authService';
 
 // API Configuration
@@ -59,7 +57,10 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Handle token refresh on 401 errors — delegates to authService for token storage
+// Handle token refresh on 401 errors.
+// Delegates to authService.refreshWithMutex() so that only a single
+// refresh request is in-flight at any time — preventing token rotation
+// races when multiple requests 401 simultaneously.
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -68,28 +69,14 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        const refreshToken = await getRefreshToken();
-        if (refreshToken) {
-          // Try to refresh the token
-          const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
-            refresh_token: refreshToken,
-          });
-
-          const { access_token, refresh_token } = response.data;
-
-          // Store new tokens via authService (single source of truth)
-          await storeTokens(access_token, refresh_token);
-
-          // Retry original request with the new access token
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          }
-          return apiClient(originalRequest);
+      const refreshed = await refreshWithMutex();
+      if (refreshed) {
+        // refreshWithMutex stored new tokens; re-read the fresh access token
+        const newToken = getAccessToken();
+        if (originalRequest.headers && newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
         }
-      } catch (refreshError) {
-        // Refresh failed, clear tokens via authService
-        await clearTokens();
+        return apiClient(originalRequest);
       }
     }
 
