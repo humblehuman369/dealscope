@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import './investiq-gateway.css';
+import './dealgapiq-gateway.css';
 
 type Step = 'start' | 'address' | 'scan';
 

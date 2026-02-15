@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { Search, User } from 'lucide-react';
-import { DealGapIQGateway } from './InvestIQGateway';
-import './investiq-homepage.css';
+import { DealGapIQGateway } from './DealGapIQGateway';
+import './dealgapiq-homepage.css';
 
 interface DealGapIQHomepageProps {
   onPointAndScan?: () => void;
