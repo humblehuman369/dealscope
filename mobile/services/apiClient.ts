@@ -85,9 +85,25 @@ apiClient.interceptors.response.use(
 );
 
 /**
+ * Check if an error is an AbortController cancellation.
+ * Normalizes across native AbortError and Axios CanceledError.
+ */
+export function isAbortError(error: unknown): boolean {
+  if (error instanceof Error && error.name === 'AbortError') return true;
+  if (axios.isCancel(error)) return true;
+  if (error instanceof Error && error.name === 'CanceledError') return true;
+  return false;
+}
+
+/**
  * Parse error response from API
  */
 function parseErrorResponse(error: unknown): APIError {
+  // Short-circuit for cancelled requests
+  if (isAbortError(error)) {
+    return { detail: 'Request cancelled' };
+  }
+
   if (axios.isAxiosError(error)) {
     const data = error.response?.data;
     if (typeof data === 'object' && data !== null) {
@@ -117,6 +133,24 @@ function parseErrorResponse(error: unknown): APIError {
 }
 
 /**
+ * Re-throw abort errors as native AbortError so callers can check
+ * `error.name === 'AbortError'` uniformly across platforms.
+ */
+function rethrowIfAborted(error: unknown): never {
+  if (isAbortError(error)) {
+    const abortErr = new DOMException('The operation was aborted.', 'AbortError');
+    throw abortErr;
+  }
+  const apiError = parseErrorResponse(error);
+  throw new APIRequestError(
+    apiError.detail,
+    axios.isAxiosError(error) ? error.response?.status : undefined,
+    apiError.code,
+    error
+  );
+}
+
+/**
  * Make a typed GET request
  */
 export async function get<T>(
@@ -128,13 +162,7 @@ export async function get<T>(
     const response = await apiClient.get<T>(endpoint, { ...config, params });
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -150,13 +178,7 @@ export async function post<T>(
     const response = await apiClient.post<T>(endpoint, data, config);
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -172,13 +194,7 @@ export async function put<T>(
     const response = await apiClient.put<T>(endpoint, data, config);
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -194,13 +210,7 @@ export async function patch<T>(
     const response = await apiClient.patch<T>(endpoint, data, config);
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -215,13 +225,7 @@ export async function del<T = void>(
     const response = await apiClient.delete<T>(endpoint, config);
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -237,13 +241,7 @@ export async function delWithBody<T = void>(
     const response = await apiClient.delete<T>(endpoint, { ...config, data });
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -348,13 +346,7 @@ export async function uploadFile<T>(
     });
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -382,13 +374,7 @@ export async function request<T>(
     });
     return response.data;
   } catch (error) {
-    const apiError = parseErrorResponse(error);
-    throw new APIRequestError(
-      apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
-      apiError.code,
-      error
-    );
+    rethrowIfAborted(error);
   }
 }
 
@@ -404,6 +390,7 @@ export const api = {
   downloadAndShareFile,
   uploadFile,
   request,
+  isAbortError,
   client: apiClient,
 };
 

@@ -3,13 +3,16 @@
  * 
  * Comprehensive types for the redesigned property analytics UI.
  * These types support all 6 investment strategies with their specific metrics.
+ *
+ * Core StrategyId type is re-exported from @dealscope/shared for consistency.
  */
 
 // ============================================
-// STRATEGY TYPES
+// STRATEGY TYPES — re-exported from shared
 // ============================================
 
-export type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+export type { StrategyId } from '@dealscope/shared'
+import type { StrategyId } from '@dealscope/shared'
 
 export interface Strategy {
   id: StrategyId

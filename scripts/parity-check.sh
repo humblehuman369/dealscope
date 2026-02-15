@@ -41,14 +41,27 @@ echo "── Strategy Types ──"
 # Normalize: strip trailing semicolons and whitespace for comparison
 normalize() { echo "$1" | sed 's/;*$//' | sed 's/[[:space:]]*$//'; }
 
-FRONTEND_STRATEGY=$(grep -h "export type StrategyId" frontend/src/components/analytics/types.ts frontend/src/types/analytics.ts 2>/dev/null | head -1 || echo "NOT FOUND")
-MOBILE_STRATEGY=$(grep -h "export type StrategyId" mobile/types/analytics.ts 2>/dev/null | head -1 || echo "NOT FOUND")
+# Check shared package as canonical source first
 SHARED_STRATEGY=$(grep -h "export type StrategyId" shared/src/types/strategy.ts 2>/dev/null | head -1 || echo "NOT FOUND")
 
-if [ "$(normalize "$FRONTEND_STRATEGY")" = "$(normalize "$MOBILE_STRATEGY")" ] && [ "$FRONTEND_STRATEGY" != "NOT FOUND" ]; then
-  log_pass "StrategyId type matches across codebases"
+# Check if both codebases reference the shared package (re-export or import)
+FE_SHARED_IMPORT=$(grep -rh "@dealscope/shared" frontend/src/components/analytics/types.ts 2>/dev/null | head -1 || echo "")
+MB_SHARED_IMPORT=$(grep -rh "@dealscope/shared" mobile/types/analytics.ts 2>/dev/null | head -1 || echo "")
+
+# Also check for direct definitions (legacy)
+FRONTEND_STRATEGY=$(grep -h "export type StrategyId\s*=" frontend/src/components/analytics/types.ts frontend/src/types/analytics.ts 2>/dev/null | head -1 || echo "NOT FOUND")
+MOBILE_STRATEGY=$(grep -h "export type StrategyId\s*=" mobile/types/analytics.ts 2>/dev/null | head -1 || echo "NOT FOUND")
+
+if [ -n "$FE_SHARED_IMPORT" ] && [ -n "$MB_SHARED_IMPORT" ] && [ "$SHARED_STRATEGY" != "NOT FOUND" ]; then
+  log_pass "StrategyId type sourced from @dealscope/shared by both codebases"
+elif [ "$(normalize "$FRONTEND_STRATEGY")" = "$(normalize "$MOBILE_STRATEGY")" ] && [ "$FRONTEND_STRATEGY" != "NOT FOUND" ]; then
+  log_pass "StrategyId type matches across codebases (direct definition)"
+elif [ "$SHARED_STRATEGY" != "NOT FOUND" ]; then
+  log_warn "StrategyId defined in shared but not yet imported by both codebases"
+  echo "  Frontend imports shared: $([ -n "$FE_SHARED_IMPORT" ] && echo 'yes' || echo 'no')"
+  echo "  Mobile imports shared: $([ -n "$MB_SHARED_IMPORT" ] && echo 'yes' || echo 'no')"
 else
-  log_fail "StrategyId type mismatch"
+  log_fail "StrategyId type mismatch or missing"
   echo "  Frontend: $FRONTEND_STRATEGY"
   echo "  Mobile:   $MOBILE_STRATEGY"
   echo "  Shared:   $SHARED_STRATEGY"
@@ -136,6 +149,17 @@ else
   log_warn "Test fixtures missing"
 fi
 
+# Check shared package is actually consumed
+FE_SHARED_COUNT=$(grep -rc "@dealscope/shared" frontend/src/ 2>/dev/null | grep -v ':0$' | wc -l || echo 0)
+MB_SHARED_COUNT=$(grep -rc "@dealscope/shared" mobile/ 2>/dev/null | grep -v ':0$' | wc -l || echo 0)
+if [ "$FE_SHARED_COUNT" -gt 0 ] && [ "$MB_SHARED_COUNT" -gt 0 ]; then
+  log_pass "Shared package imported by both codebases (FE: $FE_SHARED_COUNT files, MB: $MB_SHARED_COUNT files)"
+elif [ "$FE_SHARED_COUNT" -gt 0 ] || [ "$MB_SHARED_COUNT" -gt 0 ]; then
+  log_warn "Shared package only partially adopted (FE: $FE_SHARED_COUNT files, MB: $MB_SHARED_COUNT files)"
+else
+  log_warn "Shared package not yet imported by either codebase"
+fi
+
 # ── 6. Score Grading Alignment ──────────────────────────────────────────
 echo ""
 echo "── Score Grading ──"
@@ -198,6 +222,26 @@ if [ "$MB_WORKSHEET" -gt 0 ]; then
   log_pass "Parallel worksheet fetches in usePropertyAnalysis"
 else
   log_fail "Parallel worksheet fetches missing in usePropertyAnalysis"
+fi
+
+# ── 9. Hook Parity ──────────────────────────────────────────────────────
+echo ""
+echo "── Hook Parity ──"
+
+for HOOK in useSearchHistory useSavedProperties useWorksheetProperty; do
+  if [ -f "mobile/hooks/${HOOK}.ts" ]; then
+    log_pass "${HOOK} hook exists on mobile"
+  else
+    log_fail "${HOOK} hook missing on mobile"
+  fi
+done
+
+# Check AbortSignal support in mobile API client
+MB_ABORT_API=$(grep -c "isAbortError" mobile/services/apiClient.ts 2>/dev/null || echo 0)
+if [ "$MB_ABORT_API" -gt 0 ]; then
+  log_pass "AbortSignal support in mobile API client"
+else
+  log_fail "AbortSignal support missing in mobile API client"
 fi
 
 # ── Summary ────────────────────────────────────────────────────────────────

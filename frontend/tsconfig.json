@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@dealscope/shared": [
+        "../shared/src/index.ts"
+      ],
+      "@dealscope/shared/*": [
+        "../shared/src/*"
       ]
     },
     "target": "ES2017"
