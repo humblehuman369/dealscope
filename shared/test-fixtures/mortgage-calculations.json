@@ -1,0 +1,98 @@
+{
+  "_description": "Cross-platform test fixtures for mortgage & analytics calculations. Run these against both frontend and mobile to verify parity.",
+  "mortgage_payment": [
+    {
+      "description": "Standard 30-year fixed at 6%",
+      "input": { "loanAmount": 320000, "annualRate": 6.0, "termYears": 30 },
+      "expected": { "monthlyPayment": 1918.56, "tolerance": 0.01 }
+    },
+    {
+      "description": "15-year fixed at 5.5%",
+      "input": { "loanAmount": 250000, "annualRate": 5.5, "termYears": 15 },
+      "expected": { "monthlyPayment": 2042.71, "tolerance": 0.01 }
+    },
+    {
+      "description": "Zero loan amount",
+      "input": { "loanAmount": 0, "annualRate": 6.0, "termYears": 30 },
+      "expected": { "monthlyPayment": 0, "tolerance": 0 }
+    },
+    {
+      "description": "High rate scenario",
+      "input": { "loanAmount": 400000, "annualRate": 8.5, "termYears": 30 },
+      "expected": { "monthlyPayment": 3075.65, "tolerance": 0.01 }
+    }
+  ],
+  "metrics": [
+    {
+      "description": "Standard LTR scenario",
+      "input": {
+        "purchasePrice": 400000,
+        "downPaymentPercent": 20,
+        "closingCostsPercent": 3,
+        "interestRate": 6.0,
+        "loanTermYears": 30,
+        "monthlyRent": 2500,
+        "otherIncome": 0,
+        "vacancyRate": 5,
+        "maintenanceRate": 5,
+        "managementRate": 0,
+        "annualPropertyTax": 4800,
+        "annualInsurance": 1800,
+        "monthlyHoa": 0,
+        "appreciationRate": 3,
+        "rentGrowthRate": 3,
+        "expenseGrowthRate": 2
+      },
+      "expected": {
+        "loanAmount": 320000,
+        "totalCashRequired": { "min": 91000, "max": 93000 },
+        "grossMonthlyIncome": 2500,
+        "monthlyCashFlow": { "min": -200, "max": 200 },
+        "capRate": { "min": 3.0, "max": 6.0 },
+        "cashOnCash": { "min": -3.0, "max": 3.0 },
+        "dscr": { "min": 0.8, "max": 1.5 }
+      }
+    }
+  ],
+  "amortization": [
+    {
+      "description": "First month of 30-year loan at 6%",
+      "input": { "loanAmount": 320000, "annualRate": 6.0, "termYears": 30 },
+      "expected_first_row": {
+        "month": 1,
+        "year": 1,
+        "payment": { "min": 1918, "max": 1919 },
+        "principal": { "min": 318, "max": 319 },
+        "interest": { "min": 1600, "max": 1600 },
+        "balance": { "min": 319681, "max": 319682 }
+      }
+    }
+  ],
+  "max_purchase_price": [
+    {
+      "description": "$200/mo cash flow target, standard inputs",
+      "input": {
+        "purchasePrice": 400000,
+        "downPaymentPercent": 20,
+        "closingCostsPercent": 3,
+        "interestRate": 6.0,
+        "loanTermYears": 30,
+        "monthlyRent": 2500,
+        "otherIncome": 0,
+        "vacancyRate": 5,
+        "maintenanceRate": 5,
+        "managementRate": 0,
+        "annualPropertyTax": 4800,
+        "annualInsurance": 1800,
+        "monthlyHoa": 0,
+        "appreciationRate": 3,
+        "rentGrowthRate": 3,
+        "expenseGrowthRate": 2
+      },
+      "expected": {
+        "maxPurchasePrice": { "min": 250000, "max": 500000 },
+        "tolerance_dollars": 1000
+      }
+    }
+  ]
+}

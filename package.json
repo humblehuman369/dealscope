@@ -2,11 +2,18 @@
   "name": "dealscope",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "mobile",
+    "shared"
+  ],
   "scripts": {
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm run start",
     "lint": "cd frontend && npm run lint",
+    "parity-check": "bash scripts/parity-check.sh",
+    "typecheck:shared": "cd shared && npx tsc --noEmit",
     "postinstall": "cd frontend && npm install"
   },
   "dependencies": {
