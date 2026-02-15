@@ -61,7 +61,7 @@ See **[DEPLOY.md](./DEPLOY.md)** for detailed instructions.
 
 ```bash
 # Clone the repository
-cd investiq
+cd dealgapiq
 
 # Set environment variables
 cp backend/.env.example backend/.env
@@ -138,7 +138,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-investiq/
+dealgapiq/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI application

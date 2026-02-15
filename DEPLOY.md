@@ -17,7 +17,7 @@ This is the fastest way to get live. Free tiers available for both.
 ### 1.2 Deploy Backend
 1. Click **"New Project"**
 2. Select **"Deploy from GitHub repo"**
-3. Connect your GitHub and select/create the investiq repo
+3. Connect your GitHub and select/create the dealgapiq repo
 4. Select the `backend` folder as root directory
 
 ### 1.3 Configure Environment Variables
@@ -46,7 +46,7 @@ CORS_ORIGINS=["https://your-app.vercel.app","http://localhost:3000"]
 ### 1.4 Get Your Backend URL
 After deployment, Railway provides a URL like:
 ```
-https://investiq-api-production.up.railway.app
+https://dealgapiq-api-production.up.railway.app
 ```
 
 ---
@@ -67,7 +67,7 @@ https://investiq-api-production.up.railway.app
 In Vercel dashboard, go to **Settings > Environment Variables**:
 
 ```
-NEXT_PUBLIC_API_URL=https://investiq-api-production.up.railway.app
+NEXT_PUBLIC_API_URL=https://dealgapiq-api-production.up.railway.app
 ```
 
 ### 2.4 Deploy
@@ -120,7 +120,7 @@ Your app is now live at: `https://your-app.vercel.app`
 ```bash
 # Clone and navigate
 git clone <your-repo>
-cd investiq
+cd dealgapiq
 
 # Create .env file
 cp backend/.env.example backend/.env
@@ -142,7 +142,7 @@ docker-compose up -d --build
 #### Backend
 ```bash
 cd backend
-fly launch --name investiq-api
+fly launch --name dealgapiq-api
 fly secrets set RENTCAST_API_KEY=xxx AXESSO_API_KEY=xxx SECRET_KEY=xxx
 fly deploy
 ```
@@ -150,8 +150,8 @@ fly deploy
 #### Frontend
 ```bash
 cd frontend
-fly launch --name investiq-web
-fly secrets set NEXT_PUBLIC_API_URL=https://investiq-api.fly.dev
+fly launch --name dealgapiq-web
+fly secrets set NEXT_PUBLIC_API_URL=https://dealgapiq-api.fly.dev
 fly deploy
 ```
 

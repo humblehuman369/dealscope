@@ -360,6 +360,6 @@ Refactor this component to match the DealGapIQ design system:
 ## File References
 
 For full implementation examples, see:
-- `investiq-blended-desktop.html` - Complete worksheet implementation
-- `investiq-style-guide.html` - Visual reference
-- `INVESTIQ-STYLE-GUIDE.md` - Full documentation
+- `dealgapiq-blended-desktop.html` - Complete worksheet implementation
+- `dealgapiq-style-guide.html` - Visual reference
+- `DEALGAPIQ-STYLE-GUIDE.md` - Full documentation

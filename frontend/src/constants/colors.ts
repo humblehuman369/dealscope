@@ -1,5 +1,5 @@
 /**
- * InvestIQ Frontend Color System
+ * DealGapIQ Frontend Color System
  * Consistent with mobile app branding
  * 
  * Brand Colors:

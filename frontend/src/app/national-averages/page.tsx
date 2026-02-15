@@ -3,7 +3,7 @@
 /**
  * National Averages Reference Page
  * 
- * Educational page explaining the 8 key investment metrics InvestIQ uses:
+ * Educational page explaining the 8 key investment metrics DealGapIQ uses:
  * - Cap Rate, Cash-on-Cash, DSCR, Expense Ratio, GRM, 
  * - Breakeven Occupancy, Equity Capture, Cash Flow Yield
  * 
@@ -26,7 +26,7 @@ import {
   Info
 } from 'lucide-react'
 
-// InvestIQ Design System Colors
+// DealGapIQ Design System Colors
 const COLORS = {
   navy: '#0A1628',
   teal: '#0891B2',
@@ -414,7 +414,7 @@ export default function NationalAveragesPage() {
         <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 mb-6">
           <h2 className="text-base font-bold text-[#0A1628] mb-2">Understanding the Numbers</h2>
           <p className="text-sm text-[#475569] leading-relaxed mb-3">
-            InvestIQ evaluates every property against 8 key investment metrics. These national benchmarks 
+            DealGapIQ evaluates every property against 8 key investment metrics. These national benchmarks 
             help you understand how a deal compares to market standards and what ranges indicate strong, 
             average, or weak performance.
           </p>
@@ -518,7 +518,7 @@ export default function NationalAveragesPage() {
         {/* Footer */}
         <div className="text-center text-xs text-[#94A3B8] pb-6">
           <p className="mb-1">Data sources: CBRE, Freddie Mac, Fannie Mae, industry research</p>
-          <p>Updated Q1 2026 • InvestIQ</p>
+          <p>Updated Q1 2026 • DealGapIQ</p>
         </div>
       </main>
     </div>

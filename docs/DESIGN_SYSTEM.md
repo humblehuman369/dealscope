@@ -91,7 +91,7 @@ Each investment strategy has its own distinct color for differentiation:
 ### Headers & Navigation
 | Element | Color |
 |---------|-------|
-| Logo "Invest" | White |
+| Logo "DealGap" | White |
 | Logo "IQ" | Teal |
 | Nav links | Gray → Teal on hover |
 | Back button | Gray → White on hover |
@@ -176,7 +176,7 @@ When building new components, ask:
 ### ✅ Correct Usage
 - "IQ's Pro Tip" → Teal label, teal left border
 - Strategy card "Fix & Flip" → Pink background/border
-- "DealGapIQ" in text → "Invest" white, "IQ" teal
+- "DealGapIQ" in text → "DealGap" white, "IQ" teal
 - Primary button "Scan a Property" → Teal gradient
 
 ### ❌ Incorrect Usage

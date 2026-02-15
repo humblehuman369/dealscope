@@ -1,5 +1,5 @@
 /* ==========================================
-   Property Worksheet - InvestIQ Brand Design
+   Property Worksheet - DealGapIQ Brand Design
    FULLY RESPONSIVE - Mobile First Approach
    ========================================== */
 
@@ -7,7 +7,7 @@
    CSS CUSTOM PROPERTIES (Design Tokens)
    ========================================== */
 :root {
-  /* InvestIQ Brand Colors - Pacific Teal */
+  /* DealGapIQ Brand Colors - Pacific Teal */
   --iq-teal: #007ea7;
   --iq-teal-dark: #006080;
   --iq-teal-light: #33a5c4;

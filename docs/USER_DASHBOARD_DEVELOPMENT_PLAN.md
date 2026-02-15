@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines the complete development blueprint for implementing user registration, authentication, user investment profiles, and an intelligent dashboard with saved properties, document management, and sharing capabilities for the DealScope/InvestIQ platform.
+This document outlines the complete development blueprint for implementing user registration, authentication, user investment profiles, and an intelligent dashboard with saved properties, document management, and sharing capabilities for the DealScope/DealGapIQ platform.
 
 **Primary Objective**: Implement all new features while **preserving 100% of existing functionality**.
 
@@ -1111,7 +1111,7 @@ async def revoke_share_link(
 // - No auth required
 // - Password prompt if protected
 // - Limited view based on share settings
-// - "Get your own InvestIQ account" CTA
+// - "Get your own DealGapIQ account" CTA
 ```
 
 ### Step 7.4: Frontend Share Components
@@ -1350,7 +1350,7 @@ aiosmtplib==3.0.1
 **Environment Variables (New):**
 ```
 # Database
-DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/investiq
+DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/dealgapiq
 
 # Auth
 SECRET_KEY=your-super-secret-key-change-in-production
@@ -1360,7 +1360,7 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 # Storage
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
-AWS_S3_BUCKET=investiq-documents
+AWS_S3_BUCKET=dealgapiq-documents
 AWS_REGION=us-east-1
 
 # Email
@@ -1368,7 +1368,7 @@ SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASSWORD=your-sendgrid-api-key
-EMAIL_FROM=noreply@investiq.app
+EMAIL_FROM=noreply@dealgapiq.app
 ```
 
 ---

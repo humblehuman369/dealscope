@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Property Analytics - Exports
+// DealGapIQ Property Analytics - Exports
 // ============================================
 
 // Types
