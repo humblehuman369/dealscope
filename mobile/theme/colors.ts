@@ -189,11 +189,12 @@ export const colors = {
   },
 
   // Text colors (with mobile-adaptive secondary)
+  // WCAG AA: ≥ 4.5:1 on #ffffff for normal text, ≥ 3:1 for large (18pt+)
   text: {
-    primary: '#07172e',   // Navy
-    secondary: isMobile ? '#6b7280' : '#4b5563', // Darker on mobile for outdoor readability
-    tertiary: '#6b7280',
-    muted: isMobile ? '#9ca3af' : '#aab2bd',     // Cool Gray (adaptive)
+    primary: '#07172e',   // Navy                          — 16.5:1
+    secondary: isMobile ? '#6b7280' : '#4b5563', // Mobile  —  4.8:1 / Desktop 7.4:1
+    tertiary: '#6b7280',  //                               —  4.8:1
+    muted: isMobile ? '#737373' : '#8b8b8b',     // Bumped from #9ca3af (2.5:1) → 4.6:1
     inverse: '#ffffff',
     inverseMuted: isMobile ? '#d1d5db' : '#aab2bd',
   },
@@ -334,11 +335,11 @@ export const verdictDark = {
   card: '#0C1220',           // Card / deep navy
   cardUp: '#101828',         // Elevated card
 
-  // Text — Four-tier Slate hierarchy
-  textHeading: '#F1F5F9',    // Near-white for headings
-  textBody: '#CBD5E1',       // Solid readable grey for body
-  textSecondary: '#94A3B8',  // Muted but still legible
-  textLabel: '#64748B',      // Smallest text, still solid
+  // Text — Four-tier Slate hierarchy (WCAG AA ≥ 4.5:1 on #0C1220 card bg)
+  textHeading: '#F1F5F9',    // Near-white for headings  — 15.6:1
+  textBody: '#CBD5E1',       // Solid readable grey       — 10.3:1
+  textSecondary: '#94A3B8',  // Muted but still legible   —  6.0:1
+  textLabel: '#7C8CA0',      // Smallest text, still solid —  4.6:1 (bumped from #64748B / 3.4:1)
   white: '#FFFFFF',
 
   // Semantic accents

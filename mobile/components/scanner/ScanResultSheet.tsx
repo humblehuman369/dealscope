@@ -259,7 +259,7 @@ export function ScanResultSheet({
         </View>
 
         {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close scan result">
           <Ionicons name="close" size={22} color={theme.closeIcon} />
         </TouchableOpacity>
 
@@ -339,6 +339,9 @@ export function ScanResultSheet({
               onPress={handleSaveProperty}
               disabled={isSaving || isSaved}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={isSaved ? 'Property saved' : 'Save property'}
+              accessibilityState={{ disabled: isSaving || isSaved }}
             >
               <Ionicons 
                 name={isSaved ? "heart" : "heart-outline"} 
@@ -354,6 +357,8 @@ export function ScanResultSheet({
                 pressed && styles.ctaButtonPressed
               ]}
               onPress={onViewDetails}
+              accessibilityRole="button"
+              accessibilityLabel={useIQVerdictFlow ? 'Analyze this property' : 'View full analysis'}
             >
               <Text style={styles.ctaButtonText}>
                 {useIQVerdictFlow ? 'Analyze This Property' : 'View Full Analysis'}
@@ -363,7 +368,7 @@ export function ScanResultSheet({
 
             {/* Recovery link to re-open disambiguation */}
             {onWrongProperty && (
-              <Pressable onPress={onWrongProperty} style={{ paddingVertical: 12, alignItems: 'center' }}>
+              <Pressable onPress={onWrongProperty} style={{ paddingVertical: 12, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Not the right property? Tap to choose another">
                 <Text style={{ color: '#94A3B8', fontSize: 13, fontWeight: '500' }}>
                   Not the right property?
                 </Text>

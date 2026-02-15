@@ -9,6 +9,7 @@ import {
   Platform,
   Easing,
   Linking,
+  AccessibilityInfo,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
@@ -91,6 +92,21 @@ export default function ScanScreen() {
       clearError();
     }
   }, [scanner.isLocationReady, error, clearError]);
+
+  // Announce scan results and errors to screen readers
+  useEffect(() => {
+    if (result?.property?.address) {
+      AccessibilityInfo.announceForAccessibility(
+        `Property found: ${result.property.address}`,
+      );
+    }
+  }, [result]);
+
+  useEffect(() => {
+    if (error) {
+      AccessibilityInfo.announceForAccessibility(`Scan error: ${error}`);
+    }
+  }, [error]);
 
   // Pulsing and rotating animation for "Analyzing Area Data" state
   useEffect(() => {
@@ -279,6 +295,7 @@ export default function ScanScreen() {
                   onPress={() => setShowCalibration(true)}
                   accessibilityRole="button"
                   accessibilityLabel="Calibration needed"
+                  accessibilityHint="Opens scanner calibration panel"
                 >
                   <Ionicons name="warning" size={14} color={colors.loss.main} />
                 </TouchableOpacity>
@@ -288,6 +305,7 @@ export default function ScanScreen() {
                 onPress={() => setShowCalibration(true)}
                 accessibilityRole="button"
                 accessibilityLabel="Scanner settings"
+                accessibilityHint="Opens distance and heading calibration"
               >
                 <Ionicons name="settings-outline" size={18} color="#fff" />
               </TouchableOpacity>

@@ -8,8 +8,8 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import { useState, useEffect, useCallback } from 'react';
+import { getAccessToken } from './authService';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
@@ -18,9 +18,6 @@ const STORAGE_KEYS = {
   DEFAULTS: 'investiq_defaults',
   DEFAULTS_TIMESTAMP: 'investiq_defaults_timestamp',
 };
-
-// Secure storage key for auth token (SecureStore)
-const ACCESS_TOKEN_KEY = 'investiq_access_token';
 
 // Cache TTL
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -212,14 +209,12 @@ let memoryCache: AllDefaults | null = null;
 let memoryCacheTimestamp: number = 0;
 
 /**
- * Get auth token from SecureStore (encrypted storage)
+ * Get auth token from the in-memory store managed by authService.
+ * The access token is intentionally never persisted to disk — it's
+ * refreshed from the SecureStore refresh token on each app launch.
  */
-async function getAuthToken(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
-  } catch {
-    return null;
-  }
+function getAuthToken(): string | null {
+  return getAccessToken();
 }
 
 /**
@@ -239,7 +234,7 @@ async function apiRequest<T>(
     'Content-Type': 'application/json',
   };
   
-  const token = await getAuthToken();
+  const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   } else if (requireAuth) {
@@ -292,7 +287,7 @@ export const defaultsService = {
       
       return response;
     } catch (error) {
-      console.warn('Failed to fetch defaults from API:', error);
+      if (__DEV__) console.warn('Failed to fetch defaults from API:', error);
       
       // Try AsyncStorage cache
       try {
@@ -325,7 +320,7 @@ export const defaultsService = {
     try {
       return await apiRequest<ResolvedDefaultsResponse>(endpoint);
     } catch (error) {
-      console.warn('Failed to fetch resolved defaults:', error);
+      if (__DEV__) console.warn('Failed to fetch resolved defaults:', error);
       
       // Return a fallback response
       return {
@@ -397,7 +392,7 @@ export function useDefaults(zipCode?: string): {
       setFullResponse(response);
       setDefaults(response.resolved);
     } catch (err) {
-      console.error('Failed to fetch defaults:', err);
+      if (__DEV__) console.error('Failed to fetch defaults:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch defaults'));
       
       // Use fallback

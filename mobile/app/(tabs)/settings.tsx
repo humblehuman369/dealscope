@@ -75,7 +75,7 @@ export default function SettingsScreen() {
           }));
         }
       } catch (error) {
-        console.warn('Failed to load notification preferences:', error);
+        if (__DEV__) console.warn('Failed to load notification preferences:', error);
       }
     }
     loadNotifPrefs();
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
       try {
         await updateUserProfile({ notification_preferences: updated });
       } catch (error) {
-        console.warn('Failed to save notification preference:', error);
+        if (__DEV__) console.warn('Failed to save notification preference:', error);
       }
     }
     // Also persist locally as fallback

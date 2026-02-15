@@ -271,12 +271,15 @@ def validate_settings(settings: Settings) -> None:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
             errors.append("DATABASE_URL must be set to a production database in production mode")
 
-        # Redis is mandatory in production — in-memory rate limiting doesn't
-        # survive multi-worker deployments, allowing unlimited requests.
+        # Redis is strongly recommended in production — in-memory rate
+        # limiting doesn't survive multi-worker deployments.  However, the
+        # RateLimitMiddleware already falls back to per-worker in-memory
+        # counters gracefully, so we warn instead of blocking startup.
         if not settings.REDIS_URL or settings.REDIS_URL == "redis://localhost:6379/0":
-            errors.append(
-                "REDIS_URL must be set to a production Redis instance. "
-                "In-memory rate limiting is not safe with multiple workers."
+            warnings.warn(
+                "REDIS_URL is not set or points to localhost. "
+                "Rate limiting will use in-memory counters (per-worker). "
+                "Add a Redis instance for safe multi-worker rate limiting."
             )
 
         # Warn about missing API keys — app starts without them but

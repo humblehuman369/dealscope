@@ -183,7 +183,7 @@ export default function MapScreen() {
           mapRef.current.animateToRegion(newRegion, 1000);
         }
       } catch (error) {
-        console.error('Error getting location:', error);
+        if (__DEV__) console.error('Error getting location:', error);
       } finally {
         setIsLoadingLocation(false);
       }
@@ -320,9 +320,11 @@ export default function MapScreen() {
             placeholderTextColor={isDark ? colors.gray[500] : colors.gray[400]}
             returnKeyType="search"
             onSubmitEditing={handleSearch}
+            accessibilityLabel="Search address"
+            accessibilityHint="Enter an address to analyze"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityRole="button" accessibilityLabel="Clear search">
               <Ionicons name="close-circle" size={18} color={isDark ? colors.gray[500] : colors.gray[400]} />
             </TouchableOpacity>
           )}
@@ -331,6 +333,8 @@ export default function MapScreen() {
         <TouchableOpacity 
           style={[styles.settingsButton, dynamicStyles.settingsButton]}
           onPress={() => router.push('/search')}
+          accessibilityRole="button"
+          accessibilityLabel="Search for a property"
         >
           <Ionicons name="add" size={22} color={colors.primary[isDark ? 400 : 600]} />
         </TouchableOpacity>
@@ -368,6 +372,8 @@ export default function MapScreen() {
       <TouchableOpacity
         style={[styles.locationButton, dynamicStyles.locationButton, { bottom: insets.bottom + 120 }]}
         onPress={handleCenterOnLocation}
+        accessibilityRole="button"
+        accessibilityLabel="Center map on your location"
       >
         <Ionicons 
           name={userLocation ? "locate" : "locate-outline"} 
@@ -400,6 +406,9 @@ export default function MapScreen() {
           <TouchableOpacity 
             style={styles.viewButton}
             onPress={handleViewDetails}
+            accessibilityRole="button"
+            accessibilityLabel="View property details"
+            accessibilityHint="Opens full property analysis"
           >
             <Text style={styles.viewButtonText}>View</Text>
             <Ionicons name="arrow-forward" size={16} color="#fff" />
@@ -418,6 +427,8 @@ export default function MapScreen() {
           <TouchableOpacity 
             style={styles.emptyStateButton}
             onPress={() => router.push('/search')}
+            accessibilityRole="button"
+            accessibilityLabel="Search for a property address"
           >
             <Ionicons name="search" size={18} color="#fff" />
             <Text style={styles.emptyStateButtonText}>Search Address</Text>

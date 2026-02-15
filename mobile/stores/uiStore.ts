@@ -9,6 +9,7 @@
  */
 
 import { create } from 'zustand';
+import { AccessibilityInfo } from 'react-native';
 import type { StrategyId } from '../types/analytics';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -81,6 +82,8 @@ export const useUIStore = create<UIStore>((set) => ({
       _toastTimer = null;
     }
     set({ toast: { message, type } });
+    // Announce to screen readers so toast content is not missed
+    AccessibilityInfo.announceForAccessibility(message);
     // Auto-dismiss after 3 seconds
     _toastTimer = setTimeout(() => {
       _toastTimer = null;
