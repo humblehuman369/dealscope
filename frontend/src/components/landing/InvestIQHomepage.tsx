@@ -93,9 +93,9 @@ export function RealVestIQHomepage({ onPointAndScan }: RealVestIQHomepageProps) 
       {/* NAV */}
       <nav className="iq-nav">
         <div className="nav-inner">
-          <a href="/" className="logo" onClick={(e) => { e.preventDefault(); router.push('/'); }}>
+          <Link href="/" className="logo">
             <div className="logo-text">RealVest<span>IQ</span></div>
-          </a>
+          </Link>
           <div className="nav-links" />
           <div className="nav-actions">
             {isAuthenticated && user ? (

@@ -623,9 +623,6 @@ export function VerdictIQCombined({
       }
       const strategy = strategyMap[currentStrategy] || 'ltr'
 
-      let blob: Blob
-      let filename: string
-      
       // Build full address for property lookup
       const fullAddress = [property.address, property.city, property.state, property.zip]
         .filter(Boolean)
@@ -633,13 +630,13 @@ export function VerdictIQCombined({
       
       // Excel export only - include strategy
       // Note: priceTarget support to be added when backend API is updated
-      blob = await api.proforma.downloadExcel({
+      const blob = await api.proforma.downloadExcel({
         propertyId: propertyIdToUse,
         address: fullAddress,
         strategy,
         holdPeriodYears: 10,
       })
-      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
+      const filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
 
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob)

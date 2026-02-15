@@ -1,0 +1,42 @@
+# Dependencies (installed in Docker build)
+node_modules/
+
+# Build output (rebuilt in Docker build)
+.next/
+out/
+
+# Git
+.git/
+.gitignore
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment (should be injected at runtime, not baked in)
+.env
+.env.local
+.env.*.local
+
+# Test / coverage
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE
+
+# OS files
+.DS_Store
+Thumbs.db
