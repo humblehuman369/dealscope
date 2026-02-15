@@ -1,5 +1,5 @@
 /**
- * InvestIQ - Projections & Comparison Engine
+ * DealGapIQ - Projections & Comparison Engine
  * 10-year projections, scenario comparison, and multi-property analysis
  */
 
@@ -338,13 +338,13 @@ export function createScenario(
 
 export function saveScenarios(scenarios: Scenario[]): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('investiq-scenarios', JSON.stringify(scenarios))
+    localStorage.setItem('dealgapiq-scenarios', JSON.stringify(scenarios))
   }
 }
 
 export function loadScenarios(): Scenario[] {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('investiq-scenarios')
+    const saved = localStorage.getItem('dealgapiq-scenarios')
     if (saved) {
       try {
         return JSON.parse(saved)
@@ -425,13 +425,13 @@ export function createPropertyComparison(
 
 export function savePropertyComparisons(properties: PropertyComparison[]): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('investiq-comparisons', JSON.stringify(properties))
+    localStorage.setItem('dealgapiq-comparisons', JSON.stringify(properties))
   }
 }
 
 export function loadPropertyComparisons(): PropertyComparison[] {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('investiq-comparisons')
+    const saved = localStorage.getItem('dealgapiq-comparisons')
     if (saved) {
       try {
         return JSON.parse(saved)

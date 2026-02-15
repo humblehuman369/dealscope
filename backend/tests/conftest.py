@@ -1,5 +1,5 @@
 """
-Shared test fixtures for InvestIQ backend tests.
+Shared test fixtures for DealGapIQ backend tests.
 """
 import os
 import pytest

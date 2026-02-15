@@ -241,7 +241,7 @@ export default function ScanScreen() {
         <Text accessibilityRole="text" style={[styles.permissionText, { color: theme.textSecondary }]}>
           {permanentlyDenied
             ? 'Camera permission was denied. Please enable it in your device settings to scan properties.'
-            : 'RealVestIQ needs camera access to scan properties and provide instant investment analytics.'}
+            : 'DealGapIQ needs camera access to scan properties and provide instant investment analytics.'}
         </Text>
         {permanentlyDenied ? (
           <TouchableOpacity
@@ -277,7 +277,7 @@ export default function ScanScreen() {
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <View style={styles.headerContent}>
-            <Text style={styles.logo}>RealVestIQ</Text>
+            <Text style={styles.logo}>DealGapIQ</Text>
             <View style={styles.headerRight}>
               {/* Help Button */}
               <TouchableOpacity 

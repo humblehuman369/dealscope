@@ -1505,7 +1505,7 @@ class ReportService:
         
         # Title
         ws.merge_cells('A1:G1')
-        ws['A1'] = "InvestIQ Property Analysis Report"
+        ws['A1'] = "DealGapIQ Property Analysis Report"
         ws['A1'].font = Font(bold=True, size=18, color=self.BRAND_BLUE)
         ws['A1'].alignment = Alignment(horizontal='center')
         

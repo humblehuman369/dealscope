@@ -322,9 +322,9 @@ export default function VerdictIQScreen() {
     });
     try {
       await Share.share({
-        message: `Check out this investment property on RealVestIQ:\n${decodedAddress}\n\n${url}`,
+        message: `Check out this investment property on DealGapIQ:\n${decodedAddress}\n\n${url}`,
         url, // iOS uses this for the share sheet preview
-        title: `RealVestIQ — ${decodedAddress}`,
+        title: `DealGapIQ — ${decodedAddress}`,
       });
     } catch {
       // user cancelled

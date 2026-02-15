@@ -21,12 +21,12 @@ fi
 
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 TIMESTAMP="$(date -u +%Y%m%d_%H%M%S)"
-BACKUP_FILE="${BACKUP_DIR}/investiq_${TIMESTAMP}.sql.gz"
+BACKUP_FILE="${BACKUP_DIR}/dealgapiq_${TIMESTAMP}.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
 echo "──────────────────────────────────────"
-echo "InvestIQ Database Backup"
+echo "DealGapIQ Database Backup"
 echo "  Time:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "  Target: ${BACKUP_FILE}"
 echo "──────────────────────────────────────"
@@ -49,5 +49,5 @@ echo "✓ Backup complete: ${BACKUP_FILE} (${SIZE})"
 
 # Keep only last 10 backups to avoid filling disk
 cd "$BACKUP_DIR"
-ls -1t investiq_*.sql.gz 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+ls -1t dealgapiq_*.sql.gz 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
 echo "✓ Old backups pruned (keeping last 10)"

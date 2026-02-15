@@ -165,7 +165,7 @@ export function generateReportFilename(
   const date = new Date().toISOString().split('T')[0];
   const extension = REPORT_EXTENSIONS[reportType];
 
-  return `InvestIQ_${cleanAddress}_${date}${extension}`;
+  return `DealGapIQ_${cleanAddress}_${date}${extension}`;
 }
 
 // ===========================================

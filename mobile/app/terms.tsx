@@ -20,7 +20,7 @@ export default function TermsOfServiceScreen() {
   const { theme, isDark } = useTheme();
 
   const handleContactPress = () => {
-    Linking.openURL('mailto:legal@realvestiq.com');
+    Linking.openURL('mailto:legal@dealgapiq.com');
   };
 
   // Dynamic styles based on theme
@@ -62,14 +62,14 @@ export default function TermsOfServiceScreen() {
 
         <Section title="1. Acceptance of Terms" theme={theme}>
           <Text style={[styles.paragraph, dynamicStyles.paragraph]}>
-            By accessing or using InvestIQ ("the App"), you agree to be bound by these
+            By accessing or using DealGapIQ ("the App"), you agree to be bound by these
             Terms of Service. If you do not agree to these terms, do not use the App.
           </Text>
         </Section>
 
         <Section title="2. Description of Service" theme={theme}>
           <Text style={[styles.paragraph, dynamicStyles.paragraph]}>
-            InvestIQ provides real estate investment analysis tools, including property
+            DealGapIQ provides real estate investment analysis tools, including property
             scanning, investment calculations, portfolio tracking, and market data.
             The App is intended for informational purposes only.
           </Text>
@@ -91,7 +91,7 @@ export default function TermsOfServiceScreen() {
           <View style={[styles.warningBox, dynamicStyles.warningBox]}>
             <Ionicons name="warning-outline" size={24} color={colors.warning.main} />
             <Text style={[styles.warningText, dynamicStyles.warningText]}>
-              InvestIQ does not provide investment, financial, legal, or tax advice.
+              DealGapIQ does not provide investment, financial, legal, or tax advice.
               All data and calculations are for informational purposes only. Always
               consult qualified professionals before making investment decisions.
             </Text>
@@ -118,7 +118,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="7. Intellectual Property" theme={theme}>
           <Text style={[styles.paragraph, dynamicStyles.paragraph]}>
-            All content, features, and functionality of the App are owned by InvestIQ
+            All content, features, and functionality of the App are owned by DealGapIQ
             and are protected by copyright, trademark, and other intellectual property
             laws. You may not copy, modify, or distribute any part of the App without
             our written permission.
@@ -127,7 +127,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="8. Limitation of Liability" theme={theme}>
           <Text style={[styles.paragraph, dynamicStyles.paragraph]}>
-            TO THE MAXIMUM EXTENT PERMITTED BY LAW, INVESTIQ SHALL NOT BE LIABLE FOR
+            TO THE MAXIMUM EXTENT PERMITTED BY LAW, DEALGAPIQ SHALL NOT BE LIABLE FOR
             ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES,
             INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, OR INVESTMENT LOSSES.
           </Text>
@@ -170,12 +170,12 @@ export default function TermsOfServiceScreen() {
           </Text>
           <TouchableOpacity style={[styles.contactButton, dynamicStyles.contactButton]} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
-            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>legal@realvestiq.com</Text>
+            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>legal@dealgapiq.com</Text>
           </TouchableOpacity>
         </Section>
 
         <View style={[styles.footer, dynamicStyles.footerBorder]}>
-          <Text style={[styles.footerText, dynamicStyles.footerText]}>© 2026 InvestIQ. All rights reserved.</Text>
+          <Text style={[styles.footerText, dynamicStyles.footerText]}>© 2026 DealGapIQ. All rights reserved.</Text>
         </View>
       </ScrollView>
     </>

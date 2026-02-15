@@ -9,7 +9,7 @@
  * - Selectable rental comp cards with match scores
  * - Bottom action bar
  * 
- * Uses InvestIQ Universal Style Guide colors
+ * Uses DealGapIQ Universal Style Guide colors
  */
 
 import React, { useState } from 'react'

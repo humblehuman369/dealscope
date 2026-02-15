@@ -1,10 +1,10 @@
-# InvestIQ Design System
+# DealGapIQ Design System
 
 ## Color Semantics & Branding Rules
 
 ### Core Principle
-> **Teal = InvestIQ's Voice**  
-> When users see teal/cyan, they know InvestIQ is speaking, guiding, or presenting brand elements.
+> **Teal = DealGapIQ's Voice**  
+> When users see teal/cyan, they know DealGapIQ is speaking, guiding, or presenting brand elements.
 
 ---
 
@@ -18,7 +18,7 @@
 ```
 
 **Use for:**
-- ✅ InvestIQ logo ("IQ" portion)
+- ✅ DealGapIQ logo ("IQ" portion)
 - ✅ IQ's tips, guidance, and mentoring messages
 - ✅ "IQ's Pro Tip" labels and icons
 - ✅ IQ Welcome Modal elements
@@ -145,7 +145,7 @@ When building new components, ask:
 
 ```css
 :root {
-  /* Brand - InvestIQ Voice */
+  /* Brand - DealGapIQ Voice */
   --electric-cyan: #4dd0e1;
   --teal: #007ea7;
   --teal-accent: #0891b2;
@@ -176,7 +176,7 @@ When building new components, ask:
 ### ✅ Correct Usage
 - "IQ's Pro Tip" → Teal label, teal left border
 - Strategy card "Fix & Flip" → Pink background/border
-- "InvestIQ" in text → "Invest" white, "IQ" teal
+- "DealGapIQ" in text → "Invest" white, "IQ" teal
 - Primary button "Scan a Property" → Teal gradient
 
 ### ❌ Incorrect Usage

@@ -1,5 +1,5 @@
 /**
- * InvestIQ Domain API
+ * DealGapIQ Domain API
  *
  * Domain-specific API methods (properties, analytics, proforma, LOI, etc.)
  * built on top of the core client in `api-client.ts`.

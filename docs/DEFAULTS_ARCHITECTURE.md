@@ -2,7 +2,7 @@
 
 ## Overview
 
-InvestIQ uses a centralized defaults architecture to ensure consistent financial assumptions across all platforms (web, mobile, backend calculations). This document describes the architecture, data flow, and implementation details.
+DealGapIQ uses a centralized defaults architecture to ensure consistent financial assumptions across all platforms (web, mobile, backend calculations). This document describes the architecture, data flow, and implementation details.
 
 ## Problem Solved
 
@@ -432,7 +432,7 @@ function Component({ zipCode }) {
 
 > Every property can be a good investment at the right price.
 > 
-> InvestIQ answers two critical questions:
+> DealGapIQ answers two critical questions:
 > 1. **What price makes this deal work?** (Breakeven) - based on YOUR financing terms
 > 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
 

@@ -8,7 +8,7 @@ export type RentTrend = 'up' | 'down' | 'stable'
 export interface RentalStats {
   rentcastEstimate?: number
   zillowEstimate?: number
-  iqEstimate?: number          // InvestIQ proprietary average
+  iqEstimate?: number          // DealGapIQ proprietary average
   estimateLow?: number
   estimateHigh?: number
   marketAvgRent?: number

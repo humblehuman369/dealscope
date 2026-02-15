@@ -1,4 +1,4 @@
-# Alembic Migrations for InvestIQ
+# Alembic Migrations for DealGapIQ
 
 This directory contains database migration scripts managed by Alembic.
 

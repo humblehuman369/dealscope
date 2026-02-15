@@ -20,7 +20,7 @@ export default function PrivacyPolicyScreen() {
   const { theme, isDark } = useTheme();
 
   const handleContactPress = () => {
-    Linking.openURL('mailto:privacy@realvestiq.com');
+    Linking.openURL('mailto:privacy@dealgapiq.com');
   };
 
   // Dynamic styles based on theme
@@ -58,7 +58,7 @@ export default function PrivacyPolicyScreen() {
 
         <Section title="Introduction" theme={theme}>
           <Text style={[styles.paragraph, dynamicStyles.paragraph]}>
-            InvestIQ ("we," "our," or "us") is committed to protecting your privacy.
+            DealGapIQ ("we," "our," or "us") is committed to protecting your privacy.
             This Privacy Policy explains how we collect, use, disclose, and safeguard
             your information when you use our mobile application.
           </Text>
@@ -150,12 +150,12 @@ export default function PrivacyPolicyScreen() {
           </Text>
           <TouchableOpacity style={[styles.contactButton, dynamicStyles.contactButton]} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
-            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>privacy@realvestiq.com</Text>
+            <Text style={[styles.contactButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>privacy@dealgapiq.com</Text>
           </TouchableOpacity>
         </Section>
 
         <View style={[styles.footer, dynamicStyles.footerBorder]}>
-          <Text style={[styles.footerText, dynamicStyles.footerText]}>© 2026 InvestIQ. All rights reserved.</Text>
+          <Text style={[styles.footerText, dynamicStyles.footerText]}>© 2026 DealGapIQ. All rights reserved.</Text>
         </View>
       </ScrollView>
     </>

@@ -740,7 +740,7 @@ function StrategyContent() {
 
         {/* Footer */}
         <footer className="text-center py-5 text-xs" style={{ color: colors.text.secondary }}>
-          Powered by <span className="font-semibold" style={{ color: colors.text.body }}>Invest<span style={{ color: colors.brand.blue }}>IQ</span></span>
+          Powered by <span className="font-semibold" style={{ color: colors.text.body }}>DealGap<span style={{ color: colors.brand.blue }}>IQ</span></span>
         </footer>
       </div>
     </div>

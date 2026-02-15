@@ -1,4 +1,4 @@
-# InvestIQ Deployment Guide
+# DealGapIQ Deployment Guide
 
 ## 🚀 Quick Deploy (Recommended)
 
@@ -24,7 +24,7 @@ This is the fastest way to get live. Free tiers available for both.
 In Railway dashboard, go to **Variables** tab and add:
 
 ```
-APP_NAME=InvestIQ
+APP_NAME=DealGapIQ
 APP_VERSION=1.0.0
 DEBUG=false
 
@@ -258,7 +258,7 @@ Visit `https://your-api-url.railway.app/docs` for Swagger UI
 
 ### Backend (.env)
 ```env
-APP_NAME=InvestIQ
+APP_NAME=DealGapIQ
 APP_VERSION=1.0.0
 DEBUG=false
 RENTCAST_API_KEY=your_rentcast_key

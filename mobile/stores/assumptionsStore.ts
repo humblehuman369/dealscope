@@ -285,7 +285,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         })),
     }),
     {
-      name: 'investiq-assumptions',
+      name: 'dealgapiq-assumptions',
       storage: createJSONStorage(() => AsyncStorage),
       version: 2,
     }

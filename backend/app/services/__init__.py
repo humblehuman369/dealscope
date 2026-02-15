@@ -1,5 +1,5 @@
 """
-Service layer for InvestIQ.
+Service layer for DealGapIQ.
 Contains business logic separated from API routes.
 """
 

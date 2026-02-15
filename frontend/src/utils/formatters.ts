@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Property Analytics — Canonical Formatters
+// DealGapIQ Property Analytics — Canonical Formatters
 // ============================================
 //
 // THIS IS THE SINGLE SOURCE OF TRUTH for all formatting.

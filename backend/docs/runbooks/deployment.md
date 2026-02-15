@@ -118,7 +118,7 @@ alembic current
 alembic downgrade -1
 
 # Restore from backup if data was corrupted
-psql "$DATABASE_URL" < backups/investiq_YYYYMMDD_HHMMSS.sql
+psql "$DATABASE_URL" < backups/dealgapiq_YYYYMMDD_HHMMSS.sql
 ```
 
 ---

@@ -1,5 +1,5 @@
 /**
- * InvestIQ Mobile Text Styles
+ * DealGapIQ Mobile Text Styles
  * 
  * RULES:
  * 1. Minimum font size is 13px (applies to icons too)

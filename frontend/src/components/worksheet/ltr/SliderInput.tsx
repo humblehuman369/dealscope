@@ -102,7 +102,7 @@ export function SliderInput({
           )}
         </div>
       </div>
-      {/* InvestIQ Slider - 6px height, surface-200 track, teal fill */}
+      {/* DealGapIQ Slider - 6px height, surface-200 track, teal fill */}
       <div className="relative">
         <div className="h-1.5 bg-surface-200 dark:bg-surface-600 rounded-full">
           <div 

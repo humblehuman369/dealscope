@@ -574,7 +574,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </section>
 
-      {/* CREDIBILITY — Why Trust RealVestIQ */}
+      {/* CREDIBILITY — Why Trust DealGapIQ */}
       <section style={{ padding: '4rem 1.5rem', borderTop: '1px solid rgba(148,163,184,0.08)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#14b8a6', marginBottom: '1rem' }}>

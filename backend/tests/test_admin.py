@@ -28,7 +28,7 @@ async def admin_user(db_session: AsyncSession, seeded_roles):
     """Create a user with admin role and admin:* permission."""
     user = await user_repo.create(
         db_session,
-        email="admin@realvestiq.test",
+        email="admin@dealgapiq.test",
         hashed_password=auth_service.hash_password("AdminPass123"),
         full_name="Admin User",
         is_active=True,
@@ -54,7 +54,7 @@ async def regular_user(db_session: AsyncSession, seeded_roles):
     """Create a standard member user with no admin permissions."""
     user = await user_repo.create(
         db_session,
-        email="member@realvestiq.test",
+        email="member@dealgapiq.test",
         hashed_password=auth_service.hash_password("MemberPass123"),
         full_name="Regular Member",
         is_active=True,
@@ -74,13 +74,13 @@ class TestAdminServiceUserManagement:
         users = await admin_service.list_users(db=db_session)
         assert len(users) >= 2
         emails = {u["email"] for u in users}
-        assert "admin@realvestiq.test" in emails
-        assert "member@realvestiq.test" in emails
+        assert "admin@dealgapiq.test" in emails
+        assert "member@dealgapiq.test" in emails
 
     async def test_get_user_by_id(self, db_session, admin_user):
         user = await admin_service.get_user_by_id(db_session, admin_user.id)
         assert user is not None
-        assert user.email == "admin@realvestiq.test"
+        assert user.email == "admin@dealgapiq.test"
 
     async def test_get_user_not_found(self, db_session, admin_user):
         user = await admin_service.get_user_by_id(db_session, uuid.uuid4())

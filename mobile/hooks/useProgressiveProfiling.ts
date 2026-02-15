@@ -2,14 +2,14 @@
  * Progressive Profiling Hook
  *
  * Manages user profile completion state and prompts across analysis sessions.
- * State persisted to AsyncStorage under investiq-progressive-profile.
+ * State persisted to AsyncStorage under dealgapiq-progressive-profile.
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/apiClient';
 
-const STORAGE_KEY = 'investiq-progressive-profile';
+const STORAGE_KEY = 'dealgapiq-progressive-profile';
 const SKIP_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 const QUESTION_ORDER: ('experience' | 'strategies' | 'budget')[] = [

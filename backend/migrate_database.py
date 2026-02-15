@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Database Migration Script for DealScope/InvestIQ
+Database Migration Script for DealScope/DealGapIQ
 Helps clone, copy, or rebuild the PostgreSQL database to a new instance.
 
 Usage:
@@ -212,7 +212,7 @@ def test_connection(db_url: str, name: str = "Database") -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Database migration tool for DealScope/InvestIQ",
+        description="Database migration tool for DealScope/DealGapIQ",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

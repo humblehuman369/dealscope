@@ -6,7 +6,7 @@
  * Core Value Proposition:
  * "Every property can be a good investment at the right price."
  * 
- * InvestIQ tells you:
+ * DealGapIQ tells you:
  * 1. WHAT PRICE MAKES THIS DEAL WORK (Breakeven) - based on YOUR financing terms
  * 2. HOW LIKELY YOU ARE TO GET THAT PRICE (Deal Gap + Motivation) - based on market signals
  * 

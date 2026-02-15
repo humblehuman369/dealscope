@@ -57,7 +57,7 @@ class TestRootEndpoint:
             assert response.status_code == 200
             data = response.json()
             assert "name" in data
-            assert "InvestIQ" in data["name"]
+            assert "DealGapIQ" in data["name"]
             assert "version" in data
 
 

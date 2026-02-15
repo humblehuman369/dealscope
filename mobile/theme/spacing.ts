@@ -1,5 +1,5 @@
 /**
- * InvestIQ Mobile Spacing & Radius Tokens
+ * DealGapIQ Mobile Spacing & Radius Tokens
  * Matches frontend 8px base scale + VerdictIQ design tokens
  *
  * Usage:

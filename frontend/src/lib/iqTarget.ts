@@ -14,7 +14,7 @@
  * DO NOT add new calculation logic here.
  *
  * Original description:
- * InvestIQ - IQ Target Price Calculation Engine
+ * DealGapIQ - IQ Target Price Calculation Engine
  * The IQ Target Price is the recommended purchase price that achieves
  * profitable returns for each investment strategy.
  */

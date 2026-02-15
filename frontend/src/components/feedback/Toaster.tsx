@@ -5,7 +5,7 @@ import { Toaster as SonnerToaster } from 'sonner'
 /**
  * Toast Notification Provider
  * 
- * Renders the toast container with InvestIQ styling.
+ * Renders the toast container with DealGapIQ styling.
  * Add this component to the root layout.
  * 
  * Usage:

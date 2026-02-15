@@ -266,7 +266,7 @@ export function DealMakerPage({
 
   return (
     <div className="min-h-screen" style={{ background: '#F1F5F9' }}>
-      {/* InvestIQ Header */}
+      {/* DealGapIQ Header */}
       <div 
         className="sticky top-0 z-50 flex items-center justify-between"
         style={{ 
@@ -286,7 +286,7 @@ export function DealMakerPage({
         </button>
         
         <div style={{ fontSize: '22px', fontWeight: 700 }}>
-          <span style={{ color: '#0A1628' }}>Invest</span>
+          <span style={{ color: '#0A1628' }}>DealGap</span>
           <span style={{ color: '#0891B2' }}>IQ</span>
         </div>
         

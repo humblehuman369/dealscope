@@ -1,5 +1,5 @@
 /**
- * InvestIQ Analytics Components - Type Definitions
+ * DealGapIQ Analytics Components - Type Definitions
  * 
  * Comprehensive types for the redesigned property analytics UI.
  * These types support all 6 investment strategies with their specific metrics.

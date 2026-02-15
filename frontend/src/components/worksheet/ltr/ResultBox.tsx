@@ -12,7 +12,7 @@ interface ResultBoxProps {
   size?: ResultBoxSize
 }
 
-// InvestIQ Summary Box Pattern
+// DealGapIQ Summary Box Pattern
 const variants: Record<ResultBoxVariant, string> = {
   default: 'bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700',
   highlight: 'bg-teal-600/10 dark:bg-teal-400/10 border-teal-600/20 dark:border-teal-400/20',

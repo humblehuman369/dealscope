@@ -1,5 +1,5 @@
 // ============================================
-// InvestIQ Financial Proforma Calculations
+// DealGapIQ Financial Proforma Calculations
 // Tax, Depreciation, Exit Analysis, and Returns
 // ============================================
 

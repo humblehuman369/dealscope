@@ -11,7 +11,7 @@
  * - Location section
  * - Bottom action bar
  * 
- * Uses InvestIQ Universal Style Guide colors
+ * Uses DealGapIQ Universal Style Guide colors
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
@@ -236,7 +236,7 @@ export function PropertyDetailsPage({
         {/* App Header */}
         <div className="bg-white px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
           <div className="text-lg font-extrabold">
-            <span className="text-[#0A1628]">Invest</span>
+            <span className="text-[#0A1628]">DealGap</span>
             <span className="text-[#0891B2]">IQ</span>
           </div>
           <div className="flex items-center gap-3">

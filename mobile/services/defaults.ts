@@ -15,8 +15,8 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-produ
 
 // Storage keys for non-sensitive cached data (AsyncStorage)
 const STORAGE_KEYS = {
-  DEFAULTS: 'investiq_defaults',
-  DEFAULTS_TIMESTAMP: 'investiq_defaults_timestamp',
+  DEFAULTS: 'dealgapiq_defaults',
+  DEFAULTS_TIMESTAMP: 'dealgapiq_defaults_timestamp',
 };
 
 // Cache TTL

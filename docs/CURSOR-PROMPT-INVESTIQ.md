@@ -1,6 +1,6 @@
-# InvestIQ Design System - Cursor Prompt
+# DealGapIQ Design System - Cursor Prompt
 
-Use this document when prompting Cursor to style InvestIQ components.
+Use this document when prompting Cursor to style DealGapIQ components.
 
 ---
 
@@ -343,7 +343,7 @@ When converting existing components:
 ## Example Prompt for Cursor
 
 ```
-Refactor this component to match the InvestIQ design system:
+Refactor this component to match the DealGapIQ design system:
 
 - Use teal (#0891B2) for positive values, not green
 - Add `num` class to all financial numbers
