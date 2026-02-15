@@ -149,9 +149,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           Every Home Is an Opportunity<br />
           at the <span className="grad">Right Price.</span>
         </h1>
-        <p className="hero-tagline" style={{ fontSize: '1.15rem', color: '#94a3b8', fontWeight: 500, marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
-          Many are closer than you think.
-        </p>
 
         <p className="hero-subtitle">
           DealGapIQ analyzes the local market to establish your <strong style={{ color: '#2dd4bf' }}>Breakeven Price</strong>, your <strong style={{ color: '#2dd4bf' }}>Target Buy</strong>, and your <strong style={{ color: '#2dd4bf' }}>Deal Gap</strong> for any property — then layers in seller motivation to show you the real probability of closing the deal at your price.
