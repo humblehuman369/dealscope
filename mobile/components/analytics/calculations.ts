@@ -134,6 +134,9 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
   // Break-even rent
   const breakEvenRent = totalMonthlyExpenses / (1 - vacancyRate / 100);
 
+  // Max purchase price for $200/mo cash flow target (matches frontend)
+  const maxPurchasePriceForTarget = calculateMaxPurchasePrice(inputs, 200);
+
   return {
     grossMonthlyIncome,
     totalMonthlyExpenses,
@@ -151,7 +154,56 @@ export function calculateMetrics(inputs: AnalyticsInputs): CalculatedMetrics {
     yearOneEquityGrowth,
     breakEvenVacancy: Math.max(0, breakEvenVacancy),
     breakEvenRent,
+    maxPurchasePriceForTarget,
   };
+}
+
+/**
+ * Lightweight monthly cash-flow estimator used by the binary search in
+ * calculateMaxPurchasePrice.  Avoids calling calculateMetrics (which
+ * itself calls calculateMaxPurchasePrice) so we don't create infinite
+ * recursion.
+ */
+function estimateMonthlyCashFlow(inputs: AnalyticsInputs, testPrice: number): number {
+  const downPayment = testPrice * (inputs.downPaymentPercent / 100);
+  const loan = testPrice - downPayment;
+  const mtg = calculateMortgagePayment(loan, inputs.interestRate, inputs.loanTermYears);
+
+  const grossIncome = inputs.monthlyRent;
+  const vacancy = grossIncome * (inputs.vacancyRate / 100);
+  const management = grossIncome * (inputs.managementRate / 100);
+  const maintenance = grossIncome * (inputs.maintenanceRate / 100);
+  const propTax = inputs.annualPropertyTax / 12;
+  const insurance = inputs.annualInsurance / 12;
+
+  const totalExpenses = mtg + vacancy + management + maintenance + propTax + insurance + inputs.monthlyHoa;
+  return grossIncome - totalExpenses;
+}
+
+/**
+ * Calculate max purchase price for target monthly cash flow.
+ * Uses binary search — matches frontend calculateMaxPurchasePrice.
+ */
+function calculateMaxPurchasePrice(
+  inputs: AnalyticsInputs,
+  targetMonthlyCashFlow: number,
+): number {
+  let low = 0;
+  let high = inputs.purchasePrice * 2;
+  let maxPrice = 0;
+
+  while (high - low > 1000) {
+    const mid = (low + high) / 2;
+
+    if (estimateMonthlyCashFlow(inputs, mid) >= targetMonthlyCashFlow) {
+      maxPrice = mid;
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return maxPrice;
 }
 
 /**

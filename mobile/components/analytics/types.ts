@@ -57,6 +57,9 @@ export interface CalculatedMetrics {
   yearOneEquityGrowth: number;
   breakEvenVacancy: number;
   breakEvenRent: number;
+
+  // Max purchase price for $200/mo cash flow target (matches frontend)
+  maxPurchasePriceForTarget: number;
 }
 
 export interface ScoreBreakdown {
