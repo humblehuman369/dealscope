@@ -3,25 +3,22 @@
 # WeasyPrint requires system shared libraries (GLib/Cairo/Pango/etc.)
 # loadable via cffi.dlopen() / ctypes.util.find_library().
 #
-# nixLibs  — installs Nix packages AND adds them to LD_LIBRARY_PATH
-#            so ctypes/cffi can locate them at runtime.
-# nixPkgs  — installs Nix packages for data files (fonts, MIME DB)
-#            that don't need to be on the library search path.
+# We use aptPkgs (not nixLibs) because apt packages install to standard
+# system paths and register with ldconfig — which is what Python's
+# ctypes.util.find_library() and cffi's ffi.dlopen() need at runtime.
 
 [phases.setup]
-nixLibs = [
-  "glib",          # libgobject-2.0, libglib-2.0
-  "cairo",         # libcairo
-  "pango",         # libpango-1.0, libpangocairo-1.0, libpangoft2-1.0
-  "gdk-pixbuf",    # libgdk_pixbuf-2.0
-  "harfbuzz",      # libharfbuzz
-  "fontconfig",    # libfontconfig
-  "freetype",      # libfreetype
-  "libffi",        # libffi
-]
-nixPkgs = [
-  "shared-mime-info",  # MIME type database
-  "liberation_ttf",    # Liberation font family (print-quality)
+aptPkgs = [
+  "libglib2.0-dev",        # libgobject-2.0, libglib-2.0
+  "libcairo2-dev",         # libcairo
+  "libpango1.0-dev",       # libpango-1.0, libpangocairo-1.0, libpangoft2-1.0
+  "libgdk-pixbuf-2.0-dev", # libgdk_pixbuf-2.0
+  "libharfbuzz-dev",       # libharfbuzz
+  "libfontconfig1-dev",    # libfontconfig
+  "libfreetype6-dev",      # libfreetype
+  "libffi-dev",            # libffi
+  "shared-mime-info",      # MIME type database
+  "fonts-liberation",      # Liberation font family (print-quality)
 ]
 
 # Nixpacks' Python provider may generate `python -m venv` but the Nix
