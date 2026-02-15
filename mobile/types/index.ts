@@ -33,3 +33,6 @@ export * from './proforma';
 
 // Report types
 export * from './reports';
+
+// Analytics & strategy types (canonical definitions)
+export * from './analytics';

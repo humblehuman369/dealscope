@@ -59,7 +59,7 @@ import {
   SaveCTA,
 } from '../../components/strategy-iq';
 import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
-import { PropertyData } from '../../components/analytics/redesign/types';
+import { PropertyData } from '../../types/analytics';
 import { VerdictFooter } from '../../components/verdict-iq/VerdictCTA';
 import { useAddPortfolioProperty } from '../../hooks/useDatabase';
 

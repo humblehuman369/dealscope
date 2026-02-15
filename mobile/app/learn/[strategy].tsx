@@ -19,10 +19,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../context/ThemeContext';
+import type { StrategyId } from '../../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
 
 interface Benefit {
   title: string;

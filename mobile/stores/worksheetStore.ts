@@ -13,10 +13,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/apiClient';
+import type { StrategyId } from '../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-export type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
 
 export interface WorksheetMetrics {
   gross_income: number;

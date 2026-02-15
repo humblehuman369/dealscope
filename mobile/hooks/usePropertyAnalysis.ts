@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/apiClient';
-import { StrategyId, TargetAssumptions, PropertyData } from '../components/analytics/redesign/types';
+import { StrategyId, TargetAssumptions, PropertyData } from '../types/analytics';
 
 // ============================================
 // API RESPONSE TYPES (matches backend IQVerdictResponse)
