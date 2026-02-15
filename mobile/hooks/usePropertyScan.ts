@@ -150,27 +150,27 @@ export function usePropertyScan() {
     // If override location provided (for demo/testing), skip GPS check
     const useOverride = overrideLocation && overrideLocation.lat !== 0;
     
-    console.log('performScan called with:', {
-      distance: estimatedDistance,
-      isLocationReady: currentScanner.isLocationReady,
-      userLat: currentScanner.userLat,
-      userLng: currentScanner.userLng,
-      heading: currentScanner.heading,
-      accuracy: currentScanner.accuracy,
-      useOverride,
-    });
+    if (__DEV__) {
+      console.log('performScan called with:', {
+        distance: estimatedDistance,
+        isLocationReady: currentScanner.isLocationReady,
+        userLat: currentScanner.userLat,
+        userLng: currentScanner.userLng,
+        heading: currentScanner.heading,
+        accuracy: currentScanner.accuracy,
+        useOverride,
+      });
+    }
     
     if (!useOverride) {
       // Validate scanner is ready for real scans
       if (!currentScanner.isLocationReady) {
         setError('GPS not ready. Please wait for location lock.');
-        console.log('Scan failed: GPS not ready');
         return;
       }
 
       if (currentScanner.userLat === 0 || currentScanner.userLng === 0) {
         setError('Unable to determine your location');
-        console.log('Scan failed: Location is 0,0');
         return;
       }
     }
@@ -191,14 +191,11 @@ export function usePropertyScan() {
         ? overrideLocation!.heading 
         : currentScanner.heading;
 
-      console.log(`[ImprovedScan] Scanning from: ${userLat.toFixed(6)}, ${userLng.toFixed(6)} heading ${heading}°`);
-      console.log(`[ImprovedScan] GPS accuracy: ±${currentScanner.accuracy}m`);
+      if (__DEV__) {
+        console.log(`[Scan] From: ${userLat.toFixed(6)}, ${userLng.toFixed(6)} heading ${heading}° (±${currentScanner.accuracy}m)`);
+      }
 
-      // #region agent log
-      console.log('[DEBUG-H2-H4] performScan:beforeQuery', JSON.stringify({userLat,userLng,heading,estimatedDistance,accuracy:currentScanner.accuracy,useOverride}));
-      // #endregion
-
-      // IMPROVED: Use multi-point sampling to find all nearby properties
+      // Use multi-point sampling to find all nearby properties
       // This queries multiple points along the scan direction to catch adjacent properties
       const properties = await queryPropertiesAlongScanPath(
         userLat,
@@ -208,15 +205,13 @@ export function usePropertyScan() {
         20 // 20° cone angle for good coverage
       );
 
-      // #region agent log
-      console.log('[DEBUG-H1-H5] performScan:afterQuery', JSON.stringify({propertiesFound:properties.length,firstProperty:properties[0]?.address}));
-      // #endregion
-
       if (properties.length === 0) {
         throw new Error('No properties found in scan area. Try adjusting distance or aim.');
       }
 
-      console.log(`[ImprovedScan] Found ${properties.length} candidate properties`);
+      if (__DEV__) {
+        console.log(`[Scan] Found ${properties.length} candidate properties`);
+      }
 
       // Convert to PropertyCandidate format with additional scoring
       const propertyCandidates: PropertyCandidate[] = properties.slice(0, 5).map((p, index) => ({
@@ -232,7 +227,7 @@ export function usePropertyScan() {
       // which breaks trust immediately. The user confirms, even if
       // there's a clear "Best Match."
       if (propertyCandidates.length > 1) {
-        console.log(`[ImprovedScan] ${propertyCandidates.length} candidates found — showing disambiguation`);
+        if (__DEV__) console.log(`[Scan] ${propertyCandidates.length} candidates — showing disambiguation`);
         setCandidates(propertyCandidates);
         setShowCandidates(true);
         setIsScanning(false);
@@ -252,8 +247,8 @@ export function usePropertyScan() {
         matchedParcel.zip
       ].filter(Boolean).join(', ');
       
-      console.log('Fetching analytics for:', fullAddress);
-      
+      if (__DEV__) console.log('[Scan] Fetching analytics for:', fullAddress);
+
       // Pass parcel data for fallback estimation if API fails
       const analytics = await fetchPropertyAnalytics(fullAddress, {
         city: matchedParcel.city,
@@ -296,8 +291,8 @@ export function usePropertyScan() {
           analyticsData
         );
         
-        console.log('Saved scan to database with ID:', savedId);
-        
+        if (__DEV__) console.log('[Scan] Saved to DB:', savedId);
+
         // Invalidate queries to refresh the history list
         queryClient.invalidateQueries({ queryKey: dbQueryKeys.scannedProperties });
         queryClient.invalidateQueries({ queryKey: dbQueryKeys.databaseStats });
@@ -317,11 +312,9 @@ export function usePropertyScan() {
         savedId,
       };
 
-      console.log('Scan successful:', {
-        address: matchedParcel.address,
-        confidence: scanResult.confidence,
-        scanTime: scanResult.scanTime,
-      });
+      if (__DEV__) {
+        console.log('[Scan] Success:', matchedParcel.address, `${scanResult.confidence}% in ${scanResult.scanTime}ms`);
+      }
 
       setResult(scanResult);
 
@@ -380,7 +373,7 @@ export function usePropertyScan() {
         matchedParcel.zip
       ].filter(Boolean).join(', ');
       
-      console.log('[SelectCandidate] Fetching analytics for:', fullAddress);
+      if (__DEV__) console.log('[SelectCandidate] Fetching analytics for:', fullAddress);
       
       const analytics = await fetchPropertyAnalytics(fullAddress, {
         city: matchedParcel.city,
@@ -437,7 +430,7 @@ export function usePropertyScan() {
         savedId,
       };
 
-      console.log('[SelectCandidate] Success:', matchedParcel.address);
+      if (__DEV__) console.log('[SelectCandidate] Success:', matchedParcel.address);
       setResult(scanResult);
 
     } catch (err) {

@@ -70,7 +70,7 @@ function getCachedGeocode(lat: number, lng: number): ParcelData[] | null {
   const cached = geocodeCache.get(geohash);
   
   if (cached && (Date.now() - cached.timestamp) < GEOCODE_CACHE_TTL_MS) {
-    console.log(`[GeoCache] Cache hit for geohash ${geohash}`);
+    if (__DEV__) console.log(`[GeoCache] Cache hit for geohash ${geohash}`);
     return cached.data;
   }
   
@@ -100,7 +100,7 @@ function setCachedGeocode(lat: number, lng: number, data: ParcelData[]): void {
  */
 export function clearGeocodeCache(): void {
   geocodeCache.clear();
-  console.log('[GeoCache] Cache cleared');
+  if (__DEV__) console.log('[GeoCache] Cache cleared');
 }
 
 export interface ParcelData {
@@ -189,19 +189,19 @@ export async function queryParcelsInArea(
     const parcels = await googleReverseGeocode(centerLat, centerLng);
     
     if (parcels.length > 0) {
-      console.log('Google Maps found address:', parcels[0].address);
+      if (__DEV__) console.log('Google Maps found address:', parcels[0].address);
       return parcels;
     }
     
     // If no results, return empty
-    console.log('No address found at coordinates');
+    if (__DEV__) console.log('No address found at coordinates');
     return [];
   } catch (error) {
     console.error('Google Maps geocoding error:', error);
     
     // Fallback to mock data if Google Maps fails
     if (USE_MOCK_DATA_ON_ERROR) {
-      console.log('Using mock parcel data as fallback');
+      if (__DEV__) console.log('Using mock parcel data as fallback');
       return generateMockParcels(centerLat, centerLng);
     }
     
@@ -229,7 +229,7 @@ export async function queryPropertiesAlongScanPath(
   estimatedDistance: number,
   coneAngle: number = 20
 ): Promise<ParcelData[]> {
-  console.log('[ScanPath] Entry', JSON.stringify({userLat,userLng,heading,estimatedDistance,coneAngle}));
+  if (__DEV__) console.log('[ScanPath] Entry', JSON.stringify({userLat,userLng,heading,estimatedDistance,coneAngle}));
   
   const allProperties: Map<string, ParcelData> = new Map();
   const samplePromises: Promise<ParcelData[]>[] = [];
@@ -248,7 +248,7 @@ export async function queryPropertiesAlongScanPath(
   // Center + left/right to catch adjacent properties
   const angles = [0, -15, 15];
   
-  console.log(`[ScanPath] Sampling ${distances.length * angles.length} points along heading ${heading}° (optimized from 35)`);
+  if (__DEV__) console.log(`[ScanPath] Sampling ${distances.length * angles.length} points along heading ${heading}°`);
   
   // Track cache hits for logging
   let cacheHits = 0;
@@ -284,7 +284,7 @@ export async function queryPropertiesAlongScanPath(
               }));
             })
             .catch(err => {
-              console.log(`[ScanPath] Sample at ${dist}m/${angleOffset}° failed:`, err.message);
+              if (__DEV__) console.log(`[ScanPath] Sample at ${dist}m/${angleOffset}° failed:`, err.message);
               return [];
             })
         );
@@ -297,7 +297,7 @@ export async function queryPropertiesAlongScanPath(
   
   const successCount = results.filter(r => r.length > 0).length;
   const failCount = results.filter(r => r.length === 0).length;
-  console.log(`[ScanPath] Results: ${successCount} success, ${failCount} fail, ${cacheHits} cache hits`);
+  if (__DEV__) console.log(`[ScanPath] Results: ${successCount} success, ${failCount} fail, ${cacheHits} cache hits`);
   
   // Deduplicate by address and keep the best scoring version
   for (const propertyList of results) {
@@ -323,7 +323,7 @@ export async function queryPropertiesAlongScanPath(
   const uniqueProperties = Array.from(allProperties.values())
     .sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
   
-  console.log(`[ScanPath] Found ${uniqueProperties.length} unique properties`);
+  if (__DEV__) console.log(`[ScanPath] Found ${uniqueProperties.length} unique properties`);
   
   return uniqueProperties;
 }
@@ -371,12 +371,12 @@ async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelDat
   try {
     response = await axios.get(url, { timeout: 10000 });
   } catch (axiosErr: any) {
-    console.log('[Geocode] API error:', axiosErr?.message);
+    if (__DEV__) console.log('[Geocode] API error:', axiosErr?.message);
     throw axiosErr;
   }
   
   if (response.data.status !== 'OK' || !response.data.results?.length) {
-    console.log('[Geocode] Response status:', response.data.status);
+    if (__DEV__) console.log('[Geocode] Response status:', response.data.status);
     return [];
   }
   

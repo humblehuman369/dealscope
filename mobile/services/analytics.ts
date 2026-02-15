@@ -269,12 +269,9 @@ export async function fetchPropertyAnalytics(
   address: string,
   parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number }
 ): Promise<InvestmentAnalytics> {
-  console.log(`[Analytics] Fetching analytics for: ${address}`);
-  console.log(`[Analytics] API URL: ${API_BASE_URL}`);
+  if (__DEV__) console.log(`[Analytics] Fetching for: ${address}`);
 
   try {
-    // Step 1: Search for the property
-    console.log('[Analytics] Step 1: Searching property...');
     const searchResponse = await axios.post(
       `${API_BASE_URL}/api/v1/properties/search`,
       { address },
@@ -282,10 +279,7 @@ export async function fetchPropertyAnalytics(
     );
 
     const propertyData = searchResponse.data;
-    console.log('[Analytics] Property found:', propertyData.property_id);
-    
-    // Step 2: Calculate analytics
-    console.log('[Analytics] Step 2: Calculating analytics...');
+    if (__DEV__) console.log('[Analytics] Property found:', propertyData.property_id);
     const analyticsResponse = await axios.post(
       `${API_BASE_URL}/api/v1/analytics/calculate`,
       { 
@@ -296,7 +290,6 @@ export async function fetchPropertyAnalytics(
     );
 
     const analytics = analyticsResponse.data;
-    console.log('[Analytics] Analytics calculated successfully');
     
     // Clear any previous API errors on success
     lastApiError = null;
@@ -337,7 +330,7 @@ export async function fetchPropertyAnalytics(
     
     // Use fallback analytics when API fails
     if (USE_FALLBACK_ON_ERROR) {
-      console.log('[Analytics] Using fallback estimated analytics');
+      if (__DEV__) console.log('[Analytics] Using fallback estimated analytics');
       
       // Try to get market-specific assumptions for better estimates
       let marketAssumptions: MarketAssumptions | undefined;
@@ -345,7 +338,7 @@ export async function fetchPropertyAnalytics(
         try {
           marketAssumptions = await fetchMarketAssumptions(parcelData.zip);
         } catch (e) {
-          console.log('[Analytics] Could not fetch market assumptions, using defaults');
+          if (__DEV__) console.log('[Analytics] Could not fetch market assumptions, using defaults');
         }
       }
       
@@ -546,12 +539,12 @@ export async function fetchMarketAssumptions(zipCode: string): Promise<MarketAss
   // Check cache first
   const cached = marketAssumptionsCache.get(zipCode);
   if (cached && (Date.now() - cached.timestamp) < MARKET_CACHE_TTL_MS) {
-    console.log(`[Analytics] Market assumptions cache hit for ${zipCode}`);
+    if (__DEV__) console.log(`[Analytics] Market assumptions cache hit for ${zipCode}`);
     return cached.data;
   }
   
   try {
-    console.log(`[Analytics] Fetching market assumptions for ${zipCode}`);
+    if (__DEV__) console.log(`[Analytics] Fetching market assumptions for ${zipCode}`);
     const response = await axios.get(
       `${API_BASE_URL}/api/v1/market/assumptions`,
       { 
@@ -566,7 +559,7 @@ export async function fetchMarketAssumptions(zipCode: string): Promise<MarketAss
       // Cache the result
       marketAssumptionsCache.set(zipCode, { data, timestamp: Date.now() });
       
-      console.log(`[Analytics] Market assumptions loaded for ${zipCode}:`, data.region);
+      if (__DEV__) console.log(`[Analytics] Market assumptions loaded for ${zipCode}`);
       return data;
     }
     

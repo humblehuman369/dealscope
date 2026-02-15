@@ -9,6 +9,8 @@
  */
 
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { cacheDirectory, downloadAsync, type FileSystemDownloadResult } from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { APIError } from '../types';
 import {
   getAccessToken,
@@ -259,37 +261,79 @@ export async function delWithBody<T = void>(
 }
 
 /**
- * Download a file (returns blob URL)
+ * Download a file to the device's cache directory.
+ *
+ * Uses expo-file-system instead of browser Blob/URL.createObjectURL
+ * (which are not available in React Native).
+ *
+ * Returns the local file URI and parsed filename.
  */
-export async function downloadFile(endpoint: string): Promise<{ url: string; filename: string }> {
-  try {
-    const response = await apiClient.get(endpoint, {
-      responseType: 'blob',
-    });
+export async function downloadFile(
+  endpoint: string,
+  suggestedFilename?: string,
+): Promise<{ uri: string; filename: string }> {
+  const token = getAccessToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
-    // Get filename from Content-Disposition header if available
-    const contentDisposition = response.headers['content-disposition'];
-    let filename = 'download';
+  // Build a safe local filename
+  const filename =
+    suggestedFilename || endpoint.split('/').pop()?.split('?')[0] || 'download';
+  const localUri = `${cacheDirectory ?? ''}${filename}`;
+
+  try {
+    const result = await downloadAsync(
+      `${API_BASE_URL}${endpoint}`,
+      localUri,
+      { headers },
+    );
+
+    if (result.status < 200 || result.status >= 300) {
+      throw new APIRequestError(
+        `Download failed (${result.status})`,
+        result.status,
+      );
+    }
+
+    // Try to extract a better filename from Content-Disposition
+    const contentDisposition = result.headers['Content-Disposition'] || result.headers['content-disposition'];
+    let resolvedFilename = filename;
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="?(.+?)"?(?:;|$)/);
-      if (filenameMatch) {
-        filename = filenameMatch[1];
+      const match = contentDisposition.match(/filename="?(.+?)"?(?:;|$)/);
+      if (match) {
+        resolvedFilename = match[1];
       }
     }
 
-    // Create blob URL
-    const blob = new Blob([response.data]);
-    const url = URL.createObjectURL(blob);
-
-    return { url, filename };
+    return { uri: result.uri, filename: resolvedFilename };
   } catch (error) {
+    if (error instanceof APIRequestError) throw error;
     const apiError = parseErrorResponse(error);
     throw new APIRequestError(
       apiError.detail,
-      axios.isAxiosError(error) ? error.response?.status : undefined,
+      undefined,
       apiError.code,
-      error
+      error,
     );
+  }
+}
+
+/**
+ * Share a downloaded file using the native share sheet.
+ * Convenience wrapper around downloadFile + expo-sharing.
+ */
+export async function downloadAndShareFile(
+  endpoint: string,
+  suggestedFilename?: string,
+): Promise<void> {
+  const { uri } = await downloadFile(endpoint, suggestedFilename);
+  const canShare = await Sharing.isAvailableAsync();
+  if (canShare) {
+    await Sharing.shareAsync(uri);
+  } else {
+    throw new APIRequestError('Sharing is not available on this device');
   }
 }
 
@@ -370,6 +414,7 @@ export const api = {
   del,
   delWithBody,
   downloadFile,
+  downloadAndShareFile,
   uploadFile,
   request,
   client: apiClient,
