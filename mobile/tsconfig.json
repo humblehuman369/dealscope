@@ -6,7 +6,9 @@
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@dealscope/shared": ["../shared/src/index.ts"],
+      "@dealscope/shared/*": ["../shared/src/*"]
     },
     "jsx": "react-native",
     "esModuleInterop": true,

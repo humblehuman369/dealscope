@@ -1,27 +1,26 @@
 /**
  * Analytics & Strategy Types — canonical definitions.
  *
- * Previously scattered across redesign/types.ts, uiStore.ts,
- * worksheetStore.ts, and local type aliases.
+ * Core strategy types (StrategyId, StrategyInfo, ALL_STRATEGY_IDS) are
+ * re-exported from @dealscope/shared to keep a single source of truth.
  *
- * Import from here instead of duplicating.
+ * Platform-specific types (PropertyData, TargetAssumptions) remain here
+ * because they have mobile-specific fields.
  */
 
 // ============================================
-// STRATEGY TYPES
+// STRATEGY TYPES — re-exported from shared
 // ============================================
 
-export type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
+export type { StrategyId, StrategyInfo } from '@dealscope/shared';
+export { ALL_STRATEGY_IDS, WORKSHEET_ENDPOINTS } from '@dealscope/shared';
 
-export interface StrategyInfo {
-  id: StrategyId;
-  name: string;
-  shortName: string;
-  icon: string;
-  color: string;
-  grade?: string;
-  score?: number;
-}
+/**
+ * STRATEGY_CONFIG — mobile-specific config with emoji icons.
+ * Shared package doesn't include platform-specific icons/colors,
+ * so we keep this here.
+ */
+import type { StrategyId, StrategyInfo } from '@dealscope/shared';
 
 export const STRATEGY_CONFIG: Record<StrategyId, Omit<StrategyInfo, 'grade' | 'score'>> = {
   ltr: { id: 'ltr', name: 'Long-Term Rental', shortName: 'Long Rental', icon: '🏠', color: '#0097a7' },
