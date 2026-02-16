@@ -540,18 +540,18 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       >
         <div className="section-inner">
           <div className="section-header">
-            <h2 className="section-title">When a Deal Passes the Screen, Everything You Need Is Ready.</h2>
+            <h2 className="section-title">When a <span style={{ color: 'var(--cyan)' }}>Deal Passes</span> the Screen,<br />Everything You Need Is Ready.</h2>
             <p className="section-desc">Go deep with investor-grade tools built for confident decision-making.</p>
           </div>
           <div className="toolkit-grid">
             <div className="toolkit-card">
-              <div className="tk-icon bl">
+              <div className="tk-icon pr">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
                 </svg>
               </div>
-              <div className="tk-title">Strategy<span>IQ</span></div>
-              <p className="tk-text">Why analyze one way? Run Flip, BRRRR, Wholesale, and Long-Term Rental models simultaneously.</p>
+              <div className="tk-title">Scan</div>
+              <p className="tk-text">The field companion app. Snap a photo of any property or For Sale sign to pull data instantly. Syncs to desktop.</p>
             </div>
             <div className="toolkit-card">
               <div className="tk-icon gr">
@@ -559,17 +559,17 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
               </div>
-              <div className="tk-title">Verdict<span>IQ</span></div>
+              <div className="tk-title">Verdict</div>
               <p className="tk-text">Input your specific &ldquo;Buy Box&rdquo; criteria (e.g., 12% CoC Return). The system flags properties as PASS, MARGINAL, or BUY.</p>
             </div>
             <div className="toolkit-card">
-              <div className="tk-icon pr">
+              <div className="tk-icon bl">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+                  <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
                 </svg>
               </div>
-              <div className="tk-title">Scan<span>IQ</span></div>
-              <p className="tk-text">The field companion app. Snap a photo of any property or For Sale sign to pull data instantly. Syncs to desktop.</p>
+              <div className="tk-title">Strategy</div>
+              <p className="tk-text">Why analyze one way? Run Flip, BRRRR, Wholesale, and Long-Term Rental models simultaneously.</p>
             </div>
             <div className="toolkit-card">
               <div className="tk-icon cy">
@@ -577,7 +577,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
                 </svg>
               </div>
-              <div className="tk-title">Price<span>IQ</span></div>
+              <div className="tk-title">Price</div>
               <p className="tk-text">Three numbers that define your deal: Breakeven, Target, and Wholesale — calculated in 60 seconds flat.</p>
             </div>
             <div className="toolkit-card">
@@ -587,7 +587,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
                 </svg>
               </div>
-              <div className="tk-title">Report<span>IQ</span></div>
+              <div className="tk-title">Report</div>
               <p className="tk-text">Lender-ready PDF reports. Share with partners, lenders, or your investment team.</p>
             </div>
             <div className="toolkit-card">
@@ -596,7 +596,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <div className="tk-title">Pipeline<span>IQ</span></div>
+              <div className="tk-title">Pipeline</div>
               <p className="tk-text">Save deals, track offers, and compare opportunities side-by-side from underwriting to close.</p>
             </div>
           </div>
