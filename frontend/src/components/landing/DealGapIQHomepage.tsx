@@ -640,8 +640,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[7] = el; }}
       >
         <div className="cta-inner">
-          <h2 className="cta-title">Stop wondering. Start knowing.</h2>
-          <p className="cta-desc">Every hour spent on a bad deal is an hour you could spend closing a great one. Run your first analysis in 60 seconds — free.</p>
+          <h2 className="cta-title">Find Your Deal.<br />Close Your Gap.</h2>
+          <p className="cta-desc">Every property has a Deal Gap. Only DealGapIQ measures it.</p>
           <button className="btn-cta" onClick={handleStartAnalysis}>Analyze Your First Property</button>
           <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#64748b' }}>
             Free during beta · <a href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</a>
