@@ -256,7 +256,7 @@
 }
 
 /* Deal Gap Explainer */
-.iq-landing .deal-gap-explainer { max-width: 720px; margin: 0 auto; }
+.iq-landing .deal-gap-explainer { max-width: 600px; margin: 0 auto; }
 .iq-landing .explainer-headline {
   font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800;
   letter-spacing: -0.04em; line-height: 1.15; color: var(--white); margin-bottom: 1.5rem;
@@ -269,7 +269,7 @@
 }
 .iq-landing .deal-gap-explainer em { font-style: italic; }
 .iq-landing .deal-gap-explainer strong { color: var(--white); font-weight: 700; }
-.iq-landing .explainer-cta {
+.iq-landing .deal-gap-explainer p.explainer-cta {
   font-size: 1.1rem; font-weight: 700; color: var(--cyan); margin-top: 0.5rem;
   text-align: center;
 }
