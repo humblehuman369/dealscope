@@ -213,7 +213,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       >
         <div className="verdict-container">
           <div className="deal-gap-explainer">
-            <h2 className="explainer-headline">Find Deals Everyone Else Is Missing.</h2>
+            <h2 className="explainer-headline">Find <span className="cyan">Deals</span> Everyone Else Is Missing.</h2>
             <p>
               Most investors search the same listings, use the same filters, and chase the same narrow pool of &ldquo;deals&rdquo; — competing on speed instead of strategy. That race is over.
             </p>
