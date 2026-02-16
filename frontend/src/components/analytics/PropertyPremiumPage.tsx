@@ -182,7 +182,7 @@ export function PropertyPremiumPage({
           <ArrowLeft className="w-5 h-5" />
         </button>
         <Link href="/" className="premium-logo">
-          Invest<span>IQ</span>
+          DealGap<span>IQ</span>
         </Link>
         <div className="premium-header-actions">
           <button 

@@ -813,7 +813,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         <div className="bg-[#0C1220] border-b border-white/[0.07] p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-lg font-bold text-[#F1F5F9]">Price<span className="text-[#38bdf8]">IQ</span></h1>
+              <h1 className="text-lg font-bold text-[#F1F5F9]">DealGap<span className="text-[#38bdf8]">IQ</span></h1>
               <p className="text-xs text-[#64748B]">Comparable analysis for {property.address || 'property'}</p>
             </div>
             <div className="flex gap-1.5">

@@ -81,7 +81,7 @@ export function VerdictHeader({
               className="text-lg font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
-              DealMaker
+              DealGap
             </span>
             <span 
               className="text-lg font-bold tracking-tight"
@@ -90,12 +90,6 @@ export function VerdictHeader({
               IQ
             </span>
           </div>
-          <span 
-            className="text-[12px] font-medium -mt-0.5 text-left"
-            style={{ color: colors.text.white }}
-          >
-            by DealGapIQ
-          </span>
         </button>
 
         {/* Right Icons */}
