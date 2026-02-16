@@ -228,7 +228,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </section>
 
-      {/* VERDICT DEMO */}
+      {/* SCAN DEMO */}
       <section
         className={`verdict-section ${fadeClass(1)}`}
         data-idx="1"
@@ -236,72 +236,97 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       >
         <div className="verdict-container">
           <div className="verdict-header">
-            <div className="section-label">IQ Verdict</div>
-            <h2>One Scan. Four Signals.<br />Your Answer.</h2>
-            <p>DealGapIQ evaluates every property in 60 seconds across four key factors that determine if a deal is worth pursuing.</p>
+            <div className="section-label">See It in Action</div>
+            <h2>One Scan. Your Number.</h2>
+            <p>Every analysis gives you the four signals that matter — from a single property scan.</p>
           </div>
 
-          {/* Four Signal Cards */}
-          <div className="signals-grid">
-            <div className="signal-card">
-              <div className="signal-icon cyan-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-                </svg>
+          <div className="scan-demo-card">
+            {/* Property Header */}
+            <div className="scan-demo-property">
+              <div>
+                <div className="scan-demo-address">1847 Oakridge Drive, Tampa, FL 33612</div>
+                <div className="scan-demo-details">3 bed &middot; 2 bath &middot; 1,640 sqft &middot; Built 2004</div>
               </div>
-              <h4>Deal Gap</h4>
-              <p>Distance between market value and your target buy price</p>
-              <div className="signal-value cyan">$38K</div>
-            </div>
-            <div className="signal-card">
-              <div className="signal-icon teal-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
+              <div className="scan-demo-list-price">
+                <div className="scan-demo-label">LIST PRICE</div>
+                <div className="scan-demo-price">$349,900</div>
               </div>
-              <h4>Rental Income</h4>
-              <p>Annual income analysis to determine breakeven price</p>
-              <div className="signal-value teal">$2,180/mo</div>
             </div>
-            <div className="signal-card">
-              <div className="signal-icon green-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
-                </svg>
-              </div>
-              <h4>Target Price</h4>
-              <p>The price you&apos;d need to pay to make money</p>
-              <div className="signal-value green">$312K</div>
-            </div>
-            <div className="signal-card">
-              <div className="signal-icon gold-bg">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              </div>
-              <h4>Seller Urgency</h4>
-              <p>Signals indicating motivation to negotiate</p>
-              <div className="signal-value gold">Medium</div>
-            </div>
-          </div>
 
-          {/* Verdict Result */}
-          <div className="verdict-result">
-            <div className="verdict-gauge">
-              <div className="gauge-ring" />
-              <div className="gauge-progress" />
-              <div className="gauge-inner">
-                <div className="gauge-score">53</div>
-                <div className="gauge-label">Deal Score</div>
+            {/* Four Metrics */}
+            <div className="scan-demo-metrics">
+              <div className="scan-demo-metric">
+                <div className="scan-demo-metric-label">TARGET BUY</div>
+                <div className="scan-demo-metric-value green">$289K</div>
+                <div className="scan-demo-metric-sub">At 8% target return</div>
+              </div>
+              <div className="scan-demo-metric">
+                <div className="scan-demo-metric-label">BREAKEVEN PRICE</div>
+                <div className="scan-demo-metric-value white">$312K</div>
+                <div className="scan-demo-metric-sub">Covers all costs</div>
+              </div>
+              <div className="scan-demo-metric">
+                <div className="scan-demo-metric-label">DEAL GAP</div>
+                <div className="scan-demo-metric-value gold">$61K</div>
+                <div className="scan-demo-metric-sub">17.4% below list</div>
+              </div>
+              <div className="scan-demo-metric">
+                <div className="scan-demo-metric-label">MONTHLY CASH</div>
+                <div className="scan-demo-metric-value green">$1,180</div>
+                <div className="scan-demo-metric-sub">At target buy price</div>
               </div>
             </div>
-            <div className="verdict-content">
-              <div className="verdict-tag gold">&#9888; Marginal Deal</div>
-              <h3>Possible, but the margins are tight.</h3>
-              <p>There&apos;s potential here depending on your strategy and terms. The deal gap is narrow, which means your negotiation and financing approach will make or break this one.</p>
-              <button className="verdict-cta" onClick={handleStartAnalysis}>
-                Run full analysis to find the angle that works &rarr;
-              </button>
+
+            {/* Deal Gap Visualization */}
+            <div className="scan-demo-gap-viz">
+              <div className="scan-demo-gap-label">DEAL GAP VISUALIZATION</div>
+              <div className="scan-demo-bar-wrap">
+                <div className="scan-demo-bar">
+                  <span>$61K DEAL GAP</span>
+                </div>
+              </div>
+              <div className="scan-demo-bar-markers">
+                <div className="scan-demo-marker">
+                  <div className="scan-demo-marker-value">$289K</div>
+                  <div className="scan-demo-marker-label">Target Buy</div>
+                </div>
+                <div className="scan-demo-marker center">
+                  <div className="scan-demo-marker-value">$312K</div>
+                  <div className="scan-demo-marker-label">Breakeven</div>
+                </div>
+                <div className="scan-demo-marker end">
+                  <div className="scan-demo-marker-value">$349.9K</div>
+                  <div className="scan-demo-marker-label">List Price</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verdict + Seller Motivation */}
+            <div className="scan-demo-bottom">
+              <div className="scan-demo-verdict">
+                <div className="scan-demo-score-ring">
+                  <svg viewBox="0 0 60 60" width="60" height="60">
+                    <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(251,191,36,0.15)" strokeWidth="4" />
+                    <circle cx="30" cy="30" r="26" fill="none" stroke="var(--gold)" strokeWidth="4"
+                      strokeDasharray={`${(53 / 100) * 163.36} 163.36`}
+                      strokeLinecap="round" transform="rotate(-90 30 30)" />
+                  </svg>
+                  <div className="scan-demo-score-num">53</div>
+                </div>
+                <div className="scan-demo-verdict-text">
+                  <div className="scan-demo-verdict-title"><strong>Verdict: Possible</strong></div>
+                  <div className="scan-demo-verdict-desc">Margins are tight, but the deal has potential with negotiation.</div>
+                </div>
+              </div>
+              <div className="scan-demo-motivation">
+                <div className="scan-demo-label">SELLER MOTIVATION</div>
+                <div className="scan-demo-dots">
+                  <span className="dot filled" /><span className="dot filled" /><span className="dot filled" />
+                  <span className="dot" /><span className="dot" />
+                </div>
+                <div className="scan-demo-motivation-level">Medium</div>
+              </div>
             </div>
           </div>
         </div>

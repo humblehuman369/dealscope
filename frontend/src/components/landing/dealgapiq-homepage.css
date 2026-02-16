@@ -255,6 +255,142 @@
   font-size: 1.1rem; color: var(--text); max-width: 550px; margin: 0 auto; line-height: 1.6;
 }
 
+/* Scan Demo Card */
+.iq-landing .scan-demo-card {
+  max-width: 720px; margin: 0 auto;
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden;
+}
+
+.iq-landing .scan-demo-property {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 1.75rem 2rem; gap: 1.5rem;
+}
+.iq-landing .scan-demo-address {
+  font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem;
+}
+.iq-landing .scan-demo-details {
+  font-size: 0.85rem; color: var(--text-secondary);
+}
+.iq-landing .scan-demo-list-price { text-align: right; flex-shrink: 0; }
+.iq-landing .scan-demo-price {
+  font-size: 1.75rem; font-weight: 800; color: var(--white); letter-spacing: -0.02em;
+}
+
+.iq-landing .scan-demo-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-label); margin-bottom: 0.25rem;
+}
+
+/* Four Metrics Row */
+.iq-landing .scan-demo-metrics {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.iq-landing .scan-demo-metric {
+  padding: 1.25rem 1.5rem; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.iq-landing .scan-demo-metric:last-child { border-right: none; }
+.iq-landing .scan-demo-metric-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-label); margin-bottom: 0.5rem;
+}
+.iq-landing .scan-demo-metric-value {
+  font-size: 1.65rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem;
+}
+.iq-landing .scan-demo-metric-value.green { color: var(--green); }
+.iq-landing .scan-demo-metric-value.white { color: var(--white); }
+.iq-landing .scan-demo-metric-value.gold { color: var(--gold); }
+.iq-landing .scan-demo-metric-sub {
+  font-size: 0.75rem; color: var(--text-label);
+}
+
+/* Deal Gap Visualization */
+.iq-landing .scan-demo-gap-viz {
+  padding: 1.5rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.iq-landing .scan-demo-gap-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-label); margin-bottom: 1rem;
+}
+.iq-landing .scan-demo-bar-wrap {
+  background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25);
+  border-radius: 8px; padding: 0.65rem 0; text-align: center; margin-bottom: 0.75rem;
+}
+.iq-landing .scan-demo-bar span {
+  font-size: 0.9rem; font-weight: 800; color: var(--green); letter-spacing: 0.02em;
+}
+.iq-landing .scan-demo-bar-markers {
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.iq-landing .scan-demo-marker-value {
+  font-size: 0.9rem; font-weight: 700; color: var(--white);
+}
+.iq-landing .scan-demo-marker-label {
+  font-size: 0.7rem; color: var(--text-label);
+}
+.iq-landing .scan-demo-marker.center { text-align: center; }
+.iq-landing .scan-demo-marker.end { text-align: right; }
+
+/* Verdict + Seller Motivation Bottom Row */
+.iq-landing .scan-demo-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem 2rem;
+}
+.iq-landing .scan-demo-verdict {
+  display: flex; align-items: center; gap: 1rem;
+}
+.iq-landing .scan-demo-score-ring {
+  position: relative; width: 60px; height: 60px; flex-shrink: 0;
+}
+.iq-landing .scan-demo-score-num {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 800; color: var(--gold);
+}
+.iq-landing .scan-demo-verdict-title {
+  font-size: 0.95rem; color: var(--white); margin-bottom: 0.15rem;
+}
+.iq-landing .scan-demo-verdict-desc {
+  font-size: 0.8rem; color: var(--text-secondary); max-width: 320px;
+}
+.iq-landing .scan-demo-motivation { text-align: right; }
+.iq-landing .scan-demo-motivation .scan-demo-label { margin-bottom: 0.4rem; }
+.iq-landing .scan-demo-dots {
+  display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 0.35rem;
+}
+.iq-landing .scan-demo-dots .dot {
+  width: 16px; height: 8px; border-radius: 4px; background: rgba(148,163,184,0.2);
+}
+.iq-landing .scan-demo-dots .dot.filled {
+  background: var(--gold);
+}
+.iq-landing .scan-demo-motivation-level {
+  font-size: 0.85rem; font-weight: 700; color: var(--gold);
+}
+
+/* Scan Demo Responsive */
+@media (max-width: 640px) {
+  .iq-landing .scan-demo-property {
+    flex-direction: column; padding: 1.25rem 1.25rem; gap: 0.75rem;
+  }
+  .iq-landing .scan-demo-list-price { text-align: left; }
+  .iq-landing .scan-demo-metrics { grid-template-columns: repeat(2, 1fr); }
+  .iq-landing .scan-demo-metric {
+    border-bottom: 1px solid var(--border); padding: 1rem;
+  }
+  .iq-landing .scan-demo-metric:nth-child(odd) { border-right: 1px solid var(--border); }
+  .iq-landing .scan-demo-metric:nth-child(even) { border-right: none; }
+  .iq-landing .scan-demo-metric:nth-last-child(-n+2) { border-bottom: none; }
+  .iq-landing .scan-demo-gap-viz { padding: 1.25rem; }
+  .iq-landing .scan-demo-bottom {
+    flex-direction: column; gap: 1.25rem; align-items: flex-start; padding: 1.25rem;
+  }
+  .iq-landing .scan-demo-motivation { text-align: left; }
+  .iq-landing .scan-demo-dots { justify-content: flex-start; }
+}
+
 /* Deal Gap Explainer */
 .iq-landing .deal-gap-explainer { max-width: 600px; margin: 0 auto; }
 .iq-landing .explainer-headline {
