@@ -192,11 +192,9 @@ export function CompactHeader({
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#E2E8F0]">
           <Link href="/" className="flex flex-col">
             <div className="text-xl font-extrabold leading-tight tracking-tight">
-              <span className="text-[#0A1628]">Deal</span>
-              <span className="text-[#0A1628]">Maker</span>
+              <span className="text-[#0A1628]">DealGap</span>
               <span className="text-[#0891B2]">IQ</span>
             </div>
-            <span className="text-[10px] text-[#64748B] tracking-wide font-medium">by DealGapIQ</span>
           </Link>
           <div className="flex items-center gap-3">
             <button 
