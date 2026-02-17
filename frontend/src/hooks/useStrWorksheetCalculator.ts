@@ -85,7 +85,7 @@ export interface StrWorksheetResult {
   annual_debt_service: number
   total_cash_needed: number
   list_price: number
-  breakeven_price: number
+  income_value: number
   target_coc_price: number
   mao_price: number
   discount_percent: number

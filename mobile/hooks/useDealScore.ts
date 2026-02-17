@@ -51,7 +51,7 @@ export interface DealScoreResult {
   dealScore: number;
   dealVerdict: string;
   discountPercent: number;
-  breakevenPrice: number;
+  incomeValue: number;  // Price where cash flow = $0 (from API breakeven_price)
   purchasePrice: number;
   listPrice: number;
   // Enhanced scoring (populated when listing context provided)
@@ -135,7 +135,7 @@ export function useDealScore(
         dealScore: data.deal_score,
         dealVerdict: data.deal_verdict,
         discountPercent: data.discount_percent,
-        breakevenPrice: data.breakeven_price,
+        incomeValue: data.income_value ?? data.breakeven_price ?? 0,
         purchasePrice: data.purchase_price,
         listPrice: data.list_price,
         grade: data.grade,

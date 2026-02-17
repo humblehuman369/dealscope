@@ -27,8 +27,8 @@ export interface IQTargetResult {
   targetPrice: number
   discountFromList: number
   discountPercent: number
-  breakeven: number
-  breakevenPercent: number
+  incomeValue: number
+  incomeValuePercent: number
   rationale: string
   highlightedMetric: string
   secondaryMetric: string
@@ -97,8 +97,8 @@ export interface TargetAssumptions {
 // These are exported for utility functions that need a fallback.
 
 /**
- * Default buy discount percentage below breakeven
- * 5% means buying at 95% of breakeven (breakeven × (1 - 0.05))
+ * Default buy discount percentage below Income Value
+ * 5% means buying at 95% of Income Value (Income Value × (1 - 0.05))
  * ensuring immediate profitability
  * 
  * @deprecated Use useDefaults() hook instead - defaults.brrrr.buy_discount_pct
@@ -134,15 +134,15 @@ export const DEFAULT_HOLDING_COSTS_PCT = 0.01
 export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
 
 // ============================================
-// BREAKEVEN ESTIMATION HELPER
+// INCOME VALUE ESTIMATION HELPER
 // ============================================
 
 /**
- * Estimate breakeven purchase price for LTR based on basic property data.
+ * Estimate Income Value purchase price for LTR based on basic property data.
  * This is a simplified calculation used for setting initial purchase price values.
  * 
- * Breakeven is where monthly cash flow = $0
- * At breakeven: NOI = Annual Debt Service
+ * Income Value is where monthly cash flow = $0
+ * At Income Value: NOI = Annual Debt Service
  * 
  * IMPORTANT: Default parameter values are fallbacks that match backend/app/core/defaults.py.
  * Callers should provide values from useDefaults() hook when available.
@@ -154,7 +154,7 @@ export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
  * @param params.interestRate - From useDefaults().defaults.financing.interest_rate
  * @param params.loanTermYears - From useDefaults().defaults.financing.loan_term_years
  */
-export function estimateLTRBreakeven(params: {
+export function estimateLTRIncomeValue(params: {
   monthlyRent: number
   propertyTaxes: number
   insurance: number
@@ -195,7 +195,7 @@ export function estimateLTRBreakeven(params: {
     return 0
   }
   
-  // At breakeven: NOI = Annual Debt Service
+  // At Income Value: NOI = Annual Debt Service
   // Annual Debt Service = Monthly Payment * 12
   // Monthly Payment = Loan Amount * (r * (1+r)^n) / ((1+r)^n - 1)
   // Loan Amount = Purchase Price * (1 - Down Payment %)
@@ -213,14 +213,14 @@ export function estimateLTRBreakeven(params: {
   
   // Solve for purchase price: NOI = PurchasePrice * LTV * MortgageConstant
   // PurchasePrice = NOI / (LTV * MortgageConstant)
-  const breakeven = noi / (ltvRatio * mortgageConstant)
+  const incomeValue = noi / (ltvRatio * mortgageConstant)
   
-  return Math.round(breakeven)
+  return Math.round(incomeValue)
 }
 
 /**
- * Calculate buy price as breakeven minus the buy discount
- * Formula: Buy Price = Breakeven × (1 - Buy Discount %)
+ * Calculate buy price as Income Value minus the buy discount
+ * Formula: Buy Price = Income Value × (1 - Buy Discount %)
  */
 export function calculateBuyPrice(params: {
   monthlyRent: number
@@ -236,15 +236,15 @@ export function calculateBuyPrice(params: {
   buyDiscountPct?: number
 }): number {
   const discountPct = params.buyDiscountPct ?? DEFAULT_BUY_DISCOUNT_PCT
-  const breakeven = estimateLTRBreakeven(params)
+  const incomeValue = estimateLTRIncomeValue(params)
   
-  if (breakeven <= 0) {
-    // Can't estimate breakeven, fall back to list price
+  if (incomeValue <= 0) {
+    // Can't estimate Income Value, fall back to list price
     return params.listPrice
   }
   
-  // Buy price = Breakeven × (1 - Buy Discount %)
-  const buyPrice = Math.round(breakeven * (1 - discountPct))
+  // Buy price = Income Value × (1 - Buy Discount %)
+  const buyPrice = Math.round(incomeValue * (1 - discountPct))
   
   // Return the buy price, but cap at list price (can't pay more than list)
   return Math.min(buyPrice, params.listPrice)
@@ -252,7 +252,7 @@ export function calculateBuyPrice(params: {
 
 /**
  * Alias for calculateBuyPrice - calculates initial purchase price
- * as 95% of estimated breakeven (5% discount by default)
+ * as 95% of estimated Income Value (5% discount by default)
  */
 export const calculateInitialPurchasePrice = calculateBuyPrice
 
@@ -273,8 +273,8 @@ export function calculateInitialRehabBudget(arv: number): number {
  * The Deal Opportunity Score considers multiple factors to determine
  * how attractive a property is as an investment opportunity:
  * 
- * 1. Deal Gap (50% weight) - ((List Price - Breakeven Price) / List Price) × 100
- *    - Breakeven is calculated from LTR strategy (market rent less property costs)
+ * 1. Deal Gap (50% weight) - ((List Price - Income Value) / List Price) × 100
+ *    - Income Value is calculated from LTR strategy (market rent less property costs)
  *    - This is the primary factor as it indicates how much discount is needed
  * 
  * 2. Availability Ranking (30% weight) - Based on listing status and motivation:
@@ -298,7 +298,7 @@ export function calculateInitialRehabBudget(arv: number): number {
  * 
  * Note: BRRRR, Fix & Flip, and Wholesale strategies require physical
  * inspection for repair estimates. The Deal Score is based on LTR
- * breakeven since it can be calculated from available market data.
+ * Income Value since it can be calculated from available market data.
  */
 
 export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
@@ -328,12 +328,12 @@ export interface AvailabilityInfo {
 }
 
 export interface DealOpportunityFactors {
-  // Deal Gap (LTR-based breakeven)
+  // Deal Gap (LTR-based Income Value)
   dealGap: {
-    breakevenPrice: number
+    incomeValue: number
     listPrice: number
-    gapAmount: number       // List Price - Breakeven
-    gapPercent: number      // ((List - Breakeven) / List) × 100
+    gapAmount: number       // List Price - Income Value
+    gapPercent: number      // ((List - Income Value) / List) × 100
     score: number           // 0-100 (lower gap = higher score)
   }
   
@@ -367,7 +367,7 @@ export interface DealOpportunityScore {
   
   // Legacy compatibility
   discountPercent: number   // Same as dealGap.gapPercent
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
 }
 
@@ -603,18 +603,18 @@ export function calculateDOMScore(params: {
 }
 
 /**
- * Calculate the Deal Gap score from breakeven and list price.
+ * Calculate the Deal Gap score from Income Value and list price.
  * 
- * Deal Gap = ((List Price - Breakeven Price) / List Price) × 100
+ * Deal Gap = ((List Price - Income Value) / List Price) × 100
  * 
- * A positive gap means the list price is above breakeven (need discount).
+ * A positive gap means the list price is above Income Value (need discount).
  * A negative gap means property is already profitable at list price.
  */
 export function calculateDealGapScore(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number
 ): {
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
   gapAmount: number
   gapPercent: number
@@ -622,7 +622,7 @@ export function calculateDealGapScore(
 } {
   if (listPrice <= 0) {
     return {
-      breakevenPrice,
+      incomeValue,
       listPrice,
       gapAmount: 0,
       gapPercent: 0,
@@ -630,7 +630,7 @@ export function calculateDealGapScore(
     }
   }
   
-  const gapAmount = listPrice - breakevenPrice
+  const gapAmount = listPrice - incomeValue
   const gapPercent = Math.max(0, (gapAmount / listPrice) * 100)
   
   // Score is inverse of gap (lower gap = higher score)
@@ -639,7 +639,7 @@ export function calculateDealGapScore(
   const score = Math.max(0, Math.min(100, Math.round(100 - (gapPercent * 100 / 45))))
   
   return {
-    breakevenPrice,
+    incomeValue,
     listPrice,
     gapAmount,
     gapPercent,
@@ -655,12 +655,12 @@ export function calculateDealGapScore(
  * - Availability: 30% (seller motivation and listing status)
  * - Days on Market: 20% (negotiation leverage context)
  * 
- * @param breakevenPrice - LTR breakeven price (from market rent less costs)
+ * @param incomeValue - LTR Income Value (from market rent less costs)
  * @param listPrice - Current list price (or estimated value if off-market)
  * @param options - Additional context for availability and DOM scoring
  */
 export function calculateDealOpportunityScore(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number,
   options?: {
     listingStatus?: string | null
@@ -681,7 +681,7 @@ export function calculateDealOpportunityScore(
   }
   
   // Calculate Deal Gap score (50% weight)
-  const dealGap = calculateDealGapScore(breakevenPrice, listPrice)
+  const dealGap = calculateDealGapScore(incomeValue, listPrice)
   
   // Calculate Availability score (30% weight)
   const availability = getAvailabilityRanking({
@@ -751,7 +751,7 @@ export function calculateDealOpportunityScore(
     },
     // Legacy compatibility
     discountPercent: dealGap.gapPercent,
-    breakevenPrice,
+    incomeValue,
     listPrice
   }
 }
@@ -761,21 +761,21 @@ export function calculateDealOpportunityScore(
  * Use calculateDealOpportunityScore for full functionality.
  */
 export function calculateOpportunityScore(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number
 ): OpportunityScore {
-  return calculateDealOpportunityScore(breakevenPrice, listPrice)
+  return calculateDealOpportunityScore(incomeValue, listPrice)
 }
 
 /**
  * Get opportunity score from IQ Target result (legacy)
- * Convenience function that extracts breakeven and list price from IQ Target
+ * Convenience function that extracts Income Value and list price from IQ Target
  */
 export function getOpportunityScoreFromTarget(
   iqTarget: IQTargetResult,
   listPrice: number
 ): OpportunityScore {
-  return calculateOpportunityScore(iqTarget.breakeven, listPrice)
+  return calculateOpportunityScore(iqTarget.incomeValue, listPrice)
 }
 
 /**
@@ -796,7 +796,7 @@ export function getDealOpportunityScoreFromTarget(
   }
 ): DealOpportunityScore {
   return calculateDealOpportunityScore(
-    iqTarget.breakeven,
+    iqTarget.incomeValue,
     listPrice,
     listingInfo
   )
@@ -977,40 +977,40 @@ export function calculateLTRTarget(a: TargetAssumptions): IQTargetResult {
   // Calculate final metrics at target price
   const finalMetrics = calculateLTRMetrics(targetPrice, a)
   
-  // Find breakeven price (where cash flow = 0) using binary search
-  let breakevenLow = listPrice * 0.30
-  let breakevenHigh = listPrice * 1.10
-  let breakeven = targetPrice // Default to target if we can't find breakeven
+  // Find Income Value (where cash flow = $0) using binary search
+  let searchLow = listPrice * 0.30
+  let searchHigh = listPrice * 1.10
+  let incomeValue = targetPrice
   
-  // Check if breakeven exists within range
-  const lowMetrics = calculateLTRMetrics(breakevenLow, a)
-  const highMetrics = calculateLTRMetrics(breakevenHigh, a)
+  // Check if Income Value exists within range
+  const lowMetrics = calculateLTRMetrics(searchLow, a)
+  const highMetrics = calculateLTRMetrics(searchHigh, a)
   
   if (lowMetrics.monthlyCashFlow > 0 && highMetrics.monthlyCashFlow < 0) {
-    // Binary search to find exact breakeven
+    // Binary search to find exact Income Value
     for (let i = 0; i < 30; i++) {
-      const mid = (breakevenLow + breakevenHigh) / 2
+      const mid = (searchLow + searchHigh) / 2
       const midMetrics = calculateLTRMetrics(mid, a)
       
       if (Math.abs(midMetrics.monthlyCashFlow) < 10) {
         // Close enough to zero
-        breakeven = mid
+        incomeValue = mid
         break
       } else if (midMetrics.monthlyCashFlow > 0) {
         // Still positive, go higher (higher price = lower cash flow)
-        breakevenLow = mid
+        searchLow = mid
       } else {
         // Negative, go lower
-        breakevenHigh = mid
+        searchHigh = mid
       }
-      breakeven = mid
+      incomeValue = mid
     }
   } else if (lowMetrics.monthlyCashFlow <= 0) {
-    // Even at 30% of list, cash flow is negative - no viable breakeven
-    breakeven = breakevenLow
+    // Even at 30% of list, cash flow is negative - no viable Income Value
+    incomeValue = searchLow
   } else {
-    // Cash flow is positive even at 110% of list - breakeven is above list
-    breakeven = breakevenHigh
+    // Cash flow is positive even at 110% of list - Income Value is above list
+    incomeValue = searchHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -1020,8 +1020,8 @@ export function calculateLTRTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(breakeven / 1000) * 1000,
-    breakevenPercent: (breakeven / listPrice) * 100,
+    incomeValue: Math.round(incomeValue / 1000) * 1000,
+    incomeValuePercent: (incomeValue / listPrice) * 100,
     rationale: 'At this price you achieve positive',
     highlightedMetric: `${formatCurrency(finalMetrics.monthlyCashFlow)}/mo cash flow`,
     secondaryMetric: formatPercent(finalMetrics.cashOnCash),
@@ -1060,33 +1060,33 @@ export function calculateSTRTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateSTRMetrics(targetPrice, a)
   
-  // Find breakeven price (where cash flow = 0) using binary search
-  let breakevenLow = listPrice * 0.30
-  let breakevenHigh = listPrice * 1.10
-  let breakeven = targetPrice
+  // Find Income Value (where cash flow = $0) using binary search
+  let searchLow = listPrice * 0.30
+  let searchHigh = listPrice * 1.10
+  let incomeValue = targetPrice
   
-  const lowMetrics = calculateSTRMetrics(breakevenLow, a)
-  const highMetrics = calculateSTRMetrics(breakevenHigh, a)
+  const lowMetrics = calculateSTRMetrics(searchLow, a)
+  const highMetrics = calculateSTRMetrics(searchHigh, a)
   
   if (lowMetrics.monthlyCashFlow > 0 && highMetrics.monthlyCashFlow < 0) {
     for (let i = 0; i < 30; i++) {
-      const mid = (breakevenLow + breakevenHigh) / 2
+      const mid = (searchLow + searchHigh) / 2
       const midMetrics = calculateSTRMetrics(mid, a)
       
       if (Math.abs(midMetrics.monthlyCashFlow) < 10) {
-        breakeven = mid
+        incomeValue = mid
         break
       } else if (midMetrics.monthlyCashFlow > 0) {
-        breakevenLow = mid
+        searchLow = mid
       } else {
-        breakevenHigh = mid
+        searchHigh = mid
       }
-      breakeven = mid
+      incomeValue = mid
     }
   } else if (lowMetrics.monthlyCashFlow <= 0) {
-    breakeven = breakevenLow
+    incomeValue = searchLow
   } else {
-    breakeven = breakevenHigh
+    incomeValue = searchHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -1096,8 +1096,8 @@ export function calculateSTRTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(breakeven / 1000) * 1000,
-    breakevenPercent: (breakeven / listPrice) * 100,
+    incomeValue: Math.round(incomeValue / 1000) * 1000,
+    incomeValuePercent: (incomeValue / listPrice) * 100,
     rationale: 'At this price you achieve strong STR',
     highlightedMetric: `${formatCurrency(finalMetrics.monthlyCashFlow)}/mo cash flow`,
     secondaryMetric: formatPercent(finalMetrics.cashOnCash),
@@ -1138,35 +1138,35 @@ export function calculateBRRRRTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateBRRRRMetrics(targetPrice, a)
   
-  // Breakeven is where we get 80% cash recovery using binary search
-  let breakevenLow = listPrice * 0.30
-  let breakevenHigh = listPrice * 0.90
-  let breakeven = targetPrice
+  // Income Value is where we get 80% cash recovery using binary search
+  let searchLow = listPrice * 0.30
+  let searchHigh = listPrice * 0.90
+  let incomeValue = targetPrice
   
-  const lowMetrics = calculateBRRRRMetrics(breakevenLow, a)
-  const highMetrics = calculateBRRRRMetrics(breakevenHigh, a)
+  const lowMetrics = calculateBRRRRMetrics(searchLow, a)
+  const highMetrics = calculateBRRRRMetrics(searchHigh, a)
   
-  // Target 80% recovery as breakeven
+  // Target 80% recovery as Income Value
   const targetRecovery = 80
   if (lowMetrics.cashRecoveryPercent > targetRecovery && highMetrics.cashRecoveryPercent < targetRecovery) {
     for (let i = 0; i < 30; i++) {
-      const mid = (breakevenLow + breakevenHigh) / 2
+      const mid = (searchLow + searchHigh) / 2
       const midMetrics = calculateBRRRRMetrics(mid, a)
       
       if (Math.abs(midMetrics.cashRecoveryPercent - targetRecovery) < 2) {
-        breakeven = mid
+        incomeValue = mid
         break
       } else if (midMetrics.cashRecoveryPercent > targetRecovery) {
-        breakevenLow = mid
+        searchLow = mid
       } else {
-        breakevenHigh = mid
+        searchHigh = mid
       }
-      breakeven = mid
+      incomeValue = mid
     }
   } else if (lowMetrics.cashRecoveryPercent <= targetRecovery) {
-    breakeven = breakevenLow
+    incomeValue = searchLow
   } else {
-    breakeven = breakevenHigh
+    incomeValue = searchHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -1175,8 +1175,8 @@ export function calculateBRRRRTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(breakeven / 1000) * 1000,
-    breakevenPercent: (breakeven / listPrice) * 100,
+    incomeValue: Math.round(incomeValue / 1000) * 1000,
+    incomeValuePercent: (incomeValue / listPrice) * 100,
     rationale: 'At this price you recover',
     highlightedMetric: `${Math.round(finalMetrics.cashRecoveryPercent)}% of your cash`,
     secondaryMetric: `${formatCurrency(finalMetrics.equityCreated)} equity`,
@@ -1222,33 +1222,33 @@ export function calculateFlipTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateFlipMetrics(targetPrice, a)
   
-  // Breakeven is where profit = 0 using binary search
-  let breakevenLow = listPrice * 0.30
-  let breakevenHigh = listPrice * 1.10
-  let breakeven = targetPrice
+  // Income Value is where profit = $0 using binary search
+  let searchLow = listPrice * 0.30
+  let searchHigh = listPrice * 1.10
+  let incomeValue = targetPrice
   
-  const lowMetrics = calculateFlipMetrics(breakevenLow, a)
-  const highMetrics = calculateFlipMetrics(breakevenHigh, a)
+  const lowMetrics = calculateFlipMetrics(searchLow, a)
+  const highMetrics = calculateFlipMetrics(searchHigh, a)
   
   if (lowMetrics.netProfit > 0 && highMetrics.netProfit < 0) {
     for (let i = 0; i < 30; i++) {
-      const mid = (breakevenLow + breakevenHigh) / 2
+      const mid = (searchLow + searchHigh) / 2
       const midMetrics = calculateFlipMetrics(mid, a)
       
       if (Math.abs(midMetrics.netProfit) < 1000) {
-        breakeven = mid
+        incomeValue = mid
         break
       } else if (midMetrics.netProfit > 0) {
-        breakevenLow = mid
+        searchLow = mid
       } else {
-        breakevenHigh = mid
+        searchHigh = mid
       }
-      breakeven = mid
+      incomeValue = mid
     }
   } else if (lowMetrics.netProfit <= 0) {
-    breakeven = breakevenLow
+    incomeValue = searchLow
   } else {
-    breakeven = breakevenHigh
+    incomeValue = searchHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -1258,8 +1258,8 @@ export function calculateFlipTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(breakeven / 1000) * 1000,
-    breakevenPercent: (breakeven / listPrice) * 100,
+    incomeValue: Math.round(incomeValue / 1000) * 1000,
+    incomeValuePercent: (incomeValue / listPrice) * 100,
     rationale: 'At this price you achieve',
     highlightedMetric: formatCurrency(finalMetrics.netProfit) + ' profit',
     secondaryMetric: formatPercent(finalMetrics.roi) + ' ROI',
@@ -1302,35 +1302,35 @@ export function calculateHouseHackTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateHouseHackMetrics(targetPrice, a)
   
-  // Breakeven is where housing cost equals typical rent using binary search
+  // Income Value is where housing cost equals typical rent using binary search
   const typicalRent = a.monthlyRent / a.totalBedrooms * 1.2
-  let breakevenLow = listPrice * 0.30
-  let breakevenHigh = listPrice * 1.10
-  let breakeven = targetPrice
+  let searchLow = listPrice * 0.30
+  let searchHigh = listPrice * 1.10
+  let incomeValue = targetPrice
   
-  const lowMetrics = calculateHouseHackMetrics(breakevenLow, a)
-  const highMetrics = calculateHouseHackMetrics(breakevenHigh, a)
+  const lowMetrics = calculateHouseHackMetrics(searchLow, a)
+  const highMetrics = calculateHouseHackMetrics(searchHigh, a)
   
-  // For house hack, breakeven is where effective cost = typical rent
+  // For house hack, Income Value is where effective cost = typical rent
   if (lowMetrics.effectiveHousingCost < typicalRent && highMetrics.effectiveHousingCost > typicalRent) {
     for (let i = 0; i < 30; i++) {
-      const mid = (breakevenLow + breakevenHigh) / 2
+      const mid = (searchLow + searchHigh) / 2
       const midMetrics = calculateHouseHackMetrics(mid, a)
       
       if (Math.abs(midMetrics.effectiveHousingCost - typicalRent) < 50) {
-        breakeven = mid
+        incomeValue = mid
         break
       } else if (midMetrics.effectiveHousingCost < typicalRent) {
-        breakevenLow = mid
+        searchLow = mid
       } else {
-        breakevenHigh = mid
+        searchHigh = mid
       }
-      breakeven = mid
+      incomeValue = mid
     }
   } else if (lowMetrics.effectiveHousingCost >= typicalRent) {
-    breakeven = breakevenLow
+    incomeValue = searchLow
   } else {
-    breakeven = breakevenHigh
+    incomeValue = searchHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.abs(Math.round(v)).toLocaleString()}`
@@ -1341,8 +1341,8 @@ export function calculateHouseHackTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(breakeven / 1000) * 1000,
-    breakevenPercent: (breakeven / listPrice) * 100,
+    incomeValue: Math.round(incomeValue / 1000) * 1000,
+    incomeValuePercent: (incomeValue / listPrice) * 100,
     rationale: isFreeHousing ? 'At this price you live for' : 'At this price your housing cost is only',
     highlightedMetric: isFreeHousing ? 'FREE' : `${formatCurrency(finalMetrics.effectiveHousingCost)}/mo`,
     secondaryMetric: `Save ${formatCurrency(finalMetrics.monthlySavings)}/mo`,
@@ -1378,8 +1378,8 @@ export function calculateWholesaleTarget(a: TargetAssumptions): IQTargetResult {
     targetPrice: Math.round(targetPrice / 1000) * 1000,
     discountFromList: listPrice - targetPrice,
     discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
-    breakeven: Math.round(mao / 1000) * 1000, // MAO is breakeven for wholesale
-    breakevenPercent: (mao / listPrice) * 100,
+    incomeValue: Math.round(mao / 1000) * 1000, // MAO is Income Value for wholesale
+    incomeValuePercent: (mao / listPrice) * 100,
     rationale: 'At this price you earn',
     highlightedMetric: formatCurrency(finalMetrics.assignmentFee) + ' assignment fee',
     secondaryMetric: `${Math.round(finalMetrics.roiOnEMD)}% ROI on EMD`,

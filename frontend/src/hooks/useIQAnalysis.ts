@@ -32,7 +32,8 @@ interface VerdictResponse {
   deal_verdict?: string; dealVerdict?: string
   discount_percent?: number; discountPercent?: number
   purchase_price?: number; purchasePrice?: number
-  breakeven_price?: number; breakevenPrice?: number
+  income_value?: number; incomeValue?: number
+  breakeven_price?: number; breakevenPrice?: number  // deprecated, use income_value
   list_price?: number; listPrice?: number
   strategies: Array<{
     id: string
@@ -70,7 +71,7 @@ function mapVerdictToIQTarget(
   )
 
   const targetPrice = verdict.purchase_price ?? verdict.purchasePrice ?? 0
-  const breakevenPrice = verdict.breakeven_price ?? verdict.breakevenPrice ?? 0
+  const incomeValue = verdict.income_value ?? verdict.incomeValue ?? verdict.breakeven_price ?? verdict.breakevenPrice ?? 0
   const listPrice = assumptions.listPrice
   const discount = listPrice - targetPrice
   const discountPct = listPrice > 0 ? discount / listPrice : 0
@@ -79,10 +80,10 @@ function mapVerdictToIQTarget(
     targetPrice,
     discountFromList: discount,
     discountPercent: discountPct * 100,
-    breakeven: breakevenPrice,
-    breakevenPercent:
+    incomeValue,
+    incomeValuePercent:
       listPrice > 0
-        ? ((listPrice - breakevenPrice) / listPrice) * 100
+        ? ((listPrice - incomeValue) / listPrice) * 100
         : 0,
     rationale: `Buy at $${Math.round(targetPrice).toLocaleString()} for optimal returns`,
     highlightedMetric: String(strat?.metric_value ?? strat?.metricValue ?? ''),

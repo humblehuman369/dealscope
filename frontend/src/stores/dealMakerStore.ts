@@ -69,7 +69,8 @@ export interface CachedMetrics {
   equity: number | null
   equity_after_rehab: number | null
   deal_gap_pct: number | null
-  breakeven_price: number | null
+  income_value: number | null  // Max price where cash flow = $0 (Income Value)
+  breakeven_price?: number | null  // deprecated, use income_value
   calculated_at?: string
 }
 
@@ -514,12 +515,12 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     
     switch (activePriceTarget) {
       case 'breakeven':
-        return metrics.breakeven_price || 0
+        return metrics.income_value ?? metrics.breakeven_price ?? 0
       case 'targetBuy':
         return record.buy_price || 0
       case 'wholesale':
-        // Wholesale is typically 70% of breakeven
-        return Math.round((metrics.breakeven_price || 0) * 0.70)
+        // Wholesale is typically 70% of Income Value
+        return Math.round((metrics.income_value || 0) * 0.70)
       default:
         return record.buy_price || 0
     }
@@ -589,7 +590,7 @@ export const useDealMakerDerived = () => {
     
     // Deal Analysis
     dealGapPct: safeNumber(metrics?.deal_gap_pct),
-    breakevenPrice: safeNumber(metrics?.breakeven_price),
+    incomeValue: safeNumber(metrics?.income_value ?? metrics?.breakeven_price),
     
     // Has record loaded?
     hasRecord: record !== null,

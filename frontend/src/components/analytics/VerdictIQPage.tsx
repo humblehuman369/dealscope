@@ -26,7 +26,7 @@ interface VerdictData {
 }
 
 interface PricingData {
-  breakeven: number;
+  incomeValue: number;
   targetBuy: number;
   wholesale: number;
   marketEstimate: number;
@@ -102,13 +102,13 @@ export function VerdictIQPage({
     const noi = annualRent * 0.65; // After expenses
     const targetCapRate = 0.085; // 8.5% target
     
-    const breakeven = Math.round(noi / 0.07); // 7% cap rate breakeven
-    const targetBuy = Math.round(breakeven * 0.95); // 5% profit margin
+    const incomeValue = Math.round(noi / 0.07); // 7% cap rate Income Value
+    const targetBuy = Math.round(incomeValue * 0.95); // 5% profit margin
     const wholesale = Math.round(marketEstimate * 0.66); // 34% discount
-    const discountNeeded = marketEstimate - breakeven;
+    const discountNeeded = marketEstimate - incomeValue;
     
     return {
-      breakeven,
+      incomeValue,
       targetBuy,
       wholesale,
       marketEstimate,
@@ -118,7 +118,7 @@ export function VerdictIQPage({
 
   // Calculate verdict data
   const verdict = useMemo<VerdictData>(() => {
-    const dealGapPercent = ((pricing.breakeven - pricing.marketEstimate) / pricing.marketEstimate) * 100;
+    const dealGapPercent = ((pricing.incomeValue - pricing.marketEstimate) / pricing.marketEstimate) * 100;
     const score = dealGapPercent >= -10 ? 89 : dealGapPercent >= -20 ? 65 : 45;
     
     return {
@@ -318,9 +318,9 @@ export function VerdictIQPage({
           </div>
           <div className="grid grid-cols-3 gap-2 mb-3">
             <PriceCard 
-              label="Breakeven" 
-              value={pricing.breakeven} 
-              desc="Max price for $0 cashflow (LTR model)" 
+              label="Income Value" 
+              value={pricing.incomeValue} 
+              desc="Price where income covers all costs" 
             />
             <PriceCard 
               label="Target Buy" 
@@ -360,7 +360,7 @@ export function VerdictIQPage({
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(pricing.breakeven)}</span>
+              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(pricing.incomeValue)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Discount needed</span>

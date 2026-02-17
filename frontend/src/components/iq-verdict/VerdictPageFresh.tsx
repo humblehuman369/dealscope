@@ -599,7 +599,7 @@ function InvestmentAnalysisSection({
   isExporting?: boolean
 }) {
   const selectedLabel = selectedPriceCard === 'target' ? 'TARGET BUY'
-    : selectedPriceCard === 'breakeven' ? 'BREAKEVEN' : 'WHOLESALE'
+    : selectedPriceCard === 'breakeven' ? 'INCOME VALUE' : 'WHOLESALE'
 
   return (
     <div className="px-4 pt-0 pb-8">

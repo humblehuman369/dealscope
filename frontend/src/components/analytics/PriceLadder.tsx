@@ -84,10 +84,10 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
             </div>
           )}
 
-          {/* Breakeven - Middle */}
+          {/* Income Value - Middle */}
           {breakevenRung && (
             <div>
-              <div className="text-xs font-bold text-orange-500">Breakeven</div>
+              <div className="text-xs font-bold text-orange-500">Income Value</div>
               <div className="text-[9px] text-slate-500 dark:text-white/50">$0 Cash Flow</div>
               <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(breakevenRung.price)}</div>
               <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(breakevenRung.percentOfList)}%</div>
@@ -116,9 +116,9 @@ export function generatePriceLadder(
   targetPrice: number,
   targetName: string,
   targetDescription: string,
-  breakevenPrice: number,
-  breakevenName: string = 'Breakeven',
-  breakevenDescription: string = '$0 monthly cash flow',
+  incomeValue: number,
+  incomeValueName: string = 'Income Value',
+  incomeValueDescription: string = '$0 monthly cash flow',
   openingOfferPercent: number = 0.70,
   priceLabel: string = 'List Price'
 ): PriceRung[] {
@@ -128,7 +128,7 @@ export function generatePriceLadder(
   const rungs: PriceRung[] = [
     { type: 'list', name: priceLabel, description: 'Current asking price', price: listPrice, percentOfList: 100 },
     { type: 'ninety', name: '90% of List', description: 'Common investor threshold', price: ninetyPercent, percentOfList: 90 },
-    { type: 'breakeven', name: breakevenName, description: breakevenDescription, price: breakevenPrice, percentOfList: (breakevenPrice / listPrice) * 100 },
+    { type: 'breakeven', name: incomeValueName, description: incomeValueDescription, price: incomeValue, percentOfList: (incomeValue / listPrice) * 100 },
     { type: 'target', name: `🎯 ${targetName}`, description: targetDescription, price: targetPrice, percentOfList: (targetPrice / listPrice) * 100, isHighlighted: true },
     { type: 'offer', name: 'Offer', description: 'Initial offer starting point', price: openingOffer, percentOfList: openingOfferPercent * 100 }
   ]

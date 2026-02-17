@@ -32,8 +32,8 @@ describe('priceUtils', () => {
   })
 
   describe('getPriceTargetLabel', () => {
-    it('returns "Breakeven" for breakeven target', () => {
-      expect(getPriceTargetLabel('breakeven')).toBe('Breakeven')
+    it('returns "Income Value" for breakeven target', () => {
+      expect(getPriceTargetLabel('breakeven')).toBe('Income Value')
     })
 
     it('returns "Target Buy" for targetBuy target', () => {

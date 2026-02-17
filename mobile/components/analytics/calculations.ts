@@ -240,7 +240,7 @@ import { OpportunityGrade } from './types';
  * Calculate Deal Score based on Investment Opportunity
  * 
  * The score is based on how much discount from list price is needed
- * to reach breakeven. Lower discount = better opportunity.
+ * to reach income value. Lower discount = better opportunity.
  * 
  * Thresholds:
  * - 0-5% discount needed = Strong Opportunity (A+)
@@ -255,7 +255,7 @@ export function calculateDealScore(
   listPrice: number,
   metrics?: CalculatedMetrics
 ): DealScore {
-  // Calculate discount percentage needed to reach breakeven
+  // Calculate discount percentage needed to reach income value
   const discountPercent = listPrice > 0 
     ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
     : 0;
@@ -291,7 +291,7 @@ export function calculateDealScore(
     verdict,
     color, 
     discountPercent,
-    breakevenPrice,
+    incomeValue: breakevenPrice,
     listPrice,
     breakdown 
   };
@@ -299,24 +299,24 @@ export function calculateDealScore(
 
 /**
  * Legacy function for backwards compatibility
- * Uses metrics to calculate breakeven internally
+ * Uses metrics to calculate income value internally
  */
 export function calculateDealScoreFromMetrics(
   metrics: CalculatedMetrics,
   inputs: AnalyticsInputs
 ): DealScore {
-  const breakevenPrice = calculateBreakevenPrice(inputs);
-  return calculateDealScore(breakevenPrice, inputs.purchasePrice, metrics);
+  const incomeValue = calculateIncomeValue(inputs);
+  return calculateDealScore(incomeValue, inputs.purchasePrice, metrics);
 }
 
 /**
- * Calculate breakeven price (where monthly cash flow = 0)
+ * Calculate income value (where monthly cash flow = 0)
  */
-export function calculateBreakevenPrice(inputs: AnalyticsInputs): number {
+export function calculateIncomeValue(inputs: AnalyticsInputs): number {
   const listPrice = inputs.purchasePrice;
   let low = listPrice * 0.30;
   let high = listPrice * 1.10;
-  let breakeven = listPrice;
+  let incomeValue = listPrice;
   
   for (let i = 0; i < 30; i++) {
     const mid = (low + high) / 2;
@@ -324,17 +324,17 @@ export function calculateBreakevenPrice(inputs: AnalyticsInputs): number {
     const testMetrics = calculateMetrics(testInputs);
     
     if (Math.abs(testMetrics.monthlyCashFlow) < 10) {
-      breakeven = mid;
+      incomeValue = mid;
       break;
     } else if (testMetrics.monthlyCashFlow > 0) {
       low = mid;
     } else {
       high = mid;
     }
-    breakeven = mid;
+    incomeValue = mid;
   }
   
-  return Math.round(breakeven / 1000) * 1000;
+  return Math.round(incomeValue / 1000) * 1000;
 }
 
 /**

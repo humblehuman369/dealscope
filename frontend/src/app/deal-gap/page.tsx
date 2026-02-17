@@ -52,9 +52,9 @@ export default function DealGapPage() {
     insurance,
   })
 
-  // Breakeven price from backend or estimate
-  const breakevenPrice = useMemo(() => {
-    if (result?.breakevenPrice) return result.breakevenPrice
+  // Income value from backend or estimate (price where cash flow = $0)
+  const incomeValue = useMemo(() => {
+    if (result?.incomeValue) return result.incomeValue
     // Fallback estimate: rough LTR breakeven calculation
     // This is just for UI display while loading - actual calc is on backend
     const annualRent = monthlyRent * 12 * 0.95 // 5% vacancy
@@ -62,7 +62,7 @@ export default function DealGapPage() {
     const noi = annualRent - annualExpenses
     const capRate = 0.06 // Assume 6% cap rate
     return noi > 0 ? Math.round(noi / capRate) : listPrice * 0.85
-  }, [result?.breakevenPrice, monthlyRent, propertyTaxes, insurance, listPrice])
+  }, [result?.incomeValue, monthlyRent, propertyTaxes, insurance, listPrice])
 
   // Handle input blur - parse and update actual value
   const handleListPriceBlur = () => {
@@ -111,7 +111,7 @@ export default function DealGapPage() {
             </Link>
             <div>
               <h1 className="text-lg font-black text-slate-900 dark:text-white">Deal Gap Analysis</h1>
-              <p className="text-xs text-slate-500 dark:text-white/50">Buy Price vs Breakeven Visualization</p>
+              <p className="text-xs text-slate-500 dark:text-white/50">Buy Price vs Income Value Visualization</p>
             </div>
           </div>
           <Link 
@@ -189,12 +189,12 @@ export default function DealGapPage() {
             </div>
           </div>
 
-          {/* Calculated Breakeven Display */}
+          {/* Calculated Income Value Display */}
           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-orange-500" />
               <span className="text-sm font-semibold text-slate-600 dark:text-white/70">
-                Calculated Breakeven:
+                Calculated Income Value:
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ export default function DealGapPage() {
                 <div className="w-4 h-4 border-2 border-slate-300 border-t-teal-500 rounded-full animate-spin" />
               ) : (
                 <span className="text-lg font-black text-orange-500">
-                  {formatUSD(breakevenPrice)}
+                  {formatUSD(incomeValue)}
                 </span>
               )}
             </div>
@@ -212,7 +212,7 @@ export default function DealGapPage() {
         {/* Deal Gap Chart */}
         <section className="mb-6">
           <DealGapChart
-            breakeven={breakevenPrice}
+            incomeValue={incomeValue}
             listPrice={listPrice}
             initialBuyPrice={buyPrice}
             thresholdPct={10}
@@ -313,7 +313,7 @@ export default function DealGapPage() {
           </h3>
           <div className="space-y-2 text-sm text-slate-600 dark:text-white/70">
             <p>
-              <strong className="text-slate-800 dark:text-white">Breakeven Price</strong> is where your monthly cash flow = $0. 
+              <strong className="text-slate-800 dark:text-white">Income Value</strong> is where your monthly cash flow = $0. 
               It&apos;s calculated from rent minus all expenses including mortgage payment.
             </p>
             <p>
@@ -323,7 +323,7 @@ export default function DealGapPage() {
             <p>
               <strong className="text-slate-800 dark:text-white">The Ladder</strong> visualizes your position: 
               <span className="text-red-500 font-semibold"> Red = Loss</span>, 
-              <span className="text-yellow-500 font-semibold"> Yellow = Breakeven</span>, 
+              <span className="text-yellow-500 font-semibold"> Yellow = Income Value</span>, 
               <span className="text-green-500 font-semibold"> Green = Profit</span>, 
               <span className="text-sky-500 font-semibold"> Blue = Deep Value</span>.
             </p>

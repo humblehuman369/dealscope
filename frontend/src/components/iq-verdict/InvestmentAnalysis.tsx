@@ -36,7 +36,7 @@ interface Strategy {
 }
 
 interface InvestmentAnalysisProps {
-  breakevenPrice: number
+  incomeValue: number
   targetBuyPrice: number
   wholesalePrice: number
   isOffMarket: boolean
@@ -68,7 +68,7 @@ const DEFAULT_STRATEGIES: Strategy[] = [
 ]
 
 export function InvestmentAnalysis({
-  breakevenPrice,
+  incomeValue,
   targetBuyPrice,
   wholesalePrice,
   isOffMarket,
@@ -297,13 +297,13 @@ export function InvestmentAnalysis({
       {/* IQ Price Selector */}
       <div style={{ margin: '0 16px' }}>
         <div className="dg-iq-selector">
-          {/* Breakeven */}
+          {/* Income Value */}
           <div 
             className={`dg-iq-option ${activePriceTarget === 'breakeven' ? 'selected' : ''}`}
             onClick={() => handlePriceCardClick('breakeven')}
           >
             <div className="dg-iq-option-label">
-              BREAKEVEN 
+              INCOME VALUE 
               <span style={{
                 width: '12px',
                 height: '12px',
@@ -316,7 +316,7 @@ export function InvestmentAnalysis({
                 fontWeight: 700,
               }}>i</span>
             </div>
-            <div className="dg-iq-option-value">{formatPrice(breakevenPrice)}</div>
+            <div className="dg-iq-option-value">{formatPrice(incomeValue)}</div>
             <div className="dg-iq-option-sub">Max price for $0 cashflow</div>
           </div>
           

@@ -40,7 +40,7 @@ export interface PriceIQCard {
 
 export const priceIQData: PriceIQCard[] = [
   {
-    name: 'Breakeven',
+    name: 'Income Value',
     suffix: '',
     value: '$807,087',
     description: 'Max Price for\n$0 Cashflow',

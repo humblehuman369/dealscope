@@ -427,7 +427,7 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
         <ul className="text-[13px] font-bold text-amber-700 dark:text-amber-300 space-y-0.5">
           <li>• A 1% rate increase reduces cash flow by ~${Math.abs(analysis.interestRate[4].cashFlow - analysis.interestRate[3].cashFlow).toFixed(0)}/mo</li>
           <li>• A 10% rent increase adds ~${Math.abs(analysis.rent[5].cashFlow - analysis.rent[3].cashFlow).toFixed(0)}/mo to cash flow</li>
-          <li>• Break-even vacancy: ~{(analysis.vacancy.find(v => v.cashFlow <= 0)?.value ?? 0.15 * 100).toFixed(0)}%</li>
+          <li>• Cash-flow-zero vacancy: ~{(analysis.vacancy.find(v => v.cashFlow <= 0)?.value ?? 0.15 * 100).toFixed(0)}%</li>
         </ul>
       </div>
     </div>

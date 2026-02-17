@@ -144,18 +144,18 @@ export function VerdictIQPageNew({
     const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
     const grm = monthlyRent > 0 ? buyPrice / (monthlyRent * 12) : 0
     
-    // Breakeven price
+    // Income value (price where cash flow = $0)
     const mortgageConstant = loanAmount > 0 
       ? ((monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)) * 12 * (1 - downPaymentPct)
       : 0
-    const breakevenPrice = mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : buyPrice * 1.1
+    const incomeValue = mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : buyPrice * 1.1
     
-    const wholesalePrice = Math.round(breakevenPrice * 0.70)
+    const wholesalePrice = Math.round(incomeValue * 0.70)
     
     return {
       buyPrice,
-      breakevenPrice,
-      targetBuyPrice: Math.round(breakevenPrice * 0.95),
+      incomeValue,
+      targetBuyPrice: Math.round(incomeValue * 0.95),
       wholesalePrice,
       monthlyRent,
       annualRent,
@@ -186,7 +186,7 @@ export function VerdictIQPageNew({
   // Calculate deal gap
   const marketValue = property.zestimate || property.price
   const dealGap = marketValue > 0 
-    ? ((marketValue - pricing.breakevenPrice) / marketValue) * 100 
+    ? ((marketValue - pricing.incomeValue) / marketValue) * 100 
     : 0
 
   // Verdict info
@@ -298,7 +298,7 @@ export function VerdictIQPageNew({
         <InvestmentAnalysisNew
           downPaymentPct={pricing.downPaymentPct}
           interestRate={pricing.interestRate}
-          breakevenPrice={pricing.breakevenPrice}
+          incomeValue={pricing.incomeValue}
           targetBuyPrice={pricing.targetBuyPrice}
           wholesalePrice={pricing.wholesalePrice}
           capRate={pricing.capRate}

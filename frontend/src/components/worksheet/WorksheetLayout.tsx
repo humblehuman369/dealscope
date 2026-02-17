@@ -37,7 +37,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
     propertyData?.property_data_snapshot?.listPrice ??
     property.property_data_snapshot?.listPrice ??
     assumptions.purchasePrice
-  const breakevenPrice = worksheetMetrics?.mao ?? assumptions.purchasePrice
+  const incomeValue = worksheetMetrics?.mao ?? assumptions.purchasePrice
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -95,7 +95,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
               <ProfitFinder
                 purchasePrice={assumptions.purchasePrice}
                 listPrice={listPrice}
-                breakevenPrice={breakevenPrice}
+                incomeValue={incomeValue}
                 monthlyCashFlow={derived.monthlyCashFlow}
                 buyLabel="Buy"
                 listLabel="List"

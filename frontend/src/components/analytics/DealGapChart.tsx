@@ -9,12 +9,12 @@ import { getPriceLabel } from '@/lib/priceUtils'
  * DealGapChart Component
  * 
  * A visual "price ladder" showing the relationship between List Price, 
- * Breakeven, and Buy Price with interactive brackets showing the deal gap.
+ * Income Value, and Buy Price with interactive brackets showing the deal gap.
  * 
  * Features:
  * - Vertical gradient ladder (red=loss → green=profit → blue=deep value)
  * - Deal Gap bracket showing discount from list
- * - Delta brackets showing position vs breakeven
+ * - Delta brackets showing position vs Income Value
  * - Interactive slider for what-if analysis
  * - Zone indicators (Loss Zone, Profit Zone, Deep Value, etc.)
  */
@@ -53,7 +53,7 @@ function getZoneBadgeStyles(zone: DealZoneLabel): string {
       return 'bg-sky-500/20 text-sky-600 border-sky-500/30'
     case 'Profit Zone':
       return 'bg-green-500/20 text-green-600 border-green-500/30'
-    case 'Breakeven / Negotiate':
+    case 'Income Value / Negotiate':
       return 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30'
     case 'High Risk':
       return 'bg-orange-500/20 text-orange-600 border-orange-500/30'
@@ -102,7 +102,7 @@ function Chip({ label, value, sub, accent }: ChipProps) {
 }
 
 export function DealGapChart({
-  breakeven,
+  incomeValue,
   listPrice,
   initialBuyPrice,
   thresholdPct = 10,
@@ -114,62 +114,62 @@ export function DealGapChart({
   // Get dynamic price label
   const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
 
-  // Use the actual buy price from props (default to 90% of breakeven if not provided)
+  // Use the actual buy price from props (default to 90% of Income Value if not provided)
   const buyPrice = useMemo(() => {
-    return initialBuyPrice ?? Math.round(breakeven * 0.9)
-  }, [breakeven, initialBuyPrice])
+    return initialBuyPrice ?? Math.round(incomeValue * 0.9)
+  }, [incomeValue, initialBuyPrice])
 
   // Get deal gap data with actual worksheet values
   const { data } = useDealGap({
     listPrice,
-    breakevenPrice: breakeven,
+    incomeValue,
     buyPrice,
   })
 
   // Determine if scale needs expansion (when list and buy are within 5% of each other)
   const needsExpandedScale = useMemo(() => {
-    if (breakeven <= 0) return false
-    const listPct = Math.abs((listPrice - breakeven) / breakeven)
-    const buyPct = Math.abs((buyPrice - breakeven) / breakeven)
+    if (incomeValue <= 0) return false
+    const listPct = Math.abs((listPrice - incomeValue) / incomeValue)
+    const buyPct = Math.abs((buyPrice - incomeValue) / incomeValue)
     const diff = Math.abs(listPct - buyPct)
     return diff < 0.05 // Within 5%
-  }, [listPrice, buyPrice, breakeven])
+  }, [listPrice, buyPrice, incomeValue])
 
   // Scale factor: normal is 0.40, expanded is 0.15 (spreads markers much further apart)
   const scaleFactor = needsExpandedScale ? 0.15 : 0.40
 
   // Calculate dynamic ladder positions based on actual price relationships
   // The ladder range spans from highest price to lowest price
-  // Breakeven is always at 0.50 (center)
-  // Other positions are calculated relative to breakeven
-  const bePos = 0.50 // Breakeven always at center
+  // Income Value is always at 0.50 (center)
+  // Other positions are calculated relative to Income Value
+  const ivPos = 0.50 // Income Value always at center
   
-  // Calculate list price position relative to breakeven
-  // If list > breakeven: position above center (< 0.50)
-  // If list < breakeven: position below center (> 0.50)
+  // Calculate list price position relative to Income Value
+  // If list > Income Value: position above center (< 0.50)
+  // If list < Income Value: position below center (> 0.50)
   const listPosOnLadder = useMemo(() => {
-    if (breakeven <= 0) return 0.15
-    const listPct = (listPrice - breakeven) / breakeven // % difference from breakeven
+    if (incomeValue <= 0) return 0.15
+    const listPct = (listPrice - incomeValue) / incomeValue // % difference from Income Value
     // Map to ladder using dynamic scale factor
     const pos = 0.50 - (listPct / scaleFactor) * 0.40
     return Math.max(0.05, Math.min(0.95, pos))
-  }, [listPrice, breakeven, scaleFactor])
+  }, [listPrice, incomeValue, scaleFactor])
   
-  // Calculate buy price position relative to breakeven
+  // Calculate buy price position relative to Income Value
   const buyPosOnLadder = useMemo(() => {
-    if (breakeven <= 0) return 0.65
-    const buyPct = (buyPrice - breakeven) / breakeven // % difference from breakeven
+    if (incomeValue <= 0) return 0.65
+    const buyPct = (buyPrice - incomeValue) / incomeValue // % difference from Income Value
     // Map to ladder using dynamic scale factor
     const pos = 0.50 - (buyPct / scaleFactor) * 0.40
     return Math.max(0.05, Math.min(0.95, pos))
-  }, [buyPrice, breakeven, scaleFactor])
+  }, [buyPrice, incomeValue, scaleFactor])
 
   // Detect if labels would overlap (positions within 8% of each other on ladder)
   const labelsOverlap = Math.abs(listPosOnLadder - buyPosOnLadder) < 0.08
 
   // Colors for each position
   const listAccent = colorForPosition(listPosOnLadder)
-  const beAccent = colorForPosition(bePos)
+  const ivAccent = colorForPosition(ivPos)
   const buyAccent = colorForPosition(buyPosOnLadder)
 
   // Deal gap text
@@ -201,7 +201,7 @@ export function DealGapChart({
               Price Ladder
             </div>
             <div className="text-[11px] text-slate-500 dark:text-white/60 mt-0.5">
-              Deal Gap (Buy vs List) + Delta brackets vs Breakeven
+              Deal Gap (Buy vs List) + Delta brackets vs Income Value
             </div>
           </div>
         </div>
@@ -228,10 +228,10 @@ export function DealGapChart({
                 accent={listAccent}
               />
               <Chip
-                label="Breakeven"
-                value={formatUSD(breakeven)}
+                label="Income Value"
+                value={formatUSD(incomeValue)}
                 sub="$0 Cash Flow"
-                accent={beAccent}
+                accent={ivAccent}
               />
               <Chip
                 label="Buy Price"
@@ -255,7 +255,7 @@ export function DealGapChart({
                   #38bdf8 100%)`
               }}
             >
-              {/* Breakeven line */}
+              {/* Income Value line */}
               <div 
                 className="absolute left-[-18px] right-[-18px] h-0.5 opacity-90"
                 style={{ 
@@ -321,13 +321,13 @@ export function DealGapChart({
                 BUY
               </div>
 
-              {/* Breakeven label on right side - further out */}
+              {/* Income Value label on right side - further out */}
               <div 
                 className="absolute right-[-120px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap text-center"
                 style={{ top: '50%', transform: 'translateY(-50%)' }}
               >
-                <div className="font-black text-sm">{formatUSD(breakeven)}</div>
-                <div className="text-[9px] uppercase tracking-wider opacity-70">Breakeven</div>
+                <div className="font-black text-sm">{formatUSD(incomeValue)}</div>
+                <div className="text-[9px] uppercase tracking-wider opacity-70">Income Value</div>
               </div>
               </div>
             </div>
@@ -343,17 +343,17 @@ export function DealGapChart({
  * Compact version for embedding in cards
  */
 export function DealGapChartCompact({
-  breakeven,
+  incomeValue,
   listPrice,
   buyPrice,
 }: {
-  breakeven: number
+  incomeValue: number
   listPrice: number
   buyPrice: number
 }) {
   const { data } = useDealGap({
     listPrice,
-    breakevenPrice: breakeven,
+    incomeValue,
     buyPrice,
   })
 

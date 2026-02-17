@@ -71,13 +71,18 @@ export type IQStrategyBadge = 'Best Match' | 'Strong' | 'Good';
 export interface IQAnalysisResult {
   propertyId?: string;
   analyzedAt: string;           // ISO timestamp
-  dealScore: number;            // Overall score 0-100 (based on discount from list to breakeven)
+  dealScore: number;            // Overall score 0-100 (based on discount from list to Income Value)
   dealVerdict: IQDealVerdict;
   verdictDescription: string;
-  discountPercent?: number;     // Discount % from list price to breakeven
-  purchasePrice?: number;       // Recommended purchase price (95% of breakeven)
-  breakevenPrice?: number;      // Price where cash flow = 0
+  discountPercent?: number;     // Discount % from list price to Income Value
+  purchasePrice?: number;       // Recommended purchase price (95% of Income Value)
+  incomeValue?: number;         // Price where income covers all costs (cash flow = 0)
   listPrice?: number;           // Original list price
+  incomeGapAmount?: number;     // Dollar gap between list price and Income Value
+  incomeGapPercent?: number;    // Percentage gap between list price and Income Value
+  dealGapAmount?: number;       // Dollar gap between list price and target buy price
+  dealGapPercent?: number;      // Percentage gap between list price and target buy price
+  pricingQualityTier?: string;  // Pricing quality tier: "Underpriced", "Fair", "Overpriced", etc.
   strategies: IQStrategy[];     // Sorted by rank (1-6)
   // Inputs used for calculation (for transparency/debugging)
   inputsUsed?: {
@@ -163,7 +168,7 @@ export interface ScoreDisplay {
  * Shows the components that contribute to the Opportunity score
  */
 export interface OpportunityFactors {
-  dealGap: number;             // Discount % from list to breakeven
+  dealGap: number;             // Discount % from list to Income Value
   motivation: number;          // Seller motivation score (0-100)
   motivationLabel: string;     // "High", "Medium", "Low"
   daysOnMarket: number | null; // Days property has been listed
@@ -254,18 +259,61 @@ export const getDealVerdict = (score: number): IQDealVerdict => {
 
 /**
  * Get verdict description based on score (probability of achieving Deal Gap)
- * Score is determined by Deal Gap % and Motivation level
+ * Score is determined by Deal Gap % and Motivation level.
+ * 
+ * When incomeValue/listPrice/incomeGapPercent are provided, generates
+ * pricing-quality-aware sentences (matching backend logic).
+ * Falls back to deal-gap-only descriptions when data is unavailable.
  */
 export const getVerdictDescription = (
   score: number, 
   topStrategy: IQStrategy,
   dealGapPercent?: number,
-  motivationLabel?: string
+  motivationLabel?: string,
+  incomeValue?: number,
+  listPrice?: number,
+  incomeGapPercent?: number
 ): string => {
+  const motivationText = motivationLabel || 'Unknown';
+
+  // Pricing-quality-aware description when income gap data is available
+  if (incomeValue !== undefined && listPrice !== undefined && incomeGapPercent !== undefined) {
+    const gap = incomeGapPercent;
+    let pricingQuality: string;
+    if (gap <= -10) {
+      pricingQuality = `Listed well below its Income Value — strong upside.`;
+    } else if (gap <= 0) {
+      pricingQuality = `Priced near or below its Income Value — the numbers already work.`;
+    } else if (gap <= 10) {
+      pricingQuality = `Priced slightly above its Income Value — modest negotiation needed.`;
+    } else if (gap <= 25) {
+      pricingQuality = `Priced above its Income Value — meaningful discount required.`;
+    } else {
+      pricingQuality = `Priced significantly above its Income Value — steep discount needed.`;
+    }
+
+    if (score >= 90) {
+      return `Strong — ${pricingQuality} ${motivationText} motivation makes this easily achievable.`;
+    }
+    if (score >= 80) {
+      return `Good — ${pricingQuality} ${motivationText} motivation suggests good negotiation potential.`;
+    }
+    if (score >= 65) {
+      return `Average — ${pricingQuality} ${motivationText} motivation means negotiation is possible.`;
+    }
+    if (score >= 50) {
+      return `Marginal — ${pricingQuality} ${motivationText} motivation requires aggressive negotiation.`;
+    }
+    if (score >= 30) {
+      return `Unlikely — ${pricingQuality} ${motivationText} motivation makes this discount hard to achieve.`;
+    }
+    return `Pass — ${pricingQuality} The required discount is unrealistic given ${motivationText.toLowerCase()} seller motivation.`;
+  }
+
+  // Fallback: deal-gap-only descriptions (old behavior)
   const dealGapText = dealGapPercent !== undefined 
     ? `${dealGapPercent > 0 ? dealGapPercent.toFixed(1) : '0'}% discount needed`
     : '';
-  const motivationText = motivationLabel || 'Unknown';
   
   // Unified rating system across all VerdictIQ pages
   if (score >= 90) {
@@ -409,7 +457,7 @@ export const getGradeTextClass = (grade: ScoreGrade): string => {
  * - Cash on Cash: >= 10% = 20pts, >= 5% = 10pts
  * - DSCR: >= 1.25 = 20pts, >= 1.0 = 10pts
  * - Expense Ratio: <= 40% = 20pts, <= 50% = 10pts
- * - Breakeven Occupancy: <= 75% = 20pts, <= 85% = 10pts
+ * - Breakeven Occupancy: <= 75% = 20pts, <= 85% = 10pts (occupancy metric, not price)
  */
 export const calculateProfitScore = (factors: ReturnFactors): number => {
   let score = 0;
@@ -565,10 +613,10 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 }
 
 /**
- * Estimate breakeven purchase price for LTR
- * Breakeven is where monthly cash flow = $0 (NOI = Debt Service)
+ * Estimate Income Value purchase price for LTR
+ * Income Value is the price where income covers all costs (NOI = Debt Service)
  */
-function estimateBreakevenPrice(
+function estimateIncomeValue(
   monthlyRent: number,
   propertyTaxes: number,
   insurance: number
@@ -588,12 +636,12 @@ function estimateBreakevenPrice(
   const mortgageConstant = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
                            (Math.pow(1 + monthlyRate, numPayments) - 1) * 12;
   
-  const breakeven = noi / (ltvRatio * mortgageConstant);
-  return Math.round(breakeven);
+  const incomeValue = noi / (ltvRatio * mortgageConstant);
+  return Math.round(incomeValue);
 }
 
 /**
- * Calculate initial purchase price as 95% of breakeven
+ * Calculate initial purchase price as 95% of Income Value
  */
 function calculateTargetPurchasePrice(
   listPrice: number,
@@ -601,9 +649,9 @@ function calculateTargetPurchasePrice(
   propertyTaxes: number,
   insurance: number
 ): number {
-  const breakeven = estimateBreakevenPrice(monthlyRent, propertyTaxes, insurance);
-  if (breakeven <= 0) return listPrice;
-  const buyPrice = Math.round(breakeven * (1 - DEFAULT_ASSUMPTIONS.buyDiscountPct));
+  const incomeValue = estimateIncomeValue(monthlyRent, propertyTaxes, insurance);
+  if (incomeValue <= 0) return listPrice;
+  const buyPrice = Math.round(incomeValue * (1 - DEFAULT_ASSUMPTIONS.buyDiscountPct));
   return Math.min(buyPrice, listPrice);
 }
 
@@ -620,7 +668,7 @@ function normalizeScore(value: number, minValue: number, maxValue: number): numb
 /**
  * Calculate performance score using the worksheet formula: 50 + (metric × multiplier)
  * 
- * This formula centers at 50 for 0% return (breakeven), with:
+ * This formula centers at 50 for 0% return (break-even point), with:
  * - Positive returns increasing the score
  * - Negative returns decreasing the score
  * - Score clamped to 0-100 range
@@ -937,7 +985,7 @@ function calculateWholesaleStrategy(
  * Calculate dynamic deal analysis based on actual property economics
  * Scores each strategy 0-100 and ranks them from best to worst
  * 
- * KEY: Uses 95% of breakeven as the target purchase price (not list price)
+ * KEY: Uses 95% of Income Value as the target purchase price (not list price)
  * This aligns with the worksheet analysis page calculations.
  */
 export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult {
@@ -954,12 +1002,12 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const occupancyRate = property.occupancyRate ?? 0.65; // Properly handles 0% occupancy
   const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
   
-  // Calculate target purchase price as 95% of breakeven (aligned with worksheets)
+  // Calculate target purchase price as 95% of Income Value (aligned with worksheets)
   const targetPrice = calculateTargetPurchasePrice(listPrice, monthlyRent, propertyTaxes, insurance);
   
   // Calculate all strategies in fixed display order:
   // 1. Long-term Rental, 2. Short-term Rental, 3. BRRRR, 4. Fix & Flip, 5. House Hack, 6. Wholesale
-  // Use targetPrice (95% of breakeven) instead of listPrice for consistent analysis
+  // Use targetPrice (95% of Income Value) instead of listPrice for consistent analysis
   const strategyResults: StrategyCalculationResult[] = [
     calculateLTRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance),
     calculateSTRStrategy(targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance),

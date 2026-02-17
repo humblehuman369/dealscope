@@ -494,7 +494,7 @@ export default function OnboardingScreen() {
 
             <View style={{ marginTop: 20, padding: 14, borderRadius: 12, backgroundColor: accentColor + '15', borderWidth: 1, borderColor: accentColor + '40' }}>
               <Text style={{ fontSize: 12, color: accentColor, lineHeight: 18 }}>
-                <Text style={{ fontWeight: '600' }}>How this is used:</Text> Your breakeven price and target buy price are calculated using these terms. You can customize anytime in Settings.
+                <Text style={{ fontWeight: '600' }}>How this is used:</Text> Your income value and target buy price are calculated using these terms. You can customize anytime in Settings.
               </Text>
             </View>
           </View>

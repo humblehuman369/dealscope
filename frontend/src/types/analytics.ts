@@ -150,7 +150,7 @@ export interface CalculatedMetrics {
  * Deal Score is based on Investment Opportunity
  * 
  * The score is calculated based on how much discount from list price 
- * is needed to reach breakeven. Lower discount = better opportunity.
+ * is needed to reach Income Value. Lower discount = better opportunity.
  * 
  * Thresholds:
  * - 0-5% discount needed = Strong Opportunity (A+)
@@ -179,7 +179,7 @@ export interface DealScore {
   label: string;  // "Strong Opportunity", "Great Opportunity", etc.
   color: string;
   discountPercent: number;  // How much discount from list needed
-  breakevenPrice: number;
+  incomeValue: number;     // Max price where cash flow = $0 (formerly breakevenPrice)
   listPrice: number;
   breakdown: ScoreBreakdown[];
   strengths: string[];
@@ -305,7 +305,7 @@ export interface SensitivityAnalysis {
   impact: 'high' | 'medium' | 'low';
   dataPoints: SensitivityDataPoint[];
   cashFlowRange: { min: number; max: number };
-  breakEvenValue: number | null;
+  incomeValue: number | null;  // Price where cash flow = $0 (formerly breakEvenValue)
 }
 
 // ============================================

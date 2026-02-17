@@ -34,7 +34,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Four verdict signals
 const SIGNALS = [
   { title: 'Deal Gap', desc: 'Distance between market value and your target buy price', value: '$38K', color: '#38bdf8', bgColor: 'rgba(56,189,248,0.12)' },
-  { title: 'Rental Income', desc: 'Annual income analysis to determine breakeven price', value: '$2,180/mo', color: '#2dd4bf', bgColor: 'rgba(45,212,191,0.12)' },
+  { title: 'Rental Income', desc: 'Annual income analysis to determine income value', value: '$2,180/mo', color: '#2dd4bf', bgColor: 'rgba(45,212,191,0.12)' },
   { title: 'Target Price', desc: "The price you'd need to pay to make money", value: '$312K', color: '#34d399', bgColor: 'rgba(52,211,153,0.12)' },
   { title: 'Seller Urgency', desc: 'Signals indicating motivation to negotiate', value: 'Medium', color: '#fbbf24', bgColor: 'rgba(251,191,36,0.12)' },
 ];
@@ -44,7 +44,7 @@ const TOOLKIT = [
   { icon: 'bar-chart-outline' as const, title: 'Strategy', suffix: 'IQ', desc: 'Run Flip, BRRRR, Wholesale, and Long-Term Rental models simultaneously.', color: '#38bdf8', bg: 'rgba(56,189,248,0.10)' },
   { icon: 'checkmark-circle-outline' as const, title: 'Verdict', suffix: 'IQ', desc: 'The system flags properties as PASS, MARGINAL, or BUY based on your criteria.', color: '#34d399', bg: 'rgba(52,211,153,0.10)' },
   { icon: 'camera-outline' as const, title: 'Scan', suffix: 'IQ', desc: 'Snap a photo of any property or For Sale sign to pull data instantly.', color: '#a78bfa', bg: 'rgba(167,139,250,0.10)' },
-  { icon: 'locate-outline' as const, title: 'Price', suffix: 'IQ', desc: 'Three numbers: Breakeven, Target, and Wholesale — in 60 seconds.', color: '#38bdf8', bg: 'rgba(56,189,248,0.10)' },
+  { icon: 'locate-outline' as const, title: 'Price', suffix: 'IQ', desc: 'Three numbers: Income Value, Target, and Wholesale — in 60 seconds.', color: '#38bdf8', bg: 'rgba(56,189,248,0.10)' },
   { icon: 'document-text-outline' as const, title: 'Report', suffix: 'IQ', desc: 'Generate lender-ready PDF reports. Share with partners or your team.', color: '#fbbf24', bg: 'rgba(251,191,36,0.10)' },
   { icon: 'folder-outline' as const, title: 'Pipeline', suffix: 'IQ', desc: 'Save deals, track offers, and compare opportunities side-by-side.', color: '#38bdf8', bg: 'rgba(56,189,248,0.10)' },
 ];

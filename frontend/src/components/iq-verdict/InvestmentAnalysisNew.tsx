@@ -26,7 +26,7 @@ interface InvestmentAnalysisNewProps {
   interestRate: number
   
   // Prices
-  breakevenPrice: number
+  incomeValue: number
   targetBuyPrice: number
   wholesalePrice: number
   
@@ -115,7 +115,7 @@ function MetricCard({
 export function InvestmentAnalysisNew({
   downPaymentPct,
   interestRate,
-  breakevenPrice,
+  incomeValue,
   targetBuyPrice,
   wholesalePrice,
   capRate,
@@ -195,7 +195,7 @@ export function InvestmentAnalysisNew({
             onClick={() => setShowCalculation(!showCalculation)}
           >
             <Info className="w-3.5 h-3.5" />
-            How BREAKEVEN is calculated
+            How INCOME VALUE is calculated
           </button>
         </div>
 
@@ -203,7 +203,7 @@ export function InvestmentAnalysisNew({
         {showCalculation && (
           <div className="mb-4 p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
             <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">
-              Breakeven Calculation
+              Income Value Calculation
             </div>
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between">
@@ -216,7 +216,7 @@ export function InvestmentAnalysisNew({
               </div>
               <div className="flex justify-between pt-2 border-t border-[#E2E8F0]">
                 <span className="text-[#64748B]">NOI ÷ Mortgage Constant</span>
-                <span className="font-bold text-[#0891B2]">= Breakeven Price</span>
+                <span className="font-bold text-[#0891B2]">= Income Value</span>
               </div>
             </div>
           </div>
@@ -225,8 +225,8 @@ export function InvestmentAnalysisNew({
         {/* Price Cards */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <PriceCard 
-            label="Breakeven" 
-            value={breakevenPrice} 
+            label="Income Value" 
+            value={incomeValue} 
             description="Max price for $0 cashflow (LTR model)" 
           />
           <PriceCard 

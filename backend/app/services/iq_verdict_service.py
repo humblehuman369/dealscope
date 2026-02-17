@@ -10,7 +10,7 @@ from typing import Optional
 
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK,
-    estimate_breakeven_price, calculate_buy_price, get_all_defaults,
+    estimate_income_value, calculate_buy_price, get_all_defaults,
 )
 from app.schemas.analytics import (
     IQVerdictInput, IQVerdictResponse, StrategyResult,
@@ -226,14 +226,17 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 # Score component calculators
 # ===========================================
 
-def _calculate_deal_gap_component(breakeven_price: float, list_price: float) -> int:
+def _calculate_deal_gap_component(target_price: float, list_price: float) -> int:
     """
     Deal Gap Score component (0-90).
-    Measures how favorably the property is priced relative to breakeven.
+    Measures how favorably the property is priced relative to Target Price.
+
+    Deal Gap = (List Price - Target Price) / List Price × 100
+    Target Price = Income Value × (1 - buy_discount_pct)
     """
     if list_price <= 0:
         return 0
-    gap_pct = ((list_price - breakeven_price) / list_price) * 100
+    gap_pct = ((list_price - target_price) / list_price) * 100
 
     if gap_pct <= -10:
         excess = min(abs(gap_pct) - 10, 20)
@@ -248,6 +251,40 @@ def _calculate_deal_gap_component(breakeven_price: float, list_price: float) -> 
         return round(15 - (gap_pct - 25) * 0.67)
     else:
         return 5
+
+
+def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str, str]:
+    """
+    Assess pricing quality based on Income Gap (List Price - Income Value).
+
+    Returns (tier, sentence_fragment) for use in verdict descriptions.
+    The Income Gap is NEVER surfaced by name — only as pricing quality sentences.
+
+    Tiers:
+      <= 0%:  below_income_value  — priced below its Income Value
+      0-5%:   investment_grade    — priced near its Income Value
+      5-10%:  fair                — modestly above its Income Value
+      10-20%: above_income_value  — priced above its income-generating capacity
+      20-30%: overpriced          — significantly above its Income Value
+      30%+:   substantially_overpriced — substantially overpriced relative to income potential
+    """
+    if list_price <= 0 or income_value <= 0:
+        return ("unknown", "pricing cannot be assessed with available data")
+
+    income_gap_pct = ((list_price - income_value) / list_price) * 100
+
+    if income_gap_pct <= 0:
+        return ("below_income_value", "priced below its Income Value")
+    elif income_gap_pct <= 5:
+        return ("investment_grade", "priced near its Income Value")
+    elif income_gap_pct <= 10:
+        return ("fair", "modestly above its Income Value")
+    elif income_gap_pct <= 20:
+        return ("above_income_value", "priced above its income-generating capacity")
+    elif income_gap_pct <= 30:
+        return ("overpriced", "significantly above its Income Value")
+    else:
+        return ("substantially_overpriced", "substantially overpriced relative to income potential")
 
 
 def _calculate_return_quality_component(top_strategy_score: int) -> int:
@@ -282,7 +319,7 @@ def _calculate_deal_probability_component(
 
 
 def _calculate_composite_verdict_score(
-    breakeven_price: float,
+    target_price: float,
     list_price: float,
     top_strategy_score: int,
     motivation_score: int,
@@ -290,14 +327,17 @@ def _calculate_composite_verdict_score(
     """
     Composite IQ Verdict Score.
 
+    Deal Gap component uses Target Price (the true Deal Gap),
+    NOT Income Value (which is the internal Income Gap).
+
     Returns (composite_score, deal_gap, return_quality, market_alignment, deal_probability).
     """
-    gap_pct = ((list_price - breakeven_price) / list_price) * 100 if list_price > 0 else 100
+    deal_gap_pct = ((list_price - target_price) / list_price) * 100 if list_price > 0 else 100
 
-    deal_gap = _calculate_deal_gap_component(breakeven_price, list_price)
+    deal_gap = _calculate_deal_gap_component(target_price, list_price)
     return_quality = _calculate_return_quality_component(top_strategy_score)
     market_alignment = min(90, motivation_score)
-    deal_probability = _calculate_deal_probability_component(gap_pct, motivation_score)
+    deal_probability = _calculate_deal_probability_component(deal_gap_pct, motivation_score)
 
     composite = round(
         deal_gap * 0.35
@@ -310,10 +350,10 @@ def _calculate_composite_verdict_score(
     return composite, deal_gap, return_quality, market_alignment, deal_probability
 
 
-def _calculate_opportunity_score(breakeven_price: float, list_price: float) -> tuple[int, float, str]:
+def _calculate_opportunity_score(income_value: float, list_price: float) -> tuple[int, float, str]:
     if list_price <= 0:
         return (0, 100.0, "Invalid")
-    discount_pct = ((list_price - breakeven_price) / list_price) * 100
+    discount_pct = ((list_price - income_value) / list_price) * 100
     if discount_pct < 0:
         discount_pct = 0
     score = max(0, min(100, round(100 - discount_pct * 2)))
@@ -334,17 +374,60 @@ def _calculate_opportunity_score(breakeven_price: float, list_price: float) -> t
     return (score, discount_pct, verdict)
 
 
-def _get_verdict_description(score: int, top_strategy: dict) -> str:
+def _get_verdict_description(
+    score: int,
+    top_strategy: dict,
+    income_value: float,
+    list_price: float,
+    target_price: float,
+    income_gap_pct: float,
+    deal_gap_pct: float,
+    motivation_label: str,
+) -> str:
+    """Generate a natural-language verdict that weaves in Income Value and
+    pricing quality as contextual intelligence.
+
+    Income Gap (List Price - Income Value) is NEVER surfaced by that name.
+    Instead, its intelligence appears as pricing quality sentences.
+    Deal Gap (List Price - Target Price) is the public metric.
+    """
     name = top_strategy["name"]
-    metric = top_strategy["metric"]
-    label = top_strategy["metric_label"]
-    if score >= 80:
-        return f"Excellent potential across multiple strategies. {name} shows best returns."
-    if score >= 60:
-        return f"Good investment opportunity. {name} is your strongest option at {metric} {label}."
-    if score >= 40:
-        return f"Moderate opportunity. Consider {name} for best results, but review numbers carefully."
-    return f"This property shows limited investment potential. {name} is the best option available."
+    fmt_iv = f"${income_value:,.0f}"
+
+    if income_gap_pct <= 0:
+        return (
+            f"This property is priced at or below its Income Value of {fmt_iv} "
+            f"— it can generate positive cash flow at the current asking price. "
+            f"{name} shows the strongest returns."
+        )
+    elif income_gap_pct <= 5:
+        return (
+            f"This property is priced near its Income Value — the asking price "
+            f"nearly covers all costs at current rents. A modest negotiation "
+            f"could make this cash-flow positive. {motivation_label} seller "
+            f"motivation supports that outcome."
+        )
+    elif income_gap_pct <= 15:
+        return (
+            f"The asking price is {income_gap_pct:.0f}% above the Income Value "
+            f"of {fmt_iv}. {motivation_label} seller motivation suggests "
+            f"negotiation is feasible. {name} is your strongest strategy "
+            f"if you can close the gap."
+        )
+    elif income_gap_pct <= 30:
+        return (
+            f"This property requires a {income_gap_pct:.0f}% discount to reach "
+            f"its Income Value of {fmt_iv}. That's a significant negotiation. "
+            f"Consider adjusting your target return or exploring {name} "
+            f"for the best available returns."
+        )
+    else:
+        return (
+            f"The asking price is {income_gap_pct:.0f}% above the Income Value "
+            f"of {fmt_iv}. This gap is unlikely to close through negotiation "
+            f"alone. Consider waiting for a price reduction or adjusting "
+            f"your assumptions."
+        )
 
 
 # ===========================================
@@ -367,7 +450,7 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
-    breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
+    income_value = estimate_income_value(monthly_rent, property_taxes, insurance)
     buy_price = input_data.purchase_price or calculate_buy_price(list_price, monthly_rent, property_taxes, insurance)
 
     strategies = [
@@ -403,21 +486,33 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         motivation_score = avail["score"]
         motivation_label = avail["motivation"].capitalize()
 
+    # Income Gap (internal) — List Price vs Income Value
+    income_gap_amount = list_price - income_value if list_price > 0 else 0
+    income_gap_pct = max(0, (income_gap_amount / list_price) * 100) if list_price > 0 else 0
+
+    # Deal Gap (public hero metric) — List Price vs Target Price
+    deal_gap_amount = list_price - buy_price if list_price > 0 else 0
+    deal_gap_pct = max(0, (deal_gap_amount / list_price) * 100) if list_price > 0 else 0
+
+    # Pricing quality assessment (from Income Gap, never shown by name)
+    pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
+
+    # Composite verdict score — uses Target Price for Deal Gap component
     deal_score, comp_gap, comp_return, comp_market, comp_prob = _calculate_composite_verdict_score(
-        breakeven_price=breakeven,
+        target_price=buy_price,
         list_price=list_price,
         top_strategy_score=top_strategy["score"],
         motivation_score=motivation_score,
     )
 
-    discount_pct = max(0, ((list_price - breakeven) / list_price) * 100) if list_price > 0 else 0
+    # Verdict label based on Income Gap (pricing quality perspective)
     deal_verdict = (
-        "Strong Opportunity" if discount_pct <= 5
-        else "Great Opportunity" if discount_pct <= 10
-        else "Moderate Opportunity" if discount_pct <= 15
-        else "Potential Opportunity" if discount_pct <= 25
-        else "Mild Opportunity" if discount_pct <= 35
-        else "Weak Opportunity" if discount_pct <= 45
+        "Strong Opportunity" if income_gap_pct <= 5
+        else "Great Opportunity" if income_gap_pct <= 10
+        else "Moderate Opportunity" if income_gap_pct <= 15
+        else "Potential Opportunity" if income_gap_pct <= 25
+        else "Mild Opportunity" if income_gap_pct <= 35
+        else "Weak Opportunity" if income_gap_pct <= 45
         else "Poor Opportunity"
     )
 
@@ -426,10 +521,15 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
 
     return IQVerdictResponse(
         deal_score=deal_score, deal_verdict=deal_verdict,
-        verdict_description=_get_verdict_description(deal_score, top_strategy),
-        discount_percent=round(discount_pct, 1),
+        verdict_description=_get_verdict_description(
+            deal_score, top_strategy,
+            income_value=income_value, list_price=list_price, target_price=buy_price,
+            income_gap_pct=income_gap_pct, deal_gap_pct=deal_gap_pct,
+            motivation_label=motivation_label,
+        ),
+        discount_percent=round(income_gap_pct, 1),
         strategies=[StrategyResult(**s) for s in strategies],
-        purchase_price=buy_price, breakeven_price=breakeven, list_price=list_price,
+        purchase_price=buy_price, income_value=income_value, list_price=list_price,
         inputs_used={
             "monthly_rent": monthly_rent, "property_taxes": property_taxes,
             "insurance": insurance, "arv": arv, "rehab_cost": rehab_cost, "bedrooms": bedrooms,
@@ -437,9 +537,16 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
             "provided_insurance": input_data.insurance,
         },
         defaults_used=get_all_defaults(),
+        # Income Gap (internal pricing quality)
+        income_gap_amount=round(income_gap_amount, 0),
+        income_gap_percent=round(income_gap_pct, 1),
+        pricing_quality_tier=pricing_tier,
+        # Deal Gap (public hero metric)
+        deal_gap_amount=round(deal_gap_amount, 0),
+        deal_gap_percent=round(deal_gap_pct, 1),
         opportunity=ScoreDisplayResponse(score=deal_score, grade=opp_grade, label=opp_label, color=opp_color),
         opportunity_factors=OpportunityFactorsResponse(
-            deal_gap=round(discount_pct, 1), motivation=motivation_score, motivation_label=motivation_label,
+            deal_gap=round(deal_gap_pct, 1), motivation=motivation_score, motivation_label=motivation_label,
             days_on_market=input_data.days_on_market, buyer_market=input_data.market_temperature,
             distressed_sale=is_distressed,
         ),
@@ -476,7 +583,7 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
     rate = input_data.interest_rate if input_data.interest_rate is not None else FINANCING.interest_rate
     term = input_data.loan_term_years if input_data.loan_term_years is not None else FINANCING.loan_term_years
 
-    breakeven = estimate_breakeven_price(
+    income_value = estimate_income_value(
         monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
@@ -491,7 +598,7 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
 
     if has_listing_context:
         enhanced_result = calculate_deal_opportunity_score(
-            breakeven_price=breakeven, list_price=list_price,
+            income_value=income_value, list_price=list_price,
             listing_status=input_data.listing_status, seller_type=input_data.seller_type,
             is_foreclosure=input_data.is_foreclosure or False, is_bank_owned=input_data.is_bank_owned or False,
             is_fsbo=input_data.is_fsbo or False, is_auction=input_data.is_auction or False,
@@ -528,7 +635,7 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
             days_on_market=enhanced_result["factors"]["days_on_market"].get("days"),
         )
     else:
-        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
+        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(income_value, list_price)
         if deal_score >= 90:
             grade, color = "A+", "#22c55e"
         elif deal_score >= 80:
@@ -545,7 +652,7 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
 
     return DealScoreResponse(
         deal_score=deal_score, deal_verdict=deal_verdict, discount_percent=round(discount_pct, 1),
-        breakeven_price=breakeven, purchase_price=purchase_price, list_price=list_price,
+        income_value=income_value, purchase_price=purchase_price, list_price=list_price,
         factors=factors, grade=grade, color=color,
         calculation_details={
             "monthly_rent": monthly_rent, "property_taxes": property_taxes, "insurance": insurance,

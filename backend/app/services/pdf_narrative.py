@@ -329,7 +329,7 @@ def deal_score_narrative(data: FinancialProforma) -> str:
         action = "The data supports moving forward with due diligence and negotiation."
     elif ds.score >= 60:
         assessment = "a moderate investment opportunity with upside potential"
-        action = "Consider negotiating toward the breakeven price to improve returns."
+        action = "Consider negotiating toward the Income Value to improve returns."
     elif ds.score >= 40:
         assessment = "a marginal opportunity that requires careful evaluation"
         action = "Significant price negotiation would be needed to achieve target returns."
@@ -342,9 +342,9 @@ def deal_score_narrative(data: FinancialProforma) -> str:
         f'{ds.verdict}. '
     ]
 
-    if ds.breakeven_price > 0 and ds.discount_required != 0:
+    if ds.income_value > 0 and ds.discount_required != 0:
         parts.append(
-            f"The breakeven price is calculated at {_fmt_money(ds.breakeven_price)}, "
+            f"The Income Value is calculated at {_fmt_money(ds.income_value)}, "
             f"representing a {abs(ds.discount_required):.1f}% "
             f"{'discount' if ds.discount_required > 0 else 'premium'} from the current price. "
         )

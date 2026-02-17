@@ -765,8 +765,8 @@ class PropertyReportPDFExporter:
 
   <div class="card" style="margin-top:20px;">
     <div class="detail-row">
-      <span>Breakeven Price</span>
-      <span class="detail-value">{_fmt_money(ds.breakeven_price)}</span>
+      <span>Income Value</span>
+      <span class="detail-value">{_fmt_money(ds.income_value)}</span>
     </div>
     <div class="detail-row">
       <span>Discount Required</span>

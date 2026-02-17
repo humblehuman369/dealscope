@@ -2,10 +2,10 @@
  * DealGapIQ - Deal Scoring & Sensitivity Analysis
  * 
  * Deal Score is based on Investment Opportunity - how much discount from 
- * list price is needed to reach breakeven. Lower discount = better opportunity.
+ * list price is needed to reach Income Value. Lower discount = better opportunity.
  * 
  * Enhanced Deal Opportunity Score considers:
- * 1. Deal Gap (50%) - ((List Price - Breakeven) / List Price) × 100
+ * 1. Deal Gap (50%) - ((List Price - Income Value) / List Price) × 100
  * 2. Availability (30%) - Listing status and seller motivation
  * 3. Days on Market (20%) - Negotiation leverage context
  */
@@ -28,7 +28,7 @@ export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 export interface DealScoreBreakdown {
   overall: number
   discountPercent: number
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
   grade: OpportunityGrade
   label: string
@@ -91,7 +91,7 @@ export interface ListingInfo {
  * - 0-24 = Poor Opportunity (F)
  */
 export function calculateDealScore(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number,
   metrics?: DealMetrics,
   listingInfo?: ListingInfo
@@ -99,7 +99,7 @@ export function calculateDealScore(
   // If listing info is provided, use enhanced scoring
   if (listingInfo) {
     const enhancedScore = calculateDealOpportunityScore(
-      breakevenPrice,
+      incomeValue,
       listPrice,
       {
         listingStatus: listingInfo.listingStatus,
@@ -185,7 +185,7 @@ export function calculateDealScore(
     return {
       overall: enhancedScore.score,
       discountPercent: enhancedScore.discountPercent,
-      breakevenPrice: enhancedScore.breakevenPrice,
+      incomeValue: enhancedScore.incomeValue,
       listPrice: enhancedScore.listPrice,
       grade: enhancedScore.grade as OpportunityGrade,
       label: enhancedScore.label,
@@ -205,7 +205,7 @@ export function calculateDealScore(
   
   // Legacy scoring (Deal Gap only)
   const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100)
     : 0
   
   // Score is inverse of discount (lower discount = higher score)
@@ -277,7 +277,7 @@ export function calculateDealScore(
   return {
     overall,
     discountPercent,
-    breakevenPrice,
+    incomeValue,
     listPrice,
     grade,
     label,
@@ -289,19 +289,19 @@ export function calculateDealScore(
 
 /**
  * Legacy function for backwards compatibility
- * Uses metrics to estimate breakeven internally
+ * Uses metrics to estimate Income Value internally
  */
 export function calculateDealScoreFromMetrics(
   metrics: DealMetrics,
   listingInfo?: ListingInfo
 ): DealScoreBreakdown {
-  // Estimate breakeven as purchase price adjusted for cash flow
+  // Estimate Income Value as purchase price adjusted for cash flow
   // This is a simplified estimate - actual calculation should use binary search
   const monthlyDeficit = metrics.monthlyCashFlow < 0 ? Math.abs(metrics.monthlyCashFlow) : 0
   const annualDeficit = monthlyDeficit * 12
-  const breakevenEstimate = metrics.purchasePrice - (annualDeficit * 10) // Rough estimate
+  const incomeValueEstimate = metrics.purchasePrice - (annualDeficit * 10) // Rough estimate
   
-  return calculateDealScore(breakevenEstimate, metrics.purchasePrice, metrics, listingInfo)
+  return calculateDealScore(incomeValueEstimate, metrics.purchasePrice, metrics, listingInfo)
 }
 
 // Re-export enhanced scoring functions for direct use

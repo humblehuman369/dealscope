@@ -9,7 +9,7 @@ import { formatCurrency } from '@/utils/formatters'
  * DealScoreDisplay Component
  * 
  * Displays a comprehensive deal score based on Investment Opportunity.
- * The score shows how much discount from list price is needed to reach breakeven.
+ * The score shows how much discount from list price is needed to reach Income Value.
  * 
  * Features:
  * - Animated score ring (0-100)
@@ -45,9 +45,9 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
                 : `${data.discountPercent.toFixed(1)}% discount needed`
               }
             </div>
-            {data.breakevenPrice > 0 && (
+            {data.incomeValue > 0 && (
               <div className="text-[0.65rem] text-white/40 mt-1">
-                Breakeven: {formatCurrency(data.breakevenPrice)}
+                Income Value: {formatCurrency(data.incomeValue)}
               </div>
             )}
           </div>
@@ -211,7 +211,7 @@ function ScoreBar({ item }: ScoreBarProps) {
 }
 
 /**
- * Helper function to create deal score data from breakeven and list price
+ * Helper function to create deal score data from Income Value and list price
  * 
  * Uses the new opportunity-based scoring:
  * - 0-5% discount needed = Strong Opportunity (A+)
@@ -222,12 +222,12 @@ function ScoreBar({ item }: ScoreBarProps) {
  * - 35-45%+ = Weak Opportunity (F)
  */
 export function calculateDealScoreData(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number
 ): DealScoreData {
-  // Calculate discount percentage needed to reach breakeven
+  // Calculate discount percentage needed to reach Income Value
   const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100)
     : 0
   
   // Score is inverse of discount (lower discount = higher score)
@@ -252,7 +252,7 @@ export function calculateDealScoreData(
     label,
     verdict,
     discountPercent,
-    breakevenPrice,
+    incomeValue,
     listPrice,
     items: [
       { 

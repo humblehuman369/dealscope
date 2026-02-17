@@ -264,6 +264,7 @@ export const useDealMakerDerived = () => {
     equityAfterRehab: safeNumber(metrics?.equity_after_rehab),
     dealGapPct: safeNumber(metrics?.deal_gap_pct),
     breakevenPrice: safeNumber(metrics?.breakeven_price),
+    incomeValue: safeNumber(metrics?.breakeven_price),  // Alias: price where cash flow = $0
     hasRecord: record !== null,
   };
 };

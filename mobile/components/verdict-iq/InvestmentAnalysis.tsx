@@ -55,7 +55,7 @@ const formatPrice = (price: number): string => {
 
 const getPriceLabel = (id: IQPriceId): string => {
   switch (id) {
-    case 'breakeven': return 'BREAKEVEN';
+    case 'breakeven': return 'INCOME VALUE';
     case 'target': return 'TARGET BUY';
     case 'wholesale': return 'WHOLESALE';
   }

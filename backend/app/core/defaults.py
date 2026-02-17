@@ -56,7 +56,7 @@ class RehabDefaults:
 @dataclass(frozen=True)
 class BRRRRDefaults:
     """Default BRRRR strategy assumptions."""
-    buy_discount_pct: float = 0.05          # 5% below breakeven
+    buy_discount_pct: float = 0.05          # 5% below Income Value
     refinance_ltv: float = 0.75             # 75%
     refinance_interest_rate: float = 0.06   # 6% (was 7%)
     refinance_term_years: int = 30          # 30 years
@@ -81,7 +81,7 @@ class HouseHackDefaults:
     fha_interest_rate: float = 0.065        # 6.5% (FHA rates typically lower than conventional)
     fha_mip_rate: float = 0.0085            # 0.85%
     units_rented_out: int = 2               # 2 units
-    buy_discount_pct: float = 0.05          # 5% below breakeven
+    buy_discount_pct: float = 0.05          # 5% below Income Value
 
 
 @dataclass(frozen=True)
@@ -209,7 +209,7 @@ def _clamp(value: float, lo: float, hi: float, name: str) -> float:
     return value
 
 
-def estimate_breakeven_price(
+def estimate_income_value(
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
@@ -221,11 +221,14 @@ def estimate_breakeven_price(
     management_pct: float = None,
 ) -> float:
     """
-    Estimate breakeven purchase price for LTR.
-    Breakeven is where monthly cash flow = $0 (NOI = Debt Service).
+    Estimate Income Value — the purchase price at which cash flow = $0.
 
-    Returns the purchase price at which the property breaks even.
-    Returns 0 when the property cannot break even or inputs are invalid.
+    Income Value is the exact price point where rental income covers all
+    operating expenses and debt service (NOI = Annual Debt Service).
+    Above this price, cash flow turns negative. Below it, positive.
+
+    Returns the Income Value price, or 0 when the property cannot achieve
+    positive cash flow or inputs are invalid.
 
     All inputs are bounds-checked and clamped to prevent nonsensical results
     from garbage inputs (negative prices, rates > 100%, etc.).
@@ -288,17 +291,17 @@ def estimate_breakeven_price(
         # 0% interest — annual payment = loan / term
         mortgage_constant = 1 / term if term > 0 else 0
 
-    # At breakeven: NOI = Purchase Price × LTV × Mortgage Constant
-    # Therefore: Purchase Price = NOI / (LTV × Mortgage Constant)
+    # At Income Value: NOI = Purchase Price × LTV × Mortgage Constant
+    # Therefore: Income Value = NOI / (LTV × Mortgage Constant)
     denominator = ltv_ratio * mortgage_constant
     if denominator <= 0:
-        # 100% cash purchase (no debt service) — breakeven is NOI / cap rate
+        # 100% cash purchase (no debt service) — Income Value is NOI / cap rate
         # Use a reasonable cap rate floor of 5%
         return round(noi / 0.05)
 
-    breakeven = noi / denominator
+    income_value = noi / denominator
 
-    return round(breakeven)
+    return round(income_value)
 
 
 def calculate_buy_price(
@@ -309,9 +312,9 @@ def calculate_buy_price(
     buy_discount_pct: float = None,
 ) -> float:
     """
-    Calculate buy price as breakeven minus the buy discount.
+    Calculate Target Buy Price as Income Value minus the buy discount.
 
-    Formula: Buy Price = Breakeven × (1 - Buy Discount %)
+    Formula: Target Price = Income Value × (1 - Buy Discount %)
 
     This is the recommended purchase price that ensures profitability.
     Returns the lesser of the calculated buy price or list_price.
@@ -325,10 +328,10 @@ def calculate_buy_price(
     discount_pct = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
     discount_pct = _clamp(discount_pct, 0.0, 0.50, "buy_discount_pct")  # max 50% discount
 
-    breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
+    income_value = estimate_income_value(monthly_rent, property_taxes, insurance)
 
-    if breakeven <= 0:
+    if income_value <= 0:
         return list_price
 
-    buy_price = round(breakeven * (1 - discount_pct))
+    buy_price = round(income_value * (1 - discount_pct))
     return min(buy_price, list_price)

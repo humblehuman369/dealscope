@@ -34,7 +34,7 @@ export function getPriceLabel(
 export function getPriceTargetLabel(target: PriceTarget): string {
   switch (target) {
     case 'breakeven':
-      return 'Breakeven';
+      return 'Income Value';
     case 'targetBuy':
       return 'Target Buy';
     case 'wholesale':

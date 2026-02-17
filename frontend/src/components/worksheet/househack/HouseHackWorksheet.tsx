@@ -159,7 +159,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   
   // Extract Deal Opportunity Score from backend result
   const opportunityScore = dealScoreResult?.dealScore ?? 0
-  const breakeven = dealScoreResult?.breakevenPrice ?? purchasePrice
+  const incomeValue = dealScoreResult?.incomeValue ?? purchasePrice
   const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
 
   const calc = useMemo(() => {

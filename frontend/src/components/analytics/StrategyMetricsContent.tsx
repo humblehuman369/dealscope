@@ -71,8 +71,8 @@ export function STRMetricsContent({
     iqTarget.targetPrice,
     'IQ Target',
     iqTarget.highlightedMetric,
-    iqTarget.breakeven,
-    'Breakeven',
+    iqTarget.incomeValue,
+    'Income Value',
     '$0 monthly cash flow',
     0.70
   )
@@ -281,7 +281,7 @@ export function BRRRRMetricsContent({
     iqTarget.targetPrice,
     'IQ Target',
     iqTarget.highlightedMetric,
-    iqTarget.breakeven,
+    iqTarget.incomeValue,
     '80% Recovery',
     'Minimum acceptable cash back',
     0.60
@@ -488,8 +488,8 @@ export function FlipMetricsContent({
     iqTarget.targetPrice,
     'IQ Target',
     iqTarget.highlightedMetric,
-    iqTarget.breakeven,
-    'Breakeven',
+    iqTarget.incomeValue,
+    'Income Value',
     '$0 profit',
     0.60
   )
@@ -651,7 +651,7 @@ export function HouseHackMetricsContent({
     iqTarget.targetPrice,
     'IQ Target',
     iqTarget.highlightedMetric,
-    iqTarget.breakeven,
+    iqTarget.incomeValue,
     'Market Rent',
     'Break even vs. renting',
     0.75

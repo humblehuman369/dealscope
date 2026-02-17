@@ -4,7 +4,7 @@
  * Calls the IQ Verdict endpoint to get:
  * - Strategy grades and scores
  * - Deal score / opportunity rating
- * - Target price (breakeven × 0.95)
+ * - Target price (income value × 0.95)
  * - Return factors for each strategy
  *
  * This replaces the frontend mock calculations with real backend data.
@@ -177,7 +177,7 @@ export interface PropertyAnalysisResult {
   // Derived data for components
   strategyGrades: StrategyGrades;
   targetPrice: number;
-  breakevenPrice: number;
+  incomeValue: number;  // Price where cash flow = $0 (from API breakevenPrice)
   discountPercent: number;
   dealScore: {
     score: number;
@@ -640,7 +640,7 @@ function convertToComponentData(
       raw: null,
       strategyGrades: defaultGrades,
       targetPrice: property?.listPrice ? Math.round(property.listPrice * 0.80) : 0,
-      breakevenPrice: property?.listPrice ? Math.round(property.listPrice * 0.88) : 0,
+      incomeValue: property?.listPrice ? Math.round(property.listPrice * 0.88) : 0,
       discountPercent: 20,
       dealScore: {
         score: 0,
@@ -675,7 +675,7 @@ function convertToComponentData(
     raw: data,
     strategyGrades,
     targetPrice: data.purchasePrice,
-    breakevenPrice: data.breakevenPrice,
+    incomeValue: data.breakevenPrice,
     discountPercent: data.discountPercent,
     dealScore: {
       score: data.opportunity.score,

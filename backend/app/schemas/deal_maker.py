@@ -86,7 +86,7 @@ class CachedMetrics(BaseModel):
     
     # Deal analysis
     deal_gap_pct: Optional[float] = Field(None, description="Discount from list price needed")
-    breakeven_price: Optional[float] = Field(None, description="Price where cash flow = 0")
+    income_value: Optional[float] = Field(None, description="Income Value — price where cash flow = $0")
     
     # Metadata
     calculated_at: Optional[datetime] = None

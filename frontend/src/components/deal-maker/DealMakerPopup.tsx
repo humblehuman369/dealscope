@@ -659,7 +659,7 @@ export function DealMakerPopup({
           <span className="text-[11px] font-medium text-[#64748B] mr-1">Calculate for:</span>
           {(['breakeven', 'targetBuy', 'wholesale'] as PriceTarget[]).map((target) => {
             const labels: Record<PriceTarget, string> = {
-              breakeven: 'Breakeven',
+              breakeven: 'Income Value',
               targetBuy: 'Target Buy',
               wholesale: 'Wholesale',
             }

@@ -92,13 +92,13 @@ function getColorFromScore(score: number): 'teal' | 'amber' | 'negative' {
 }
 
 function buildIQPrices(
-  breakevenPrice: number,
+  incomeValue: number,
   targetPrice: number,
   listPrice: number
 ): IQPriceOption[] {
   const wholesalePrice = Math.round(targetPrice * 0.70);
   return [
-    { id: 'breakeven', label: 'BREAKEVEN', value: breakevenPrice, subtitle: 'Max price for $0 cashflow' },
+    { id: 'breakeven', label: 'INCOME VALUE', value: incomeValue, subtitle: 'Max price for $0 cashflow' },
     { id: 'target', label: 'TARGET BUY', value: targetPrice, subtitle: 'Positive Cashflow' },
     { id: 'wholesale', label: 'WHOLESALE', value: wholesalePrice, subtitle: '30% net discount for assignment' },
   ];
@@ -262,7 +262,7 @@ export default function VerdictIQScreen() {
   }), [decodedAddress, city, state, zip, listPrice, monthlyRent, propertyTaxes, insurance, bedroomCount, bathroomCount, sqftValue, image]);
 
   const analysisResult = usePropertyAnalysis(propertyData);
-  const { raw, targetPrice, breakevenPrice, discountPercent, dealScore, isLoading, error } = analysisResult;
+  const { raw, targetPrice, incomeValue, discountPercent, dealScore, isLoading, error } = analysisResult;
 
   const property: PropertyContextData = useMemo(() => ({
     street: decodedAddress || 'Unknown Address',
@@ -278,7 +278,7 @@ export default function VerdictIQScreen() {
   }), [decodedAddress, city, state, zip, bedroomCount, bathroomCount, sqftValue, listPrice, status, image]);
 
   // Derived data
-  const iqPrices = useMemo(() => buildIQPrices(breakevenPrice, targetPrice, listPrice), [breakevenPrice, targetPrice, listPrice]);
+  const iqPrices = useMemo(() => buildIQPrices(incomeValue, targetPrice, listPrice), [incomeValue, targetPrice, listPrice]);
   const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
   const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
   const signalIndicators = useMemo(() => buildSignalIndicators(raw, discountPercent), [raw, discountPercent]);
@@ -304,8 +304,8 @@ export default function VerdictIQScreen() {
   const handleHowCalculated = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Alert.alert(
-      'How BREAKEVEN is Calculated',
-      'Breakeven price is the maximum purchase price that results in $0 monthly cashflow after all expenses.',
+      'How Income Value is Calculated',
+      'Income value is the maximum purchase price that results in $0 monthly cashflow after all expenses.',
       [{ text: 'Got it' }]
     );
   }, []);
@@ -357,7 +357,7 @@ export default function VerdictIQScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Alert.alert(
       'How Verdict Score Works',
-      'Your Verdict Score (5–95) is a weighted composite of four factors:\n\n• Deal Gap (35%) — How favorably priced vs breakeven\n• Return Quality (30%) — Best strategy\'s financial returns\n• Market Alignment (20%) — Seller motivation & market conditions\n• Deal Probability (15%) — Likelihood of closing at target price\n\nNo property scores 100 — every deal carries risk.',
+      'Your Verdict Score (5–95) is a weighted composite of four factors:\n\n• Deal Gap (35%) — How favorably priced vs income value\n• Return Quality (30%) — Best strategy\'s financial returns\n• Market Alignment (20%) — Seller motivation & market conditions\n• Deal Probability (15%) — Likelihood of closing at target price\n\nNo property scores 100 — every deal carries risk.',
       [{ text: 'Got it' }]
     );
   }, []);
@@ -531,7 +531,7 @@ export default function VerdictIQScreen() {
               {(() => {
                 // Calculate real positions based on actual price relationships
                 const scaleMin = wholesalePrice * 0.95;
-                const scaleMax = Math.max(listPrice * 1.08, breakevenPrice * 1.05);
+                const scaleMax = Math.max(listPrice * 1.08, incomeValue * 1.05);
                 const range = scaleMax - scaleMin;
                 const clamp = (v: number) => Math.min(0.96, Math.max(0.04, (v - scaleMin) / range));
                 return (
@@ -539,7 +539,7 @@ export default function VerdictIQScreen() {
                     askingPriceLabel={formatCurrency(listPrice)}
                     targetPosition={clamp(targetPrice)}
                     askingPosition={clamp(listPrice)}
-                    labels={['Wholesale', 'Profit Entry', 'Breakeven', 'Asking ▶']}
+                    labels={['Wholesale', 'Profit Entry', 'Income Value', 'Asking ▶']}
                     termsNote="20% down · 6.0% rate · 30-year term"
                   />
                 );

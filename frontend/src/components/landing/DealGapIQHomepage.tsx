@@ -153,7 +153,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <div className="hero-body">
           <p className="hero-subtitle">
-            DealGapIQ analyzes the local market to establish your <strong style={{ color: '#2dd4bf' }}>Breakeven Price</strong>, your <strong style={{ color: '#2dd4bf' }}>Target Buy</strong>, and your <strong style={{ color: '#2dd4bf' }}>Deal Gap</strong> for any property — then layers in seller motivation to show you the real probability of closing the deal at your price.
+            DealGapIQ analyzes the local market to establish your <strong style={{ color: '#2dd4bf' }}>Income Value</strong>, your <strong style={{ color: '#2dd4bf' }}>Target Buy</strong>, and your <strong style={{ color: '#2dd4bf' }}>Deal Gap</strong> for any property — then layers in seller motivation to show you the real probability of closing the deal at your price.
           </p>
           <p className="hero-subtitle hero-cta-line">
             Scan any property. Know your number.
@@ -262,7 +262,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 <div className="scan-demo-metric-sub">At 8% target return</div>
               </div>
               <div className="scan-demo-metric">
-                <div className="scan-demo-metric-label">BREAKEVEN PRICE</div>
+                <div className="scan-demo-metric-label">INCOME VALUE</div>
                 <div className="scan-demo-metric-value white">$312K</div>
                 <div className="scan-demo-metric-sub">Covers all costs</div>
               </div>
@@ -293,7 +293,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </div>
                 <div className="scan-demo-marker center">
                   <div className="scan-demo-marker-value">$312K</div>
-                  <div className="scan-demo-marker-label">Breakeven</div>
+                  <div className="scan-demo-marker-label">Income Value</div>
                 </div>
                 <div className="scan-demo-marker end">
                   <div className="scan-demo-marker-value">$349.9K</div>
@@ -603,7 +603,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </svg>
               </div>
               <div className="tk-title">Price</div>
-              <p className="tk-text">Three numbers that define your deal: Breakeven, Target, and Wholesale — calculated in 60 seconds flat.</p>
+              <p className="tk-text">Three numbers that define your deal: Income Value, Target, and Wholesale — calculated in 60 seconds flat.</p>
             </div>
             <div className="toolkit-card">
               <div className="tk-icon go">

@@ -258,7 +258,7 @@ export interface DealScoreData {
   label: string  // "Strong Opportunity", "Great Opportunity", etc.
   verdict: string
   discountPercent: number  // How much discount from list needed
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
   items: ScoreItem[]
 }
@@ -292,22 +292,22 @@ export interface StrategyGrade {
 // DEAL GAP CHART
 // ============================================
 
-export type DealZoneLabel = 'Loss Zone' | 'High Risk' | 'Breakeven / Negotiate' | 'Profit Zone' | 'Deep Value'
+export type DealZoneLabel = 'Loss Zone' | 'High Risk' | 'Income Value / Negotiate' | 'Profit Zone' | 'Deep Value'
 export type SellerMotivationLevel = 'Low' | 'Moderate' | 'High'
 
 export interface DealGapData {
   /** Current list/asking price */
   listPrice: number
-  /** LTR breakeven purchase price (where cash flow = $0) */
-  breakevenPrice: number
+  /** LTR Income Value (where cash flow = $0) */
+  incomeValue: number
   /** Proposed or calculated buy price */
   buyPrice: number
   /** Deal gap percentage: ((listPrice - buyPrice) / listPrice) * 100 */
   dealGapPercent: number
-  /** Buy price vs breakeven percentage */
-  buyVsBreakevenPercent: number
-  /** List price vs breakeven percentage */
-  listVsBreakevenPercent: number
+  /** Buy price vs Income Value percentage */
+  buyVsIncomeValuePercent: number
+  /** List price vs Income Value percentage */
+  listVsIncomeValuePercent: number
   /** Current deal zone based on buy position */
   zone: DealZoneLabel
   /** Seller motivation indicator */
@@ -319,11 +319,11 @@ export interface DealGapData {
 }
 
 export interface DealGapChartProps {
-  /** Breakeven price (where cash flow = $0) */
-  breakeven: number
+  /** Income Value (where cash flow = $0) */
+  incomeValue: number
   /** Current list/asking price */
   listPrice: number
-  /** Buy price from worksheet (defaults to 90% of breakeven) */
+  /** Buy price from worksheet (defaults to 90% of Income Value) */
   initialBuyPrice?: number
   /** Threshold percentage for deal gap glow effect */
   thresholdPct?: number

@@ -322,7 +322,7 @@ class FlipExcelExporter:
         ann_roi = self.bd.get("annualized_roi", 0)
         margin = self.bd.get("profit_margin", 0)
         total_cash = self.bd.get("total_cash_required", 0)
-        breakeven = self.bd.get("minimum_sale_for_breakeven", 0)
+        income_value = self.bd.get("minimum_sale_for_income_value", 0)
         arv = self.bd.get("arv", 0)
         meets_rule = self.bd.get("meets_70_rule", False)
 
@@ -337,12 +337,12 @@ class FlipExcelExporter:
             r = self._label_value(ws, r, label, val, fmt=fmt, highlight=True)
 
         r += 1
-        r = self._section_header(ws, r, "BREAK-EVEN ANALYSIS")
-        cushion = arv - breakeven if arv and breakeven else 0
+        r = self._section_header(ws, r, "INCOME VALUE ANALYSIS")
+        cushion = arv - income_value if arv and income_value else 0
         rows2 = [
-            ("Minimum Sale Price to Break Even", breakeven, _CUR),
+            ("Minimum Sale Price for Income Value", income_value, _CUR),
             ("After-Repair Value (ARV)", arv, _CUR),
-            ("Cushion Above Breakeven", cushion, _CUR),
+            ("Cushion Above Income Value", cushion, _CUR),
         ]
         for label, val, fmt in rows2:
             r = self._label_value(ws, r, label, val, fmt=fmt)

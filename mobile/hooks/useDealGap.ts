@@ -2,7 +2,7 @@
  * useDealGap — Hook for Deal Gap calculations and data
  * Matches frontend/src/hooks/useDealGap.ts
  *
- * Computes deal gap metrics from breakeven and list price.
+ * Computes deal gap metrics from income value and list price.
  */
 
 import { useMemo } from 'react';
@@ -12,7 +12,7 @@ import { useMemo } from 'react';
 export type DealZoneLabel =
   | 'Loss Zone'
   | 'High Risk'
-  | 'Breakeven / Negotiate'
+  | 'Income Value / Negotiate'
   | 'Profit Zone'
   | 'Deep Value';
 
@@ -56,7 +56,7 @@ function getDealZone(
 
   if (buyPrice > breakevenPrice) return { zone: 'Loss Zone', motivation: 'Low' };
   if (buyBelowBreakevenPct < 2) return { zone: 'High Risk', motivation: 'Moderate' };
-  if (buyBelowBreakevenPct < 5) return { zone: 'Breakeven / Negotiate', motivation: 'Moderate' };
+  if (buyBelowBreakevenPct < 5) return { zone: 'Income Value / Negotiate', motivation: 'Moderate' };
   if (buyBelowBreakevenPct < 12) return { zone: 'Profit Zone', motivation: 'High' };
   return { zone: 'Deep Value', motivation: 'High' };
 }

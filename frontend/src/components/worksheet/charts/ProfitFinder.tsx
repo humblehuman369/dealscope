@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 interface ProfitFinderProps {
   purchasePrice: number
   listPrice: number
-  breakevenPrice: number
+  incomeValue: number
   monthlyCashFlow: number
   // Optional labels for different strategies
   buyLabel?: string
@@ -25,7 +25,7 @@ const formatCurrency = (value: number) =>
 export function ProfitFinder({
   purchasePrice,
   listPrice,
-  breakevenPrice,
+  incomeValue,
   monthlyCashFlow,
   buyLabel = 'Buy',
   listLabel = 'List',
@@ -35,23 +35,23 @@ export function ProfitFinder({
   
   // Calculate marker positions (percentage from top)
   const positions = useMemo(() => {
-    const breakevenCenter = 50 // Breakeven is always at center
+    const incomeValueCenter = 50 // Income value is always at center
     
     function priceToPosition(price: number): number {
-      if (!breakevenPrice || breakevenPrice <= 0) return 50
-      const diffFromBreakeven = price - breakevenPrice
-      const rangePercent = breakevenPrice * 0.5 // 50% of breakeven = full range
-      const offset = (diffFromBreakeven / rangePercent) * 42
-      const position = breakevenCenter - offset
+      if (!incomeValue || incomeValue <= 0) return 50
+      const diffFromIncomeValue = price - incomeValue
+      const rangePercent = incomeValue * 0.5 // 50% of income value = full range
+      const offset = (diffFromIncomeValue / rangePercent) * 42
+      const position = incomeValueCenter - offset
       return Math.max(8, Math.min(92, position))
     }
     
     return {
       purchase: priceToPosition(purchasePrice),
       list: priceToPosition(listPrice),
-      breakeven: breakevenCenter,
+      incomeValue: incomeValueCenter,
     }
-  }, [purchasePrice, listPrice, breakevenPrice])
+  }, [purchasePrice, listPrice, incomeValue])
   
   const isNegative = monthlyCashFlow < 0
   const statusText = isNegative ? 'Loss Zone' : 'Profit Zone'
@@ -82,12 +82,12 @@ export function ProfitFinder({
         <div className="pf-marker-column right">
           <div 
             className="pf-marker even"
-            style={{ top: `${positions.breakeven}%` }}
+            style={{ top: `${positions.incomeValue}%` }}
           >
             <span className="pf-marker-arrow">◀</span>
             <div className="pf-marker-stack">
               <span className="pf-marker-name">{evenLabel}</span>
-              <span className="pf-marker-val">{formatCurrency(breakevenPrice)}</span>
+              <span className="pf-marker-val">{formatCurrency(incomeValue)}</span>
             </div>
           </div>
           <div 
