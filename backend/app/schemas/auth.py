@@ -194,6 +194,9 @@ class UserResponse(BaseModel):
     onboarding_completed: bool = False
     roles: List[str] = []
     permissions: List[str] = []
+    # Subscription tier (free or pro) — used for frontend feature gating
+    subscription_tier: str = "free"
+    subscription_status: str = "active"
 
     class Config:
         from_attributes = True

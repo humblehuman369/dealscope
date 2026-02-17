@@ -314,6 +314,8 @@ export interface UserResponse {
   onboarding_completed: boolean
   roles: string[]
   permissions: string[]
+  subscription_tier: 'free' | 'pro'
+  subscription_status: string
 }
 
 export interface LoginResponse {

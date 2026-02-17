@@ -203,6 +203,25 @@ def require_permission(codename: str) -> Callable:
 
 
 # ------------------------------------------------------------------
+# Subscription tier checks
+# ------------------------------------------------------------------
+
+async def get_current_pro_user(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Require the user to have an active Pro subscription."""
+    from app.services.billing_service import billing_service
+    subscription = await billing_service.get_subscription(db, current_user.id)
+    if subscription and subscription.is_premium():
+        return current_user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="This feature requires a Pro subscription. Upgrade at /pricing",
+    )
+
+
+# ------------------------------------------------------------------
 # Type aliases for cleaner route signatures
 # ------------------------------------------------------------------
 
@@ -212,3 +231,4 @@ VerifiedUser = Annotated[User, Depends(get_current_verified_user)]
 SuperUser = Annotated[User, Depends(get_current_superuser)]
 CurrentSession = Annotated[UserSession, Depends(get_current_session)]
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+ProUser = Annotated[User, Depends(get_current_pro_user)]

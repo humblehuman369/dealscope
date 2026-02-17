@@ -18,7 +18,7 @@ from io import BytesIO
 
 from app.services.report_service import report_service
 from app.services.property_service import property_service
-from app.core.deps import CurrentUser, DbSession, OptionalUser
+from app.core.deps import CurrentUser, DbSession, OptionalUser, ProUser
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ router = APIRouter(prefix="/api/v1/reports", tags=["Reports"])
 )
 async def generate_excel_report(
     property_id: str,
-    current_user: OptionalUser,
+    current_user: ProUser,
     include_sensitivity: bool = Query(True, description="Include sensitivity analysis sheet"),
 ):
     """
@@ -116,7 +116,7 @@ async def generate_excel_report(
 )
 async def generate_financial_statements_report(
     property_id: str,
-    current_user: OptionalUser,
+    current_user: ProUser,
 ):
     """
     Generate a comprehensive financial statements report for lenders/investors.
@@ -290,7 +290,7 @@ async def generate_csv_report(
 )
 async def generate_saved_property_report(
     saved_property_id: str,
-    current_user: CurrentUser,
+    current_user: ProUser,
     db: DbSession,
     include_sensitivity: bool = Query(True, description="Include sensitivity analysis"),
 ):
