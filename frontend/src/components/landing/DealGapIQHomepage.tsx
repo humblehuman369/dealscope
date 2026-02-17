@@ -96,7 +96,10 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           <Link href="/" className="logo">
             <div className="logo-text">DealGap<span>IQ</span></div>
           </Link>
-          <div className="nav-links" />
+          <div className="nav-links" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <a href="#strategies" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>Product</a>
+            <a href="/pricing" style={{ color: '#0EA5E9', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>Pricing</a>
+          </div>
           <div className="nav-actions">
             {isAuthenticated && user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
