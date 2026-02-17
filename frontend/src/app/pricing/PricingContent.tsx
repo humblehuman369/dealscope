@@ -870,7 +870,7 @@ export default function PricingContent() {
             features={proFeatures}
             cta="Start 7-Day Free Trial"
             ctaVariant="primary"
-            onCtaClick={() => router.push("/register?plan=pro")}
+            onCtaClick={() => router.push(`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`)}
           />
         </section>
 
@@ -1399,7 +1399,7 @@ export default function PricingContent() {
             }}
           >
             <button
-              onClick={() => router.push("/register?plan=pro")}
+              onClick={() => router.push(`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`)}
               style={{
                 padding: "13px 28px",
                 borderRadius: "8px",

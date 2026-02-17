@@ -29,8 +29,16 @@ interface ProGateProps {
 export function ProGate({ children, feature, mode = 'inline', fallback }: ProGateProps) {
   const { isPro, isLoading } = useSubscription()
 
-  if (isLoading) return <>{children}</>
   if (isPro) return <>{children}</>
+
+  // While session is loading, show a muted skeleton instead of flashing Pro content
+  if (isLoading) {
+    return (
+      <div className="opacity-30 pointer-events-none select-none animate-pulse">
+        {children}
+      </div>
+    )
+  }
 
   if (fallback) return <>{fallback}</>
 

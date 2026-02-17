@@ -154,11 +154,14 @@ const InputField: React.FC<{
 };
 
 // ─── Plan Summary Sidebar ───
-const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string }> = ({
+const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boolean }> = ({
   plan,
   trialEndDate,
+  annual = true,
 }) => {
   const isPro = plan === "pro";
+  const proPrice = annual ? "$29" : "$39";
+  const proBillingNote = annual ? "Billed annually · Cancel anytime" : "Billed monthly · Cancel anytime";
 
   const features = isPro
     ? [
@@ -229,7 +232,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string }> = ({
               lineHeight: 1,
             }}
           >
-            {isPro ? "$29" : "Free"}
+            {isPro ? proPrice : "Free"}
           </span>
           {isPro && (
             <span style={{ fontSize: "14px", color: "#64748B", fontWeight: 500 }}>
@@ -239,7 +242,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string }> = ({
         </div>
         {isPro && (
           <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>
-            Billed annually · Cancel anytime
+            {proBillingNote}
           </div>
         )}
       </div>
@@ -550,7 +553,9 @@ function RegistrationInner() {
   const loginMutation = useLogin();
 
   const planParam = searchParams.get("plan");
+  const billingParam = searchParams.get("billing");
   const initialPlan: PlanType = planParam === "starter" ? "starter" : "pro";
+  const isAnnual = billingParam !== "monthly"; // default to annual
 
   const [plan, setPlan] = useState<PlanType>(initialPlan);
   const [step, setStep] = useState<Step>("form");
@@ -925,7 +930,7 @@ function RegistrationInner() {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: "12px", color: "#94A3B8" }}>After trial</span>
             <span style={{ fontSize: "12px", color: "#CBD5E1", fontWeight: 600 }}>
-              $29/mo (billed annually) or cancel free
+              {isAnnual ? "$29/mo (billed annually)" : "$39/mo"} or cancel free
             </span>
           </div>
         </div>
@@ -1243,7 +1248,7 @@ function RegistrationInner() {
                   transition: "all 0.2s",
                 }}
               >
-                {p === "starter" ? "Starter \u00B7 Free" : "Pro \u00B7 $29/mo"}
+                {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29" : "$39"}/mo`}
               </button>
             ))}
           </div>
@@ -1266,7 +1271,7 @@ function RegistrationInner() {
           {stepRenderers[step]()}
 
           {/* Right: Plan summary (not on success) */}
-          {step !== "success" && <PlanSummary plan={plan} trialEndDate={trialEndDate} />}
+          {step !== "success" && <PlanSummary plan={plan} trialEndDate={trialEndDate} annual={isAnnual} />}
         </section>
 
         {/* ─── FOOTER ─── */}

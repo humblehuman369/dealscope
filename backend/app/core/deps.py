@@ -213,7 +213,7 @@ async def get_current_pro_user(
     """Require the user to have an active Pro subscription."""
     from app.services.billing_service import billing_service
     subscription = await billing_service.get_subscription(db, current_user.id)
-    if subscription and subscription.is_premium():
+    if subscription and subscription.is_premium() and subscription.is_active():
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

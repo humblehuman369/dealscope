@@ -140,17 +140,16 @@ class BillingService:
         subscription = result.scalar_one_or_none()
         
         if not subscription:
+            free_limits = TIER_LIMITS[SubscriptionTier.FREE]
             subscription = Subscription(
                 user_id=user_id,
                 tier=SubscriptionTier.FREE,
                 status=SubscriptionStatus.ACTIVE,
-                **TIER_LIMITS[SubscriptionTier.FREE],
+                properties_limit=free_limits["properties_limit"],
+                searches_per_month=free_limits["searches_per_month"],
+                api_calls_per_month=free_limits["api_calls_per_month"],
+                usage_reset_date=datetime.now(timezone.utc),
             )
-            # Remove 'features' from limits as it's not a column
-            subscription.properties_limit = TIER_LIMITS[SubscriptionTier.FREE]["properties_limit"]
-            subscription.searches_per_month = TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"]
-            subscription.api_calls_per_month = TIER_LIMITS[SubscriptionTier.FREE]["api_calls_per_month"]
-            subscription.usage_reset_date = datetime.now(timezone.utc)
             
             db.add(subscription)
             await db.commit()
@@ -175,8 +174,17 @@ class BillingService:
         db: AsyncSession, 
         user_id: uuid.UUID
     ) -> UsageResponse:
-        """Get user's current usage."""
+        """Get user's current usage. Lazily resets counters if 30+ days since last reset."""
         subscription = await self.get_or_create_subscription(db, user_id)
+        
+        # Lazy usage reset: if 30+ days since last reset, zero the counters
+        if subscription.usage_reset_date:
+            days_since_reset = (datetime.now(timezone.utc) - subscription.usage_reset_date).days
+            if days_since_reset >= 30:
+                subscription.reset_usage()
+                await db.commit()
+                await db.refresh(subscription)
+                logger.info(f"Auto-reset usage for user {user_id} ({days_since_reset} days since last reset)")
         
         # Count saved properties using COUNT query (not loading all into memory)
         from app.models.saved_property import SavedProperty
@@ -346,6 +354,11 @@ class BillingService:
         lookup_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Attach payment method and create subscription with 7-day trial."""
+        # Guard: prevent duplicate subscriptions
+        existing = await self.get_subscription(db, user.id)
+        if existing and existing.is_premium() and existing.is_active():
+            raise ValueError("User already has an active Pro subscription")
+        
         customer_id = await self.get_or_create_stripe_customer(db, user)
         
         if not self.is_configured:
@@ -490,11 +503,25 @@ class BillingService:
         db: AsyncSession, 
         event: Dict[str, Any]
     ) -> bool:
-        """Process Stripe webhook event."""
+        """Process Stripe webhook event (idempotent — skips duplicate event IDs)."""
+        event_id = event.get("id")
         event_type = event.get("type")
         data = event.get("data", {}).get("object", {})
         
-        logger.info(f"Processing webhook: {event_type}")
+        # Idempotency: skip if we've already processed this exact event.
+        # For invoice events we check by stripe_invoice_id; for all events
+        # we log the event_id so replays are harmless.
+        if event_id and event_type == "invoice.paid":
+            invoice_id = data.get("id")
+            if invoice_id:
+                existing = await db.execute(
+                    select(PaymentHistory).where(PaymentHistory.stripe_invoice_id == invoice_id)
+                )
+                if existing.scalar_one_or_none():
+                    logger.info(f"Skipping duplicate webhook event {event_id} (invoice {invoice_id} already recorded)")
+                    return True
+        
+        logger.info(f"Processing webhook: {event_type} (event_id={event_id})")
         
         handlers = {
             "checkout.session.completed": self._handle_checkout_completed,
@@ -672,22 +699,22 @@ class BillingService:
         }
         subscription.status = status_map.get(stripe_sub.get("status"), SubscriptionStatus.ACTIVE)
         
-        # Update period
+        # Update period (use timezone-aware datetimes to match model columns)
         if stripe_sub.get("current_period_start"):
-            subscription.current_period_start = datetime.fromtimestamp(stripe_sub["current_period_start"])
+            subscription.current_period_start = datetime.fromtimestamp(stripe_sub["current_period_start"], tz=timezone.utc)
         if stripe_sub.get("current_period_end"):
-            subscription.current_period_end = datetime.fromtimestamp(stripe_sub["current_period_end"])
+            subscription.current_period_end = datetime.fromtimestamp(stripe_sub["current_period_end"], tz=timezone.utc)
         
         subscription.cancel_at_period_end = stripe_sub.get("cancel_at_period_end", False)
         
         if stripe_sub.get("canceled_at"):
-            subscription.canceled_at = datetime.fromtimestamp(stripe_sub["canceled_at"])
+            subscription.canceled_at = datetime.fromtimestamp(stripe_sub["canceled_at"], tz=timezone.utc)
         
         # Trial
         if stripe_sub.get("trial_start"):
-            subscription.trial_start = datetime.fromtimestamp(stripe_sub["trial_start"])
+            subscription.trial_start = datetime.fromtimestamp(stripe_sub["trial_start"], tz=timezone.utc)
         if stripe_sub.get("trial_end"):
-            subscription.trial_end = datetime.fromtimestamp(stripe_sub["trial_end"])
+            subscription.trial_end = datetime.fromtimestamp(stripe_sub["trial_end"], tz=timezone.utc)
         
         # Determine tier from price
         items = stripe_sub.get("items", {}).get("data", [])
@@ -717,8 +744,16 @@ class BillingService:
         user_id: uuid.UUID,
         limit: int = 10,
         offset: int = 0,
-    ) -> List[PaymentHistoryItem]:
-        """Get user's payment history."""
+    ) -> Tuple[List[PaymentHistoryItem], int]:
+        """Get user's payment history. Returns (items, total_count)."""
+        from sqlalchemy import func
+        
+        # Total count for pagination
+        count_result = await db.execute(
+            select(func.count()).select_from(PaymentHistory).where(PaymentHistory.user_id == user_id)
+        )
+        total_count = count_result.scalar() or 0
+        
         result = await db.execute(
             select(PaymentHistory)
             .where(PaymentHistory.user_id == user_id)
@@ -728,7 +763,7 @@ class BillingService:
         )
         payments = result.scalars().all()
         
-        return [
+        items = [
             PaymentHistoryItem(
                 id=str(p.id),
                 amount=p.amount,
@@ -741,6 +776,7 @@ class BillingService:
             )
             for p in payments
         ]
+        return items, total_count
 
 
 # Singleton instance

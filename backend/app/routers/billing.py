@@ -74,8 +74,6 @@ async def get_subscription(
         id=str(subscription.id),
         tier=subscription.tier,
         status=subscription.status,
-        stripe_customer_id=subscription.stripe_customer_id,
-        stripe_subscription_id=subscription.stripe_subscription_id,
         current_period_start=subscription.current_period_start,
         current_period_end=subscription.current_period_end,
         cancel_at_period_end=subscription.cancel_at_period_end,
@@ -225,9 +223,9 @@ async def create_subscription(
     is created with trial_period_days=7.
     """
     if not data.price_id and not data.lookup_key:
-        # Default to Pro monthly price from env
-        import os
-        data.price_id = os.getenv("STRIPE_PRICE_PRO_MONTHLY", "")
+        # Default to Pro monthly price from settings
+        from app.core.config import settings
+        data.price_id = settings.STRIPE_PRICE_PRO_MONTHLY
     
     try:
         result = await billing_service.create_subscription(
@@ -296,7 +294,7 @@ async def get_payment_history(
     
     Returns a list of past payments with invoice links.
     """
-    payments = await billing_service.get_payment_history(
+    payments, total_count = await billing_service.get_payment_history(
         db, 
         current_user.id,
         limit=limit,
@@ -305,8 +303,8 @@ async def get_payment_history(
     
     return PaymentHistoryResponse(
         payments=payments,
-        total_count=len(payments),
-        has_more=len(payments) == limit,
+        total_count=total_count,
+        has_more=(offset + len(payments)) < total_count,
     )
 
 
