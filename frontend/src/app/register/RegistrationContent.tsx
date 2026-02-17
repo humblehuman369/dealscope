@@ -626,7 +626,10 @@ function RegistrationInner() {
     setStep("success");
   };
 
-  const isFormValid = form.email.includes("@") && form.password.length >= 8 && form.firstName.length > 0;
+  const isFormValid =
+    form.email.includes("@") &&
+    form.password.length >= 8 &&
+    form.firstName.trim().length >= 2;
 
   // ─── Render Steps ───
 
@@ -730,10 +733,10 @@ function RegistrationInner() {
 
       {/* Form fields */}
       <InputField
-        label="First name"
+        label="Full name"
         value={form.firstName}
         onChange={(v) => setForm({ ...form, firstName: v })}
-        placeholder="Brad"
+        placeholder="Brad Smith"
         autoFocus
       />
 

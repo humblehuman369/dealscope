@@ -40,6 +40,20 @@ class ApiError extends Error {
   }
 }
 
+/** Turn FastAPI 422/400 detail (string or array of { loc, msg }) into one readable message. */
+function formatApiErrorDetail(detail: unknown, status: number): string {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail) && detail.length > 0) {
+    const parts = detail.map((e: { loc?: string[]; msg?: string }) => {
+      const field = e.loc?.filter((s) => s !== 'body')[0] ?? 'field'
+      const label = field.replace(/_/g, ' ')
+      return `${label}: ${e.msg ?? 'invalid'}`
+    })
+    return parts.join('. ')
+  }
+  return `Request failed (${status}). Please check your input and try again.`
+}
+
 // ------------------------------------------------------------------
 // In-memory token fallback
 //
@@ -173,11 +187,8 @@ async function apiRequest<T>(
 
   if (!response.ok) {
     const errBody = await response.json().catch(() => ({ detail: 'Unknown error' }))
-    throw new ApiError(
-      errBody.detail || `API Error: ${response.status}`,
-      response.status,
-      errBody.code,
-    )
+    const message = formatApiErrorDetail(errBody.detail, response.status)
+    throw new ApiError(message, response.status, errBody.code)
   }
 
   // 204 No Content has no body — return undefined instead of parsing
