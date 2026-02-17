@@ -324,7 +324,7 @@ const PaymentForm: React.FC<{
       if (!cardElement) throw new Error("Card element not found");
 
       const { error: stripeError, setupIntent } = await stripe.confirmCardSetup(client_secret, {
-        payment_method: { card: cardElement },
+        payment_method: { card: cardElement as unknown as import('@stripe/stripe-js').StripeCardElement },
       });
 
       if (stripeError) {
