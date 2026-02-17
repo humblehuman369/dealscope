@@ -114,6 +114,12 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
         profile_user = await user_repo.get_by_id(db, user.id, load_profile=True)
         profile = profile_user.profile if profile_user else None
 
+    # -- Subscription tier (lightweight lookup) --
+    from app.services.billing_service import billing_service
+    subscription = await billing_service.get_subscription(db, user.id)
+    tier = subscription.tier.value if subscription else "free"
+    sub_status = subscription.status.value if subscription else "active"
+
     return UserResponse(
         id=str(user.id),
         email=user.email,
@@ -129,6 +135,8 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
         onboarding_completed=profile.onboarding_completed if profile else False,
         roles=role_names,
         permissions=sorted(perms),
+        subscription_tier=tier,
+        subscription_status=sub_status,
     )
 
 

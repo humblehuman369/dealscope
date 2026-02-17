@@ -11,6 +11,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
 import { PriceTarget } from '@/lib/priceUtils'
+import { useSubscription } from '@/hooks/useSubscription'
 
 // Strategy type - matches VerdictIQ header options
 export type PopupStrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
@@ -314,6 +315,8 @@ export function DealMakerPopup({
   activePriceTarget = 'targetBuy',
   onPriceTargetChange,
 }: DealMakerPopupProps) {
+  const { isPro } = useSubscription()
+  
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
   
@@ -590,6 +593,36 @@ export function DealMakerPopup({
 
   // Don't render if not open
   if (!isOpen) return null
+
+  // Show upgrade prompt for free users
+  if (!isPro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
+        <div className="w-full max-w-lg bg-[#0B1120] rounded-t-2xl p-8 text-center">
+          <div className="mb-4 text-4xl">🔒</div>
+          <h3 className="text-xl font-bold text-white mb-2">Pro Feature</h3>
+          <p className="text-sm text-slate-400 mb-6">
+            Editable inputs and stress testing let you change any variable and see the Deal Gap recalculate in real time. Upgrade to Pro to unlock.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <a
+              href="/pricing"
+              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #0EA5E9, #0284C7)' }}
+            >
+              Upgrade to Pro
+            </a>
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-slate-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div 

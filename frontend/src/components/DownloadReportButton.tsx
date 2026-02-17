@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react'
 import { API_BASE_URL } from '@/lib/env'
+import { ProGate } from '@/components/ProGate'
 
 interface DownloadReportButtonProps {
   propertyId: string
@@ -96,6 +97,7 @@ export default function DownloadReportButton({
   }
 
   return (
+    <ProGate feature="Export Reports" mode="inline">
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -167,6 +169,7 @@ export default function DownloadReportButton({
         </>
       )}
     </div>
+    </ProGate>
   )
 }
 

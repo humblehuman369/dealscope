@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api-client'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
+import { ProGate } from '@/components/ProGate'
 
 /* ─── Types ─── */
 
@@ -384,12 +385,14 @@ function CompareContent() {
 
 export default function ComparePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#38bdf8' }} />
-      </div>
-    }>
-      <CompareContent />
-    </Suspense>
+    <ProGate feature="Deal Comparison" mode="section">
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#38bdf8' }} />
+        </div>
+      }>
+        <CompareContent />
+      </Suspense>
+    </ProGate>
   )
 }

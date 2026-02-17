@@ -26,7 +26,7 @@ from app.services.brrrr_exporter import BRRRRExcelExporter
 from app.services.str_exporter import STRExcelExporter
 from app.services.house_hack_exporter import HouseHackExcelExporter
 from app.services.property_service import property_service
-from app.core.deps import CurrentUser, OptionalUser
+from app.core.deps import CurrentUser, OptionalUser, ProUser
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +214,7 @@ async def get_proforma(
 )
 async def download_proforma_excel(
     property_id: str,
-    current_user: OptionalUser,
+    current_user: ProUser,
     address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy"),
     land_value_percent: float = Query(0.20, ge=0, le=0.50),
@@ -324,7 +324,7 @@ async def download_proforma_excel(
 )
 async def download_proforma_pdf(
     property_id: str,
-    current_user: OptionalUser,
+    current_user: ProUser,
     address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy"),
     theme: str = Query("light", description="Report theme: 'light' for print, 'dark' for digital"),
