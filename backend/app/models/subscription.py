@@ -72,10 +72,10 @@ class Subscription(Base):
     trial_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     trial_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
-    # Usage limits based on tier
-    properties_limit: Mapped[int] = mapped_column(Integer, default=5)  # Free tier: 5
-    searches_per_month: Mapped[int] = mapped_column(Integer, default=25)  # Free tier: 25
-    api_calls_per_month: Mapped[int] = mapped_column(Integer, default=100)  # Free tier: 100
+    # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
+    properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
+    searches_per_month: Mapped[int] = mapped_column(Integer, default=5)  # Starter: 5 analyses/mo
+    api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
     
     # Usage tracking (reset monthly)
     searches_used: Mapped[int] = mapped_column(Integer, default=0)
