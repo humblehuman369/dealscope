@@ -169,10 +169,17 @@ async def create_checkout_session(
     
     Returns a URL to redirect the user to Stripe's hosted checkout page.
     """
+    if not data.price_id and not data.lookup_key:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either price_id or lookup_key must be provided",
+        )
+    
     return await billing_service.create_checkout_session(
         db,
         current_user,
         price_id=data.price_id,
+        lookup_key=data.lookup_key,
         success_url=data.success_url,
         cancel_url=data.cancel_url,
     )

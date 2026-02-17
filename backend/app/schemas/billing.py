@@ -11,9 +11,7 @@ from enum import Enum
 class SubscriptionTier(str, Enum):
     """Subscription tier levels."""
     FREE = "free"
-    STARTER = "starter"
     PRO = "pro"
-    ENTERPRISE = "enterprise"
 
 
 class SubscriptionStatus(str, Enum):
@@ -127,7 +125,8 @@ class UsageResponse(BaseModel):
 
 class CreateCheckoutRequest(BaseModel):
     """Request to create a Stripe checkout session."""
-    price_id: str = Field(..., description="Stripe price ID")
+    price_id: Optional[str] = Field(None, description="Stripe price ID (provide this or lookup_key)")
+    lookup_key: Optional[str] = Field(None, description="Stripe price lookup key (alternative to price_id)")
     success_url: Optional[str] = Field(None, description="URL to redirect after success")
     cancel_url: Optional[str] = Field(None, description="URL to redirect after cancel")
 
