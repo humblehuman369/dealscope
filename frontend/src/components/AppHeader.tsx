@@ -102,7 +102,7 @@ const TABS: { id: AppTab; label: string }[] = [
 
 // Pages where header should be completely hidden
 // Verdict & strategy have their own AnalysisNav — no need for AppHeader there
-const HIDDEN_ROUTES = ['/', '/verdict', '/strategy']
+const HIDDEN_ROUTES = ['/', '/verdict', '/strategy', '/pricing']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
