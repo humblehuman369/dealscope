@@ -15,6 +15,9 @@ from app.schemas.billing import (
     UsageResponse,
     CreateCheckoutRequest,
     CheckoutSessionResponse,
+    SetupIntentResponse,
+    CreateSubscriptionRequest,
+    CreateSubscriptionResponse,
     PortalSessionResponse,
     CancelSubscriptionRequest,
     CancelSubscriptionResponse,
@@ -183,6 +186,73 @@ async def create_checkout_session(
         success_url=data.success_url,
         cancel_url=data.cancel_url,
     )
+
+
+@router.post(
+    "/setup-intent",
+    response_model=SetupIntentResponse,
+    summary="Create SetupIntent for card collection"
+)
+async def create_setup_intent(
+    current_user: CurrentUser,
+    db: DbSession
+):
+    """
+    Create a Stripe SetupIntent for collecting a payment method
+    during the Pro registration flow.
+    
+    Returns a client_secret for use with Stripe.js confirmCardSetup().
+    """
+    result = await billing_service.create_setup_intent(db, current_user)
+    return SetupIntentResponse(client_secret=result["client_secret"])
+
+
+@router.post(
+    "/subscribe",
+    response_model=CreateSubscriptionResponse,
+    summary="Create subscription with trial"
+)
+async def create_subscription(
+    data: CreateSubscriptionRequest,
+    current_user: CurrentUser,
+    db: DbSession
+):
+    """
+    Create a Pro subscription with a 7-day free trial.
+    
+    Requires a payment_method_id from a confirmed SetupIntent.
+    The payment method is attached to the customer and a subscription
+    is created with trial_period_days=7.
+    """
+    if not data.price_id and not data.lookup_key:
+        # Default to Pro monthly price from env
+        import os
+        data.price_id = os.getenv("STRIPE_PRICE_PRO_MONTHLY", "")
+    
+    try:
+        result = await billing_service.create_subscription(
+            db,
+            current_user,
+            payment_method_id=data.payment_method_id,
+            price_id=data.price_id,
+            lookup_key=data.lookup_key,
+        )
+        return CreateSubscriptionResponse(
+            subscription_id=result["subscription_id"],
+            status=result["status"],
+            trial_end=result.get("trial_end"),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(f"Subscription creation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create subscription. Please try again.",
+        )
 
 
 @router.post(

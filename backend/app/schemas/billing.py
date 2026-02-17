@@ -137,6 +137,25 @@ class CheckoutSessionResponse(BaseModel):
     session_id: str
 
 
+class SetupIntentResponse(BaseModel):
+    """Stripe SetupIntent client secret for embedded card collection."""
+    client_secret: str
+
+
+class CreateSubscriptionRequest(BaseModel):
+    """Request to create a subscription after collecting payment method."""
+    payment_method_id: str = Field(..., description="Stripe PaymentMethod ID from confirmed SetupIntent")
+    price_id: Optional[str] = Field(None, description="Stripe price ID")
+    lookup_key: Optional[str] = Field(None, description="Stripe price lookup key")
+
+
+class CreateSubscriptionResponse(BaseModel):
+    """Response after subscription creation."""
+    subscription_id: str
+    status: str
+    trial_end: Optional[datetime] = None
+
+
 class PortalSessionResponse(BaseModel):
     """Stripe customer portal session response."""
     portal_url: str
