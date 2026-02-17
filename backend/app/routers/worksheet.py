@@ -265,7 +265,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
         annual_debt_service = result["annual_debt_service"]
         total_cash_needed = result["total_cash_required"]
         list_price = input_data.list_price or (input_data.purchase_price * 1.03)
-        breakeven_price = input_data.purchase_price * (annual_debt_service / noi) if noi > 0 else 0
+        income_value = input_data.purchase_price * (annual_debt_service / noi) if noi > 0 else 0
         target_cash_flow = total_cash_needed * 0.10
         ten_coc_price = (
             input_data.purchase_price - ((target_cash_flow - (noi - annual_debt_service)) / 0.25)
@@ -305,7 +305,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
             "deal_score": deal_score,
             "loan_amount": result["loan_amount"], "monthly_payment": result["monthly_pi"],
             "annual_debt_service": annual_debt_service, "total_cash_needed": total_cash_needed,
-            "list_price": list_price, "breakeven_price": breakeven_price,
+            "list_price": list_price, "income_value": income_value,
             "target_coc_price": ten_coc_price, "mao_price": mao_price,
             "discount_percent": discount_percent, "seasonality": seasonality,
         }
@@ -438,7 +438,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
         total_renovation = result["total_renovation"]
         all_in_cost = input_data.purchase_price + total_renovation + input_data.purchase_costs
         purchase_rehab_cost = input_data.purchase_price + input_data.rehab_costs
-        breakeven_price = result["minimum_sale_for_breakeven"]
+        income_value = result["minimum_sale_for_income_value"]
         target_fifteen_all_in = (input_data.arv * 0.85) - input_data.rehab_costs - input_data.purchase_costs
         total_cash_required = result["down_payment"] + input_data.purchase_costs + input_data.inspection_costs + points_cost + total_renovation + total_holding_costs
         total_project_cost = input_data.purchase_price + input_data.purchase_costs + input_data.inspection_costs + total_renovation + total_holding_costs
@@ -473,7 +473,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             "meets_70_rule": result["meets_70_rule"], "mao": result["seventy_pct_max_price"],
             "deal_score": deal_score,
             "all_in_cost": all_in_cost, "purchase_rehab_cost": purchase_rehab_cost,
-            "breakeven_price": breakeven_price, "target_fifteen_all_in": target_fifteen_all_in,
+            "income_value": income_value, "target_fifteen_all_in": target_fifteen_all_in,
         }
     except Exception as e:
         logger.error(f"Flip worksheet calculation error: {e}")
@@ -515,7 +515,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
         full_rental_cash_flow = full_rental_noi - (monthly_piti * 12)
         moveout_cap_rate = (full_rental_noi / input_data.purchase_price * 100) if input_data.purchase_price > 0 else 0
         list_price = input_data.list_price or (input_data.purchase_price * 1.056)
-        breakeven_price = input_data.purchase_price + ((monthly_piti + total_monthly_expenses - effective_rental_income) * 12 / 0.08)
+        income_value = input_data.purchase_price + ((monthly_piti + total_monthly_expenses - effective_rental_income) * 12 / 0.08)
         target_coc_price = input_data.purchase_price * 0.93
         fha_max_price = input_data.fha_max_price or 472030
 
@@ -539,7 +539,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
                 (15 if savings_vs_renting >= 1000 else 10 if savings_vs_renting >= 500 else 0) +
                 (15 if full_rental_cash_flow > 0 else 0)
             ))),
-            "list_price": list_price, "breakeven_price": breakeven_price,
+            "list_price": list_price, "income_value": income_value,
             "target_coc_price": target_coc_price, "fha_max_price": fha_max_price,
         }
     except Exception as e:

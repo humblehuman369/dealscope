@@ -124,7 +124,7 @@ For a property in Miami (ZIP 33139):
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `buy_discount_pct` | float | 0.05 | Target discount below breakeven |
+| `buy_discount_pct` | float | 0.05 | Target discount below Income Value |
 | `refinance_ltv` | float | 0.75 | Refinance loan-to-value |
 | `refinance_interest_rate` | float | 0.06 | Refinance mortgage rate |
 | `refinance_term_years` | int | 30 | Refinance loan term |
@@ -156,7 +156,7 @@ For a property in Miami (ZIP 33139):
 | `fha_down_payment_pct` | float | 0.035 | FHA minimum down payment |
 | `fha_mip_rate` | float | 0.0085 | FHA mortgage insurance premium |
 | `units_rented_out` | int | 2 | Number of units to rent |
-| `buy_discount_pct` | float | 0.05 | Target discount below breakeven |
+| `buy_discount_pct` | float | 0.05 | Target discount below Income Value |
 
 ### Wholesale Defaults
 
@@ -433,28 +433,30 @@ function Component({ zipCode }) {
 > Every property can be a good investment at the right price.
 > 
 > DealGapIQ answers two critical questions:
-> 1. **What price makes this deal work?** (Breakeven) - based on YOUR financing terms
+> 1. **What price makes this deal work?** (Income Value) - based on YOUR financing terms
 > 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
 
 ### Price Points
 
 | Price | Calculation | Purpose |
 |-------|-------------|---------|
-| **Breakeven** | Max price for $0 monthly cash flow | Maximum you can pay |
-| **Target Buy** | Breakeven × (1 - buy_discount_pct) | Recommended purchase price |
-| **Wholesale** | Breakeven × 0.70 | Assignment deal price |
+| **Income Value** | Max price for $0 monthly cash flow | Maximum you can pay |
+| **Target Buy** | Income Value × (1 - buy_discount_pct) | Recommended purchase price |
+| **Wholesale** | Income Value × 0.70 | Assignment deal price |
 
 ### Deal Gap
 
-The Deal Gap measures the distance between asking price and your breakeven:
+The Deal Gap measures the distance between list price and your target price:
 
 ```
-Deal Gap = (Asking Price - Breakeven) / Asking Price × 100%
+Deal Gap = (List Price - Target Price) / List Price × 100%
 ```
 
-- **Negative gap**: Deal is profitable at asking price
+- **Negative gap**: Deal is profitable at list price
 - **Positive gap**: Need to negotiate a discount
-- **0%**: Break-even at asking price
+- **0%**: Income Value at list price
+
+> **Note:** Income Gap = List Price - Income Value is an internal calculation used for analysis; the user-facing Deal Gap uses List Price and Target Price.
 
 ### Off-Market Properties
 

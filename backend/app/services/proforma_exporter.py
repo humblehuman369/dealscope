@@ -550,7 +550,7 @@ class ProformaExcelExporter:
             ("Score", f"{self.data.deal_score.score}/100", "text"),
             ("Grade", self.data.deal_score.grade or "N/A", "text"),
             ("Verdict", self.data.deal_score.verdict or "N/A", "text"),
-            ("Breakeven Price", self.data.deal_score.breakeven_price, "currency"),
+            ("Income Value", self.data.deal_score.income_value, "currency"),
         ]
         
         for label, value, fmt in score_rows:

@@ -112,7 +112,7 @@ function ScoreBar({
 // ============================================
 
 interface DealScoreCardProps {
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
   metrics?: DealMetrics
   compact?: boolean
@@ -120,8 +120,8 @@ interface DealScoreCardProps {
   listingStatus?: string
 }
 
-export default function DealScoreCard({ breakevenPrice, listPrice, metrics, compact = false, isOffMarket = false, listingStatus }: DealScoreCardProps) {
-  const score = useMemo(() => calculateDealScore(breakevenPrice, listPrice, metrics), [breakevenPrice, listPrice, metrics])
+export default function DealScoreCard({ incomeValue, listPrice, metrics, compact = false, isOffMarket = false, listingStatus }: DealScoreCardProps) {
+  const score = useMemo(() => calculateDealScore(incomeValue, listPrice, metrics), [incomeValue, listPrice, metrics])
   const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
   
   if (compact) {
@@ -183,7 +183,7 @@ export default function DealScoreCard({ breakevenPrice, listPrice, metrics, comp
               }
             </div>
             <div className="text-[12px] text-gray-500 dark:text-gray-500 mt-1">
-              Breakeven: {formatCurrency(score.breakevenPrice)}
+              Income Value: {formatCurrency(score.incomeValue)}
             </div>
           </div>
         </div>
@@ -202,8 +202,8 @@ export default function DealScoreCard({ breakevenPrice, listPrice, metrics, comp
               <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.listPrice)}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[12px] text-gray-500 dark:text-gray-400">Breakeven Price</span>
-              <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.breakevenPrice)}</span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">Income Value</span>
+              <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.incomeValue)}</span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-600">
               <span className="text-[12px] font-medium text-gray-700 dark:text-gray-300">Discount Required</span>

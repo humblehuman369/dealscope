@@ -709,8 +709,8 @@ class FlipResults(BaseModel):
     seventy_pct_max_price: float
     meets_70_rule: bool
     
-    # Break-even
-    minimum_sale_for_breakeven: float
+    # Income Value (minimum sale price to cover all costs)
+    minimum_sale_for_income_value: float
 
 
 class HouseHackResults(BaseModel):

@@ -145,9 +145,9 @@ const getVerdictLabel = (score: number, city?: string): { label: string; sublabe
 
 // Price point explanations
 const PRICE_EXPLANATIONS = {
-  breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms. Calculated using LTR (rental) revenue model.',
-  buyPrice: 'Target price for positive cash flow (5% below breakeven)',
-  wholesale: 'Price for assignment to another investor (70% of breakeven)',
+  incomeValue: 'Maximum price with $0 cash flow, based on YOUR financing terms. Calculated using LTR (rental) revenue model.',
+  buyPrice: 'Target price for positive cash flow (5% below income value)',
+  wholesale: 'Price for assignment to another investor (70% of income value)',
 };
 
 // Get motivation label from score
@@ -254,10 +254,10 @@ export function IQVerdictScreen({
     [property.state, property.zip].filter(Boolean).join(' ')
   ].filter(Boolean).join(', ');
 
-  // Calculate prices
-  const breakevenPrice = property.price * 1.1;
-  const buyPrice = breakevenPrice * 0.95;
-  const wholesalePrice = breakevenPrice * 0.70;
+  // Calculate prices (income value = price where cash flow = $0)
+  const incomeValue = property.price * 1.1;
+  const buyPrice = incomeValue * 0.95;
+  const wholesalePrice = incomeValue * 0.70;
   const estValue = property.price;
 
   // Dynamic sizes for score ring - reduced to prevent overlap
@@ -328,21 +328,21 @@ export function IQVerdictScreen({
 
               {/* Prices */}
               <View style={[styles.verdictPrices, { gap: rsp(12) }]}>
-                {/* Breakeven */}
+                {/* Income Value */}
                 <TouchableOpacity 
                   style={[styles.priceRow, { gap: rsp(8) }]}
-                  onPress={() => setActivePriceTooltip(activePriceTooltip === 'breakeven' ? null : 'breakeven')}
+                  onPress={() => setActivePriceTooltip(activePriceTooltip === 'incomeValue' ? null : 'incomeValue')}
                 >
                   <View style={styles.priceLabelRow}>
-                    <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Breakeven</Text>
+                    <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Income Value</Text>
                     <Text style={{ fontSize: rf(9), color: COLORS.surface400, marginLeft: 4 }}>(LTR)</Text>
                     <Ionicons name="help-circle-outline" size={rs(14)} color={COLORS.surface400} />
                   </View>
-                  <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
+                  <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(incomeValue))}</Text>
                 </TouchableOpacity>
-                {activePriceTooltip === 'breakeven' && (
+                {activePriceTooltip === 'incomeValue' && (
                   <View style={[styles.priceTooltip, { padding: rsp(8) }]}>
-                    <Text style={[styles.priceTooltipText, { fontSize: rf(11) }]}>{PRICE_EXPLANATIONS.breakeven}</Text>
+                    <Text style={[styles.priceTooltipText, { fontSize: rf(11) }]}>{PRICE_EXPLANATIONS.incomeValue}</Text>
                   </View>
                 )}
 

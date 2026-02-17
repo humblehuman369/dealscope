@@ -133,7 +133,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   
   // Extract Deal Opportunity Score from backend result
   const opportunityScore = dealScoreResult?.dealScore ?? 0
-  const breakeven = dealScoreResult?.breakevenPrice ?? contractPrice
+  const incomeValue = dealScoreResult?.incomeValue ?? contractPrice
   const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
 
   const calc = useMemo(() => {

@@ -189,7 +189,7 @@ export function FlipWorksheet({
   
   // Extract Deal Opportunity Score from backend result
   const opportunityScore = dealScoreResult?.dealScore ?? 0
-  const breakeven = dealScoreResult?.breakevenPrice ?? purchasePrice
+  const incomeValue = dealScoreResult?.incomeValue ?? purchasePrice
   const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
 
   // ============================================
@@ -220,13 +220,13 @@ export function FlipWorksheet({
     const allInPctArv = arv > 0 ? (allInCost / arv) * 100 : 0
     const pricePerSqft = sqft > 0 ? purchasePrice / sqft : 0
     const arvPerSqft = sqft > 0 ? arv / sqft : 0
-    const flipBreakeven = allInCost + totalHoldingCosts + (allInCost * (sellingCostsPct / 100))
+    const flipIncomeValue = allInCost + totalHoldingCosts + (allInCost * (sellingCostsPct / 100))
     
     return {
       purchaseCosts, allInCost, loanAmount, downPayment, pointsCost, cashToClose,
       monthlyInterest, totalInterest, totalHoldingCosts, sellingCosts, grossSaleProceeds, netSaleProceeds,
       totalCashInvested, actualProfit, roi, annualizedRoi, profitMargin,
-      mao, meets70Rule, allInPctArv, pricePerSqft, arvPerSqft, breakeven: flipBreakeven,
+      mao, meets70Rule, allInPctArv, pricePerSqft, arvPerSqft, incomeValue: flipIncomeValue,
     }
   }, [purchasePrice, rehabCosts, purchaseCostsPct, financingPct, interestRate, loanPoints, arv, holdingMonths, propertyTaxes, insurance, utilities, sellingCostsPct, sqft])
 
@@ -545,7 +545,7 @@ export function FlipWorksheet({
               <DisplayRow label="ROI" value={fmt.percent(calc.roi)} variant={calc.roi >= 20 ? 'success' : 'default'} />
               <DisplayRow label="Annualized ROI" value={fmt.percent(calc.annualizedRoi)} variant={calc.annualizedRoi >= 50 ? 'success' : 'default'} />
               <DisplayRow label="Profit Margin" value={fmt.percent(calc.profitMargin)} variant={calc.profitMargin >= 10 ? 'success' : 'default'} />
-              <DisplayRow label="Breakeven Price" value={fmt.currency(calc.breakeven)} />
+              <DisplayRow label="Income Value" value={fmt.currency(calc.incomeValue)} />
             </Section>
           </div>
           
@@ -621,7 +621,7 @@ export function FlipWorksheet({
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">ARV</span><span className="font-semibold text-slate-800">{fmt.currencyCompact(arv)}</span></div>
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">All-In</span><span className={`font-semibold ${calc.meets70Rule ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.allInCost)}</span></div>
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">MAO (70%)</span><span className="font-semibold text-slate-800">{fmt.currencyCompact(calc.mao)}</span></div>
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">Breakeven</span><span className="font-semibold text-slate-800">{fmt.currencyCompact(calc.breakeven)}</span></div>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">Income Value</span><span className="font-semibold text-slate-800">{fmt.currencyCompact(calc.incomeValue)}</span></div>
               </div>
             </div>
             

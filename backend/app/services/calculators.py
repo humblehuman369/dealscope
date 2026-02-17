@@ -764,8 +764,8 @@ def calculate_flip(
     seventy_pct_max_price = (arv * 0.70) - renovation_budget
     meets_70_rule = purchase_price <= seventy_pct_max_price
     
-    # Break-even
-    minimum_sale_for_breakeven = total_project_cost / (1 - selling_costs_pct)
+    # Income Value (minimum sale price to cover project cost after selling costs)
+    minimum_sale_for_income_value = total_project_cost / (1 - selling_costs_pct)
     
     return {
         # Acquisition
@@ -813,8 +813,8 @@ def calculate_flip(
         "seventy_pct_max_price": seventy_pct_max_price,
         "meets_70_rule": meets_70_rule,
         
-        # Break-even
-        "minimum_sale_for_breakeven": minimum_sale_for_breakeven
+        # Income Value
+        "minimum_sale_for_income_value": minimum_sale_for_income_value
     }
 
 
@@ -1282,24 +1282,24 @@ def calculate_dom_score(
 
 
 def calculate_deal_gap_score(
-    breakeven_price: float,
+    income_value: float,
     list_price: float,
 ) -> Dict[str, Any]:
     """
-    Calculate the Deal Gap score from breakeven and list price.
+    Calculate the Deal Gap score from income value and list price.
     
-    Deal Gap = ((List Price - Breakeven Price) / List Price) × 100
+    Deal Gap = ((List Price - Income Value) / List Price) × 100
     """
     if list_price <= 0:
         return {
-            "breakeven_price": breakeven_price,
+            "income_value": income_value,
             "list_price": list_price,
             "gap_amount": 0,
             "gap_percent": 0,
             "score": 0
         }
     
-    gap_amount = list_price - breakeven_price
+    gap_amount = list_price - income_value
     gap_percent = max(0, (gap_amount / list_price) * 100)
     
     # Score is inverse of gap (lower gap = higher score)
@@ -1307,7 +1307,7 @@ def calculate_deal_gap_score(
     score = max(0, min(100, round(100 - (gap_percent * 100 / 45))))
     
     return {
-        "breakeven_price": breakeven_price,
+        "income_value": income_value,
         "list_price": list_price,
         "gap_amount": gap_amount,
         "gap_percent": gap_percent,
@@ -1316,7 +1316,7 @@ def calculate_deal_gap_score(
 
 
 def calculate_deal_opportunity_score(
-    breakeven_price: float,
+    income_value: float,
     list_price: float,
     listing_status: Optional[str] = None,
     seller_type: Optional[str] = None,
@@ -1334,12 +1334,12 @@ def calculate_deal_opportunity_score(
     The score answers: "How likely can you negotiate the required discount?"
     
     Formula:
-    1. Deal Gap % = (List Price - Breakeven) / List Price (required discount)
+    1. Deal Gap % = (List Price - Income Value) / List Price (required discount)
     2. Motivation = Seller signals + Market condition modifier
     3. IQ Score = Probability of achieving Deal Gap given Motivation
     
     Args:
-        breakeven_price: LTR breakeven price (from market rent less costs)
+        income_value: LTR income value (from market rent less costs)
         list_price: Current list price (or estimated value if off-market)
         listing_status: Property listing status (FOR_SALE, OFF_MARKET, etc.)
         seller_type: Type of seller (Agent, FSBO, BankOwned, etc.)
@@ -1357,7 +1357,7 @@ def calculate_deal_opportunity_score(
     # ========================================
     # STEP 1: Calculate Deal Gap %
     # ========================================
-    deal_gap_info = calculate_deal_gap_score(breakeven_price, list_price)
+    deal_gap_info = calculate_deal_gap_score(income_value, list_price)
     deal_gap_pct = deal_gap_info["gap_percent"]  # This is the required discount %
     
     # ========================================
@@ -1487,7 +1487,7 @@ def calculate_deal_opportunity_score(
         # Deal Gap details (the required discount)
         "deal_gap_percent": deal_gap_pct,
         "deal_gap_amount": deal_gap_info["gap_amount"],
-        "breakeven_price": breakeven_price,
+        "income_value": income_value,
         "list_price": list_price,
         # Motivation details
         "motivation": {

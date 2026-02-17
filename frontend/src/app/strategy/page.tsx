@@ -33,7 +33,7 @@ interface BackendAnalysisResponse {
     monthly_cash_flow?: number; annual_cash_flow?: number;
   }>
   purchase_price: number
-  breakeven_price: number
+  income_value: number
   list_price: number
   return_factors?: {
     capRate?: number

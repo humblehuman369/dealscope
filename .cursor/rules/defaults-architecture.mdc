@@ -171,22 +171,22 @@ If you find hardcoded defaults during development:
 > Every property can be a good investment at the right price.
 > 
 > DealGapIQ answers two questions:
-> 1. **What price makes this deal work?** (Breakeven) - based on user's financing terms
+> 1. **What price makes this deal work?** (Income Value) - based on user's financing terms
 > 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
 
 ### IQ Score Components
 
 | Component | Weight | Description |
 |-----------|--------|-------------|
-| Deal Gap | 50% | Distance from asking to breakeven |
+| Deal Gap | 50% | Distance from list price to target price |
 | Seller Motivation | 30% | Likelihood of negotiation success |
 | Market Context | 20% | Days on market, buyer/seller market |
 
 ### Price Points (Must Be Clear to User)
 
-1. **Breakeven Price** - Maximum price for $0 monthly cash flow (based on USER'S assumptions)
-2. **Target Buy Price** - Breakeven minus default discount (typically 5%)
-3. **Wholesale Price** - Breakeven × 0.70 (for assignment deals)
+1. **Income Value** - Maximum price for $0 monthly cash flow (based on USER'S assumptions)
+2. **Target Buy Price** - Income Value minus default discount (typically 5%)
+3. **Wholesale Price** - Income Value × 0.70 (for assignment deals)
 
 ### Off-Market Properties
 

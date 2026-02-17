@@ -1351,7 +1351,7 @@ class ReportService:
         ws[f'A{row}'].fill = header_fill
         
         row += 1
-        vac_headers = ["Vacancy Rate", "Vacancy Loss", "Effective Income", "Est. Cash Flow", "Cash-on-Cash", "Break-Even?", "Risk Level"]
+        vac_headers = ["Vacancy Rate", "Vacancy Loss", "Effective Income", "Est. Cash Flow", "Cash-on-Cash", "Cash Flow+", "Risk Level"]
         for col, header in enumerate(vac_headers, 1):
             cell = ws.cell(row=row, column=col, value=header)
             cell.font = header_font
@@ -1389,8 +1389,8 @@ class ReportService:
             ws.cell(row=row, column=5, value=est_coc)
             ws.cell(row=row, column=5).number_format = self._get_percent_format()
             
-            break_even = "Yes" if est_cf > 0 else "No"
-            ws.cell(row=row, column=6, value=break_even)
+            cash_flow_positive = "Yes" if est_cf > 0 else "No"
+            ws.cell(row=row, column=6, value=cash_flow_positive)
             ws.cell(row=row, column=6).font = Font(color=self.GREEN if est_cf > 0 else self.RED)
             
             risk = "Low" if vac <= 0.05 else "Medium" if vac <= 0.10 else "High"

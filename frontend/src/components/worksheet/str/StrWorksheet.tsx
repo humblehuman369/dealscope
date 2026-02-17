@@ -190,7 +190,7 @@ export function StrWorksheet({
   
   // Extract Deal Opportunity Score from backend result
   const opportunityScore = dealScoreResult?.dealScore ?? 0
-  const breakeven = dealScoreResult?.breakevenPrice ?? inputs.purchase_price
+  const incomeValue = dealScoreResult?.incomeValue ?? inputs.purchase_price
   const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
 
   // ============================================
@@ -1059,25 +1059,25 @@ export function StrWorksheet({
                   <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(originalPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
-                  <span className="text-sm text-slate-500">Breakeven Price</span>
-                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(breakeven)}</span>
+                  <span className="text-sm text-slate-500">Income Value</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(incomeValue)}</span>
                 </div>
                 <div className={`flex justify-between items-center py-2.5 px-3 rounded-lg border ${
-                  inputs.purchase_price <= breakeven 
+                  inputs.purchase_price <= incomeValue 
                     ? 'bg-teal/10 border-teal/20' 
                     : 'bg-red-500/10 border-red-500/20'
                 }`}>
-                  <span className={`text-sm font-medium ${inputs.purchase_price <= breakeven ? 'text-teal' : 'text-red-500'}`}>
+                  <span className={`text-sm font-medium ${inputs.purchase_price <= incomeValue ? 'text-teal' : 'text-red-500'}`}>
                     Your Price
                   </span>
-                  <span className={`text-sm font-bold tabular-nums ${inputs.purchase_price <= breakeven ? 'text-teal' : 'text-red-500'}`}>
+                  <span className={`text-sm font-bold tabular-nums ${inputs.purchase_price <= incomeValue ? 'text-teal' : 'text-red-500'}`}>
                     {fmt.currency(inputs.purchase_price)}
                   </span>
                 </div>
-                {inputs.purchase_price > breakeven && (
+                {inputs.purchase_price > incomeValue && (
                   <div className="mt-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                     <p className="text-xs text-amber-600 font-medium">
-                      Price is {fmt.currency(inputs.purchase_price - breakeven)} above breakeven
+                      Price is {fmt.currency(inputs.purchase_price - incomeValue)} above income value
                     </p>
                   </div>
                 )}

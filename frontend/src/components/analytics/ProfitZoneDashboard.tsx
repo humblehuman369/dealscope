@@ -34,7 +34,7 @@ export interface ProfitZoneTip {
 export interface ProfitZoneDashboardProps {
   metrics: ProfitZoneMetrics
   projectedProfit: number
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
   tips: ProfitZoneTip[]
 }
@@ -98,17 +98,17 @@ function MetricBox({ label, value, sublabel, valueColorClass = 'text-green-500' 
 
 interface ProfitZoneVisualizerProps {
   projectedProfit: number
-  breakevenPrice: number
+  incomeValue: number
   listPrice: number
 }
 
-function ProfitZoneVisualizer({ projectedProfit, breakevenPrice, listPrice }: ProfitZoneVisualizerProps) {
+function ProfitZoneVisualizer({ projectedProfit, incomeValue, listPrice }: ProfitZoneVisualizerProps) {
   // Calculate position of the profit indicator (0 = bottom/loss, 100 = top/max profit)
   const maxProfit = listPrice * 0.5
   const profitPosition = Math.min(Math.max((projectedProfit / maxProfit) * 100, 15), 85)
   
-  // Breakeven position on the scale (closer to bottom)
-  const breakevenPosition = 25
+  // Income Value position on the scale (closer to bottom)
+  const incomeValuePosition = 25
   
   const isProfit = projectedProfit > 0
   
@@ -150,13 +150,13 @@ function ProfitZoneVisualizer({ projectedProfit, breakevenPrice, listPrice }: Pr
           </div>
         </div>
         
-        {/* Breakeven Line - Below the bar */}
+        {/* Income Value Line - Below the bar */}
         <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1">
           <div className="w-20 border-t-2 border-dashed border-slate-300 dark:border-slate-500" />
         </div>
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
           <span className="text-[8px] font-medium text-slate-400 dark:text-white/50">
-            BREAKEVEN {formatCompactCurrency(breakevenPrice)}
+            INCOME VALUE {formatCompactCurrency(incomeValue)}
           </span>
         </div>
       </div>
@@ -231,7 +231,7 @@ function TipsSection({ tips }: TipsSectionProps) {
 export function ProfitZoneDashboard({
   metrics,
   projectedProfit,
-  breakevenPrice,
+  incomeValue,
   listPrice,
   tips,
 }: ProfitZoneDashboardProps) {
@@ -286,7 +286,7 @@ export function ProfitZoneDashboard({
         <div className="flex justify-center">
           <ProfitZoneVisualizer 
             projectedProfit={projectedProfit}
-            breakevenPrice={breakevenPrice}
+            incomeValue={incomeValue}
             listPrice={listPrice}
           />
         </div>

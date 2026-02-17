@@ -36,7 +36,7 @@ export function getPriceLabel(isOffMarket?: boolean, status?: string): string {
  */
 export function getPriceTargetLabel(target: PriceTarget): string {
   switch (target) {
-    case 'breakeven': return 'Breakeven'
+    case 'breakeven': return 'Income Value'
     case 'targetBuy': return 'Target Buy'
     case 'wholesale': return 'Wholesale'
   }

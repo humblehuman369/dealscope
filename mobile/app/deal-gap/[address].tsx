@@ -79,7 +79,7 @@ export default function DealGapScreen() {
 
   const analysis = usePropertyAnalysis(propertyData);
   const {
-    breakevenPrice,
+    incomeValue,
     targetPrice,
     dealScore,
     isLoading,
@@ -102,12 +102,12 @@ export default function DealGapScreen() {
     if (buyPrice <= targetPrice) {
       return Math.min(100, base + Math.round((targetPrice - buyPrice) / targetPrice * 10));
     }
-    if (buyPrice >= breakevenPrice) {
+    if (buyPrice >= incomeValue) {
       return Math.max(0, Math.round(base * 0.4));
     }
-    const t = (buyPrice - targetPrice) / (breakevenPrice - targetPrice);
+    const t = (buyPrice - targetPrice) / (incomeValue - targetPrice);
     return Math.round(base * (1 - t * 0.6));
-  }, [buyPrice, targetPrice, breakevenPrice, dealScore.score, analysis.raw]);
+  }, [buyPrice, targetPrice, incomeValue, dealScore.score, analysis.raw]);
 
   const handleBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -168,12 +168,12 @@ export default function DealGapScreen() {
 
   const priceRungs = [
     { label: 'List Price', price: listPrice, color: mutedColor },
-    { label: 'Breakeven', price: breakevenPrice, color: '#f59e0b' },
+    { label: 'Income Value', price: incomeValue, color: '#f59e0b' },
     { label: 'IQ Target / Buy Price', price: targetPrice, color: accentColor },
   ];
 
-  const maxP = Math.max(listPrice, breakevenPrice, targetPrice, buyPrice);
-  const minP = Math.min(listPrice, breakevenPrice, targetPrice, buyPrice);
+  const maxP = Math.max(listPrice, incomeValue, targetPrice, buyPrice);
+  const minP = Math.min(listPrice, incomeValue, targetPrice, buyPrice);
   const range = maxP - minP || 1;
 
   return (

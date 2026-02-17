@@ -31,7 +31,7 @@ interface Proforma {
   exit: { hold_period_years: number; initial_value: number; appreciation_rate: number; projected_sale_price: number; broker_commission: number; closing_costs: number; total_sale_costs: number; remaining_loan_balance: number; net_sale_proceeds: number; accumulated_depreciation: number; total_gain: number; depreciation_recapture: number; depreciation_recapture_tax: number; capital_gain: number; capital_gains_tax: number; total_tax_on_sale: number; after_tax_proceeds: number }
   returns: { irr: number; equity_multiple: number; average_annual_return: number; cagr: number; total_cash_flows: number; total_distributions: number; payback_period_months: number | null }
   sensitivity: { purchase_price: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; interest_rate: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; rent: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; vacancy: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }>; appreciation: Array<{ variable: string; change_percent: number; absolute_value: number; irr: number; cash_on_cash: number; net_profit: number }> }
-  deal_score: { score: number; grade: string; verdict: string; breakeven_price: number; discount_required: number }
+  deal_score: { score: number; grade: string; verdict: string; income_value?: number; breakeven_price?: number; discount_required: number }
   sources: { rent_estimate_source: string; property_value_source: string; tax_data_source: string; market_data_source: string; data_freshness: string }
   strategy_breakdown?: Record<string, any>
   strategy_methodology?: string
@@ -147,7 +147,8 @@ function narrativeDealScore(d: Proforma): string {
   else if (ds.score >= 40) { assess = 'a marginal opportunity requiring careful evaluation'; action = 'Significant price negotiation would be needed to achieve target returns.' }
   else { assess = 'a challenging investment at current pricing'; action = 'The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies.' }
   let t = `The DealGapIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
-  if (ds.breakeven_price > 0 && ds.discount_required !== 0) t += `The breakeven price is calculated at ${$(ds.breakeven_price)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
+  const incomeVal = ds.income_value ?? ds.breakeven_price ?? 0
+  if (incomeVal > 0 && ds.discount_required !== 0) t += `The income value is calculated at ${$(incomeVal)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
   return t + action
 }
 

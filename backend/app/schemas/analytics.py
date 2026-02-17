@@ -72,7 +72,7 @@ class OpportunityFactorsResponse(BaseModel):
     """Opportunity factors breakdown for IQ Verdict."""
     model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
 
-    deal_gap: float = Field(..., description="Discount % needed from list to breakeven")
+    deal_gap: float = Field(..., description="Deal Gap % — discount needed from list price to Target Price")
     motivation: float = Field(..., description="Seller motivation score (0-100)")
     motivation_label: str = Field(..., description="Motivation level label")
     days_on_market: Optional[int] = Field(None)
@@ -110,7 +110,7 @@ class IQVerdictResponse(BaseModel):
     discount_percent: float
     strategies: List[StrategyResult]
     purchase_price: float
-    breakeven_price: float
+    income_value: float = Field(..., description="Income Value — price where cash flow = $0")
     list_price: float
     inputs_used: dict
     defaults_used: dict
@@ -118,6 +118,13 @@ class IQVerdictResponse(BaseModel):
     opportunity_factors: OpportunityFactorsResponse
     return_rating: ScoreDisplayResponse
     return_factors: ReturnFactorsResponse
+    # Income Gap — internal pricing quality (List Price - Income Value)
+    income_gap_amount: float = Field(0, description="List Price minus Income Value (dollars)")
+    income_gap_percent: float = Field(0, description="Income Gap as percentage of List Price")
+    pricing_quality_tier: str = Field("unknown", description="Pricing quality: below_income_value, investment_grade, fair, above_income_value, overpriced, substantially_overpriced")
+    # Deal Gap — public hero metric (List Price - Target Price)
+    deal_gap_amount: float = Field(0, description="List Price minus Target Price (dollars)")
+    deal_gap_percent: float = Field(0, description="Deal Gap as percentage of List Price")
     # Component scores — flat top-level fields (no nested model)
     # to eliminate Pydantic v2 nested-model serialization ambiguity
     deal_gap_score: int = 0
@@ -184,7 +191,7 @@ class DealScoreResponse(BaseModel):
     deal_score: int
     deal_verdict: str
     discount_percent: float
-    breakeven_price: float
+    income_value: float = Field(..., description="Income Value — price where cash flow = $0")
     purchase_price: float
     list_price: float
     factors: Optional[DealScoreFactors] = None

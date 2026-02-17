@@ -81,7 +81,7 @@ export interface STRAssumptions {
   additional_utilities_monthly: number
   furniture_setup_cost: number
   str_insurance_pct: number  // Percentage of purchase price (was fixed str_insurance_annual)
-  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
+  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
 }
 
 export interface RehabAssumptions {
@@ -92,7 +92,7 @@ export interface RehabAssumptions {
 }
 
 export interface BRRRRAssumptions {
-  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
+  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
   refinance_ltv: number
   refinance_interest_rate: number
   refinance_term_years: number
@@ -111,7 +111,7 @@ export interface HouseHackAssumptions {
   fha_down_payment_pct: number
   fha_mip_rate: number
   units_rented_out: number
-  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
+  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
   // Note: room_rent_monthly is now calculated as (estimatedRent / bedrooms) * units_rented_out
   // Note: owner_unit_market_rent is now calculated as estimatedRent / bedrooms
 }
@@ -125,7 +125,7 @@ export interface WholesaleAssumptions {
 }
 
 export interface LTRAssumptions {
-  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
+  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
 }
 
 export interface AllAssumptions {
@@ -162,7 +162,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     pest_control_annual: 200,      // $200
   },
   ltr: {
-    buy_discount_pct: 0.05,     // 5% below breakeven
+    buy_discount_pct: 0.05,     // 5% below Income Value
   },
   str: {
     platform_fees_pct: 0.15,       // 15%
@@ -174,7 +174,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     additional_utilities_monthly: 0, // $0 (was $125)
     furniture_setup_cost: 6000,    // $6,000
     str_insurance_pct: 0.01,       // 1% of purchase price (was $1,500 fixed)
-    buy_discount_pct: 0.05,     // 5% below breakeven
+    buy_discount_pct: 0.05,     // 5% below Income Value
   },
   rehab: {
     renovation_budget_pct: 0.05,   // 5% of ARV (was $40,000 fixed)
@@ -183,7 +183,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     holding_costs_pct: 0.01,       // 1% of purchase price annually (was $2,000/mo fixed)
   },
   brrrr: {
-    buy_discount_pct: 0.05,     // 5% below breakeven (replaced purchase_discount_pct)
+    buy_discount_pct: 0.05,     // 5% below Income Value (replaced purchase_discount_pct)
     refinance_ltv: 0.75,           // 75%
     refinance_interest_rate: 0.06, // 6% (was 7%)
     refinance_term_years: 30,      // 30 years
@@ -200,7 +200,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     fha_down_payment_pct: 0.035,   // 3.5%
     fha_mip_rate: 0.0085,          // 0.85%
     units_rented_out: 2,           // 2 units
-    buy_discount_pct: 0.05,     // 5% below breakeven
+    buy_discount_pct: 0.05,     // 5% below Income Value
     // room_rent_monthly now calculated: (estimatedRent / bedrooms) * units_rented_out
     // owner_unit_market_rent now calculated: estimatedRent / bedrooms
   },

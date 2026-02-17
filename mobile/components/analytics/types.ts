@@ -77,7 +77,7 @@ export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
  * Deal Score based on Investment Opportunity
  * 
  * The score is calculated based on how much discount from list price 
- * is needed to reach breakeven. Lower discount = better opportunity.
+ * is needed to reach income value. Lower discount = better opportunity.
  */
 export interface DealScore {
   score: number;
@@ -86,7 +86,7 @@ export interface DealScore {
   verdict: string;
   color: string;
   discountPercent: number;  // How much discount from list needed
-  breakevenPrice: number;
+  incomeValue: number;  // Price where cash flow = $0
   listPrice: number;
   breakdown: ScoreBreakdown[];
 }

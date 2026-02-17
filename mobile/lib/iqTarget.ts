@@ -1,11 +1,11 @@
 /**
- * IQ Target — Breakeven estimation and Deal Opportunity Score
+ * IQ Target — Income value estimation and Deal Opportunity Score
  * Matches frontend/src/lib/iqTarget.ts (non-deprecated parts only)
  *
  * The full IQ calculation engine lives on the backend. This module
  * provides:
  * 1. Type exports used across the mobile codebase
- * 2. Client-side breakeven estimators for initial price recommendations
+ * 2. Client-side income value estimators for initial price recommendations
  * 3. Deal Opportunity Score types (scoring is backend-driven)
  *
  * DO NOT add new calculation logic here — calculations are backend-driven.
@@ -85,7 +85,7 @@ export interface TargetAssumptions {
 // backend. These exist only as last-resort fallbacks matching
 // backend/app/core/defaults.py.
 
-/** Default buy discount below breakeven (5% → buy at 95% of breakeven) */
+/** Default buy discount below income value (5% → buy at 95% of income value) */
 export const DEFAULT_BUY_DISCOUNT_PCT = 0.05;
 
 /** Default insurance as percentage of purchase price */
@@ -101,12 +101,12 @@ export const DEFAULT_HOLDING_COSTS_PCT = 0.01;
 export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03;
 
 // ============================================
-// BREAKEVEN ESTIMATION
+// INCOME VALUE ESTIMATION
 // ============================================
 
 /**
- * Estimate breakeven purchase price for LTR.
- * Breakeven is where monthly cash flow = $0 (NOI = Annual Debt Service).
+ * Estimate income value (purchase price) for LTR.
+ * Income value is where monthly cash flow = $0 (NOI = Annual Debt Service).
  *
  * Default parameter values are fallbacks matching backend/app/core/defaults.py.
  * Callers should provide values from useDefaults() when available.
@@ -166,8 +166,8 @@ export function estimateLTRBreakeven(params: {
 }
 
 /**
- * Calculate buy price as breakeven minus the buy discount.
- * Formula: Buy Price = Breakeven × (1 - Buy Discount %)
+ * Calculate buy price as income value minus the buy discount.
+ * Formula: Buy Price = Income Value × (1 - Buy Discount %)
  */
 export function calculateBuyPrice(params: {
   monthlyRent: number;

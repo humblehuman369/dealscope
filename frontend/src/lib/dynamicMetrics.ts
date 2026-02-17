@@ -16,7 +16,7 @@ import { StrategyType, MetricId, formatMetricValue, METRIC_DEFINITIONS } from '@
 export interface CalculationInputs {
   // Prices
   listPrice: number
-  breakevenPrice: number
+  incomeValue: number
   targetBuyPrice: number
   wholesalePrice: number
   arv: number
@@ -115,7 +115,7 @@ export function getBasePriceForTarget(
 ): number {
   switch (priceTarget) {
     case 'breakeven':
-      return inputs.breakevenPrice
+      return inputs.incomeValue
     case 'targetBuy':
       return inputs.targetBuyPrice
     case 'wholesale':

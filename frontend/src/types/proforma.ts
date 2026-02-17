@@ -300,7 +300,7 @@ export interface ProformaDealScore {
   score: number;
   grade: string;
   verdict: string;
-  breakevenPrice: number;
+  incomeValue: number;     // Max price where cash flow = $0 (formerly breakevenPrice)
   discountRequired: number;
 }
 

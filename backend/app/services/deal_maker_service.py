@@ -31,7 +31,7 @@ from app.schemas.deal_maker import (
 from app.core.defaults import (
     FINANCING, OPERATING, GROWTH, STR, BRRRR, FLIP,
     get_all_defaults,
-    estimate_breakeven_price,
+    estimate_income_value,
 )
 from app.services.assumptions_service import get_market_adjustments
 from app.services.calculators import (
@@ -181,7 +181,7 @@ class DealMakerService:
             if record.list_price > 0 else 0
         )
         
-        breakeven = estimate_breakeven_price(
+        income_value = estimate_income_value(
             record.monthly_rent,
             record.annual_property_tax,
             record.annual_insurance,
@@ -225,7 +225,7 @@ class DealMakerService:
             
             # Deal analysis
             deal_gap_pct=deal_gap_pct,
-            breakeven_price=breakeven,
+            income_value=income_value,
             
             # Metadata
             calculated_at=datetime.now(timezone.utc),

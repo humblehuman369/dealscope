@@ -255,7 +255,7 @@ class DealScoreSummary(BaseModel):
     score: int
     grade: str
     verdict: str
-    breakeven_price: float
+    income_value: float
     discount_required: float
 
 

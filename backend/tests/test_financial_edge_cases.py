@@ -12,7 +12,7 @@ All functions under test are pure — no DB or network required.
 """
 
 import pytest
-from app.core.defaults import estimate_breakeven_price, calculate_buy_price, _clamp
+from app.core.defaults import estimate_income_value, calculate_buy_price, _clamp
 
 
 # =====================================================================
@@ -35,15 +35,15 @@ class TestClamp:
 
 
 # =====================================================================
-# estimate_breakeven_price
+# estimate_income_value
 # =====================================================================
 
-class TestBreakevenPrice:
-    """Tests for estimate_breakeven_price with edge-case inputs."""
+class TestIncomeValue:
+    """Tests for estimate_income_value with edge-case inputs."""
 
     def test_basic_positive_result(self):
-        """Normal inputs should produce a positive breakeven price."""
-        result = estimate_breakeven_price(
+        """Normal inputs should produce a positive income value."""
+        result = estimate_income_value(
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -51,8 +51,8 @@ class TestBreakevenPrice:
         assert result > 0
 
     def test_zero_rent_returns_zero(self):
-        """Zero rent → property can never break even."""
-        result = estimate_breakeven_price(
+        """Zero rent → property can never achieve income value."""
+        result = estimate_income_value(
             monthly_rent=0,
             property_taxes=3000,
             insurance=1200,
@@ -60,7 +60,7 @@ class TestBreakevenPrice:
         assert result == 0
 
     def test_none_rent_returns_zero(self):
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=None,
             property_taxes=3000,
             insurance=1200,
@@ -68,7 +68,7 @@ class TestBreakevenPrice:
         assert result == 0
 
     def test_negative_rent_returns_zero(self):
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=-500,
             property_taxes=3000,
             insurance=1200,
@@ -77,7 +77,7 @@ class TestBreakevenPrice:
 
     def test_none_taxes_treated_as_zero(self):
         """None taxes should not crash — treated as 0."""
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=2000,
             property_taxes=None,
             insurance=1200,
@@ -85,8 +85,8 @@ class TestBreakevenPrice:
         assert result > 0
 
     def test_zero_interest_rate(self):
-        """0% interest should still produce a valid breakeven."""
-        result = estimate_breakeven_price(
+        """0% interest should still produce a valid income value."""
+        result = estimate_income_value(
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -96,7 +96,7 @@ class TestBreakevenPrice:
 
     def test_max_interest_rate_clamp(self):
         """Interest rate above 30% should be clamped and not crash."""
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -106,7 +106,7 @@ class TestBreakevenPrice:
 
     def test_100_pct_down_payment(self):
         """100% down (cash buy) — no mortgage, use cap rate floor."""
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -117,7 +117,7 @@ class TestBreakevenPrice:
 
     def test_huge_taxes_overwhelm_rent(self):
         """When operating expenses exceed income, NOI < 0 → return 0."""
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=500,
             property_taxes=100_000,  # absurd taxes
             insurance=50_000,
@@ -126,7 +126,7 @@ class TestBreakevenPrice:
 
     def test_all_rates_none_uses_defaults(self):
         """All optional params as None should use module-level defaults."""
-        result = estimate_breakeven_price(
+        result = estimate_income_value(
             monthly_rent=2500,
             property_taxes=3600,
             insurance=1200,

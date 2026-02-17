@@ -469,8 +469,8 @@ function LTRMetricsContent({
     iqTarget.targetPrice,
     'IQ Target',
     iqTarget.highlightedMetric,
-    iqTarget.breakeven,
-    'Breakeven',
+    iqTarget.incomeValue,
+    'Income Value',
     '$0 monthly cash flow',
     0.70
   )
@@ -678,7 +678,7 @@ function LTRMetricsContent({
       <ProfitZoneDashboard
         metrics={profitZoneMetrics}
         projectedProfit={projectedProfit}
-        breakevenPrice={iqTarget.breakeven}
+        incomeValue={iqTarget.incomeValue}
         listPrice={assumptions.listPrice}
         tips={profitZoneTips}
       />
@@ -831,11 +831,11 @@ function ScoreTabContent({ strategy, metrics, iqTarget, assumptions }: ScoreTabC
   const hasRentalMetrics = 'monthlyCashFlow' in metrics && 'cashOnCash' in metrics && 'capRate' in metrics && 'dscr' in metrics
   
   const scoreData = useMemo(() => {
-    // Use the opportunity-based scoring with breakeven and list price
-    const breakevenPrice = iqTarget.breakeven || assumptions.listPrice
+    // Use the opportunity-based scoring with income value and list price
+    const incomeValue = iqTarget.incomeValue || assumptions.listPrice
     const listPrice = assumptions.listPrice
     
-    return calculateDealScoreData(breakevenPrice, listPrice)
+    return calculateDealScoreData(incomeValue, listPrice)
   }, [iqTarget, assumptions])
   
   // Generate strengths and weaknesses based on opportunity score

@@ -7,7 +7,7 @@
  * "Every property can be a good investment at the right price."
  * 
  * DealGapIQ tells you:
- * 1. WHAT PRICE MAKES THIS DEAL WORK (Breakeven) - based on YOUR financing terms
+ * 1. WHAT PRICE MAKES THIS DEAL WORK (Income Value) - based on YOUR financing terms
  * 2. HOW LIKELY YOU ARE TO GET THAT PRICE (Deal Gap + Motivation) - based on market signals
  * 
  * Design specs:
@@ -229,9 +229,9 @@ export function IQVerdictScreen({
     : 'Asking Price'
 
   // Calculate prices
-  const breakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
-  const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
-  const wholesalePrice = Math.round(breakevenPrice * 0.70)
+  const incomeValue = analysis.incomeValue || Math.round(marketValue * 1.1)
+  const buyPrice = analysis.purchasePrice || Math.round(incomeValue * 0.95)
+  const wholesalePrice = Math.round(incomeValue * 0.70)
   
   // For "Market Estimate" / "Asking Price" display:
   // - For saved properties, use the original list_price from Deal Maker record
@@ -241,10 +241,10 @@ export function IQVerdictScreen({
     ? record.list_price
     : marketValue
   
-  // User's target buy price (from Deal Maker or calculated breakeven)
+  // User's target buy price (from Deal Maker or calculated Income Value)
   const userTargetPrice = isSavedPropertyMode && record?.buy_price 
     ? record.buy_price 
-    : breakevenPrice
+    : incomeValue
   const discountNeeded = estValue - userTargetPrice
   
   // Recalculate deal gap: (Market - Target) / Market × 100
@@ -474,9 +474,9 @@ export function IQVerdictScreen({
           </div>
           <div className="grid grid-cols-3 gap-2 mb-3">
             <PriceCard 
-              label="Breakeven" 
-              value={breakevenPrice} 
-              desc="Max price for $0 cashflow (LTR model)" 
+              label="Income Value" 
+              value={incomeValue} 
+              desc="Price where income covers all costs" 
             />
             <PriceCard 
               label="Target Buy" 

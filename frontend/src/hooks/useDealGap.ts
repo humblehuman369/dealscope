@@ -1,8 +1,8 @@
 /**
  * useDealGap - Hook for Deal Gap calculations and data
  * 
- * Computes deal gap metrics from breakeven and list price.
- * Uses the backend deal-score API for breakeven calculation.
+ * Computes deal gap metrics from Income Value and list price.
+ * Uses the backend deal-score API for Income Value calculation.
  */
 
 import { useMemo } from 'react'
@@ -10,7 +10,7 @@ import { DealGapData, DealZoneLabel, SellerMotivationLevel, OpportunityGrade } f
 
 export interface UseDealGapInput {
   listPrice: number
-  breakevenPrice: number
+  incomeValue: number
   buyPrice: number
 }
 
@@ -21,21 +21,21 @@ export interface UseDealGapResult {
 }
 
 /**
- * Determine the deal zone based on buy position relative to breakeven
+ * Determine the deal zone based on buy position relative to Income Value
  */
-function getDealZone(buyPrice: number, breakevenPrice: number): { zone: DealZoneLabel; motivation: SellerMotivationLevel } {
-  const buyBelowBreakevenPct = ((breakevenPrice - buyPrice) / breakevenPrice) * 100
+function getDealZone(buyPrice: number, incomeValue: number): { zone: DealZoneLabel; motivation: SellerMotivationLevel } {
+  const buyBelowIncomeValuePct = ((incomeValue - buyPrice) / incomeValue) * 100
 
-  if (buyPrice > breakevenPrice) {
+  if (buyPrice > incomeValue) {
     return { zone: 'Loss Zone', motivation: 'Low' }
   }
-  if (buyBelowBreakevenPct < 2) {
+  if (buyBelowIncomeValuePct < 2) {
     return { zone: 'High Risk', motivation: 'Moderate' }
   }
-  if (buyBelowBreakevenPct < 5) {
-    return { zone: 'Breakeven / Negotiate', motivation: 'Moderate' }
+  if (buyBelowIncomeValuePct < 5) {
+    return { zone: 'Income Value / Negotiate', motivation: 'Moderate' }
   }
-  if (buyBelowBreakevenPct < 12) {
+  if (buyBelowIncomeValuePct < 12) {
     return { zone: 'Profit Zone', motivation: 'High' }
   }
   return { zone: 'Deep Value', motivation: 'High' }
@@ -56,12 +56,12 @@ function getDealGrade(dealGapPercent: number): OpportunityGrade {
 /**
  * Compute deal gap data from prices
  */
-function computeDealGapData(listPrice: number, breakevenPrice: number, buyPrice: number): DealGapData {
+function computeDealGapData(listPrice: number, incomeValue: number, buyPrice: number): DealGapData {
   const dealGapPercent = listPrice > 0 ? ((listPrice - buyPrice) / listPrice) * 100 : 0
-  const buyVsBreakevenPercent = breakevenPrice > 0 ? ((buyPrice / breakevenPrice) - 1) * 100 : 0
-  const listVsBreakevenPercent = breakevenPrice > 0 ? ((listPrice / breakevenPrice) - 1) * 100 : 0
+  const buyVsIncomeValuePercent = incomeValue > 0 ? ((buyPrice / incomeValue) - 1) * 100 : 0
+  const listVsIncomeValuePercent = incomeValue > 0 ? ((listPrice / incomeValue) - 1) * 100 : 0
   
-  const { zone, motivation } = getDealZone(buyPrice, breakevenPrice)
+  const { zone, motivation } = getDealZone(buyPrice, incomeValue)
   const dealGrade = getDealGrade(dealGapPercent)
   
   // Score: 0-100 based on deal gap (higher gap = higher score)
@@ -69,11 +69,11 @@ function computeDealGapData(listPrice: number, breakevenPrice: number, buyPrice:
 
   return {
     listPrice,
-    breakevenPrice,
+    incomeValue,
     buyPrice,
     dealGapPercent,
-    buyVsBreakevenPercent,
-    listVsBreakevenPercent,
+    buyVsIncomeValuePercent,
+    listVsIncomeValuePercent,
     zone,
     sellerMotivation: motivation,
     dealScore,
@@ -85,54 +85,54 @@ function computeDealGapData(listPrice: number, breakevenPrice: number, buyPrice:
  * Hook to compute deal gap metrics
  */
 export function useDealGap(input: UseDealGapInput): UseDealGapResult {
-  const { listPrice, breakevenPrice, buyPrice } = input
+  const { listPrice, incomeValue, buyPrice } = input
 
   const data = useMemo(() => {
-    return computeDealGapData(listPrice, breakevenPrice, buyPrice)
-  }, [listPrice, breakevenPrice, buyPrice])
+    return computeDealGapData(listPrice, incomeValue, buyPrice)
+  }, [listPrice, incomeValue, buyPrice])
 
   const computeAtPrice = useMemo(() => {
-    return (newBuyPrice: number) => computeDealGapData(listPrice, breakevenPrice, newBuyPrice)
-  }, [listPrice, breakevenPrice])
+    return (newBuyPrice: number) => computeDealGapData(listPrice, incomeValue, newBuyPrice)
+  }, [listPrice, incomeValue])
 
   return { data, computeAtPrice }
 }
 
 /**
- * Calculate a suggested buy price based on target discount from breakeven
+ * Calculate a suggested buy price based on target discount from Income Value
  */
 export function calculateSuggestedBuyPrice(
-  breakevenPrice: number,
+  incomeValue: number,
   targetDiscountPercent: number = 10
 ): number {
-  return Math.round(breakevenPrice * (1 - targetDiscountPercent / 100))
+  return Math.round(incomeValue * (1 - targetDiscountPercent / 100))
 }
 
 /**
  * Calculate buy price from slider position (0-100)
- * 0 = above breakeven (loss zone)
- * 50 = at breakeven
- * 100 = deep value (well below breakeven)
+ * 0 = above Income Value (loss zone)
+ * 50 = at Income Value
+ * 100 = deep value (well below Income Value)
  */
 export function buyPriceFromSliderPosition(
-  breakevenPrice: number,
+  incomeValue: number,
   position: number,
-  range: number = 0.20 // +/- 20% of breakeven
+  range: number = 0.20 // +/- 20% of Income Value
 ): number {
-  // Map 0-100 to +range to -range of breakeven
+  // Map 0-100 to +range to -range of Income Value
   const pct = ((50 - position) * range * 2) / 100
-  return Math.round(breakevenPrice * (1 + pct))
+  return Math.round(incomeValue * (1 + pct))
 }
 
 /**
  * Calculate slider position from buy price
  */
 export function sliderPositionFromBuyPrice(
-  breakevenPrice: number,
+  incomeValue: number,
   buyPrice: number,
   range: number = 0.20
 ): number {
-  const pct = (buyPrice / breakevenPrice) - 1
+  const pct = (buyPrice / incomeValue) - 1
   const position = 50 - (pct / (range * 2)) * 100
   return Math.max(0, Math.min(100, position))
 }

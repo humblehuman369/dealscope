@@ -50,7 +50,7 @@ interface BackendAnalysisResponse {
     score: number; rank: number; badge: string | null
   }>
   purchase_price?: number; purchasePrice?: number
-  breakeven_price?: number; breakevenPrice?: number
+  income_value?: number; incomeValue?: number
   list_price?: number; listPrice?: number
   // Component scores — flat top-level fields (both key formats for safety)
   deal_gap_score?: number; dealGapScore?: number
@@ -457,7 +457,7 @@ function VerdictContent() {
             verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
             discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
             purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
-            breakevenPrice: analysisData.breakeven_price ?? analysisData.breakevenPrice,
+            incomeValue: analysisData.income_value ?? analysisData.incomeValue,
             listPrice: analysisData.list_price ?? analysisData.listPrice,
             // Include inputs used for transparency
             inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
@@ -679,7 +679,7 @@ function VerdictContent() {
   const score = analysis.dealScore
   const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'High Deal Gap' : score >= 30 ? 'Unlikely Deal' : 'Pass'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
-  const breakevenPrice = analysis.breakevenPrice || property.price
+  const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
   const monthlyRent = property.monthlyRent || Math.round(property.price * 0.007)
   const discountPct = analysis.discountPercent || 0
@@ -766,7 +766,7 @@ function VerdictContent() {
               {[
                 { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false },
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true },
-                { label: 'Breakeven', value: breakevenPrice, sub: 'Max price for $0 cashflow', active: false },
+                { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false },
               ].map((card, i) => (
                 <div key={i} className="flex-1 rounded-xl py-3 px-2 text-center transition-all" style={{
                   background: card.active ? colors.background.cardUp : colors.background.card,
@@ -787,7 +787,7 @@ function VerdictContent() {
                 const markers = [
                   { label: 'Wholesale', price: wholesalePrice, dotColor: colors.brand.teal },
                   { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
-                  { label: 'Breakeven', price: breakevenPrice, dotColor: colors.brand.gold },
+                  { label: 'Income Value', price: incomeValue, dotColor: colors.brand.gold },
                   { label: priceLabel, price: property.price, dotColor: colors.status.negative },
                 ].sort((a, b) => a.price - b.price)
 

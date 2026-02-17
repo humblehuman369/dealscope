@@ -130,7 +130,7 @@ class TestComputeIQVerdict:
 
     def test_breakeven_positive(self, typical_input):
         resp = compute_iq_verdict(typical_input)
-        assert resp.breakeven_price > 0
+        assert resp.income_value > 0
 
     def test_minimal_input(self):
         """Only required field is list_price — everything else is derived."""

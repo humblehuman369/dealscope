@@ -5,7 +5,7 @@
  * 
  * Unified IQ Verdict page that combines:
  * - Verdict Score Hero with deal gap and motivation factors
- * - Investment Analysis with price cards (Breakeven, Target, Wholesale)
+ * - Investment Analysis with price cards (Income Value, Target, Wholesale)
  * - Performance Benchmarks with national comparisons
  * - At-a-Glance summary bars
  * 
@@ -208,17 +208,17 @@ export function VerdictIQCombined({
     : 'Asking Price'
 
   // Base prices from analysis (before any overrides)
-  const baseBreakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
-  const baseBuyPrice = analysis.purchasePrice || Math.round(baseBreakevenPrice * 0.95)
+  const baseIncomeValue = analysis.incomeValue || Math.round(marketValue * 1.1)
+  const baseBuyPrice = analysis.purchasePrice || Math.round(baseIncomeValue * 0.95)
   
   // Use override buy price if available, otherwise fall back to calculated
   const effectiveBuyPrice = overrideValues?.buyPrice ?? baseBuyPrice
   
-  // Recalculate breakeven based on override values if available
-  const breakevenPrice = useMemo(() => {
-    if (!overrideValues) return baseBreakevenPrice
+  // Recalculate income value based on override values if available
+  const incomeValue = useMemo(() => {
+    if (!overrideValues) return baseIncomeValue
     
-    // Recalculate breakeven based on new terms
+    // Recalculate income value based on new terms
     const monthlyRent = overrideValues.monthlyRent ?? property.monthlyRent ?? effectiveBuyPrice * 0.007
     const annualRent = monthlyRent * 12
     const vacancyRate = (overrideValues.vacancyRate ?? 1) / 100
@@ -242,12 +242,12 @@ export function VerdictIQCombined({
     const mortgageConstant = loanRatio * (monthlyRate * Math.pow(1 + monthlyRate, term)) / 
       (Math.pow(1 + monthlyRate, term) - 1) * 12
     
-    // Breakeven = NOI / Mortgage Constant
-    return mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : baseBreakevenPrice
-  }, [overrideValues, property, effectiveBuyPrice, baseBreakevenPrice])
+    // Income Value = NOI / Mortgage Constant
+    return mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : baseIncomeValue
+  }, [overrideValues, property, effectiveBuyPrice, baseIncomeValue])
   
   const buyPrice = effectiveBuyPrice
-  const wholesalePrice = Math.round(breakevenPrice * 0.70)
+  const wholesalePrice = Math.round(incomeValue * 0.70)
 
   const estValue = isSavedPropertyMode && record?.list_price
     ? record.list_price
@@ -255,7 +255,7 @@ export function VerdictIQCombined({
 
   // User target price uses override buy price if available
   const userTargetPrice = overrideValues?.buyPrice 
-    ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : breakevenPrice)
+    ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : incomeValue)
   const discountNeeded = estValue - userTargetPrice
 
   const calculatedDealGap = estValue > 0 
@@ -378,7 +378,7 @@ export function VerdictIQCombined({
     
     const inputs: CalculationInputs = {
       listPrice: estValue,
-      breakevenPrice,
+      incomeValue: incomeValue,
       targetBuyPrice: buyPrice,
       wholesalePrice,
       arv: overrideValues?.arv ?? property.arv ?? buyPrice * 1.15,
@@ -449,7 +449,7 @@ export function VerdictIQCombined({
     buyPrice, 
     property, 
     estValue, 
-    breakevenPrice, 
+    incomeValue, 
     wholesalePrice, 
     defaults
   ])
@@ -772,7 +772,7 @@ export function VerdictIQCombined({
 
         {/* Investment Analysis with Price Cards */}
         <InvestmentAnalysis
-          breakevenPrice={breakevenPrice}
+          incomeValue={incomeValue}
           targetBuyPrice={buyPrice}
           wholesalePrice={wholesalePrice}
           isOffMarket={isOffMarket}

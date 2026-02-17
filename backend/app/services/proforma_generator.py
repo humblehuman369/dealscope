@@ -1156,7 +1156,7 @@ async def generate_proforma_data(
             score=0,  # Would be populated from deal score calculation
             grade="",
             verdict="",
-            breakeven_price=0,
+            income_value=0,
             discount_required=0,
         ),
         

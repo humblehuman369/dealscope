@@ -104,7 +104,7 @@ const METRICS = [
     higherIsBetter: true,
     whatItMeasures: 'DSCR measures a property\'s ability to generate sufficient net operating income to cover debt service obligations. It functions as the primary credit metric for lenders evaluating cash flow sustainability.',
     interpretation: [
-      { range: '1.00x', meaning: 'Breakeven - income exactly covers debt with zero margin for error' },
+      { range: '1.00x', meaning: 'Income covers debt with zero margin' },
       { range: '1.20-1.25x', meaning: 'Minimum acceptable for most lenders, providing 20-25% cushion' },
       { range: '1.40-1.50x+', meaning: 'Strong cash flow with favorable loan terms and lower rates' },
     ],

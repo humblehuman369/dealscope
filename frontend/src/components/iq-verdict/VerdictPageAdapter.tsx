@@ -180,14 +180,14 @@ export function VerdictPageAdapter({
   }), [analysis])
 
   // Price cards with fallbacks — override buy price feeds through
-  const breakevenPrice = analysis.breakevenPrice || property.price
+  const incomeValue = analysis.incomeValue || property.price
   const purchasePrice = effectiveBuyPrice
   const listPrice = analysis.listPrice || property.price
 
   const priceCards = useMemo(() => [
     {
-      label: 'Breakeven',
-      value: breakevenPrice,
+      label: 'Income Value',
+      value: incomeValue,
       variant: 'breakeven' as PriceCardVariant,
     },
     {
@@ -200,12 +200,12 @@ export function VerdictPageAdapter({
       value: wholesalePrice,
       variant: 'wholesale' as PriceCardVariant,
     },
-  ], [breakevenPrice, purchasePrice, wholesalePrice])
+  ], [incomeValue, purchasePrice, wholesalePrice])
 
   // Key metrics based on selected price card — uses effective override values
   const keyMetrics = useMemo(() => {
     const selectedPrice = selectedPriceCard === 'breakeven' 
-      ? breakevenPrice 
+      ? incomeValue 
       : selectedPriceCard === 'target' 
         ? purchasePrice 
         : wholesalePrice
@@ -240,7 +240,7 @@ export function VerdictPageAdapter({
       { value: `${Math.max(0, cashOnCash).toFixed(1)}%`, label: 'Cash-on-Cash' },
       { value: `$${Math.round(effectiveRent).toLocaleString()}`, label: 'Monthly Rent' },
     ]
-  }, [selectedPriceCard, breakevenPrice, purchasePrice, wholesalePrice, property.price,
+  }, [selectedPriceCard, incomeValue, purchasePrice, wholesalePrice, property.price,
       effectiveRent, effectiveTaxes, effectiveInsurance, effectiveManagementPct,
       effectiveDownPaymentPct, effectiveInterestRate, effectiveLoanTerm])
 

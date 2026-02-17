@@ -1,6 +1,6 @@
 {
-  "version": "1.6",
-  "updatedAt": "2026-01-24",
+  "version": "1.7",
+  "updatedAt": "2026-02-16",
   "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py, frontend/src/lib/iqTarget.ts, backend/app/main.py",
   "market_statistics": {
     "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
@@ -149,7 +149,7 @@
     "notes": [
       "Equity % is excluded as mortgage balance data is not available from the Axesso API (would require public records data).",
       "BRRRR, Fix & Flip, and Wholesale strategies require physical inspection for repair estimates.",
-      "The Deal Score is based on LTR breakeven since it can be calculated from available market data."
+      "The Deal Score is based on LTR Income Value since it can be calculated from available market data."
     ],
     "metrics": {
       "deal_opportunity_score": {
@@ -171,18 +171,18 @@
         }
       },
       "deal_gap": {
-        "formula": "deal_gap_percent = ((list_price - breakeven_price) / list_price) × 100; deal_gap_score = max(0, min(100, 100 - (deal_gap_percent × 100 / 45)))",
-        "inputs": ["list_price", "breakeven_price"],
-        "description": "Primary factor (50% weight). Measures how much discount from list price is needed to reach breakeven. A positive gap means the list price is above breakeven (need discount). A negative gap means property is already profitable at list price.",
+        "formula": "deal_gap = (list_price - target_price) / list_price × 100; target_price = income_value × (1 - buy_discount_pct); deal_gap_score = max(0, min(100, 100 - (deal_gap × 100 / 45)))",
+        "inputs": ["list_price", "income_value", "buy_discount_pct"],
+        "description": "Primary factor (50% weight). Deal Gap uses Target Price (Income Value minus buy discount). Measures how much discount from list price is needed to reach target. A positive gap means the list price is above target (need discount). A negative gap means property is already profitable at list price.",
         "interpretation": {
           "0%_gap": "100 score - Property profitable at list price",
           "45%+_gap": "0 score - Significant discount needed"
         }
       },
-      "ltr_breakeven_price": {
-        "formula": "breakeven_price = NOI / (LTV × mortgage_constant); where NOI = effective_gross_income - operating_expenses; effective_gross_income = monthly_rent × 12 × (1 - vacancy_rate); operating_expenses = property_taxes + insurance + (effective_gross_income × maintenance_pct) + (effective_gross_income × management_pct); LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate × (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) × 12",
+      "ltr_income_value": {
+        "formula": "income_value = NOI / (LTV × mortgage_constant); where NOI = effective_gross_income - operating_expenses; effective_gross_income = monthly_rent × 12 × (1 - vacancy_rate); operating_expenses = property_taxes + insurance + (effective_gross_income × maintenance_pct) + (effective_gross_income × management_pct); LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate × (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) × 12",
         "inputs": ["monthly_rent", "property_taxes", "insurance", "vacancy_rate", "maintenance_pct", "management_pct", "down_payment_pct", "interest_rate", "loan_term_years"],
-        "description": "The purchase price at which monthly cash flow equals $0 (NOI = Annual Debt Service). Used as the basis for Deal Gap calculation.",
+        "description": "The Income Value — the purchase price at which rental income exactly covers all operating expenses and debt service. Used as the basis for Deal Gap calculation.",
         "defaults": {
           "vacancy_rate": 0.01,
           "maintenance_pct": 0.05,
@@ -224,6 +224,11 @@
           "low": "Low Deal Gap (<10%) or Low DOM (<30 days)",
           "unknown": "DOM data not available"
         }
+      },
+      "pricing_quality": {
+        "formula": "pricing_quality_tier based on income_gap_percent = (list_price - income_value) / list_price × 100; Tiers: <=0% below_income_value, 0-5% investment_grade, 5-10% fair, 10-20% above_income_value, 20-30% overpriced, 30%+ substantially_overpriced",
+        "inputs": ["list_price", "income_value"],
+        "description": "Internal pricing quality assessment based on how the asking price relates to the property's Income Value. Used to generate contextual verdict explanations."
       }
     }
   },
@@ -507,20 +512,20 @@
           "formula": "Per year: gross_rent = annual_gross_rent*(1+rent_growth_rate)^(year-1), expenses = total_operating_expenses*(1+expense_growth_rate)^(year-1), noi = gross_rent*(1-vacancy_rate)-expenses, cash_flow = noi - annual_debt_service, property_value = purchase_price*(1+appreciation_rate)^year, equity = property_value - (loan_amount*(1-(year/loan_term_years)*0.3))",
           "inputs": ["annual_gross_rent", "rent_growth_rate", "total_operating_expenses", "expense_growth_rate", "vacancy_rate", "annual_debt_service", "purchase_price", "appreciation_rate", "loan_amount", "loan_term_years"]
         },
-        "breakeven_price": {
-          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = effective_gross_income - operating_expenses; LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate * (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) * 12",
+        "income_value": {
+          "formula": "income_value = NOI / (LTV * mortgage_constant); where NOI = effective_gross_income - operating_expenses; LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate * (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) * 12",
           "inputs": ["monthly_rent", "vacancy_rate", "property_taxes", "insurance", "maintenance_pct", "management_pct", "down_payment_pct", "interest_rate", "loan_term_years"],
-          "description": "The purchase price at which monthly cash flow equals $0 (NOI = Annual Debt Service)"
+          "description": "The Income Value — the purchase price at which rental income exactly covers all operating expenses and debt service"
         },
         "buy_discount_pct": {
           "formula": "buy_discount_pct = input (default 0.05)",
           "inputs": ["buy_discount_pct"],
-          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+          "description": "The discount percentage below Income Value to ensure profitability (default 5%)"
         },
         "buy_price": {
-          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
-          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
-          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
+          "formula": "buy_price = income_value * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["income_value", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as Income Value minus the buy discount to ensure profitability"
         }
       }
     },
@@ -564,20 +569,20 @@
           "inputs": ["property_taxes_annual", "insurance_annual", "maintenance_annual", "landscaping_annual", "pest_control_annual", "hoa_monthly", "annual_debt_service", "average_daily_rate", "platform_fees_pct", "str_management_pct", "cleaning_cost_per_turnover", "avg_length_of_stay_days"],
           "description": "The minimum occupancy rate needed to cover all fixed costs and debt service"
         },
-        "breakeven_price": {
-          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = total_gross_revenue - total_operating_expenses; uses same formula as LTR but with STR revenue assumptions",
+        "income_value": {
+          "formula": "income_value = NOI / (LTV * mortgage_constant); where NOI = total_gross_revenue - total_operating_expenses; uses same formula as LTR but with STR revenue assumptions",
           "inputs": ["average_daily_rate", "occupancy_rate", "total_operating_expenses", "down_payment_pct", "interest_rate", "loan_term_years"],
-          "description": "The purchase price at which annual cash flow equals $0 at the given occupancy and ADR"
+          "description": "The Income Value — the purchase price at which rental income exactly covers all operating expenses and debt service at the given occupancy and ADR"
         },
         "buy_discount_pct": {
           "formula": "buy_discount_pct = input (default 0.05)",
           "inputs": ["buy_discount_pct"],
-          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+          "description": "The discount percentage below Income Value to ensure profitability (default 5%)"
         },
         "buy_price": {
-          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
-          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
-          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
+          "formula": "buy_price = income_value * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["income_value", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as Income Value minus the buy discount to ensure profitability"
         },
         "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs + furniture_setup_cost", "inputs": ["down_payment", "closing_costs", "furniture_setup_cost"] },
         "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
@@ -624,20 +629,20 @@
           "inputs": ["annual_gross_rent", "operating_expense_pct", "property_taxes_annual", "insurance_annual"],
           "notes": "insurance_annual is referenced in code but not defined in function signature"
         },
-        "breakeven_price": {
-          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); uses post-rehab rent and refinance terms; where NOI = (post_rehab_monthly_rent * 12 * (1 - vacancy_rate)) - operating_expenses",
+        "income_value": {
+          "formula": "income_value = NOI / (LTV * mortgage_constant); uses post-rehab rent and refinance terms; where NOI = (post_rehab_monthly_rent * 12 * (1 - vacancy_rate)) - operating_expenses",
           "inputs": ["post_rehab_monthly_rent", "vacancy_rate", "operating_expense_pct", "property_taxes_annual", "insurance_annual", "refinance_ltv", "refinance_interest_rate", "refinance_term_years"],
-          "description": "The purchase price at which post-refinance monthly cash flow equals $0"
+          "description": "The Income Value — the purchase price at which post-refinance rental income exactly covers all operating expenses and debt service"
         },
         "buy_discount_pct": {
           "formula": "buy_discount_pct = input (default 0.05)",
           "inputs": ["buy_discount_pct"],
-          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+          "description": "The discount percentage below Income Value to ensure profitability (default 5%)"
         },
         "buy_price": {
-          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
-          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
-          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
+          "formula": "buy_price = income_value * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["income_value", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as Income Value minus the buy discount to ensure profitability"
         }
       }
     },
@@ -735,12 +740,12 @@
         "buy_discount_pct": {
           "formula": "buy_discount_pct = input (default 0.05)",
           "inputs": ["buy_discount_pct"],
-          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+          "description": "The discount percentage below Income Value to ensure profitability (default 5%)"
         },
         "buy_price": {
-          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
-          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
-          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
+          "formula": "buy_price = income_value * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["income_value", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as Income Value minus the buy discount to ensure profitability"
         }
       }
     },
