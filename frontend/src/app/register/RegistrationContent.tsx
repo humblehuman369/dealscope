@@ -989,15 +989,57 @@ function RegistrationInner() {
     </div>
   );
 
-  const renderPayment = () => (
-    <Elements stripe={stripePromise} options={{ appearance: { theme: "night", variables: { colorPrimary: "#0EA5E9" } } }}>
-      <PaymentForm
-        trialEndDate={trialEndDate}
-        onComplete={handlePaymentComplete}
-        onBack={() => setStep("confirm")}
-      />
-    </Elements>
-  );
+  const renderPayment = () => {
+    // Guard: if Stripe isn't configured (no publishable key), show a dev message
+    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!key) {
+      return (
+        <div
+          style={{
+            background: "#0D1424",
+            border: "1px solid rgba(239,68,68,0.2)",
+            borderRadius: "12px",
+            padding: "36px",
+            width: "100%",
+            maxWidth: "420px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "16px", fontWeight: 700, color: "#F87171", marginBottom: "12px" }}>
+            Stripe Not Configured
+          </div>
+          <p style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.6, marginBottom: "20px" }}>
+            Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments.
+          </p>
+          <button
+            onClick={() => setStep("confirm")}
+            style={{
+              padding: "10px 20px",
+              border: "1px solid rgba(148,163,184,0.12)",
+              borderRadius: "8px",
+              background: "transparent",
+              color: "#CBD5E1",
+              fontSize: "13px",
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            &larr; Back
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <Elements stripe={stripePromise} options={{ appearance: { theme: "night", variables: { colorPrimary: "#0EA5E9" } } }}>
+        <PaymentForm
+          trialEndDate={trialEndDate}
+          onComplete={handlePaymentComplete}
+          onBack={() => setStep("confirm")}
+        />
+      </Elements>
+    );
+  };
 
   const renderSuccess = () => (
     <div
