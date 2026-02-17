@@ -4,8 +4,9 @@ import React, { useState, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRegister, useLogin } from "@/hooks/useSession";
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "@/lib/stripe";
+import { billingApi } from "@/lib/api-client";
 
 // ─── Icons ───
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
@@ -300,10 +301,59 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string }> = ({
 // ─── Payment Form (with Stripe Elements) ───
 const PaymentForm: React.FC<{
   trialEndDate: string;
-  loading: boolean;
   onComplete: () => void;
   onBack: () => void;
-}> = ({ trialEndDate, loading, onComplete, onBack }) => {
+}> = ({ trialEndDate, onComplete, onBack }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+    setError("");
+
+    try {
+      // Step 1: Create SetupIntent on backend
+      const { client_secret } = await billingApi.createSetupIntent();
+
+      // Step 2: Confirm card setup with Stripe.js
+      const cardElement = elements.getElement(CardNumberElement);
+      if (!cardElement) throw new Error("Card element not found");
+
+      const { error: stripeError, setupIntent } = await stripe.confirmCardSetup(client_secret, {
+        payment_method: { card: cardElement },
+      });
+
+      if (stripeError) {
+        setError(stripeError.message || "Card verification failed. Please try again.");
+        return;
+      }
+
+      if (!setupIntent?.payment_method) {
+        setError("Failed to process payment method.");
+        return;
+      }
+
+      // Step 3: Create subscription with the confirmed payment method
+      const paymentMethodId = typeof setupIntent.payment_method === "string"
+        ? setupIntent.payment_method
+        : setupIntent.payment_method.id;
+
+      await billingApi.createSubscription(paymentMethodId);
+
+      // Step 4: Success
+      onComplete();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -329,6 +379,23 @@ const PaymentForm: React.FC<{
       <p style={{ fontSize: "13px", color: "#94A3B8", margin: "0 0 24px", lineHeight: 1.5 }}>
         You won&apos;t be charged until <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
       </p>
+
+      {/* Error message */}
+      {error && (
+        <div
+          style={{
+            background: "rgba(239,68,68,0.06)",
+            border: "1px solid rgba(239,68,68,0.15)",
+            borderRadius: "8px",
+            padding: "10px 14px",
+            marginBottom: "16px",
+            fontSize: "13px",
+            color: "#F87171",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {/* Stripe Elements */}
       <div
@@ -429,8 +496,8 @@ const PaymentForm: React.FC<{
       </div>
 
       <button
-        onClick={onComplete}
-        disabled={loading}
+        onClick={handleSubmit}
+        disabled={processing || !stripe}
         style={{
           width: "100%",
           padding: "13px",
@@ -438,7 +505,7 @@ const PaymentForm: React.FC<{
           borderRadius: "8px",
           fontSize: "14px",
           fontWeight: 700,
-          cursor: loading ? "not-allowed" : "pointer",
+          cursor: processing || !stripe ? "not-allowed" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -446,14 +513,15 @@ const PaymentForm: React.FC<{
           fontFamily: "inherit",
           background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
           color: "#fff",
-          opacity: loading ? 0.8 : 1,
+          opacity: processing ? 0.8 : 1,
         }}
       >
-        {loading ? <SpinnerIcon /> : <>Start Free Trial <ArrowIcon /></>}
+        {processing ? <SpinnerIcon /> : <>Start Free Trial <ArrowIcon /></>}
       </button>
 
       <button
         onClick={onBack}
+        disabled={processing}
         style={{
           width: "100%",
           padding: "10px",
@@ -461,7 +529,7 @@ const PaymentForm: React.FC<{
           background: "none",
           color: "#64748B",
           fontSize: "12px",
-          cursor: "pointer",
+          cursor: processing ? "not-allowed" : "pointer",
           fontFamily: "inherit",
           marginTop: "8px",
         }}
@@ -550,14 +618,7 @@ function RegistrationInner() {
   };
 
   const handlePaymentComplete = () => {
-    // TODO: Create SetupIntent via POST /api/v1/billing/setup-intent
-    // Then: stripe.confirmCardSetup(clientSecret, { payment_method: { card: elements.getElement(CardNumberElement) } })
-    // Then: Create subscription via POST /api/v1/billing/checkout with setup_intent_id
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep("success");
-    }, 1500);
+    setStep("success");
   };
 
   const isFormValid = form.email.includes("@") && form.password.length >= 8 && form.firstName.length > 0;
@@ -927,7 +988,6 @@ function RegistrationInner() {
     <Elements stripe={stripePromise} options={{ appearance: { theme: "night", variables: { colorPrimary: "#0EA5E9" } } }}>
       <PaymentForm
         trialEndDate={trialEndDate}
-        loading={loading}
         onComplete={handlePaymentComplete}
         onBack={() => setStep("confirm")}
       />

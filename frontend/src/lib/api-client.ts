@@ -344,5 +344,24 @@ export interface MFASetupResponse {
   provisioning_uri: string
 }
 
+// ------------------------------------------------------------------
+// Billing API
+// ------------------------------------------------------------------
+
+export const billingApi = {
+  createSetupIntent: () =>
+    apiRequest<{ client_secret: string }>('/api/v1/billing/setup-intent', { method: 'POST' }),
+
+  createSubscription: (paymentMethodId: string, priceId?: string, lookupKey?: string) =>
+    apiRequest<{ subscription_id: string; status: string; trial_end?: number | null }>('/api/v1/billing/subscribe', {
+      method: 'POST',
+      body: {
+        payment_method_id: paymentMethodId,
+        ...(priceId ? { price_id: priceId } : {}),
+        ...(lookupKey ? { lookup_key: lookupKey } : {}),
+      },
+    }),
+}
+
 export { ApiError, apiRequest }
 export default api

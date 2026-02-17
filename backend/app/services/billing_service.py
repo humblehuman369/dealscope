@@ -318,6 +318,86 @@ class BillingService:
             session_id=session.id,
         )
 
+    async def create_setup_intent(
+        self,
+        db: AsyncSession,
+        user: User,
+    ) -> Dict[str, str]:
+        """Create a Stripe SetupIntent for embedded card collection."""
+        customer_id = await self.get_or_create_stripe_customer(db, user)
+        
+        if not self.is_configured:
+            return {"client_secret": "seti_dev_secret_placeholder"}
+        
+        intent = stripe.SetupIntent.create(
+            customer=customer_id,
+            metadata={"user_id": str(user.id)},
+        )
+        
+        logger.info(f"Created SetupIntent {intent.id} for user {user.id}")
+        return {"client_secret": intent.client_secret}
+
+    async def create_subscription(
+        self,
+        db: AsyncSession,
+        user: User,
+        payment_method_id: str,
+        price_id: Optional[str] = None,
+        lookup_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Attach payment method and create subscription with 7-day trial."""
+        customer_id = await self.get_or_create_stripe_customer(db, user)
+        
+        if not self.is_configured:
+            return {
+                "subscription_id": "sub_dev_test",
+                "status": "trialing",
+                "trial_end": None,
+            }
+        
+        # Attach payment method to customer and set as default
+        stripe.PaymentMethod.attach(payment_method_id, customer=customer_id)
+        stripe.Customer.modify(
+            customer_id,
+            invoice_settings={"default_payment_method": payment_method_id},
+        )
+        
+        # Resolve price
+        resolved_price_id = price_id
+        if lookup_key and not price_id:
+            prices = stripe.Price.list(
+                lookup_keys=[lookup_key],
+                expand=["data.product"],
+            )
+            if not prices.data:
+                raise ValueError(f"No price found for lookup_key: {lookup_key}")
+            resolved_price_id = prices.data[0].id
+        
+        if not resolved_price_id:
+            # Fall back to the Pro monthly price from env
+            resolved_price_id = os.getenv("STRIPE_PRICE_PRO_MONTHLY", "")
+            if not resolved_price_id:
+                raise ValueError("No price_id, lookup_key, or STRIPE_PRICE_PRO_MONTHLY configured")
+        
+        # Create subscription with 7-day trial
+        subscription = stripe.Subscription.create(
+            customer=customer_id,
+            items=[{"price": resolved_price_id}],
+            trial_period_days=7,
+            metadata={"user_id": str(user.id)},
+        )
+        
+        logger.info(
+            f"Created subscription {subscription.id} for user {user.id} "
+            f"(status={subscription.status}, trial_end={subscription.trial_end})"
+        )
+        
+        return {
+            "subscription_id": subscription.id,
+            "status": subscription.status,
+            "trial_end": subscription.trial_end,
+        }
+
     async def create_portal_session(
         self,
         db: AsyncSession,
