@@ -104,10 +104,14 @@ class Subscription(Base):
     
     def can_save_property(self, current_count: int) -> bool:
         """Check if user can save another property."""
+        if self.properties_limit == -1:
+            return True
         return current_count < self.properties_limit
     
     def can_search(self) -> bool:
         """Check if user has searches remaining."""
+        if self.searches_per_month == -1:
+            return True
         return self.searches_used < self.searches_per_month
     
     def increment_search(self) -> None:

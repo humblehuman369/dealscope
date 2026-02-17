@@ -69,8 +69,6 @@ class SubscriptionResponse(BaseModel):
     id: str
     tier: SubscriptionTier
     status: SubscriptionStatus
-    stripe_customer_id: Optional[str] = None
-    stripe_subscription_id: Optional[str] = None
     current_period_start: Optional[datetime] = None
     current_period_end: Optional[datetime] = None
     cancel_at_period_end: bool = False
