@@ -51,6 +51,10 @@ function formatApiErrorDetail(detail: unknown, status: number): string {
     })
     return parts.join('. ')
   }
+  if (detail && typeof detail === 'object' && ('msg' in detail || 'message' in detail)) {
+    const msg = 'msg' in detail ? (detail as { msg?: string }).msg : (detail as { message?: string }).message
+    if (typeof msg === 'string') return msg
+  }
   return `Request failed (${status}). Please check your input and try again.`
 }
 
@@ -186,7 +190,20 @@ async function apiRequest<T>(
   }
 
   if (!response.ok) {
-    const errBody = await response.json().catch(() => ({ detail: 'Unknown error' }))
+    const text = await response.text()
+    let errBody: { detail?: unknown; code?: string }
+    try {
+      errBody = text.length ? JSON.parse(text) : {}
+    } catch {
+      // Server returned HTML or non-JSON (e.g. proxy error page)
+      const fallback =
+        response.status >= 500
+          ? `Server error (${response.status}). Please try again in a moment.`
+          : response.status === 404
+            ? 'Service unavailable. Please check your connection.'
+            : `Request failed (${response.status}). Please try again.`
+      throw new ApiError(fallback, response.status)
+    }
     const message = formatApiErrorDetail(errBody.detail, response.status)
     throw new ApiError(message, response.status, errBody.code)
   }
