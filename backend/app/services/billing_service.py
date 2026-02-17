@@ -61,94 +61,61 @@ class BillingService:
         self.plans = self._define_plans()
 
     def _define_plans(self) -> Dict[str, PricingPlan]:
-        """Define pricing plans with Stripe price IDs."""
+        """Define pricing plans aligned to 2-tier model: Starter (Free) + Pro ($29/mo)."""
         return {
             "free": PricingPlan(
                 id="free",
-                name="Free",
+                name="Starter",
                 tier=SubscriptionTier.FREE,
-                description="Perfect for getting started",
+                description="Always free. No credit card required.",
                 price_monthly=0,
                 price_yearly=0,
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
-                properties_limit=5,
-                searches_per_month=25,
-                api_calls_per_month=100,
+                properties_limit=10,
+                searches_per_month=5,
+                api_calls_per_month=50,
                 features=[
-                    PlanFeature(name="Property Analysis", description="Analyze up to 5 properties"),
-                    PlanFeature(name="6 Investment Strategies", description="LTR, STR, BRRRR, Flip, House Hack, Wholesale"),
-                    PlanFeature(name="Basic Reports", description="View analysis results"),
-                    PlanFeature(name="25 Searches/month", description="Monthly property searches", limit="25/month"),
-                    PlanFeature(name="Export Reports", description="Download PDF/Excel reports", included=False),
-                    PlanFeature(name="API Access", description="Integrate with your tools", included=False),
-                ],
-            ),
-            "starter": PricingPlan(
-                id="starter",
-                name="Starter",
-                tier=SubscriptionTier.STARTER,
-                description="For active investors",
-                price_monthly=2900,  # $29/month
-                price_yearly=29000,  # $290/year (save ~$58)
-                stripe_price_id_monthly=os.getenv("STRIPE_PRICE_STARTER_MONTHLY", "price_starter_monthly"),
-                stripe_price_id_yearly=os.getenv("STRIPE_PRICE_STARTER_YEARLY", "price_starter_yearly"),
-                properties_limit=25,
-                searches_per_month=100,
-                api_calls_per_month=500,
-                is_popular=True,
-                features=[
-                    PlanFeature(name="Everything in Free", description="All free tier features"),
-                    PlanFeature(name="25 Saved Properties", description="Save and track more deals"),
-                    PlanFeature(name="100 Searches/month", description="More property searches", limit="100/month"),
-                    PlanFeature(name="Export Reports", description="PDF and Excel exports"),
-                    PlanFeature(name="Email Alerts", description="Get notified on price changes"),
-                    PlanFeature(name="Priority Support", description="Fast email support"),
+                    PlanFeature(name="5 Property Analyses/month", description="Analyze up to 5 properties per month", limit="5/month"),
+                    PlanFeature(name="Deal Gap + Income Value + Target Buy", description="Core pricing metrics for every property"),
+                    PlanFeature(name="IQ Verdict Score", description="Pass / Marginal / Buy verdict"),
+                    PlanFeature(name="All 6 Strategy Snapshots", description="LTR, STR, BRRRR, Flip, House Hack, Wholesale"),
+                    PlanFeature(name="Seller Motivation Indicator", description="Gauge negotiation likelihood"),
+                    PlanFeature(name="Full Calculation Breakdown", description="See every assumption behind the numbers", included=False),
+                    PlanFeature(name="Editable Inputs & Stress Testing", description="Change rent, vacancy, rates — recalculate instantly", included=False),
+                    PlanFeature(name="Comparable Rental Data Sources", description="See the 12+ comps that set your rent estimate", included=False),
+                    PlanFeature(name="Downloadable Excel Proforma", description="Export financial proformas", included=False),
+                    PlanFeature(name="DealVaultIQ Pipeline & Tracking", description="Save and manage your deal pipeline", included=False),
+                    PlanFeature(name="Lender-Ready PDF Reports", description="Professional reports for partners and lenders", included=False),
+                    PlanFeature(name="Side-by-Side Deal Comparison", description="Compare multiple properties", included=False),
                 ],
             ),
             "pro": PricingPlan(
                 id="pro",
-                name="Pro",
+                name="Pro Investor",
                 tier=SubscriptionTier.PRO,
-                description="For serious investors & agents",
-                price_monthly=7900,  # $79/month
-                price_yearly=79000,  # $790/year (save ~$158)
-                stripe_price_id_monthly=os.getenv("STRIPE_PRICE_PRO_MONTHLY", "price_pro_monthly"),
-                stripe_price_id_yearly=os.getenv("STRIPE_PRICE_PRO_YEARLY", "price_pro_yearly"),
-                properties_limit=100,
-                searches_per_month=500,
-                api_calls_per_month=2500,
-                features=[
-                    PlanFeature(name="Everything in Starter", description="All starter tier features"),
-                    PlanFeature(name="100 Saved Properties", description="Track your entire pipeline"),
-                    PlanFeature(name="500 Searches/month", description="Unlimited property analysis", limit="500/month"),
-                    PlanFeature(name="API Access", description="Integrate with your tools"),
-                    PlanFeature(name="Team Sharing", description="Share deals with your team"),
-                    PlanFeature(name="Custom Branding", description="White-label reports"),
-                    PlanFeature(name="Phone Support", description="Direct line to support"),
-                ],
-            ),
-            "enterprise": PricingPlan(
-                id="enterprise",
-                name="Enterprise",
-                tier=SubscriptionTier.ENTERPRISE,
-                description="For teams and organizations",
-                price_monthly=29900,  # $299/month
-                price_yearly=299000,  # $2990/year
-                stripe_price_id_monthly=os.getenv("STRIPE_PRICE_ENTERPRISE_MONTHLY", "price_enterprise_monthly"),
-                stripe_price_id_yearly=os.getenv("STRIPE_PRICE_ENTERPRISE_YEARLY", "price_enterprise_yearly"),
+                description="For investors who verify the math before they make the offer.",
+                price_monthly=3900,  # $39/month (monthly billing)
+                price_yearly=34800,  # $348/year ($29/mo billed annually)
+                stripe_price_id_monthly=os.getenv("STRIPE_PRICE_PRO_MONTHLY", ""),
+                stripe_price_id_yearly=os.getenv("STRIPE_PRICE_PRO_YEARLY", ""),
                 properties_limit=-1,  # Unlimited
                 searches_per_month=-1,  # Unlimited
                 api_calls_per_month=-1,  # Unlimited
+                is_popular=True,
                 features=[
-                    PlanFeature(name="Everything in Pro", description="All pro tier features"),
-                    PlanFeature(name="Unlimited Properties", description="No limits on saved properties"),
-                    PlanFeature(name="Unlimited Searches", description="Search as much as you need"),
-                    PlanFeature(name="Unlimited API Calls", description="Full API access"),
-                    PlanFeature(name="SSO Integration", description="Single sign-on support"),
-                    PlanFeature(name="Dedicated Account Manager", description="Your personal contact"),
-                    PlanFeature(name="Custom Integrations", description="We'll build what you need"),
-                    PlanFeature(name="SLA Guarantee", description="99.9% uptime guarantee"),
+                    PlanFeature(name="Unlimited Property Analyses", description="Analyze as many properties as you want"),
+                    PlanFeature(name="Deal Gap + Income Value + Target Buy", description="Core pricing metrics for every property"),
+                    PlanFeature(name="IQ Verdict Score", description="Pass / Marginal / Buy verdict"),
+                    PlanFeature(name="All 6 Strategy Models — Full Detail", description="Complete strategy analysis"),
+                    PlanFeature(name="Seller Motivation Indicator", description="Gauge negotiation likelihood"),
+                    PlanFeature(name="Full Calculation Breakdown", description="See every assumption: rent, vacancy, capex, taxes, insurance"),
+                    PlanFeature(name="Editable Inputs & Stress Testing", description="Change any variable — Deal Gap recalculates in real time"),
+                    PlanFeature(name="Comparable Rental Data Sources", description="See the comps that drive the rent estimate"),
+                    PlanFeature(name="Downloadable Excel Proforma", description="Instant financial proforma — modify assumptions, share with lenders"),
+                    PlanFeature(name="DealVaultIQ Pipeline & Tracking", description="Save and manage your deal pipeline"),
+                    PlanFeature(name="Lender-Ready PDF Reports", description="Professional reports for partners and lenders"),
+                    PlanFeature(name="Side-by-Side Deal Comparison", description="Compare multiple properties"),
                 ],
             ),
         }
@@ -291,42 +258,60 @@ class BillingService:
         self,
         db: AsyncSession,
         user: User,
-        price_id: str,
+        price_id: Optional[str] = None,
+        lookup_key: Optional[str] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
     ) -> CheckoutSessionResponse:
-        """Create Stripe checkout session."""
+        """Create Stripe checkout session with 7-day trial.
+        
+        Accepts either a price_id or a lookup_key to resolve the price.
+        """
         customer_id = await self.get_or_create_stripe_customer(db, user)
         
-        success_url = success_url or f"{self.frontend_url}/billing?success=true"
-        cancel_url = cancel_url or f"{self.frontend_url}/billing?canceled=true"
+        success_url = success_url or f"{self.frontend_url}/register?success=true"
+        cancel_url = cancel_url or f"{self.frontend_url}/register?canceled=true"
         
         if not self.is_configured:
-            # Dev mode - return fake session
             return CheckoutSessionResponse(
-                checkout_url=f"{self.frontend_url}/billing?dev=true",
+                checkout_url=f"{self.frontend_url}/register?dev=true",
                 session_id="cs_dev_test_session",
             )
+        
+        # Resolve price — lookup_key takes precedence if provided
+        resolved_price_id = price_id
+        if lookup_key and not price_id:
+            prices = stripe.Price.list(
+                lookup_keys=[lookup_key],
+                expand=["data.product"],
+            )
+            if not prices.data:
+                raise ValueError(f"No price found for lookup_key: {lookup_key}")
+            resolved_price_id = prices.data[0].id
+        
+        if not resolved_price_id:
+            raise ValueError("Either price_id or lookup_key must be provided")
         
         session = stripe.checkout.Session.create(
             customer=customer_id,
             mode="subscription",
             payment_method_types=["card"],
-            line_items=[{"price": price_id, "quantity": 1}],
+            line_items=[{"price": resolved_price_id, "quantity": 1}],
             success_url=success_url + "&session_id={CHECKOUT_SESSION_ID}",
             cancel_url=cancel_url,
             metadata={
                 "user_id": str(user.id),
             },
             subscription_data={
+                "trial_period_days": 7,
                 "metadata": {
                     "user_id": str(user.id),
-                }
+                },
             },
             allow_promotion_codes=True,
         )
         
-        logger.info(f"Created checkout session {session.id} for user {user.id}")
+        logger.info(f"Created checkout session {session.id} for user {user.id} (7-day trial)")
         
         return CheckoutSessionResponse(
             checkout_url=session.url,
@@ -436,8 +421,10 @@ class BillingService:
             "customer.subscription.created": self._handle_subscription_created,
             "customer.subscription.updated": self._handle_subscription_updated,
             "customer.subscription.deleted": self._handle_subscription_deleted,
+            "customer.subscription.trial_will_end": self._handle_trial_will_end,
             "invoice.paid": self._handle_invoice_paid,
             "invoice.payment_failed": self._handle_invoice_payment_failed,
+            "entitlements.active_entitlement_summary.updated": self._handle_entitlement_updated,
         }
         
         handler = handlers.get(event_type)
@@ -499,6 +486,17 @@ class BillingService:
             
             await db.commit()
             logger.info(f"Subscription deleted, downgraded user {subscription.user_id} to free tier")
+
+    async def _handle_trial_will_end(self, db: AsyncSession, data: Dict[str, Any]):
+        """Handle subscription trial ending soon (fires 3 days before trial end)."""
+        stripe_sub_id = data.get("id")
+        logger.info(f"Subscription trial will end: {stripe_sub_id}")
+        # TODO: Send trial-ending reminder email to user
+
+    async def _handle_entitlement_updated(self, db: AsyncSession, data: Dict[str, Any]):
+        """Handle active entitlement summary update."""
+        logger.info(f"Entitlement summary updated: {data.get('id', 'unknown')}")
+        # Logged for future entitlement-based feature gating
 
     async def _handle_invoice_paid(self, db: AsyncSession, data: Dict[str, Any]):
         """Handle successful invoice payment."""

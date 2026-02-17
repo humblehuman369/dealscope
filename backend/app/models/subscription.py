@@ -16,9 +16,7 @@ from app.db.base import Base
 class SubscriptionTier(str, enum.Enum):
     """Subscription tier levels."""
     FREE = "free"
-    STARTER = "starter"
     PRO = "pro"
-    ENTERPRISE = "enterprise"
 
 
 class SubscriptionStatus(str, enum.Enum):
@@ -102,7 +100,7 @@ class Subscription(Base):
     
     def is_premium(self) -> bool:
         """Check if user has a paid subscription."""
-        return self.tier in [SubscriptionTier.STARTER, SubscriptionTier.PRO, SubscriptionTier.ENTERPRISE]
+        return self.tier == SubscriptionTier.PRO
     
     def can_save_property(self, current_count: int) -> bool:
         """Check if user can save another property."""
@@ -166,28 +164,20 @@ class PaymentHistory(Base):
 # Tier configurations for easy reference
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
-        "properties_limit": 5,
-        "searches_per_month": 25,
-        "api_calls_per_month": 100,
-        "features": ["basic_analysis", "save_properties"],
-    },
-    SubscriptionTier.STARTER: {
-        "properties_limit": 25,
-        "searches_per_month": 100,
-        "api_calls_per_month": 500,
-        "features": ["basic_analysis", "save_properties", "export_reports", "email_alerts"],
+        "properties_limit": 10,
+        "searches_per_month": 5,
+        "api_calls_per_month": 50,
+        "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],
     },
     SubscriptionTier.PRO: {
-        "properties_limit": 100,
-        "searches_per_month": 500,
-        "api_calls_per_month": 2500,
-        "features": ["basic_analysis", "save_properties", "export_reports", "email_alerts", "api_access", "priority_support"],
-    },
-    SubscriptionTier.ENTERPRISE: {
         "properties_limit": -1,  # Unlimited
         "searches_per_month": -1,  # Unlimited
         "api_calls_per_month": -1,  # Unlimited
-        "features": ["basic_analysis", "save_properties", "export_reports", "email_alerts", "api_access", "priority_support", "white_label", "dedicated_support"],
+        "features": [
+            "basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots",
+            "seller_motivation", "full_breakdown", "editable_inputs", "rental_comps",
+            "excel_proforma", "dealvault_pipeline", "pdf_reports", "deal_comparison",
+        ],
     },
 }
 
