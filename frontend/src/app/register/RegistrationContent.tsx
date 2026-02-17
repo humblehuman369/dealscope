@@ -562,6 +562,7 @@ function RegistrationInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [googleMessage, setGoogleMessage] = useState("");
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -668,10 +669,13 @@ function RegistrationInner() {
           : "Get started with 5 free analyses per month."}
       </p>
 
-      {/* Google OAuth placeholder */}
-      {/* TODO: Implement Google OAuth */}
+      {/* Google OAuth — coming soon; avoid misleading "connection" errors */}
       <button
-        onClick={() => { /* TODO: Wire Google OAuth provider */ }}
+        type="button"
+        onClick={() => {
+          setError("");
+          setGoogleMessage("Google sign-in is coming soon. Please use the form below to sign up with your email.");
+        }}
         style={{
           width: "100%",
           padding: "11px",
@@ -687,7 +691,7 @@ function RegistrationInner() {
           justifyContent: "center",
           gap: "10px",
           fontFamily: "inherit",
-          marginBottom: "20px",
+          marginBottom: googleMessage ? "12px" : "20px",
           transition: "background 0.2s",
         }}
       >
@@ -699,6 +703,11 @@ function RegistrationInner() {
         </svg>
         Continue with Google
       </button>
+      {googleMessage && (
+        <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "20px", lineHeight: 1.4 }}>
+          {googleMessage}
+        </p>
+      )}
 
       {/* Divider */}
       <div
