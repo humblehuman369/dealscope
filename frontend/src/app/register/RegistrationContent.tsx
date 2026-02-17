@@ -1012,7 +1012,7 @@ function RegistrationInner() {
             Stripe Not Configured
           </div>
           <p style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.6, marginBottom: "20px" }}>
-            Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments.
+            Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments. Restart the dev server after changing env.
           </p>
           <button
             onClick={() => setStep("confirm")}
