@@ -73,7 +73,7 @@ const nextConfig = {
     // Proxy all /api/* requests to the backend.
     //
     // This is CRITICAL for cookie-based auth: when the browser sends
-    // requests to dealgapiq.guru/api/*, cookies are first-party.
+    // requests to dealgapiq.com/api/*, cookies are first-party.
     // Without this, cookies set by the Railway backend are third-party
     // and get blocked by modern browsers.
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
