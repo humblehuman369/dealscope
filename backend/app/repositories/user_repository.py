@@ -70,6 +70,30 @@ class UserRepository:
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_oauth(
+        self,
+        db: AsyncSession,
+        provider: str,
+        oauth_id: str,
+        *,
+        load_roles: bool = False,
+    ) -> Optional[User]:
+        """Find user by OAuth provider and provider user id."""
+        stmt = select(User).where(
+            User.oauth_provider == provider,
+            User.oauth_id == oauth_id,
+        )
+        if load_roles:
+            from app.models.role import UserRole, Role, RolePermission, Permission
+            stmt = stmt.options(
+                selectinload(User.user_roles)
+                .selectinload(UserRole.role)
+                .selectinload(Role.role_permissions)
+                .selectinload(RolePermission.permission)
+            )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
     # ------------------------------------------------------------------
     # Write
     # ------------------------------------------------------------------
@@ -90,6 +114,25 @@ class UserRepository:
         await db.execute(
             update(User).where(User.id == user_id).values(**kwargs)
         )
+
+    async def update_oauth(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        *,
+        oauth_provider: str,
+        oauth_id: str,
+        avatar_url: Optional[str] = None,
+    ) -> None:
+        """Link OAuth provider to existing user; optionally set avatar_url."""
+        values = {
+            "oauth_provider": oauth_provider,
+            "oauth_id": oauth_id,
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if avatar_url is not None:
+            values["avatar_url"] = avatar_url
+        await db.execute(update(User).where(User.id == user_id).values(**values))
 
     async def delete(self, db: AsyncSession, user_id: uuid.UUID) -> None:
         await db.execute(delete(User).where(User.id == user_id))

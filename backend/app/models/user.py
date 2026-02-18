@@ -53,6 +53,10 @@ class User(Base):
     )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    # OAuth (e.g. Google); hashed_password unused for oauth-only users
+    oauth_provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    oauth_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+
     # Profile info
     full_name: Mapped[Optional[str]] = mapped_column(String(255))
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))

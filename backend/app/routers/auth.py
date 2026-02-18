@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import logging
 from typing import Optional
+from urllib.parse import urlencode
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -176,6 +179,116 @@ async def register(body: UserRegister, request: Request, db: DbSession):
             requires_verification=True,
         )
     return AuthMessage(message="Registration successful. You can now sign in.")
+
+
+# ------------------------------------------------------------------
+# Google OAuth
+# ------------------------------------------------------------------
+
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
+
+
+@router.get("/google")
+async def google_start(request: Request):
+    """Redirect user to Google OAuth consent screen."""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="Google sign-in is not configured")
+    base = str(request.base_url).rstrip("/")
+    redirect_uri = f"{base}/api/v1/auth/google/callback"
+    params = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+    }
+    auth_url = f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
+    return RedirectResponse(url=auth_url, status_code=302)
+
+
+@router.get("/google/callback")
+async def google_callback(request: Request, response: Response, db: DbSession):
+    """Handle Google OAuth callback: exchange code, get or create user, set session, redirect to frontend."""
+    code = request.query_params.get("code")
+    if not code:
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_missing_code"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_not_configured"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    base = str(request.base_url).rstrip("/")
+    redirect_uri = f"{base}/api/v1/auth/google/callback"
+
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            },
+            headers={"Accept": "application/json"},
+        )
+    if token_resp.status_code != 200:
+        logger.warning("Google token exchange failed: %s %s", token_resp.status_code, token_resp.text)
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    token_data = token_resp.json()
+    access_token = token_data.get("access_token")
+    if not access_token:
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    async with httpx.AsyncClient() as client:
+        userinfo_resp = await client.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+    if userinfo_resp.status_code != 200:
+        logger.warning("Google userinfo failed: %s", userinfo_resp.status_code)
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_userinfo_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    userinfo = userinfo_resp.json()
+    google_id = userinfo.get("sub")
+    email = userinfo.get("email")
+    name = userinfo.get("name") or ""
+    picture = userinfo.get("picture")
+
+    if not google_id or not email:
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_invalid_userinfo"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    try:
+        user, _created = await auth_service.get_or_create_user_from_google(
+            db,
+            google_id=google_id,
+            email=email,
+            name=name,
+            picture=picture,
+        )
+    except Exception as e:
+        logger.exception("Google get_or_create_user_from_google failed: %s", e)
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_signup_failed"
+        return RedirectResponse(url=redirect_url, status_code=302)
+
+    session_obj, jwt_token = await session_service.create_session(
+        db,
+        user.id,
+        ip_address=_client_ip(request),
+        user_agent=request.headers.get("User-Agent") or "",
+        remember_me=False,
+    )
+
+    redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
+    _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    return redirect_to
 
 
 # ------------------------------------------------------------------
