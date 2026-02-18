@@ -374,7 +374,7 @@ export default function StrategyIQScreen() {
   const handlePDFExport = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+      const { API_BASE_URL } = await import('../../services/apiClient');
       const strategyMap: Record<string, string> = {
         'Long-Term Rental': 'ltr', 'Short-Term Rental': 'str', 'BRRRR': 'brrrr',
         'Fix & Flip': 'flip', 'House Hack': 'house_hack', 'Wholesale': 'wholesale',
@@ -386,7 +386,7 @@ export default function StrategyIQScreen() {
         strategy,
         theme: 'light',
       });
-      const pdfUrl = `${API_BASE}/api/v1/proforma/property/${propertyId}/pdf?${params}`;
+      const pdfUrl = `${API_BASE_URL}/api/v1/proforma/property/${propertyId}/pdf?${params}`;
       const safeAddress = decodedAddress.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
       const fileUri = `${FileSystem.cacheDirectory}DealGapIQ_${safeAddress}.pdf`;
 

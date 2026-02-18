@@ -142,10 +142,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     loadTheme();
   }, []);
 
-  // Calculate active theme based on mode and system preference
-  const activeTheme: ActiveTheme = mode === 'system'
+  // When theme preference is not yet loaded, use system so the app renders immediately (no blank screen).
+  const effectiveMode: ThemeMode = isLoaded ? mode : 'system';
+  const activeTheme: ActiveTheme = effectiveMode === 'system'
     ? (systemColorScheme === 'dark' ? 'dark' : 'light')
-    : mode;
+    : effectiveMode;
 
   const isDark = activeTheme === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
@@ -164,15 +165,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     setMode(nextMode);
   }, [mode, setMode]);
 
-  // Don't render until theme is loaded to prevent flash
-  if (!isLoaded) {
-    return null;
-  }
-
   return (
     <ThemeContext.Provider
       value={{
-        mode,
+        mode: isLoaded ? mode : 'system',
         activeTheme,
         theme,
         isDark,

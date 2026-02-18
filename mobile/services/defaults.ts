@@ -10,8 +10,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useCallback } from 'react';
 import { getAccessToken } from './authService';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+import { API_BASE_URL } from './apiClient';
 
 // Storage keys for non-sensitive cached data (AsyncStorage)
 const STORAGE_KEYS = {

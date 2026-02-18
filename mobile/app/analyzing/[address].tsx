@@ -38,8 +38,9 @@ export default function AnalyzingScreen() {
 
   const decodedAddress = decodeURIComponent(params.address || '');
 
-  // Debug logging
-  console.log('[IQ Analyzing] Screen mounted with params:', params);
+  if (__DEV__) {
+    console.log('[IQ Analyzing] Screen mounted with params:', params);
+  }
 
   // Build property object from route params
   const property = useMemo((): IQProperty => ({

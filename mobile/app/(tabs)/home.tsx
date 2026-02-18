@@ -52,18 +52,18 @@ const TOOLKIT = [
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
-  // Redirect to onboarding if needed
+  // Redirect to onboarding if needed (only when auth is resolved to avoid flash)
   useEffect(() => {
-    if (user && isAuthenticated && !user.onboarding_completed) {
+    if (!authLoading && user && isAuthenticated && !user.onboarding_completed) {
       router.replace('/onboarding');
     }
-  }, [user, isAuthenticated, router]);
+  }, [authLoading, user, isAuthenticated, router]);
 
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
@@ -101,7 +101,7 @@ export default function HomeScreen() {
               DealGap<Text style={{ color: c.blue }}>IQ</Text>
             </Text>
             <View style={s.navRight}>
-              {isAuthenticated && user ? (
+              {authLoading ? null : isAuthenticated && user ? (
                 <>
                   <TouchableOpacity style={[s.navIcon, { backgroundColor: c.border }]} onPress={() => router.push('/search' as any)} accessibilityRole="button" accessibilityLabel="Search properties">
                     <Ionicons name="search" size={18} color={c.white} />
