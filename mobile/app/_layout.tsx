@@ -116,12 +116,12 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, [fontsLoaded]);
 
-  // Don't render until fonts are loaded to prevent FOUT
-  if (!fontsLoaded) return null;
-
   const handleAnimationComplete = useCallback(() => {
     setShowAnimatedSplash(false);
   }, []);
+
+  // Don't render until fonts are loaded to prevent FOUT (must be after all hooks)
+  if (!fontsLoaded) return null;
 
   return (
     <ErrorBoundary>
