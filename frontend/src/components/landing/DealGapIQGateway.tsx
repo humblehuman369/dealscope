@@ -131,7 +131,8 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>Institutional Grade Underwriting Engine.</h3>
+                  <h3>Fine-Tune Your Scan.</h3>
+                  <p className="gw-subline">These two factors shift your Income Value the most. Set them before you scan for a sharper result.</p>
                 </div>
               </div>
 
@@ -214,7 +215,8 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   <IQIcon size={40} />
                 </div>
                 <div>
-                  <h3>Institutional Grade Underwriting Engine.</h3>
+                  <h3>Fine-Tune Your Scan.</h3>
+                  <p className="gw-subline">These two factors shift your Income Value the most. Set them before you scan for a sharper result.</p>
                 </div>
               </div>
 
