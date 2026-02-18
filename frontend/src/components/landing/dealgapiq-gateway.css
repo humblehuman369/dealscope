@@ -147,9 +147,11 @@
   font-size: 1.4rem; font-weight: 700;
   color: #F1F5F9; margin-bottom: 0.125rem;
 }
-.gw-assistant-box p {
+.gw-assistant-box p,
+.gw-assistant-box .gw-subline {
   font-size: 0.72rem; color: #CBD5E1; line-height: 1.5;
 }
+.gw-assistant-box .gw-subline { margin-top: 0.25rem; margin-bottom: 0; }
 
 /* Address Input */
 .gw-address-input-wrap { position: relative; }
