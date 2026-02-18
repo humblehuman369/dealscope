@@ -77,15 +77,25 @@ const nextConfig = {
     // Without this, cookies set by the Railway backend are third-party
     // and get blocked by modern browsers.
     //
-    // On Vercel you MUST set NEXT_PUBLIC_API_URL to your public backend URL
-    // (e.g. https://dealscope-production.up.railway.app). If unset, we fall
-    // back to localhost and Vercel will return 404 / DNS_HOSTNAME_RESOLVED_PRIVATE.
+    // On Vercel, set NEXT_PUBLIC_API_URL to your public backend URL (e.g. https://your-app.up.railway.app).
+    // If unset, we fall back to localhost and API rewrites will 404 until you add the var and redeploy.
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    if (process.env.VERCEL && (apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1'))) {
-      throw new Error(
-        'NEXT_PUBLIC_API_URL must be set to your public backend URL on Vercel (e.g. https://your-app.up.railway.app). ' +
-        'Add it in Vercel → Project → Settings → Environment Variables, then redeploy.'
-      )
+    if (process.env.VERCEL) {
+      const isSet = !!process.env.NEXT_PUBLIC_API_URL
+      const isLocalhost = apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1')
+      if (isSet && isLocalhost) {
+        // Explicitly set to localhost on Vercel is a misconfiguration — fail the build.
+        throw new Error(
+          'NEXT_PUBLIC_API_URL must be your public backend URL on Vercel, not localhost. ' +
+          'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://your-app.up.railway.app), then redeploy.'
+        )
+      }
+      if (!isSet) {
+        console.warn(
+          '[next.config.js] NEXT_PUBLIC_API_URL is not set on Vercel. API rewrites will target localhost and may 404. ' +
+          'Add NEXT_PUBLIC_API_URL in Vercel → Settings → Environment Variables, then redeploy.'
+        )
+      }
     }
     return [
       {
