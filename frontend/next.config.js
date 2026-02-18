@@ -79,18 +79,19 @@ const nextConfig = {
     //
     // On Vercel, set NEXT_PUBLIC_API_URL to your public backend URL (e.g. https://your-app.up.railway.app).
     // If unset, we fall back to localhost and API rewrites will 404 until you add the var and redeploy.
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const raw = process.env.NEXT_PUBLIC_API_URL || ''
+    const apiUrl = raw.trim().replace(/\/+$/, '') || 'http://localhost:8000'
     if (process.env.VERCEL) {
-      const isSet = !!process.env.NEXT_PUBLIC_API_URL
+      console.log(`[next.config.js] NEXT_PUBLIC_API_URL raw value: "${raw}" (length=${raw.length})`)
+      console.log(`[next.config.js] Rewrite destination: ${apiUrl}/api/:path*`)
       const isLocalhost = apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1')
-      if (isSet && isLocalhost) {
-        // Explicitly set to localhost on Vercel is a misconfiguration — fail the build.
+      if (raw && isLocalhost) {
         throw new Error(
           'NEXT_PUBLIC_API_URL must be your public backend URL on Vercel, not localhost. ' +
           'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://your-app.up.railway.app), then redeploy.'
         )
       }
-      if (!isSet) {
+      if (!raw) {
         console.warn(
           '[next.config.js] NEXT_PUBLIC_API_URL is not set on Vercel. API rewrites will target localhost and may 404. ' +
           'Add NEXT_PUBLIC_API_URL in Vercel → Settings → Environment Variables, then redeploy.'
