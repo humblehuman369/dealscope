@@ -200,8 +200,8 @@ async function apiRequest<T>(
       const fallback =
         status >= 500
           ? `Server error (${status}). Please try again in a moment.`
-          : status === 404
-            ? `Service unavailable (${status}). Check that NEXT_PUBLIC_API_URL points to your backend.`
+          :       status === 404
+            ? `Backend returned 404 (Not Found). Check that NEXT_PUBLIC_API_URL points to your running backend and that the API route exists.`
             : `Request failed (${status}). Please try again.`
       throw new ApiError(fallback, status)
     }
