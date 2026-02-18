@@ -172,6 +172,12 @@ class Settings(BaseSettings):
     STRIPE_PRICE_PRO_MONTHLY: str = ""
     STRIPE_PRICE_PRO_YEARLY: str = ""
     
+        # ===========================================
+    # Google OAuth
+    # ===========================================
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    
     # ===========================================
     # Data Retention
     # ===========================================
