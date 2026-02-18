@@ -24,7 +24,7 @@ import {
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { VerdictScoreCard } from '@/components/iq-verdict/VerdictScoreCard'
+import { VerdictScoreCard, ComponentScoreBars } from '@/components/iq-verdict/VerdictScoreCard'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
@@ -459,6 +459,12 @@ function VerdictContent() {
             purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
             incomeValue: analysisData.income_value ?? analysisData.incomeValue,
             listPrice: analysisData.list_price ?? analysisData.listPrice,
+            incomeGapPercent: analysisData.income_gap_percent ?? analysisData.incomeGapPercent ?? (() => {
+              const lp = analysisData.list_price ?? analysisData.listPrice
+              const iv = analysisData.income_value ?? analysisData.incomeValue
+              return lp != null && iv != null && lp > 0 ? Math.round(((lp - iv) / lp) * 1000) / 10 : undefined
+            })(),
+            incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
             // Include inputs used for transparency
             inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
             strategies: analysisData.strategies.map((s) => ({
@@ -683,10 +689,19 @@ function VerdictContent() {
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
   const monthlyRent = property.monthlyRent || Math.round(property.price * 0.007)
   const discountPct = analysis.discountPercent || 0
-
-  // Price label adapts to listing status — "Asking" for listed properties, "Market" for off-market
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
+  const incomeGapPct = analysis.incomeGapPercent ?? (() => {
+    const lp = analysis.listPrice ?? property.price
+    return lp != null && lp > 0 && incomeValue != null ? Math.round(((lp - incomeValue) / lp) * 1000) / 10 : undefined
+  })()
+
+  // Short verdict description (override backend long copy for this page)
+  const shortVerdictDescription = incomeGapPct != null
+    ? (incomeGapPct > 0
+      ? `${priceLabel} price is ${incomeGapPct}% above Income Value. At this gap, the deal doesn't work at your target return.`
+      : `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`)
+    : (analysis.verdictDescription || 'Calculating deal metrics...')
 
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
@@ -749,32 +764,83 @@ function VerdictContent() {
           <VerdictScoreCard
             score={score}
             verdictLabel={verdictLabel}
-            description={analysis.verdictDescription || 'Calculating deal metrics...'}
+            description={shortVerdictDescription}
             componentScores={verdictComponentScores}
             onHowItWorks={handleShowMethodology}
+            hideScoreComponents
           />
 
-          {/* Price Targets */}
+          {/* Price Targets — hero gap bar first, then heading and cards */}
           <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
-            <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>What Should You Pay?</h2>
+
+            {/* Hero gap bar — primary story: Market vs Income Value vs Target Buy */}
+            {(() => {
+              const listPrice = analysis.listPrice ?? property.price
+              const heroMarkers = [
+                { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
+                { label: 'Income Value', price: incomeValue, dotColor: colors.brand.gold },
+                { label: priceLabel, price: listPrice, dotColor: colors.status.negative },
+              ].sort((a, b) => a.price - b.price)
+              const allPrices = heroMarkers.map(m => m.price).filter(p => p > 0)
+              if (allPrices.length === 0) return null
+              const scaleMin = Math.min(...allPrices) * 0.95
+              const scaleMax = Math.max(...allPrices) * 1.05
+              const range = scaleMax - scaleMin
+              const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
+              const gapPct = incomeGapPct != null && incomeGapPct > 0 ? Math.round(incomeGapPct) : null
+              return (
+                <div className="mb-6">
+                  <div className="relative h-3 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.blue}25, ${colors.brand.gold}25, ${colors.status.negative}30)` }}>
+                    {heroMarkers.map((m, i) => (
+                      <div key={i} className="absolute w-5 h-5 rounded-full border-2 -top-[5px]"
+                        style={{
+                          left: `${pos(m.price)}%`,
+                          transform: 'translateX(-50%)',
+                          background: m.dotColor,
+                          borderColor: colors.background.card,
+                          boxShadow: `0 0 10px ${m.dotColor}60`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-2 mb-1">
+                    {heroMarkers.map((m, i) => (
+                      <div key={i} className="flex flex-col items-center gap-0.5">
+                        <span className="text-[0.7rem] font-bold" style={{ color: m.dotColor }}>{m.label}</span>
+                        <span className="text-[0.8rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {gapPct != null && (
+                    <p className="text-center text-sm font-semibold mt-2" style={{ color: colors.status.negative }}>
+                      {gapPct}% above Income Value
+                    </p>
+                  )}
+                </div>
+              )
+            })()}
+
+            <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>
+              {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
+            </h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
               Every investment property has three price levels. The gap between {isListed ? 'asking price' : 'market value'} and your target buy price is what makes or breaks this deal.
             </p>
 
-            <div className="flex gap-2.5">
+            <div className="flex gap-2.5 items-stretch">
               {[
-                { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false },
-                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true },
-                { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false },
+                { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false, dominant: false },
+                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
+                { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
-                <div key={i} className="flex-1 rounded-xl py-3 px-2 text-center transition-all" style={{
+                <div key={i} className={`rounded-xl py-3 px-2 text-center transition-all ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`} style={{
                   background: card.active ? colors.background.cardUp : colors.background.card,
-                  border: card.active ? `1.5px solid ${colors.brand.blue}60` : `1px solid ${colors.ui.border}`,
-                  boxShadow: card.active ? `0 0 12px ${colors.brand.blue}20` : undefined,
+                  border: card.active ? `2px solid ${colors.brand.blue}` : `1px solid ${colors.ui.border}`,
+                  boxShadow: card.active ? `0 0 16px ${colors.brand.blue}25` : undefined,
                 }}>
                   <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : colors.text.tertiary }}>{card.label}</p>
-                  <p className="text-lg font-bold tabular-nums mb-0.5" style={{ color: card.active ? colors.brand.blue : colors.text.secondary }}>{fmtShort(card.value)}</p>
+                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : colors.text.secondary }}>{fmtShort(card.value)}</p>
                   <p className="text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
                 </div>
               ))}
@@ -844,6 +910,11 @@ function VerdictContent() {
             </div>
           </section>
 
+          {/* Score Components — why did it score this way */}
+          <section className="px-5 py-6 border-t" style={{ borderColor: colors.ui.border }}>
+            <ComponentScoreBars scores={verdictComponentScores} />
+          </section>
+
           {/* === RIGHT COLUMN on desktop / continues below on mobile === */}
           <div className="lg:border-l lg:sticky lg:top-0 lg:self-start lg:h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
 
@@ -864,7 +935,7 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* Beginner Tip */}
+          {/* 60-second screen callout */}
           <section className="px-5 pb-6">
             <div className="flex gap-3.5 rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
               <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.teal }}>
@@ -873,7 +944,9 @@ function VerdictContent() {
               <div>
                 <p className="text-sm font-bold mb-1" style={{ color: colors.text.primary }}>This is your 60-second screen.</p>
                 <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
-                  A VerdictIQ score tells you whether to keep scrolling or dig deeper. This property scored {score} — {score >= 65 ? 'a ' + verdictLabel.toLowerCase() + ' worth your full analysis' : 'the numbers need work before committing'}. Ready to go deep? The full financial breakdown is one tap away.
+                  {score >= 65
+                    ? `A score of ${score} means the numbers are worth a closer look. The full financial breakdown — rent comps, expense detail, and strategy-by-strategy analysis — is one tap away.`
+                    : `A score of ${score} means the numbers need work. The full financial breakdown — rent comps, expense detail, and strategy-by-strategy analysis — is one tap away.`}
                 </p>
               </div>
             </div>
@@ -904,7 +977,7 @@ function VerdictContent() {
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
                 : score >= 40
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
-                : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work.'}
+                : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
             <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
               style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
@@ -926,14 +999,9 @@ function VerdictContent() {
           {/* Trust Strip — full-width, spans both columns on desktop */}
           <div className="px-5 py-5 text-center border-t lg:col-span-2" style={{ borderColor: colors.ui.border }}>
             <p className="text-xs leading-relaxed" style={{ color: colors.text.secondary }}>
-              VerdictIQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
+              DealGap IQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
             </p>
           </div>
-
-          {/* Footer — full-width, spans both columns on desktop */}
-          <footer className="text-center py-5 text-xs lg:col-span-2" style={{ color: colors.text.secondary }}>
-            Powered by <span className="font-semibold" style={{ color: colors.text.body }}>RealVest<span style={{ color: colors.brand.blue }}>IQ</span></span>
-          </footer>
         </div>
       </div>
 
