@@ -76,7 +76,17 @@ const nextConfig = {
     // requests to dealgapiq.com/api/*, cookies are first-party.
     // Without this, cookies set by the Railway backend are third-party
     // and get blocked by modern browsers.
+    //
+    // On Vercel you MUST set NEXT_PUBLIC_API_URL to your public backend URL
+    // (e.g. https://dealscope-production.up.railway.app). If unset, we fall
+    // back to localhost and Vercel will return 404 / DNS_HOSTNAME_RESOLVED_PRIVATE.
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    if (process.env.VERCEL && (apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1'))) {
+      throw new Error(
+        'NEXT_PUBLIC_API_URL must be set to your public backend URL on Vercel (e.g. https://your-app.up.railway.app). ' +
+        'Add it in Vercel → Project → Settings → Environment Variables, then redeploy.'
+      )
+    }
     return [
       {
         source: '/api/:path*',
