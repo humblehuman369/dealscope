@@ -44,6 +44,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const sectionRefs = useRef<(HTMLDivElement | HTMLElement | null)[]>([]);
   const [gatewayOpen, setGatewayOpen] = useState(false);
   const [gatewayStep, setGatewayStep] = useState<'start' | 'address' | 'scan'>('start');
+  const [ctaAddress, setCtaAddress] = useState('');
+  const [ctaFocused, setCtaFocused] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -81,6 +83,16 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const handleStartAnalysis = () => {
     setGatewayStep('start');
     setGatewayOpen(true);
+  };
+
+  const handleCtaSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = ctaAddress.trim();
+    if (trimmed) {
+      router.push(`/analyzing?address=${encodeURIComponent(trimmed)}`);
+    } else {
+      handleStartAnalysis();
+    }
   };
 
   return (
@@ -160,7 +172,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       >
         <div className="verdict-container">
           <div className="deal-gap-explainer">
-            <h2 className="explainer-headline">Most Investors Search for <span className="cyan">Deals</span>. <span className="cyan">DealGapIQ</span> Calculates Them.</h2>
+            <h2 className="explainer-headline">Most Investors Search for <span className="cyan">Deals</span>. DealGap<span className="cyan">IQ</span> Calculates Them.</h2>
             <p>
               Most investors search the same listings, use the same filters, and chase the same narrow pool of &ldquo;deals&rdquo; — competing on speed instead of strategy. That race is over.
             </p>
@@ -333,7 +345,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </section>
 
-      {/* FOUNDER + VALUATION CONTROLS */}
+      {/* FOUNDER */}
       <div
         className={fadeClass(3)}
         data-idx="3"
@@ -349,6 +361,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               &ldquo;I built the infrastructure behind <strong>HomePath.com</strong> (Fannie Mae) and <strong>HomeSteps.com</strong> (Freddie Mac). DealGapIQ isn&apos;t a calculator; it&apos;s 35 years of institutional intelligence, now in your hands.&rdquo;
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ADJUST FOR REALITY — own section, dark background */}
+      <section className="adjust-section">
+        <div className={`adjust-section-inner ${fadeClass(3)}`} data-idx="3">
           <div className="val-section">
             <div className="val-intro">
               <h3 className="val-intro-headline">Adjust for Reality.</h3>
@@ -396,7 +414,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* INVESTMENT STRATEGIES */}
       <section
@@ -497,7 +515,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <h2 className="section-title">When a <span style={{ color: 'var(--cyan)' }}>Deal Passes</span> the Screen,<br />Everything You Need Is Ready.</h2>
             <p className="section-desc">Go deep with investor-grade tools built for confident decision-making.</p>
           </div>
-          <div className="toolkit-grid">
+          <div className="toolkit-strip" aria-label="Toolkit features">
+            <div className="toolkit-grid">
             <div className="toolkit-card">
               <div className="tk-icon pr">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -554,6 +573,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <p className="tk-text">Save deals, track offers, and compare opportunities side-by-side from underwriting to close.</p>
             </div>
           </div>
+            </div>
         </div>
       </section>
 
@@ -567,16 +587,16 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             From the founder of Foreclosure.com — the most trusted name in distressed real estate.
           </h2>
           <p style={{ fontSize: '0.95rem', color: '#94a3b8', lineHeight: 1.7, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            20+ years of real estate data, 2M+ properties analyzed, and the same analytical rigor — now available to every investor. DealGapIQ is in beta and your feedback drives what ships next.
+            35+ years in real estate data, 80+ companies, a 30+ year GSE partnership, and 500+ projects — the same analytical rigor, now available to every investor. DealGapIQ is in beta and your feedback drives what ships next.
           </p>
 
           {/* Trust Metrics */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', maxWidth: '560px', margin: '0 auto' }}>
             {[
-              { val: '20+', label: 'Years in RE Data', color: '#38bdf8' },
-              { val: '2M+', label: 'Properties Indexed', color: '#2dd4bf' },
-              { val: '6', label: 'Strategy Models', color: '#a78bfa' },
-              { val: 'Free', label: 'Beta Access', color: '#fbbf24' },
+              { val: '35+', label: 'Years in RE Data', color: '#38bdf8' },
+              { val: '80+', label: 'Companies', color: '#2dd4bf' },
+              { val: '30+', label: 'Year GSE Partnership', color: '#a78bfa' },
+              { val: '500+', label: 'Projects', color: '#fbbf24' },
             ].map((m, i) => (
               <div key={i} style={{ padding: '1rem', borderRadius: '12px', background: `${m.color}08`, border: `1px solid ${m.color}18` }}>
                 <p style={{ fontSize: '1.3rem', fontWeight: 800, color: m.color, marginBottom: '0.2rem' }}>{m.val}</p>
@@ -596,7 +616,70 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <div className="cta-inner">
           <h2 className="cta-title">Find Your Deal.<br />Close Your Gap.</h2>
           <p className="cta-desc">Every property has a Deal Gap. Only DealGapIQ measures it.</p>
-          <button className="btn-cta" onClick={handleStartAnalysis}>Analyze Your First Property</button>
+          <form onSubmit={handleCtaSubmit} className="cta-address-form">
+            <div
+              className="cta-address-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                background: '#0D1424',
+                border: `1px solid ${ctaFocused ? 'rgba(14,165,233,0.35)' : 'rgba(148,163,184,0.1)'}`,
+                borderRadius: '10px',
+                padding: '4px 4px 4px 16px',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                boxShadow: ctaFocused ? '0 0 0 3px rgba(14,165,233,0.06)' : 'none',
+                maxWidth: '520px',
+                margin: '0 auto',
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="7.5" cy="7.5" r="5.5" stroke="#475569" strokeWidth="1.5" />
+                <path d="M12 12L16 16" stroke="#475569" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <input
+                type="text"
+                value={ctaAddress}
+                onChange={(e) => setCtaAddress(e.target.value)}
+                onFocus={() => setCtaFocused(true)}
+                onBlur={() => setCtaFocused(false)}
+                placeholder="Enter any property address..."
+                style={{
+                  flex: 1,
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#E2E8F0',
+                  fontSize: '14px',
+                  padding: '12px 12px',
+                  fontFamily: 'inherit',
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  padding: '10px 20px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                Analyze
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </form>
           <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#64748b' }}>
             Free during beta · <a href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</a>
           </p>
