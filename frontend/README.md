@@ -157,9 +157,9 @@ The app uses a **dark fintech theme** with these conventions:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NEXT_PUBLIC_API_URL` | Build-time | Backend URL for `next.config.js` rewrites (default: `http://localhost:8000`) |
+| `NEXT_PUBLIC_API_URL` | Build-time | Backend URL for `next.config.js` rewrites (default: `http://localhost:8000`). **On Vercel this must be set** to your public backend URL (e.g. `https://dealscope-production.up.railway.app`); otherwise rewrites target localhost and you get 404 / DNS_HOSTNAME_RESOLVED_PRIVATE. |
 
-The frontend uses **relative API paths** (`/api/v1/...`) at runtime. The `NEXT_PUBLIC_API_URL` is only used by the Next.js rewrite config to know where to proxy requests.
+The frontend uses **relative API paths** (`/api/v1/...`) at runtime. The `NEXT_PUBLIC_API_URL` is only used by the Next.js rewrite config to know where to proxy requests. If you deploy on Vercel without setting it, the build will fail with a clear error.
 
 ## Docker
 
