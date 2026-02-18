@@ -195,14 +195,15 @@ async function apiRequest<T>(
     try {
       errBody = text.length ? JSON.parse(text) : {}
     } catch {
-      // Server returned HTML or non-JSON (e.g. proxy error page)
+      // Server returned HTML or non-JSON (e.g. proxy error page, 404 page)
+      const status = response.status
       const fallback =
-        response.status >= 500
-          ? `Server error (${response.status}). Please try again in a moment.`
-          : response.status === 404
-            ? 'Service unavailable. Please check your connection.'
-            : `Request failed (${response.status}). Please try again.`
-      throw new ApiError(fallback, response.status)
+        status >= 500
+          ? `Server error (${status}). Please try again in a moment.`
+          : status === 404
+            ? `Service unavailable (${status}). Check that NEXT_PUBLIC_API_URL points to your backend.`
+            : `Request failed (${status}). Please try again.`
+      throw new ApiError(fallback, status)
     }
     const message = formatApiErrorDetail(errBody.detail, response.status)
     throw new ApiError(message, response.status, errBody.code)
