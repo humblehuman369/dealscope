@@ -3,6 +3,14 @@
  *
  * Handles synchronization between the local SQLite database and the backend API.
  * Provides offline-first capabilities with background sync.
+ *
+ * Sync flow:
+ * - Push: On reconnect, processOfflineQueue() sends queued local changes (saved_properties
+ *   create/update/delete, scanned_properties → save) to the API.
+ * - Pull: syncAll() / syncSavedProperties(), syncSearchHistory(), syncDocuments(),
+ *   syncLOIHistory() pull from the API into SQLite.
+ * - Synced tables: saved_properties, search_history, documents, loi_history.
+ *   Deal Maker data is online-only; no sync job populates deal_maker_records.
  */
 
 import NetInfo from '@react-native-community/netinfo';
@@ -569,12 +577,13 @@ export async function getCachedLOIHistory(propertyId?: string): Promise<CachedLO
 }
 
 /**
- * Get sync status summary for all tables.
+ * Get sync status summary for synced tables.
+ * Deal Maker data is online-only; deal_maker_records is not synced.
  */
 export async function getSyncStatus(): Promise<{
   [table: string]: SyncMetadata | null;
 }> {
-  const tables = ['saved_properties', 'search_history', 'documents', 'loi_history', 'deal_maker_records'];
+  const tables = ['saved_properties', 'search_history', 'documents', 'loi_history'];
   const status: { [table: string]: SyncMetadata | null } = {};
 
   for (const table of tables) {
@@ -594,7 +603,6 @@ export async function clearCache(): Promise<void> {
   await db.runAsync('DELETE FROM search_history WHERE synced_at IS NOT NULL');
   await db.runAsync('DELETE FROM documents WHERE synced_at IS NOT NULL');
   await db.runAsync('DELETE FROM loi_history WHERE synced_at IS NOT NULL');
-  await db.runAsync('DELETE FROM deal_maker_records WHERE synced_at IS NOT NULL');
   await db.runAsync('DELETE FROM sync_metadata');
 }
 

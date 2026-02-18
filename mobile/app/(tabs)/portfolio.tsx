@@ -5,7 +5,6 @@ import {
   StyleSheet, 
   TouchableOpacity,
   ScrollView,
-  FlatList,
   Modal,
   TextInput,
   KeyboardAvoidingView,
@@ -323,6 +322,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const [address, setAddress] = useState('');
+  const [addressError, setAddressError] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [zip, setZip] = useState('');
@@ -332,6 +332,7 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
 
   const resetForm = useCallback(() => {
     setAddress('');
+    setAddressError('');
     setCity('');
     setState('');
     setZip('');
@@ -346,9 +347,10 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
 
   const handleSubmit = useCallback(async () => {
     if (!address.trim()) {
-      Alert.alert('Required Field', 'Please enter the property address.');
+      setAddressError('Please enter the property address.');
       return;
     }
+    setAddressError('');
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -427,14 +429,16 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
             <View style={styles.inputGroup}>
               <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Street Address *</Text>
               <TextInput
-                style={[styles.textInput, modalTheme.textInput]}
+                style={[styles.textInput, modalTheme.textInput, addressError ? { borderColor: colors.loss.main } : undefined]}
                 placeholder="123 Main Street"
                 placeholderTextColor={modalTheme.placeholder}
                 value={address}
-                onChangeText={setAddress}
+                onChangeText={(text) => { setAddress(text); if (addressError) setAddressError(''); }}
                 autoCapitalize="words"
                 accessibilityLabel="Street address"
+                accessibilityHint={addressError ? addressError : undefined}
               />
+              {addressError ? <Text style={[styles.inlineError, { color: colors.loss.main }]}>{addressError}</Text> : null}
             </View>
 
             {/* City, State, Zip Row */}
@@ -810,6 +814,10 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  inlineError: {
+    fontSize: 12,
+    marginTop: 4,
   },
   textInput: {
     borderWidth: 1,

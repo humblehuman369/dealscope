@@ -21,23 +21,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { getAccessToken } from '../../services/authService';
+import { get } from '../../services/apiClient';
 import { getUserProfile } from '../../services/userService';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
-
-// ------------------------------------------------------------------
-// API helper
-// ------------------------------------------------------------------
-
-async function apiFetch<T>(endpoint: string): Promise<T> {
-  const token = getAccessToken();
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
 
 // ------------------------------------------------------------------
 // Types
@@ -101,25 +86,25 @@ export default function DashboardScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: stats, isLoading: statsLoading } = useQuery<PropertyStats>({
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery<PropertyStats>({
     queryKey: ['mobile', 'dashboard', 'stats'],
-    queryFn: () => apiFetch('/api/v1/properties/saved/stats'),
+    queryFn: () => get<PropertyStats>('/api/v1/properties/saved/stats'),
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: recentSearches } = useQuery<SearchHistoryItem[]>({
+  const { data: recentSearches, isError: searchesError, refetch: refetchSearches } = useQuery<SearchHistoryItem[]>({
     queryKey: ['mobile', 'dashboard', 'searches'],
-    queryFn: () => apiFetch('/api/v1/search-history/recent?limit=5'),
+    queryFn: () => get<SearchHistoryItem[]>('/api/v1/search-history/recent', { limit: 5 }),
     staleTime: 60 * 1000,
   });
 
-  const { data: savedProperties } = useQuery<SavedProperty[]>({
+  const { data: savedProperties, isError: propertiesError, refetch: refetchProperties } = useQuery<SavedProperty[]>({
     queryKey: ['mobile', 'dashboard', 'properties'],
-    queryFn: () => apiFetch('/api/v1/properties/saved?limit=5'),
+    queryFn: () => get<SavedProperty[]>('/api/v1/properties/saved', { limit: 5 }),
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: profile } = useQuery({
+  const { data: profile, isError: profileError, refetch: refetchProfile } = useQuery({
     queryKey: ['mobile', 'dashboard', 'profile'],
     queryFn: getUserProfile,
     staleTime: 5 * 60 * 1000,
@@ -129,6 +114,7 @@ export default function DashboardScreen() {
     queryClient.invalidateQueries({ queryKey: ['mobile', 'dashboard'] });
   }, [queryClient]);
 
+  const hasError = statsError || searchesError || propertiesError || profileError;
   const isRefreshing = statsLoading;
 
   const bg = isDark ? '#0f172a' : '#f8fafc';
@@ -160,6 +146,24 @@ export default function DashboardScreen() {
             Your investment overview
           </Text>
         </View>
+
+        {/* Error state */}
+        {hasError && (
+          <View style={{ backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)' }} accessibilityRole="alert">
+            <Text style={{ fontSize: 14, color: isDark ? '#fca5a5' : '#b91c1c', marginBottom: 12 }} accessibilityLabel="Error: Couldn't load dashboard. Check your connection and try again.">
+              Couldn't load dashboard. Check your connection and try again.
+            </Text>
+            <TouchableOpacity
+              onPress={onRefresh}
+              style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, backgroundColor: accentColor }}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading dashboard"
+            >
+              <Ionicons name="refresh" size={18} color="#ffffff" />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#ffffff' }}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Metrics */}
         {statsLoading ? (

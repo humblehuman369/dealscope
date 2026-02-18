@@ -7,8 +7,8 @@
 
 import axios from 'axios';
 import { calculateBoundingBox, calculateTargetPoint, calculateDistance } from '../utils/geoCalculations';
+import { API_BASE_URL } from './apiClient';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 // Enable mock data in development when API is unreachable

@@ -10,13 +10,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
   Image,
   Modal,
   Dimensions,
   Pressable,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -224,13 +224,13 @@ export default function PhotosScreen() {
             </Text>
           </View>
         ) : (
-          <FlatList
+          <FlashList
             data={photos}
             renderItem={renderThumb}
-            keyExtractor={(item, i) => item.url + i}
+            estimatedItemSize={THUMB_SIZE + 24}
+            keyExtractor={(item, i) => item.url + String(i)}
             numColumns={COLS}
             contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 24 }}
-            columnWrapperStyle={{ gap: GRID_GAP, marginBottom: GRID_GAP }}
           />
         )}
 

@@ -4,11 +4,11 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity,
-  FlatList,
   RefreshControl,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -451,9 +451,10 @@ export default function HistoryScreen() {
       </View>
 
       {/* Property List */}
-      <FlatList
+      <FlashList
         data={displayProperties}
         renderItem={renderProperty}
+        estimatedItemSize={100}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,

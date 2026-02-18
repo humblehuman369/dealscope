@@ -4,8 +4,7 @@
  */
 
 import axios from 'axios';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+import { API_BASE_URL } from './apiClient';
 
 // DISABLED: Local fallback analytics
 // All financial calculations must come from the backend. Showing locally-computed

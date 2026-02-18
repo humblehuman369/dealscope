@@ -1,11 +1,22 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments, Redirect } from 'expo-router';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+
+const PROTECTED_TABS = ['dashboard', 'portfolio', 'history', 'settings', 'map'];
 
 export default function TabLayout() {
+  const segments = useSegments();
+  const { isAuthenticated, isLoading } = useAuth();
   const { isDark: isDarkMode, theme } = useTheme();
+
+  const currentTab = segments[1];
+  const isProtectedTab = typeof currentTab === 'string' && PROTECTED_TABS.includes(currentTab);
+  if (!isLoading && !isAuthenticated && isProtectedTab) {
+    return <Redirect href="/auth/login" />;
+  }
 
   return (
     <Tabs

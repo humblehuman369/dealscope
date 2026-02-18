@@ -11,8 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
-  FlatList,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -934,14 +934,15 @@ export default function ProfileScreen() {
               <Text style={{ color: colors.primary[500], fontSize: 16 }}>Done</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
+          <FlashList
             data={US_STATES}
+            estimatedItemSize={48}
             keyExtractor={(item) => item}
             renderItem={({ item }) => {
-              const isSelected = stateModalType === 'target' 
+              const isSelected = stateModalType === 'target'
                 ? targetMarkets.includes(item)
                 : (stateModalType === 'business' ? businessState === item : licenseState === item);
-              
+
               return (
                 <TouchableOpacity
                   style={[styles.stateItem, { borderBottomColor: theme.border }]}
