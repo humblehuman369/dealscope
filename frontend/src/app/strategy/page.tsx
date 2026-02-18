@@ -65,7 +65,7 @@ function normalizePercentMetric(value?: number): number | null {
 function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  useSession()
+  const { isAuthenticated } = useSession()
 
   const addressParam = searchParams.get('address') || ''
   const conditionParam = searchParams.get('condition')
@@ -404,16 +404,40 @@ function StrategyContent() {
         {/* Page Header + Actions */}
         <section className="px-5 pt-8 pb-0">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>This Deal Passed the Screen.<br/>Here Are the Numbers.</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-            Every dollar in and out — so you can see exactly whether this property pays for itself.
-          </p>
+          {verdictScore >= 70 ? (
+            <>
+              <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>This Deal Passed the Screen.<br/>Here Are the Numbers.</h2>
+              <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
+                Every dollar in and out — so you can see exactly whether this property pays for itself.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>Here&apos;s Why the Numbers Don&apos;t Work —<br/>and What Would Change Them.</h2>
+              <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
+                Every dollar in and out so you can see exactly where the gap is and what it would take to make this deal work.
+              </p>
+            </>
+          )}
 
-          {/* VerdictIQ reference badge */}
-          <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: colors.accentBg.green, border: '1px solid rgba(52,211,153,0.2)', color: colors.status.positive }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-            VerdictIQ Score: {verdictScore} · {topStrategyName}{selectedStrategyId && selectedStrategyId !== sortedStrategies[0]?.id ? '' : ' recommended'}
-          </div>
+          {/* Score + strategy badge — no VerdictIQ sub-brand; acknowledge when best strategy still loses money */}
+          {(() => {
+            const viewingBestStrategy = !selectedStrategyId || selectedStrategyId === sortedStrategies[0]?.id
+            const bestIsNegative = viewingBestStrategy && (
+              isFlipOrWholesale ? strategyAnnualCashFlow < 0 : strategyCashFlow < 0
+            )
+            const strategySuffix = (selectedStrategyId && selectedStrategyId !== sortedStrategies[0]?.id)
+              ? ''
+              : bestIsNegative
+                ? ' — best available strategy'
+                : ' recommended'
+            return (
+              <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: verdictScore >= 65 ? colors.accentBg.green : colors.accentBg.gold, border: `1px solid ${verdictScore >= 65 ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`, color: verdictScore >= 65 ? colors.status.positive : colors.brand.gold }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                Score: {verdictScore} · {topStrategyName}{strategySuffix}
+              </div>
+            )
+          })()}
 
           {/* Top Action Buttons — always 3 across */}
           <div className="grid grid-cols-3 gap-2 mt-5 mb-2">
@@ -474,11 +498,11 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Market Price', formatCurrency(listPrice), true],
-                ['Your Target Price', formatCurrency(targetPrice), false, colors.brand.blue],
+                ['Target Buy', formatCurrency(targetPrice), false, colors.brand.blue],
                 [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
                 [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
                 ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
@@ -499,7 +523,7 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Loan Amount', formatCurrency(loanAmount)],
@@ -524,7 +548,7 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Monthly Rent', formatCurrency(monthlyRent)],
@@ -550,7 +574,7 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125" style={{ color: colors.brand.teal }}>Adjust</button>
+                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
@@ -592,25 +616,21 @@ function StrategyContent() {
               </div>
             </div>
           ) : (
-            /* Rental strategies: Income/Cash Flow cards */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
-              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>NOI</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
-                </div>
-                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
+            /* Rental strategies: NOI and Net Pocket — hero summary cards, full-width and prominent */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-6 w-full">
+              <div className="rounded-2xl p-5 sm:p-6 w-full" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.25)`, boxShadow: `0 0 24px rgba(52,211,153,0.12)` }}>
+                <p className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.text.primary }}>Before Your Loan</p>
+                <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>NOI</p>
+                <p className="text-2xl sm:text-3xl font-bold tabular-nums mt-2" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
+                <p className="text-sm font-semibold tabular-nums mt-1" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
               </div>
-              <div className="rounded-xl p-4" style={{ background: strategyCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyCashFlow >= 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>What You&apos;d Pocket</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Net</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
-                    {strategyCashFlow >= 0 ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
-                  </p>
-                </div>
-                <p className="text-xs font-medium tabular-nums text-right mt-0.5" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
+              <div className="rounded-2xl p-5 sm:p-6 w-full" style={{ background: strategyCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyCashFlow >= 0 ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)'}`, boxShadow: strategyCashFlow >= 0 ? `0 0 24px rgba(52,211,153,0.12)` : `0 0 24px rgba(248,113,113,0.12)` }}>
+                <p className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.text.primary }}>What You&apos;d Pocket</p>
+                <p className="text-xs font-medium mt-0.5" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Net</p>
+                <p className="text-2xl sm:text-3xl font-bold tabular-nums mt-2" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
+                  {strategyCashFlow >= 0 ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
+                </p>
+                <p className="text-sm font-semibold tabular-nums mt-1" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
                   {strategyCashFlow >= 0 ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{strategyCashFlow >= 0 ? '' : ')'}
                 </p>
               </div>
@@ -722,26 +742,36 @@ function StrategyContent() {
               <span className="text-sm font-bold tabular-nums w-12 text-right" style={{ color: m.color }}>{Math.round(m.value)}%</span>
             </div>
           ))}
+          <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
+            Price Confidence reflects comp availability in this price range. Luxury properties have fewer comparables.
+          </p>
         </section>
 
-        {/* Save CTA */}
+        {/* Save CTA — adapt for logged-in vs anonymous; future: scan limit → Pro upgrade */}
         <section className="px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>You screened it. You proved it.</p>
           <h2 className="text-2xl font-extrabold mb-3" style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}>Now Save It.</h2>
           <p className="text-[15px] mb-7 mx-auto max-w-sm" style={{ color: colors.text.body, lineHeight: 1.6 }}>
             Save to your DealVaultIQ and we&apos;ll keep the numbers fresh and alert you if anything changes.
           </p>
-          <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
-            style={{ background: colors.brand.teal }}>
-            Create Free Account
-          </button>
-          <p className="text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
+          {isAuthenticated ? (
+            <>
+              <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
+                style={{ background: colors.brand.teal }}>
+                Save to DealVaultIQ
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
+                style={{ background: colors.brand.teal }}>
+                Create Free Account
+              </button>
+              <p className="text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
+            </>
+          )}
         </section>
 
-        {/* Footer */}
-        <footer className="text-center py-5 text-xs" style={{ color: colors.text.secondary }}>
-          Powered by <span className="font-semibold" style={{ color: colors.text.body }}>DealGap<span style={{ color: colors.brand.blue }}>IQ</span></span>
-        </footer>
       </div>
     </div>
   )
