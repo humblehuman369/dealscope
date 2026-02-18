@@ -36,6 +36,8 @@ export interface VerdictScoreCardProps {
   }
   /** Callback when "How Verdict Score Works" is clicked */
   onHowItWorks?: () => void
+  /** When true, do not render Score Components (e.g. when shown later on page) */
+  hideScoreComponents?: boolean
 }
 
 // ─── Helpers (pure, no side-effects) ──────────────────────────────────────────
@@ -154,7 +156,7 @@ const COMPONENTS: { key: keyof VerdictScoreCardProps['componentScores']; label: 
   { key: 'dealProbability', label: 'Deal Probability' },
 ]
 
-function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['componentScores'] }) {
+export function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['componentScores'] }) {
   return (
     <div className="mt-6 text-left max-w-sm mx-auto">
       <p
@@ -209,6 +211,7 @@ export function VerdictScoreCard({
   description,
   componentScores,
   onHowItWorks,
+  hideScoreComponents = false,
 }: VerdictScoreCardProps) {
   const color = scoreColor(score)
 
@@ -254,8 +257,8 @@ export function VerdictScoreCard({
         </div>
       )}
 
-      {/* Component score bars */}
-      <ComponentScoreBars scores={componentScores} />
+      {/* Component score bars — optional for page flow reorder */}
+      {!hideScoreComponents && <ComponentScoreBars scores={componentScores} />}
     </section>
   )
 }
