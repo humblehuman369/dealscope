@@ -562,7 +562,6 @@ function RegistrationInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [googleMessage, setGoogleMessage] = useState("");
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -669,12 +668,15 @@ function RegistrationInner() {
           : "Get started with 5 free analyses per month."}
       </p>
 
-      {/* Google OAuth — coming soon; avoid misleading "connection" errors */}
+      {/* Google OAuth — redirect to backend; callback sets cookies and redirects to frontend */}
       <button
         type="button"
         onClick={() => {
-          setError("");
-          setGoogleMessage("Google sign-in is coming soon. Please use the form below to sign up with your email.");
+          const base = typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL
+            ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")
+            : "";
+          const url = base ? `${base}/api/v1/auth/google` : "/api/v1/auth/google";
+          window.location.href = url;
         }}
         style={{
           width: "100%",
@@ -691,7 +693,7 @@ function RegistrationInner() {
           justifyContent: "center",
           gap: "10px",
           fontFamily: "inherit",
-          marginBottom: googleMessage ? "12px" : "20px",
+          marginBottom: "20px",
           transition: "background 0.2s",
         }}
       >
@@ -703,11 +705,6 @@ function RegistrationInner() {
         </svg>
         Continue with Google
       </button>
-      {googleMessage && (
-        <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "20px", lineHeight: 1.4 }}>
-          {googleMessage}
-        </p>
-      )}
 
       {/* Divider */}
       <div
