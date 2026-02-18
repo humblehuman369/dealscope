@@ -4,6 +4,20 @@ Complete audit of the `mobile/` codebase (DealGapIQ React Native / Expo). Output
 
 ---
 
+## Resolved (implementation complete)
+
+The following items from this audit were addressed in a single pass:
+
+- **Phase 1:** Production `console.log` guarded in analyzing screen; Jest `setupFilesAfterEnv` typo fixed; dashboard uses `apiClient`; ThemeProvider renders with default theme while loading (no blank screen); error reporting (ErrorBoundary, Sentry) verified.
+- **Phase 2:** Route-level auth guard for protected tabs (dashboard, portfolio, history, settings, map); `deal_maker_records` removed from sync status/clearCache and documented as online-only; `API_BASE_URL` centralized via `apiClient`; sync flow documented in `syncManager.ts`.
+- **Phase 3:** Dashboard shows error state + Retry when queries fail; portfolio add-property has inline address validation; home nav waits for auth before showing protected CTAs (onboarding redirect timing).
+- **Phase 4:** FlatList replaced with FlashList in history, photos, and profile state picker; dashboard error block has `accessibilityRole="alert"` and error message has `accessibilityLabel`.
+- **Phase 5:** Store readiness checklist added at `docs/STORE_READINESS.md`; in-app links (help, privacy, terms, support) verified.
+
+Manual steps still recommended: full VoiceOver/TalkBack pass, production build and OTA test on real devices, store listing metadata in App Store Connect and Play Console.
+
+---
+
 ## ISSUE 1 (EPIC): Mobile Audit & Production Readiness
 
 ### Executive summary
