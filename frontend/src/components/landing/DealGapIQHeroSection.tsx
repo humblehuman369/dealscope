@@ -38,9 +38,10 @@ const ShieldIcon: React.FC = () => (
   </svg>
 );
 
-const ScanIcon: React.FC = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <path d="M1 7V3a2 2 0 012-2h4M17 1h4a2 2 0 012 2v4M23 17v4a2 2 0 01-2 2h-4M7 23H3a2 2 0 01-2-2v-4" />
+const CameraIcon: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M2 5.5C2 4.67 2.67 4 3.5 4H4.72L5.5 2.5H10.5L11.28 4H12.5C13.33 4 14 4.67 14 5.5V12C14 12.83 13.33 13.5 12.5 13.5H3.5C2.67 13.5 2 12.83 2 12V5.5Z" stroke="#0EA5E9" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="8" cy="8.5" r="2.5" stroke="#0EA5E9" strokeWidth="1.2" />
   </svg>
 );
 
@@ -162,11 +163,12 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
         <form onSubmit={handleSubmit}>
           <div
             style={{
-              maxWidth: '520px',
-              margin: '0 auto 14px',
+              maxWidth: '540px',
+              margin: '0 auto 10px',
               position: 'relative',
             }}
           >
+            {/* Input row */}
             <div
               style={{
                 display: 'flex',
@@ -220,33 +222,55 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
                 Analyze <ArrowIcon />
               </button>
             </div>
+
+            {/* Divider with OR */}
+            {onScanProperty && (
+              <>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    margin: '12px 0',
+                    padding: '0 8px',
+                  }}
+                >
+                  <div style={{ flex: 1, height: '1px', background: 'rgba(148,163,184,0.08)' }} />
+                  <span style={{ fontSize: '11px', color: '#475569', fontWeight: 600, letterSpacing: '0.06em' }}>OR</span>
+                  <div style={{ flex: 1, height: '1px', background: 'rgba(148,163,184,0.08)' }} />
+                </div>
+
+                {/* Scan Property button */}
+                <button
+                  type="button"
+                  onClick={onScanProperty}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    padding: '12px 20px',
+                    background: 'rgba(14,165,233,0.04)',
+                    border: '1px solid rgba(14,165,233,0.12)',
+                    borderRadius: '10px',
+                    color: '#CBD5E1',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <CameraIcon />
+                  Scan Property
+                  <span style={{ fontSize: '11px', color: '#475569', fontWeight: 400, marginLeft: '4px' }}>
+                    — snap a photo of any For Sale sign
+                  </span>
+                </button>
+              </>
+            )}
           </div>
-          {onScanProperty && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
-              <button
-                type="button"
-                onClick={onScanProperty}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(148,163,184,0.2)',
-                  borderRadius: '10px',
-                  color: '#CBD5E1',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s, border-color 0.2s',
-                }}
-              >
-                <ScanIcon />
-                Scan Property
-              </button>
-            </div>
-          )}
         </form>
 
         {/* Micro-copy */}
