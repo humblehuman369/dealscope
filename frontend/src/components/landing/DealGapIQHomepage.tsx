@@ -288,7 +288,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <div className="funnel-container">
           <div className="funnel-header">
             <div className="section-label">How Pros Invest</div>
-            <h2>Experienced Investors Pass on<br />90% of Deals in Minutes.<br /><span className="grad">Now You Can Too.</span></h2>
+            <h2>Experienced Investors Pass on<br />90% of Deals in Minutes.<br /><span className="grad">Now So Can You — in 60 Seconds.</span></h2>
             <p>Most properties aren&apos;t worth your time. IQ Verdict tells you which ones are — so you only go deep when it matters.</p>
           </div>
 
@@ -342,7 +342,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <div className="founder-bar">
           <div className="founder-inner">
             <div className="founder-info">
-              <div className="founder-meta">Architecture By</div>
               <div className="founder-name">Brad Geisen</div>
               <div className="founder-role">Founder, Foreclosure.com</div>
             </div>
@@ -350,7 +349,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               &ldquo;I built the infrastructure behind <strong>HomePath.com</strong> (Fannie Mae) and <strong>HomeSteps.com</strong> (Freddie Mac). DealGapIQ isn&apos;t a calculator; it&apos;s 35 years of institutional intelligence, now in your hands.&rdquo;
             </div>
           </div>
-          <div className="val-panel">
+          <div className="val-section">
+            <div className="val-intro">
+              <h3 className="val-intro-headline">Adjust for Reality.</h3>
+              <p className="val-intro-subline">Every property is different. Fine-tune condition, location, and rehab estimates to see how they change your Income Value.</p>
+            </div>
+            <div className="val-panel">
             <div className="val-header">
               <div className="val-header-title">Valuation Controls</div>
               <div className="val-header-badge">Edit Mode: On</div>
@@ -388,6 +392,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <div className="val-result-impact">+ $12,400</div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -480,35 +485,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </section>
 
-      {/* INVESTMENT OS */}
-      <section
-        className={`section section-alt ${fadeClass(5)}`}
-        id="workflow"
-        data-idx="5"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[5] = el; }}
-      >
-        <div className="section-inner">
-          <div className="os-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '640px', margin: '0 auto' }}>
-            <div>
-              <div className="os-label">02 — Workflow OS</div>
-              <h2 className="os-title">Your Investment<br />Operating System.</h2>
-              <p className="os-desc">
-                Stop managing millions of dollars in spreadsheets and text messages. <strong>DealVaultIQ</strong> centralizes your entire workflow from lead to close.
-              </p>
-              <div className="os-bullet"><div className="os-dot b" /><p><strong>DealVaultIQ:</strong> Saves every photo, comp, and underwriting assumption forever.</p></div>
-              <div className="os-bullet"><div className="os-dot g" /><p><strong>Side-by-Side:</strong> Compare Rental Cashflow vs. Flip Profit instantly for the same address.</p></div>
-              <div className="os-bullet"><div className="os-dot o" /><p><strong>Export:</strong> Download lender-ready PDF reports and share analysis with your team.</p></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* TOOLKIT */}
       <section
-        className={`section ${fadeClass(6)}`}
+        className={`section ${fadeClass(5)}`}
         id="toolkit"
-        data-idx="6"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[6] = el; }}
+        data-idx="5"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[5] = el; }}
       >
         <div className="section-inner">
           <div className="section-header">
@@ -607,9 +589,9 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* CTA */}
       <section
-        className={`cta-section ${fadeClass(7)}`}
-        data-idx="7"
-        ref={(el: HTMLDivElement | null) => { sectionRefs.current[7] = el; }}
+        className={`cta-section ${fadeClass(6)}`}
+        data-idx="6"
+        ref={(el: HTMLDivElement | null) => { sectionRefs.current[6] = el; }}
       >
         <div className="cta-inner">
           <h2 className="cta-title">Find Your Deal.<br />Close Your Gap.</h2>
@@ -640,7 +622,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <a href="#strategies" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Strategies</a>
                 <a href="#toolkit" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Toolkit</a>
-                <a href="#workflow" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Workflow</a>
                 <a href="/pricing" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Pricing</a>
               </div>
             </div>

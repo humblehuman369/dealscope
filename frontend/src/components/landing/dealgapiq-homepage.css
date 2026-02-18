@@ -270,7 +270,7 @@
   font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem;
 }
 .iq-landing .scan-demo-details {
-  font-size: 0.85rem; color: var(--text-secondary);
+  font-size: 0.85rem; color: #ffffff;
 }
 .iq-landing .scan-demo-list-price { text-align: right; flex-shrink: 0; }
 .iq-landing .scan-demo-price {
@@ -279,7 +279,7 @@
 
 .iq-landing .scan-demo-label {
   font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--text-label); margin-bottom: 0.25rem;
+  text-transform: uppercase; color: #ffffff; margin-bottom: 0.25rem;
 }
 
 /* Four Metrics Row */
@@ -294,7 +294,7 @@
 .iq-landing .scan-demo-metric:last-child { border-right: none; }
 .iq-landing .scan-demo-metric-label {
   font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text-label); margin-bottom: 0.5rem;
+  text-transform: uppercase; color: #ffffff; margin-bottom: 0.5rem;
 }
 .iq-landing .scan-demo-metric-value {
   font-size: 1.65rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem;
@@ -303,7 +303,7 @@
 .iq-landing .scan-demo-metric-value.white { color: var(--white); }
 .iq-landing .scan-demo-metric-value.gold { color: var(--gold); }
 .iq-landing .scan-demo-metric-sub {
-  font-size: 0.75rem; color: var(--text-label);
+  font-size: 0.75rem; color: #ffffff;
 }
 
 /* Deal Gap Visualization */
@@ -313,7 +313,7 @@
 }
 .iq-landing .scan-demo-gap-label {
   font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--text-label); margin-bottom: 1rem;
+  text-transform: uppercase; color: #ffffff; margin-bottom: 1rem;
 }
 .iq-landing .scan-demo-bar-wrap {
   background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25);
@@ -329,7 +329,7 @@
   font-size: 0.9rem; font-weight: 700; color: var(--white);
 }
 .iq-landing .scan-demo-marker-label {
-  font-size: 0.7rem; color: var(--text-label);
+  font-size: 0.7rem; color: #ffffff;
 }
 .iq-landing .scan-demo-marker.center { text-align: center; }
 .iq-landing .scan-demo-marker.end { text-align: right; }
@@ -353,7 +353,7 @@
   font-size: 0.95rem; color: var(--white); margin-bottom: 0.15rem;
 }
 .iq-landing .scan-demo-verdict-desc {
-  font-size: 0.8rem; color: var(--text-secondary); max-width: 320px;
+  font-size: 0.8rem; color: #ffffff; max-width: 320px;
 }
 .iq-landing .scan-demo-motivation { text-align: right; }
 .iq-landing .scan-demo-motivation .scan-demo-label { margin-bottom: 0.4rem; }
@@ -367,7 +367,7 @@
   background: var(--gold);
 }
 .iq-landing .scan-demo-motivation-level {
-  font-size: 0.85rem; font-weight: 700; color: var(--gold);
+  font-size: 0.85rem; font-weight: 700; color: #ffffff;
 }
 
 /* Scan Demo Responsive */
@@ -622,14 +622,28 @@
   font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; margin-bottom: 0.5rem;
 }
-.iq-landing .founder-name { font-size: 1.25rem; font-weight: 700; color: var(--white); }
-.iq-landing .founder-role { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.125rem; }
+.iq-landing .founder-name { font-size: 1.625rem; font-weight: 700; color: var(--white); }
+.iq-landing .founder-role { font-size: 1.04rem; color: #ffffff; margin-top: 0.125rem; }
 .iq-landing .founder-quote-text { font-size: 1.05rem; color: var(--text); line-height: 1.7; font-style: italic; }
 .iq-landing .founder-quote-text strong { color: var(--white); font-weight: 600; font-style: normal; }
 
 /* VALUATION CONTROLS */
+.iq-landing .val-section {
+  max-width: 680px; margin: 0 auto;
+  padding-top: 2.5rem;
+}
+.iq-landing .val-intro {
+  margin-bottom: 1.5rem;
+}
+.iq-landing .val-intro-headline {
+  font-size: 1.5rem; font-weight: 800; color: var(--white);
+  letter-spacing: -0.03em; line-height: 1.2; margin: 0 0 0.5rem;
+}
+.iq-landing .val-intro-subline {
+  font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0;
+}
 .iq-landing .val-panel {
-  max-width: 680px; margin: 3rem auto 0;
+  max-width: 680px; margin: 0 auto;
   background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
 }
 .iq-landing .val-header {
