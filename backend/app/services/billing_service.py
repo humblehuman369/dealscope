@@ -28,6 +28,7 @@ from app.schemas.billing import (
     PortalSessionResponse,
     PaymentHistoryItem,
 )
+from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -480,6 +481,15 @@ class BillingService:
     # Webhook Handlers
     # ===========================================
 
+    async def _get_user_for_email(self, db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+        """Look up user by ID for sending transactional emails."""
+        try:
+            result = await db.execute(select(User).where(User.id == user_id))
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f"Failed to look up user {user_id} for email: {e}")
+            return None
+
     def verify_webhook_signature(self, payload: bytes, signature: str) -> Optional[Dict[str, Any]]:
         """Verify Stripe webhook signature and return event."""
         if not self.is_configured or not self.webhook_secret:
@@ -565,15 +575,29 @@ class BillingService:
         logger.info(f"Checkout completed for user {user_id}")
 
     async def _handle_subscription_created(self, db: AsyncSession, data: Dict[str, Any]):
-        """Handle new subscription."""
+        """Handle new subscription — sync state and send Pro welcome email."""
         await self._sync_subscription(db, data)
+        
+        user_id = data.get("metadata", {}).get("user_id")
+        if user_id:
+            user = await self._get_user_for_email(db, uuid.UUID(user_id))
+            if user:
+                trial_end_str = None
+                if data.get("trial_end"):
+                    trial_end_dt = datetime.fromtimestamp(data["trial_end"], tz=timezone.utc)
+                    trial_end_str = trial_end_dt.strftime("%B %d, %Y")
+                await email_service.send_pro_welcome_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                    trial_end_date=trial_end_str,
+                )
 
     async def _handle_subscription_updated(self, db: AsyncSession, data: Dict[str, Any]):
         """Handle subscription update."""
         await self._sync_subscription(db, data)
 
     async def _handle_subscription_deleted(self, db: AsyncSession, data: Dict[str, Any]):
-        """Handle subscription cancellation."""
+        """Handle subscription cancellation — downgrade and notify user."""
         stripe_sub_id = data.get("id")
         
         result = await db.execute(
@@ -582,7 +606,8 @@ class BillingService:
         subscription = result.scalar_one_or_none()
         
         if subscription:
-            # Downgrade to free tier
+            user_id = subscription.user_id
+            
             subscription.tier = SubscriptionTier.FREE
             subscription.status = SubscriptionStatus.CANCELED
             subscription.stripe_subscription_id = None
@@ -592,13 +617,38 @@ class BillingService:
             subscription.api_calls_per_month = TIER_LIMITS[SubscriptionTier.FREE]["api_calls_per_month"]
             
             await db.commit()
-            logger.info(f"Subscription deleted, downgraded user {subscription.user_id} to free tier")
+            logger.info(f"Subscription deleted, downgraded user {user_id} to free tier")
+            
+            user = await self._get_user_for_email(db, user_id)
+            if user:
+                await email_service.send_subscription_canceled_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                )
 
     async def _handle_trial_will_end(self, db: AsyncSession, data: Dict[str, Any]):
         """Handle subscription trial ending soon (fires 3 days before trial end)."""
         stripe_sub_id = data.get("id")
         logger.info(f"Subscription trial will end: {stripe_sub_id}")
-        # TODO: Send trial-ending reminder email to user
+        
+        result = await db.execute(
+            select(Subscription).where(Subscription.stripe_subscription_id == stripe_sub_id)
+        )
+        subscription = result.scalar_one_or_none()
+        
+        if subscription:
+            trial_end_str = "soon"
+            if data.get("trial_end"):
+                trial_end_dt = datetime.fromtimestamp(data["trial_end"], tz=timezone.utc)
+                trial_end_str = trial_end_dt.strftime("%B %d, %Y")
+            
+            user = await self._get_user_for_email(db, subscription.user_id)
+            if user:
+                await email_service.send_trial_ending_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                    trial_end_date=trial_end_str,
+                )
 
     async def _handle_entitlement_updated(self, db: AsyncSession, data: Dict[str, Any]):
         """Handle active entitlement summary update."""
@@ -606,7 +656,7 @@ class BillingService:
         # Logged for future entitlement-based feature gating
 
     async def _handle_invoice_paid(self, db: AsyncSession, data: Dict[str, Any]):
-        """Handle successful invoice payment."""
+        """Handle successful invoice payment — record and send receipt."""
         customer_id = data.get("customer")
         
         result = await db.execute(
@@ -615,25 +665,43 @@ class BillingService:
         subscription = result.scalar_one_or_none()
         
         if subscription:
-            # Record payment
+            amount_paid = data.get("amount_paid", 0)
+            currency = data.get("currency", "usd")
+            description = f"Subscription payment - {subscription.tier.value}"
+            receipt_url = data.get("hosted_invoice_url")
+            invoice_pdf_url = data.get("invoice_pdf")
+            
             payment = PaymentHistory(
                 user_id=subscription.user_id,
                 stripe_invoice_id=data.get("id"),
                 stripe_payment_intent_id=data.get("payment_intent"),
-                amount=data.get("amount_paid", 0),
-                currency=data.get("currency", "usd"),
+                amount=amount_paid,
+                currency=currency,
                 status="succeeded",
-                description=f"Subscription payment - {subscription.tier.value}",
-                invoice_pdf_url=data.get("invoice_pdf"),
-                receipt_url=data.get("hosted_invoice_url"),
+                description=description,
+                invoice_pdf_url=invoice_pdf_url,
+                receipt_url=receipt_url,
             )
             db.add(payment)
             await db.commit()
             
             logger.info(f"Invoice paid for user {subscription.user_id}")
+            
+            if amount_paid > 0:
+                user = await self._get_user_for_email(db, subscription.user_id)
+                if user:
+                    await email_service.send_payment_receipt_email(
+                        to=user.email,
+                        user_name=user.full_name or "",
+                        amount_cents=amount_paid,
+                        currency=currency,
+                        description=description,
+                        receipt_url=receipt_url,
+                        invoice_pdf_url=invoice_pdf_url,
+                    )
 
     async def _handle_invoice_payment_failed(self, db: AsyncSession, data: Dict[str, Any]):
-        """Handle failed invoice payment."""
+        """Handle failed invoice payment — mark past_due and notify user."""
         customer_id = data.get("customer")
         
         result = await db.execute(
@@ -642,14 +710,16 @@ class BillingService:
         subscription = result.scalar_one_or_none()
         
         if subscription:
+            amount_due = data.get("amount_due", 0)
+            currency = data.get("currency", "usd")
+            
             subscription.status = SubscriptionStatus.PAST_DUE
             
-            # Record failed payment
             payment = PaymentHistory(
                 user_id=subscription.user_id,
                 stripe_invoice_id=data.get("id"),
-                amount=data.get("amount_due", 0),
-                currency=data.get("currency", "usd"),
+                amount=amount_due,
+                currency=currency,
                 status="failed",
                 description="Payment failed",
             )
@@ -657,6 +727,15 @@ class BillingService:
             await db.commit()
             
             logger.warning(f"Payment failed for user {subscription.user_id}")
+            
+            user = await self._get_user_for_email(db, subscription.user_id)
+            if user:
+                await email_service.send_payment_failed_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                    amount_cents=amount_due,
+                    currency=currency,
+                )
 
     async def _sync_subscription(self, db: AsyncSession, stripe_sub: Dict[str, Any]):
         """Sync subscription data from Stripe."""
