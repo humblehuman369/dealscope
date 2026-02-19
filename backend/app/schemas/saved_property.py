@@ -119,13 +119,10 @@ class SavedPropertyUpdate(SavedPropertyBase):
     # Custom assumptions per strategy (DEPRECATED - use deal_maker_record)
     custom_assumptions: Optional[Dict[str, Any]] = None
     
-    # Worksheet assumptions (DEPRECATED - use deal_maker_record)
-    worksheet_assumptions: Optional[Dict[str, Any]] = None
-    
     # Deal Maker Record - the central analysis data structure
     deal_maker_record: Optional[DealMakerRecord] = Field(
         None,
-        description="Central analysis record - replaces custom_assumptions and worksheet_assumptions",
+        description="Central analysis record - replaces custom_assumptions",
     )
 
     from pydantic import model_validator
@@ -135,7 +132,7 @@ class SavedPropertyUpdate(SavedPropertyBase):
         """Validate that JSON blob fields don't exceed 512 KB."""
         import json
         _max = 524_288
-        for field_name in ("custom_assumptions", "worksheet_assumptions"):
+        for field_name in ("custom_assumptions",):
             val = getattr(self, field_name, None)
             if val is not None:
                 size = len(json.dumps(val, default=str))
@@ -200,9 +197,6 @@ class SavedPropertyResponse(SavedPropertySummary):
     custom_daily_rate: Optional[float]
     custom_occupancy_rate: Optional[float]
     custom_assumptions: Optional[Dict[str, Any]]
-    
-    # Worksheet assumptions (DEPRECATED - use deal_maker_record)
-    worksheet_assumptions: Optional[Dict[str, Any]]
     
     # Deal Maker Record - the central analysis data structure
     deal_maker_record: Optional[DealMakerRecord] = Field(

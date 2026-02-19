@@ -8,7 +8,7 @@ print(">>> MAIN.PY LOADING — Python", sys.version_info[:2], "PORT", os.environ
 
 try:
     from contextlib import asynccontextmanager
-    from fastapi import FastAPI, HTTPException, Query, Depends
+    from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import JSONResponse
     from typing import Optional, List
@@ -358,19 +358,6 @@ async def root():
         "endpoints": {"auth": "/api/v1/auth", "users": "/api/v1/users", "properties": "/api/v1/properties", "analytics": "/api/v1/analytics", "loi": "/api/v1/loi"},
     }
 
-
-@app.get("/api/v1/market/assumptions")
-async def get_market_assumptions(
-    zip_code: str = Query(..., description="ZIP code to get market-specific assumptions for")
-):
-    """Get market-specific default assumptions based on zip code."""
-    try:
-        from app.services.assumptions_service import get_market_adjustments
-        adjustments = get_market_adjustments(zip_code)
-        return {"success": True, "data": adjustments}
-    except Exception as e:
-        logger.error(f"Market assumptions error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ============================================

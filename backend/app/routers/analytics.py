@@ -11,7 +11,6 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
-from app.core.defaults import get_all_defaults
 from app.core.deps import DbSession
 from app.schemas.analytics import (
     IQVerdictInput, IQVerdictResponse,
@@ -52,16 +51,6 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
     except Exception as e:
         logger.error(f"IQ Verdict analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ===========================================
-# Defaults
-# ===========================================
-
-@router.get("/api/v1/defaults")
-async def get_default_assumptions_endpoint():
-    """Get all default assumptions used in calculations."""
-    return get_all_defaults()
 
 
 # ===========================================
