@@ -116,19 +116,22 @@ class PropertyService:
             rentcast_data.update(rc_rent.data)
         
         # Fetch from Zillow via AXESSO
-        # The search-by-address endpoint returns all property data including Zestimate
+        # The search-by-address endpoint returns property data including Zestimate (~$685k for many properties)
         axesso_data = None
         zillow_zpid = None  # Store ZPID for photos API
         try:
             logger.info(f"Fetching Zillow data for: {address}")
             zillow_response = await self.zillow.search_by_address(address)
-            
+
             if zillow_response.success and zillow_response.data:
-                axesso_data = zillow_response.data
-                zillow_zpid = axesso_data.get('zpid')
-                zestimate = axesso_data.get('zestimate')
-                rent_zestimate = axesso_data.get('rentZestimate')
-                logger.info(f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}")
+                raw = zillow_response.data
+                axesso_data = self._unwrap_axesso_property(raw)
+                zillow_zpid = axesso_data.get("zpid") or raw.get("zpid")
+                zestimate = axesso_data.get("zestimate")
+                rent_zestimate = axesso_data.get("rentZestimate")
+                logger.info(
+                    f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
+                )
             else:
                 logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
         except Exception as e:
@@ -316,6 +319,38 @@ class PropertyService:
             full_address=address
         )
     
+    def _unwrap_axesso_property(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Return the dict that contains zestimate so normalizer and market_price get it.
+        AXESSO may return the property at top level or wrapped (e.g. data, searchResult, body).
+        Normalizes camelCase Zestimate/rentZestimate so downstream code sees zestimate/rentZestimate.
+        """
+        def _has_zestimate(d: Dict[str, Any]) -> bool:
+            if not d or not isinstance(d, dict):
+                return False
+            return d.get("zestimate") is not None or d.get("Zestimate") is not None
+
+        def _normalize_zestimate_keys(d: Dict[str, Any]) -> Dict[str, Any]:
+            out = dict(d)
+            if out.get("zestimate") is None and out.get("Zestimate") is not None:
+                out["zestimate"] = out["Zestimate"]
+            if out.get("rentZestimate") is None and out.get("RentZestimate") is not None:
+                out["rentZestimate"] = out["RentZestimate"]
+            return out
+
+        if not raw or not isinstance(raw, dict):
+            return raw or {}
+        chosen = raw
+        if _has_zestimate(raw):
+            chosen = raw
+        else:
+            for key in ("data", "searchResult", "body", "search", "result", "property"):
+                inner = raw.get(key)
+                if isinstance(inner, dict) and _has_zestimate(inner):
+                    chosen = inner
+                    break
+        return _normalize_zestimate_keys(chosen)
+
     def _apply_market_price_to_cached(self, cached_data: Dict[str, Any]) -> Dict[str, Any]:
         """Recompute market_price on cached response so stale cache uses current formula."""
         valuations = (cached_data.get("valuations") or {}).copy()
