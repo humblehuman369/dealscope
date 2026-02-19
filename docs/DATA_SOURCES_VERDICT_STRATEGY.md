@@ -64,6 +64,9 @@ DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Verdict and S
   - No zestimate and no AVM → backend falls back to Income Value, then tax/0.75.  
   - If the only value was tax_assessed_value (e.g. ~$57,675), then tax/0.75 ≈ **$76,900**—which matches the wrong Market you saw.
 
+- **search-by-address not including zestimate**  
+  Some AXESSO responses from `search-by-address` may only include zpid. When we have zpid but no zestimate, the backend now calls **property-v2** (full details) and uses that for valuations, so zestimate (e.g. $685,000) is populated. Previously cached responses may still show the tax fallback until cache expires or the user re-searches.
+
 - **Different data on Strategy vs Verdict**  
   Strategy can use a different code path or cached run; e.g. "Market Price $380,000" on Strategy vs "Market $76,900" on Verdict can happen if one request had valuations and the other didn’t, or cache differed.
 
