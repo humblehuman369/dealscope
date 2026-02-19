@@ -209,10 +209,10 @@ const styles = StyleSheet.create({
   outerContainer: {
     paddingHorizontal: rs(20),
     paddingVertical: rs(32),
-    backgroundColor: verdictDark.bg,
+    backgroundColor: 'transparent',
   },
   card: {
-    backgroundColor: verdictDark.bg,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     alignItems: 'center',
   },
