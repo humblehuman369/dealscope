@@ -166,7 +166,7 @@ jobs:
           path: backend/bandit-report.json
 
   # ────────────────────────────────────────────
-  # Tests (requires PostgreSQL service)
+  # Tests + Migration check (requires PostgreSQL)
   # ────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
@@ -202,6 +202,17 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Verify Alembic migrations apply cleanly
+        run: alembic upgrade head
+
+      - name: Check models match migrations
+        run: |
+          # Generate a diff — if models have un-migrated changes this exits non-zero
+          alembic check || {
+            echo "::error::Models are out of sync with migrations. Run 'alembic revision --autogenerate' locally."
+            exit 1
+          }
 
       - name: Run tests with coverage
         run: |

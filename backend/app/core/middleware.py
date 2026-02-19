@@ -141,7 +141,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return False, 0
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        skip = ("/health", "/docs", "/redoc", "/openapi.json")
+        skip = ("/health", "/docs", "/redoc", "/openapi.json", "/metrics")
         if any(request.url.path.startswith(p) for p in skip):
             return await call_next(request)
 
@@ -279,3 +279,47 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
             return response
         finally:
             request_id_ctx.reset(token)
+
+
+# ============================================
+# AUDIT LOGGING MIDDLEWARE
+# ============================================
+
+_AUDIT_PREFIXES = (
+    "/api/v1/auth/",
+    "/api/v1/billing/webhook",
+)
+
+_audit_logger = logging.getLogger("dealscope.audit")
+
+
+class AuditLoggingMiddleware(BaseHTTPMiddleware):
+    """Log request metadata for auth and billing endpoints.
+
+    Captures method, path, status, client IP, and user-agent (redacted
+    to first 80 chars).  Billing webhook events additionally log the
+    Stripe event type from the ``Stripe-Signature`` header presence.
+    """
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        path = request.url.path
+        if not any(path.startswith(p) for p in _AUDIT_PREFIXES):
+            return await call_next(request)
+
+        client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "-")
+        ua = (request.headers.get("User-Agent") or "-")[:80]
+
+        response = await call_next(request)
+
+        extra: Dict = {
+            "method": request.method,
+            "path": path,
+            "status": response.status_code,
+            "client_ip": client_ip,
+            "user_agent": ua,
+        }
+        if "webhook" in path:
+            extra["has_stripe_sig"] = "Stripe-Signature" in request.headers
+
+        _audit_logger.info("audit_event", extra=extra)
+        return response
