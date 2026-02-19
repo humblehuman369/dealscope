@@ -116,7 +116,7 @@ class PropertyService:
             rentcast_data.update(rc_rent.data)
         
         # Fetch from Zillow via AXESSO
-        # The search-by-address endpoint returns property data including Zestimate (~$685k for many properties)
+        # search-by-address may return only zpid; property-v2 returns full details including zestimate.
         axesso_data = None
         zillow_zpid = None  # Store ZPID for photos API
         try:
@@ -127,8 +127,18 @@ class PropertyService:
                 raw = zillow_response.data
                 axesso_data = self._unwrap_axesso_property(raw)
                 zillow_zpid = axesso_data.get("zpid") or raw.get("zpid")
-                zestimate = axesso_data.get("zestimate")
-                rent_zestimate = axesso_data.get("rentZestimate")
+                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                # If search-by-address didn't include zestimate, fetch property-v2 (has zestimate/rentZestimate)
+                if zillow_zpid and zestimate is None:
+                    details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
+                    if details_response.success and details_response.data:
+                        axesso_data = self._unwrap_axesso_property(details_response.data)
+                        zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                        rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                        logger.info(
+                            f"Zillow property-v2 retrieved - zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
+                        )
                 logger.info(
                     f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
                 )
