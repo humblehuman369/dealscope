@@ -161,12 +161,24 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning(f"WeasyPrint: NOT AVAILABLE — PDF exports will fail. Error: {exc}")
 
+    # Start periodic cleanup scheduler (APScheduler)
+    try:
+        from app.tasks.scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        logger.warning(f"Scheduler failed to start (non-fatal): {e}")
+
     logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here
     
     # Shutdown
     logger.info("Shutting down DealGapIQ API...")
+    try:
+        from app.tasks.scheduler import stop_scheduler
+        stop_scheduler()
+    except Exception:
+        pass
     if close_db:
         await close_db()
         logger.info("Database connections closed")
@@ -231,9 +243,11 @@ try:
         RequestTimingMiddleware,
         CSRFMiddleware,
         RequestIDMiddleware,
+        AuditLoggingMiddleware,
     )
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(CSRFMiddleware)
+    app.add_middleware(AuditLoggingMiddleware)
     app.add_middleware(RequestIDMiddleware)
     app.add_middleware(RequestTimingMiddleware)
     app.add_middleware(
@@ -241,7 +255,7 @@ try:
         default_limit=settings.RATE_LIMIT_REQUESTS,
         default_period=settings.RATE_LIMIT_PERIOD,
     )
-    logger.info("Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID")
+    logger.info("Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID, audit logging")
 except Exception as e:
     logger.warning(f"Could not load security middleware: {e}")
 
@@ -291,6 +305,44 @@ async def dealgapiq_error_handler(request: Request, exc: DealGapIQError):
                 "code": exc.code,
                 "message": exc.message,
                 "details": exc.details,
+            }
+        },
+    )
+
+
+from fastapi.exceptions import HTTPException as StarletteHTTPException
+
+_STATUS_TO_CODE = {
+    400: "BAD_REQUEST",
+    401: "AUTHENTICATION_ERROR",
+    402: "PAYMENT_REQUIRED",
+    403: "AUTHORIZATION_ERROR",
+    404: "NOT_FOUND",
+    405: "METHOD_NOT_ALLOWED",
+    409: "CONFLICT",
+    422: "VALIDATION_ERROR",
+    429: "RATE_LIMIT_EXCEEDED",
+}
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Normalise all HTTPException responses into the canonical error shape."""
+    detail = exc.detail
+    if isinstance(detail, dict) and "error" in detail:
+        # Already in canonical shape — pass through
+        return JSONResponse(status_code=exc.status_code, content=detail)
+
+    code = _STATUS_TO_CODE.get(exc.status_code, "HTTP_ERROR")
+    message = detail if isinstance(detail, str) else str(detail)
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "details": {},
             }
         },
     )
