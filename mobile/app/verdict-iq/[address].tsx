@@ -94,9 +94,14 @@ function getColorFromScore(score: number): 'teal' | 'amber' | 'negative' {
 function buildIQPrices(
   incomeValue: number,
   targetPrice: number,
-  listPrice: number
+  listPrice: number,
+  /** When backend provides wholesale/MAO price, pass it here to avoid local formula */
+  wholesalePriceFromApi?: number
 ): IQPriceOption[] {
-  const wholesalePrice = Math.round(targetPrice * 0.70);
+  const wholesalePrice =
+    wholesalePriceFromApi != null && wholesalePriceFromApi > 0
+      ? Math.round(wholesalePriceFromApi)
+      : Math.round(targetPrice * 0.70);
   return [
     { id: 'breakeven', label: 'INCOME VALUE', value: incomeValue, subtitle: 'Max price for $0 cashflow' },
     { id: 'target', label: 'TARGET BUY', value: targetPrice, subtitle: 'Positive Cashflow' },

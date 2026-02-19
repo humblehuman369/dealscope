@@ -12,6 +12,10 @@ export interface UseDealGapInput {
   listPrice: number
   incomeValue: number
   buyPrice: number
+  /** When provided, use backend deal score instead of computing from deal gap % */
+  dealScoreFromApi?: number
+  /** When provided, use backend grade instead of computing from deal gap % */
+  dealGradeFromApi?: OpportunityGrade
 }
 
 export interface UseDealGapResult {
@@ -54,18 +58,25 @@ function getDealGrade(dealGapPercent: number): OpportunityGrade {
 }
 
 /**
- * Compute deal gap data from prices
+ * Compute deal gap data from prices. Prefer API-sourced dealScore and dealGrade when provided (backend as single source of truth).
  */
-function computeDealGapData(listPrice: number, incomeValue: number, buyPrice: number): DealGapData {
+function computeDealGapData(
+  listPrice: number,
+  incomeValue: number,
+  buyPrice: number,
+  dealScoreFromApi?: number,
+  dealGradeFromApi?: OpportunityGrade,
+): DealGapData {
   const dealGapPercent = listPrice > 0 ? ((listPrice - buyPrice) / listPrice) * 100 : 0
   const buyVsIncomeValuePercent = incomeValue > 0 ? ((buyPrice / incomeValue) - 1) * 100 : 0
   const listVsIncomeValuePercent = incomeValue > 0 ? ((listPrice / incomeValue) - 1) * 100 : 0
-  
+
   const { zone, motivation } = getDealZone(buyPrice, incomeValue)
-  const dealGrade = getDealGrade(dealGapPercent)
-  
-  // Score: 0-100 based on deal gap (higher gap = higher score)
-  const dealScore = Math.min(100, Math.max(0, Math.round(dealGapPercent * 4)))
+  const dealGrade = dealGradeFromApi ?? getDealGrade(dealGapPercent)
+  const dealScore =
+    dealScoreFromApi != null
+      ? Math.min(100, Math.max(0, Math.round(dealScoreFromApi)))
+      : Math.min(100, Math.max(0, Math.round(dealGapPercent * 4)))
 
   return {
     listPrice,
@@ -85,15 +96,16 @@ function computeDealGapData(listPrice: number, incomeValue: number, buyPrice: nu
  * Hook to compute deal gap metrics
  */
 export function useDealGap(input: UseDealGapInput): UseDealGapResult {
-  const { listPrice, incomeValue, buyPrice } = input
+  const { listPrice, incomeValue, buyPrice, dealScoreFromApi, dealGradeFromApi } = input
 
   const data = useMemo(() => {
-    return computeDealGapData(listPrice, incomeValue, buyPrice)
-  }, [listPrice, incomeValue, buyPrice])
+    return computeDealGapData(listPrice, incomeValue, buyPrice, dealScoreFromApi, dealGradeFromApi)
+  }, [listPrice, incomeValue, buyPrice, dealScoreFromApi, dealGradeFromApi])
 
   const computeAtPrice = useMemo(() => {
-    return (newBuyPrice: number) => computeDealGapData(listPrice, incomeValue, newBuyPrice)
-  }, [listPrice, incomeValue])
+    return (newBuyPrice: number) =>
+      computeDealGapData(listPrice, incomeValue, newBuyPrice, dealScoreFromApi, dealGradeFromApi)
+  }, [listPrice, incomeValue, dealScoreFromApi, dealGradeFromApi])
 
   return { data, computeAtPrice }
 }

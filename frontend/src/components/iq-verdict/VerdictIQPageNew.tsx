@@ -102,60 +102,64 @@ export function VerdictIQPageNew({
     },
   }), [])
 
-  // Calculate pricing
+  // Pricing: prefer backend API values (analysis) for income value and target buy; local math only for display breakdown when API missing.
   const pricing = useMemo(() => {
     const buyPrice = overrideValues?.buyPrice ?? analysis.purchasePrice ?? property.price * 0.9
     const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? property.price * 0.007
     const annualRent = monthlyRent * 12
     const vacancyRate = (overrideValues?.vacancyRate ?? 5) / 100
     const effectiveIncome = annualRent * (1 - vacancyRate)
-    
+
     const propertyTaxes = overrideValues?.propertyTaxes ?? property.propertyTaxes ?? buyPrice * 0.012
     const insurance = overrideValues?.insurance ?? property.insurance ?? buyPrice * 0.01
     const maintenance = annualRent * defaults.operating.maintenance_pct
     const management = annualRent * defaults.operating.property_management_pct
-    
+
     const totalExpenses = propertyTaxes + insurance + maintenance + management
     const noi = effectiveIncome - totalExpenses
-    
-    // Mortgage calculation
+
+    // Mortgage calculation (for display breakdown only; key prices from API when available)
     const downPaymentPct = (overrideValues?.downPayment ?? 20) / 100
     const interestRate = (overrideValues?.interestRate ?? 6) / 100
     const loanTermYears = overrideValues?.loanTerm ?? 30
     const downPayment = buyPrice * downPaymentPct
     const loanAmount = buyPrice - downPayment
-    
+
     const monthlyRate = interestRate / 12
     const numPayments = loanTermYears * 12
     const monthlyPI = loanAmount > 0 && monthlyRate > 0
-      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
         (Math.pow(1 + monthlyRate, numPayments) - 1)
       : 0
     const annualDebtService = monthlyPI * 12
-    
+
     const annualCashFlow = noi - annualDebtService
     const monthlyCashFlow = annualCashFlow / 12
-    
+
     const closingCosts = buyPrice * defaults.financing.closing_costs_pct
     const cashNeeded = downPayment + closingCosts
-    
+
     const capRate = buyPrice > 0 ? (noi / buyPrice) * 100 : 0
     const cashOnCash = cashNeeded > 0 ? (annualCashFlow / cashNeeded) * 100 : 0
     const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
     const grm = monthlyRent > 0 ? buyPrice / (monthlyRent * 12) : 0
-    
-    // Income value (price where cash flow = $0)
-    const mortgageConstant = loanAmount > 0 
+
+    // Income value and target buy: from backend when available (single source of truth)
+    const targetBuyFromApi = analysis.purchasePrice
+    const mortgageConstant = loanAmount > 0
       ? ((monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)) * 12 * (1 - downPaymentPct)
       : 0
-    const incomeValue = mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : buyPrice * 1.1
-    
+    const incomeValueLocal = mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : buyPrice * 1.1
+    const incomeValue = analysis.incomeValue != null && analysis.incomeValue > 0 ? analysis.incomeValue : incomeValueLocal
+    const targetBuyPrice = targetBuyFromApi != null && targetBuyFromApi > 0 ? targetBuyFromApi : Math.round(incomeValue * 0.95)
+
+    // Wholesale price: backend verdict does not yet expose MAO on the price ladder; use backend when added, until then display-only fallback
     const wholesalePrice = Math.round(incomeValue * 0.70)
-    
+
     return {
       buyPrice,
       incomeValue,
-      targetBuyPrice: Math.round(incomeValue * 0.95),
+      targetBuyPrice,
       wholesalePrice,
       monthlyRent,
       annualRent,
