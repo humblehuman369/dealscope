@@ -110,13 +110,6 @@ class SavedProperty(Base):
         default=dict
     )  # {"ltr": {...}, "str": {...}, etc.}
     
-    # Worksheet Assumptions (detailed analysis settings for worksheet view)
-    # DEPRECATED: Use deal_maker_record instead
-    worksheet_assumptions: Mapped[Optional[dict]] = mapped_column(
-        JSON, 
-        default=dict
-    )  # Full worksheet assumptions saved by user
-    
     # Deal Maker Record - the central analysis data structure
     # Contains: property data + initial assumptions (locked) + user adjustments + cached metrics
     deal_maker_record: Mapped[Optional[dict]] = mapped_column(

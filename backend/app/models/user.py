@@ -100,15 +100,6 @@ class User(Base):
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # ==========================================
-    # Legacy token columns (kept for migration, will be removed later)
-    # New code uses the verification_tokens table.
-    # ==========================================
-    verification_token: Mapped[Optional[str]] = mapped_column(String(255))
-    verification_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    reset_token: Mapped[Optional[str]] = mapped_column(String(255))
-    reset_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-
-    # ==========================================
     # Timestamps
     # ==========================================
     created_at: Mapped[datetime] = mapped_column(

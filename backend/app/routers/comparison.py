@@ -1,13 +1,10 @@
 """
-Comparison router — Strategy comparison, sensitivity analysis, and market data endpoints.
-
-Extracted from main.py as part of Phase 2 Architecture Cleanup.
+Comparison router — Strategy comparison and sensitivity analysis.
 """
 
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 
 from app.core.deps import DbSession
 from app.schemas.property import SensitivityRequest, SensitivityResponse
@@ -89,70 +86,6 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
         raise
     except Exception as e:
         logger.error(f"Sensitivity analysis error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# NOTE: Photos endpoint lives in property.py (prefix=/api/v1, path=/photos).
-# Duplicate removed to avoid route shadowing.
-
-
-# ===========================================
-# Market Data
-# ===========================================
-
-@router.get("/api/v1/market-data")
-async def get_market_data(
-    location: str = Query(..., description="City, State format"),
-):
-    """Get rental market data from Zillow via AXESSO API."""
-    try:
-        result = await property_service.get_market_data(location=location)
-        if result.get("success"):
-            return result.get("data", {})
-        else:
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch market data"))
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Market data fetch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/api/v1/similar-rent")
-async def get_similar_rent(
-    zpid: Optional[str] = None,
-    url: Optional[str] = None,
-    address: Optional[str] = None,
-):
-    """Get similar rental properties from Zillow via AXESSO API."""
-    try:
-        if not zpid and not url and not address:
-            raise HTTPException(status_code=400, detail="At least one of zpid, url, or address is required")
-        result = await property_service.get_similar_rent(zpid=zpid, url=url, address=address)
-        return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Similar rent fetch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/api/v1/similar-sold")
-async def get_similar_sold(
-    zpid: Optional[str] = None,
-    url: Optional[str] = None,
-    address: Optional[str] = None,
-):
-    """Get similar sold properties from Zillow via AXESSO API."""
-    try:
-        if not zpid and not url and not address:
-            raise HTTPException(status_code=400, detail="At least one of zpid, url, or address is required")
-        result = await property_service.get_similar_sold(zpid=zpid, url=url, address=address)
-        return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Similar sold fetch error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

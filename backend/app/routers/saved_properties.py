@@ -72,7 +72,6 @@ def _build_saved_property_response(
         custom_daily_rate=saved.custom_daily_rate,
         custom_occupancy_rate=saved.custom_occupancy_rate,
         custom_assumptions=saved.custom_assumptions or {},
-        worksheet_assumptions=saved.worksheet_assumptions or {},
         deal_maker_record=deal_maker,
         notes=saved.notes,
         best_strategy=best_strategy,

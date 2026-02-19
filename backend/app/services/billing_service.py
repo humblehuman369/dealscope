@@ -3,7 +3,6 @@ Billing service for Stripe integration.
 """
 
 import logging
-import os
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime, timedelta, timezone
 import uuid
@@ -11,6 +10,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.models.subscription import (
     Subscription, 
     PaymentHistory, 
@@ -46,9 +46,9 @@ class BillingService:
     """
 
     def __init__(self):
-        self.api_key = os.getenv("STRIPE_SECRET_KEY")
-        self.webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
-        self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        self.api_key = settings.STRIPE_SECRET_KEY or None
+        self.webhook_secret = settings.STRIPE_WEBHOOK_SECRET or None
+        self.frontend_url = settings.FRONTEND_URL
         self.is_configured = bool(self.api_key and STRIPE_AVAILABLE)
         
         if self.is_configured:
@@ -97,8 +97,8 @@ class BillingService:
                 description="For investors who verify the math before they make the offer.",
                 price_monthly=3900,  # $39/month (monthly billing)
                 price_yearly=34800,  # $348/year ($29/mo billed annually)
-                stripe_price_id_monthly=os.getenv("STRIPE_PRICE_PRO_MONTHLY", ""),
-                stripe_price_id_yearly=os.getenv("STRIPE_PRICE_PRO_YEARLY", ""),
+                stripe_price_id_monthly=settings.STRIPE_PRICE_PRO_MONTHLY,
+                stripe_price_id_yearly=settings.STRIPE_PRICE_PRO_YEARLY,
                 properties_limit=-1,  # Unlimited
                 searches_per_month=-1,  # Unlimited
                 api_calls_per_month=-1,  # Unlimited
@@ -388,7 +388,7 @@ class BillingService:
         
         if not resolved_price_id:
             # Fall back to the Pro monthly price from env
-            resolved_price_id = os.getenv("STRIPE_PRICE_PRO_MONTHLY", "")
+            resolved_price_id = settings.STRIPE_PRICE_PRO_MONTHLY
             if not resolved_price_id:
                 raise ValueError("No price_id, lookup_key, or STRIPE_PRICE_PRO_MONTHLY configured")
         
