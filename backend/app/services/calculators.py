@@ -265,7 +265,8 @@ def calculate_ltr(
     
     # 10-Year Projection
     ten_year_projection = []
-    cumulative_loan_balance = loan_amount
+    monthly_rate = interest_rate / 12
+    total_payments = loan_term_years * 12
     
     for year in range(1, 11):
         year_gross_rent = annual_gross_rent * ((1 + rent_growth_rate) ** (year - 1))
@@ -274,8 +275,15 @@ def calculate_ltr(
         year_cash_flow = year_noi - annual_debt_service
         property_value = purchase_price * ((1 + appreciation_rate) ** year)
         
-        # Simplified equity calculation (principal paydown estimate)
-        equity = property_value - (loan_amount * (1 - (year / loan_term_years) * 0.3))
+        payments_made = year * 12
+        if interest_rate == 0:
+            remaining_balance = loan_amount * (1 - payments_made / total_payments)
+        else:
+            remaining_balance = loan_amount * (
+                ((1 + monthly_rate) ** total_payments - (1 + monthly_rate) ** payments_made)
+                / ((1 + monthly_rate) ** total_payments - 1)
+            )
+        equity = property_value - remaining_balance
         
         ten_year_projection.append({
             "year": year,
@@ -751,7 +759,7 @@ def calculate_flip(
     
     # Profit Analysis
     gross_profit = arv - total_project_cost
-    net_profit_before_tax = net_sale_proceeds - hard_money_loan - total_cash_required
+    net_profit_before_tax = net_sale_proceeds - total_project_cost
     capital_gains_tax = max(0, net_profit_before_tax * capital_gains_rate)
     net_profit_after_tax = net_profit_before_tax - capital_gains_tax
     
