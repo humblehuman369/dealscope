@@ -112,7 +112,12 @@ function StrategyContent() {
       try {
         setIsLoading(true)
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
-        let price = propData.valuations?.current_value_avm || propData.valuations?.zestimate || 350000
+        const v = propData.valuations || {}
+        let price = v.market_price
+          ?? (v.zestimate != null && v.current_value_avm != null ? Math.round((v.zestimate + v.current_value_avm) / 2) : null)
+          ?? v.current_value_avm
+          ?? v.zestimate
+          ?? 350000
         let monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
         let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
         let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)
@@ -139,6 +144,8 @@ function StrategyContent() {
 
         setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal })
 
+        const listingStatus = propData.listing?.listing_status
+        const isListed = listingStatus && !['OFF_MARKET', 'SOLD', 'FOR_RENT'].includes(String(listingStatus)) && price > 0
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', {
           list_price: price,
           monthly_rent: monthlyRent,
@@ -147,6 +154,10 @@ function StrategyContent() {
           bedrooms: propData.details?.bedrooms || 3,
           bathrooms: propData.details?.bathrooms || 2,
           sqft: propData.details?.square_footage || 1500,
+          is_listed: isListed ?? undefined,
+          zestimate: v.zestimate ?? undefined,
+          current_value_avm: v.current_value_avm ?? undefined,
+          tax_assessed_value: v.tax_assessed_value ?? undefined,
         })
         setData(analysis)
       } catch (err) {

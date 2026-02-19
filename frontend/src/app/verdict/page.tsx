@@ -256,17 +256,34 @@ function VerdictContent() {
             })
           : Promise.resolve(null)
 
-        // Get monthly rent (used for estimating price if needed)
+        // Get monthly rent (used for rent estimates and API payload)
         const monthlyRentLTR = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || null
         const monthlyRent = monthlyRentLTR || 2500
-        const estimatedValueFromRent = monthlyRent / 0.007
 
-        // Get the best available price
-        const price = data.valuations?.current_value_avm 
-          || data.valuations?.zestimate 
-          || data.valuations?.tax_assessed_value
-          || data.valuations?.last_sale_price
-          || estimatedValueFromRent
+        // Market Price: when listed = List Price; when off-market = API market_price or same fallback as backend
+        const isListed =
+          data.listing?.listing_status &&
+          data.listing.listing_status !== 'OFF_MARKET' &&
+          data.listing.listing_status !== 'SOLD' &&
+          data.listing.listing_status !== 'FOR_RENT'
+        const zestimate = data.valuations?.zestimate ?? null
+        const currentAvm = data.valuations?.current_value_avm ?? null
+        const taxAssessed = data.valuations?.tax_assessed_value ?? null
+        const lastSale = data.valuations?.last_sale_price ?? null
+        const listPrice = data.listing?.list_price ?? null
+        const apiMarketPrice = data.valuations?.market_price ?? null
+
+        const price =
+          (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
+          (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
+          (zestimate != null && zestimate > 0 && currentAvm != null && currentAvm > 0
+            ? Math.round((zestimate + currentAvm) / 2)
+            : null) ??
+          (zestimate != null && zestimate > 0 ? zestimate : null) ??
+          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
+          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
+          (lastSale != null && lastSale > 0 ? lastSale : null) ??
+          Math.round(2500 / 0.007)
 
         // Get property taxes from API data
         const propertyTaxes = data.taxes?.annual_tax_amount 
@@ -300,6 +317,7 @@ function VerdictContent() {
           baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
           sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
           price: Math.round(price),
+          zestimate: zestimate != null && zestimate > 0 ? Math.round(zestimate) : undefined,
           imageUrl: SAMPLE_PHOTOS[0], // Placeholder until photo promise resolves
           yearBuilt: data.details?.year_built,
           lotSize: data.details?.lot_size,
@@ -427,6 +445,10 @@ function VerdictContent() {
             arv: arvForCalc,
             average_daily_rate: propertyData.averageDailyRate,
             occupancy_rate: propertyData.occupancyRate,
+            is_listed: isListed,
+            zestimate: zestimate ?? undefined,
+            current_value_avm: currentAvm ?? undefined,
+            tax_assessed_value: taxAssessed ?? undefined,
           },
         )
 

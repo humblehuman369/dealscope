@@ -6,7 +6,7 @@ These values align with the frontend stores/index.ts DEFAULT_ASSUMPTIONS.
 Updated: January 2025 to reflect current market conditions and user preferences.
 """
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 @dataclass(frozen=True)
@@ -207,6 +207,40 @@ def _clamp(value: float, lo: float, hi: float, name: str) -> float:
         )
         return hi
     return value
+
+
+def compute_market_price(
+    is_listed: bool,
+    list_price: Optional[float],
+    zestimate: Optional[float],
+    current_value_avm: Optional[float],
+    income_value: Optional[float],
+    tax_assessed_value: Optional[float],
+) -> Optional[float]:
+    """
+    Compute Market Price for display and deal gap.
+
+    When listed: Market Price = List Price.
+    When off-market: (1) (Zestimate + RentCast AVM) / 2 when both available;
+    (2) if one missing, use the other; (3) if both missing, use Income Value;
+    (4) if still none, use tax_assessed_value / 0.75; else None.
+    """
+    if is_listed and list_price is not None and list_price > 0:
+        return round(list_price)
+    # Off-market
+    z = zestimate if zestimate is not None and zestimate > 0 else None
+    avm = current_value_avm if current_value_avm is not None and current_value_avm > 0 else None
+    if z is not None and avm is not None:
+        return round((z + avm) / 2)
+    if z is not None:
+        return round(z)
+    if avm is not None:
+        return round(avm)
+    if income_value is not None and income_value > 0:
+        return round(income_value)
+    if tax_assessed_value is not None and tax_assessed_value > 0:
+        return round(tax_assessed_value / 0.75)
+    return None
 
 
 def estimate_income_value(

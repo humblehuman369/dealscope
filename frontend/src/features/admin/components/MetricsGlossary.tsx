@@ -56,6 +56,7 @@ const formatKeyLabel = (key: string) =>
 const SECTION_LABELS: Record<string, string> = {
   iq_verdict_score: 'IQ Verdict Score',
   wholesale_price_target: 'Wholesale Price Target',
+  market_price_off_market: 'Market Price (Off-Market)',
   market_statistics: 'Market Statistics',
   rental_market_statistics: 'Rental Market Statistics',
   deal_opportunity_score: 'Deal Opportunity Score',

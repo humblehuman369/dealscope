@@ -53,6 +53,12 @@ export interface AnalyticsPropertyData {
   thumbnailUrl?: string;
   photos?: string[];
   photoCount?: number;
+  /** For off-market market price: backend blends (zestimate + current_value_avm)/2 */
+  listingStatus?: string;
+  zestimate?: number;
+  currentValueAvm?: number;
+  taxAssessedValue?: number;
+  marketPrice?: number;
 }
 
 // Backward-compatible alias — consumers that imported PropertyData

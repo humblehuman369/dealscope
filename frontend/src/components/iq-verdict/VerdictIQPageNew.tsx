@@ -188,7 +188,7 @@ export function VerdictIQPageNew({
   }, [property, analysis, defaults, overrideValues])
 
   // Calculate deal gap
-  const marketValue = property.zestimate || property.price
+  const marketValue = property.price
   const dealGap = marketValue > 0 
     ? ((marketValue - pricing.incomeValue) / marketValue) * 100 
     : 0
