@@ -47,7 +47,7 @@ class CacheService:
         """Generate a cache key with prefix."""
         # Normalize the identifier
         normalized = identifier.lower().strip()
-        hash_part = hashlib.md5(normalized.encode()).hexdigest()[:16]
+        hash_part = hashlib.sha256(normalized.encode()).hexdigest()[:16]
         return f"{prefix}:{hash_part}"
     
     async def get(self, key: str) -> Optional[Any]:

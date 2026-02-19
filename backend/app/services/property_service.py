@@ -59,12 +59,12 @@ class PropertyService:
     def _generate_property_id(self, address: str) -> str:
         """Generate consistent property ID from address."""
         normalized = address.lower().strip()
-        return hashlib.md5(normalized.encode()).hexdigest()[:16]
-    
+        return hashlib.sha256(normalized.encode()).hexdigest()[:16]
+
     def _generate_assumptions_hash(self, assumptions: AllAssumptions) -> str:
         """Generate hash of assumptions for cache key."""
         assumptions_json = json.dumps(assumptions.model_dump(), sort_keys=True)
-        return hashlib.md5(assumptions_json.encode()).hexdigest()[:12]
+        return hashlib.sha256(assumptions_json.encode()).hexdigest()[:12]
     
     async def get_cached_property(self, property_id: str) -> Optional[PropertyResponse]:
         """Retrieve a property from cache by its property_id.

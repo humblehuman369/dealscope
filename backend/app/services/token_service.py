@@ -41,6 +41,11 @@ class TokenService:
     # JWT helpers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _jwt_key() -> str:
+        """Return the JWT signing key, preferring a dedicated secret."""
+        return getattr(settings, "JWT_SECRET_KEY", None) or settings.SECRET_KEY
+
     def create_jwt(
         self,
         user_id: uuid.UUID,
@@ -57,16 +62,20 @@ class TokenService:
             "exp": expire,
             "iat": now,
             "type": "access",
+            "aud": settings.APP_NAME,
+            "iss": settings.APP_NAME,
         }
-        return jwt.encode(payload, settings.SECRET_KEY, algorithm=JWT_ALGORITHM)
+        return jwt.encode(payload, self._jwt_key(), algorithm=JWT_ALGORITHM)
 
     def verify_jwt(self, token: str) -> Optional[dict]:
         """Decode and verify a JWT.  Returns the payload dict or None."""
         try:
             payload = jwt.decode(
                 token,
-                settings.SECRET_KEY,
+                self._jwt_key(),
                 algorithms=[JWT_ALGORITHM],
+                audience=settings.APP_NAME,
+                issuer=settings.APP_NAME,
             )
             if payload.get("type") != "access":
                 return None
