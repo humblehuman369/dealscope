@@ -176,6 +176,8 @@ class ValuationData(BaseModel):
     zestimate: Optional[float] = None
     zestimate_high_pct: Optional[float] = None
     zestimate_low_pct: Optional[float] = None
+    # DealGapIQ off-market Market Price: (Zestimate + AVM)/2 or single source or Income Value or tax/0.75
+    market_price: Optional[float] = None
 
 
 class RentTrend(str, Enum):

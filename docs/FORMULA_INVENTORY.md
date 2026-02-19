@@ -15,6 +15,7 @@ Single source of truth for all user-facing financial metrics. All calculations M
 | **IQ Verdict composite score** | `backend/app/services/iq_verdict_service._calculate_composite_verdict_score` | `composite = deal_gap×0.35 + return_quality×0.30 + market_alignment×0.20 + deal_probability×0.15` clamped to 5–95 | `POST /api/v1/analysis/verdict` → `dealScore`, `dealGapScore`, `returnQualityScore`, `marketAlignmentScore`, `dealProbabilityScore` |
 | **Deal Opportunity Score (worksheet)** | `backend/app/services/calculators.calculate_deal_opportunity_score`, `iq_verdict_service._calculate_opportunity_score` | Worksheet: weighted (deal_gap 50%, availability 30%, DOM 20%). Simple: `score = 100 - discount_pct×2` | `POST /api/v1/worksheet/deal-score` → `deal_score`, `discount_percent`, `deal_verdict` |
 | **Pricing quality tier** | `backend/app/services/iq_verdict_service._assess_pricing_quality` | `income_gap_pct = (list_price - income_value)/list_price×100`; tiers: ≤0%, 0–5%, 5–10%, 10–20%, 20–30%, 30%+ | Verdict → `pricing_quality_tier`, verdict description text |
+| **Market Price (off-market)** | `backend/app/core/defaults.compute_market_price` | Listed: Market Price = List Price. Off-market: (1) (Zestimate + RentCast AVM)/2 when both; (2) one source if other missing; (3) Income Value; (4) tax_assessed_value/0.75 | Property API `valuations.market_price`; Verdict `list_price` when off-market (client sends `is_listed`, `zestimate`, `current_value_avm`, `tax_assessed_value`) |
 
 ---
 

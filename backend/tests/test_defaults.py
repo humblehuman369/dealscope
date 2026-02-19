@@ -7,6 +7,7 @@ import pytest
 from app.core.defaults import (
     estimate_income_value,
     calculate_buy_price,
+    compute_market_price,
     DEFAULT_BUY_DISCOUNT_PCT,
 )
 
@@ -118,3 +119,100 @@ class TestCalculateBuyPrice:
             buy_discount_pct=0.10,
         )
         assert buy_10 < buy_5
+
+
+class TestComputeMarketPrice:
+    """Tests for compute_market_price (listed = list price; off-market = blended or fallbacks)."""
+
+    def test_listed_returns_list_price(self):
+        """When is_listed and list_price > 0, return list_price."""
+        out = compute_market_price(
+            is_listed=True,
+            list_price=400_000,
+            zestimate=350_000,
+            current_value_avm=360_000,
+            income_value=320_000,
+            tax_assessed_value=300_000,
+        )
+        assert out == 400_000
+
+    def test_off_market_both_valuations_returns_average(self):
+        """Off-market with both Zestimate and AVM: (z + avm) / 2."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=600_000,
+            current_value_avm=700_000,
+            income_value=500_000,
+            tax_assessed_value=400_000,
+        )
+        assert out == 650_000
+
+    def test_off_market_one_valuation_uses_single_source(self):
+        """Off-market with only Zestimate returns Zestimate."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=685_000,
+            current_value_avm=None,
+            income_value=500_000,
+            tax_assessed_value=400_000,
+        )
+        assert out == 685_000
+        out2 = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=None,
+            current_value_avm=700_000,
+            income_value=500_000,
+            tax_assessed_value=400_000,
+        )
+        assert out2 == 700_000
+
+    def test_off_market_neither_valuation_uses_income_value(self):
+        """Off-market with no Z/AVM uses income_value."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=None,
+            current_value_avm=None,
+            income_value=550_000,
+            tax_assessed_value=400_000,
+        )
+        assert out == 550_000
+
+    def test_off_market_no_valuation_no_income_uses_tax_divided_75(self):
+        """Off-market with no Z/AVM/income uses tax_assessed_value / 0.75."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=None,
+            current_value_avm=None,
+            income_value=None,
+            tax_assessed_value=300_000,
+        )
+        assert out == 400_000  # 300_000 / 0.75
+
+    def test_off_market_all_none_returns_none(self):
+        """When off-market and no valuations/income/tax, return None."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=None,
+            current_value_avm=None,
+            income_value=None,
+            tax_assessed_value=None,
+        )
+        assert out is None
+
+    def test_listed_zero_list_price_treated_as_off_market(self):
+        """When is_listed but list_price is 0 or None, fall through to off-market logic."""
+        out = compute_market_price(
+            is_listed=True,
+            list_price=0,
+            zestimate=500_000,
+            current_value_avm=520_000,
+            income_value=None,
+            tax_assessed_value=None,
+        )
+        assert out == 510_000

@@ -380,17 +380,17 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       propertyType: property.details?.property_type || 'Single Family',
     },
     pricing: {
-      listPrice: property.valuations?.current_value_avm || 0,
-      estimatedValue: property.valuations?.current_value_avm || 0,
+      listPrice: property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0,
+      estimatedValue: property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0,
       pricePerSqft: property.details?.square_footage 
-        ? Math.floor((property.valuations?.current_value_avm || 0) / property.details.square_footage)
+        ? Math.floor((property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0) / property.details.square_footage)
         : 0,
       rentEstimate: property.rentals?.monthly_rent_ltr || 0,
       strEstimate: property.rentals?.average_daily_rate || 0,
     },
     strategies: (() => {
       // Calculate Flip Margin for Fix & Flip (matching frontend)
-      const purchasePrice = property.valuations?.current_value_avm || 0;
+      const purchasePrice = property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0;
       const rehabCost = 25000; // Default rehab estimate
       const arv = property.valuations?.arv || purchasePrice * 1.1;
       const flipMargin = arv - purchasePrice - rehabCost;

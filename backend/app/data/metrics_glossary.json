@@ -1,7 +1,7 @@
 {
   "version": "1.8",
   "updatedAt": "2026-02-19",
-  "source": "backend/app/core/defaults.py, backend/app/services/calculators.py, backend/app/services/iq_verdict_service.py, backend/app/services/data_normalizer.py",
+  "source": "backend/app/core/defaults.py, backend/app/services/calculators.py, backend/app/services/iq_verdict_service.py, backend/app/services/data_normalizer.py, backend/app/services/property_service.py",
   "iq_verdict_score": {
     "description": "IQ Verdict Score - The main score (e.g. 74/100) shown on the VerdictIQ page. Composite of four weighted components. Used only on the Verdict page; worksheets use Deal Opportunity Score instead.",
     "source": "backend/app/services/iq_verdict_service._calculate_composite_verdict_score",
@@ -54,6 +54,23 @@
         "formula": "seventy_pct_max_offer = arv × (1 - arv_discount_pct) - estimated_rehab_costs; default arv_discount_pct = 0.30 (30% discount = 70% rule)",
         "inputs": ["arv", "estimated_rehab_costs", "arv_discount_pct"],
         "description": "70% rule: MAO = ARV×70% minus rehab. Worksheet and analytics use this; default 30% discount from ARV."
+      }
+    }
+  },
+  "market_price_off_market": {
+    "description": "Market Price is the value displayed when the property is not listed (status off-market). When the property is listed, Market Price = List Price (asking price). Off-market Market Price gives DealGapIQ a proprietary blended number different from single-source sites.",
+    "source": "backend/app/core/defaults.compute_market_price",
+    "usage": "Property API valuations.market_price; Verdict request/response when off-market (list_price = market price).",
+    "metrics": {
+      "market_price_listed": {
+        "formula": "If listed: market_price = list_price",
+        "inputs": ["list_price"],
+        "description": "When property is actively listed, Market Price is the list (asking) price."
+      },
+      "market_price_off_market": {
+        "formula": "(1) (Zestimate + RentCast AVM) / 2 when both available; (2) if one missing, use the other; (3) if both missing, use calculated Income Value; (4) if still none, use tax_assessed_value / 0.75",
+        "inputs": ["zestimate", "current_value_avm", "income_value", "tax_assessed_value"],
+        "description": "Off-market only. Two-source blended average when both Zestimate and RentCast AVM exist; otherwise single source, then Income Value, then tax/0.75."
       }
     }
   },

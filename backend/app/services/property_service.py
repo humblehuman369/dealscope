@@ -18,6 +18,7 @@ from app.services.calculators import (
     calculate_flip, calculate_house_hack, calculate_wholesale
 )
 from app.services.cache_service import get_cache_service, CacheService
+from app.core.defaults import compute_market_price
 from app.schemas.property import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
@@ -181,20 +182,7 @@ class PropertyService:
                 # View
                 view_type=normalized.get("view_type"),
             ),
-            valuations=ValuationData(
-                current_value_avm=normalized.get("current_value_avm"),
-                value_range_low=normalized.get("value_range_low"),
-                value_range_high=normalized.get("value_range_high"),
-                last_sale_price=normalized.get("last_sale_price"),
-                last_sale_date=normalized.get("last_sale_date"),
-                tax_assessed_value=normalized.get("tax_assessed_value"),
-                arv=self._estimate_arv(normalized),
-                arv_flip=self._estimate_arv_flip(normalized),
-                # Raw Zestimate data for frontend default calculations
-                zestimate=normalized.get("zestimate"),
-                zestimate_high_pct=normalized.get("zestimate_high_pct"),
-                zestimate_low_pct=normalized.get("zestimate_low_pct")
-            ),
+            valuations=self._build_valuations(normalized),
             rentals=RentalData(
                 # Use IQ proprietary estimate as primary rent value
                 monthly_rent_ltr=normalized.get("rental_iq_estimate") or normalized.get("monthly_rent_ltr"),
@@ -326,6 +314,42 @@ class PropertyService:
             full_address=address
         )
     
+    def _build_valuations(self, normalized: Dict) -> ValuationData:
+        """Build ValuationData including off-market market_price when applicable."""
+        listing_status = normalized.get("listing_status")
+        list_price = normalized.get("list_price")
+        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT")
+        is_listed = (
+            listing_status is not None
+            and str(listing_status).upper() not in off_market_statuses
+            and list_price is not None
+            and list_price > 0
+        )
+        market_price_val = None
+        if not is_listed:
+            market_price_val = compute_market_price(
+                is_listed=False,
+                list_price=None,
+                zestimate=normalized.get("zestimate"),
+                current_value_avm=normalized.get("current_value_avm"),
+                income_value=None,
+                tax_assessed_value=normalized.get("tax_assessed_value"),
+            )
+        return ValuationData(
+            current_value_avm=normalized.get("current_value_avm"),
+            value_range_low=normalized.get("value_range_low"),
+            value_range_high=normalized.get("value_range_high"),
+            last_sale_price=normalized.get("last_sale_price"),
+            last_sale_date=normalized.get("last_sale_date"),
+            tax_assessed_value=normalized.get("tax_assessed_value"),
+            arv=self._estimate_arv(normalized),
+            arv_flip=self._estimate_arv_flip(normalized),
+            zestimate=normalized.get("zestimate"),
+            zestimate_high_pct=normalized.get("zestimate_high_pct"),
+            zestimate_low_pct=normalized.get("zestimate_low_pct"),
+            market_price=market_price_val,
+        )
+
     def _estimate_arv(self, data: Dict) -> Optional[float]:
         """Estimate ARV for BRRRR strategy."""
         avm = data.get("current_value_avm")

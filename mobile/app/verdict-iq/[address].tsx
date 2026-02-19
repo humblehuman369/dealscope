@@ -269,6 +269,8 @@ export default function VerdictIQScreen() {
   const analysisResult = usePropertyAnalysis(propertyData);
   const { raw, targetPrice, incomeValue, discountPercent, dealScore, isLoading, error } = analysisResult;
 
+  const marketPrice = raw?.listPrice ?? listPrice;
+
   const property: PropertyContextData = useMemo(() => ({
     street: decodedAddress || 'Unknown Address',
     city: city || 'Unknown',
@@ -277,13 +279,13 @@ export default function VerdictIQScreen() {
     beds: bedroomCount,
     baths: bathroomCount,
     sqft: sqftValue,
-    price: listPrice,
+    price: marketPrice,
     status: (status as 'active' | 'pending' | 'off-market') || 'off-market',
     image: image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop',
-  }), [decodedAddress, city, state, zip, bedroomCount, bathroomCount, sqftValue, listPrice, status, image]);
+  }), [decodedAddress, city, state, zip, bedroomCount, bathroomCount, sqftValue, marketPrice, status, image]);
 
-  // Derived data
-  const iqPrices = useMemo(() => buildIQPrices(incomeValue, targetPrice, listPrice), [incomeValue, targetPrice, listPrice]);
+  // Derived data — use backend list_price (market price when off-market) when available
+  const iqPrices = useMemo(() => buildIQPrices(incomeValue, targetPrice, marketPrice), [incomeValue, targetPrice, marketPrice]);
   const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
   const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
   const signalIndicators = useMemo(() => buildSignalIndicators(raw, discountPercent), [raw, discountPercent]);
@@ -318,7 +320,7 @@ export default function VerdictIQScreen() {
   const handleShare = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const url = buildVerdictShareUrl(decodedAddress, {
-      price: listPrice,
+      price: marketPrice,
       beds: bedroomCount,
       baths: bathroomCount,
       sqft: sqftValue,
@@ -334,7 +336,7 @@ export default function VerdictIQScreen() {
     } catch {
       // user cancelled
     }
-  }, [decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, city, state]);
+  }, [decodedAddress, marketPrice, bedroomCount, bathroomCount, sqftValue, city, state]);
 
   const handleSaveToPortfolio = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -536,14 +538,14 @@ export default function VerdictIQScreen() {
               {(() => {
                 // Calculate real positions based on actual price relationships
                 const scaleMin = wholesalePrice * 0.95;
-                const scaleMax = Math.max(listPrice * 1.08, incomeValue * 1.05);
+                const scaleMax = Math.max(marketPrice * 1.08, incomeValue * 1.05);
                 const range = scaleMax - scaleMin;
                 const clamp = (v: number) => Math.min(0.96, Math.max(0.04, (v - scaleMin) / range));
                 return (
                   <PriceScale
-                    askingPriceLabel={formatCurrency(listPrice)}
+                    askingPriceLabel={formatCurrency(marketPrice)}
                     targetPosition={clamp(targetPrice)}
-                    askingPosition={clamp(listPrice)}
+                    askingPosition={clamp(marketPrice)}
                     labels={['Wholesale', 'Profit Entry', 'Income Value', 'Asking ▶']}
                     termsNote="20% down · 6.0% rate · 30-year term"
                   />

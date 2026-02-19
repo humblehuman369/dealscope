@@ -200,9 +200,7 @@ export function VerdictIQCombined({
     property.listingStatus === 'SOLD' ||
     property.listingStatus === 'FOR_RENT'
   
-  const marketValue = isOffMarket 
-    ? (property.zestimate || property.price) 
-    : property.price
+  const marketValue = property.price
   const priceSource = isOffMarket 
     ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
     : 'Asking Price'

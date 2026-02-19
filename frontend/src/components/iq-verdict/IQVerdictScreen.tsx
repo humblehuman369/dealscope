@@ -220,13 +220,9 @@ export function IQVerdictScreen({
     property.listingStatus === 'SOLD' ||
     property.listingStatus === 'FOR_RENT'
   
-  // Use AVM (Zestimate) for off-market properties, otherwise use listing price
-  const marketValue = isOffMarket 
-    ? (property.zestimate || property.price) 
-    : property.price
-  const priceSource = isOffMarket 
-    ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
-    : 'Asking Price'
+  // Market Price: when listed = list price; when off-market = backend market_price (property.price set from API)
+  const marketValue = property.price
+  const priceSource = isOffMarket ? 'Market Estimate' : 'Asking Price'
 
   // Calculate prices
   const incomeValue = analysis.incomeValue || Math.round(marketValue * 1.1)

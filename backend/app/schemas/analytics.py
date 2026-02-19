@@ -47,6 +47,11 @@ class IQVerdictInput(BaseModel):
     is_fsbo: Optional[bool] = Field(False, description="For Sale By Owner")
     days_on_market: Optional[int] = Field(None, ge=0, le=10_000, description="Days on market")
     market_temperature: Optional[str] = Field(None, max_length=20, description="Market temperature: cold, warm, hot")
+    # Off-market market price: when is_listed is False, backend computes Market Price from valuations
+    is_listed: Optional[bool] = Field(None, description="True if property has active listing; False for off-market")
+    zestimate: Optional[float] = Field(None, ge=0, le=100_000_000, description="Zillow Zestimate (for off-market market price)")
+    current_value_avm: Optional[float] = Field(None, ge=0, le=100_000_000, description="RentCast AVM (for off-market market price)")
+    tax_assessed_value: Optional[float] = Field(None, ge=0, le=100_000_000, description="Tax assessed value (for off-market fallback)")
 
 
 class StrategyResult(BaseModel):

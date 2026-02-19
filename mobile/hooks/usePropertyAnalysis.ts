@@ -325,8 +325,11 @@ export function usePropertyAnalysis(
 
     try {
       // Build the verdict input in snake_case to match backend schema
+      const isListed = property.listingStatus != null
+        ? !['OFF_MARKET', 'SOLD', 'FOR_RENT'].includes(property.listingStatus)
+        : undefined;
       const input = {
-        list_price: property.listPrice,
+        list_price: property.marketPrice ?? property.listPrice,
         monthly_rent: assumptions?.monthlyRent ?? property.monthlyRent ?? undefined,
         property_taxes: property.propertyTaxes ?? undefined,
         insurance: property.insurance ?? undefined,
@@ -334,6 +337,10 @@ export function usePropertyAnalysis(
         average_daily_rate: assumptions?.averageDailyRate ?? property.averageDailyRate ?? undefined,
         occupancy_rate: assumptions?.occupancyRate ?? property.occupancyRate ?? undefined,
         bedrooms: property.bedrooms ?? 3,
+        is_listed: isListed,
+        zestimate: property.zestimate ?? undefined,
+        current_value_avm: property.currentValueAvm ?? undefined,
+        tax_assessed_value: property.taxAssessedValue ?? undefined,
       };
 
       // Fetch verdict and analytics in parallel
