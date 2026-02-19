@@ -195,96 +195,134 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       >
         <div className="verdict-container">
           <div className="verdict-header">
-            <div className="section-label">See It in Action</div>
-            <h2>One Scan. Your Number.</h2>
-            <p>Every analysis gives you the four signals that matter — from a single property scan.</p>
+            <div className="section-label">See It In Action</div>
+            <h2>&ldquo;Is This a Good Deal?&rdquo; Answered in Three Numbers.</h2>
+            <p>Income Value shows where you break even. Target Buy shows where you profit. Deal Gap shows how far you need to negotiate.</p>
           </div>
 
           <div className="scan-demo-card">
             {/* Property Header */}
-            <div className="scan-demo-property">
+            <div className="prop-header">
               <div>
-                <div className="scan-demo-address">1847 Oakridge Drive, Tampa, FL 33612</div>
-                <div className="scan-demo-details">3 bed &middot; 2 bath &middot; 1,640 sqft &middot; Built 2004</div>
+                <div className="prop-address">1847 Oakridge Drive, Tampa, FL 33612</div>
+                <div className="prop-details">3 bed &middot; 2 bath &middot; 1,640 sqft &middot; Built 2004</div>
               </div>
-              <div className="scan-demo-list-price">
-                <div className="scan-demo-label">LIST PRICE</div>
-                <div className="scan-demo-price">$349,900</div>
-              </div>
-            </div>
-
-            {/* Four Metrics */}
-            <div className="scan-demo-metrics">
-              <div className="scan-demo-metric">
-                <div className="scan-demo-metric-label">TARGET BUY</div>
-                <div className="scan-demo-metric-value green">$289K</div>
-                <div className="scan-demo-metric-sub">At 8% target return</div>
-              </div>
-              <div className="scan-demo-metric">
-                <div className="scan-demo-metric-label">INCOME VALUE</div>
-                <div className="scan-demo-metric-value white">$312K</div>
-                <div className="scan-demo-metric-sub">Covers all costs</div>
-              </div>
-              <div className="scan-demo-metric">
-                <div className="scan-demo-metric-label">DEAL GAP</div>
-                <div className="scan-demo-metric-value gold">$61K</div>
-                <div className="scan-demo-metric-sub">17.4% below list</div>
-              </div>
-              <div className="scan-demo-metric">
-                <div className="scan-demo-metric-label">MONTHLY CASH</div>
-                <div className="scan-demo-metric-value green">$1,180</div>
-                <div className="scan-demo-metric-sub">At target buy price</div>
+              <div>
+                <div className="prop-price-label">List Price</div>
+                <div className="prop-price">$349,900</div>
               </div>
             </div>
 
-            {/* Deal Gap Visualization */}
-            <div className="scan-demo-gap-viz">
-              <div className="scan-demo-gap-label">DEAL GAP VISUALIZATION</div>
-              <div className="scan-demo-bar-wrap">
-                <div className="scan-demo-bar">
-                  <span>$61K DEAL GAP</span>
+            {/* Price Spectrum */}
+            <div className="story-section">
+              <div className="story-label">Your Price Spectrum</div>
+
+              <div className="spectrum-container">
+                <div className="deal-gap-dimension">
+                  <div className="dim-line-left" />
+                  <span className="dim-label">DEAL GAP&nbsp; 17.4%</span>
+                  <div className="dim-line-right" />
+                </div>
+
+                <div className="spectrum-track">
+                  <div className="spectrum-zone-profit" />
+                  <div className="spectrum-zone-loss" />
+                </div>
+
+                <div className="markers">
+                  <div className="marker target-buy" style={{ left: '30%' }}>
+                    <div className="marker-line" />
+                    <div className="marker-value">$289K</div>
+                    <div className="marker-label">Target Buy</div>
+                    <div className="marker-zone-label" style={{ color: 'var(--green)' }}>Profit</div>
+                  </div>
+                  <div className="marker income-value" style={{ left: '65%' }}>
+                    <div className="marker-line" />
+                    <div className="marker-value">$312K</div>
+                    <div className="marker-label">Income Value</div>
+                    <div className="marker-zone-label" style={{ color: 'var(--gold)' }}>Breakeven</div>
+                  </div>
+                  <div className="marker list-price" style={{ left: '92%' }}>
+                    <div className="marker-line" />
+                    <div className="marker-value">$349.9K</div>
+                    <div className="marker-label">List Price</div>
+                    <div className="marker-zone-label" style={{ color: 'var(--red)' }}>Loss</div>
+                  </div>
                 </div>
               </div>
-              <div className="scan-demo-bar-markers">
-                <div className="scan-demo-marker">
-                  <div className="scan-demo-marker-value">$289K</div>
-                  <div className="scan-demo-marker-label">Target Buy</div>
+            </div>
+
+            {/* Deal Gap Banner */}
+            <div className="deal-gap-section">
+              <div className="deal-gap-banner">
+                <div className="deal-gap-left">
+                  <div className="deal-gap-label-row">
+                    <span className="deal-gap-label-text">Deal Gap</span>
+                    <span className="deal-gap-badge-new">Only on DealGapIQ</span>
+                  </div>
+                  <div className="deal-gap-value">&minus;17.4%</div>
+                  <div className="deal-gap-explain">
+                    The list price is <strong>$61K above</strong> your Target Buy. This is the negotiating distance — the discount you&apos;d need to make this deal hit your return target.
+                  </div>
                 </div>
-                <div className="scan-demo-marker center">
-                  <div className="scan-demo-marker-value">$312K</div>
-                  <div className="scan-demo-marker-label">Income Value</div>
-                </div>
-                <div className="scan-demo-marker end">
-                  <div className="scan-demo-marker-value">$349.9K</div>
-                  <div className="scan-demo-marker-label">List Price</div>
+                <div className="deal-gap-right">
+                  <div className="difficulty-label">Negotiation Difficulty</div>
+                  <div className="difficulty-meter">
+                    <div className="diff-bar active g" />
+                    <div className="diff-bar active g" />
+                    <div className="diff-bar active y" />
+                    <div className="diff-bar active y" />
+                    <div className="diff-bar" />
+                    <div className="diff-bar" />
+                    <div className="diff-bar" />
+                  </div>
+                  <div className="difficulty-rating">Moderate</div>
+                  <div className="difficulty-hint">15–20% discounts require skill</div>
                 </div>
               </div>
             </div>
 
             {/* Verdict + Seller Motivation */}
-            <div className="scan-demo-bottom">
-              <div className="scan-demo-verdict">
-                <div className="scan-demo-score-ring">
-                  <svg viewBox="0 0 60 60" width="60" height="60">
-                    <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(251,191,36,0.15)" strokeWidth="4" />
-                    <circle cx="30" cy="30" r="26" fill="none" stroke="var(--gold)" strokeWidth="4"
-                      strokeDasharray={`${(53 / 100) * 163.36} 163.36`}
-                      strokeLinecap="round" transform="rotate(-90 30 30)" />
+            <div className="bottom-row">
+              <div className="verdict-cell">
+                <div className="verdict-ring">
+                  <svg viewBox="0 0 52 52">
+                    <circle className="ring-bg" cx="26" cy="26" r="22" />
+                    <circle className="ring-fill" cx="26" cy="26" r="22" />
                   </svg>
-                  <div className="scan-demo-score-num">53</div>
+                  <span className="verdict-score">53</span>
                 </div>
-                <div className="scan-demo-verdict-text">
-                  <div className="scan-demo-verdict-title"><strong>Verdict: Possible</strong></div>
-                  <div className="scan-demo-verdict-desc">Margins are tight, but the deal has potential with negotiation.</div>
+                <div className="verdict-text">
+                  <h4>Verdict: Possible</h4>
+                  <p>Tight margins, but potential with negotiation.</p>
                 </div>
               </div>
-              <div className="scan-demo-motivation">
-                <div className="scan-demo-label">SELLER MOTIVATION</div>
-                <div className="scan-demo-dots">
-                  <span className="dot filled" /><span className="dot filled" /><span className="dot filled" />
-                  <span className="dot" /><span className="dot" />
+              <div className="motivation-cell">
+                <div className="motivation-label">Seller Motivation</div>
+                <div className="motivation-dots">
+                  <div className="mot-dot active" />
+                  <div className="mot-dot active" />
+                  <div className="mot-dot active" />
+                  <div className="mot-dot" />
+                  <div className="mot-dot" />
                 </div>
-                <div className="scan-demo-motivation-level">Medium</div>
+                <div className="motivation-rating">Medium</div>
+              </div>
+            </div>
+
+            {/* Context Callouts */}
+            <div className="context-row">
+              <div className="context-item">
+                <h5 style={{ color: 'var(--gold)' }}>Income Value</h5>
+                <p>The maximum price the rental income supports. Above it, you lose money. No other platform calculates this.</p>
+              </div>
+              <div className="context-item">
+                <h5 style={{ color: 'var(--green)' }}>Target Buy</h5>
+                <p>The price that hits your desired return. Change your return target, loan terms, or expenses — it recalculates instantly.</p>
+              </div>
+              <div className="context-item">
+                <h5 style={{ color: 'var(--blue-deep)' }}>Deal Gap</h5>
+                <p>The discount between the asking price and your Target Buy. The bigger the gap, the better the deal — but the harder the negotiation.</p>
               </div>
             </div>
           </div>

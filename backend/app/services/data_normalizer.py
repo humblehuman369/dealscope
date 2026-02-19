@@ -379,7 +379,11 @@ class DealGapIQNormalizer:
         
         if "zpid" in data:
             flat["zpid"] = data["zpid"]
-        
+
+        # AXESSO search-by-address returns the property object at top level (zestimate, zpid, etc.)
+        if "property" not in flat and (data.get("zestimate") is not None or data.get("zpid")):
+            flat["property"] = data
+
         return flat
     
     def _set_field(

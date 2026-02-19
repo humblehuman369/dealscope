@@ -94,6 +94,8 @@ class PropertyService:
         if cached_data:
             logger.info(f"Cache hit for property: {address}")
             try:
+                # Recompute market_price from cached valuations so stale cache gets current formula
+                cached_data = self._apply_market_price_to_cached(cached_data)
                 return PropertyResponse(**cached_data)
             except Exception as e:
                 logger.warning(f"Failed to deserialize cached property: {e}")
@@ -314,6 +316,30 @@ class PropertyService:
             full_address=address
         )
     
+    def _apply_market_price_to_cached(self, cached_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Recompute market_price on cached response so stale cache uses current formula."""
+        valuations = (cached_data.get("valuations") or {}).copy()
+        listing = cached_data.get("listing") or {}
+        listing_status = listing.get("listing_status")
+        list_price = listing.get("list_price")
+        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT")
+        is_listed = (
+            listing_status is not None
+            and str(listing_status).upper() not in off_market_statuses
+            and list_price is not None
+            and list_price > 0
+        )
+        market_price_val = compute_market_price(
+            is_listed=is_listed,
+            list_price=list_price,
+            zestimate=valuations.get("zestimate"),
+            current_value_avm=valuations.get("current_value_avm"),
+            income_value=None,
+            tax_assessed_value=valuations.get("tax_assessed_value"),
+        )
+        valuations["market_price"] = market_price_val
+        return {**cached_data, "valuations": valuations}
+
     def _build_valuations(self, normalized: Dict) -> ValuationData:
         """Build ValuationData including off-market market_price when applicable."""
         listing_status = normalized.get("listing_status")
