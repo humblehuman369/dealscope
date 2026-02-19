@@ -1,7 +1,7 @@
 /* DealGapIQ Homepage — Scoped Styles
  * All selectors scoped under .iq-landing to avoid conflicts with Tailwind/globals */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Source+Sans+3:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
 .iq-landing {
   --black: #000000;
@@ -45,6 +45,7 @@
   --font: 'Inter', -apple-system, system-ui, sans-serif;
   --font-display: 'Inter', -apple-system, system-ui, sans-serif;
   --font-logo: 'Source Sans 3', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
 
   font-family: var(--font);
   background: var(--black);
@@ -252,143 +253,436 @@
   letter-spacing: -0.04em; line-height: 1.15; color: var(--white); margin-bottom: 1rem;
 }
 .iq-landing .verdict-header p {
-  font-size: 1.1rem; color: var(--text); max-width: 550px; margin: 0 auto; line-height: 1.6;
+  font-size: 1.1rem; color: var(--text); max-width: 580px; margin: 0 auto; line-height: 1.6;
 }
 
-/* Scan Demo Card */
+/* Scan Demo Card — Enhanced */
 .iq-landing .scan-demo-card {
-  max-width: 720px; margin: 0 auto;
-  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   overflow: hidden;
 }
 
-.iq-landing .scan-demo-property {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 1.75rem 2rem; gap: 1.5rem;
-}
-.iq-landing .scan-demo-address {
-  font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem;
-}
-.iq-landing .scan-demo-details {
-  font-size: 0.85rem; color: #ffffff;
-}
-.iq-landing .scan-demo-list-price { text-align: right; flex-shrink: 0; }
-.iq-landing .scan-demo-price {
-  font-size: 1.75rem; font-weight: 800; color: var(--white); letter-spacing: -0.02em;
-}
-
-.iq-landing .scan-demo-label {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: #ffffff; margin-bottom: 0.25rem;
-}
-
-/* Four Metrics Row */
-.iq-landing .scan-demo-metrics {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-}
-.iq-landing .scan-demo-metric {
-  padding: 1.25rem 1.5rem; text-align: center;
-  border-right: 1px solid var(--border);
-}
-.iq-landing .scan-demo-metric:last-child { border-right: none; }
-.iq-landing .scan-demo-metric-label {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: #ffffff; margin-bottom: 0.5rem;
-}
-.iq-landing .scan-demo-metric-value {
-  font-size: 1.65rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem;
-}
-.iq-landing .scan-demo-metric-value.green { color: var(--green); }
-.iq-landing .scan-demo-metric-value.white { color: var(--white); }
-.iq-landing .scan-demo-metric-value.gold { color: var(--gold); }
-.iq-landing .scan-demo-metric-sub {
-  font-size: 0.75rem; color: #ffffff;
-}
-
-/* Deal Gap Visualization */
-.iq-landing .scan-demo-gap-viz {
-  padding: 1.5rem 2rem 1.25rem;
+/* Property Header */
+.iq-landing .prop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 28px 32px 24px;
   border-bottom: 1px solid var(--border);
 }
-.iq-landing .scan-demo-gap-label {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: #ffffff; margin-bottom: 1rem;
+.iq-landing .prop-address {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 5px;
 }
-.iq-landing .scan-demo-bar-wrap {
-  background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25);
-  border-radius: 8px; padding: 0.65rem 0; text-align: center; margin-bottom: 0.75rem;
+.iq-landing .prop-details {
+  font-size: 13.5px;
+  color: var(--text-secondary);
 }
-.iq-landing .scan-demo-bar span {
-  font-size: 0.9rem; font-weight: 800; color: var(--green); letter-spacing: 0.02em;
+.iq-landing .prop-price-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: right;
+  margin-bottom: 4px;
 }
-.iq-landing .scan-demo-bar-markers {
-  display: flex; justify-content: space-between; align-items: flex-start;
+.iq-landing .prop-price {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
 }
-.iq-landing .scan-demo-marker-value {
-  font-size: 0.9rem; font-weight: 700; color: var(--white);
+
+/* Price Spectrum */
+.iq-landing .story-section {
+  padding: 32px 32px 28px;
+  position: relative;
 }
-.iq-landing .scan-demo-marker-label {
-  font-size: 0.7rem; color: #ffffff;
+.iq-landing .story-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
 }
-.iq-landing .scan-demo-marker.center { text-align: center; }
-.iq-landing .scan-demo-marker.end { text-align: right; }
+.iq-landing .spectrum-container {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+/* Deal Gap dimension line */
+.iq-landing .deal-gap-dimension {
+  display: flex;
+  align-items: center;
+  position: relative;
+  left: 30%;
+  width: 62%;
+  margin-bottom: 12px;
+}
+.iq-landing .dim-line-left,
+.iq-landing .dim-line-right {
+  flex: 1;
+  height: 2px;
+  background: var(--blue-deep);
+  position: relative;
+}
+.iq-landing .dim-line-left::before,
+.iq-landing .dim-line-right::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 8px;
+  background: var(--blue-deep);
+}
+.iq-landing .dim-line-left::before { left: 0; }
+.iq-landing .dim-line-right::after { right: 0; }
+.iq-landing .dim-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding: 0 10px;
+}
+
+/* Spectrum Track */
+.iq-landing .spectrum-track {
+  position: relative;
+  height: 8px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.iq-landing .spectrum-zone-profit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 65%;
+  background: var(--green);
+  opacity: 0.5;
+}
+.iq-landing .spectrum-zone-loss {
+  position: absolute;
+  left: 65%;
+  top: 0;
+  height: 100%;
+  width: 35%;
+  background: var(--red);
+  opacity: 0.35;
+}
+
+/* Price Markers */
+.iq-landing .markers {
+  position: relative;
+  height: 120px;
+  margin-top: 4px;
+}
+.iq-landing .marker {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+.iq-landing .marker-line {
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+}
+.iq-landing .marker-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+.iq-landing .marker-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.iq-landing .marker-zone-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+.iq-landing .marker.target-buy .marker-line { background: var(--green); }
+.iq-landing .marker.target-buy .marker-value { color: var(--green); }
+.iq-landing .marker.income-value .marker-line { background: var(--gold); }
+.iq-landing .marker.income-value .marker-value { color: var(--gold); }
+.iq-landing .marker.list-price .marker-line { background: var(--text-secondary); }
+.iq-landing .marker.list-price .marker-value { color: var(--text-body); }
+
+/* Deal Gap Banner */
+.iq-landing .deal-gap-section {
+  padding: 0 32px 32px;
+}
+.iq-landing .deal-gap-banner {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(14, 165, 233, 0.03));
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.iq-landing .deal-gap-left {
+  flex: 1;
+  min-width: 240px;
+}
+.iq-landing .deal-gap-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.iq-landing .deal-gap-label-text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-deep);
+}
+.iq-landing .deal-gap-badge-new {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue-deep);
+  background: rgba(14, 165, 233, 0.15);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.iq-landing .deal-gap-value {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.iq-landing .deal-gap-explain {
+  font-size: 13.5px;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+.iq-landing .deal-gap-explain strong {
+  color: var(--white);
+  font-weight: 600;
+}
+
+/* Difficulty Gauge */
+.iq-landing .deal-gap-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 160px;
+}
+.iq-landing .difficulty-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.iq-landing .difficulty-meter {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.iq-landing .diff-bar {
+  width: 18px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.07);
+}
+.iq-landing .diff-bar.active.g { background: var(--green); }
+.iq-landing .diff-bar.active.y { background: var(--gold); }
+.iq-landing .diff-bar.active.r { background: var(--red); }
+.iq-landing .difficulty-rating {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.iq-landing .difficulty-hint {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
 
 /* Verdict + Seller Motivation Bottom Row */
-.iq-landing .scan-demo-bottom {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1.5rem 2rem;
+.iq-landing .bottom-row {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid var(--border);
 }
-.iq-landing .scan-demo-verdict {
-  display: flex; align-items: center; gap: 1rem;
+.iq-landing .verdict-cell {
+  flex: 1;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-right: 1px solid var(--border);
 }
-.iq-landing .scan-demo-score-ring {
-  position: relative; width: 60px; height: 60px; flex-shrink: 0;
+.iq-landing .verdict-ring {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
 }
-.iq-landing .scan-demo-score-num {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; font-weight: 800; color: var(--gold);
+.iq-landing .verdict-ring svg {
+  width: 52px;
+  height: 52px;
+  transform: rotate(-90deg);
 }
-.iq-landing .scan-demo-verdict-title {
-  font-size: 0.95rem; color: var(--white); margin-bottom: 0.15rem;
+.iq-landing .verdict-ring .ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.07);
+  stroke-width: 4;
 }
-.iq-landing .scan-demo-verdict-desc {
-  font-size: 0.8rem; color: #ffffff; max-width: 320px;
+.iq-landing .verdict-ring .ring-fill {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 138.2;
+  stroke-dashoffset: 64.9;
 }
-.iq-landing .scan-demo-motivation { text-align: right; }
-.iq-landing .scan-demo-motivation .scan-demo-label { margin-bottom: 0.4rem; }
-.iq-landing .scan-demo-dots {
-  display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 0.35rem;
+.iq-landing .verdict-score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
 }
-.iq-landing .scan-demo-dots .dot {
-  width: 16px; height: 8px; border-radius: 4px; background: rgba(148,163,184,0.2);
+.iq-landing .verdict-text h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: var(--white);
 }
-.iq-landing .scan-demo-dots .dot.filled {
-  background: var(--gold);
+.iq-landing .verdict-text p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
 }
-.iq-landing .scan-demo-motivation-level {
-  font-size: 0.85rem; font-weight: 700; color: #ffffff;
+.iq-landing .motivation-cell {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  min-width: 180px;
+}
+.iq-landing .motivation-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.iq-landing .motivation-dots {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.iq-landing .mot-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+.iq-landing .mot-dot.active { background: var(--gold); }
+.iq-landing .motivation-rating {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
 }
 
-/* Scan Demo Responsive */
-@media (max-width: 640px) {
-  .iq-landing .scan-demo-property {
-    flex-direction: column; padding: 1.25rem 1.25rem; gap: 0.75rem;
+/* Context Callouts Row */
+.iq-landing .context-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+.iq-landing .context-item {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+}
+.iq-landing .context-item:last-child { border-right: none; }
+.iq-landing .context-item h5 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.iq-landing .context-item p {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* Scan Demo Card Responsive */
+@media (max-width: 680px) {
+  .iq-landing .prop-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 20px 18px;
   }
-  .iq-landing .scan-demo-list-price { text-align: left; }
-  .iq-landing .scan-demo-metrics { grid-template-columns: repeat(2, 1fr); }
-  .iq-landing .scan-demo-metric {
-    border-bottom: 1px solid var(--border); padding: 1rem;
+  .iq-landing .prop-price-label { text-align: left; }
+  .iq-landing .story-section { padding: 24px 20px 20px; }
+  .iq-landing .deal-gap-section { padding: 0 20px 24px; }
+  .iq-landing .deal-gap-banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .iq-landing .scan-demo-metric:nth-child(odd) { border-right: 1px solid var(--border); }
-  .iq-landing .scan-demo-metric:nth-child(even) { border-right: none; }
-  .iq-landing .scan-demo-metric:nth-last-child(-n+2) { border-bottom: none; }
-  .iq-landing .scan-demo-gap-viz { padding: 1.25rem; }
-  .iq-landing .scan-demo-bottom {
-    flex-direction: column; gap: 1.25rem; align-items: flex-start; padding: 1.25rem;
+  .iq-landing .deal-gap-right { align-items: flex-start; }
+  .iq-landing .bottom-row { flex-direction: column; }
+  .iq-landing .verdict-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
-  .iq-landing .scan-demo-motivation { text-align: left; }
-  .iq-landing .scan-demo-dots { justify-content: flex-start; }
+  .iq-landing .motivation-cell { align-items: flex-start; }
+  .iq-landing .context-row { grid-template-columns: 1fr; }
+  .iq-landing .context-item {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .iq-landing .context-item:last-child { border-bottom: none; }
+  .iq-landing .marker-value { font-size: 14px; }
+  .iq-landing .marker-label { font-size: 10px; }
+  .iq-landing .markers { height: 90px; }
+}
+@media (max-width: 480px) {
+  .iq-landing .deal-gap-dimension { display: none; }
+  .iq-landing .spectrum-container { margin-bottom: 24px; }
 }
 
 /* Deal Gap Explainer */
