@@ -166,7 +166,8 @@ export {
 export {
   DealScoreDisplay,
   DealScoreCompact,
-  calculateDealScoreData
+  calculateDealScoreData,
+  dealScoreDataFromApi,
 } from './DealScoreDisplay'
 
 // Profit Quality Card - Score gauge with strategy fit metrics

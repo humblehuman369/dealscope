@@ -151,13 +151,14 @@ class TestWholesaleCalculator:
             days_to_close=45
         )
         
-        assert "mao" in result  # Maximum Allowable Offer
+        assert "seventy_pct_max_offer" in result
+        assert "contract_price" in result
         assert "net_profit" in result
         assert "roi" in result
         assert "assignment_fee" in result
-    
-    def test_wholesale_mao_calculation(self):
-        """MAO should follow the 70% rule minus rehab."""
+
+    def test_wholesale_70_percent_rule(self):
+        """70% rule: seventy_pct_max_offer = ARV*(1 - arv_discount_pct) - rehab; default 30% discount."""
         result = calculate_wholesale(
             arv=400000,
             estimated_rehab_costs=50000,
@@ -166,10 +167,10 @@ class TestWholesaleCalculator:
             earnest_money_deposit=1000,
             days_to_close=45
         )
-        
-        # MAO = ARV * 0.70 - Rehab - Assignment Fee
-        expected_mao = 400000 * 0.70 - 50000 - 15000
-        assert result["mao"] == expected_mao
+        # seventy_pct_max_offer = 400k * 0.70 - 50k = 230000
+        expected_mao = 400000 * 0.70 - 50000
+        assert result["seventy_pct_max_offer"] == expected_mao
+        assert result["contract_price"] == expected_mao
 
 
 class TestHouseHackCalculator:

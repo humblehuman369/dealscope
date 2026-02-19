@@ -221,20 +221,50 @@ function ScoreBar({ item }: ScoreBarProps) {
  * - 25-35% = Mild Opportunity (D)
  * - 35-45%+ = Weak Opportunity (F)
  */
+/**
+ * Build DealScoreData from backend API result. Use this when deal score comes from POST /api/v1/worksheet/deal-score or verdict so all values are backend-derived.
+ */
+export function dealScoreDataFromApi(api: {
+  dealScore: number
+  dealVerdict: string
+  discountPercent: number
+  incomeValue: number
+  purchasePrice: number
+  listPrice: number
+  grade?: string
+}): DealScoreData {
+  const grade = (api.grade ?? 'C') as OpportunityGrade
+  const label = api.dealVerdict || 'Opportunity'
+  return {
+    overall: Math.max(0, Math.min(100, Math.round(api.dealScore))),
+    grade,
+    label,
+    verdict: api.dealVerdict,
+    discountPercent: api.discountPercent,
+    incomeValue: api.incomeValue,
+    listPrice: api.listPrice,
+    items: [
+      {
+        label: 'Discount Required',
+        score: Math.round(100 - api.discountPercent),
+        maxScore: 100,
+        fillPercent: Math.max(0, 100 - api.discountPercent),
+      },
+    ],
+  }
+}
+
+/**
+ * @deprecated Prefer dealScoreDataFromApi when backend deal-score or verdict API result is available. Only use when API is not used.
+ */
 export function calculateDealScoreData(
   incomeValue: number,
   listPrice: number
 ): DealScoreData {
-  // Calculate discount percentage needed to reach Income Value
-  const discountPercent = listPrice > 0 
+  const discountPercent = listPrice > 0
     ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100)
     : 0
-  
-  // Score is inverse of discount (lower discount = higher score)
-  // 0% discount = 100 score, 45% discount = 0 score
   const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
-  
-  // Get grade and label based on discount percentage
   const getGradeInfo = (dp: number): { grade: OpportunityGrade; label: string; verdict: string } => {
     if (dp <= 5) return { grade: 'A+', label: 'Strong Opportunity', verdict: 'Excellent deal - minimal negotiation needed' }
     if (dp <= 10) return { grade: 'A', label: 'Great Opportunity', verdict: 'Very good deal - reasonable negotiation required' }
@@ -243,9 +273,7 @@ export function calculateDealScoreData(
     if (dp <= 35) return { grade: 'D', label: 'Mild Opportunity', verdict: 'Challenging deal - major price reduction required' }
     return { grade: 'F', label: 'Weak Opportunity', verdict: 'Not recommended - unrealistic discount needed' }
   }
-
   const { grade, label, verdict } = getGradeInfo(discountPercent)
-
   return {
     overall,
     grade,
@@ -255,13 +283,8 @@ export function calculateDealScoreData(
     incomeValue,
     listPrice,
     items: [
-      { 
-        label: 'Discount Required', 
-        score: Math.round(100 - discountPercent), 
-        maxScore: 100, 
-        fillPercent: Math.max(0, 100 - discountPercent) 
-      }
-    ]
+      { label: 'Discount Required', score: Math.round(100 - discountPercent), maxScore: 100, fillPercent: Math.max(0, 100 - discountPercent) },
+    ],
   }
 }
 

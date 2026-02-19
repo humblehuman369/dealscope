@@ -1,7 +1,62 @@
 {
-  "version": "1.7",
-  "updatedAt": "2026-02-16",
-  "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py, frontend/src/lib/iqTarget.ts, backend/app/main.py",
+  "version": "1.8",
+  "updatedAt": "2026-02-19",
+  "source": "backend/app/core/defaults.py, backend/app/services/calculators.py, backend/app/services/iq_verdict_service.py, backend/app/services/data_normalizer.py",
+  "iq_verdict_score": {
+    "description": "IQ Verdict Score - The main score (e.g. 74/100) shown on the VerdictIQ page. Composite of four weighted components. Used only on the Verdict page; worksheets use Deal Opportunity Score instead.",
+    "source": "backend/app/services/iq_verdict_service._calculate_composite_verdict_score",
+    "usage": "VerdictIQ page (POST /api/v1/analysis/verdict)",
+    "metrics": {
+      "iq_verdict_composite": {
+        "formula": "composite = deal_gap×0.35 + return_quality×0.30 + market_alignment×0.20 + deal_probability×0.15; result clamped to 5-95",
+        "inputs": ["deal_gap_component", "return_quality_component", "market_alignment_component", "deal_probability_component"],
+        "description": "Weighted composite score displayed as the Verdict score (e.g. 74/100).",
+        "weights": {
+          "deal_gap": 0.35,
+          "return_quality": 0.30,
+          "market_alignment": 0.20,
+          "deal_probability": 0.15
+        }
+      },
+      "deal_gap_component": {
+        "formula": "deal_gap_pct = (list_price - target_price) / list_price × 100; score 0-90 from bands (gap ≤-10%, ≤0%, ≤10%, ≤25%, ≤40%, else). Target_price = income_value × (1 - buy_discount_pct)",
+        "inputs": ["target_price", "list_price"],
+        "description": "Measures how favorably the property is priced relative to Target Buy price."
+      },
+      "return_quality_component": {
+        "formula": "return_quality = min(90, round(top_strategy_score × 0.9))",
+        "inputs": ["top_strategy_score"],
+        "description": "Derived from the best-performing strategy score (LTR, STR, BRRRR, Flip, House Hack, Wholesale)."
+      },
+      "market_alignment_component": {
+        "formula": "market_alignment = min(90, motivation_score)",
+        "inputs": ["motivation_score"],
+        "description": "Seller motivation score, capped at 90."
+      },
+      "deal_probability_component": {
+        "formula": "max_discount = (motivation_score/100)×0.25; ratio = deal_gap_pct/100 / max_discount; score 5-90 from ratio bands (≤0.6, ≤1.0, ≤1.5, else)",
+        "inputs": ["deal_gap_pct", "motivation_score"],
+        "description": "Likelihood of achieving the required discount given seller motivation."
+      }
+    }
+  },
+  "wholesale_price_target": {
+    "description": "Wholesale as a price target on the Verdict price ladder (e.g. '30% net discount'). The displayed wholesale price comes from backend strategy or worksheet MAO.",
+    "source": "backend/app/services/iq_verdict_service._calculate_wholesale_strategy, backend/app/services/calculators.calculate_wholesale",
+    "usage": "VerdictIQ price ladder (wholesale card); Worksheet wholesale (MAO).",
+    "metrics": {
+      "wholesale_mao_verdict": {
+        "formula": "wholesale_fee = price × 0.007; mao = (arv × 0.70) - rehab_cost - wholesale_fee",
+        "inputs": ["price", "arv", "rehab_cost"],
+        "description": "Max Allowable Offer in Verdict context. Used for wholesale strategy metric; fee is 0.7% of purchase price."
+      },
+      "wholesale_70_rule_worksheet": {
+        "formula": "seventy_pct_max_offer = arv × (1 - arv_discount_pct) - estimated_rehab_costs; default arv_discount_pct = 0.30 (30% discount = 70% rule)",
+        "inputs": ["arv", "estimated_rehab_costs", "arv_discount_pct"],
+        "description": "70% rule: MAO = ARV×70% minus rehab. Worksheet and analytics use this; default 30% discount from ARV."
+      }
+    }
+  },
   "market_statistics": {
     "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
     "source": "RentCast Markets API",
@@ -144,8 +199,8 @@
     }
   },
   "deal_opportunity_score": {
-    "description": "Deal Opportunity Score - Investment Price Indicator. A composite weighted score that considers multiple factors to determine how attractive a property is as an investment opportunity.",
-    "source": "backend/app/services/calculators.py, frontend/src/lib/iqTarget.ts",
+    "description": "Deal Opportunity Score - Used on Worksheets and Deal Score flow (POST /api/v1/worksheet/deal-score). Weights: deal_gap 50%, availability 30%, DOM 20%. For the Verdict page score (74/100 style), see iq_verdict_score.",
+    "source": "backend/app/services/calculators.py, backend/app/services/iq_verdict_service.py",
     "notes": [
       "Equity % is excluded as mortgage balance data is not available from the Axesso API (would require public records data).",
       "BRRRR, Fix & Flip, and Wholesale strategies require physical inspection for repair estimates.",
@@ -234,7 +289,7 @@
   },
   "performance_scores": {
     "description": "Strategy Performance Scores - Measures how well a property performs for each investment strategy. Uses a unified formula: score = 50 + (metric × multiplier), centered at 50 for breakeven performance.",
-    "source": "backend/app/main.py, frontend/src/components/worksheet/*/Worksheet.tsx, frontend/src/components/iq-verdict/types.ts",
+    "source": "backend/app/services/iq_verdict_service.py, backend/app/services/calculators.py",
     "notes": [
       "All scores use the same base formula: score = 50 + (metric_value × multiplier)",
       "Score of 50 represents breakeven (0% return or 0% benefit)",

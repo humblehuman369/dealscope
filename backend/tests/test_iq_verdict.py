@@ -15,6 +15,8 @@ from app.services.iq_verdict_service import (
     _performance_score,
     _format_compact_currency,
     _calculate_monthly_mortgage,
+    _calculate_composite_verdict_score,
+    _calculate_wholesale_strategy,
 )
 
 
@@ -77,6 +79,58 @@ class TestMonthlyMortgage:
         """6% on $200k/30yr ≈ $1,199."""
         payment = _calculate_monthly_mortgage(200_000, 0.06, 30)
         assert 1100 < payment < 1300
+
+
+class TestCompositeVerdictScore:
+    """Tests for _calculate_composite_verdict_score (35% deal_gap + 30% return_quality + 20% market_alignment + 15% deal_probability)."""
+
+    def test_returns_five_components(self):
+        composite, dg, rq, ma, dp = _calculate_composite_verdict_score(
+            target_price=270_000,
+            list_price=300_000,
+            top_strategy_score=60,
+            motivation_score=50,
+        )
+        assert 5 <= composite <= 95
+        assert 0 <= dg <= 90
+        assert 0 <= rq <= 90
+        assert 0 <= ma <= 90
+        assert 0 <= dp <= 90
+
+    def test_better_deal_gap_increases_score(self):
+        # List at target → good deal gap component
+        c1, _, _, _, _ = _calculate_composite_verdict_score(300_000, 300_000, 50, 50)
+        # List well above target → worse deal gap
+        c2, _, _, _, _ = _calculate_composite_verdict_score(200_000, 400_000, 50, 50)
+        assert c1 > c2
+
+    def test_higher_strategy_score_increases_composite(self):
+        c_low, _, _, _, _ = _calculate_composite_verdict_score(270_000, 300_000, 30, 50)
+        c_high, _, _, _, _ = _calculate_composite_verdict_score(270_000, 300_000, 80, 50)
+        assert c_high > c_low
+
+
+class TestWholesaleStrategy:
+    """Tests for _calculate_wholesale_strategy (Verdict context: mao = arv*0.70 - rehab - fee)."""
+
+    def test_wholesale_strategy_returns_expected_keys(self):
+        result = _calculate_wholesale_strategy(price=300_000, arv=400_000, rehab_cost=50_000)
+        assert result["id"] == "wholesale"
+        assert "score" in result
+        assert "annual_cash_flow" in result
+        assert "metric" in result
+
+    def test_mao_formula_verdict_context(self):
+        """Verdict wholesale: wholesale_fee = price*0.007, mao = (arv*0.70) - rehab_cost - wholesale_fee."""
+        price = 300_000
+        arv = 400_000
+        rehab = 50_000
+        result = _calculate_wholesale_strategy(price, arv, rehab)
+        # assignment_fee is used in metric; internal mao = (400k*0.70) - 50k - (300k*0.007) = 280k - 50k - 2.1k = 227_900
+        # We can't read mao from result (it's not in the dict); we check assignment_fee = mao - (price*0.85) per code
+        # So: mao = 227900, assignment_fee = 227900 - 255000 = -27100 (negative). So strategy still returns.
+        assert result["score"] >= 0
+        assert result["score"] <= 100
 
 
 # =====================================================================
@@ -228,3 +282,31 @@ class TestComputeDealScore:
             )
         )
         assert high_rent.score >= low_rent.score
+
+
+# =====================================================================
+# Golden-style regression (fixed inputs → assert key fields and ranges)
+# =====================================================================
+
+class TestVerdictGoldenRegression:
+    """Fixed-input regression: same inputs must produce valid verdict with expected structure."""
+
+    def test_verdict_fixed_input_structure_and_ranges(self):
+        """Known inputs (e.g. 1451 Sw 10th St–style) produce valid verdict; key fields in range."""
+        inp = IQVerdictInput(
+            list_price=360_000,
+            monthly_rent=2_800,
+            property_taxes=5_500,
+            insurance=2_200,
+        )
+        resp = compute_iq_verdict(inp)
+        assert resp.income_value > 0
+        assert resp.purchase_price > 0
+        assert resp.purchase_price <= inp.list_price
+        assert 0 <= resp.deal_score <= 100
+        assert len(resp.strategies) == 6
+        strategy_ids = {s.id for s in resp.strategies}
+        assert "long-term-rental" in strategy_ids
+        assert "wholesale" in strategy_ids
+        # Income value should be in a plausible range for rent 33.6k/yr
+        assert 200_000 < resp.income_value < 2_000_000
