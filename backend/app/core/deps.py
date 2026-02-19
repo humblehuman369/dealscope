@@ -165,12 +165,27 @@ async def get_current_verified_user(
 async def get_current_superuser(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Legacy superuser check — prefer ``require_permission``."""
+    """Deprecated: use ``require_permission("admin:*")`` instead.
+
+    The ``is_superuser`` flag bypasses RBAC entirely with no audit trail.
+    Existing callers should migrate to explicit RBAC permissions.
+    """
+    import warnings
+    warnings.warn(
+        "get_current_superuser is deprecated — use require_permission() with "
+        "an explicit RBAC codename instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Superuser access required",
         )
+    logger.warning(
+        "Legacy is_superuser access: user_id=%s — migrate to RBAC",
+        current_user.id,
+    )
     return current_user
 
 
@@ -188,8 +203,13 @@ def require_permission(codename: str) -> Callable:
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ) -> User:
-        # Superusers implicitly have all permissions
         if current_user.is_superuser:
+            logger.warning(
+                "RBAC bypass via is_superuser: user_id=%s permission=%s — "
+                "migrate this user to an RBAC role with explicit permissions",
+                current_user.id,
+                codename,
+            )
             return current_user
         has = await role_repo.user_has_permission(db, current_user.id, codename)
         if not has:

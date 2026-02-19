@@ -133,7 +133,12 @@ class SharedLink(Base):
         )
     
     def increment_view_count(self) -> None:
-        """Increment view count and update last accessed time."""
-        self.view_count += 1
+        """Increment view count atomically via SQL expression.
+
+        Uses ``Column + 1`` so SQLAlchemy emits
+        ``SET view_count = view_count + 1`` instead of a Python-side
+        read-modify-write, preventing lost updates under concurrency.
+        """
+        self.view_count = SharedLink.view_count + 1  # type: ignore[assignment]
         self.last_accessed_at = datetime.now(timezone.utc)
 

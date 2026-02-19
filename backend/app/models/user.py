@@ -71,7 +71,7 @@ class User(Base):
     business_address_state: Mapped[Optional[str]] = mapped_column(String(10))
     business_address_zip: Mapped[Optional[str]] = mapped_column(String(20))
     business_address_country: Mapped[Optional[str]] = mapped_column(String(100), default="USA")
-    phone_numbers: Mapped[Optional[dict]] = mapped_column(JSON, default=list)
+    phone_numbers: Mapped[Optional[list]] = mapped_column(JSON, default=list)
     additional_emails: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
     social_links: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
     license_number: Mapped[Optional[str]] = mapped_column(String(100))

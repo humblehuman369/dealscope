@@ -159,6 +159,7 @@ async def register(body: UserRegister, request: Request, db: DbSession):
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
         )
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
@@ -285,6 +286,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         user_agent=request.headers.get("User-Agent") or "",
         remember_me=False,
     )
+    await db.commit()
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
     _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
@@ -311,7 +313,9 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
             user_agent=request.headers.get("User-Agent"),
             remember_me=body.remember_me,
         )
+        await db.commit()
     except MFARequired as mfa:
+        await db.commit()
         return MFAChallengeResponse(challenge_token=mfa.challenge_token)
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
@@ -339,6 +343,7 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
             user_agent=request.headers.get("User-Agent"),
             remember_me=body.remember_me,
         )
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
@@ -371,6 +376,7 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
     session_obj, new_jwt, new_refresh = result
+    await db.commit()
     _set_auth_cookies(response, session_obj.session_token, new_refresh, new_jwt)
 
     return TokenResponse(
@@ -393,6 +399,7 @@ async def logout(request: Request, response: Response, db: DbSession, session: C
         user_id=session.user_id,
         ip_address=_client_ip(request),
     )
+    await db.commit()
     _clear_auth_cookies(response)
     return AuthMessage(message="Logged out successfully")
 
@@ -415,6 +422,7 @@ async def get_me(user: CurrentUser, db: DbSession):
 async def verify_email(body: EmailVerification, request: Request, db: DbSession):
     try:
         user = await auth_service.verify_email(db, body.token, ip_address=_client_ip(request))
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
@@ -432,6 +440,7 @@ async def resend_verification(user: CurrentUser, db: DbSession):
     raw_token = await auth_service.resend_verification(db, user.id)
     if raw_token is None:
         return AuthMessage(message="Email already verified")
+    await db.commit()
     try:
         await email_service.send_verification_email(
             to_email=user.email,
@@ -451,6 +460,7 @@ async def resend_verification(user: CurrentUser, db: DbSession):
 async def forgot_password(body: PasswordReset, request: Request, db: DbSession):
     result = await auth_service.request_password_reset(db, body.email, ip_address=_client_ip(request))
     if result:
+        await db.commit()
         raw_token, user = result
         try:
             await email_service.send_password_reset_email(
@@ -470,6 +480,7 @@ async def reset_password(body: PasswordResetConfirm, request: Request, response:
         user = await auth_service.reset_password(
             db, body.token, body.new_password, ip_address=_client_ip(request),
         )
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
@@ -494,6 +505,7 @@ async def change_password(body: PasswordChange, request: Request, user: CurrentU
             current_session_id=session.id,
             ip_address=_client_ip(request),
         )
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
@@ -552,6 +564,7 @@ async def revoke_session(session_id: str, user: CurrentUser, db: DbSession, requ
         ip_address=_client_ip(request),
         metadata={"revoked_session": session_id},
     )
+    await db.commit()
     return AuthMessage(message="Session revoked")
 
 
@@ -564,6 +577,7 @@ async def mfa_setup(user: CurrentUser, db: DbSession):
     """Begin MFA setup — returns secret and QR code provisioning URI."""
     try:
         secret, uri = await auth_service.setup_mfa(db, user.id)
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
     return MFASetupResponse(secret=secret, provisioning_uri=uri)
@@ -574,6 +588,7 @@ async def mfa_verify(body: MFAConfirmRequest, user: CurrentUser, request: Reques
     """Confirm MFA setup by verifying a TOTP code."""
     try:
         await auth_service.confirm_mfa(db, user.id, body.totp_code, ip_address=_client_ip(request))
+        await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
     return AuthMessage(message="MFA enabled successfully")
@@ -583,6 +598,7 @@ async def mfa_verify(body: MFAConfirmRequest, user: CurrentUser, request: Reques
 async def mfa_disable(user: CurrentUser, request: Request, db: DbSession):
     """Disable MFA for the current user."""
     await auth_service.disable_mfa(db, user.id, ip_address=_client_ip(request))
+    await db.commit()
     return AuthMessage(message="MFA disabled")
 
 
@@ -607,6 +623,7 @@ async def login_form(request: Request, response: Response, db: DbSession):
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
         )
+        await db.commit()
     except (AuthError, MFARequired) as e:
         raise HTTPException(status_code=401, detail=str(e))
 
