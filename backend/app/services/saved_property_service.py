@@ -12,6 +12,7 @@ from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload, defer
 
 from app.models.saved_property import SavedProperty, PropertyAdjustment, PropertyStatus
+from app.models.subscription import Subscription
 from app.schemas.saved_property import (
     SavedPropertyCreate,
     SavedPropertyUpdate,
@@ -19,6 +20,16 @@ from app.schemas.saved_property import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: int) -> None:
+    """Atomically adjust the denormalized properties_count on the subscription."""
+    result = await db.execute(
+        select(Subscription).where(Subscription.user_id == user_id)
+    )
+    sub = result.scalar_one_or_none()
+    if sub is not None:
+        sub.properties_count = Subscription.properties_count + delta  # type: ignore[assignment]
 
 
 class SavedPropertyService:
@@ -85,6 +96,7 @@ class SavedPropertyService:
         )
 
         db.add(saved_property)
+        await _adjust_properties_count(db, uuid.UUID(user_id), +1)
         try:
             await db.commit()
         except IntegrityError as e:
@@ -388,6 +400,7 @@ class SavedPropertyService:
             return False
         
         db.delete(saved_property)  # delete() is synchronous in SQLAlchemy 2.0
+        await _adjust_properties_count(db, uuid.UUID(user_id), -1)
         await db.commit()
         
         logger.info(f"Property deleted: {property_id}")
@@ -413,7 +426,6 @@ class SavedPropertyService:
         if not uuid_ids:
             return 0
         
-        # Bulk delete with single query
         result = await db.execute(
             delete(SavedProperty)
             .where(
@@ -421,10 +433,11 @@ class SavedPropertyService:
                 SavedProperty.user_id == uuid.UUID(user_id)
             )
         )
-        
-        await db.commit()
         count = result.rowcount
-        
+        if count > 0:
+            await _adjust_properties_count(db, uuid.UUID(user_id), -count)
+        await db.commit()
+
         logger.info(f"Bulk delete: {count} properties deleted")
         return count
     

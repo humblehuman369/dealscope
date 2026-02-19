@@ -1,5 +1,5 @@
 """Short-Term Rental strategy calculator."""
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
 from .common import (
     validate_financial_inputs,
@@ -8,7 +8,7 @@ from .common import (
     calculate_cash_on_cash,
     calculate_dscr,
 )
-from app.core.defaults import FINANCING, OPERATING, STR
+from app.core.defaults import FINANCING, OPERATING, STR, DEFAULT_SEASONALITY, SeasonConfig
 
 
 def calculate_str(
@@ -33,6 +33,7 @@ def calculate_str(
     maintenance_annual: float = None,
     landscaping_annual: float = None,
     pest_control_annual: float = None,
+    seasonality: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """
     Calculate Short-Term Rental metrics.
@@ -126,14 +127,30 @@ def calculate_str(
     break_even_nights = fixed_costs / revenue_per_night_net if revenue_per_night_net > 0 else 365
     break_even_occupancy = break_even_nights / 365
     
-    # Seasonality Analysis
+    # Seasonality Analysis — configurable, defaults assume temperate climate
+    seasons: List[SeasonConfig] = []
+    if seasonality:
+        seasons = [
+            SeasonConfig(
+                name=s.get("name", s.get("season", f"Season {i+1}")),
+                months=s["months"],
+                occupancy_multiplier=s.get("occupancy_multiplier", s.get("occupancy", 0.75)),
+                adr_multiplier=s.get("adr_multiplier", 1.0),
+            )
+            for i, s in enumerate(seasonality)
+        ]
+    else:
+        seasons = STR.seasonality
+
     seasonality_analysis = [
-        {"season": "Peak (Winter)", "months": 5, "occupancy": 0.90, "adr": average_daily_rate * 1.2,
-         "revenue": average_daily_rate * 1.2 * 0.90 * (5 * 30)},
-        {"season": "Shoulder (Spring/Fall)", "months": 2, "occupancy": 0.80, "adr": average_daily_rate,
-         "revenue": average_daily_rate * 0.80 * (2 * 30)},
-        {"season": "Off (Summer)", "months": 5, "occupancy": 0.70, "adr": average_daily_rate * 0.8,
-         "revenue": average_daily_rate * 0.8 * 0.70 * (5 * 30)},
+        {
+            "season": sc.name,
+            "months": sc.months,
+            "occupancy": sc.occupancy_multiplier,
+            "adr": average_daily_rate * sc.adr_multiplier,
+            "revenue": average_daily_rate * sc.adr_multiplier * sc.occupancy_multiplier * (sc.months * 30),
+        }
+        for sc in seasons
     ]
     
     return {

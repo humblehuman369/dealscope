@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
-from app.db.session import get_db
+from app.db.session import get_db, get_engine
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -203,7 +203,26 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
     if config_issues and settings.is_production:
         overall_status = "degraded"
     
-    # 4. Feature flags
+    # 4. Connection pool stats
+    try:
+        engine = get_engine()
+        pool = engine.pool
+        pool_status = pool.status()
+        pool_info: Dict[str, Any] = {"raw_status": pool_status}
+        if hasattr(pool, "size"):
+            pool_info["pool_size"] = pool.size()
+            pool_info["checked_in"] = pool.checkedin()
+            pool_info["checked_out"] = pool.checkedout()
+            pool_info["overflow"] = pool.overflow()
+            total = pool_info["checked_out"] + pool_info["overflow"]
+            capacity = pool.size() + pool._max_overflow
+            pool_info["utilization_pct"] = round(total / capacity * 100, 1) if capacity else 0
+        checks["connection_pool"] = {"status": "healthy", **pool_info}
+    except Exception as exc:
+        logger.warning("Could not read connection pool stats: %s", exc)
+        checks["connection_pool"] = {"status": "unknown", "error": str(exc)}
+
+    # 5. Feature flags
     checks["features"] = {
         "auth_required": settings.FEATURE_AUTH_REQUIRED,
         "dashboard_enabled": settings.FEATURE_DASHBOARD_ENABLED,

@@ -5,8 +5,8 @@ All investment calculation defaults are defined here and used across the applica
 These values align with the frontend stores/index.ts DEFAULT_ASSUMPTIONS.
 Updated: January 2025 to reflect current market conditions and user preferences.
 """
-from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from dataclasses import dataclass, field
+from typing import Dict, Any, List, Optional
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,23 @@ class OperatingDefaults:
 
 
 @dataclass(frozen=True)
+class SeasonConfig:
+    """One season entry for STR seasonality analysis."""
+    name: str
+    months: int
+    occupancy_multiplier: float
+    adr_multiplier: float
+
+
+# Temperate-climate defaults (e.g. Florida/Southeast US winter peak)
+DEFAULT_SEASONALITY: List[SeasonConfig] = [
+    SeasonConfig(name="Peak (Winter)", months=5, occupancy_multiplier=0.90, adr_multiplier=1.2),
+    SeasonConfig(name="Shoulder (Spring/Fall)", months=2, occupancy_multiplier=0.80, adr_multiplier=1.0),
+    SeasonConfig(name="Off (Summer)", months=5, occupancy_multiplier=0.70, adr_multiplier=0.8),
+]
+
+
+@dataclass(frozen=True)
 class STRDefaults:
     """Default short-term rental assumptions."""
     platform_fees_pct: float = 0.15         # 15%
@@ -42,6 +59,7 @@ class STRDefaults:
     additional_utilities_monthly: float = 0 # $0 (was $125)
     furniture_setup_cost: float = 6000      # $6,000
     str_insurance_pct: float = 0.01         # 1% of purchase price (was $1,500 fixed)
+    seasonality: List[SeasonConfig] = field(default_factory=lambda: list(DEFAULT_SEASONALITY))
 
 
 @dataclass(frozen=True)

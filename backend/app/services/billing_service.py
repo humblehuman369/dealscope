@@ -192,13 +192,7 @@ class BillingService:
                 await db.refresh(subscription)
                 logger.info(f"Auto-reset usage for user {user_id} ({days_since_reset} days since last reset)")
         
-        # Count saved properties using COUNT query (not loading all into memory)
-        from app.models.saved_property import SavedProperty
-        from sqlalchemy import func
-        result = await db.execute(
-            select(func.count()).select_from(SavedProperty).where(SavedProperty.user_id == user_id)
-        )
-        properties_count = result.scalar() or 0
+        properties_count = subscription.properties_count
         
         # Calculate remaining
         props_limit = subscription.properties_limit

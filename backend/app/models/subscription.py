@@ -78,6 +78,7 @@ class Subscription(Base):
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
     
     # Usage tracking (reset monthly)
+    properties_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     searches_used: Mapped[int] = mapped_column(Integer, default=0)
     api_calls_used: Mapped[int] = mapped_column(Integer, default=0)
     usage_reset_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -102,11 +103,17 @@ class Subscription(Base):
         """Check if user has a paid subscription."""
         return self.tier == SubscriptionTier.PRO
     
-    def can_save_property(self, current_count: int) -> bool:
-        """Check if user can save another property."""
+    def can_save_property(self, current_count: int | None = None) -> bool:
+        """Check if user can save another property.
+
+        Uses the denormalized ``properties_count`` column by default.
+        ``current_count`` is accepted for backward compatibility but
+        ignored when the column is populated.
+        """
         if self.properties_limit == -1:
             return True
-        return current_count < self.properties_limit
+        count = self.properties_count if current_count is None else current_count
+        return count < self.properties_limit
     
     def can_search(self) -> bool:
         """Check if user has searches remaining."""
