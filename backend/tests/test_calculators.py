@@ -11,8 +11,7 @@ from app.services.calculators import (
     calculate_flip,
     calculate_house_hack,
     calculate_wholesale,
-    calculate_deal_score,
-    calculate_seller_motivation_score,
+    calculate_seller_motivation,
 )
 
 
@@ -271,89 +270,27 @@ class TestBRRRRCalculator:
         assert result["cash_left_in_deal"] < result.get("total_investment", float('inf'))
 
 
-class TestDealScoring:
-    """Tests for deal scoring functionality."""
-    
-    def test_deal_score_range(self):
-        """Deal score should be between 0 and 100."""
-        score = calculate_deal_score(
-            cash_on_cash_return=0.12,
-            cap_rate=0.08,
-            monthly_cash_flow=500,
-            equity_position=0.30
-        )
-        
-        assert 0 <= score <= 100
-    
-    def test_excellent_deal_high_score(self):
-        """Excellent metrics should produce high score."""
-        score = calculate_deal_score(
-            cash_on_cash_return=0.20,  # 20% CoC
-            cap_rate=0.10,             # 10% cap rate
-            monthly_cash_flow=1000,    # Strong cash flow
-            equity_position=0.40       # 40% equity
-        )
-        
-        assert score >= 70  # Should be a good score
-    
-    def test_poor_deal_low_score(self):
-        """Poor metrics should produce low score."""
-        score = calculate_deal_score(
-            cash_on_cash_return=0.02,   # 2% CoC
-            cap_rate=0.03,              # 3% cap rate
-            monthly_cash_flow=-200,     # Negative cash flow
-            equity_position=0.10        # 10% equity
-        )
-        
-        assert score < 50  # Should be a poor score
+# TestDealScoring removed: calculate_deal_score does not exist in calculators;
+# deal scoring is in iq_verdict_service and worksheet endpoints.
 
 
 class TestSellerMotivation:
-    """Tests for seller motivation scoring."""
-    
+    """Tests for seller motivation scoring (calculate_seller_motivation returns dict with 'score')."""
+
     def test_motivation_score_range(self):
         """Motivation score should be between 0 and 100."""
-        score = calculate_seller_motivation_score(
-            days_on_market=30,
-            price_drops=1,
-            vacancy_status="occupied",
-            listing_description="Beautiful home for sale"
-        )
-        
+        result = calculate_seller_motivation(days_on_market=30, price_reduction_count=1)
+        score = result["score"]
         assert 0 <= score <= 100
-    
+
     def test_high_dom_increases_motivation(self):
         """High days on market should increase motivation score."""
-        short_dom = calculate_seller_motivation_score(
-            days_on_market=10,
-            price_drops=0,
-            vacancy_status="occupied",
-            listing_description="Home for sale"
-        )
-        
-        long_dom = calculate_seller_motivation_score(
-            days_on_market=180,
-            price_drops=0,
-            vacancy_status="occupied",
-            listing_description="Home for sale"
-        )
-        
-        assert long_dom > short_dom
-    
+        short_dom = calculate_seller_motivation(days_on_market=10, price_reduction_count=0)
+        long_dom = calculate_seller_motivation(days_on_market=180, price_reduction_count=0)
+        assert long_dom["score"] > short_dom["score"]
+
     def test_price_drops_increase_motivation(self):
-        """Price drops should increase motivation score."""
-        no_drops = calculate_seller_motivation_score(
-            days_on_market=60,
-            price_drops=0,
-            vacancy_status="occupied",
-            listing_description="Home for sale"
-        )
-        
-        with_drops = calculate_seller_motivation_score(
-            days_on_market=60,
-            price_drops=3,
-            vacancy_status="occupied",
-            listing_description="Home for sale"
-        )
-        
-        assert with_drops > no_drops
+        """Price reductions should increase motivation score."""
+        no_drops = calculate_seller_motivation(days_on_market=60, price_reduction_count=0)
+        with_drops = calculate_seller_motivation(days_on_market=60, price_reduction_count=3)
+        assert with_drops["score"] > no_drops["score"]
