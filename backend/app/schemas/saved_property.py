@@ -2,6 +2,8 @@
 SavedProperty schemas for user's property portfolio management.
 """
 
+from decimal import Decimal
+
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -109,12 +111,12 @@ class SavedPropertyUpdate(SavedPropertyBase):
     display_order: Optional[int] = None
     
     # Custom value adjustments (DEPRECATED - use deal_maker_record)
-    custom_purchase_price: Optional[float] = Field(None, ge=0, le=100_000_000)
-    custom_rent_estimate: Optional[float] = Field(None, ge=0, le=1_000_000)
-    custom_arv: Optional[float] = Field(None, ge=0, le=100_000_000)
-    custom_rehab_budget: Optional[float] = Field(None, ge=0, le=100_000_000)
-    custom_daily_rate: Optional[float] = Field(None, ge=0, le=100_000)
-    custom_occupancy_rate: Optional[float] = Field(None, ge=0, le=1)
+    custom_purchase_price: Optional[Decimal] = Field(None, ge=0, le=100_000_000)
+    custom_rent_estimate: Optional[Decimal] = Field(None, ge=0, le=1_000_000)
+    custom_arv: Optional[Decimal] = Field(None, ge=0, le=100_000_000)
+    custom_rehab_budget: Optional[Decimal] = Field(None, ge=0, le=100_000_000)
+    custom_daily_rate: Optional[Decimal] = Field(None, ge=0, le=100_000)
+    custom_occupancy_rate: Optional[Decimal] = Field(None, ge=0, le=1)
     
     # Custom assumptions per strategy (DEPRECATED - use deal_maker_record)
     custom_assumptions: Optional[Dict[str, Any]] = None
@@ -161,8 +163,8 @@ class SavedPropertySummary(BaseModel):
     
     # Quick metrics
     best_strategy: Optional[str]
-    best_cash_flow: Optional[float]
-    best_coc_return: Optional[float]
+    best_cash_flow: Optional[Decimal] = None
+    best_coc_return: Optional[Decimal] = None
     
     # Timestamps
     saved_at: datetime
@@ -190,12 +192,12 @@ class SavedPropertyResponse(SavedPropertySummary):
     property_data_snapshot: Optional[Dict[str, Any]]
     
     # Custom adjustments (DEPRECATED - use deal_maker_record)
-    custom_purchase_price: Optional[float]
-    custom_rent_estimate: Optional[float]
-    custom_arv: Optional[float]
-    custom_rehab_budget: Optional[float]
-    custom_daily_rate: Optional[float]
-    custom_occupancy_rate: Optional[float]
+    custom_purchase_price: Optional[Decimal] = None
+    custom_rent_estimate: Optional[Decimal] = None
+    custom_arv: Optional[Decimal] = None
+    custom_rehab_budget: Optional[Decimal] = None
+    custom_daily_rate: Optional[Decimal] = None
+    custom_occupancy_rate: Optional[Decimal] = None
     custom_assumptions: Optional[Dict[str, Any]]
     
     # Deal Maker Record - the central analysis data structure

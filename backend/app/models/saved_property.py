@@ -3,6 +3,8 @@ SavedProperty and PropertyAdjustment models.
 Handles user's saved properties with custom adjustments and tracking.
 """
 
+from decimal import Decimal
+
 from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer, Numeric, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -97,12 +99,12 @@ class SavedProperty(Base):
     # Custom Value Adjustments (user overrides)
     # Dollar amounts use Numeric(12,2) to avoid IEEE 754 rounding.
     # Percentages use Numeric(5,4) for precision to 0.01%.
-    custom_purchase_price: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
-    custom_rent_estimate: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
-    custom_arv: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
-    custom_rehab_budget: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
-    custom_daily_rate: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))  # STR
-    custom_occupancy_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))  # STR
+    custom_purchase_price: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    custom_rent_estimate: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    custom_arv: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    custom_rehab_budget: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    custom_daily_rate: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))  # STR
+    custom_occupancy_rate: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))  # STR
     
     # Custom Strategy Assumptions (JSON per strategy)
     custom_assumptions: Mapped[Optional[dict]] = mapped_column(
@@ -128,8 +130,8 @@ class SavedProperty(Base):
     
     # Best Strategy (cached for sorting/filtering)
     best_strategy: Mapped[Optional[str]] = mapped_column(String(20))
-    best_cash_flow: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
-    best_coc_return: Mapped[Optional[float]] = mapped_column(Numeric(5, 4))
+    best_cash_flow: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    best_coc_return: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))
     
     # Timestamps
     saved_at: Mapped[datetime] = mapped_column(

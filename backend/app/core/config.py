@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     # Generate with: openssl rand -hex 32
     # Empty default ensures this is explicitly configured.
     SECRET_KEY: str = ""
+    JWT_SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 5   # Short-lived JWT; session is the authority
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7

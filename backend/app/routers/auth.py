@@ -188,7 +188,6 @@ async def register(body: UserRegister, request: Request, db: DbSession):
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 
 
 @router.get("/google")
@@ -241,26 +240,29 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         return RedirectResponse(url=redirect_url, status_code=302)
 
     token_data = token_resp.json()
-    access_token = token_data.get("access_token")
-    if not access_token:
+    raw_id_token = token_data.get("id_token")
+    if not raw_id_token:
         redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_failed"
         return RedirectResponse(url=redirect_url, status_code=302)
 
-    async with httpx.AsyncClient() as client:
-        userinfo_resp = await client.get(
-            GOOGLE_USERINFO_URL,
-            headers={"Authorization": f"Bearer {access_token}"},
+    # Verify id_token signature, audience, and issuer server-side
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        idinfo = google_id_token.verify_oauth2_token(
+            raw_id_token,
+            google_requests.Request(),
+            audience=settings.GOOGLE_CLIENT_ID,
         )
-    if userinfo_resp.status_code != 200:
-        logger.warning("Google userinfo failed: %s", userinfo_resp.status_code)
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_userinfo_failed"
+    except ValueError as exc:
+        logger.warning("Google id_token verification failed: %s", exc)
+        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_invalid"
         return RedirectResponse(url=redirect_url, status_code=302)
 
-    userinfo = userinfo_resp.json()
-    google_id = userinfo.get("sub")
-    email = userinfo.get("email")
-    name = userinfo.get("name") or ""
-    picture = userinfo.get("picture")
+    google_id = idinfo.get("sub")
+    email = idinfo.get("email")
+    name = idinfo.get("name") or ""
+    picture = idinfo.get("picture")
 
     if not google_id or not email:
         redirect_url = f"{settings.FRONTEND_URL}/register?error=google_invalid_userinfo"

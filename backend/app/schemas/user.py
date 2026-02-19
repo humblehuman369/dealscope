@@ -2,6 +2,8 @@
 User and UserProfile schemas for API responses and updates.
 """
 import re
+from decimal import Decimal
+
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator, HttpUrl
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -221,23 +223,23 @@ class UserProfileBase(BaseModel):
         default=None,
         description="List of state codes or city names"
     )
-    investment_budget_min: Optional[float] = Field(
+    investment_budget_min: Optional[Decimal] = Field(
         default=None,
         ge=0,
         description="Minimum investment budget"
     )
-    investment_budget_max: Optional[float] = Field(
+    investment_budget_max: Optional[Decimal] = Field(
         default=None,
         ge=0,
         description="Maximum investment budget"
     )
-    target_cash_on_cash: Optional[float] = Field(
+    target_cash_on_cash: Optional[Decimal] = Field(
         default=None,
         ge=0,
         le=1,
         description="Target cash-on-cash return (0.08 = 8%)"
     )
-    target_cap_rate: Optional[float] = Field(
+    target_cap_rate: Optional[Decimal] = Field(
         default=None,
         ge=0,
         le=1,

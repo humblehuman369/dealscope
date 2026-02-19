@@ -53,6 +53,12 @@ class BillingService:
         
         if self.is_configured:
             stripe.api_key = self.api_key
+            if not self.webhook_secret:
+                logger.error(
+                    "STRIPE_SECRET_KEY is configured but STRIPE_WEBHOOK_SECRET is "
+                    "empty — webhook events will NOT be verified. Set "
+                    "STRIPE_WEBHOOK_SECRET to enable signature verification."
+                )
             logger.info("Billing service initialized with Stripe")
         else:
             logger.warning("Billing service running in dev mode (no payments)")
