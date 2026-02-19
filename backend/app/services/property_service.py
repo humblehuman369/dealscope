@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
 import hashlib
 import json
+import time
 import uuid
 import logging
 import re
@@ -86,25 +87,31 @@ class PropertyService:
         Fetches from both APIs, normalizes, and returns unified response.
         Uses Redis cache with 24h TTL when available.
         """
+        t0 = time.perf_counter()
+        timings: Dict[str, float] = {}
         property_id = self._generate_property_id(address)
         timestamp = datetime.now(timezone.utc)
         
         # Check Redis/in-memory cache first
+        t_cache = time.perf_counter()
         cached_data = await self._cache.get_property(address)
+        timings["cache_lookup_ms"] = (time.perf_counter() - t_cache) * 1000
         if cached_data:
             logger.info(f"Cache hit for property: {address}")
             try:
-                # Recompute market_price from cached valuations so stale cache gets current formula
                 cached_data = self._apply_market_price_to_cached(cached_data)
+                timings["total_ms"] = (time.perf_counter() - t0) * 1000
+                logger.info("search_property timings (cache hit): %s", timings)
                 return PropertyResponse(**cached_data)
             except Exception as e:
                 logger.warning(f"Failed to deserialize cached property: {e}")
-                # Continue to fetch fresh data
         
         # Fetch from RentCast
+        t_rc = time.perf_counter()
         rc_property = await self.rentcast.get_property(address)
         rc_value = await self.rentcast.get_value_estimate(address)
         rc_rent = await self.rentcast.get_rent_estimate(address)
+        timings["rentcast_ms"] = (time.perf_counter() - t_rc) * 1000
         
         # Merge RentCast responses
         rentcast_data = {}
@@ -116,9 +123,9 @@ class PropertyService:
             rentcast_data.update(rc_rent.data)
         
         # Fetch from Zillow via AXESSO
-        # search-by-address may return only zpid; property-v2 returns full details including zestimate.
+        t_zil = time.perf_counter()
         axesso_data = None
-        zillow_zpid = None  # Store ZPID for photos API
+        zillow_zpid = None
         try:
             logger.info(f"Fetching Zillow data for: {address}")
             zillow_response = await self.zillow.search_by_address(address)
@@ -146,8 +153,10 @@ class PropertyService:
                 logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
         except Exception as e:
             logger.error(f"Error fetching Zillow data: {e}")
-        
+        timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
+
         # Normalize and merge data
+        t_norm = time.perf_counter()
         normalized, provenance = self.normalizer.normalize(
             rentcast_data or None,
             axesso_data,
@@ -157,6 +166,8 @@ class PropertyService:
         # Calculate data quality
         data_quality = self.normalizer.calculate_data_quality(normalized, provenance)
         
+        timings["normalize_ms"] = (time.perf_counter() - t_norm) * 1000
+
         # Build address object
         address_obj = self._parse_address(address, rentcast_data)
         # Ensure lat/long are set from normalized data if missing from rentcast_data
@@ -293,12 +304,13 @@ class PropertyService:
         try:
             serialized = response.model_dump()
             await self._cache.set_property(address, serialized)
-            # Secondary index by property_id so callers can retrieve by id
             await self._cache.set(f"prop_id:{property_id}", serialized)
             logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")
         except Exception as e:
             logger.warning(f"Failed to cache property: {e}")
         
+        timings["total_ms"] = (time.perf_counter() - t0) * 1000
+        logger.info("search_property timings (cache miss): %s", timings)
         return response
     
     def _parse_address(self, address: str, data: Dict = None) -> Address:
