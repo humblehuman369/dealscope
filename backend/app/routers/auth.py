@@ -161,6 +161,14 @@ async def register(body: UserRegister, request: Request, db: DbSession):
         )
         await db.commit()
     except AuthError as e:
+        # #region agent log
+        try:
+            import json
+            with open("/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-29fd32.log", "a") as _f:
+                _f.write(json.dumps({"sessionId": "29fd32", "location": "auth.py:register", "message": "AuthError in register", "data": {"status_code": e.status_code, "detail": e.detail}, "hypothesisId": "H2", "timestamp": __import__("time").time() * 1000}) + "\n")
+        except Exception:
+            pass
+        # #endregion
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     # Send verification email (non-blocking)
