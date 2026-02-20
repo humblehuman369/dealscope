@@ -232,6 +232,8 @@ const PricingCard: React.FC<{
   popular?: boolean;
   note?: string;
   ctaVariant: "primary" | "secondary";
+  /** Use Link when set (reliable navigation); otherwise onCtaClick is used. */
+  ctaHref?: string;
   onCtaClick?: () => void;
 }> = ({
   tier,
@@ -243,6 +245,7 @@ const PricingCard: React.FC<{
   popular = false,
   note,
   ctaVariant,
+  ctaHref,
   onCtaClick,
 }) => {
   const [hovered, setHovered] = useState(false);
@@ -388,34 +391,67 @@ const PricingCard: React.FC<{
         ))}
       </div>
 
-      <button
-        onClick={onCtaClick}
-        style={{
-          width: "100%",
-          padding: "13px 24px",
-          border:
-            ctaVariant === "primary"
-              ? "none"
-              : "1px solid rgba(148,163,184,0.12)",
-          borderRadius: "8px",
-          fontSize: "14px",
-          fontWeight: 700,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          transition: "all 0.3s",
-          fontFamily: "inherit",
-          background:
-            ctaVariant === "primary"
-              ? "linear-gradient(135deg, #0EA5E9, #0284C7)"
-              : "rgba(148,163,184,0.06)",
-          color: ctaVariant === "primary" ? "#fff" : "#CBD5E1",
-        }}
-      >
-        {cta} <ArrowIcon />
-      </button>
+      {ctaHref ? (
+        <Link
+          href={ctaHref}
+          style={{
+            width: "100%",
+            padding: "13px 24px",
+            border:
+              ctaVariant === "primary"
+                ? "none"
+                : "1px solid rgba(148,163,184,0.12)",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "all 0.3s",
+            fontFamily: "inherit",
+            background:
+              ctaVariant === "primary"
+                ? "linear-gradient(135deg, #0EA5E9, #0284C7)"
+                : "rgba(148,163,184,0.06)",
+            color: ctaVariant === "primary" ? "#fff" : "#CBD5E1",
+            textDecoration: "none",
+          }}
+        >
+          {cta} <ArrowIcon />
+        </Link>
+      ) : (
+        <button
+          type="button"
+          onClick={onCtaClick}
+          style={{
+            width: "100%",
+            padding: "13px 24px",
+            border:
+              ctaVariant === "primary"
+                ? "none"
+                : "1px solid rgba(148,163,184,0.12)",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "all 0.3s",
+            fontFamily: "inherit",
+            background:
+              ctaVariant === "primary"
+                ? "linear-gradient(135deg, #0EA5E9, #0284C7)"
+                : "rgba(148,163,184,0.06)",
+            color: ctaVariant === "primary" ? "#fff" : "#CBD5E1",
+          }}
+        >
+          {cta} <ArrowIcon />
+        </button>
+      )}
     </div>
   );
 };
@@ -858,7 +894,7 @@ export default function PricingContent() {
             features={freeFeatures}
             cta="Start Free"
             ctaVariant="secondary"
-            onCtaClick={() => router.push("/register?plan=starter")}
+            ctaHref="/register?plan=starter"
           />
           <PricingCard
             tier="Pro Investor"
@@ -870,7 +906,7 @@ export default function PricingContent() {
             features={proFeatures}
             cta="Start 7-Day Free Trial"
             ctaVariant="primary"
-            onCtaClick={() => router.push(`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`)}
+            ctaHref={`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`}
           />
         </section>
 
@@ -1398,8 +1434,8 @@ export default function PricingContent() {
               flexWrap: "wrap",
             }}
           >
-            <button
-              onClick={() => router.push(`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`)}
+            <Link
+              href={`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`}
               style={{
                 padding: "13px 28px",
                 borderRadius: "8px",
@@ -1413,12 +1449,13 @@ export default function PricingContent() {
                 alignItems: "center",
                 gap: "8px",
                 fontFamily: "inherit",
+                textDecoration: "none",
               }}
             >
               Start 7-Day Free Trial <ArrowIcon />
-            </button>
-            <button
-              onClick={() => router.push("/register?plan=starter")}
+            </Link>
+            <Link
+              href="/register?plan=starter"
               style={{
                 padding: "13px 28px",
                 borderRadius: "8px",
@@ -1429,10 +1466,11 @@ export default function PricingContent() {
                 fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
+                textDecoration: "none",
               }}
             >
               Start Free
-            </button>
+            </Link>
           </div>
 
           <div
