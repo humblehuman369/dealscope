@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from app.services.saved_property_service import saved_property_service
 from app.services.deal_maker_service import DealMakerService
+from app.services.billing_service import billing_service
 from app.models.saved_property import PropertyStatus
 from app.schemas.saved_property import (
     SavedPropertyCreate,
@@ -270,7 +271,15 @@ async def save_property(
     
     Includes property data snapshot at time of save.
     Also creates a DealMakerRecord with resolved defaults locked at save time.
+    Enforces subscription property limit (Starter: 10, Pro: unlimited).
     """
+    subscription = await billing_service.get_or_create_subscription(db, current_user.id)
+    if not subscription.can_save_property():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Property save limit reached ({subscription.properties_limit} properties). Upgrade to Pro for unlimited saves.",
+        )
+
     logger.info(f"Save property request received for user {current_user.id}")
     logger.debug(f"Property data: address={data.address_street}, zpid={data.zpid}, external_id={data.external_property_id}")
     try:
