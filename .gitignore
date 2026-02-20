@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Next.js
+frontend/.next/
+frontend/out/
+
 # Vercel
 .vercel
 
@@ -61,3 +65,4 @@ htmlcov/
 # *.xlsx
 # *.csv
 backend/dealgapiq_property_data_*.json
+backend/*.db
