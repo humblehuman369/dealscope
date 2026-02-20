@@ -198,12 +198,19 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
 
+def _backend_base_url(request: Request) -> str:
+    """Base URL for this backend (for OAuth redirect_uri). Use BACKEND_PUBLIC_URL when set so Google sees the correct URL behind proxies."""
+    if settings.BACKEND_PUBLIC_URL:
+        return str(settings.BACKEND_PUBLIC_URL).rstrip("/")
+    return str(request.base_url).rstrip("/")
+
+
 @router.get("/google")
 async def google_start(request: Request):
     """Redirect user to Google OAuth consent screen."""
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google sign-in is not configured")
-    base = str(request.base_url).rstrip("/")
+    base = _backend_base_url(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
@@ -227,7 +234,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         redirect_url = f"{settings.FRONTEND_URL}/register?error=google_not_configured"
         return RedirectResponse(url=redirect_url, status_code=302)
 
-    base = str(request.base_url).rstrip("/")
+    base = _backend_base_url(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
 
     async with httpx.AsyncClient() as client:
