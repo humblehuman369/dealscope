@@ -55,6 +55,9 @@ function formatApiErrorDetail(detail: unknown, status: number): string {
     const msg = 'msg' in detail ? (detail as { msg?: string }).msg : (detail as { message?: string }).message
     if (typeof msg === 'string') return msg
   }
+  if (status === 409) {
+    return "This email is already registered. Sign in or use a different email."
+  }
   return `Request failed (${status}). Please check your input and try again.`
 }
 
