@@ -107,6 +107,14 @@ class AuthService:
 
         existing = await user_repo.get_by_email(db, email)
         if existing:
+            # #region agent log
+            try:
+                import json
+                with open("/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-29fd32.log", "a") as _f:
+                    _f.write(json.dumps({"sessionId": "29fd32", "location": "auth_service.py:register_user", "message": "duplicate email 409", "data": {"reason": "existing_user"}, "hypothesisId": "H3", "timestamp": __import__("time").time() * 1000}) + "\n")
+            except Exception:
+                pass
+            # #endregion
             raise AuthError("Email already registered", status_code=409)
 
         hashed = self.hash_password(password)
