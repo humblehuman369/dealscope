@@ -176,6 +176,9 @@ class Settings(BaseSettings):
         # ===========================================
     # Google OAuth
     # ===========================================
+    # Optional: public URL of this backend (e.g. https://dealscope-production.up.railway.app).
+    # When set, used as redirect_uri base so Google OAuth works behind proxies; otherwise request.base_url is used.
+    BACKEND_PUBLIC_URL: str = ""
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     
