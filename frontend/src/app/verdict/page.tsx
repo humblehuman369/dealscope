@@ -269,10 +269,12 @@ function VerdictContent() {
         const zestimate = data.valuations?.zestimate ?? null
         const currentAvm = data.valuations?.current_value_avm ?? null
         const taxAssessed = data.valuations?.tax_assessed_value ?? null
-        const lastSale = data.valuations?.last_sale_price ?? null
         const listPrice = data.listing?.list_price ?? null
         const apiMarketPrice = data.valuations?.market_price ?? null
 
+        // Market price for verdict: listed price, API market_price, or current valuations only.
+        // Never use prior sale (last_sale_price) for pricing — it would wrongly cap Target Buy
+        // and skew Income Value. Use last_sale_price only for display (e.g. "Last sold") if needed.
         const price =
           (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
           (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
@@ -282,7 +284,6 @@ function VerdictContent() {
           (zestimate != null && zestimate > 0 ? zestimate : null) ??
           (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
           (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-          (lastSale != null && lastSale > 0 ? lastSale : null) ??
           Math.round(2500 / 0.007)
 
         // Get property taxes from API data
