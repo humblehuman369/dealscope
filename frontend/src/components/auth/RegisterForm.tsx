@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth'
-import { useRegister } from '@/hooks/useSession'
+import { useRegister, SESSION_QUERY_KEY, setLastKnownUser } from '@/hooks/useSession'
+import { setMemoryToken } from '@/lib/api-client'
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -34,6 +36,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const [success, setSuccess] = useState(false)
   const [requiresVerification, setRequiresVerification] = useState(true)
   const registerMutation = useRegister()
+  const queryClient = useQueryClient()
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -51,8 +54,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         password: data.password,
         fullName: data.fullName,
       })
-      setRequiresVerification((result as any).requires_verification ?? true)
-      setSuccess(true)
+      if (result.user && result.access_token) {
+        setMemoryToken(result.access_token)
+        setLastKnownUser(result.user)
+        queryClient.setQueryData(SESSION_QUERY_KEY, result.user)
+        onSuccess?.()
+      } else {
+        setRequiresVerification(result.requires_verification ?? true)
+        setSuccess(true)
+      }
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     }

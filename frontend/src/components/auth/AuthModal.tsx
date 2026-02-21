@@ -107,7 +107,7 @@ export default function AuthModal() {
           )}
           {view === 'register' && (
             <RegisterForm
-              onSuccess={() => setView('login')}
+              onSuccess={onLoginSuccess}
               onSwitchToLogin={() => setView('login')}
             />
           )}

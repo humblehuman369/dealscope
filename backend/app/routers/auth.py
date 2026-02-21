@@ -37,6 +37,7 @@ from app.schemas.auth import (
     PasswordReset,
     PasswordResetConfirm,
     RefreshTokenRequest,
+    RegisterResponse,
     SessionInfo,
     TokenResponse,
     UserLogin,
@@ -147,9 +148,9 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
 # Registration
 # ------------------------------------------------------------------
 
-@router.post("/register", response_model=AuthMessage, status_code=status.HTTP_201_CREATED)
-async def register(body: UserRegister, request: Request, db: DbSession):
-    """Register a new user account."""
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+async def register(body: UserRegister, request: Request, response: Response, db: DbSession):
+    """Register a new user account. When verification is disabled, creates a session and returns user + tokens for auto-login."""
     try:
         user, verification_token = await auth_service.register_user(
             db,
@@ -183,11 +184,29 @@ async def register(body: UserRegister, request: Request, db: DbSession):
             logger.warning("Verification email failed: %s", exc)
 
     if verification_token:
-        return AuthMessage(
+        return RegisterResponse(
             message="Registration successful. Please check your email to verify your account.",
             requires_verification=True,
         )
-    return AuthMessage(message="Registration successful. You can now sign in.")
+
+    # Verification disabled: create session and return user + tokens for auto-login
+    session_obj, jwt_token = await session_service.create_session(
+        db,
+        user.id,
+        ip_address=_client_ip(request),
+        user_agent=request.headers.get("User-Agent"),
+    )
+    await db.commit()
+    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    user_resp = await _build_user_response(db, user)
+    return RegisterResponse(
+        message="Registration successful. You are now signed in.",
+        requires_verification=False,
+        user=user_resp,
+        access_token=jwt_token,
+        refresh_token=session_obj.refresh_token,
+        expires_in=300,
+    )
 
 
 # ------------------------------------------------------------------
