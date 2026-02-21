@@ -151,6 +151,36 @@ interface LocalSubjectProperty {
 // ============================================
 // DATA TRANSFORMATION
 // ============================================
+/** Extract first photo URL from a comp from various API response shapes */
+function getCompImageUrl(comp: Record<string, unknown>): string {
+  // Direct image fields (common from various providers)
+  const direct = (comp.imgSrc || comp.imageUrl || comp.photo || comp.image || comp.thumbnail || comp.picture) as string | undefined
+  if (direct && typeof direct === 'string' && direct.startsWith('http')) return direct
+
+  // Zillow-style: compsCarouselPropertyPhotos[0].mixedSources.jpeg[0].url
+  const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
+  if (photos?.length) {
+    const photoData = photos[0] as Record<string, unknown>
+    const mixedSources = photoData.mixedSources as Record<string, unknown[]> | undefined
+    if (mixedSources?.jpeg?.length) {
+      const url = (mixedSources.jpeg[0] as Record<string, string>)?.url
+      if (url) return url
+    }
+    const url = photoData.url as string | undefined
+    if (url) return url
+  }
+
+  // Array of photos: photos[0].url or photos[0]
+  const photosArr = (comp.photos || comp.images) as Array<Record<string, unknown> | string> | undefined
+  if (photosArr?.length) {
+    const first = photosArr[0]
+    if (typeof first === 'string' && first.startsWith('http')) return first
+    if (first && typeof first === 'object' && (first as Record<string, string>).url) return (first as Record<string, string>).url
+  }
+
+  return ''
+}
+
 const transformRentalResponse = (apiData: Record<string, unknown>, subject: LocalSubjectProperty): LocalRentalComp[] => {
   const rawResults = (apiData.rentalComps || apiData.results || apiData.data || apiData.rentals || []) as Record<string, unknown>[]
 
@@ -158,16 +188,7 @@ const transformRentalResponse = (apiData: Record<string, unknown>, subject: Loca
     const comp = (item.property || item) as Record<string, unknown>
     const address = (comp.address || {}) as Record<string, unknown>
     
-    let imageUrl = ''
-    const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
-    if (photos?.length) {
-      const photoData = photos[0]
-      const mixedSources = photoData.mixedSources as Record<string, unknown[]> | undefined
-      if (mixedSources?.jpeg?.length) {
-        imageUrl = (mixedSources.jpeg[0] as Record<string, string>).url
-      }
-    }
-    imageUrl = imageUrl || (comp.imgSrc as string) || (comp.imageUrl as string) || ''
+    const imageUrl = getCompImageUrl(comp)
     
     let distance = 0
     if (subject.latitude && subject.longitude && comp.latitude && comp.longitude) {
@@ -790,6 +811,39 @@ export function RentalCompsSection() {
       doFetch()
     }
   }, []) // Only fetch on mount
+
+  // When comps have zpid but no image, fetch photos from /api/v1/photos and set first photo as image
+  const compsNeedingPhotos = comps.filter((c) => c.zpid && !(c.image && c.image.startsWith('http')))
+  useEffect(() => {
+    if (compsNeedingPhotos.length === 0) return
+
+    let cancelled = false
+    const photoByZpid: Record<string, string> = {}
+
+    Promise.allSettled(
+      compsNeedingPhotos.map(async (c) => {
+        const res = await fetch(`${window.location.origin}/api/v1/photos?zpid=${encodeURIComponent(c.zpid!)}`, {
+          headers: { Accept: 'application/json' },
+        })
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        const url = data?.photos?.[0]?.url
+        if (url) photoByZpid[c.zpid!] = url
+      })
+    ).then(() => {
+      if (cancelled || Object.keys(photoByZpid).length === 0) return
+      setComps((prev) =>
+        prev.map((c) => {
+          const url = c.zpid ? photoByZpid[c.zpid] : null
+          return url ? { ...c, image: url } : c
+        })
+      )
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [comps.length, compsNeedingPhotos.length])
 
   // Refresh all comps
   const handleRefreshAll = async () => {
