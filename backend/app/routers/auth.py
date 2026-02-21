@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from typing import Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -199,10 +199,20 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
 
 def _backend_base_url(request: Request) -> str:
-    """Base URL for this backend (for OAuth redirect_uri). Use BACKEND_PUBLIC_URL when set so Google sees the correct URL behind proxies."""
+    """Base URL for this backend (for OAuth redirect_uri). Use BACKEND_PUBLIC_URL when set so Google sees the correct URL behind proxies. Forces https in production (Google requires it)."""
     if settings.BACKEND_PUBLIC_URL:
-        return str(settings.BACKEND_PUBLIC_URL).rstrip("/")
-    return str(request.base_url).rstrip("/")
+        base = str(settings.BACKEND_PUBLIC_URL).rstrip("/")
+    else:
+        base = str(request.base_url).rstrip("/")
+    # Google OAuth requires https for redirect_uri in production. Behind a proxy, request.base_url may be http.
+    if base.startswith("http://"):
+        try:
+            parsed = urlparse(base)
+            if parsed.hostname and parsed.hostname not in ("localhost", "127.0.0.1"):
+                base = f"https://{parsed.netloc}{parsed.path or ''}".rstrip("/")
+        except Exception:
+            pass
+    return base
 
 
 @router.get("/google")
