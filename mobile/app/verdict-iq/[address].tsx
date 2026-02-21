@@ -128,7 +128,7 @@ function buildMetricsFromAPI(
   return [
     { label: 'CASH FLOW', value: `$${Math.round(monthlyCashFlow)}/mo` },
     { label: 'CASH NEEDED', value: formatCurrencyCompact(cashNeeded) },
-    { label: 'CAP RATE', value: `${(capRate * 100).toFixed(1)}%` },
+    { label: 'CAP RATE', value: `${Number(capRate).toFixed(1)}%` },
   ];
 }
 

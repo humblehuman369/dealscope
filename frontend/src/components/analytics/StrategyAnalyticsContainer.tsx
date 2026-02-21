@@ -495,8 +495,8 @@ function LTRMetricsContent({
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return null
     
-    // Type guard for rental metrics (LTR, STR, BRRRR, House Hack have monthlyCashFlow)
-    const hasRentalMetrics = 'monthlyCashFlow' in m
+    const monthlyCashFlow = (m as Record<string, unknown>).monthly_cash_flow ?? (m as Record<string, unknown>).monthlyCashFlow
+    const hasRentalMetrics = monthlyCashFlow !== undefined && monthlyCashFlow !== null
     
     switch (strategy) {
       case 'ltr':
@@ -504,12 +504,16 @@ function LTRMetricsContent({
       case 'brrrr':
       case 'house_hack':
         if (hasRentalMetrics) {
-          const rentalMetrics = m as { monthlyCashFlow: number; cashOnCash: number; capRate: number; dscr: number }
+          const raw = m as Record<string, unknown>
+          const capRaw = raw.cap_rate ?? raw.capRate ?? 0
+          const cocRaw = raw.cash_on_cash_return ?? raw.cashOnCashReturn ?? raw.cashOnCash ?? 0
+          const capRateDecimal = typeof capRaw === 'number' && capRaw > 1 ? capRaw / 100 : Number(capRaw) || 0
+          const cashOnCashDecimal = typeof cocRaw === 'number' && cocRaw > 1 ? cocRaw / 100 : Number(cocRaw) || 0
           return createLTRReturns(
-            rentalMetrics.monthlyCashFlow || 0,
-            rentalMetrics.cashOnCash || 0,
-            rentalMetrics.capRate || 0,
-            rentalMetrics.dscr || 0
+            Number(monthlyCashFlow) || 0,
+            cashOnCashDecimal,
+            capRateDecimal,
+            Number(raw.dscr) || 0
           )
         }
         return null
@@ -527,14 +531,15 @@ function LTRMetricsContent({
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return []
     
-    // Type guard - only rental strategies have these metrics
-    const hasRentalMetrics = 'cashOnCash' in m && 'capRate' in m && 'dscr' in m
+    const raw = m as Record<string, unknown>
+    const capRaw = raw.cap_rate ?? raw.capRate
+    const cocRaw = raw.cash_on_cash_return ?? raw.cashOnCashReturn ?? raw.cashOnCash
+    const hasRentalMetrics = (capRaw !== undefined && capRaw !== null) && (cocRaw !== undefined && cocRaw !== null) && (raw.dscr !== undefined && raw.dscr !== null)
     if (!hasRentalMetrics) return []
     
-    const rentalMetrics = m as { cashOnCash: number; capRate: number; dscr: number }
-    const coc = rentalMetrics.cashOnCash || 0
-    const cap = rentalMetrics.capRate || 0
-    const dscr = rentalMetrics.dscr || 0
+    const coc = typeof cocRaw === 'number' && cocRaw > 1 ? cocRaw / 100 : Number(cocRaw) || 0
+    const cap = typeof capRaw === 'number' && capRaw > 1 ? capRaw / 100 : Number(capRaw) || 0
+    const dscr = Number(raw.dscr) || 0
     
     return [
       {
