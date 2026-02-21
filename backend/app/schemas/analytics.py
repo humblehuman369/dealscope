@@ -52,6 +52,14 @@ class IQVerdictInput(BaseModel):
     zestimate: Optional[float] = Field(None, ge=0, le=100_000_000, description="Zillow Zestimate (for off-market market price)")
     current_value_avm: Optional[float] = Field(None, ge=0, le=100_000_000, description="RentCast AVM (for off-market market price)")
     tax_assessed_value: Optional[float] = Field(None, ge=0, le=100_000_000, description="Tax assessed value (for off-market fallback)")
+    # Assumptions — when provided, Income Value and Target Buy are calculated from these; otherwise backend defaults are used
+    down_payment_pct: Optional[float] = Field(None, ge=0, le=1, description="Down payment fraction (e.g. 0.20 = 20%%)")
+    interest_rate: Optional[float] = Field(None, ge=0, le=0.30, description="Annual interest rate (e.g. 0.06 = 6%%)")
+    loan_term_years: Optional[int] = Field(None, ge=1, le=50, description="Loan term in years")
+    vacancy_rate: Optional[float] = Field(None, ge=0, le=1, description="Vacancy rate (e.g. 0.05 = 5%%)")
+    maintenance_pct: Optional[float] = Field(None, ge=0, le=1, description="Maintenance as fraction of gross income")
+    management_pct: Optional[float] = Field(None, ge=0, le=1, description="Property management as fraction of gross income")
+    buy_discount_pct: Optional[float] = Field(None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)")
 
 
 class StrategyResult(BaseModel):

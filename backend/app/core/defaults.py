@@ -362,13 +362,20 @@ def calculate_buy_price(
     property_taxes: float,
     insurance: float,
     buy_discount_pct: float = None,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
+    vacancy_rate: float = None,
+    maintenance_pct: float = None,
+    management_pct: float = None,
 ) -> float:
     """
     Calculate Target Buy Price as Income Value minus the buy discount.
 
     Formula: Target Price = Income Value × (1 - Buy Discount %)
 
-    This is the recommended purchase price that ensures profitability.
+    Income Value is computed from the same assumptions (down payment, rate, term,
+    vacancy, maintenance, management) when provided; otherwise backend defaults are used.
     Returns the lesser of the calculated buy price or list_price.
     Returns 0 if list_price is invalid.
     """
@@ -380,7 +387,15 @@ def calculate_buy_price(
     discount_pct = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
     discount_pct = _clamp(discount_pct, 0.0, 0.50, "buy_discount_pct")  # max 50% discount
 
-    income_value = estimate_income_value(monthly_rent, property_taxes, insurance)
+    income_value = estimate_income_value(
+        monthly_rent, property_taxes, insurance,
+        down_payment_pct=down_payment_pct,
+        interest_rate=interest_rate,
+        loan_term_years=loan_term_years,
+        vacancy_rate=vacancy_rate,
+        maintenance_pct=maintenance_pct,
+        management_pct=management_pct,
+    )
 
     if income_value <= 0:
         return list_price
