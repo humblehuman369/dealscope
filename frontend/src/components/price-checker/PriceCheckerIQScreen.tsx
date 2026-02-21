@@ -374,7 +374,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                 {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
               </p>
               <p className="text-[11px] font-semibold text-[#38bdf8] tabular-nums">
-                ${comp.pricePerSqft}{isSale ? '' : '.00'}/sf{!isSale && '/mo'}
+                ${Number(comp.pricePerSqft).toFixed(2)}/sf{!isSale && '/mo'}
               </p>
             </div>
           </div>
