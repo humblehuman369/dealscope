@@ -21,6 +21,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -396,6 +397,12 @@ export function AppHeader({
     ? showPropertyBarProp 
     : !NO_PROPERTY_BAR_ROUTES.some(route => pathname?.startsWith(route))
 
+  const signInUrl = `${pathname || '/'}?${(() => {
+    const p = new URLSearchParams(searchParams?.toString() ?? '')
+    p.set('auth', 'required')
+    return p.toString()
+  })()}`
+
   // Navigation handlers
   const handleLogoClick = () => {
     router.push('/')
@@ -669,8 +676,8 @@ export function AppHeader({
               
               {/* Right side actions */}
               <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                {/* Save Property Button */}
-                {isAuthenticated && (
+                {/* Save Property Button — auth required (free & pro) */}
+                {isAuthenticated ? (
                   <button
                     onClick={handleSaveToggle}
                     disabled={isSaving}
@@ -685,6 +692,15 @@ export function AppHeader({
                       style={{ color: isSaved ? colors.brand.tealBright : colors.text.tertiary }}
                     />
                   </button>
+                ) : (
+                  <Link
+                    href={signInUrl}
+                    className="p-1.5 rounded transition-all hover:bg-white/10"
+                    title="Sign in to save property"
+                    aria-label="Sign in to save property"
+                  >
+                    <Bookmark className="w-4 h-4" style={{ color: colors.text.tertiary }} />
+                  </Link>
                 )}
                 {/* Expand/Collapse Button */}
                 <button

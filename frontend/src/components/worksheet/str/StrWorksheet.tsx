@@ -21,6 +21,7 @@ import { EquityChart } from '../charts/EquityChart'
 
 // Chart components
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
+import { ProGate } from '@/components/ProGate'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 import { STRMetricsChart, buildSTRMetricsData } from './STRMetricsChart'
@@ -1118,13 +1119,15 @@ export function StrWorksheet({
               />
             </div>
             
-            {/* CTA Button */}
-            <button 
-              onClick={onExportPDF}
-              className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-full text-slate-800 font-bold text-sm transition-colors"
-            >
-              Export PDF Report →
-            </button>
+            {/* CTA Button — Pro only */}
+            <ProGate feature="Export PDF Report" mode="inline">
+              <button 
+                onClick={onExportPDF}
+                className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-full text-slate-800 font-bold text-sm transition-colors"
+              >
+                Export PDF Report →
+              </button>
+            </ProGate>
           </div>
         </div>
         </>

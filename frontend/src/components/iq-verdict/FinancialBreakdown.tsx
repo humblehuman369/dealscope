@@ -19,7 +19,7 @@ import { ChevronDown } from 'lucide-react'
 import { StrategyType } from '@/config/strategyMetrics'
 import { PriceTarget } from '@/lib/priceUtils'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
-import { ProGate } from '@/components/ProGate'
+import { AuthGate } from '@/components/auth/AuthGate'
 
 interface FinancialBreakdownProps {
   // Purchase Terms
@@ -338,7 +338,7 @@ export function FinancialBreakdown({
   ])
 
   return (
-    <ProGate feature="Full Calculation Breakdown" mode="section">
+    <AuthGate feature="view full calculation breakdown" mode="section">
     <div className="bg-white border-b border-[#E2E8F0] overflow-hidden">
       {/* Collapsible Header */}
       <button
@@ -567,7 +567,7 @@ export function FinancialBreakdown({
         </div>
       )}
     </div>
-  </ProGate>
+  </AuthGate>
   )
 }
 

@@ -30,6 +30,7 @@ import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenc
 import { PropertyContextBar } from './PropertyContextBar'
 import { NavTabs } from './NavTabs'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType, DealMakerTab } from '../deal-maker/DealMakerPopup'
+import { ProGate } from '@/components/ProGate'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -969,24 +970,26 @@ export function VerdictIQCombined({
           Go to DealMakerIQ →
         </button>
         
-        <button 
-          className="dg-btn-secondary"
-          onClick={() => handleExportProforma('excel')}
-          disabled={isExporting}
-          style={{ opacity: isExporting ? 0.5 : 1 }}
-        >
-          {isExporting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Exporting...
-            </>
-          ) : (
-            <>
-              <FileSpreadsheet className="w-4 h-4" />
-              Export Analysis
-            </>
-          )}
-        </button>
+        <ProGate feature="Export Analysis" mode="inline">
+          <button 
+            className="dg-btn-secondary"
+            onClick={() => handleExportProforma('excel')}
+            disabled={isExporting}
+            style={{ opacity: isExporting ? 0.5 : 1 }}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="w-4 h-4" />
+                Export Analysis
+              </>
+            )}
+          </button>
+        </ProGate>
         
         {/* Export Error */}
         {exportError && (

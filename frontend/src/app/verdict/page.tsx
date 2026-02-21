@@ -35,6 +35,7 @@ import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AnalysisNav } from '@/components/navigation/AnalysisNav'
+import { ProGate } from '@/components/ProGate'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
@@ -975,16 +976,18 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* Export Report Button */}
+          {/* Export Report Button — Pro only */}
           <section className="px-5 pb-6">
-            <button
-              onClick={() => handleExport('light')}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[12px] text-[0.85rem] font-semibold transition-all hover:opacity-90"
-              style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
-            >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Export Full Report
-            </button>
+            <ProGate feature="Export Full Report" mode="inline">
+              <button
+                onClick={() => handleExport('light')}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[12px] text-[0.85rem] font-semibold transition-all hover:opacity-90"
+                style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Export Full Report
+              </button>
+            </ProGate>
           </section>
 
           {/* CTA → Strategy — copy adapts to verdict score */}
