@@ -1,7 +1,9 @@
 """
 Property service - orchestrates data fetching, normalization, and calculations.
 """
-from typing import Dict, Any, Optional, List
+from __future__ import annotations
+
+from typing import Dict, Any, Optional, List, Tuple, Union
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -20,6 +22,8 @@ from app.services.calculators import (
 )
 from app.services.cache_service import get_cache_service, CacheService
 from app.core.defaults import compute_market_price
+from app.schemas.analytics import IQVerdictInput
+from app.services.iq_verdict_service import compute_iq_verdict
 from app.schemas.property import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
@@ -81,79 +85,153 @@ class PropertyService:
                 logger.warning("Failed to deserialize cached property %s: %s", property_id, e)
         return None
 
-    async def search_property(self, address: str) -> PropertyResponse:
+    async def _fetch_raw_rentcast(self, address: str) -> Dict[str, Any]:
+        """Fetch raw RentCast data (property, value, rent, optional market_stats). Used for export."""
+        rentcast_data: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
+        merged: Dict[str, Any] = {}
+        rc_property = await self.rentcast.get_property(address)
+        rc_value = await self.rentcast.get_value_estimate(address)
+        rc_rent = await self.rentcast.get_rent_estimate(address)
+        if rc_property.success and rc_property.data:
+            data = rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data
+            rentcast_data["property"] = data
+            merged.update(data)
+        if rc_value.success and rc_value.data:
+            rentcast_data["value_estimate"] = rc_value.data
+            merged.update(rc_value.data)
+        if rc_rent.success and rc_rent.data:
+            rentcast_data["rent_estimate"] = rc_rent.data
+            merged.update(rc_rent.data)
+        rentcast_data["_merged"] = merged
+        parts = address.split()
+        zip_code = None
+        for part in parts:
+            if part.replace("-", "").isdigit() and len(part.replace("-", "")) >= 5:
+                zip_code = part[:5]
+                break
+        if zip_code:
+            rc_market = await self.rentcast.get_market_statistics(zip_code=zip_code)
+            if rc_market.success and rc_market.data:
+                rentcast_data["market_statistics"] = rc_market.data
+        return rentcast_data
+
+    async def _fetch_raw_axesso(self, address: str) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+        """
+        Fetch raw AXESSO/Zillow data. Returns (raw_export_dict, unwrapped_property_dict).
+        raw_export_dict is for Excel (search_by_address + property_details responses).
+        unwrapped_property_dict is for normalizer (single property dict with zestimate etc).
+        """
+        raw_export: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
+        unwrapped: Optional[Dict[str, Any]] = None
+        try:
+            zillow_response = await self.zillow.search_by_address(address)
+            raw_export["search_by_address"] = zillow_response.data if zillow_response.success else {"error": zillow_response.error}
+            if zillow_response.success and zillow_response.data:
+                raw = zillow_response.data
+                unwrapped = self._unwrap_axesso_property(raw)
+                zillow_zpid = unwrapped.get("zpid") or raw.get("zpid")
+                zestimate = unwrapped.get("zestimate") or unwrapped.get("Zestimate")
+                if zillow_zpid and zestimate is None:
+                    details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
+                    raw_export["property_details"] = details_response.data if details_response.success else {"error": details_response.error}
+                    if details_response.success and details_response.data:
+                        unwrapped = self._unwrap_axesso_property(details_response.data)
+                else:
+                    raw_export["property_details"] = None
+            else:
+                raw_export["property_details"] = None
+        except Exception as e:
+            raw_export["error"] = str(e)
+        return raw_export, unwrapped
+
+    async def search_property(
+        self,
+        address: str,
+        pre_fetched: Optional[Tuple[Dict[str, Any], Tuple[Optional[Dict[str, Any]], Dict[str, Any]]]] = None,
+    ) -> Union[PropertyResponse, Tuple[PropertyResponse, Dict[str, Any], Dict[str, Any]]]:
         """
         Search for property by address.
         Fetches from both APIs, normalizes, and returns unified response.
-        Uses Redis cache with 24h TTL when available.
+        Uses Redis cache with 24h TTL when available (when pre_fetched is None).
+
+        When pre_fetched=(rentcast_merged, (axesso_unwrapped, axesso_export)) is provided,
+        uses that data (no cache, no fetch) and returns (response, rentcast_merged, axesso_export).
         """
         t0 = time.perf_counter()
         timings: Dict[str, float] = {}
         property_id = self._generate_property_id(address)
         timestamp = datetime.now(timezone.utc)
-        
-        # Check Redis/in-memory cache first
-        t_cache = time.perf_counter()
-        cached_data = await self._cache.get_property(address)
-        timings["cache_lookup_ms"] = (time.perf_counter() - t_cache) * 1000
-        if cached_data:
-            logger.info(f"Cache hit for property: {address}")
-            try:
-                cached_data = self._apply_market_price_to_cached(cached_data)
-                timings["total_ms"] = (time.perf_counter() - t0) * 1000
-                logger.info("search_property timings (cache hit): %s", timings)
-                return PropertyResponse(**cached_data)
-            except Exception as e:
-                logger.warning(f"Failed to deserialize cached property: {e}")
-        
-        # Fetch from RentCast
-        t_rc = time.perf_counter()
-        rc_property = await self.rentcast.get_property(address)
-        rc_value = await self.rentcast.get_value_estimate(address)
-        rc_rent = await self.rentcast.get_rent_estimate(address)
-        timings["rentcast_ms"] = (time.perf_counter() - t_rc) * 1000
-        
-        # Merge RentCast responses
-        rentcast_data = {}
-        if rc_property.success and rc_property.data:
-            rentcast_data.update(rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data)
-        if rc_value.success and rc_value.data:
-            rentcast_data.update(rc_value.data)
-        if rc_rent.success and rc_rent.data:
-            rentcast_data.update(rc_rent.data)
-        
-        # Fetch from Zillow via AXESSO
-        t_zil = time.perf_counter()
-        axesso_data = None
-        zillow_zpid = None
-        try:
-            logger.info(f"Fetching Zillow data for: {address}")
-            zillow_response = await self.zillow.search_by_address(address)
+        rentcast_data: Dict[str, Any] = {}
+        axesso_data: Optional[Dict[str, Any]] = None
+        axesso_export_for_return: Optional[Dict[str, Any]] = None
 
-            if zillow_response.success and zillow_response.data:
-                raw = zillow_response.data
-                axesso_data = self._unwrap_axesso_property(raw)
-                zillow_zpid = axesso_data.get("zpid") or raw.get("zpid")
-                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                # If search-by-address didn't include zestimate, fetch property-v2 (has zestimate/rentZestimate)
-                if zillow_zpid and zestimate is None:
-                    details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
-                    if details_response.success and details_response.data:
-                        axesso_data = self._unwrap_axesso_property(details_response.data)
-                        zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                        rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                        logger.info(
-                            f"Zillow property-v2 retrieved - zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
-                        )
-                logger.info(
-                    f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
-                )
-            else:
-                logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
-        except Exception as e:
-            logger.error(f"Error fetching Zillow data: {e}")
-        timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
+        zillow_zpid = None
+        if pre_fetched is not None:
+            rentcast_merged, (axesso_unwrapped, axesso_export) = pre_fetched
+            rentcast_data = rentcast_merged
+            axesso_data = axesso_unwrapped
+            axesso_export_for_return = axesso_export
+            if axesso_data:
+                zillow_zpid = axesso_data.get("zpid")
+        else:
+            # Check Redis/in-memory cache first
+            t_cache = time.perf_counter()
+            cached_data = await self._cache.get_property(address)
+            timings["cache_lookup_ms"] = (time.perf_counter() - t_cache) * 1000
+            if cached_data:
+                logger.info(f"Cache hit for property: {address}")
+                try:
+                    cached_data = self._apply_market_price_to_cached(cached_data)
+                    timings["total_ms"] = (time.perf_counter() - t0) * 1000
+                    logger.info("search_property timings (cache hit): %s", timings)
+                    return PropertyResponse(**cached_data)
+                except Exception as e:
+                    logger.warning(f"Failed to deserialize cached property: {e}")
+
+            # Fetch from RentCast
+            t_rc = time.perf_counter()
+            rc_property = await self.rentcast.get_property(address)
+            rc_value = await self.rentcast.get_value_estimate(address)
+            rc_rent = await self.rentcast.get_rent_estimate(address)
+            timings["rentcast_ms"] = (time.perf_counter() - t_rc) * 1000
+
+            if rc_property.success and rc_property.data:
+                rentcast_data.update(rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data)
+            if rc_value.success and rc_value.data:
+                rentcast_data.update(rc_value.data)
+            if rc_rent.success and rc_rent.data:
+                rentcast_data.update(rc_rent.data)
+
+            # Fetch from Zillow via AXESSO
+            t_zil = time.perf_counter()
+            zillow_zpid = None
+            try:
+                logger.info(f"Fetching Zillow data for: {address}")
+                zillow_response = await self.zillow.search_by_address(address)
+
+                if zillow_response.success and zillow_response.data:
+                    raw = zillow_response.data
+                    axesso_data = self._unwrap_axesso_property(raw)
+                    zillow_zpid = axesso_data.get("zpid") or raw.get("zpid")
+                    zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                    rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                    if zillow_zpid and zestimate is None:
+                        details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
+                        if details_response.success and details_response.data:
+                            axesso_data = self._unwrap_axesso_property(details_response.data)
+                            zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                            rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                            logger.info(
+                                f"Zillow property-v2 retrieved - zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
+                            )
+                    logger.info(
+                        f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
+                    )
+                else:
+                    logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
+            except Exception as e:
+                logger.error(f"Error fetching Zillow data: {e}")
+            timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
 
         # Normalize and merge data
         t_norm = time.perf_counter()
@@ -300,19 +378,91 @@ class PropertyService:
             fetched_at=timestamp
         )
         
-        # Cache result (Redis with in-memory fallback, 24h TTL)
-        try:
-            serialized = response.model_dump()
-            await self._cache.set_property(address, serialized)
-            await self._cache.set(f"prop_id:{property_id}", serialized)
-            logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")
-        except Exception as e:
-            logger.warning(f"Failed to cache property: {e}")
-        
+        # Cache result (skip when pre_fetched; return raw sources with response)
+        if pre_fetched is None:
+            try:
+                serialized = response.model_dump()
+                await self._cache.set_property(address, serialized)
+                await self._cache.set(f"prop_id:{property_id}", serialized)
+                logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")
+            except Exception as e:
+                logger.warning(f"Failed to cache property: {e}")
+            timings["total_ms"] = (time.perf_counter() - t0) * 1000
+            logger.info("search_property timings (cache miss): %s", timings)
+            return response
         timings["total_ms"] = (time.perf_counter() - t0) * 1000
-        logger.info("search_property timings (cache miss): %s", timings)
-        return response
-    
+        return (response, rentcast_data, axesso_export_for_return or {})
+
+    async def get_property_export_data(self, address: str) -> Dict[str, Any]:
+        """
+        Fetch raw RentCast, raw AXESSO, normalized property, and verdict/strategy
+        calculated values for export (e.g. Excel). Does one coordinated fetch and
+        returns data for all three export sheets.
+        """
+        rentcast_raw = await self._fetch_raw_rentcast(address)
+        axesso_export, axesso_unwrapped = await self._fetch_raw_axesso(address)
+        rentcast_merged = rentcast_raw.get("_merged") or {}
+        result = await self.search_property(
+            address,
+            pre_fetched=(rentcast_merged, (axesso_unwrapped, axesso_export)),
+        )
+        if not isinstance(result, tuple):
+            # Should not happen when pre_fetched is provided
+            response = result
+            rentcast_merged = rentcast_raw.get("_merged") or {}
+            axesso_export = {}
+        else:
+            response, _, axesso_export = result
+        # Build verdict input from property response
+        valuations = response.valuations
+        listing = response.listing
+        details = response.details
+        rentals = response.rentals
+        market = response.market
+        list_price_val = getattr(listing, "list_price", None) if listing is not None else None
+        if list_price_val is None and listing is not None and isinstance(listing, dict):
+            list_price_val = listing.get("list_price")
+        list_price = (
+            float(list_price_val)
+            if list_price_val is not None and list_price_val > 0
+            else (float(valuations.market_price) if valuations.market_price is not None else float(valuations.zestimate or valuations.current_value_avm or 0) or 1)
+        )
+        monthly_rent = (rentals.monthly_rent_ltr or rentals.average_rent) or (list_price * 0.007)
+        listing_status_val = getattr(listing, "listing_status", None) if listing is not None else None
+        if listing_status_val is None and listing is not None and isinstance(listing, dict):
+            listing_status_val = listing.get("listing_status")
+        is_listed = (
+            listing_status_val is not None
+            and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT")
+            and (list_price_val or 0) > 0
+        )
+        verdict_input = IQVerdictInput(
+            list_price=max(1, list_price),
+            monthly_rent=monthly_rent,
+            property_taxes=market.property_taxes_annual or (list_price * 0.012),
+            insurance=getattr(market, "insurance_annual", None) or (list_price * 0.01),
+            bedrooms=details.bedrooms or 3,
+            bathrooms=float(details.bathrooms or 2),
+            sqft=details.square_footage,
+            arv=valuations.arv or (list_price * 1.15),
+            average_daily_rate=rentals.average_daily_rate,
+            occupancy_rate=rentals.occupancy_rate or 0.75,
+            is_listed=is_listed,
+            zestimate=valuations.zestimate,
+            current_value_avm=valuations.current_value_avm,
+            tax_assessed_value=valuations.tax_assessed_value,
+            listing_status=listing_status_val,
+        )
+        verdict_result = compute_iq_verdict(verdict_input)
+        # Strip internal key from raw RentCast for export
+        raw_rentcast_export = {k: v for k, v in rentcast_raw.items() if k != "_merged"}
+        return {
+            "raw_rentcast": raw_rentcast_export,
+            "raw_axesso": axesso_export,
+            "property": response.model_dump(mode="json"),
+            "verdict": verdict_result.model_dump(mode="json"),
+        }
+
     def _parse_address(self, address: str, data: Dict = None) -> Address:
         """Parse address into components."""
         # Try to get structured address from API data
