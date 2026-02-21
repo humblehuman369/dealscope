@@ -86,23 +86,49 @@ class PropertyService:
         return None
 
     async def _fetch_raw_rentcast(self, address: str) -> Dict[str, Any]:
-        """Fetch raw RentCast data (property, value, rent, optional market_stats). Used for export."""
+        """Fetch raw RentCast data (property, value, rent, optional market_stats). Used for export.
+        Always records each endpoint response so the export shows either data or error (for auditing).
+        """
         rentcast_data: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
         merged: Dict[str, Any] = {}
+
         rc_property = await self.rentcast.get_property(address)
-        rc_value = await self.rentcast.get_value_estimate(address)
-        rc_rent = await self.rentcast.get_rent_estimate(address)
         if rc_property.success and rc_property.data:
             data = rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data
             rentcast_data["property"] = data
-            merged.update(data)
+            merged.update(data if isinstance(data, dict) else {})
+        else:
+            rentcast_data["property_response"] = {
+                "success": False,
+                "status_code": getattr(rc_property, "status_code", None),
+                "error": rc_property.error,
+                "data": rc_property.data,
+            }
+
+        rc_value = await self.rentcast.get_value_estimate(address)
         if rc_value.success and rc_value.data:
             rentcast_data["value_estimate"] = rc_value.data
-            merged.update(rc_value.data)
+            merged.update(rc_value.data if isinstance(rc_value.data, dict) else {})
+        else:
+            rentcast_data["value_estimate_response"] = {
+                "success": False,
+                "status_code": getattr(rc_value, "status_code", None),
+                "error": rc_value.error,
+                "data": rc_value.data,
+            }
+
+        rc_rent = await self.rentcast.get_rent_estimate(address)
         if rc_rent.success and rc_rent.data:
             rentcast_data["rent_estimate"] = rc_rent.data
-            merged.update(rc_rent.data)
-        rentcast_data["_merged"] = merged
+            merged.update(rc_rent.data if isinstance(rc_rent.data, dict) else {})
+        else:
+            rentcast_data["rent_estimate_response"] = {
+                "success": False,
+                "status_code": getattr(rc_rent, "status_code", None),
+                "error": rc_rent.error,
+                "data": rc_rent.data,
+            }
+
         parts = address.split()
         zip_code = None
         for part in parts:
@@ -113,32 +139,53 @@ class PropertyService:
             rc_market = await self.rentcast.get_market_statistics(zip_code=zip_code)
             if rc_market.success and rc_market.data:
                 rentcast_data["market_statistics"] = rc_market.data
+            else:
+                rentcast_data["market_statistics_response"] = {
+                    "success": False,
+                    "status_code": getattr(rc_market, "status_code", None),
+                    "error": rc_market.error,
+                    "data": rc_market.data,
+                }
+
+        rentcast_data["_merged"] = merged
         return rentcast_data
 
     async def _fetch_raw_axesso(self, address: str) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
         """
         Fetch raw AXESSO/Zillow data. Returns (raw_export_dict, unwrapped_property_dict).
-        raw_export_dict is for Excel (search_by_address + property_details responses).
-        unwrapped_property_dict is for normalizer (single property dict with zestimate etc).
+        raw_export_dict is for Excel; always records each response (data or error) for auditing.
         """
         raw_export: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
         unwrapped: Optional[Dict[str, Any]] = None
         try:
             zillow_response = await self.zillow.search_by_address(address)
-            raw_export["search_by_address"] = zillow_response.data if zillow_response.success else {"error": zillow_response.error}
             if zillow_response.success and zillow_response.data:
+                raw_export["search_by_address"] = zillow_response.data
                 raw = zillow_response.data
                 unwrapped = self._unwrap_axesso_property(raw)
                 zillow_zpid = unwrapped.get("zpid") or raw.get("zpid")
                 zestimate = unwrapped.get("zestimate") or unwrapped.get("Zestimate")
                 if zillow_zpid and zestimate is None:
                     details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
-                    raw_export["property_details"] = details_response.data if details_response.success else {"error": details_response.error}
                     if details_response.success and details_response.data:
+                        raw_export["property_details"] = details_response.data
                         unwrapped = self._unwrap_axesso_property(details_response.data)
+                    else:
+                        raw_export["property_details"] = {
+                            "success": False,
+                            "status_code": getattr(details_response, "status_code", None),
+                            "error": details_response.error,
+                            "data": details_response.data,
+                        }
                 else:
                     raw_export["property_details"] = None
             else:
+                raw_export["search_by_address"] = {
+                    "success": False,
+                    "status_code": getattr(zillow_response, "status_code", None),
+                    "error": zillow_response.error,
+                    "data": zillow_response.data,
+                }
                 raw_export["property_details"] = None
         except Exception as e:
             raw_export["error"] = str(e)
