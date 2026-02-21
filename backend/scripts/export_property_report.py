@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-One-off script to export property data report (RentCast, AXESSO, Verdict/Strategy) to Excel.
+One-off script to export property data for audit: one file with RentCast data only,
+one file with AXESSO data only.
 Usage (from backend directory):
   python scripts/export_property_report.py "3788 Moon Bay Cir, Wellington, FL 33414"
   python scripts/export_property_report.py "3788 Moon Bay Cir" "Wellington" "FL" "33414"
-Output: Property_Data_<address_slug>_<timestamp>.xlsx in current directory.
+Output (in current directory):
+  Property_Data_RentCast_<address_slug>_<timestamp>.xlsx
+  Property_Data_AXESSO_<address_slug>_<timestamp>.xlsx
 Requires .env with RENTCAST_API_KEY and AXESSO_API_KEY (or set in environment).
 """
 import asyncio
@@ -34,18 +37,25 @@ async def main():
     load_dotenv()
 
     from app.services.property_service import property_service
-    from app.services.property_export_service import generate_property_data_excel
+    from app.services.property_export_service import generate_rentcast_only_excel, generate_axesso_only_excel
     from datetime import datetime, timezone
 
     print(f"Fetching data for: {address}")
     export_data = await property_service.get_property_export_data(address)
-    excel_bytes = generate_property_data_excel(export_data)
     slug = address.replace(" ", "_").replace(",", "")[:40]
-    filename = f"Property_Data_{slug}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M')}.xlsx"
-    out_path = backend_dir / filename
-    out_path.write_bytes(excel_bytes)
-    print(f"Wrote: {out_path}")
-    return str(out_path)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+
+    rentcast_bytes = generate_rentcast_only_excel(export_data)
+    rentcast_path = backend_dir / f"Property_Data_RentCast_{slug}_{ts}.xlsx"
+    rentcast_path.write_bytes(rentcast_bytes)
+    print(f"Wrote (RentCast): {rentcast_path}")
+
+    axesso_bytes = generate_axesso_only_excel(export_data)
+    axesso_path = backend_dir / f"Property_Data_AXESSO_{slug}_{ts}.xlsx"
+    axesso_path.write_bytes(axesso_bytes)
+    print(f"Wrote (AXESSO): {axesso_path}")
+
+    return str(rentcast_path), str(axesso_path)
 
 
 if __name__ == "__main__":

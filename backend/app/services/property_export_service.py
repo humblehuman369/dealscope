@@ -44,26 +44,71 @@ def _flatten_to_rows(obj: Any, prefix: str = "") -> List[Tuple[str, Any]]:
 
 
 def _build_rentcast_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_RENTCAST) -> List[Tuple[str, Any]]:
-    """Build flat key/value rows for RentCast (skip internal keys). Keys prefixed with key_prefix."""
+    """Build flat key/value rows for RentCast (skip internal keys). Keys prefixed with key_prefix when set."""
     out: List[Tuple[str, Any]] = []
     for k, v in raw.items():
         if k.startswith("_"):
             continue
-        base = f"{key_prefix}.{k}"
+        base = f"{key_prefix}.{k}" if key_prefix else k
         out.extend(_flatten_to_rows(v, base) if isinstance(v, (dict, list)) else [(base, v)])
     return out
 
 
 def _build_axesso_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_AXESSO) -> List[Tuple[str, Any]]:
-    """Build flat key/value rows for AXESSO. Keys prefixed with key_prefix."""
+    """Build flat key/value rows for AXESSO. Keys prefixed with key_prefix when set."""
     out: List[Tuple[str, Any]] = []
     for k, v in raw.items():
-        base = f"{key_prefix}.{k}"
+        base = f"{key_prefix}.{k}" if key_prefix else k
         if isinstance(v, (dict, list)):
             out.extend(_flatten_to_rows(v, base))
         else:
             out.append((base, v))
     return out
+
+
+def _write_key_value_sheet(ws: Any, rows: List[Tuple[str, Any]]) -> None:
+    """Write a single sheet with Key, Value columns."""
+    ws.append(["Key", "Value"])
+    ws.cell(row=1, column=1).font = Font(bold=True)
+    ws.cell(row=1, column=2).font = Font(bold=True)
+    for key, value in rows:
+        ws.append([key, value])
+    ws.column_dimensions["A"].width = 55
+    ws.column_dimensions["B"].width = 45
+
+
+def generate_rentcast_only_excel(export_data: Dict[str, Any]) -> bytes:
+    """
+    Generate a single Excel workbook with RentCast data only (for auditing).
+    One sheet: Key, Value with all RentCast API data (property, value_estimate, rent_estimate, market_statistics).
+    """
+    raw_rentcast = export_data.get("raw_rentcast") or {}
+    rows = _build_rentcast_rows(raw_rentcast, key_prefix="")
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "RentCast Data"
+    _write_key_value_sheet(ws, rows)
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
+
+
+def generate_axesso_only_excel(export_data: Dict[str, Any]) -> bytes:
+    """
+    Generate a single Excel workbook with AXESSO data only (for auditing).
+    One sheet: Key, Value with all AXESSO/Zillow API data (search_by_address, property_details).
+    """
+    raw_axesso = export_data.get("raw_axesso") or {}
+    rows = _build_axesso_rows(raw_axesso, key_prefix="")
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "AXESSO Data"
+    _write_key_value_sheet(ws, rows)
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
 
 
 def _write_property_data_sheet(ws: Any, rentcast_rows: List[Tuple[str, Any]], axesso_rows: List[Tuple[str, Any]]) -> None:
