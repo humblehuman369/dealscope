@@ -111,12 +111,13 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           </Link>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <a href="#strategies" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>Product</a>
-            <a href="/pricing" style={{ color: '#0EA5E9', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>Pricing</a>
+            <Link href="/pricing" style={{ color: '#0EA5E9', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>Pricing</Link>
           </div>
           <div className="nav-actions">
             {isAuthenticated && user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button
+                  type="button"
                   onClick={() => router.push('/search')}
                   className="btn-icon"
                   aria-label="Search properties"
@@ -124,6 +125,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <Search className="w-5 h-5" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => router.push('/profile')}
                   className="btn-icon"
                   aria-label="Account"
@@ -132,9 +134,25 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </button>
               </div>
             ) : (
-              <button className="btn-ghost" onClick={handleLoginRegister}>
-                Login/Register
-              </button>
+              <>
+                <button type="button" className="btn-ghost" onClick={handleLoginRegister}>
+                  Login
+                </button>
+                <Link
+                  href="/register"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
+                    color: '#fff',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Start free trial
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -373,11 +391,16 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
           {/* Section CTA */}
           <div className="funnel-cta-wrap">
-            <button className="btn-funnel-cta" onClick={handleStartAnalysis}>
+            <button type="button" className="btn-funnel-cta" onClick={handleStartAnalysis}>
               Start Scanning Free &rarr;
             </button>
             <p className="funnel-note">
               <strong>60-second analysis</strong> · No credit card required
+            </p>
+            <p style={{ marginTop: '0.75rem' }}>
+              <Link href="/register" style={{ color: '#38bdf8', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
+                Sign up for free trial &rarr;
+              </Link>
             </p>
           </div>
         </div>
@@ -719,7 +742,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             </div>
           </form>
           <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#64748b' }}>
-            Free during beta · <a href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</a>
+            Free during beta · <Link href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</Link>
           </p>
         </div>
       </section>
@@ -743,7 +766,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <a href="#strategies" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Strategies</a>
                 <a href="#toolkit" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Toolkit</a>
-                <a href="/pricing" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Pricing</a>
+                <Link href="/pricing" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Pricing</Link>
               </div>
             </div>
 
