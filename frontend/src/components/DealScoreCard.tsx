@@ -111,17 +111,43 @@ function ScoreBar({
 // MAIN DEAL SCORE COMPONENT
 // ============================================
 
+/** When provided, display these instead of calculating (backend verdict/deal-score API). */
+export interface DealScoreFromApi {
+  score: number
+  grade: string
+  label: string
+  discountPercent: number
+  verdict?: string
+}
+
 interface DealScoreCardProps {
   incomeValue: number
   listPrice: number
   metrics?: DealMetrics
+  /** Prefer when available — from POST /api/v1/analysis/verdict or deal-score. */
+  dealScoreFromApi?: DealScoreFromApi | null
   compact?: boolean
   isOffMarket?: boolean
   listingStatus?: string
 }
 
-export default function DealScoreCard({ incomeValue, listPrice, metrics, compact = false, isOffMarket = false, listingStatus }: DealScoreCardProps) {
-  const score = useMemo(() => calculateDealScore(incomeValue, listPrice, metrics), [incomeValue, listPrice, metrics])
+export default function DealScoreCard({ incomeValue, listPrice, metrics, dealScoreFromApi, compact = false, isOffMarket = false, listingStatus }: DealScoreCardProps) {
+  const score = useMemo(() => {
+    if (dealScoreFromApi) {
+      return {
+        overall: dealScoreFromApi.score,
+        grade: dealScoreFromApi.grade as import('@/lib/analytics').OpportunityGrade,
+        label: dealScoreFromApi.label,
+        verdict: dealScoreFromApi.verdict ?? dealScoreFromApi.label,
+        discountPercent: dealScoreFromApi.discountPercent,
+        incomeValue,
+        listPrice,
+        strengths: [],
+        weaknesses: [],
+      }
+    }
+    return calculateDealScore(incomeValue, listPrice, metrics)
+  }, [incomeValue, listPrice, metrics, dealScoreFromApi])
   const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
   
   if (compact) {

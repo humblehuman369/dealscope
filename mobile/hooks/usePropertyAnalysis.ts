@@ -88,6 +88,8 @@ export interface IQVerdictResponse {
   opportunityFactors: OpportunityFactorsResponse;
   returnRating: ScoreDisplayResponse;
   returnFactors: ReturnFactorsResponse;
+  // Wholesale MAO from backend (use instead of targetPrice * 0.70)
+  wholesaleMao?: number;
   // Component scores — flat top-level fields from backend
   dealGapScore?: number;
   returnQualityScore?: number;
@@ -187,6 +189,8 @@ export interface PropertyAnalysisResult {
   };
   opportunityFactors: OpportunityFactorsResponse | null;
   returnFactors: ReturnFactorsResponse | null;
+  // Wholesale MAO from verdict API (display instead of computing targetPrice * 0.70)
+  wholesaleMao?: number;
   // Strategy-specific metrics
   strategies: StrategyResultResponse[];
   // Worksheet metrics at target price AND list price (matches frontend)
@@ -355,14 +359,17 @@ export function usePropertyAnalysis(
       if (controller.signal.aborted) return;
 
       // Build componentScores from flat top-level fields returned by backend
+      const v = verdictResponse as Record<string, unknown>;
       if (!verdictResponse.componentScores) {
-        const v = verdictResponse as Record<string, unknown>;
         verdictResponse.componentScores = {
           dealGapScore: Number(v.dealGapScore ?? v.deal_gap_score ?? 0),
           returnQualityScore: Number(v.returnQualityScore ?? v.return_quality_score ?? 0),
           marketAlignmentScore: Number(v.marketAlignmentScore ?? v.market_alignment_score ?? 0),
           dealProbabilityScore: Number(v.dealProbabilityScore ?? v.deal_probability_score ?? 0),
         };
+      }
+      if (verdictResponse.wholesaleMao == null && (v.wholesaleMao != null || v.wholesale_mao != null)) {
+        verdictResponse.wholesaleMao = Number(v.wholesaleMao ?? v.wholesale_mao);
       }
 
       setData(verdictResponse);
@@ -693,6 +700,7 @@ function convertToComponentData(
     opportunityFactors: data.opportunityFactors,
     returnFactors: data.returnFactors,
     strategies: data.strategies,
+    wholesaleMao: data.wholesaleMao ?? (data as Record<string, unknown>).wholesale_mao as number | undefined,
     metricsAtTarget,
     metricsAtList,
     projections,

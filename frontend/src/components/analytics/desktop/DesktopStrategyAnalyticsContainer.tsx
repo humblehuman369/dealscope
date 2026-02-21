@@ -25,7 +25,7 @@ import {
   createIQInsight,
   HeroMetric,
   DealScoreDisplay,
-  calculateDealScoreData,
+  dealScoreDataFromApi,
   FundingOverview,
   PerformanceSection,
   create10YearProjection,
@@ -182,6 +182,7 @@ export function DesktopStrategyAnalyticsContainer({
   // Compute IQ Target + metrics via backend (debounced)
   const {
     iqTarget,
+    verdictDealScore,
     metricsAtTarget,
     metricsAtList,
     isLoading: isCalculating,
@@ -365,6 +366,7 @@ export function DesktopStrategyAnalyticsContainer({
                   strategy={activeStrategy}
                   metrics={currentMetrics}
                   iqTarget={iqTarget}
+                  verdictDealScore={verdictDealScore}
                   assumptions={assumptions}
                 />
               )}
@@ -765,19 +767,35 @@ interface DesktopScoreTabContentProps {
   strategy: StrategyId
   metrics: Record<string, unknown>
   iqTarget: IQTargetResult
+  verdictDealScore: import('@/hooks/useIQAnalysis').VerdictDealScore | null
   assumptions: TargetAssumptions
 }
 
-function DesktopScoreTabContent({ strategy, metrics, iqTarget, assumptions }: DesktopScoreTabContentProps) {
+function DesktopScoreTabContent({ strategy, metrics, iqTarget, verdictDealScore, assumptions }: DesktopScoreTabContentProps) {
   const hasRentalMetrics = 'monthlyCashFlow' in metrics && 'cashOnCash' in metrics && 'capRate' in metrics && 'dscr' in metrics
   
   const scoreData = useMemo(() => {
-    // Use the opportunity-based scoring with income value and list price
-    const incomeValue = iqTarget.incomeValue || assumptions.listPrice
-    const listPrice = assumptions.listPrice
-    
-    return calculateDealScoreData(incomeValue, listPrice)
-  }, [iqTarget, assumptions])
+    if (verdictDealScore) {
+      return dealScoreDataFromApi({
+        dealScore: verdictDealScore.dealScore,
+        dealVerdict: verdictDealScore.dealVerdict,
+        discountPercent: verdictDealScore.discountPercent,
+        incomeValue: iqTarget.incomeValue,
+        purchasePrice: iqTarget.targetPrice,
+        listPrice: assumptions.listPrice,
+        grade: verdictDealScore.grade,
+      })
+    }
+    return dealScoreDataFromApi({
+      dealScore: 0,
+      dealVerdict: 'Loading…',
+      discountPercent: 0,
+      incomeValue: iqTarget.incomeValue,
+      purchasePrice: iqTarget.targetPrice,
+      listPrice: assumptions.listPrice,
+      grade: 'C',
+    })
+  }, [iqTarget, verdictDealScore, assumptions])
   
   // Generate strengths and weaknesses based on opportunity score
   const strengths: string[] = []

@@ -15,6 +15,7 @@ from app.core.defaults import FINANCING, OPERATING, STR, BRRRR, FLIP, HOUSE_HACK
 from app.services.calculators import (
     calculate_ltr, calculate_str, calculate_brrrr,
     calculate_flip, calculate_house_hack, calculate_wholesale,
+    calculate_monthly_mortgage,
 )
 
 logger = logging.getLogger(__name__)
@@ -147,19 +148,6 @@ class WholesaleWorksheetInput(BaseModel):
     investor_down_payment_pct: float = 0.25
     investor_purchase_costs_pct: float = 0.03
     tax_rate: float = 0.20
-
-
-# ===========================================
-# Helper
-# ===========================================
-
-def _calculate_monthly_mortgage(principal: float, annual_rate: float, years: int) -> float:
-    if annual_rate == 0:
-        return principal / (years * 12)
-    monthly_rate = annual_rate / 12
-    num_payments = years * 12
-    return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / \
-           ((1 + monthly_rate) ** num_payments - 1)
 
 
 # ===========================================
@@ -428,7 +416,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
         points_cost = loan_amount * (input_data.points / 100)
         loan_to_cost_pct = (loan_amount / (input_data.purchase_price + input_data.rehab_costs)) * 100 if (input_data.purchase_price + input_data.rehab_costs) > 0 else 0
         if input_data.loan_type == "amortizing":
-            monthly_payment = _calculate_monthly_mortgage(loan_amount, input_data.interest_rate, 30)
+            monthly_payment = calculate_monthly_mortgage(loan_amount, input_data.interest_rate, 30)
         else:
             monthly_payment = (loan_amount * input_data.interest_rate) / 12
         monthly_taxes = input_data.property_taxes_annual / 12

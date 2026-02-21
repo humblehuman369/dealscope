@@ -41,3 +41,4 @@ Per-file list of calculations to remove (use backend API instead) vs display-onl
 - **When API data is available:** Display only API response fields; no client-side formula for that metric.
 - **Loading/error:** Show skeleton or "—"; do not show synthetic or fallback-calculated numbers unless product explicitly approves a minimal, labeled fallback (e.g. "Estimate" with disclaimer).
 - **Deal Maker / worksheets:** Prefer backend-calculated metrics (verdict, analytics, or worksheet endpoints); remove duplicate mortgage/NOI/cash flow/cap/CoC/score logic from frontend and mobile.
+- **Default assumptions:** Backend is the source of truth (`backend/app/core/defaults.py`). Clients should prefer `GET /api/v1/defaults` for system defaults; any client-side fallbacks (e.g. in createIQInputsFromProperty) must match backend and be documented as such.

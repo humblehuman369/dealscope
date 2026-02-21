@@ -212,7 +212,9 @@ export function useIQAnalysis(baseInputs: AnalyticsInputs): UseIQAnalysisResult 
 
 /**
  * Create IQ analysis inputs from property data using default assumptions.
- * Same logic as before — no financial calculations, just sensible defaults.
+ * Display/fallback only — no financial calculations. Backend verdict uses
+ * GET /api/v1/defaults (backend/app/core/defaults.py) when optional fields are omitted.
+ * These values should match backend; prefer fetching GET /api/v1/defaults for consistency.
  */
 export function createIQInputsFromProperty(property: {
   price: number;

@@ -34,7 +34,9 @@ interface VerdictResponse {
   purchase_price?: number; purchasePrice?: number
   income_value?: number; incomeValue?: number
   breakeven_price?: number; breakevenPrice?: number  // deprecated, use income_value
+  wholesale_mao?: number; wholesaleMao?: number
   list_price?: number; listPrice?: number
+  opportunity?: { score?: number; grade?: string; label?: string; color?: string }
   strategies: Array<{
     id: string
     name: string
@@ -72,6 +74,7 @@ function mapVerdictToIQTarget(
 
   const targetPrice = verdict.purchase_price ?? verdict.purchasePrice ?? 0
   const incomeValue = verdict.income_value ?? verdict.incomeValue ?? verdict.breakeven_price ?? verdict.breakevenPrice ?? 0
+  const wholesaleMao = verdict.wholesale_mao ?? verdict.wholesaleMao
   const listPrice = assumptions.listPrice
   const discount = listPrice - targetPrice
   const discountPct = listPrice > 0 ? discount / listPrice : 0
@@ -81,6 +84,7 @@ function mapVerdictToIQTarget(
     discountFromList: discount,
     discountPercent: discountPct * 100,
     incomeValue,
+    wholesaleMao: wholesaleMao ?? undefined,
     incomeValuePercent:
       listPrice > 0
         ? ((listPrice - incomeValue) / listPrice) * 100
@@ -172,8 +176,20 @@ function buildWorksheetPayload(
   }
 }
 
+/** Deal score and opportunity from verdict API (single source of truth). */
+export interface VerdictDealScore {
+  dealScore: number
+  dealVerdict: string
+  grade: string
+  label: string
+  color: string
+  discountPercent: number
+}
+
 export interface UseIQAnalysisReturn {
   iqTarget: IQTargetResult | null
+  /** From verdict API — use instead of any client-side deal score calculation. */
+  verdictDealScore: VerdictDealScore | null
   metricsAtTarget: Record<string, unknown> | null
   metricsAtList: Record<string, unknown> | null
   isLoading: boolean
@@ -185,6 +201,7 @@ export function useIQAnalysis(
   assumptions: TargetAssumptions,
 ): UseIQAnalysisReturn {
   const [iqTarget, setIqTarget] = useState<IQTargetResult | null>(null)
+  const [verdictDealScore, setVerdictDealScore] = useState<VerdictDealScore | null>(null)
   const [metricsAtTarget, setMetricsAtTarget] = useState<Record<string, unknown> | null>(null)
   const [metricsAtList, setMetricsAtList] = useState<Record<string, unknown> | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -194,6 +211,7 @@ export function useIQAnalysis(
   useEffect(() => {
     if (!strategyId) {
       setIqTarget(null)
+      setVerdictDealScore(null)
       setMetricsAtTarget(null)
       setMetricsAtList(null)
       return
@@ -234,6 +252,17 @@ export function useIQAnalysis(
 
         const target = mapVerdictToIQTarget(verdict, strategyId, assumptions)
         setIqTarget(target)
+        const ds = verdict.deal_score ?? verdict.dealScore ?? 0
+        const opp = verdict.opportunity
+        const dealVerdict = verdict.deal_verdict ?? verdict.dealVerdict ?? 'Opportunity'
+        setVerdictDealScore({
+          dealScore: ds,
+          dealVerdict,
+          grade: opp?.grade ?? 'C',
+          label: opp?.label ?? 'MODERATE',
+          color: opp?.color ?? '#f97316',
+          discountPercent: verdict.discount_percent ?? verdict.discountPercent ?? 0,
+        })
 
         // 2. Get metrics at both prices via worksheet endpoint
         const endpoint = WORKSHEET_ENDPOINTS[strategyId]
@@ -273,5 +302,5 @@ export function useIQAnalysis(
     }
   }, [strategyId, assumptions])
 
-  return { iqTarget, metricsAtTarget, metricsAtList, isLoading, error }
+  return { iqTarget, verdictDealScore, metricsAtTarget, metricsAtList, isLoading, error }
 }

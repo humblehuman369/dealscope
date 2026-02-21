@@ -284,14 +284,16 @@ export default function VerdictIQScreen() {
     image: image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop',
   }), [decodedAddress, city, state, zip, bedroomCount, bathroomCount, sqftValue, marketPrice, status, image]);
 
-  // Derived data — use backend list_price (market price when off-market) when available
-  const iqPrices = useMemo(() => buildIQPrices(incomeValue, targetPrice, marketPrice), [incomeValue, targetPrice, marketPrice]);
+  // Derived data — use backend list_price and wholesale_mao when available
+  const wholesaleMao = analysisResult.wholesaleMao ?? raw?.wholesaleMao;
+  const iqPrices = useMemo(
+    () => buildIQPrices(incomeValue, targetPrice, marketPrice, wholesaleMao),
+    [incomeValue, targetPrice, marketPrice, wholesaleMao]
+  );
   const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
   const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
   const signalIndicators = useMemo(() => buildSignalIndicators(raw, discountPercent), [raw, discountPercent]);
   const marketTiles = useMemo(() => buildMarketTiles(signalIndicators), [signalIndicators]);
-
-  const wholesalePrice = Math.round(targetPrice * 0.70);
 
   // Handlers
   const handleIQPriceChange = useCallback((id: IQPriceId) => {
@@ -536,7 +538,7 @@ export default function VerdictIQScreen() {
             {/* Price Scale — data-driven positions */}
             <View style={styles.scaleWrap}>
               {(() => {
-                // Calculate real positions based on actual price relationships
+                const wholesalePrice = iqPrices.find((p) => p.id === 'wholesale')?.value ?? targetPrice * 0.70;
                 const scaleMin = wholesalePrice * 0.95;
                 const scaleMax = Math.max(marketPrice * 1.08, incomeValue * 1.05);
                 const range = scaleMax - scaleMin;
