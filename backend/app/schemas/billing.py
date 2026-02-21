@@ -64,28 +64,36 @@ class PricingPlansResponse(BaseModel):
 # Subscription Management
 # ===========================================
 
+class PlanType(str, Enum):
+    """Billing interval for Pro (for display only)."""
+    STARTER = "starter"
+    PRO_MONTHLY = "pro_monthly"
+    PRO_ANNUAL = "pro_annual"
+
+
 class SubscriptionResponse(BaseModel):
     """Current subscription details."""
     id: str
     tier: SubscriptionTier
     status: SubscriptionStatus
+    plan_type: Optional[PlanType] = None  # starter | pro_monthly | pro_annual
     current_period_start: Optional[datetime] = None
     current_period_end: Optional[datetime] = None
     cancel_at_period_end: bool = False
     canceled_at: Optional[datetime] = None
     trial_start: Optional[datetime] = None
     trial_end: Optional[datetime] = None
-    
+
     # Limits
     properties_limit: int
     searches_per_month: int
     api_calls_per_month: int
-    
+
     # Usage
     searches_used: int
     api_calls_used: int
     usage_reset_date: Optional[datetime] = None
-    
+
     created_at: datetime
     updated_at: datetime
 

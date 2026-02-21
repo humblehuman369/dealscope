@@ -3,7 +3,7 @@ Billing service for Stripe integration.
 """
 
 import logging
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Optional, Dict, Any, Tuple, List, Union
 from datetime import datetime, timedelta, timezone
 import uuid
 
@@ -301,12 +301,13 @@ class BillingService:
         if not resolved_price_id:
             raise ValueError("Either price_id or lookup_key must be provided")
         
+        sep = "&" if "?" in success_url else "?"
         session = stripe.checkout.Session.create(
             customer=customer_id,
             mode="subscription",
             payment_method_types=["card"],
             line_items=[{"price": resolved_price_id, "quantity": 1}],
-            success_url=success_url + "&session_id={CHECKOUT_SESSION_ID}",
+            success_url=success_url + sep + "session_id={CHECKOUT_SESSION_ID}",
             cancel_url=cancel_url,
             metadata={
                 "user_id": str(user.id),
@@ -557,21 +558,31 @@ class BillingService:
             return True
 
     async def _handle_checkout_completed(self, db: AsyncSession, data: Dict[str, Any]):
-        """Handle successful checkout."""
+        """Handle successful checkout. Sync subscription from Stripe so user is Pro when they land on success page."""
         user_id = data.get("metadata", {}).get("user_id")
         if not user_id:
             logger.warning("Checkout completed without user_id in metadata")
             return
-        
+
         subscription_id = data.get("subscription")
         customer_id = data.get("customer")
-        
+
         subscription = await self.get_subscription(db, uuid.UUID(user_id))
         if subscription:
             subscription.stripe_customer_id = customer_id
             subscription.stripe_subscription_id = subscription_id
             await db.commit()
-        
+
+        if subscription_id and self.is_configured and STRIPE_AVAILABLE:
+            try:
+                stripe_sub = stripe.Subscription.retrieve(
+                    subscription_id,
+                    expand=["items.data.price"],
+                )
+                await self._sync_subscription(db, stripe_sub)
+            except Exception as e:
+                logger.warning("Could not sync subscription after checkout: %s", e)
+
         logger.info(f"Checkout completed for user {user_id}")
 
     async def _handle_subscription_created(self, db: AsyncSession, data: Dict[str, Any]):
@@ -737,8 +748,8 @@ class BillingService:
                     currency=currency,
                 )
 
-    async def _sync_subscription(self, db: AsyncSession, stripe_sub: Dict[str, Any]):
-        """Sync subscription data from Stripe."""
+    async def _sync_subscription(self, db: AsyncSession, stripe_sub: Union[Dict[str, Any], Any]):
+        """Sync subscription data from Stripe (dict from webhook or StripeObject from retrieve)."""
         stripe_sub_id = stripe_sub.get("id")
         customer_id = stripe_sub.get("customer")
         user_id = stripe_sub.get("metadata", {}).get("user_id")

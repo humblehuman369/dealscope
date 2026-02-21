@@ -23,9 +23,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark, CreditCard } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
@@ -197,6 +198,7 @@ export function AppHeader({
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
+  const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
   const logoutMutation = useLogout()
 
@@ -505,7 +507,18 @@ export function AppHeader({
                 <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
                   {user && (
                     <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
+                        <span
+                          className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
+                          style={{
+                            background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
+                            color: isPro ? '#0ea5e9' : '#64748b',
+                          }}
+                        >
+                          {isPro ? 'Pro' : 'Starter'}
+                        </span>
+                      </div>
                       <p className="text-xs text-slate-400 truncate">{user.email}</p>
                     </div>
                   )}
@@ -526,6 +539,12 @@ export function AppHeader({
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
                   >
                     <Bookmark className="w-4 h-4" /> Saved Properties
+                  </button>
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/billing') }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                  >
+                    <CreditCard className="w-4 h-4" /> Billing
                   </button>
                   {isAdmin && (
                     <button

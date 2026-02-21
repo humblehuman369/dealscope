@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/hooks/useSession";
+import { UpgradeModal } from "@/components/billing/UpgradeModal";
 
 // ─── Icons ───
 const CheckIcon: React.FC = () => (
@@ -530,7 +532,9 @@ const FAQItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
 // ═══════════════════════════════════════════════
 export default function PricingContent() {
   const router = useRouter();
+  const { isAuthenticated } = useSession();
   const [annual, setAnnual] = useState(true);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const freeFeatures: FeatureItem[] = [
     { text: "5 property analyses per month", included: true },
@@ -906,7 +910,8 @@ export default function PricingContent() {
             features={proFeatures}
             cta="Start 7-Day Free Trial"
             ctaVariant="primary"
-            ctaHref={`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`}
+            ctaHref={!isAuthenticated ? `/register?plan=pro&billing=${annual ? "annual" : "monthly"}` : undefined}
+            onCtaClick={isAuthenticated ? () => setUpgradeModalOpen(true) : undefined}
           />
         </section>
 
@@ -1434,9 +1439,31 @@ export default function PricingContent() {
               flexWrap: "wrap",
             }}
           >
-            <Link
-              href={`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`}
-              style={{
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={() => setUpgradeModalOpen(true)}
+                style={{
+                  padding: "13px 28px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontFamily: "inherit",
+                }}
+              >
+                Start 7-Day Free Trial <ArrowIcon />
+              </button>
+            ) : (
+              <Link
+                href={`/register?plan=pro&billing=${annual ? "annual" : "monthly"}`}
+                style={{
                 padding: "13px 28px",
                 borderRadius: "8px",
                 border: "none",
@@ -1452,8 +1479,9 @@ export default function PricingContent() {
                 textDecoration: "none",
               }}
             >
-              Start 7-Day Free Trial <ArrowIcon />
-            </Link>
+                Start 7-Day Free Trial <ArrowIcon />
+              </Link>
+            )}
             <Link
               href="/register?plan=starter"
               style={{
@@ -1483,6 +1511,12 @@ export default function PricingContent() {
             No credit card required for Starter · 7-day trial for Pro
           </div>
         </section>
+
+        <UpgradeModal
+          isOpen={upgradeModalOpen}
+          onClose={() => setUpgradeModalOpen(false)}
+          returnTo="/pricing"
+        />
 
         {/* ─── FOOTER ─── */}
         <footer
