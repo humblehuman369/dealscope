@@ -79,6 +79,8 @@ export interface IQVerdictResponse {
   discountPercent: number;
   strategies: StrategyResultResponse[];
   purchasePrice: number;
+  /** Income Value — price where cash flow = $0 (backend sends this as incomeValue) */
+  incomeValue?: number;
   breakevenPrice: number;
   listPrice: number;
   inputsUsed: Record<string, unknown>;
@@ -370,6 +372,9 @@ export function usePropertyAnalysis(
       }
       if (verdictResponse.wholesaleMao == null && (v.wholesaleMao != null || v.wholesale_mao != null)) {
         verdictResponse.wholesaleMao = Number(v.wholesaleMao ?? v.wholesale_mao);
+      }
+      if (verdictResponse.incomeValue == null && (v.incomeValue != null || v.income_value != null)) {
+        verdictResponse.incomeValue = Number(v.incomeValue ?? v.income_value);
       }
 
       setData(verdictResponse);
@@ -689,7 +694,7 @@ function convertToComponentData(
     raw: data,
     strategyGrades,
     targetPrice: data.purchasePrice,
-    incomeValue: data.breakevenPrice,
+    incomeValue: data.incomeValue ?? data.breakevenPrice ?? 0,
     discountPercent: data.discountPercent,
     dealScore: {
       score: data.opportunity.score,

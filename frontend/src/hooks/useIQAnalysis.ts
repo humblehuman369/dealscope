@@ -93,8 +93,8 @@ function mapVerdictToIQTarget(
     highlightedMetric: String(strat?.metric_value ?? strat?.metricValue ?? ''),
     secondaryMetric: String(strat?.metric_label ?? strat?.metricLabel ?? ''),
     monthlyCashFlow: strat?.monthly_cash_flow ?? strat?.monthlyCashFlow ?? 0,
-    cashOnCash: (strat?.cash_on_cash ?? strat?.cashOnCash ?? 0) * 100,
-    capRate: (strat?.cap_rate ?? strat?.capRate ?? 0) * 100,
+    cashOnCash: ((strat?.cash_on_cash ?? strat?.cashOnCash ?? 0) as number) / 100,
+    capRate: ((strat?.cap_rate ?? strat?.capRate ?? 0) as number) / 100,
     dscr: strat?.dscr ?? 0,
   }
 }
