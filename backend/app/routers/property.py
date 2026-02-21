@@ -4,7 +4,6 @@ Property router for property search, details, and market data endpoints.
 Extracted from main.py for cleaner architecture.
 """
 import logging
-import zipfile
 from datetime import datetime
 from io import BytesIO
 from typing import Optional
@@ -17,10 +16,7 @@ from app.schemas.property import (
     PropertyResponse,
 )
 from app.services.property_service import property_service
-from app.services.property_export_service import (
-    generate_rentcast_only_excel,
-    generate_axesso_only_excel,
-)
+from app.services.property_export_service import generate_property_data_report_excel
 from app.services.search_history_service import search_history_service
 from app.core.deps import OptionalUser, DbSession
 from app.core.exceptions import PropertyNotFoundError, ExternalAPIError
@@ -156,15 +152,16 @@ async def search_property(
 
 @router.post(
     "/properties/export-report",
-    summary="Export property data for audit (RentCast-only + AXESSO-only Excel files)",
+    summary="Report of data received from RentCast and AXESSO for a property",
 )
 async def export_property_data_report(request: PropertySearchRequest):
     """
-    Generate two Excel files for auditing API data:
-    1. RentCast-only workbook — all data pulled from RentCast (property, value_estimate, rent_estimate, market_statistics)
-    2. AXESSO-only workbook — all data pulled from AXESSO/Zillow (search_by_address, property_details)
+    Generate one Excel report with two sheets:
+    - **RentCast** — all data we receive from RentCast for this property.
+    - **AXESSO** — all data we receive from AXESSO/Zillow for this property.
 
-    Returns a ZIP containing both files. Request body: same as property search (address, optional city, state, zip_code).
+    Request body: same as property search (address, optional city, state, zip_code).
+    Returns a single .xlsx file.
     """
     address_parts = [request.address]
     if request.city:
@@ -174,11 +171,10 @@ async def export_property_data_report(request: PropertySearchRequest):
     if request.zip_code:
         address_parts.append(request.zip_code)
     full_address = ", ".join(address_parts)
-    logger.info(f"Export report requested for: {full_address}")
+    logger.info(f"Property data report requested for: {full_address}")
     try:
         export_data = await property_service.get_property_export_data(full_address)
-        rentcast_bytes = generate_rentcast_only_excel(export_data)
-        axesso_bytes = generate_axesso_only_excel(export_data)
+        report_bytes = generate_property_data_report_excel(export_data)
     except Exception as e:
         logger.exception("Property export report failed")
         raise HTTPException(
@@ -186,19 +182,11 @@ async def export_property_data_report(request: PropertySearchRequest):
             detail=f"Export failed: {str(e)}",
         )
     street_slug = (request.address or "property").replace(" ", "_").replace(",", "")[:40]
-    ts = datetime.utcnow().strftime("%Y%m%d_%H%M")
-    rentcast_name = f"Property_Data_RentCast_{street_slug}_{ts}.xlsx"
-    axesso_name = f"Property_Data_AXESSO_{street_slug}_{ts}.xlsx"
-    zip_name = f"Property_Data_Audit_{street_slug}_{ts}.zip"
-    buf = BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr(rentcast_name, rentcast_bytes)
-        zf.writestr(axesso_name, axesso_bytes)
-    buf.seek(0)
+    filename = f"Property_Data_Report_{street_slug}_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.xlsx"
     return StreamingResponse(
-        buf,
-        media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{zip_name}"'},
+        BytesIO(report_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

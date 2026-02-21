@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Export property audit files (RentCast + AXESSO) by calling the **deployed** backend (e.g. Railway).
-Use this when running locally so the backend (which has RENTCAST_API_KEY and AXESSO_API_KEY) does
-the fetch and returns the ZIP.
+Request a report of the data we receive from RentCast and AXESSO for a property.
+Calls the **deployed** backend (e.g. Railway), which has the API keys, and saves the Excel report.
 
 Usage (from backend directory):
   BACKEND_URL=https://your-app.railway.app python scripts/export_property_report_via_api.py "3788 Moon Bay Cir, Wellington, FL 33414"
@@ -10,12 +9,11 @@ Usage (from backend directory):
 
   python scripts/export_property_report_via_api.py "3788 Moon Bay Cir" "Wellington" "FL" "33414"
 
-Output: downloads Property_Data_Audit_<slug>_<timestamp>.zip and extracts the two .xlsx files
-        into the current directory.
+Output: one Excel file (Property_Data_Report_<address>_<timestamp>.xlsx) with two sheets:
+        RentCast and AXESSO — the data we receive from each for that property.
 """
 import os
 import sys
-import zipfile
 from pathlib import Path
 
 try:
@@ -62,25 +60,17 @@ def main():
         resp.raise_for_status()
 
     content_type = resp.headers.get("content-type", "")
-    if "zip" not in content_type and "octet-stream" not in content_type:
+    if "spreadsheet" not in content_type and "octet-stream" not in content_type:
         print(f"Unexpected response: {content_type}")
         print(resp.text[:500])
         sys.exit(1)
 
-    # Save ZIP
     backend_dir = Path(__file__).resolve().parent.parent
-    zip_name = resp.headers.get("content-disposition", "").split("filename=")[-1].strip('"') or "Property_Data_Audit.zip"
-    zip_path = backend_dir / zip_name
-    zip_path.write_bytes(resp.content)
-    print(f"Saved: {zip_path}")
-
-    # Unzip so the two .xlsx files are in the same directory
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        for name in zf.namelist():
-            zf.extract(name, backend_dir)
-            print(f"  Extracted: {name}")
-
-    return str(zip_path)
+    filename = resp.headers.get("content-disposition", "").split("filename=")[-1].strip('"') or "Property_Data_Report.xlsx"
+    out_path = backend_dir / filename
+    out_path.write_bytes(resp.content)
+    print(f"Saved: {out_path}")
+    return str(out_path)
 
 
 if __name__ == "__main__":
