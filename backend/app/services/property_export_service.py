@@ -1,5 +1,5 @@
 """
-Property data export service — Excel report with RentCast, AXESSO, and Verdict/Strategy sheets.
+Property data export service — Excel report with combined property data (RentCast + AXESSO) and Calculated sheets.
 """
 import json
 import logging
@@ -7,10 +7,12 @@ from io import BytesIO
 from typing import Any, Dict, List, Tuple
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
-from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 
 logger = logging.getLogger(__name__)
+
+SOURCE_RENTCAST = "RentCast"
+SOURCE_AXESSO = "AXESSO"
 
 
 def _flatten_to_rows(obj: Any, prefix: str = "") -> List[Tuple[str, Any]]:
@@ -41,36 +43,54 @@ def _flatten_to_rows(obj: Any, prefix: str = "") -> List[Tuple[str, Any]]:
     return rows
 
 
-def _sheet_from_flat(ws: Any, rows: List[Tuple[str, Any]], title: str) -> None:
-    """Write a sheet with Key, Value columns from (key, value) rows."""
-    ws.append(["Key", "Value"])
-    ws.cell(row=1, column=1).font = Font(bold=True)
-    ws.cell(row=1, column=2).font = Font(bold=True)
-    for key, value in rows:
-        ws.append([key, value])
-    ws.column_dimensions["A"].width = 50
-    ws.column_dimensions["B"].width = 40
-
-
-def _build_rentcast_rows(raw: Dict[str, Any]) -> List[Tuple[str, Any]]:
-    """Build flat key/value rows for RentCast sheet (skip internal keys)."""
+def _build_rentcast_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_RENTCAST) -> List[Tuple[str, Any]]:
+    """Build flat key/value rows for RentCast (skip internal keys). Keys prefixed with key_prefix."""
     out: List[Tuple[str, Any]] = []
     for k, v in raw.items():
         if k.startswith("_"):
             continue
-        out.extend(_flatten_to_rows(v, k) if isinstance(v, (dict, list)) else [(k, v)])
+        base = f"{key_prefix}.{k}"
+        out.extend(_flatten_to_rows(v, base) if isinstance(v, (dict, list)) else [(base, v)])
     return out
 
 
-def _build_axesso_rows(raw: Dict[str, Any]) -> List[Tuple[str, Any]]:
-    """Build flat key/value rows for AXESSO sheet."""
+def _build_axesso_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_AXESSO) -> List[Tuple[str, Any]]:
+    """Build flat key/value rows for AXESSO. Keys prefixed with key_prefix."""
     out: List[Tuple[str, Any]] = []
     for k, v in raw.items():
-        if k in ("address", "fetched_at"):
-            out.append((k, v))
-            continue
-        out.extend(_flatten_to_rows(v, k) if isinstance(v, (dict, list)) else [(k, v)])
+        base = f"{key_prefix}.{k}"
+        if isinstance(v, (dict, list)):
+            out.extend(_flatten_to_rows(v, base))
+        else:
+            out.append((base, v))
     return out
+
+
+def _write_property_data_sheet(ws: Any, rentcast_rows: List[Tuple[str, Any]], axesso_rows: List[Tuple[str, Any]]) -> None:
+    """Write one sheet with all RentCast then all AXESSO data (Key, Value)."""
+    ws.append(["Key", "Value"])
+    ws.cell(row=1, column=1).font = Font(bold=True)
+    ws.cell(row=1, column=2).font = Font(bold=True)
+    row_num = 2
+    if rentcast_rows:
+        ws.cell(row=row_num, column=1, value=f"--- {SOURCE_RENTCAST} (all data used for calculations) ---")
+        ws.cell(row=row_num, column=1).font = Font(bold=True, italic=True)
+        row_num += 1
+        for key, value in rentcast_rows:
+            ws.cell(row=row_num, column=1, value=key)
+            ws.cell(row=row_num, column=2, value=value)
+            row_num += 1
+        row_num += 1
+    if axesso_rows:
+        ws.cell(row=row_num, column=1, value=f"--- {SOURCE_AXESSO} (all data used for calculations) ---")
+        ws.cell(row=row_num, column=1).font = Font(bold=True, italic=True)
+        row_num += 1
+        for key, value in axesso_rows:
+            ws.cell(row=row_num, column=1, value=key)
+            ws.cell(row=row_num, column=2, value=value)
+            row_num += 1
+    ws.column_dimensions["A"].width = 55
+    ws.column_dimensions["B"].width = 45
 
 
 def _build_calculated_rows(verdict: Dict[str, Any], property_data: Dict[str, Any]) -> List[Tuple[str, str]]:
@@ -129,12 +149,14 @@ def _build_calculated_rows(verdict: Dict[str, Any], property_data: Dict[str, Any
 
 def generate_property_data_excel(export_data: Dict[str, Any]) -> bytes:
     """
-    Generate a 3-sheet Excel workbook from get_property_export_data() result.
+    Generate a 2-sheet Excel workbook from get_property_export_data() result.
 
     Sheets:
-    1. RentCast Data — raw RentCast API data (property, value_estimate, rent_estimate, market_statistics)
-    2. AXESSO Data — raw AXESSO/Zillow API data (search_by_address, property_details)
-    3. Calculated — Verdict and Strategy metrics (deal score, list price, income value, target buy, strategies)
+    1. Property Data (RentCast & AXESSO) — all RentCast and all AXESSO API data
+       used to calculate the values in sheet 2 (property, value_estimate, rent_estimate,
+       market_statistics, search_by_address, property_details).
+    2. Calculated (Verdict & Strategy) — Verdict and Strategy metrics (deal score,
+       list price, income value, target buy, strategies).
     """
     wb = Workbook()
     raw_rentcast = export_data.get("raw_rentcast") or {}
@@ -142,19 +164,15 @@ def generate_property_data_excel(export_data: Dict[str, Any]) -> bytes:
     verdict = export_data.get("verdict") or {}
     property_data = export_data.get("property") or {}
 
-    # Sheet 1: RentCast
-    ws_rc = wb.active
-    ws_rc.title = "RentCast Data"
+    # Sheet 1: All property data from RentCast + AXESSO (source data for calculations)
+    ws_prop = wb.active
+    ws_prop.title = "Property Data (RentCast & AXESSO)"
     rentcast_rows = _build_rentcast_rows(raw_rentcast)
-    _sheet_from_flat(ws_rc, rentcast_rows, "RentCast Data")
-
-    # Sheet 2: AXESSO
-    ws_ax = wb.create_sheet("AXESSO Data", 1)
     axesso_rows = _build_axesso_rows(raw_axesso)
-    _sheet_from_flat(ws_ax, axesso_rows, "AXESSO Data")
+    _write_property_data_sheet(ws_prop, rentcast_rows, axesso_rows)
 
-    # Sheet 3: Calculated (Verdict + Strategy)
-    ws_calc = wb.create_sheet("Calculated (Verdict & Strategy)", 2)
+    # Sheet 2: Calculated (Verdict + Strategy)
+    ws_calc = wb.create_sheet("Calculated (Verdict & Strategy)", 1)
     calc_rows = _build_calculated_rows(verdict, property_data)
     ws_calc.append(["Label", "Value"])
     ws_calc.cell(row=1, column=1).font = Font(bold=True)
