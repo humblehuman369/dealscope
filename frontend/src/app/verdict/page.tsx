@@ -549,7 +549,10 @@ function VerdictContent() {
 
           // Use backend list_price as displayed Market (single source of truth)
           if (backendListPrice != null && backendListPrice > 0) {
-            setProperty((prev) => ({ ...prev, price: Math.round(backendListPrice) }))
+            setProperty((prev) => {
+              if (!prev) return null
+              return { ...prev, price: Math.round(backendListPrice) } as IQProperty
+            })
           }
         } catch (analysisErr) {
           console.error('Error fetching analysis:', analysisErr)
