@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-One-off script to export property data for audit: one file with RentCast data only,
-one file with AXESSO data only.
+Export property audit files by calling RentCast and AXESSO **from this machine**.
+Requires RENTCAST_API_KEY and AXESSO_API_KEY in .env (same as backend).
+
+If your backend runs on Railway (and keys are only there), use the API script instead:
+  BACKEND_URL=https://your-app.railway.app python scripts/export_property_report_via_api.py "..."
+
 Usage (from backend directory):
   python scripts/export_property_report.py "3788 Moon Bay Cir, Wellington, FL 33414"
-  python scripts/export_property_report.py "3788 Moon Bay Cir" "Wellington" "FL" "33414"
-Output (in current directory):
-  Property_Data_RentCast_<address_slug>_<timestamp>.xlsx
-  Property_Data_AXESSO_<address_slug>_<timestamp>.xlsx
-Requires .env with RENTCAST_API_KEY and AXESSO_API_KEY (or set in environment).
+Output: Property_Data_RentCast_*.xlsx and Property_Data_AXESSO_*.xlsx in backend directory.
 """
 import asyncio
 import os
