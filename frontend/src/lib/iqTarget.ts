@@ -49,6 +49,8 @@ export interface IQTargetResult {
   monthlySavings?: number
   // For Wholesale
   assignmentFee?: number
+  /** From verdict API — wholesale MAO (max allowable offer). */
+  wholesaleMao?: number
   mao?: number
 }
 

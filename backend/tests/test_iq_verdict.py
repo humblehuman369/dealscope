@@ -8,13 +8,13 @@ is required.
 
 import pytest
 from app.schemas.analytics import IQVerdictInput, DealScoreInput
+from app.services.calculators import calculate_monthly_mortgage
 from app.services.iq_verdict_service import (
     compute_iq_verdict,
     compute_deal_score,
     _score_to_grade_label,
     _performance_score,
     _format_compact_currency,
-    _calculate_monthly_mortgage,
     _calculate_composite_verdict_score,
     _calculate_wholesale_strategy,
 )
@@ -72,12 +72,12 @@ class TestFormatCompactCurrency:
 class TestMonthlyMortgage:
     def test_zero_rate(self):
         """0% rate should give principal / total_payments."""
-        payment = _calculate_monthly_mortgage(240_000, 0.0, 30)
+        payment = calculate_monthly_mortgage(240_000, 0.0, 30)
         assert pytest.approx(payment, rel=0.01) == 240_000 / 360
 
     def test_normal_rate(self):
         """6% on $200k/30yr ≈ $1,199."""
-        payment = _calculate_monthly_mortgage(200_000, 0.06, 30)
+        payment = calculate_monthly_mortgage(200_000, 0.06, 30)
         assert 1100 < payment < 1300
 
 

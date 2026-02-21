@@ -136,6 +136,8 @@ class IQVerdictResponse(BaseModel):
     return_quality_score: int = 0
     market_alignment_score: int = 0
     deal_probability_score: int = 0
+    # Wholesale MAO — so clients do not compute it (MAO = ARV×0.70 − rehab − fee)
+    wholesale_mao: Optional[float] = Field(None, description="Wholesale max allowable offer for price ladder")
 
 
 # ===========================================

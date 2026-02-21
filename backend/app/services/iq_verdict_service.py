@@ -13,6 +13,7 @@ from app.core.defaults import (
     estimate_income_value, calculate_buy_price, get_all_defaults,
     compute_market_price,
 )
+from app.services.calculators import calculate_monthly_mortgage
 from app.schemas.analytics import (
     IQVerdictInput, IQVerdictResponse, StrategyResult,
     ScoreDisplayResponse, OpportunityFactorsResponse, ReturnFactorsResponse,
@@ -55,15 +56,6 @@ def _format_compact_currency(value: float) -> str:
     return f"${round(value):,}"
 
 
-def _calculate_monthly_mortgage(principal: float, annual_rate: float, years: int) -> float:
-    if annual_rate == 0:
-        return principal / (years * 12)
-    monthly_rate = annual_rate / 12
-    num_payments = years * 12
-    return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / \
-           ((1 + monthly_rate) ** num_payments - 1)
-
-
 # ===========================================
 # Strategy calculators
 # ===========================================
@@ -73,7 +65,7 @@ def _calculate_ltr_strategy(price: float, monthly_rent: float, property_taxes: f
     closing_costs = price * FINANCING.closing_costs_pct
     loan_amount = price - down_payment
     total_cash = down_payment + closing_costs
-    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
     effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
@@ -99,7 +91,7 @@ def _calculate_str_strategy(price: float, adr: float, occupancy: float, property
     closing_costs = price * FINANCING.closing_costs_pct
     total_cash = down_payment + closing_costs + STR.furniture_setup_cost
     loan_amount = price - down_payment
-    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_revenue = adr * 365 * occupancy
     mgmt_fee = annual_revenue * STR.str_management_pct
@@ -130,7 +122,7 @@ def _calculate_brrrr_strategy(price: float, monthly_rent: float, property_taxes:
     cash_back = refi_loan - (price * 0.90)
     cash_left = max(0, initial_cash - max(0, cash_back))
     recovery_pct = ((initial_cash - cash_left) / initial_cash * 100) if initial_cash > 0 else 0
-    monthly_pi = _calculate_monthly_mortgage(refi_loan, BRRRR.refinance_interest_rate, BRRRR.refinance_term_years)
+    monthly_pi = calculate_monthly_mortgage(refi_loan, BRRRR.refinance_interest_rate, BRRRR.refinance_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
     effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
@@ -189,7 +181,7 @@ def _calculate_house_hack_strategy(price: float, monthly_rent: float, bedrooms: 
     down_payment = price * HOUSE_HACK.fha_down_payment_pct
     closing_costs = price * FINANCING.closing_costs_pct
     loan_amount = price - down_payment
-    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
     monthly_taxes = property_taxes / 12
     monthly_insurance = insurance / 12
     pmi = loan_amount * HOUSE_HACK.fha_mip_rate / 12
@@ -582,6 +574,7 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         return_quality_score=comp_return,
         market_alignment_score=comp_market,
         deal_probability_score=comp_prob,
+        wholesale_mao=round((arv * 0.70) - rehab_cost - (buy_price * 0.007), 0),
     )
 
 
