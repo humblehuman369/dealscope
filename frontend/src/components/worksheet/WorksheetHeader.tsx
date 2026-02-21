@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { WorksheetExport } from './WorksheetExport'
+import { ProGate } from '@/components/ProGate'
 import {
   Edit3,
   Share2,
@@ -217,11 +218,13 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
             <span className="hidden sm:inline">Edit Property</span>
           </button>
           
-          {/* Export */}
-          <WorksheetExport 
-            propertyId={propertyId}
-            propertyAddress={getDisplayAddress(property)}
-          />
+          {/* Export — Pro only */}
+          <ProGate feature="Export reports" mode="inline">
+            <WorksheetExport 
+              propertyId={propertyId}
+              propertyAddress={getDisplayAddress(property)}
+            />
+          </ProGate>
           
           {/* Share */}
           <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-[var(--ws-accent)] hover:bg-[var(--ws-accent-hover)] rounded-lg transition-colors">

@@ -6,6 +6,7 @@ import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useDealScore } from '@/hooks/useDealScore'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
+import { ProGate } from '@/components/ProGate'
 
 // ============================================
 // STRATEGY DEFINITIONS
@@ -987,28 +988,30 @@ export function LTRWorksheet({
           </svg>
         </button>
 
-        {/* Export Link */}
-        <button 
-          onClick={onExportPDF}
-          style={{
-            width: '100%',
-            background: 'none',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: '#64748B',
-            fontSize: '14px',
-            padding: '12px',
-            cursor: 'pointer'
-          }}
-        >
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          <span>Export PDF Report</span>
-        </button>
+        {/* Export Link — Pro only */}
+        <ProGate feature="Export PDF Report" mode="inline">
+          <button 
+            onClick={onExportPDF}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              color: '#64748B',
+              fontSize: '14px',
+              padding: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span>Export PDF Report</span>
+          </button>
+        </ProGate>
 
         <div style={{ height: '24px' }} />
       </main>
