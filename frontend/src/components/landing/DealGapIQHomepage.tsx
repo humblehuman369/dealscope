@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useSession } from '@/hooks/useSession';
+import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
-import { Search, User } from 'lucide-react';
+import { Search, User, LogOut } from 'lucide-react';
 import { DealGapIQGateway } from './DealGapIQGateway';
 import { DealGapIQHeroSection } from './DealGapIQHeroSection';
 import './dealgapiq-homepage.css';
@@ -39,6 +39,7 @@ function AuthParamHandler({ onOpenGateway }: { onOpenGateway?: () => void }) {
 export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
   const { openAuthModal } = useAuthModal();
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
   const sectionRefs = useRef<(HTMLDivElement | HTMLElement | null)[]>([]);
@@ -131,6 +132,17 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   aria-label="Account"
                 >
                   <User className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="btn-ghost"
+                  style={{ fontSize: '0.875rem', color: '#94A3B8' }}
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-4 h-4" style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                  Sign out
                 </button>
               </div>
             ) : (

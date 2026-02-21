@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Map,
   ScanLine,
-  User,
   Compass
 } from 'lucide-react';
 import { useSession, useLogout } from '@/hooks/useSession';
@@ -364,10 +363,11 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                 </button>
                 <button
                   onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
                   className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full"
+                  aria-label="Sign out"
                 >
-                  <User className="w-3 h-3 text-white" />
-                  <span className="text-white text-xs">{user.full_name?.split(' ')[0]}</span>
+                  <span className="text-white text-xs">Sign out</span>
                 </button>
               </>
             ) : (
