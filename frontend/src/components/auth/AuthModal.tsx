@@ -53,11 +53,25 @@ export default function AuthModal() {
 
   // Post-login redirect — navigate to the intended destination
   const onLoginSuccess = useCallback(() => {
-    const redirect = searchParams.get('redirect')
+    let redirect = searchParams.get('redirect')
     setIsOpen(false)
     if (redirect) {
-      // Explicit redirect target — honour it
-      router.replace(redirect)
+      try {
+        redirect = decodeURIComponent(redirect)
+      } catch {
+        // leave as-is if not encoded
+      }
+      // Same-origin only: must start with / and not be protocol-relative or absolute
+      const isSameOriginPath = redirect.startsWith('/') && !redirect.startsWith('//')
+      if (isSameOriginPath) {
+        router.replace(redirect)
+      } else {
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete('auth')
+        params.delete('redirect')
+        const qs = params.toString()
+        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      }
     } else {
       // No explicit redirect — stay on current page, strip only auth/redirect params
       const params = new URLSearchParams(searchParams.toString())

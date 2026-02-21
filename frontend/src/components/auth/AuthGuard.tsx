@@ -43,11 +43,12 @@ export function AuthGuard({
     if (!isAuthenticated) {
       // Build the URL to stay on this page and open the auth modal.
       // After login, the AuthModal reads `redirect` and sends the
-      // user back here automatically.
+      // user back here (full path + query) automatically.
       const params = new URLSearchParams(searchParams.toString())
       if (!params.has('auth')) {
         params.set('auth', 'required')
-        params.set('redirect', pathname)
+        const fullPath = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname
+        params.set('redirect', fullPath)
         router.replace(`${pathname}?${params.toString()}`, { scroll: false })
       }
       return

@@ -554,8 +554,20 @@ function RegistrationInner() {
 
   const planParam = searchParams.get("plan");
   const billingParam = searchParams.get("billing");
+  const returnToParam = searchParams.get("returnTo") || searchParams.get("redirect");
   const initialPlan: PlanType = planParam === "starter" ? "starter" : "pro";
   const isAnnual = billingParam !== "monthly"; // default to annual
+
+  const getPostRegisterPath = () => {
+    if (!returnToParam) return "/search";
+    try {
+      const decoded = decodeURIComponent(returnToParam);
+      if (decoded.startsWith("/") && !decoded.startsWith("//")) return decoded;
+    } catch {
+      /* ignore */
+    }
+    return "/search";
+  };
 
   const [plan, setPlan] = useState<PlanType>(initialPlan);
   const [step, setStep] = useState<Step>("form");
@@ -1121,7 +1133,7 @@ function RegistrationInner() {
       </p>
 
       <button
-        onClick={() => router.push("/search")}
+        onClick={() => router.replace(getPostRegisterPath())}
         style={{
           padding: "14px 32px",
           border: "none",
@@ -1137,7 +1149,7 @@ function RegistrationInner() {
           color: "#fff",
         }}
       >
-        Analyze Your First Property <ArrowIcon />
+        {returnToParam ? "Continue" : "Analyze Your First Property"} <ArrowIcon />
       </button>
 
       <p style={{ fontSize: "12px", color: "#475569", marginTop: "16px" }}>

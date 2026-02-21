@@ -34,6 +34,8 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
   const searchParams = useSearchParams()
   const params = new URLSearchParams(searchParams.toString())
   params.set('auth', 'required')
+  const fullPath = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname
+  params.set('redirect', fullPath)
   const signInUrl = `${pathname}?${params.toString()}`
 
   if (isAuthenticated) return <>{children}</>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
+import { SavePropertyButton } from '@/components/SavePropertyButton'
+import type { PropertySnapshot } from '@/hooks/useSaveProperty'
 
 /**
  * AnalysisNav — Persistent top navigation bar for the analysis flow.
@@ -20,25 +22,35 @@ export function AnalysisNav() {
   const isVerdict = pathname === '/verdict'
   const isStrategy = pathname === '/strategy'
 
-  // Resolve zpid — check URL params first, then sessionStorage
+  // Resolve zpid and optional snapshot — check URL params first, then sessionStorage
   const zpidFromUrl = searchParams.get('zpid') || searchParams.get('propertyId') || ''
   const [zpid, setZpid] = useState(zpidFromUrl)
+  const [propertySnapshot, setPropertySnapshot] = useState<PropertySnapshot | null>(null)
 
   useEffect(() => {
-    if (zpidFromUrl) {
-      setZpid(zpidFromUrl)
-      return
-    }
-    // Fallback: read from sessionStorage (set by verdict page after API fetch)
+    if (zpidFromUrl) setZpid(zpidFromUrl)
     if (typeof window === 'undefined') return
     try {
       const stored = sessionStorage.getItem('dealMakerOverrides')
       if (stored) {
         const parsed = JSON.parse(stored)
-        if (parsed.zpid) setZpid(String(parsed.zpid))
+        if (parsed.zpid && !zpidFromUrl) setZpid(String(parsed.zpid))
+        if (address && (parsed.beds != null || parsed.zpid != null)) {
+          setPropertySnapshot({
+            bedrooms: parsed.beds,
+            bathrooms: parsed.baths,
+            sqft: parsed.sqft,
+            listPrice: parsed.price,
+            zpid: parsed.zpid != null ? String(parsed.zpid) : undefined,
+          })
+        } else {
+          setPropertySnapshot(null)
+        }
+      } else {
+        setPropertySnapshot(null)
       }
     } catch { /* ignore */ }
-  }, [zpidFromUrl])
+  }, [zpidFromUrl, address])
 
   // Only show on analysis pages
   if (!isVerdict && !isStrategy) return null
@@ -107,8 +119,15 @@ export function AnalysisNav() {
           </Link>
         </div>
 
-        {/* Right: icon actions */}
+        {/* Right: Save Property + icon actions */}
         <div className="flex items-center gap-3">
+          {address && (
+            <SavePropertyButton
+              displayAddress={address}
+              propertySnapshot={propertySnapshot}
+              compact
+            />
+          )}
           <Link
             href="/search"
             className="p-1.5 rounded-lg transition-colors hover:bg-white/5"
