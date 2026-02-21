@@ -158,23 +158,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </div>
       </nav>
 
-      {/* BETA BANNER */}
-      <div style={{
-        background: 'linear-gradient(90deg, rgba(14,165,233,0.12) 0%, rgba(20,184,166,0.08) 100%)',
-        borderBottom: '1px solid rgba(14,165,233,0.15)',
-        padding: '0.5rem 1rem',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 40,
-      }}>
-        <p style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 500, margin: 0 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(14,165,233,0.2)', padding: '0.15rem 0.6rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: '0.5rem' }}>
-            Beta
-          </span>
-          Free early access — help shape the future of real estate analytics
-        </p>
-      </div>
-
       {/* HERO */}
       <DealGapIQHeroSection
         onAnalyzeAddress={(addr) => router.push(`/analyzing?address=${encodeURIComponent(addr)}`)}
