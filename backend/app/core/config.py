@@ -3,7 +3,7 @@ Application configuration and settings.
 All settings are loaded from environment variables with sensible defaults.
 """
 from pydantic_settings import BaseSettings
-from pydantic import computed_field
+from pydantic import computed_field, field_validator
 from functools import lru_cache
 from typing import Optional, List
 import os
@@ -159,8 +159,23 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "noreply@dealgapiq.com"
     EMAIL_FROM_NAME: str = "DealGapIQ"
     
-    # Email templates base URL (for links in emails)
+    # Email templates base URL (for links in emails and post-login redirects)
     FRONTEND_URL: str = "http://localhost:3000"
+
+    @field_validator("FRONTEND_URL", mode="before")
+    @classmethod
+    def normalize_frontend_url(cls, v: Optional[str]) -> str:
+        """Ensure FRONTEND_URL is a valid base URL. If env contains descriptive text (e.g. 'dealgapiq.com for email links and redirects'), use only the URL part and add scheme if missing."""
+        if not v or not isinstance(v, str):
+            return "http://localhost:3000"
+        s = v.strip()
+        if " " in s:
+            s = s.split()[0].strip()
+        if not s:
+            return "http://localhost:3000"
+        if not s.startswith("http://") and not s.startswith("https://"):
+            s = "https://" + s
+        return s.rstrip("/")
     
     # ===========================================
     # Stripe (Billing) — 2-tier model: Free + Pro ($29/mo)
