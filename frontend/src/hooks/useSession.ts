@@ -54,7 +54,7 @@ export function getLastKnownUser(): UserResponse | null {
 // ------------------------------------------------------------------
 
 export function useSession() {
-  const { data: user, isLoading, error } = useQuery<UserResponse | null>({
+  const { data: user, isLoading } = useQuery<UserResponse | null>({
     queryKey: SESSION_QUERY_KEY,
     queryFn: async () => {
       try {
@@ -71,6 +71,8 @@ export function useSession() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes — keep cache longer to survive navigations
+    // Show last known user while loading so we don't flash logged-out on refresh/navigation.
+    placeholderData: () => getLastKnownUser(),
     // Retry once on transient failures so a single network hiccup
     // doesn't immediately drop the session.
     retry: 1,
@@ -81,15 +83,19 @@ export function useSession() {
     refetchInterval: 4 * 60 * 1000, // 4 minutes
   })
 
+  // Single source of truth: query data with fallback to last known user.
+  // Prevents "logged out" flash when /me is in flight or returned null transiently.
+  const effectiveUser = user ?? getLastKnownUser()
+
   return {
-    user: user ?? null,
+    user: effectiveUser ?? null,
     isLoading,
-    isAuthenticated: !!user,
-    needsOnboarding: !!user && !user.onboarding_completed,
-    permissions: user?.permissions ?? [],
-    roles: user?.roles ?? [],
-    hasPermission: (perm: string) => user?.permissions?.includes(perm) ?? false,
-    isAdmin: user?.roles?.includes('admin') || user?.roles?.includes('owner') || user?.is_superuser || false,
+    isAuthenticated: !!effectiveUser,
+    needsOnboarding: !!effectiveUser && !effectiveUser.onboarding_completed,
+    permissions: effectiveUser?.permissions ?? [],
+    roles: effectiveUser?.roles ?? [],
+    hasPermission: (perm: string) => effectiveUser?.permissions?.includes(perm) ?? false,
+    isAdmin: effectiveUser?.roles?.includes('admin') || effectiveUser?.roles?.includes('owner') || effectiveUser?.is_superuser || false,
   }
 }
 
@@ -147,6 +153,7 @@ export function useLoginMfa() {
       return authApi.loginMfa(challengeToken, totpCode, rememberMe)
     },
     onSuccess: (data) => {
+      _lastKnownUser = data.user
       queryClient.setQueryData(SESSION_QUERY_KEY, data.user)
     },
   })
