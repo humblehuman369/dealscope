@@ -10,6 +10,7 @@ from typing import Optional
 
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK,
+    DEFAULT_BUY_DISCOUNT_PCT,
     estimate_income_value, calculate_buy_price, get_all_defaults,
     compute_market_price,
 )
@@ -445,7 +446,20 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
-    income_value = estimate_income_value(monthly_rent, property_taxes, insurance)
+    # Resolve assumptions from request or backend defaults so Income Value and Target Buy are always from the same assumptions
+    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else FINANCING.down_payment_pct
+    rate = input_data.interest_rate if input_data.interest_rate is not None else FINANCING.interest_rate
+    term = input_data.loan_term_years if input_data.loan_term_years is not None else FINANCING.loan_term_years
+    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else OPERATING.vacancy_rate
+    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else OPERATING.maintenance_pct
+    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else OPERATING.property_management_pct
+    buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
+
+    income_value = estimate_income_value(
+        monthly_rent, property_taxes, insurance,
+        down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
+        vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
+    )
     # Off-market: replace list_price with DealGapIQ Market Price when valuations provided
     if input_data.is_listed is False and (
         input_data.zestimate is not None
@@ -465,7 +479,12 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
             arv = input_data.arv or (list_price * 1.15)
             rehab_cost = arv * REHAB.renovation_budget_pct
 
-    buy_price = input_data.purchase_price or calculate_buy_price(list_price, monthly_rent, property_taxes, insurance)
+    buy_price = input_data.purchase_price or calculate_buy_price(
+        list_price, monthly_rent, property_taxes, insurance,
+        buy_discount_pct=buy_discount,
+        down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
+        vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
+    )
 
     strategies = [
         _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance),
