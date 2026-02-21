@@ -250,11 +250,16 @@ export const authApi = {
     return result
   },
 
-  loginMfa: (challengeToken: string, totpCode: string, rememberMe = false) =>
-    apiRequest<LoginResponse>('/api/v1/auth/login/mfa', {
+  loginMfa: async (challengeToken: string, totpCode: string, rememberMe = false) => {
+    const result = await apiRequest<LoginResponse>('/api/v1/auth/login/mfa', {
       method: 'POST',
       body: { challenge_token: challengeToken, totp_code: totpCode, remember_me: rememberMe },
-    }),
+    })
+    if (result.access_token) {
+      setMemoryToken(result.access_token)
+    }
+    return result
+  },
 
   register: (email: string, password: string, fullName: string) =>
     apiRequest<{ message: string }>('/api/v1/auth/register', {
