@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, Palette, Shield, Mail, Smartphone, TrendingUp, Megaphone } from 'lucide-react'
+import { Bell, Palette, Shield, Save } from 'lucide-react'
 import { api } from '@/lib/api-client'
 
 // ===========================================
@@ -218,6 +218,23 @@ export function PreferencesTab() {
             <span className="text-xs font-semibold text-slate-600">Coming Soon</span>
           </div>
         </div>
+      </div>
+
+      {/* Save - consistent with Account / Business / Investor tabs */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => savePrefs(prefs, theme)}
+          disabled={saving}
+          className="px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-sky-500 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
+        >
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          Save preferences
+        </button>
       </div>
     </div>
   )

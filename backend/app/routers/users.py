@@ -110,7 +110,20 @@ async def get_current_user_with_profile(
         last_login=user.last_login,
         has_profile=user.profile is not None,
         onboarding_completed=user.profile.onboarding_completed if user.profile else False,
-        profile=profile_response
+        profile=profile_response,
+        business_name=user.business_name,
+        business_type=user.business_type,
+        business_address_street=user.business_address_street,
+        business_address_city=user.business_address_city,
+        business_address_state=user.business_address_state,
+        business_address_zip=user.business_address_zip,
+        business_address_country=user.business_address_country,
+        phone_numbers=user.phone_numbers,
+        additional_emails=user.additional_emails,
+        social_links=user.social_links,
+        license_number=user.license_number,
+        license_state=user.license_state,
+        bio=user.bio,
     )
 
 
@@ -142,7 +155,20 @@ async def update_current_user(
         created_at=user.created_at,
         last_login=user.last_login,
         has_profile=user.profile is not None,
-        onboarding_completed=user.profile.onboarding_completed if user.profile else False
+        onboarding_completed=user.profile.onboarding_completed if user.profile else False,
+        business_name=user.business_name,
+        business_type=user.business_type,
+        business_address_street=user.business_address_street,
+        business_address_city=user.business_address_city,
+        business_address_state=user.business_address_state,
+        business_address_zip=user.business_address_zip,
+        business_address_country=user.business_address_country,
+        phone_numbers=user.phone_numbers,
+        additional_emails=user.additional_emails,
+        social_links=user.social_links,
+        license_number=user.license_number,
+        license_state=user.license_state,
+        bio=user.bio,
     )
 
 
