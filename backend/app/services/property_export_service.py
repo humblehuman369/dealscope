@@ -111,6 +111,31 @@ def generate_axesso_only_excel(export_data: Dict[str, Any]) -> bytes:
     return buf.getvalue()
 
 
+def generate_property_data_report_excel(export_data: Dict[str, Any]) -> bytes:
+    """
+    Generate one report file with two sheets: data received from RentCast and data received from AXESSO.
+    Sheet 1 "RentCast" — all data we receive from RentCast for this property.
+    Sheet 2 "AXESSO" — all data we receive from AXESSO/Zillow for this property.
+    """
+    raw_rentcast = export_data.get("raw_rentcast") or {}
+    raw_axesso = export_data.get("raw_axesso") or {}
+    rentcast_rows = _build_rentcast_rows(raw_rentcast, key_prefix="")
+    axesso_rows = _build_axesso_rows(raw_axesso, key_prefix="")
+
+    wb = Workbook()
+    ws_rc = wb.active
+    ws_rc.title = "RentCast"
+    _write_key_value_sheet(ws_rc, rentcast_rows)
+
+    ws_ax = wb.create_sheet("AXESSO", 1)
+    _write_key_value_sheet(ws_ax, axesso_rows)
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
+
+
 def _write_property_data_sheet(ws: Any, rentcast_rows: List[Tuple[str, Any]], axesso_rows: List[Tuple[str, Any]]) -> None:
     """Write one sheet with all RentCast then all AXESSO data (Key, Value)."""
     ws.append(["Key", "Value"])
