@@ -4,16 +4,19 @@ Property router for property search, details, and market data endpoints.
 Extracted from main.py for cleaner architecture.
 """
 import logging
+from datetime import datetime
+from io import BytesIO
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.schemas.property import (
     PropertySearchRequest,
     PropertyResponse,
 )
 from app.services.property_service import property_service
+from app.services.property_export_service import generate_property_data_excel
 from app.services.search_history_service import search_history_service
 from app.core.deps import OptionalUser, DbSession
 from app.core.exceptions import PropertyNotFoundError, ExternalAPIError
@@ -145,6 +148,46 @@ async def search_property(
         logger.debug("Search history not recorded: no authenticated user")
 
     return result
+
+
+@router.post(
+    "/properties/export-report",
+    summary="Export property data report (RentCast, AXESSO, Verdict/Strategy)",
+)
+async def export_property_data_report(request: PropertySearchRequest):
+    """
+    Generate an Excel report with three sheets:
+    1. RentCast Data — raw RentCast API data (property, value estimate, rent estimate, market stats)
+    2. AXESSO Data — raw AXESSO/Zillow API data (search-by-address, property details)
+    3. Calculated — Verdict and Strategy metrics (deal score, list price, income value, target buy, strategies)
+
+    Request body: same as property search (address, optional city, state, zip_code).
+    """
+    address_parts = [request.address]
+    if request.city:
+        address_parts.append(request.city)
+    if request.state:
+        address_parts.append(request.state)
+    if request.zip_code:
+        address_parts.append(request.zip_code)
+    full_address = ", ".join(address_parts)
+    logger.info(f"Export report requested for: {full_address}")
+    try:
+        export_data = await property_service.get_property_export_data(full_address)
+        excel_bytes = generate_property_data_excel(export_data)
+    except Exception as e:
+        logger.exception("Property export report failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Export failed: {str(e)}",
+        )
+    street_slug = (request.address or "property").replace(" ", "_").replace(",", "")[:40]
+    filename = f"Property_Data_{street_slug}_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.xlsx"
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/properties/demo/sample", response_model=PropertyResponse)
