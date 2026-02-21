@@ -212,5 +212,16 @@ class AuthMessage(BaseModel):
     requires_verification: bool = False
 
 
+class RegisterResponse(BaseModel):
+    """Returned after registration. When verification is disabled, includes user + tokens for auto-login."""
+    message: str
+    requires_verification: bool
+    user: Optional["UserResponse"] = None
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    expires_in: Optional[int] = None
+
+
 # Resolve forward reference
 LoginResponse.model_rebuild()
+RegisterResponse.model_rebuild()

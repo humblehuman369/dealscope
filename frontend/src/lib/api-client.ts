@@ -262,7 +262,7 @@ export const authApi = {
   },
 
   register: (email: string, password: string, fullName: string) =>
-    apiRequest<{ message: string }>('/api/v1/auth/register', {
+    apiRequest<RegisterResponse>('/api/v1/auth/register', {
       method: 'POST',
       body: { email, password, full_name: fullName },
       skipAuth: true,
@@ -376,6 +376,15 @@ export interface LoginResponse {
 export interface MFAChallengeResponse {
   mfa_required: boolean
   challenge_token: string
+}
+
+export interface RegisterResponse {
+  message: string
+  requires_verification?: boolean
+  user?: UserResponse
+  access_token?: string
+  refresh_token?: string
+  expires_in?: number
 }
 
 export interface SessionInfo {
