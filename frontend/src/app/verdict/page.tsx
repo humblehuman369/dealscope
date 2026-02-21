@@ -781,20 +781,28 @@ function VerdictContent() {
           />
         )}
 
-        {/* Responsive container: mobile-first single column, desktop 2-column */}
-        <div className="max-w-[520px] lg:max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_380px] lg:gap-0">
-          {/* VerdictIQ Score Card — clean standalone component */}
-          <VerdictScoreCard
-            score={score}
-            verdictLabel={verdictLabel}
-            description={shortVerdictDescription}
-            componentScores={verdictComponentScores}
-            onHowItWorks={handleShowMethodology}
-            hideScoreComponents
-          />
+        {/* Responsive container: mobile-first single column, desktop 2-column. Wide: left = Verdict + Score Components, right = Price Targets + Snapshot + CTA. */}
+        <div className="max-w-[520px] lg:max-w-6xl xl:max-w-7xl mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-0">
+          {/* LEFT COLUMN (wide): Verdict + Score Components */}
+          <div className="min-w-0 flex flex-col lg:pr-0">
+            <VerdictScoreCard
+              score={score}
+              verdictLabel={verdictLabel}
+              description={shortVerdictDescription}
+              componentScores={verdictComponentScores}
+              onHowItWorks={handleShowMethodology}
+              hideScoreComponents
+            />
+            {/* Score Components — why did it score this way */}
+            <section className="px-5 py-6 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
+              <ComponentScoreBars scores={verdictComponentScores} />
+            </section>
+          </div>
 
+          {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
+          <div className="min-w-0 lg:border-l lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
           {/* Price Targets — hero gap bar first, then heading and cards */}
-          <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
+          <section className="px-5 py-8 border-t lg:border-t-0 lg:pt-8" style={{ borderColor: colors.ui.border }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
 
             {/* Hero gap bar — primary story: Market vs Income Value vs Target Buy */}
@@ -932,14 +940,6 @@ function VerdictContent() {
               </div>
             </div>
           </section>
-
-          {/* Score Components — why did it score this way */}
-          <section className="px-5 py-6 border-t" style={{ borderColor: colors.ui.border }}>
-            <ComponentScoreBars scores={verdictComponentScores} />
-          </section>
-
-          {/* === RIGHT COLUMN on desktop / continues below on mobile === */}
-          <div className="lg:border-l lg:sticky lg:top-0 lg:self-start lg:h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
 
           {/* Market Snapshot */}
           <section className="px-5 pb-6 border-t lg:border-t-0 lg:pt-10" style={{ borderColor: colors.ui.border }}>
