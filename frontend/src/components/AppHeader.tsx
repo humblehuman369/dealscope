@@ -27,6 +27,7 @@ import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, 
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
 
 // ===================
@@ -194,11 +195,6 @@ export function AppHeader({
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   
-  // Save property state
-  const [isSaved, setIsSaved] = useState(false)
-  const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
   const { openAuthModal } = useAuthModal()
@@ -306,83 +302,26 @@ export function AppHeader({
     }
   }, [isPropertyExpanded, readPropertyFromStorage])
 
-  // Check if the current property is already saved
-  useEffect(() => {
-    if (!isAuthenticated || !displayAddress) {
-      setIsSaved(false)
-      setSavedPropertyId(null)
-      return
+  const savePropertySnapshot = React.useMemo(() => {
+    if (!resolvedProperty || !displayAddress) return undefined
+    const addrParts = parseDisplayAddress(displayAddress)
+    return {
+      street: addrParts.streetAddress,
+      city: addrParts.city,
+      state: addrParts.state,
+      zipCode: addrParts.zipCode,
+      bedrooms: resolvedProperty.beds,
+      bathrooms: resolvedProperty.baths,
+      sqft: resolvedProperty.sqft,
+      listPrice: resolvedProperty.price,
+      zpid: resolvedProperty.zpid,
     }
-    
-    let cancelled = false
-    const checkSaved = async () => {
-      try {
-        const result = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
-          `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
-        )
-        if (!cancelled) {
-          setIsSaved(result.is_saved)
-          setSavedPropertyId(result.saved_property_id)
-        }
-      } catch {
-        // Silently fail — don't block the UI
-      }
-    }
-    
-    checkSaved()
-    return () => { cancelled = true }
-  }, [isAuthenticated, displayAddress])
+  }, [resolvedProperty, displayAddress])
 
-  // Save / unsave property handler
-  const handleSaveToggle = useCallback(async () => {
-    if (!isAuthenticated || !displayAddress || isSaving) return
-    
-    setIsSaving(true)
-    try {
-      if (isSaved && savedPropertyId) {
-        // Unsave
-        await api.delete(`/api/v1/properties/saved/${savedPropertyId}`)
-        setIsSaved(false)
-        setSavedPropertyId(null)
-      } else {
-        // Save
-        const addrParts = parseDisplayAddress(displayAddress)
-        const snapshot: Record<string, any> = {}
-        if (resolvedProperty) {
-          snapshot.street = addrParts.streetAddress
-          snapshot.city = addrParts.city
-          snapshot.state = addrParts.state
-          snapshot.zipCode = addrParts.zipCode
-          if (resolvedProperty.beds) snapshot.bedrooms = resolvedProperty.beds
-          if (resolvedProperty.baths) snapshot.bathrooms = resolvedProperty.baths
-          if (resolvedProperty.sqft) snapshot.sqft = resolvedProperty.sqft
-          if (resolvedProperty.price) snapshot.listPrice = resolvedProperty.price
-          if (resolvedProperty.zpid) snapshot.zpid = resolvedProperty.zpid
-        }
-
-        const result = await api.post<{ id: string }>('/api/v1/properties/saved', {
-          address_street: addrParts.streetAddress,
-          address_city: addrParts.city || undefined,
-          address_state: addrParts.state || undefined,
-          address_zip: addrParts.zipCode || undefined,
-          full_address: displayAddress,
-          zpid: resolvedProperty?.zpid || undefined,
-          property_data_snapshot: Object.keys(snapshot).length > 0 ? snapshot : undefined,
-          status: 'watching',
-        })
-        setIsSaved(true)
-        setSavedPropertyId(result.id)
-      }
-    } catch (err: any) {
-      // If already saved (409), update state to reflect that
-      if (err?.status === 409) {
-        setIsSaved(true)
-      }
-      console.error('Save toggle failed:', err)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [isAuthenticated, displayAddress, isSaved, savedPropertyId, isSaving, resolvedProperty])
+  const { isSaved, savedPropertyId, isSaving, toggle: handleSaveToggle } = useSaveProperty({
+    displayAddress: displayAddress || '',
+    propertySnapshot: savePropertySnapshot,
+  })
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
   // if (HIDDEN_ROUTES.includes(pathname || '')) {
@@ -400,6 +339,8 @@ export function AppHeader({
   const signInUrl = `${pathname || '/'}?${(() => {
     const p = new URLSearchParams(searchParams?.toString() ?? '')
     p.set('auth', 'required')
+    const fullPath = searchParams?.toString() ? `${pathname || '/'}?${searchParams.toString()}` : pathname || '/'
+    p.set('redirect', fullPath)
     return p.toString()
   })()}`
 
@@ -679,7 +620,7 @@ export function AppHeader({
                 {/* Save Property Button — auth required (free & pro) */}
                 {isAuthenticated ? (
                   <button
-                    onClick={handleSaveToggle}
+                    onClick={() => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))}
                     disabled={isSaving}
                     aria-label={isSaved ? 'Unsave property' : 'Save property'}
                     className={`p-1.5 rounded transition-all ${

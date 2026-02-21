@@ -18,6 +18,8 @@ export function useAuthModal() {
     (mode: 'login' | 'register') => {
       const params = new URLSearchParams(window.location.search)
       params.set('auth', mode)
+      const fullPath = window.location.search ? `${pathname}${window.location.search}` : pathname
+      params.set('redirect', fullPath)
       router.push(`${pathname}?${params.toString()}`)
     },
     [router, pathname],

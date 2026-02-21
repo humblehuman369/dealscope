@@ -10,9 +10,12 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import { useCallback, useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
@@ -66,6 +69,8 @@ function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isAuthenticated } = useSession()
+  const { isPro } = useSubscription()
+  const { openAuthModal } = useAuthModal()
 
   const addressParam = searchParams.get('address') || ''
   const conditionParam = searchParams.get('condition')
@@ -100,6 +105,27 @@ function StrategyContent() {
       console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
     }
   }, [addressParam, strategyParam])
+
+  const savePropertySnapshot = useMemo(() => {
+    if (!addressParam || !propertyInfo) return undefined
+    const addr = propertyInfo.address || {}
+    return {
+      street: addr.street ?? (addressParam.split(',')[0]?.trim() || ''),
+      city: addr.city ?? '',
+      state: addr.state ?? '',
+      zipCode: addr.zip_code ?? addr.zip ?? '',
+      bedrooms: propertyInfo.details?.bedrooms,
+      bathrooms: propertyInfo.details?.bathrooms,
+      sqft: propertyInfo.details?.square_footage,
+      listPrice: propertyInfo.price,
+      zpid: propertyInfo.zpid,
+    }
+  }, [addressParam, propertyInfo])
+
+  const { isSaved, isSaving, save, toggle } = useSaveProperty({
+    displayAddress: addressParam,
+    propertySnapshot: savePropertySnapshot,
+  })
 
   // Scroll to top on mount — prevents opening mid-page after navigation
   useEffect(() => {
@@ -334,6 +360,15 @@ function StrategyContent() {
       return
     }
 
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
+    if (!isPro) {
+      alert('Excel worksheet download is a Pro feature. Visit Pricing to upgrade.')
+      return
+    }
+
     setIsExporting('excel')
     try {
       const params = new URLSearchParams({
@@ -364,11 +399,22 @@ function StrategyContent() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || 'Failed to generate Excel report')
+        const detail = typeof errorData.detail === 'string' ? errorData.detail : ''
+        if (response.status === 401) {
+          throw new Error('Please sign in to download the worksheet.')
+        }
+        if (response.status === 403) {
+          throw new Error('Pro subscription required. Upgrade to download the worksheet.')
+        }
+        if (response.status === 404) {
+          throw new Error(detail || 'Property not found.')
+        }
+        throw new Error(detail || 'Failed to generate Excel report.')
       }
 
       const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = 'DealGapIQ_Strategy_Report.xlsx'
+      const addressSlug = addressParam.replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 30) || 'property'
+      let filename = `DealGapIQ_Proforma_${addressSlug}.xlsx`
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/)
         if (match) filename = match[1]
@@ -767,15 +813,24 @@ function StrategyContent() {
           </p>
           {isAuthenticated ? (
             <>
-              <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
-                style={{ background: colors.brand.teal }}>
-                Save to DealVaultIQ
+              <button
+                type="button"
+                onClick={() => (isSaved ? toggle() : save()).catch((err) => console.error('Save to DealVault failed:', err))}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: colors.brand.teal }}
+              >
+                {isSaving ? 'Saving…' : isSaved ? 'Saved to DealVault ✓' : 'Save to DealVaultIQ'}
               </button>
             </>
           ) : (
             <>
-              <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
-                style={{ background: colors.brand.teal }}>
+              <button
+                type="button"
+                onClick={() => openAuthModal('register')}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
+                style={{ background: colors.brand.teal }}
+              >
                 Create Free Account
               </button>
               <p className="text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
