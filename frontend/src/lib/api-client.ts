@@ -406,9 +406,32 @@ export interface MFASetupResponse {
 // Billing API
 // ------------------------------------------------------------------
 
+export interface CreateCheckoutParams {
+  price_id?: string
+  lookup_key?: string
+  success_url?: string
+  cancel_url?: string
+}
+
+export interface CheckoutSessionResponse {
+  checkout_url: string
+  session_id: string
+}
+
 export const billingApi = {
   createSetupIntent: () =>
     apiRequest<{ client_secret: string }>('/api/v1/billing/setup-intent', { method: 'POST' }),
+
+  createCheckoutSession: (params: CreateCheckoutParams) =>
+    apiRequest<CheckoutSessionResponse>('/api/v1/billing/checkout', {
+      method: 'POST',
+      body: {
+        price_id: params.price_id ?? undefined,
+        lookup_key: params.lookup_key ?? undefined,
+        success_url: params.success_url ?? undefined,
+        cancel_url: params.cancel_url ?? undefined,
+      },
+    }),
 
   createSubscription: (paymentMethodId: string, priceId?: string, lookupKey?: string) =>
     apiRequest<{ subscription_id: string; status: string; trial_end?: number | null }>('/api/v1/billing/subscribe', {

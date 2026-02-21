@@ -8,9 +8,11 @@ from typing import Optional, List
 
 from app.core.deps import CurrentUser, DbSession
 from app.services.billing_service import billing_service
+from app.core.config import settings
 from app.schemas.billing import (
     PricingPlan,
     PricingPlansResponse,
+    PlanType,
     SubscriptionResponse,
     UsageResponse,
     CreateCheckoutRequest,
@@ -69,11 +71,19 @@ async def get_subscription(
     Returns subscription tier, status, limits, and billing period information.
     """
     subscription = await billing_service.get_or_create_subscription(db, current_user.id)
-    
+
+    plan_type = PlanType.STARTER
+    if subscription.tier.value == "pro":
+        if subscription.stripe_price_id == settings.STRIPE_PRICE_PRO_YEARLY:
+            plan_type = PlanType.PRO_ANNUAL
+        else:
+            plan_type = PlanType.PRO_MONTHLY  # monthly or legacy Pro
+
     return SubscriptionResponse(
         id=str(subscription.id),
         tier=subscription.tier,
         status=subscription.status,
+        plan_type=plan_type,
         current_period_start=subscription.current_period_start,
         current_period_end=subscription.current_period_end,
         cancel_at_period_end=subscription.cancel_at_period_end,

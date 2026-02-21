@@ -19,6 +19,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react'
+import { UpgradeModal } from '@/components/billing/UpgradeModal'
 
 interface Subscription {
   id: string
@@ -55,6 +56,7 @@ function BillingContent() {
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -204,7 +206,12 @@ function BillingContent() {
             </div>
           </div>
 
-          {/* Renewal info */}
+          {/* Trial end / renewal info */}
+          {isPro && subscription?.trial_end && isTrialing && (
+            <div className="text-xs mb-2" style={{ color: '#64748B' }}>
+              Trial ends {new Date(subscription.trial_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </div>
+          )}
           {isPro && subscription?.current_period_end && (
             <div className="text-xs mb-4" style={{ color: '#64748B' }}>
               {subscription.cancel_at_period_end ? 'Access until' : 'Renews'}{' '}
@@ -252,18 +259,19 @@ function BillingContent() {
                 style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.12)', color: '#CBD5E1' }}
               >
                 {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                Manage Billing
+                Manage Subscription
                 <ExternalLink className="w-3 h-3" />
               </button>
             ) : (
-              <Link
-                href="/pricing"
+              <button
+                type="button"
+                onClick={() => setUpgradeModalOpen(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white"
                 style={{ background: 'linear-gradient(135deg, #0EA5E9, #0284C7)' }}
               >
                 Upgrade to Pro
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             )}
           </div>
         </div>
@@ -328,6 +336,12 @@ function BillingContent() {
             </div>
           )}
         </div>
+
+        <UpgradeModal
+          isOpen={upgradeModalOpen}
+          onClose={() => setUpgradeModalOpen(false)}
+          returnTo="/billing"
+        />
 
         {/* Trust badges */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs" style={{ color: '#475569' }}>
