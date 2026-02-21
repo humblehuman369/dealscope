@@ -519,6 +519,38 @@ function VerdictContent() {
             })(),
           }
           setAnalysis(analysisResult)
+
+          // Single source of truth: persist backend list_price, income_value, purchase_price
+          // to the same key Strategy reads (dealMaker_${canonicalAddress}) so both pages
+          // show the same Market, Target Buy, and Income Value when navigating Verdict → Strategy.
+          const backendListPrice = analysisData.list_price ?? analysisData.listPrice
+          const backendIncomeValue = analysisData.income_value ?? analysisData.incomeValue
+          const backendPurchasePrice = analysisData.purchase_price ?? analysisData.purchasePrice
+          if (backendListPrice != null || backendIncomeValue != null || backendPurchasePrice != null) {
+            try {
+              const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+              const parts = [propertyData.address, propertyData.city, stateZip].filter(Boolean)
+              const canonicalAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+              if (canonicalAddress) {
+                const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
+                const existing = sessionStorage.getItem(sessionKey)
+                const parsed = existing ? JSON.parse(existing) : {}
+                if (backendListPrice != null) parsed.listPrice = backendListPrice
+                if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
+                if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
+                parsed.timestamp = Date.now()
+                parsed.canonicalAddress = canonicalAddress
+                sessionStorage.setItem(sessionKey, JSON.stringify(parsed))
+              }
+            } catch {
+              // Ignore storage errors
+            }
+          }
+
+          // Use backend list_price as displayed Market (single source of truth)
+          if (backendListPrice != null && backendListPrice > 0) {
+            setProperty((prev) => ({ ...prev, price: Math.round(backendListPrice) }))
+          }
         } catch (analysisErr) {
           console.error('Error fetching analysis:', analysisErr)
         }
@@ -752,7 +784,8 @@ function VerdictContent() {
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const parts = [property.address, property.city, stateZip].filter(Boolean)
+    const fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
     const params = new URLSearchParams({ address: fullAddress })
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
