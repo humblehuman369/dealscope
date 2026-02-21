@@ -490,23 +490,27 @@ function LTRMetricsContent({
     ]
   )
   
-  // Returns data based on strategy
+  // Returns data based on strategy — require all rental metrics (same as benchmarks) so we don't show returns with missing data as zeros
   const returnsData = useMemo(() => {
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return null
     
-    const monthlyCashFlow = (m as Record<string, unknown>).monthly_cash_flow ?? (m as Record<string, unknown>).monthlyCashFlow
-    const hasRentalMetrics = monthlyCashFlow !== undefined && monthlyCashFlow !== null
+    const raw = m as Record<string, unknown>
+    const monthlyCashFlow = raw.monthly_cash_flow ?? raw.monthlyCashFlow
+    const capRaw = raw.cap_rate ?? raw.capRate
+    const cocRaw = raw.cash_on_cash_return ?? raw.cashOnCashReturn ?? raw.cashOnCash
+    const hasAllRentalMetrics =
+      monthlyCashFlow !== undefined && monthlyCashFlow !== null &&
+      capRaw !== undefined && capRaw !== null &&
+      cocRaw !== undefined && cocRaw !== null &&
+      raw.dscr !== undefined && raw.dscr !== null
     
     switch (strategy) {
       case 'ltr':
       case 'str':
       case 'brrrr':
       case 'house_hack':
-        if (hasRentalMetrics) {
-          const raw = m as Record<string, unknown>
-          const capRaw = raw.cap_rate ?? raw.capRate ?? 0
-          const cocRaw = raw.cash_on_cash_return ?? raw.cashOnCashReturn ?? raw.cashOnCash ?? 0
+        if (hasAllRentalMetrics) {
           const capRateDecimal = typeof capRaw === 'number' && capRaw > 1 ? capRaw / 100 : Number(capRaw) || 0
           const cashOnCashDecimal = typeof cocRaw === 'number' && cocRaw > 1 ? cocRaw / 100 : Number(cocRaw) || 0
           return createLTRReturns(
