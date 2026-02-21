@@ -83,12 +83,14 @@ function StrategyContent() {
   const [isExporting, setIsExporting] = useState<string | null>(null)
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
 
-  // Read DealMaker adjustments from sessionStorage (saved by Verdict page)
+  // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
+  // key uses canonical address so it matches when navigating Verdict → Strategy).
   const [dealMakerOverrides, setDealMakerOverrides] = useState<Record<string, any> | null>(null)
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
     try {
-      const sessionKey = `dealMaker_${encodeURIComponent(addressParam)}`
+      const canonicalAddress = addressParam.trim().replace(/\s+/g, ' ')
+      const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
       const stored = sessionStorage.getItem(sessionKey)
       if (stored) {
         const parsed = JSON.parse(stored)
@@ -139,11 +141,13 @@ function StrategyContent() {
         setIsLoading(true)
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
         const v = propData.valuations || {}
+        // Same fallback as Verdict page when no valuations (2500/0.007 not 350000)
+        const verdictFallback = Math.round(2500 / 0.007)
         let price = v.market_price
           ?? (v.zestimate != null && v.current_value_avm != null ? Math.round((v.zestimate + v.current_value_avm) / 2) : null)
           ?? v.current_value_avm
           ?? v.zestimate
-          ?? 350000
+          ?? verdictFallback
         let monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
         let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
         let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)
@@ -158,9 +162,12 @@ function StrategyContent() {
           monthlyRent = Math.round(monthlyRent * loc.rentMultiplier)
         }
 
-        // Apply DealMaker overrides (saved from Verdict page)
+        // Apply DealMaker/verdict overrides: listPrice from Verdict = Market (single source of truth);
+        // buyPrice/purchasePrice only used as market when listPrice not set (e.g. after Deal Maker Apply).
         if (dealMakerOverrides) {
-          if (dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice) {
+          if (dealMakerOverrides.listPrice != null && dealMakerOverrides.listPrice > 0) {
+            price = dealMakerOverrides.listPrice
+          } else if (dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice) {
             price = dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice
           }
           if (dealMakerOverrides.monthlyRent) monthlyRent = dealMakerOverrides.monthlyRent
@@ -247,10 +254,12 @@ function StrategyContent() {
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
-  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 350000
-  // DealMaker overrides take priority, then backend data, then defaults
-  const targetPrice = dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice
-    || data.purchase_price || (data as any).purchasePrice || Math.round(listPrice * 0.85)
+  // Same fallback as Verdict when no valuations (single source of truth)
+  const listPriceFallback = Math.round(2500 / 0.007)
+  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? listPriceFallback
+  // DealMaker/verdict overrides: purchasePrice from verdict or Deal Maker, then backend
+  const targetPrice = dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice
+    ?? data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const monthlyRent = dealMakerOverrides?.monthlyRent
     || propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
   const propertyTaxes = dealMakerOverrides?.propertyTaxes
