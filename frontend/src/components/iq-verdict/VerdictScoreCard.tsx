@@ -218,9 +218,6 @@ export function VerdictScoreCard({
   return (
     <section
       className="px-5 pt-10 pb-8"
-      style={{
-        background: `radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.04) 0%, transparent 70%), ${colors.background.bg}`,
-      }}
     >
       {/* Section label */}
       <p

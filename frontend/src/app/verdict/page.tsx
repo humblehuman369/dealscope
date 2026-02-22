@@ -836,56 +836,7 @@ function VerdictContent() {
 
           {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
           <div className="min-w-0 lg:border-l lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
-          {/* Price Targets — hero gap bar first, then heading and cards */}
           <section className="px-5 py-8 border-t lg:border-t-0 lg:pt-8" style={{ borderColor: colors.ui.border }}>
-            <p className={tw.sectionHeader} style={{ color: colors.brand.teal, marginBottom: 8 }}>Price Targets</p>
-
-            {/* Hero gap bar — primary story: Market vs Income Value vs Target Buy */}
-            {(() => {
-              const listPrice = analysis.listPrice ?? property.price
-              const heroMarkers = [
-                { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
-                { label: 'Income Value', price: incomeValue, dotColor: colors.brand.gold },
-                { label: priceLabel, price: listPrice, dotColor: colors.status.negative },
-              ].sort((a, b) => a.price - b.price)
-              const allPrices = heroMarkers.map(m => m.price).filter(p => p > 0)
-              if (allPrices.length === 0) return null
-              const scaleMin = Math.min(...allPrices) * 0.95
-              const scaleMax = Math.max(...allPrices) * 1.05
-              const range = scaleMax - scaleMin
-              const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
-              const gapPct = incomeGapPct != null && incomeGapPct > 0 ? Math.round(incomeGapPct) : null
-              return (
-                <div className="mb-6">
-                  <div className="relative h-3 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.blue}25, ${colors.brand.gold}25, ${colors.status.negative}30)` }}>
-                    {heroMarkers.map((m, i) => (
-                      <div key={i} className="absolute w-5 h-5 rounded-full border-2 -top-[5px]"
-                        style={{
-                          left: `${pos(m.price)}%`,
-                          transform: 'translateX(-50%)',
-                          background: m.dotColor,
-                          borderColor: colors.background.card,
-                          boxShadow: `0 0 10px ${m.dotColor}60`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex justify-between mt-2 mb-1">
-                    {heroMarkers.map((m, i) => (
-                      <div key={i} className="flex flex-col items-center gap-0.5">
-                        <span className="text-[0.7rem] font-bold" style={{ color: m.dotColor }}>{m.label}</span>
-                        <span className="text-[0.8rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {gapPct != null && (
-                    <p className="text-center text-sm font-semibold mt-2" style={{ color: colors.status.negative }}>
-                      {gapPct}% above Income Value
-                    </p>
-                  )}
-                </div>
-              )
-            })()}
 
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>
               {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}

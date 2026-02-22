@@ -168,18 +168,28 @@ def calculate_ltr_breakeven(
     down_payment_pct: float,
     interest_rate: float,
     loan_term_years: int,
+    capex_pct: float = 0.0,
+    utilities_annual: float = 0.0,
+    other_annual_expenses: float = 0.0,
 ) -> float:
     """Breakeven purchase price where monthly cash flow = $0.
 
     At breakeven: NOI = Annual Debt Service.
+    Percentage-based expenses use annual_gross_rent (before vacancy)
+    to match the LTR strategy calculator.
     All parameters are required — resolved by the caller.
     """
     annual_gross_rent = monthly_rent * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
 
-    annual_maintenance = effective_gross_income * maintenance_pct
-    annual_management = effective_gross_income * management_pct
-    operating_expenses = property_taxes + insurance + annual_maintenance + annual_management
+    annual_maintenance = annual_gross_rent * maintenance_pct
+    annual_management = annual_gross_rent * management_pct
+    annual_capex = annual_gross_rent * capex_pct
+    operating_expenses = (
+        property_taxes + insurance
+        + annual_maintenance + annual_management + annual_capex
+        + utilities_annual + other_annual_expenses
+    )
 
     noi = effective_gross_income - operating_expenses
 
