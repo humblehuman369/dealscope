@@ -12,7 +12,7 @@ All functions under test are pure — no DB or network required.
 """
 
 import pytest
-from app.core.defaults import estimate_income_value, calculate_buy_price, _clamp
+from app.core.formulas import estimate_income_value, calculate_buy_price, _clamp
 
 
 # =====================================================================

@@ -4,12 +4,8 @@ Tests for backend/app/core/defaults.py — Income Value and Target Buy.
 These formulas are the single source of truth for price targets; all clients must use API values.
 """
 import pytest
-from app.core.defaults import (
-    estimate_income_value,
-    calculate_buy_price,
-    compute_market_price,
-    DEFAULT_BUY_DISCOUNT_PCT,
-)
+from app.core.formulas import estimate_income_value, calculate_buy_price, compute_market_price
+from app.core.defaults import DEFAULT_BUY_DISCOUNT_PCT
 
 
 class TestEstimateIncomeValue:

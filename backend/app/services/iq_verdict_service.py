@@ -11,9 +11,9 @@ from typing import Optional
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK,
     DEFAULT_BUY_DISCOUNT_PCT,
-    estimate_income_value, calculate_buy_price, get_all_defaults,
-    compute_market_price,
+    get_all_defaults,
 )
+from app.core.formulas import estimate_income_value, calculate_buy_price, compute_market_price
 from app.services.calculators import calculate_monthly_mortgage
 from app.schemas.analytics import (
     IQVerdictInput, IQVerdictResponse, StrategyResult,
