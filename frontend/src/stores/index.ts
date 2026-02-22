@@ -193,7 +193,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
   flip: {
     hard_money_ltv: 0.90,          // 90%
     hard_money_rate: 0.12,         // 12%
-    selling_costs_pct: 0.06,       // 6% (was 8%)
+    selling_costs_pct: 0.08,       // 8% (6% commission + 2% seller closing)
     holding_period_months: 6,      // 6 months
   },
   house_hack: {

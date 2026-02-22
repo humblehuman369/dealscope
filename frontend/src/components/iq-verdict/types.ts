@@ -106,6 +106,8 @@ export interface IQAnalysisResult {
   profitGrade?: ProfitGrade;
   // NEW: Composite verdict component scores from backend
   componentScores?: VerdictComponentScores;
+  // Assumptions used for this analysis (from backend resolver)
+  defaults_used?: Record<string, Record<string, number>>;
 }
 
 /**
@@ -587,7 +589,7 @@ const FALLBACK_ASSUMPTIONS = {
   insurancePct: 0.01,           // OPERATING.insurance_pct
   strManagementPct: 0.10,       // STR.str_management_pct
   platformFeesPct: 0.15,        // STR.platform_fees_pct
-  sellingCostsPct: 0.06,        // FLIP.selling_costs_pct
+  sellingCostsPct: 0.08,        // FLIP.selling_costs_pct
   rehabBudgetPct: 0.05,         // REHAB.renovation_budget_pct
   buyDiscountPct: 0.05,         // BRRRR.buy_discount_pct
   refinanceRate: 0.06,          // BRRRR.refinance_interest_rate
@@ -874,7 +876,7 @@ function calculateFlipStrategy(
     (price * 0.12 / 12 * holdingPeriodMonths) + // Hard money interest
     (propertyTaxes / 12 * holdingPeriodMonths) +
     (insurance / 12 * holdingPeriodMonths);
-  const sellingCosts = arv * DEFAULT_ASSUMPTIONS.sellingCostsPct; // 6%
+  const sellingCosts = arv * DEFAULT_ASSUMPTIONS.sellingCostsPct; // 8%
   const totalInvestment = price + purchaseCosts + rehabCost + holdingCosts;
   const netProfit = arv - totalInvestment - sellingCosts;
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0;
