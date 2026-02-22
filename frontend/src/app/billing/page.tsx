@@ -112,7 +112,7 @@ function BillingContent() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white gap-4">
         <p className="text-slate-400">Log in to manage your subscription.</p>
-        <Link href="/?auth=login" className="px-6 py-2 rounded-lg bg-sky-500 text-white font-semibold">
+        <Link href="/billing?auth=required&redirect=%2Fbilling" className="px-6 py-2 rounded-lg bg-sky-500 text-white font-semibold">
           Log In
         </Link>
       </div>

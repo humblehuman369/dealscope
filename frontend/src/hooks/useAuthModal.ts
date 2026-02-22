@@ -15,13 +15,13 @@ export function useAuthModal() {
   const pathname = usePathname()
 
   const openAuthModal = useCallback(
-    (mode: 'login' | 'register') => {
+    (mode: 'login' | 'register', redirectTo?: string) => {
       // Build a clean redirect URL without stale auth/redirect params
       const currentParams = new URLSearchParams(window.location.search)
       currentParams.delete('auth')
       currentParams.delete('redirect')
       const cleanSearch = currentParams.toString()
-      const redirectPath = cleanSearch ? `${pathname}?${cleanSearch}` : pathname
+      const redirectPath = redirectTo ?? (cleanSearch ? `${pathname}?${cleanSearch}` : pathname)
 
       const params = new URLSearchParams(cleanSearch)
       params.set('auth', mode)
