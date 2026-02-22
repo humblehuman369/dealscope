@@ -118,15 +118,22 @@ async function refreshTokens(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
-      // No body — backend reads the refresh_token from the httpOnly cookie.
-      // Sending `body: '{}'` previously caused a 422 because FastAPI tried
-      // to validate the empty object against RefreshTokenRequest (which
-      // requires a `refresh_token` string field).
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       })
-      return res.ok
+      if (res.ok) {
+        try {
+          const body = await res.json()
+          if (body.access_token) {
+            setMemoryToken(body.access_token)
+          }
+        } catch {
+          // Token still set via cookie; memory replenishment is best-effort
+        }
+        return true
+      }
+      return false
     } catch {
       return false
     } finally {
@@ -206,19 +213,9 @@ async function apiRequest<T>(
           :       status === 404
             ? `Backend returned 404 (Not Found). Check that NEXT_PUBLIC_API_URL points to your running backend and that the API route exists.`
             : `Request failed (${status}). Please try again.`
-      // #region agent log
-      if (response.status === 409) {
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '29fd32' }, body: JSON.stringify({ sessionId: '29fd32', location: 'api-client.ts:4xx-non-json', message: '409 with non-JSON body', data: { status: response.status, endpoint, textPreview: text.slice(0, 80) }, hypothesisId: 'H2', timestamp: Date.now() }) }).catch(() => {});
-      }
-      // #endregion
       throw new ApiError(fallback, status)
     }
     const message = formatApiErrorDetail(errBody.detail, response.status)
-    // #region agent log
-    if (response.status === 409) {
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '29fd32' }, body: JSON.stringify({ sessionId: '29fd32', location: 'api-client.ts:4xx-errBody', message: '409 response parsed', data: { status: response.status, endpoint, detailType: typeof errBody.detail, detailPreview: typeof errBody.detail === 'string' ? errBody.detail.slice(0, 60) : JSON.stringify(errBody.detail).slice(0, 60), formattedMessage: message.slice(0, 80) }, hypothesisId: 'H1', timestamp: Date.now() }) }).catch(() => {});
-    }
-    // #endregion
     throw new ApiError(message, response.status, errBody.code)
   }
 

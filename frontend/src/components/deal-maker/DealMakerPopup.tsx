@@ -317,7 +317,7 @@ export function DealMakerPopup({
   activePriceTarget = 'targetBuy',
   onPriceTargetChange,
 }: DealMakerPopupProps) {
-  const { isAuthenticated } = useSession()
+  const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -602,7 +602,16 @@ export function DealMakerPopup({
   authParams.set('auth', 'required')
   const signInUrl = `${pathname}?${authParams.toString()}`
 
-  // Require login to change loan terms (free and pro both get access)
+  if (sessionLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
+        <div className="w-full max-w-lg bg-[#0B1120] rounded-t-2xl p-8 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
+        </div>
+      </div>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>

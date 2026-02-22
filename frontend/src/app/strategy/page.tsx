@@ -22,6 +22,7 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { AnalysisNav } from '@/components/navigation/AnalysisNav'
+import { AuthGate } from '@/components/auth/AuthGate'
 
 // Types from existing verdict system
 interface BackendAnalysisResponse {
@@ -553,7 +554,8 @@ function StrategyContent() {
           </div>
         </section>
 
-        {/* Financial Breakdown */}
+        {/* Financial Breakdown — requires free (logged-in) tier */}
+        <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
 
           {/* Two columns */}
@@ -812,6 +814,7 @@ function StrategyContent() {
             Price Confidence reflects comp availability in this price range. Luxury properties have fewer comparables.
           </p>
         </section>
+        </AuthGate>
 
         {/* Save CTA — adapt for logged-in vs anonymous; future: scan limit → Pro upgrade */}
         <section className="px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
