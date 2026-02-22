@@ -587,6 +587,8 @@ class PropertyService:
             is_listed=is_listed,
             list_price=list_price,
             zestimate=valuations.get("zestimate"),
+            current_value_avm=valuations.get("current_value_avm"),
+            tax_assessed_value=valuations.get("tax_assessed_value"),
         )
         valuations["market_price"] = market_price_val
         return {**cached_data, "valuations": valuations}
@@ -608,6 +610,8 @@ class PropertyService:
                 is_listed=False,
                 list_price=None,
                 zestimate=normalized.get("zestimate"),
+                current_value_avm=normalized.get("current_value_avm"),
+                tax_assessed_value=normalized.get("tax_assessed_value"),
             )
         return ValuationData(
             current_value_avm=normalized.get("current_value_avm"),
