@@ -87,7 +87,7 @@ class FlipDefaults:
     """Default fix & flip assumptions."""
     hard_money_ltv: float = 0.90            # 90%
     hard_money_rate: float = 0.12           # 12%
-    selling_costs_pct: float = 0.06         # 6% (was 8%)
+    selling_costs_pct: float = 0.08         # 8% (6% commission + 2% seller closing)
     holding_period_months: int = 6          # 6 months
     purchase_discount_pct: float = 0.20     # 20% below ARV for purchase
 

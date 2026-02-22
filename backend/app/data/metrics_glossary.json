@@ -1,7 +1,7 @@
 {
-  "version": "1.8",
-  "updatedAt": "2026-02-19",
-  "source": "backend/app/core/defaults.py, backend/app/services/calculators.py, backend/app/services/iq_verdict_service.py, backend/app/services/data_normalizer.py, backend/app/services/property_service.py",
+  "version": "1.9",
+  "updatedAt": "2026-02-21",
+  "source": "backend/app/core/formulas.py, backend/app/services/calculators/, backend/app/services/iq_verdict_service.py, backend/app/services/assumption_resolver.py, backend/app/services/property_service.py",
   "iq_verdict_score": {
     "description": "IQ Verdict Score - The main score (e.g. 74/100) shown on the VerdictIQ page. Composite of four weighted components. Used only on the Verdict page; worksheets use Deal Opportunity Score instead.",
     "source": "backend/app/services/iq_verdict_service._calculate_composite_verdict_score",
@@ -59,7 +59,7 @@
   },
   "market_price_off_market": {
     "description": "Market Price is the Zestimate (Zillow API) for off-market properties. When the property is listed, Market Price = List Price (asking price).",
-    "source": "backend/app/core/defaults.compute_market_price",
+    "source": "backend/app/core/formulas.compute_market_price",
     "usage": "Property API valuations.market_price; Verdict request/response when off-market (list_price = Zestimate).",
     "metrics": {
       "market_price_listed": {
