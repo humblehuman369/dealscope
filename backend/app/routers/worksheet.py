@@ -11,7 +11,8 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.core.defaults import FINANCING, OPERATING, STR, BRRRR, FLIP, HOUSE_HACK
+from app.core.deps import DbSession
+from app.services.assumption_resolver import resolve_assumptions
 from app.services.calculators import (
     calculate_ltr, calculate_str, calculate_brrrr,
     calculate_flip, calculate_house_hack, calculate_wholesale,
@@ -32,14 +33,14 @@ class LTRWorksheetInput(BaseModel):
     monthly_rent: float = Field(...)
     property_taxes_annual: float = Field(None)
     insurance_annual: float = Field(None)
-    down_payment_pct: float = Field(default_factory=lambda: FINANCING.down_payment_pct)
-    interest_rate: float = Field(default_factory=lambda: FINANCING.interest_rate)
-    loan_term_years: int = Field(default_factory=lambda: FINANCING.loan_term_years)
+    down_payment_pct: Optional[float] = None
+    interest_rate: Optional[float] = None
+    loan_term_years: Optional[int] = None
     closing_costs: float = Field(0)
     rehab_costs: float = Field(0)
-    vacancy_rate: float = Field(default_factory=lambda: OPERATING.vacancy_rate)
-    property_management_pct: float = Field(default_factory=lambda: OPERATING.property_management_pct)
-    maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct)
+    vacancy_rate: Optional[float] = None
+    property_management_pct: Optional[float] = None
+    maintenance_pct: Optional[float] = None
     capex_pct: float = Field(0.0)
     hoa_monthly: float = Field(0)
     arv: float = Field(None)
@@ -53,19 +54,19 @@ class STRWorksheetInput(BaseModel):
     occupancy_rate: float = Field(0.75)
     property_taxes_annual: float = Field(None)
     insurance_annual: float = Field(None)
-    down_payment_pct: float = Field(default_factory=lambda: FINANCING.down_payment_pct)
-    interest_rate: float = Field(default_factory=lambda: FINANCING.interest_rate)
-    loan_term_years: int = Field(default_factory=lambda: FINANCING.loan_term_years)
+    down_payment_pct: Optional[float] = None
+    interest_rate: Optional[float] = None
+    loan_term_years: Optional[int] = None
     closing_costs: float = 0
-    furnishing_budget: float = Field(default_factory=lambda: STR.furniture_setup_cost)
-    platform_fees_pct: float = Field(default_factory=lambda: STR.platform_fees_pct)
-    property_management_pct: float = Field(default_factory=lambda: STR.str_management_pct)
-    cleaning_cost_per_turn: float = Field(default_factory=lambda: STR.cleaning_cost_per_turnover)
-    cleaning_fee_revenue: float = Field(default_factory=lambda: STR.cleaning_fee_revenue)
-    avg_booking_length: int = Field(default_factory=lambda: STR.avg_length_of_stay_days)
-    supplies_monthly: float = Field(default_factory=lambda: STR.supplies_monthly)
-    utilities_monthly: float = Field(default_factory=lambda: OPERATING.utilities_monthly)
-    maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct)
+    furnishing_budget: Optional[float] = None
+    platform_fees_pct: Optional[float] = None
+    property_management_pct: Optional[float] = None
+    cleaning_cost_per_turn: Optional[float] = None
+    cleaning_fee_revenue: Optional[float] = None
+    avg_booking_length: Optional[int] = None
+    supplies_monthly: Optional[float] = None
+    utilities_monthly: Optional[float] = None
+    maintenance_pct: Optional[float] = None
     capex_pct: float = Field(0.05)
 
 
@@ -155,22 +156,38 @@ class WholesaleWorksheetInput(BaseModel):
 # ===========================================
 
 @router.post("/api/v1/worksheet/ltr/calculate")
-async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
+async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
     """Calculate LTR worksheet metrics."""
     try:
+        a = await resolve_assumptions(db)
+        f, o = a.financing, a.operating
+        dp = input_data.down_payment_pct if input_data.down_payment_pct is not None else f.down_payment_pct
+        ir = input_data.interest_rate if input_data.interest_rate is not None else f.interest_rate
+        lt = input_data.loan_term_years if input_data.loan_term_years is not None else f.loan_term_years
+        vr = input_data.vacancy_rate if input_data.vacancy_rate is not None else o.vacancy_rate
+        pm = input_data.property_management_pct if input_data.property_management_pct is not None else o.property_management_pct
+        mp = input_data.maintenance_pct if input_data.maintenance_pct is not None else o.maintenance_pct
+        ia = input_data.insurance_annual if input_data.insurance_annual is not None else input_data.purchase_price * o.insurance_pct
+
         result = calculate_ltr(
             purchase_price=input_data.purchase_price,
             monthly_rent=input_data.monthly_rent,
-            property_taxes_annual=input_data.property_taxes_annual,
+            property_taxes_annual=input_data.property_taxes_annual or (input_data.purchase_price * 0.012),
+            down_payment_pct=dp,
+            interest_rate=ir,
+            loan_term_years=lt,
+            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else f.closing_costs_pct,
+            vacancy_rate=vr,
+            property_management_pct=pm,
+            maintenance_pct=mp + input_data.capex_pct,
+            insurance_annual=ia,
+            utilities_monthly=o.utilities_monthly,
+            landscaping_annual=o.landscaping_annual,
+            pest_control_annual=o.pest_control_annual,
+            appreciation_rate=a.appreciation_rate,
+            rent_growth_rate=a.rent_growth_rate,
+            expense_growth_rate=a.expense_growth_rate,
             hoa_monthly=input_data.hoa_monthly,
-            down_payment_pct=input_data.down_payment_pct,
-            interest_rate=input_data.interest_rate,
-            loan_term_years=input_data.loan_term_years,
-            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else 0.03,
-            vacancy_rate=input_data.vacancy_rate,
-            property_management_pct=input_data.property_management_pct,
-            maintenance_pct=input_data.maintenance_pct + input_data.capex_pct,
-            insurance_annual=input_data.insurance_annual,
         )
 
         arv = input_data.arv or input_data.purchase_price
@@ -220,28 +237,46 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
 
 
 @router.post("/api/v1/worksheet/str/calculate")
-async def calculate_str_worksheet(input_data: STRWorksheetInput):
+async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
     """Calculate STR worksheet metrics."""
     try:
+        a = await resolve_assumptions(db)
+        f, o, s = a.financing, a.operating, a.str_assumptions
+        dp = input_data.down_payment_pct if input_data.down_payment_pct is not None else f.down_payment_pct
+        ir = input_data.interest_rate if input_data.interest_rate is not None else f.interest_rate
+        lt = input_data.loan_term_years if input_data.loan_term_years is not None else f.loan_term_years
+        mp = input_data.maintenance_pct if input_data.maintenance_pct is not None else o.maintenance_pct
+        fb = input_data.furnishing_budget if input_data.furnishing_budget is not None else s.furniture_setup_cost
+        pfp = input_data.platform_fees_pct if input_data.platform_fees_pct is not None else s.platform_fees_pct
+        pmp = input_data.property_management_pct if input_data.property_management_pct is not None else s.str_management_pct
+        cpt = input_data.cleaning_cost_per_turn if input_data.cleaning_cost_per_turn is not None else s.cleaning_cost_per_turnover
+        cfr = input_data.cleaning_fee_revenue if input_data.cleaning_fee_revenue is not None else s.cleaning_fee_revenue
+        abl = input_data.avg_booking_length if input_data.avg_booking_length is not None else s.avg_length_of_stay_days
+        sm = input_data.supplies_monthly if input_data.supplies_monthly is not None else s.supplies_monthly
+        um = input_data.utilities_monthly if input_data.utilities_monthly is not None else o.utilities_monthly
+        ia = input_data.insurance_annual if input_data.insurance_annual is not None else input_data.purchase_price * s.str_insurance_pct
+
         result = calculate_str(
             purchase_price=input_data.purchase_price,
             average_daily_rate=input_data.average_daily_rate,
             occupancy_rate=input_data.occupancy_rate,
-            property_taxes_annual=input_data.property_taxes_annual,
-            down_payment_pct=input_data.down_payment_pct,
-            interest_rate=input_data.interest_rate,
-            loan_term_years=input_data.loan_term_years,
-            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else 0.03,
-            furniture_setup_cost=input_data.furnishing_budget,
-            platform_fees_pct=input_data.platform_fees_pct,
-            str_management_pct=input_data.property_management_pct,
-            cleaning_cost_per_turnover=input_data.cleaning_cost_per_turn,
-            cleaning_fee_revenue=input_data.cleaning_fee_revenue,
-            avg_length_of_stay_days=input_data.avg_booking_length,
-            supplies_monthly=input_data.supplies_monthly,
-            additional_utilities_monthly=input_data.utilities_monthly,
-            insurance_annual=input_data.insurance_annual,
-            maintenance_annual=input_data.purchase_price * (input_data.maintenance_pct + input_data.capex_pct),
+            property_taxes_annual=input_data.property_taxes_annual or (input_data.purchase_price * 0.012),
+            down_payment_pct=dp,
+            interest_rate=ir,
+            loan_term_years=lt,
+            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else f.closing_costs_pct,
+            furniture_setup_cost=fb,
+            platform_fees_pct=pfp,
+            str_management_pct=pmp,
+            cleaning_cost_per_turnover=cpt,
+            cleaning_fee_revenue=cfr,
+            avg_length_of_stay_days=abl,
+            supplies_monthly=sm,
+            additional_utilities_monthly=um,
+            insurance_annual=ia,
+            maintenance_annual=input_data.purchase_price * (mp + input_data.capex_pct),
+            landscaping_annual=o.landscaping_annual,
+            pest_control_annual=o.pest_control_annual,
         )
 
         supplies_annual = input_data.supplies_monthly * 12
@@ -303,11 +338,13 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
 
 
 @router.post("/api/v1/worksheet/brrrr/calculate")
-async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
+async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSession):
     """Calculate BRRRR worksheet metrics."""
     try:
-        purchase_costs_pct = input_data.purchase_costs / input_data.purchase_price if input_data.purchase_costs > 0 else 0.03
+        a = await resolve_assumptions(db)
+        purchase_costs_pct = input_data.purchase_costs / input_data.purchase_price if input_data.purchase_costs > 0 else a.financing.closing_costs_pct
         down_payment_pct = (1 - (input_data.loan_to_cost_pct / 100)) if input_data.loan_to_cost_pct is not None else input_data.down_payment_pct
+        monthly_holding = (input_data.purchase_price * a.rehab.holding_costs_pct) / 12
 
         result = calculate_brrrr(
             market_value=input_data.purchase_price, arv=input_data.arv,
@@ -316,11 +353,14 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
             purchase_discount_pct=0, down_payment_pct=down_payment_pct,
             interest_rate=input_data.interest_rate, loan_term_years=1,
             closing_costs_pct=purchase_costs_pct, renovation_budget=input_data.rehab_costs,
+            contingency_pct=a.rehab.contingency_pct,
             holding_period_months=input_data.holding_months,
+            monthly_holding_costs=monthly_holding,
             refinance_ltv=input_data.refi_ltv, refinance_interest_rate=input_data.refi_interest_rate,
             refinance_term_years=input_data.refi_loan_term, refinance_closing_costs=input_data.refi_closing_costs,
             vacancy_rate=input_data.vacancy_rate,
             operating_expense_pct=input_data.property_management_pct + input_data.maintenance_pct + input_data.capex_pct,
+            insurance_annual=input_data.insurance_annual,
         )
 
         sqft = input_data.sqft or 1
@@ -536,17 +576,20 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
 
 
 @router.post("/api/v1/worksheet/wholesale/calculate")
-async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput):
+async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput, db: DbSession):
     """Calculate Wholesale worksheet metrics."""
     try:
         mao = (input_data.arv * 0.70) - input_data.rehab_costs
         assignment_fee = input_data.investor_price - input_data.contract_price - input_data.marketing_costs
         post_tax_profit = assignment_fee * (1 - input_data.tax_rate)
 
+        a = await resolve_assumptions(db)
         result = calculate_wholesale(
             arv=input_data.arv, estimated_rehab_costs=input_data.rehab_costs,
             assignment_fee=assignment_fee, marketing_costs=input_data.marketing_costs,
             earnest_money_deposit=input_data.earnest_money,
+            arv_discount_pct=a.wholesale.target_purchase_discount_pct,
+            days_to_close=a.wholesale.days_to_close,
         )
 
         investor_purchase_costs = input_data.investor_price * input_data.investor_purchase_costs_pct

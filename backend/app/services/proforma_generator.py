@@ -33,8 +33,7 @@ from app.services.calculators import (
     calculate_brrrr, calculate_flip, calculate_house_hack, calculate_wholesale,
 )
 
-# Import centralized defaults
-from app.core.defaults import FINANCING, OPERATING, GROWTH
+from app.schemas.property import AllAssumptions
 
 import logging
 logger = logging.getLogger(__name__)
@@ -590,18 +589,20 @@ def calculate_sensitivity_for_purchase_price(
     hold_period_years: int,
     marginal_tax_rate: float,
     capital_gains_tax_rate: float,
+    assumptions: Optional[AllAssumptions] = None,
 ) -> Dict[str, float]:
     """Recalculate returns for a different purchase price."""
+    a = assumptions or AllAssumptions()
     purchase_price = new_purchase_price
     monthly_rent = base_params["monthly_rent"]
     property_taxes = base_params["property_taxes"]
     hoa_fees = base_params["hoa_fees"]
     
     # Recalculate with new purchase price
-    down_payment_pct = FINANCING.down_payment_pct
-    interest_rate = FINANCING.interest_rate
-    loan_term_years = FINANCING.loan_term_years
-    closing_costs_pct = FINANCING.closing_costs_pct
+    down_payment_pct = a.financing.down_payment_pct
+    interest_rate = a.financing.interest_rate
+    loan_term_years = a.financing.loan_term_years
+    closing_costs_pct = a.financing.closing_costs_pct
     
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
@@ -610,15 +611,15 @@ def calculate_sensitivity_for_purchase_price(
     total_cash_required = down_payment + closing_costs
     
     annual_gross_rent = monthly_rent * 12
-    vacancy_rate = OPERATING.vacancy_rate
-    insurance = purchase_price * OPERATING.insurance_pct
+    vacancy_rate = a.operating.vacancy_rate
+    insurance = purchase_price * a.operating.insurance_pct
     
     # Operating expenses
-    management = annual_gross_rent * OPERATING.property_management_pct
-    maintenance = annual_gross_rent * OPERATING.maintenance_pct
-    utilities = OPERATING.utilities_monthly * 12
-    landscaping = OPERATING.landscaping_annual
-    pest_control = OPERATING.pest_control_annual
+    management = annual_gross_rent * a.operating.property_management_pct
+    maintenance = annual_gross_rent * a.operating.maintenance_pct
+    utilities = a.operating.utilities_monthly * 12
+    landscaping = a.operating.landscaping_annual
+    pest_control = a.operating.pest_control_annual
     cap_ex = annual_gross_rent * 0.05
     
     total_op_ex = (property_taxes + insurance + hoa_fees + 
@@ -633,7 +634,7 @@ def calculate_sensitivity_for_purchase_price(
     cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
     
     # Simple IRR estimate (using annual cash flow and appreciation)
-    appreciation_rate = GROWTH.appreciation_rate
+    appreciation_rate = a.appreciation_rate
     exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
     exit_costs = exit_value * 0.075  # ~7.5% selling costs
     
@@ -661,26 +662,28 @@ def calculate_sensitivity_for_interest_rate(
     base_params: Dict[str, Any],
     new_interest_rate: float,
     hold_period_years: int,
+    assumptions: Optional[AllAssumptions] = None,
 ) -> Dict[str, float]:
     """Recalculate returns for a different interest rate."""
+    a = assumptions or AllAssumptions()
     purchase_price = base_params["purchase_price"]
     monthly_rent = base_params["monthly_rent"]
     property_taxes = base_params["property_taxes"]
     total_cash_required = base_params["total_cash_required"]
     
-    down_payment_pct = FINANCING.down_payment_pct
-    loan_term_years = FINANCING.loan_term_years
+    down_payment_pct = a.financing.down_payment_pct
+    loan_term_years = a.financing.loan_term_years
     
     loan_amount = purchase_price * (1 - down_payment_pct)
     monthly_mortgage = calculate_monthly_mortgage(loan_amount, new_interest_rate, loan_term_years)
     
     annual_gross_rent = monthly_rent * 12
-    vacancy_rate = OPERATING.vacancy_rate
-    insurance = purchase_price * OPERATING.insurance_pct
+    vacancy_rate = a.operating.vacancy_rate
+    insurance = purchase_price * a.operating.insurance_pct
     
-    management = annual_gross_rent * OPERATING.property_management_pct
-    maintenance = annual_gross_rent * OPERATING.maintenance_pct
-    utilities = OPERATING.utilities_monthly * 12
+    management = annual_gross_rent * a.operating.property_management_pct
+    maintenance = annual_gross_rent * a.operating.maintenance_pct
+    utilities = a.operating.utilities_monthly * 12
     total_op_ex = (property_taxes + insurance + management + maintenance + utilities + 
                    annual_gross_rent * 0.05)
     
@@ -691,7 +694,7 @@ def calculate_sensitivity_for_interest_rate(
     
     cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
     
-    appreciation_rate = GROWTH.appreciation_rate
+    appreciation_rate = a.appreciation_rate
     exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
     remaining_balance = loan_amount * 0.7  # Rough estimate
     net_exit = exit_value * 0.925 - remaining_balance
@@ -711,20 +714,22 @@ def calculate_sensitivity_for_rent(
     base_params: Dict[str, Any],
     new_monthly_rent: float,
     hold_period_years: int,
+    assumptions: Optional[AllAssumptions] = None,
 ) -> Dict[str, float]:
     """Recalculate returns for different rent."""
+    a = assumptions or AllAssumptions()
     purchase_price = base_params["purchase_price"]
     property_taxes = base_params["property_taxes"]
     total_cash_required = base_params["total_cash_required"]
     monthly_mortgage = base_params["monthly_mortgage"]
     
     annual_gross_rent = new_monthly_rent * 12
-    vacancy_rate = OPERATING.vacancy_rate
-    insurance = purchase_price * OPERATING.insurance_pct
+    vacancy_rate = a.operating.vacancy_rate
+    insurance = purchase_price * a.operating.insurance_pct
     
-    management = annual_gross_rent * OPERATING.property_management_pct
-    maintenance = annual_gross_rent * OPERATING.maintenance_pct
-    utilities = OPERATING.utilities_monthly * 12
+    management = annual_gross_rent * a.operating.property_management_pct
+    maintenance = annual_gross_rent * a.operating.maintenance_pct
+    utilities = a.operating.utilities_monthly * 12
     total_op_ex = (property_taxes + insurance + management + maintenance + utilities + 
                    annual_gross_rent * 0.05)
     
@@ -735,9 +740,9 @@ def calculate_sensitivity_for_rent(
     
     cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
     
-    appreciation_rate = GROWTH.appreciation_rate
+    appreciation_rate = a.appreciation_rate
     exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
-    loan_amount = purchase_price * (1 - FINANCING.down_payment_pct)
+    loan_amount = purchase_price * (1 - a.financing.down_payment_pct)
     remaining_balance = loan_amount * 0.7
     net_exit = exit_value * 0.925 - remaining_balance
     
@@ -757,8 +762,10 @@ def generate_full_sensitivity_analysis(
     hold_period_years: int,
     marginal_tax_rate: float,
     capital_gains_tax_rate: float,
+    assumptions: Optional[AllAssumptions] = None,
 ) -> SensitivityAnalysis:
     """Generate complete sensitivity analysis for all key variables."""
+    a = assumptions or AllAssumptions()
     percent_changes = [-10, -5, 0, 5, 10]
     
     # Purchase Price Sensitivity
@@ -767,7 +774,8 @@ def generate_full_sensitivity_analysis(
         new_price = base_params["purchase_price"] * (1 + pct / 100)
         results = calculate_sensitivity_for_purchase_price(
             base_params, new_price, hold_period_years, 
-            marginal_tax_rate, capital_gains_tax_rate
+            marginal_tax_rate, capital_gains_tax_rate,
+            assumptions=a
         )
         purchase_price_scenarios.append(SensitivityScenario(
             variable="purchase_price",
@@ -780,12 +788,13 @@ def generate_full_sensitivity_analysis(
     
     # Interest Rate Sensitivity
     interest_rate_scenarios = []
-    base_rate = FINANCING.interest_rate * 100  # Convert to percentage
+    base_rate = a.financing.interest_rate * 100  # Convert to percentage
     rate_changes = [-1.5, -0.75, 0, 0.75, 1.5]  # Absolute rate changes
     for delta in rate_changes:
         new_rate = (base_rate + delta) / 100  # Convert back to decimal
         results = calculate_sensitivity_for_interest_rate(
-            base_params, new_rate, hold_period_years
+            base_params, new_rate, hold_period_years,
+            assumptions=a
         )
         interest_rate_scenarios.append(SensitivityScenario(
             variable="interest_rate",
@@ -801,7 +810,8 @@ def generate_full_sensitivity_analysis(
     for pct in percent_changes:
         new_rent = base_params["monthly_rent"] * (1 + pct / 100)
         results = calculate_sensitivity_for_rent(
-            base_params, new_rent, hold_period_years
+            base_params, new_rent, hold_period_years,
+            assumptions=a
         )
         rent_scenarios.append(SensitivityScenario(
             variable="rent",
@@ -814,7 +824,7 @@ def generate_full_sensitivity_analysis(
     
     # Vacancy Sensitivity
     vacancy_scenarios = []
-    base_vacancy = OPERATING.vacancy_rate * 100
+    base_vacancy = a.operating.vacancy_rate * 100
     vacancy_changes = [0, 2.5, 5, 7.5, 10]  # Absolute vacancy rates
     for vac in vacancy_changes:
         # Recalculate with different vacancy
@@ -823,10 +833,10 @@ def generate_full_sensitivity_analysis(
         annual_gross_rent = monthly_rent * 12
         effective_income = annual_gross_rent * (1 - vac / 100)
         
-        insurance = purchase_price * OPERATING.insurance_pct
-        management = annual_gross_rent * OPERATING.property_management_pct
-        maintenance = annual_gross_rent * OPERATING.maintenance_pct
-        utilities = OPERATING.utilities_monthly * 12
+        insurance = purchase_price * a.operating.insurance_pct
+        management = annual_gross_rent * a.operating.property_management_pct
+        maintenance = annual_gross_rent * a.operating.maintenance_pct
+        utilities = a.operating.utilities_monthly * 12
         total_op_ex = (base_params["property_taxes"] + insurance + management + 
                        maintenance + utilities + annual_gross_rent * 0.05)
         
@@ -849,7 +859,7 @@ def generate_full_sensitivity_analysis(
     for app_rate in appreciation_changes:
         exit_value = base_params["purchase_price"] * ((1 + app_rate / 100) ** hold_period_years)
         exit_costs = exit_value * 0.075
-        loan_amount = base_params["purchase_price"] * (1 - FINANCING.down_payment_pct)
+        loan_amount = base_params["purchase_price"] * (1 - a.financing.down_payment_pct)
         remaining_balance = loan_amount * 0.7
         net_exit = exit_value - exit_costs - remaining_balance
         
@@ -895,34 +905,36 @@ async def generate_proforma_data(
     down_payment_pct_override: Optional[float] = None,
     property_taxes_override: Optional[float] = None,
     insurance_override: Optional[float] = None,
+    assumptions: Optional[AllAssumptions] = None,
 ) -> FinancialProforma:
     """Generate complete financial proforma from property data."""
-    
-    # Extract property values with defensive None checks
+    a = assumptions or AllAssumptions()
+    _FIN = a.financing
+    _OPS = a.operating
+    _GRO_appreciation = a.appreciation_rate
+    _GRO_rent_growth = a.rent_growth_rate
+    _GRO_expense_growth = a.expense_growth_rate
+
     valuations = property_data.valuations
     rentals = property_data.rentals
     market = property_data.market
     listing = property_data.listing
-    
+
     purchase_price = purchase_price_override or (valuations.current_value_avm if valuations else None) or 0
     list_price = (listing.list_price if listing and listing.list_price else None) or purchase_price
     monthly_rent = monthly_rent_override or (rentals.monthly_rent_ltr if rentals else None) or 0
     annual_gross_rent = monthly_rent * 12
     property_taxes = property_taxes_override or (market.property_taxes_annual if market else None) or (purchase_price * 0.01)
     hoa_fees = ((market.hoa_fees_monthly if market else None) or 0) * 12
-    
-    # Financing parameters — user overrides take priority over defaults
-    # Normalize: callers may send percentages (20, 6) instead of decimals (0.20, 0.06).
-    # Defaults from FINANCING are always decimals (e.g., 0.20, 0.065).
-    # Heuristic: if > 1, the value is a percentage → divide by 100.
-    down_payment_pct = down_payment_pct_override or FINANCING.down_payment_pct
+
+    down_payment_pct = down_payment_pct_override or _FIN.down_payment_pct
     if down_payment_pct > 1:
         down_payment_pct = down_payment_pct / 100
-    interest_rate = interest_rate_override or FINANCING.interest_rate
+    interest_rate = interest_rate_override or _FIN.interest_rate
     if interest_rate > 1:
         interest_rate = interest_rate / 100
-    loan_term_years = FINANCING.loan_term_years
-    closing_costs_pct = FINANCING.closing_costs_pct
+    loan_term_years = _FIN.loan_term_years
+    closing_costs_pct = _FIN.closing_costs_pct
     
     # Calculate financing
     down_payment = purchase_price * down_payment_pct
@@ -932,13 +944,13 @@ async def generate_proforma_data(
     total_cash_required = down_payment + closing_costs
     
     # Operating assumptions
-    vacancy_rate = OPERATING.vacancy_rate * 100  # Convert to percent
-    management_pct = OPERATING.property_management_pct
-    maintenance_pct = OPERATING.maintenance_pct
-    insurance = insurance_override or (purchase_price * OPERATING.insurance_pct)
-    utilities = OPERATING.utilities_monthly * 12
-    landscaping = OPERATING.landscaping_annual
-    pest_control = OPERATING.pest_control_annual
+    vacancy_rate = _OPS.vacancy_rate * 100  # Convert to percent
+    management_pct = _OPS.property_management_pct
+    maintenance_pct = _OPS.maintenance_pct
+    insurance = insurance_override or (purchase_price * _OPS.insurance_pct)
+    utilities = _OPS.utilities_monthly * 12
+    landscaping = _OPS.landscaping_annual
+    pest_control = _OPS.pest_control_annual
     
     # Calculate expenses
     management = annual_gross_rent * management_pct
@@ -1003,9 +1015,9 @@ async def generate_proforma_data(
         amortization_schedule=amortization_schedule,
         annual_depreciation=depreciation.annual_depreciation,
         hold_period_years=hold_period_years,
-        rent_growth_rate=GROWTH.rent_growth_rate * 100,
-        expense_growth_rate=GROWTH.expense_growth_rate * 100,
-        appreciation_rate=GROWTH.appreciation_rate * 100,
+        rent_growth_rate=_GRO_rent_growth * 100,
+        expense_growth_rate=_GRO_expense_growth * 100,
+        appreciation_rate=_GRO_appreciation * 100,
         purchase_price=purchase_price,
         marginal_tax_rate=marginal_tax_rate,
     )
@@ -1018,7 +1030,7 @@ async def generate_proforma_data(
     exit_analysis = calculate_exit_analysis(
         purchase_price=purchase_price,
         hold_period_years=hold_period_years,
-        appreciation_rate=GROWTH.appreciation_rate * 100,
+        appreciation_rate=_GRO_appreciation * 100,
         accumulated_depreciation=accumulated_depreciation,
         remaining_loan_balance=remaining_loan_balance,
         rehab_costs=0,
@@ -1053,6 +1065,7 @@ async def generate_proforma_data(
         hold_period_years=hold_period_years,
         marginal_tax_rate=marginal_tax_rate,
         capital_gains_tax_rate=capital_gains_tax_rate,
+        assumptions=a,
     )
     
     # Build proforma - extract with None checks

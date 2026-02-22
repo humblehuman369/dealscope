@@ -31,12 +31,13 @@ router = APIRouter(tags=["Analytics"])
 # ===========================================
 
 @router.post("/api/v1/analysis/verdict", response_model=IQVerdictResponse)
-async def calculate_iq_verdict(input_data: IQVerdictInput):
+async def calculate_iq_verdict(input_data: IQVerdictInput, db: DbSession):
     """Calculate IQ Verdict multi-strategy analysis."""
     try:
-        result = compute_iq_verdict(input_data)
+        from app.services.assumption_resolver import resolve_assumptions
+        assumptions = await resolve_assumptions(db)
+        result = compute_iq_verdict(input_data, assumptions=assumptions)
 
-        # Explicit serialization with by_alias=True guarantees camelCase keys.
         response_dict = result.model_dump(mode='json', by_alias=True)
         logger.info(
             "IQ Verdict response — dealScore=%s, dealGapScore=%s, returnQualityScore=%s, "
@@ -58,10 +59,12 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
 # ===========================================
 
 @router.post("/api/v1/worksheet/deal-score", response_model=DealScoreResponse)
-async def calculate_deal_score(input_data: DealScoreInput):
+async def calculate_deal_score(input_data: DealScoreInput, db: DbSession):
     """Calculate IQ Verdict Score (Deal Opportunity Score)."""
     try:
-        return compute_deal_score(input_data)
+        from app.services.assumption_resolver import resolve_assumptions
+        assumptions = await resolve_assumptions(db)
+        return compute_deal_score(input_data, assumptions=assumptions)
     except Exception as e:
         logger.error(f"Deal Score calculation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

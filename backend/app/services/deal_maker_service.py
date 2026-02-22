@@ -28,10 +28,7 @@ from app.schemas.deal_maker import (
     InitialAssumptions,
     CachedMetrics,
 )
-from app.core.defaults import (
-    FINANCING, OPERATING, GROWTH, STR, BRRRR, FLIP,
-    get_all_defaults,
-)
+from app.schemas.property import AllAssumptions
 from app.core.formulas import estimate_income_value
 from app.services.assumptions_service import get_market_adjustments
 from app.services.calculators import (
@@ -57,65 +54,70 @@ class DealMakerService:
     """
     
     @staticmethod
-    def resolve_initial_assumptions(zip_code: Optional[str] = None) -> InitialAssumptions:
+    def resolve_initial_assumptions(
+        zip_code: Optional[str] = None,
+        resolved: Optional[AllAssumptions] = None,
+    ) -> InitialAssumptions:
+        """Resolve initial assumptions from DB defaults + market adjustments.
+
+        ``resolved`` should be an AllAssumptions object produced by
+        assumption_resolver.  When not provided, falls back to Pydantic
+        schema defaults (which still reference defaults.py singletons).
         """
-        Resolve initial assumptions from defaults + market adjustments.
-        This is called ONCE when the record is created.
-        
-        After creation, these assumptions are immutable.
-        """
-        # Start with system defaults
+        a = resolved or AllAssumptions()
+        f = a.financing
+        o = a.operating
+        s = a.str_assumptions
+        b = a.brrrr
+        fl = a.flip
+
         assumptions = InitialAssumptions(
-            down_payment_pct=FINANCING.down_payment_pct,
-            closing_costs_pct=FINANCING.closing_costs_pct,
-            interest_rate=FINANCING.interest_rate,
-            loan_term_years=FINANCING.loan_term_years,
-            vacancy_rate=OPERATING.vacancy_rate,
-            maintenance_pct=OPERATING.maintenance_pct,
-            management_pct=OPERATING.property_management_pct,
-            insurance_pct=OPERATING.insurance_pct,
-            capex_pct=0.05,  # 5% CapEx reserve
-            appreciation_rate=GROWTH.appreciation_rate,
-            rent_growth_rate=GROWTH.rent_growth_rate,
-            expense_growth_rate=GROWTH.expense_growth_rate,
+            down_payment_pct=f.down_payment_pct,
+            closing_costs_pct=f.closing_costs_pct,
+            interest_rate=f.interest_rate,
+            loan_term_years=f.loan_term_years,
+            vacancy_rate=o.vacancy_rate,
+            maintenance_pct=o.maintenance_pct,
+            management_pct=o.property_management_pct,
+            insurance_pct=o.insurance_pct,
+            capex_pct=0.05,
+            appreciation_rate=a.appreciation_rate,
+            rent_growth_rate=a.rent_growth_rate,
+            expense_growth_rate=a.expense_growth_rate,
             resolved_at=datetime.now(timezone.utc),
             zip_code=zip_code,
         )
-        
-        # Apply market adjustments if zip code provided
+
         if zip_code:
             market = get_market_adjustments(zip_code)
-            # Exclude fields we're overriding to avoid duplicate keyword argument error
             assumptions_dict = assumptions.model_dump(exclude={'insurance_pct', 'vacancy_rate', 'appreciation_rate', 'market_region'})
             assumptions = InitialAssumptions(
                 **assumptions_dict,
-                insurance_pct=market.get("insurance_rate", OPERATING.insurance_pct),
-                vacancy_rate=market.get("vacancy_rate", OPERATING.vacancy_rate),
-                appreciation_rate=market.get("appreciation_rate", GROWTH.appreciation_rate),
+                insurance_pct=market.get("insurance_rate", o.insurance_pct),
+                vacancy_rate=market.get("vacancy_rate", o.vacancy_rate),
+                appreciation_rate=market.get("appreciation_rate", a.appreciation_rate),
                 market_region=market.get("region"),
             )
-        
-        # Include strategy-specific defaults
-        # Exclude fields we're overriding to avoid duplicate keyword argument error
+
         assumptions_dict = assumptions.model_dump(exclude={'str_defaults', 'brrrr_defaults', 'flip_defaults'})
         assumptions = InitialAssumptions(
             **assumptions_dict,
             str_defaults={
-                "platform_fees_pct": STR.platform_fees_pct,
-                "management_pct": STR.str_management_pct,
-                "cleaning_cost": STR.cleaning_cost_per_turnover,
+                "platform_fees_pct": s.platform_fees_pct,
+                "management_pct": s.str_management_pct,
+                "cleaning_cost": s.cleaning_cost_per_turnover,
             },
             brrrr_defaults={
-                "refinance_ltv": BRRRR.refinance_ltv,
-                "refinance_rate": BRRRR.refinance_interest_rate,
-                "post_rehab_rent_increase": BRRRR.post_rehab_rent_increase_pct,
+                "refinance_ltv": b.refinance_ltv,
+                "refinance_rate": b.refinance_interest_rate,
+                "post_rehab_rent_increase": b.post_rehab_rent_increase_pct,
             },
             flip_defaults={
-                "holding_period_months": FLIP.holding_period_months,
-                "selling_costs_pct": FLIP.selling_costs_pct,
+                "holding_period_months": fl.holding_period_months,
+                "selling_costs_pct": fl.selling_costs_pct,
             },
         )
-        
+
         return assumptions
     
     @staticmethod
