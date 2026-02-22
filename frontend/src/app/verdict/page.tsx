@@ -829,7 +829,7 @@ function VerdictContent() {
               hideScoreComponents
             />
             {/* Score Components — why did it score this way */}
-            <section className="px-5 py-6 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
+            <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
               <ComponentScoreBars scores={verdictComponentScores} />
             </section>
           </div>
