@@ -142,10 +142,12 @@ function StrategyContent() {
         setIsLoading(true)
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
         const v = propData.valuations || {}
-        // Zestimate is single source of truth for off-market market value
+        // Zestimate is primary source for off-market; sequential fallbacks prevent crashes
         let price = v.market_price
           ?? v.zestimate
-          ?? 0
+          ?? v.current_value_avm
+          ?? (v.tax_assessed_value ? Math.round(v.tax_assessed_value / 0.75) : null)
+          ?? 1
         let monthlyRent = propData.rentals?.monthly_rent_ltr || 0
         let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
         let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)

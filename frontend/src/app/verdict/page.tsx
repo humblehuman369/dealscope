@@ -273,12 +273,16 @@ function VerdictContent() {
         const listPrice = data.listing?.list_price ?? null
         const apiMarketPrice = data.valuations?.market_price ?? null
 
-        // Market price: listed price or Zestimate (single source of truth for off-market)
+        // Market price: listed price or Zestimate (primary source for off-market).
+        // Sequential fallbacks (no blending) ensure the app remains functional
+        // when the primary source is unavailable.
         const price =
           (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
           (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
           (zestimate != null && zestimate > 0 ? zestimate : null) ??
-          0
+          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
+          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
+          1
 
         // Get property taxes from API data
         const propertyTaxes = data.taxes?.annual_tax_amount 

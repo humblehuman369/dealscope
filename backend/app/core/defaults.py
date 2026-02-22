@@ -239,13 +239,18 @@ def compute_market_price(
     Compute Market Price for display and deal gap.
 
     When listed: Market Price = List Price.
-    When off-market: Market Price = Zestimate (direct from Zillow API).
-    Returns None when the source value is unavailable.
+    When off-market: Zestimate is the primary source (no blending).
+    Sequential fallbacks ensure the system remains functional when the
+    primary source is unavailable.
     """
     if is_listed and list_price is not None and list_price > 0:
         return round(list_price)
     if zestimate is not None and zestimate > 0:
         return round(zestimate)
+    if current_value_avm is not None and current_value_avm > 0:
+        return round(current_value_avm)
+    if tax_assessed_value is not None and tax_assessed_value > 0:
+        return round(tax_assessed_value / 0.75)
     return None
 
 

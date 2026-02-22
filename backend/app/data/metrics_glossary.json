@@ -68,9 +68,9 @@
         "description": "When property is actively listed, Market Price is the list (asking) price."
       },
       "market_price_off_market": {
-        "formula": "market_price = zestimate (direct from Zillow API via search_by_address.zestimate)",
-        "inputs": ["zestimate"],
-        "description": "Off-market only. Zestimate is the single source of truth for market value."
+        "formula": "market_price = zestimate (primary); fallback to current_value_avm, then tax_assessed_value / 0.75",
+        "inputs": ["zestimate", "current_value_avm", "tax_assessed_value"],
+        "description": "Off-market only. Zestimate is the primary source (no blending). Sequential fallbacks used only when Zestimate is unavailable."
       }
     }
   },

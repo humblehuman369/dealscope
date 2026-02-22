@@ -122,7 +122,7 @@ class TestCalculateBuyPrice:
 
 
 class TestComputeMarketPrice:
-    """Tests for compute_market_price (listed = list price; off-market = Zestimate)."""
+    """Tests for compute_market_price (listed = list price; off-market = Zestimate primary, sequential fallbacks)."""
 
     def test_listed_returns_list_price(self):
         """When is_listed and list_price > 0, return list_price."""
@@ -134,7 +134,7 @@ class TestComputeMarketPrice:
         assert out == 400_000
 
     def test_off_market_returns_zestimate(self):
-        """Off-market: Zestimate is the single source of truth."""
+        """Off-market: Zestimate is the primary source."""
         out = compute_market_price(
             is_listed=False,
             list_price=None,
@@ -152,17 +152,26 @@ class TestComputeMarketPrice:
         )
         assert out == 600_000
 
-    def test_off_market_no_zestimate_returns_none(self):
-        """Off-market with no Zestimate returns None regardless of other values."""
+    def test_off_market_no_zestimate_falls_to_avm(self):
+        """Off-market with no Zestimate falls back to AVM."""
         out = compute_market_price(
             is_listed=False,
             list_price=None,
             zestimate=None,
             current_value_avm=700_000,
-            income_value=500_000,
-            tax_assessed_value=400_000,
         )
-        assert out is None
+        assert out == 700_000
+
+    def test_off_market_no_zestimate_no_avm_falls_to_tax(self):
+        """Off-market with no Zestimate or AVM falls back to tax_assessed / 0.75."""
+        out = compute_market_price(
+            is_listed=False,
+            list_price=None,
+            zestimate=None,
+            current_value_avm=None,
+            tax_assessed_value=300_000,
+        )
+        assert out == 400_000  # 300_000 / 0.75
 
     def test_off_market_all_none_returns_none(self):
         """When off-market and no valuations at all, return None."""
@@ -182,11 +191,12 @@ class TestComputeMarketPrice:
         )
         assert out == 500_000
 
-    def test_off_market_zero_zestimate_returns_none(self):
-        """Zestimate of 0 is treated as unavailable."""
+    def test_off_market_zero_zestimate_falls_to_avm(self):
+        """Zestimate of 0 is treated as unavailable, falls to AVM."""
         out = compute_market_price(
             is_listed=False,
             list_price=None,
             zestimate=0,
+            current_value_avm=450_000,
         )
-        assert out is None
+        assert out == 450_000

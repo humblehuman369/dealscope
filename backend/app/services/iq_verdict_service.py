@@ -460,12 +460,18 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
     )
-    # Off-market: replace list_price with Zestimate when available
-    if input_data.is_listed is False and input_data.zestimate is not None:
+    # Off-market: replace list_price with Zestimate (primary), fallback to AVM/tax
+    if input_data.is_listed is False and (
+        input_data.zestimate is not None
+        or input_data.current_value_avm is not None
+        or input_data.tax_assessed_value is not None
+    ):
         computed_market = compute_market_price(
             is_listed=False,
             list_price=input_data.list_price,
             zestimate=input_data.zestimate,
+            current_value_avm=input_data.current_value_avm,
+            tax_assessed_value=input_data.tax_assessed_value,
         )
         if computed_market is not None:
             list_price = float(computed_market)
