@@ -178,7 +178,7 @@ function StrategyContent() {
         setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal })
 
         const listingStatus = propData.listing?.listing_status
-        const isListed = listingStatus && !['OFF_MARKET', 'SOLD', 'FOR_RENT'].includes(String(listingStatus)) && price > 0
+        const isListed = listingStatus && !['OFF_MARKET', 'SOLD', 'FOR_RENT', 'OTHER'].includes(String(listingStatus)) && price > 0
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', {
           list_price: price,
           monthly_rent: monthlyRent,

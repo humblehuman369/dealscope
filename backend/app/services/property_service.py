@@ -480,7 +480,7 @@ class PropertyService:
             listing_status_val = listing.get("listing_status")
         is_listed = (
             listing_status_val is not None
-            and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT")
+            and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
             and (list_price_val or 0) > 0
         )
         verdict_input = IQVerdictInput(
@@ -543,6 +543,11 @@ class PropertyService:
         Return the dict that contains zestimate so normalizer and market_price get it.
         AXESSO may return the property at top level or wrapped (e.g. data, searchResult, body).
         Normalizes camelCase Zestimate/rentZestimate so downstream code sees zestimate/rentZestimate.
+
+        The search-by-address endpoint often returns the Zestimate as ``price``
+        (not ``zestimate``) and inside the ``adTargets`` JSON blob.  When no
+        explicit ``zestimate`` key is found, this method extracts it from
+        ``adTargets`` or promotes ``price`` for off-market properties.
         """
         def _has_zestimate(d: Dict[str, Any]) -> bool:
             if not d or not isinstance(d, dict):
@@ -557,6 +562,26 @@ class PropertyService:
                 out["rentZestimate"] = out["RentZestimate"]
             return out
 
+        def _extract_zestimate_from_ad_targets(d: Dict[str, Any]) -> Optional[float]:
+            """Parse adTargets (JSON string or dict) and extract the zestimate value."""
+            ad_targets = d.get("adTargets")
+            if ad_targets is None:
+                return None
+            if isinstance(ad_targets, str):
+                try:
+                    import json
+                    ad_targets = json.loads(ad_targets)
+                except (json.JSONDecodeError, TypeError):
+                    return None
+            if isinstance(ad_targets, dict):
+                z = ad_targets.get("zestimate")
+                if z is not None:
+                    try:
+                        return float(z)
+                    except (ValueError, TypeError):
+                        pass
+            return None
+
         if not raw or not isinstance(raw, dict):
             return raw or {}
         chosen = raw
@@ -568,7 +593,23 @@ class PropertyService:
                 if isinstance(inner, dict) and _has_zestimate(inner):
                     chosen = inner
                     break
-        return _normalize_zestimate_keys(chosen)
+
+        out = _normalize_zestimate_keys(chosen)
+
+        if out.get("zestimate") is None:
+            ad_z = _extract_zestimate_from_ad_targets(out)
+            if ad_z is not None and ad_z > 0:
+                out["zestimate"] = ad_z
+            elif out.get("price") is not None:
+                home_status = str(out.get("homeStatus") or "").upper()
+                listed_statuses = ("FOR_SALE", "PENDING", "RECENTLY_SOLD")
+                if home_status not in listed_statuses:
+                    try:
+                        out["zestimate"] = float(out["price"])
+                    except (ValueError, TypeError):
+                        pass
+
+        return out
 
     def _apply_market_price_to_cached(self, cached_data: Dict[str, Any]) -> Dict[str, Any]:
         """Recompute market_price on cached response — Zestimate is single source for off-market."""
@@ -576,7 +617,7 @@ class PropertyService:
         listing = cached_data.get("listing") or {}
         listing_status = listing.get("listing_status")
         list_price = listing.get("list_price")
-        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT")
+        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
         is_listed = (
             listing_status is not None
             and str(listing_status).upper() not in off_market_statuses
@@ -597,7 +638,7 @@ class PropertyService:
         """Build ValuationData — Zestimate is single source for off-market market_price."""
         listing_status = normalized.get("listing_status")
         list_price = normalized.get("list_price")
-        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT")
+        off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
         is_listed = (
             listing_status is not None
             and str(listing_status).upper() not in off_market_statuses

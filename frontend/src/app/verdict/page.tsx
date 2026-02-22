@@ -266,7 +266,8 @@ function VerdictContent() {
           data.listing?.listing_status &&
           data.listing.listing_status !== 'OFF_MARKET' &&
           data.listing.listing_status !== 'SOLD' &&
-          data.listing.listing_status !== 'FOR_RENT'
+          data.listing.listing_status !== 'FOR_RENT' &&
+          data.listing.listing_status !== 'OTHER'
         const zestimate = data.valuations?.zestimate ?? null
         const currentAvm = data.valuations?.current_value_avm ?? null
         const taxAssessed = data.valuations?.tax_assessed_value ?? null
