@@ -309,7 +309,7 @@ class UnifiedPropertyService:
                 ((value - expected_value) / expected_value) * 100, 2
             )
         
-        # Valuation comparison (RentCast vs Zillow)
+        # Valuation comparison (RentCast vs Zillow — Zestimate is source of truth)
         if prop.rentcast_avm and prop.zestimate:
             variance = abs(prop.rentcast_avm - prop.zestimate) / prop.rentcast_avm * 100
             metrics["avm_variance_pct"] = round(variance, 2)
@@ -317,10 +317,10 @@ class UnifiedPropertyService:
                 "rentcast": prop.rentcast_avm,
                 "zillow": prop.zestimate,
                 "difference": prop.rentcast_avm - prop.zestimate,
-                "recommended_value": prop.current_value_avm
+                "recommended_value": prop.zestimate
             }
         
-        # Rent comparison
+        # Rent comparison (RentCast rent is source of truth)
         if prop.rentcast_rent and prop.rent_zestimate:
             variance = abs(prop.rentcast_rent - prop.rent_zestimate) / prop.rentcast_rent * 100
             metrics["rent_variance_pct"] = round(variance, 2)
@@ -328,7 +328,7 @@ class UnifiedPropertyService:
                 "rentcast": prop.rentcast_rent,
                 "zillow": prop.rent_zestimate,
                 "difference": prop.rentcast_rent - prop.rent_zestimate,
-                "recommended_rent": prop.monthly_rent_estimate
+                "recommended_rent": prop.rentcast_rent
             }
         
         return metrics
@@ -484,7 +484,7 @@ class UnifiedPropertyService:
         
         # Rental
         rows.append(["RENTAL DATA", "Value", "Source"])
-        rows.append(["Monthly Rent Estimate", f"${normalized.get('monthly_rent_estimate') or 0:,.0f}",
+        rows.append(["RentCast Estimate", f"${normalized.get('monthly_rent_estimate') or 0:,.0f}",
                     normalized.get("provenance", {}).get("monthly_rent_estimate", {}).get("source", "")])
         rows.append(["RentCast Rent", f"${normalized.get('rentcast_rent') or 0:,.0f}", "rentcast"])
         rows.append(["Zillow Rent Zestimate", f"${normalized.get('rent_zestimate') or 0:,.0f}", "zillow"])

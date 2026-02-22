@@ -33,7 +33,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Four verdict signals
 const SIGNALS = [
-  { title: 'Deal Gap', desc: 'Distance between market value and your target buy price', value: '$38K', color: '#38bdf8', bgColor: 'rgba(56,189,248,0.12)' },
+  { title: 'Deal Gap', desc: 'Distance between Zestimate and your target buy price', value: '$38K', color: '#38bdf8', bgColor: 'rgba(56,189,248,0.12)' },
   { title: 'Rental Income', desc: 'Annual income analysis to determine income value', value: '$2,180/mo', color: '#2dd4bf', bgColor: 'rgba(45,212,191,0.12)' },
   { title: 'Target Price', desc: "The price you'd need to pay to make money", value: '$312K', color: '#34d399', bgColor: 'rgba(52,211,153,0.12)' },
   { title: 'Seller Urgency', desc: 'Signals indicating motivation to negotiate', value: 'Medium', color: '#fbbf24', bgColor: 'rgba(251,191,36,0.12)' },

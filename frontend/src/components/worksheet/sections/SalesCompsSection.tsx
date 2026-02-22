@@ -322,10 +322,10 @@ const DualValuationPanel = ({
 
       {/* Dual Value Display */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        {/* Market Value */}
+        {/* Zestimate */}
         <div className="bg-white rounded-lg p-3 border border-slate-200">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Est. Market Value</span>
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Zestimate</span>
             <button
               onClick={onToggleMarketValueOverride}
               className={`p-1 rounded transition-colors ${isMarketValueOverridden ? 'text-amber-500 bg-amber-50' : 'text-slate-400 hover:text-slate-600'}`}

@@ -24,11 +24,9 @@ DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Verdict and S
      - `listing_status` ← AXESSO `homeStatus` (e.g. OFF_MARKET)
 
 4. **Market Price (off-market)**  
-   Backend computes:  
-   - If both: **Market Price = (Zestimate + RentCast AVM) / 2**  
-   - If one missing: use the other  
-   - If both missing: use **Income Value** (from rent/taxes/insurance)  
-   - Last resort: **Tax assessed value / 0.75**  
+   **Market Price = Zestimate** (direct from Zillow API `search_by_address.zestimate`).  
+   Zestimate is the single source of truth for off-market property valuation.  
+   Returns None when Zestimate is unavailable.  
 
    Result is in `valuations.market_price` and (after verdict) in `list_price` in the verdict response.
 
@@ -92,8 +90,7 @@ DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Verdict and S
 
 ## Optional UI improvement
 
-To make sources visible without changing logic, we can add a short line under "Market" or "Market Price" when both sources are present, e.g.:  
-**"From Zestimate + RentCast AVM"**  
-and when only one is present: **"From Zestimate"** or **"From RentCast AVM"** (using the same backend fields that already drive the number).
+Market value source is now always shown as **"Zestimate"** (direct from Zillow API).  
+Rent source is now always shown as **"RentCast Estimate"** (direct from RentCast API).
 
 This doc is the single place that describes how Verdict and Strategy get their numbers from AXESSO and RentCast even when the UI doesn’t name them.

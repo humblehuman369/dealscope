@@ -25,7 +25,7 @@ export function getPriceLabel(
   isOffMarket?: boolean,
   status?: string,
 ): string {
-  if (isOffMarket) return 'Est. Market Value';
+  if (isOffMarket) return 'Zestimate';
   if (status === 'PENDING') return 'List Price (Pending)';
   return 'List Price';
 }
@@ -76,6 +76,6 @@ export function getAtPriceLabel(
 
 /** Get returns label with price context. */
 export function getReturnsAtPriceLabel(isOffMarket?: boolean): string {
-  const priceType = isOffMarket ? 'Est. Market Value' : 'List Price';
+  const priceType = isOffMarket ? 'Zestimate' : 'List Price';
   return `Returns at ${priceType}`;
 }

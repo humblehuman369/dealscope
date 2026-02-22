@@ -134,10 +134,10 @@ export function generateEstimatedAnalytics(
   // Base median home price ~$350K, adjusted by state
   const listPrice = Math.floor(350000 * multiplier);
   
-  // Use market-specific rent-to-price ratio if available, otherwise default
+  // No rent fallback — use 0 when no rent data available
   const rentToPriceRatio = marketAssumptions?.rent_to_price_ratio || 0.006;
-  const rentEstimate = Math.floor(listPrice * rentToPriceRatio);
-  const strEstimate = Math.floor(rentEstimate / 20);
+  const rentEstimate = 0;
+  const strEstimate = 0;
   
   // Use market-specific rates if available
   const vacancyRate = marketAssumptions?.vacancy_rate || 0.05;

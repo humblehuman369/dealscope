@@ -67,7 +67,7 @@ export default function DealGapScreen() {
       state: 'Unknown',
       zipCode: '00000',
       listPrice,
-      monthlyRent: Math.round(listPrice * 0.008),
+      monthlyRent: 0,
       propertyTaxes: Math.round(listPrice * 0.012),
       insurance: Math.round(1500 + (sqftValue || 1500) * 3),
       bedrooms,

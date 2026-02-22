@@ -993,7 +993,7 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   
   // Use provided data or estimate from list price
   // Note: Use nullish coalescing (??) for numeric values to properly handle 0
-  const monthlyRent = property.monthlyRent ?? listPrice * 0.007; // 0.7% rule
+  const monthlyRent = property.monthlyRent ?? 0;
   const propertyTaxes = property.propertyTaxes ?? listPrice * 0.012; // 1.2% estimate
   const insurance = property.insurance ?? listPrice * DEFAULT_ASSUMPTIONS.insurancePct; // 1% of price
   const arv = property.arv ?? listPrice * 1.15; // 15% above list

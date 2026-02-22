@@ -221,7 +221,7 @@ class AnalyticsUser(HttpUser):
             "/api/v1/analytics/iq-verdict",
             json={
                 "listPrice": price,
-                "monthlyRent": int(price * 0.007),
+                "monthlyRent": 2500,
                 "propertyTaxes": int(price * 0.012),
                 "insurance": int(price * 0.005),
                 "bedrooms": random.randint(2, 5),
@@ -240,7 +240,7 @@ class AnalyticsUser(HttpUser):
             json={
                 "listPrice": price,
                 "purchasePrice": int(price * 0.9),
-                "monthlyRent": int(price * 0.007),
+                "monthlyRent": 2500,
                 "propertyTaxes": int(price * 0.012),
                 "insurance": int(price * 0.005),
             },

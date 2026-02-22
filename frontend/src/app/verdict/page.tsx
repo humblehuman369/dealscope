@@ -273,19 +273,12 @@ function VerdictContent() {
         const listPrice = data.listing?.list_price ?? null
         const apiMarketPrice = data.valuations?.market_price ?? null
 
-        // Market price for verdict: listed price, API market_price, or current valuations only.
-        // Never use prior sale (last_sale_price) for pricing — it would wrongly cap Target Buy
-        // and skew Income Value. Use last_sale_price only for display (e.g. "Last sold") if needed.
+        // Market price: listed price or Zestimate (single source of truth for off-market)
         const price =
           (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
           (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-          (zestimate != null && zestimate > 0 && currentAvm != null && currentAvm > 0
-            ? Math.round((zestimate + currentAvm) / 2)
-            : null) ??
           (zestimate != null && zestimate > 0 ? zestimate : null) ??
-          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-          Math.round(2500 / 0.007)
+          0
 
         // Get property taxes from API data
         const propertyTaxes = data.taxes?.annual_tax_amount 
@@ -390,7 +383,7 @@ function VerdictContent() {
           listPriceForCalc = propertyData.price
           rentForCalc = overrideMonthlyRent 
             ? parseFloat(overrideMonthlyRent) 
-            : (propertyData.monthlyRent || (listPriceForCalc * 0.007)) // 0.7% rule
+            : (propertyData.monthlyRent || 0)
           taxesForCalc = overridePropertyTaxes 
             ? parseFloat(overridePropertyTaxes) 
             : (propertyData.propertyTaxes || (listPriceForCalc * 0.012)) // ~1.2%
@@ -746,7 +739,7 @@ function VerdictContent() {
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
-  const monthlyRent = property.monthlyRent || Math.round(property.price * 0.007)
+  const monthlyRent = property.monthlyRent || 0
   const discountPct = analysis.discountPercent || 0
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
@@ -893,7 +886,7 @@ function VerdictContent() {
               {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
             </h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
-              Every investment property has three price levels. The gap between {isListed ? 'asking price' : 'market value'} and your target buy price is what makes or breaks this deal.
+              Every investment property has three price levels. The gap between {isListed ? 'asking price' : 'Zestimate'} and your target buy price is what makes or breaks this deal.
             </p>
 
             <div className="flex gap-2.5 items-stretch">
@@ -1029,7 +1022,7 @@ function VerdictContent() {
           {/* CTA → Strategy — copy adapts to verdict score */}
           <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>
-              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'market value'}`}
+              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
             </p>
             <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>
               {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
@@ -1105,7 +1098,7 @@ function VerdictContent() {
             // Restore previous DealMaker values from sessionStorage if available
             const defaults = {
               buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
-              monthlyRent: property.monthlyRent || Math.round(property.price * 0.007),
+              monthlyRent: property.monthlyRent || 0,
               propertyTaxes: property.propertyTaxes || Math.round(property.price * 0.012),
               insurance: property.insurance || Math.round(property.price * 0.01),
               arv: property.arv || property.price,

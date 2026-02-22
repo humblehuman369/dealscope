@@ -53,7 +53,7 @@ export interface AnalyticsPropertyData {
   thumbnailUrl?: string;
   photos?: string[];
   photoCount?: number;
-  /** For off-market market price: backend blends (zestimate + current_value_avm)/2 */
+  /** For off-market market price: backend uses Zestimate directly */
   listingStatus?: string;
   zestimate?: number;
   currentValueAvm?: number;

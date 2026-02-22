@@ -16,7 +16,7 @@ from app.schemas.proforma import FinancialProforma
 def get_price_label(is_off_market: bool = False, listing_status: str = None) -> str:
     """Get appropriate price label based on property status."""
     if is_off_market:
-        return "Est. Market Value"
+        return "Zestimate"
     if listing_status == "PENDING":
         return "List Price (Pending)"
     return "List Price"
@@ -652,7 +652,7 @@ class ProformaExcelExporter:
         row_num += 1
         
         source_rows = [
-            ("Rent Estimate", self.data.sources.rent_estimate_source),
+            ("RentCast Estimate", self.data.sources.rent_estimate_source),
             ("Property Value", self.data.sources.property_value_source),
             ("Tax Data", self.data.sources.tax_data_source),
             ("Market Data", self.data.sources.market_data_source),

@@ -500,7 +500,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   </div>` : ''}
   <div class="disclaimer">
     <h4>Data Sources</h4>
-    <p>Rent Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
+    <p>RentCast Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
     <h4 class="mt-6">Disclaimer</h4>
     <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
     <p class="mt-4">&copy; ${now.getFullYear()} DealGapIQ. All rights reserved.</p>

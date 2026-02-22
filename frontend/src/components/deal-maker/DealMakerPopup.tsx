@@ -874,7 +874,7 @@ export function DealMakerPopup({
               
               <SliderInput
                 label="Buy Discount"
-                sublabel="Below market value"
+                sublabel="Below Zestimate"
                 value={values.buyDiscountPct}
                 min={0}
                 max={30}

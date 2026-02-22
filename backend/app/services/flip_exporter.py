@@ -364,7 +364,7 @@ class FlipExcelExporter:
 
         r = self._section_header(ws, r, "FIX & FLIP ASSUMPTIONS")
         assumptions = [
-            ("Purchase Discount", "20% off market value"),
+            ("Purchase Discount", "20% off Zestimate"),
             ("Hard Money LTV", "70%"),
             ("Hard Money Rate", "12%"),
             ("Holding Period", f"{self.bd.get('holding_period_months', 6)} months"),
@@ -379,7 +379,7 @@ class FlipExcelExporter:
         r = self._section_header(ws, r, "DATA SOURCES")
         src = self.d.sources
         sources = [
-            ("Rent Estimate", src.rent_estimate_source),
+            ("RentCast Estimate", src.rent_estimate_source),
             ("Property Value", src.property_value_source),
             ("Tax Data", src.tax_data_source),
             ("Market Data", src.market_data_source),

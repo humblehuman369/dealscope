@@ -176,7 +176,7 @@ class ValuationData(BaseModel):
     zestimate: Optional[float] = None
     zestimate_high_pct: Optional[float] = None
     zestimate_low_pct: Optional[float] = None
-    # DealGapIQ off-market Market Price: (Zestimate + AVM)/2 or single source or Income Value or tax/0.75
+    # Off-market Market Price = Zestimate (direct from Zillow API)
     market_price: Optional[float] = None
 
 
@@ -197,9 +197,9 @@ class RentalMarketStatistics(BaseModel):
     - Trend indicators for rental market direction
     """
     # Property-specific estimates
-    rentcast_estimate: Optional[float] = None     # RentCast rent estimate
-    zillow_estimate: Optional[float] = None       # Zillow rentZestimate
-    iq_estimate: Optional[float] = None           # DealGapIQ proprietary: avg of both
+    rentcast_estimate: Optional[float] = None     # RentCast rent estimate (single source of truth)
+    zillow_estimate: Optional[float] = None       # Zillow rentZestimate (reference only)
+    iq_estimate: Optional[float] = None           # = RentCast rent estimate
     
     # Estimate range (from RentCast)
     estimate_low: Optional[float] = None

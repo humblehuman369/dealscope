@@ -321,7 +321,7 @@ export function ScanResultSheet({
 
           {/* Estimated Value */}
           <View style={styles.valueContainer}>
-            <Text style={[styles.valueLabel, { color: theme.textSecondary }]}>Estimated Market Value</Text>
+            <Text style={[styles.valueLabel, { color: theme.textSecondary }]}>Zestimate</Text>
             <Text style={[styles.valueAmount, { color: theme.valueAmount }]}>
               {estimatedValue > 0 ? formatCurrency(estimatedValue) : '—'}
             </Text>

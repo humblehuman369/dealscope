@@ -461,8 +461,8 @@ Deal Gap = (List Price - Target Price) / List Price × 100%
 ### Off-Market Properties
 
 When there's no listing price:
-- Use AVM (Zestimate) as "Estimated Market Value"
-- Display: "No asking price - using market estimate"
+- Use Zestimate (direct from Zillow API) as market value
+- Display: "No asking price - using Zestimate"
 - Allow user to input expected price in Deal Maker
 
 ### Seller Motivation Score

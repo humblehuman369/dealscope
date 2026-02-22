@@ -105,7 +105,7 @@ export function VerdictIQPageNew({
   // Pricing: prefer backend API values (analysis) for income value and target buy; local math only for display breakdown when API missing.
   const pricing = useMemo(() => {
     const buyPrice = overrideValues?.buyPrice ?? analysis.purchasePrice ?? property.price * 0.9
-    const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? property.price * 0.007
+    const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? 0
     const annualRent = monthlyRent * 12
     const vacancyRate = (overrideValues?.vacancyRate ?? 5) / 100
     const effectiveIncome = annualRent * (1 - vacancyRate)
@@ -216,7 +216,7 @@ export function VerdictIQPageNew({
     baths: property.baths,
     sqft: property.sqft || 0,
     price: property.price,
-    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    rent: property.monthlyRent || 0,
     status: property.listingStatus || 'OFF-MARKET',
     image: property.imageUrl,
     zpid: property.zpid?.toString(),
@@ -274,7 +274,7 @@ export function VerdictIQPageNew({
           baths={property.baths}
           sqft={property.sqft || 0}
           estimatedValue={property.price}
-          estimatedRent={property.monthlyRent || Math.round(property.price * 0.007)}
+          estimatedRent={property.monthlyRent || 0}
           status={property.listingStatus || 'OFF-MARKET'}
           imageUrl={property.imageUrl}
           defaultOpen={true}

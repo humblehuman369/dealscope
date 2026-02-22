@@ -172,7 +172,7 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
               <div className="scan-data-icon">🏠</div>
               <div className="scan-data-info">
                 <div className="scan-data-value">$485K</div>
-                <div className="scan-data-label">Market Value</div>
+                <div className="scan-data-label">Zestimate</div>
               </div>
             </div>
             <div className="scan-data-card">

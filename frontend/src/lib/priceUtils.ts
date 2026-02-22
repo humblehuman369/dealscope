@@ -20,10 +20,10 @@ export type PriceTarget = 'breakeven' | 'targetBuy' | 'wholesale'
  * 
  * @param isOffMarket - Whether the property is off-market
  * @param status - The listing status (e.g., 'PENDING', 'FOR_SALE')
- * @returns The appropriate label: 'Est. Market Value', 'List Price (Pending)', or 'List Price'
+ * @returns The appropriate label: 'Zestimate', 'List Price (Pending)', or 'List Price'
  */
 export function getPriceLabel(isOffMarket?: boolean, status?: string): string {
-  if (isOffMarket) return 'Est. Market Value'
+  if (isOffMarket) return 'Zestimate'
   if (status === 'PENDING') return 'List Price (Pending)'
   return 'List Price'
 }
@@ -74,7 +74,7 @@ export function isPropertyOffMarket(listingStatus?: string): boolean {
  * 
  * @param isOffMarket - Whether the property is off-market
  * @param status - The listing status
- * @returns Label with "At" prefix (e.g., "At List Price", "At Est. Market Value")
+ * @returns Label with "At" prefix (e.g., "At List Price", "At Zestimate")
  */
 export function getAtPriceLabel(isOffMarket?: boolean, status?: string): string {
   const baseLabel = getPriceLabel(isOffMarket, status)
@@ -85,9 +85,9 @@ export function getAtPriceLabel(isOffMarket?: boolean, status?: string): string 
  * Get returns label with price context
  * 
  * @param isOffMarket - Whether the property is off-market
- * @returns Label for returns (e.g., "Returns at List Price", "Returns at Est. Market Value")
+ * @returns Label for returns (e.g., "Returns at List Price", "Returns at Zestimate")
  */
 export function getReturnsAtPriceLabel(isOffMarket?: boolean): string {
-  const priceType = isOffMarket ? 'Est. Market Value' : 'List Price'
+  const priceType = isOffMarket ? 'Zestimate' : 'List Price'
   return `Returns at ${priceType}`
 }
