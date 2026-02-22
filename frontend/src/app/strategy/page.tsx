@@ -470,21 +470,16 @@ function StrategyContent() {
         {/* Page Header + Actions */}
         <section className="px-5 pt-8 pb-0">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
-          {verdictScore >= 70 ? (
-            <>
-              <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>This Deal Passed the Screen.<br/>Here Are the Numbers.</h2>
-              <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-                Every dollar in and out — so you can see exactly whether this property pays for itself.
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>Here&apos;s Why the Numbers Don&apos;t Work —<br/>and What Would Change Them.</h2>
-              <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-                Every dollar in and out so you can see exactly where the gap is and what it would take to make this deal work.
-              </p>
-            </>
-          )}
+          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
+          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
+            This {verdictScore} assumes a {topStrategyName} at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
+            <button
+              onClick={handleOpenDealMaker}
+              className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
+              style={{ color: '#0EA5E9', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+            >Change Terms</button>
+            {' '}to adjust any assumption and see how the deal shifts in real time.
+          </p>
 
           {/* Score + strategy badge — no VerdictIQ sub-brand; acknowledge when best strategy still loses money */}
           {(() => {
