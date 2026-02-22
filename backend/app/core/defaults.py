@@ -24,6 +24,7 @@ class OperatingDefaults:
     vacancy_rate: float = 0.01              # 1% (was 5%)
     property_management_pct: float = 0.00   # 0% (was 10%)
     maintenance_pct: float = 0.05           # 5% (was 10%)
+    capex_pct: float = 0.05                 # 5% reserves / capital expenditures
     insurance_pct: float = 0.01             # 1% of purchase price (was $500 fixed)
     utilities_monthly: float = 100          # $100/mo (was $75)
     landscaping_annual: float = 0           # $0 (was $500)
@@ -151,6 +152,7 @@ def get_all_defaults() -> Dict[str, Any]:
             "vacancy_rate": OPERATING.vacancy_rate,
             "property_management_pct": OPERATING.property_management_pct,
             "maintenance_pct": OPERATING.maintenance_pct,
+            "capex_pct": OPERATING.capex_pct,
             "insurance_pct": OPERATING.insurance_pct,
             "utilities_monthly": OPERATING.utilities_monthly,
             "landscaping_annual": OPERATING.landscaping_annual,

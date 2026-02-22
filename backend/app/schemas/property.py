@@ -424,6 +424,7 @@ class OperatingAssumptions(BaseModel):
     vacancy_rate: float = Field(default_factory=lambda: OPERATING.vacancy_rate)
     property_management_pct: float = Field(default_factory=lambda: OPERATING.property_management_pct)
     maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct)
+    capex_pct: float = Field(default_factory=lambda: OPERATING.capex_pct)
     insurance_pct: float = Field(default_factory=lambda: OPERATING.insurance_pct)
     insurance_annual: Optional[float] = None  # Calculated from insurance_pct if not provided
     utilities_monthly: float = Field(default_factory=lambda: OPERATING.utilities_monthly)

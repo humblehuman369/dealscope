@@ -56,12 +56,19 @@ def estimate_income_value(
     vacancy_rate: float,
     maintenance_pct: float,
     management_pct: float,
+    capex_pct: float = 0.0,
+    utilities_annual: float = 0.0,
+    other_annual_expenses: float = 0.0,
 ) -> float:
     """Income Value — the purchase price at which cash flow = $0.
 
     At this price, rental income exactly covers operating expenses
     and debt service (NOI = Annual Debt Service).
     Above this price, cash flow turns negative. Below it, positive.
+
+    Percentage-based expenses (maintenance, management, capex) are
+    computed on annual_gross_rent (before vacancy), matching the LTR
+    strategy calculator so both produce the same breakeven price.
 
     All parameters are required and fully resolved by the caller.
     """
@@ -78,13 +85,19 @@ def estimate_income_value(
     vacancy = _clamp(vacancy_rate, 0.0, 1.0, "vacancy_rate")
     maint_pct = _clamp(maintenance_pct, 0.0, 1.0, "maintenance_pct")
     mgmt_pct = _clamp(management_pct, 0.0, 1.0, "management_pct")
+    cap_pct = _clamp(capex_pct, 0.0, 1.0, "capex_pct")
 
     annual_gross_rent = monthly_rent * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy)
 
-    annual_maintenance = effective_gross_income * maint_pct
-    annual_management = effective_gross_income * mgmt_pct
-    operating_expenses = property_taxes + insurance + annual_maintenance + annual_management
+    annual_maintenance = annual_gross_rent * maint_pct
+    annual_management = annual_gross_rent * mgmt_pct
+    annual_capex = annual_gross_rent * cap_pct
+    operating_expenses = (
+        property_taxes + insurance
+        + annual_maintenance + annual_management + annual_capex
+        + utilities_annual + other_annual_expenses
+    )
 
     noi = effective_gross_income - operating_expenses
     if noi <= 0:
@@ -121,6 +134,9 @@ def calculate_buy_price(
     vacancy_rate: float,
     maintenance_pct: float,
     management_pct: float,
+    capex_pct: float = 0.0,
+    utilities_annual: float = 0.0,
+    other_annual_expenses: float = 0.0,
 ) -> float:
     """Target Buy Price = Income Value x (1 - Buy Discount %).
 
@@ -144,6 +160,9 @@ def calculate_buy_price(
         vacancy_rate=vacancy_rate,
         maintenance_pct=maintenance_pct,
         management_pct=management_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual_expenses,
     )
 
     if income_value <= 0:

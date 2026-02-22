@@ -72,7 +72,15 @@ def _calculate_ltr_strategy(
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
     effective_income = annual_rent * (1 - o.vacancy_rate)
-    op_ex = property_taxes + insurance + (annual_rent * o.property_management_pct) + (annual_rent * o.maintenance_pct)
+    utilities_annual = o.utilities_monthly * 12
+    other_annual = o.landscaping_annual + o.pest_control_annual
+    op_ex = (
+        property_taxes + insurance
+        + (annual_rent * o.property_management_pct)
+        + (annual_rent * o.maintenance_pct)
+        + (annual_rent * o.capex_pct)
+        + utilities_annual + other_annual
+    )
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -108,7 +116,8 @@ def _calculate_str_strategy(
     utilities = o.utilities_monthly * 12
     supplies = s.supplies_monthly * 12
     maintenance = annual_revenue * o.maintenance_pct
-    op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance
+    capex = annual_revenue * o.capex_pct
+    op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance + capex
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -142,7 +151,15 @@ def _calculate_brrrr_strategy(
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
     effective_income = annual_rent * (1 - o.vacancy_rate)
-    op_ex = property_taxes + insurance + (annual_rent * o.property_management_pct) + (annual_rent * o.maintenance_pct)
+    utilities_annual = o.utilities_monthly * 12
+    other_annual = o.landscaping_annual + o.pest_control_annual
+    op_ex = (
+        property_taxes + insurance
+        + (annual_rent * o.property_management_pct)
+        + (annual_rent * o.maintenance_pct)
+        + (annual_rent * o.capex_pct)
+        + utilities_annual + other_annual
+    )
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     min_cash_for_coc = max(cash_left, initial_cash * 0.10)
@@ -213,8 +230,9 @@ def _calculate_house_hack_strategy(
     monthly_insurance = insurance / 12
     pmi = loan_amount * h.fha_mip_rate / 12
     maintenance = rental_income * o.maintenance_pct
+    capex = rental_income * o.capex_pct
     vacancy = rental_income * o.vacancy_rate
-    monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
+    monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + capex + vacancy
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     annual_savings = rental_income * 12
     score = _performance_score(housing_offset, 1)
@@ -430,10 +448,16 @@ def compute_iq_verdict(
     mgmt_pct = input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
+    capex_pct = a.operating.capex_pct
+    utilities_annual = a.operating.utilities_monthly * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
+
     income_value = estimate_income_value(
         monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
+        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
     )
 
     if input_data.is_listed is False and (
@@ -459,6 +483,8 @@ def compute_iq_verdict(
         buy_discount_pct=buy_discount,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
+        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
     )
 
     strategies = [
@@ -589,10 +615,16 @@ def compute_deal_score(
     rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
 
+    capex_pct = a.operating.capex_pct
+    utilities_annual = a.operating.utilities_monthly * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
+
     income_value = estimate_income_value(
         monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
+        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
     )
 
     has_listing_context = (

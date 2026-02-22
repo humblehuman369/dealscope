@@ -184,15 +184,15 @@ class DealMakerService:
         )
         
         income_value = estimate_income_value(
-            record.monthly_rent,
-            record.annual_property_tax,
-            record.annual_insurance,
-            record.down_payment_pct,
-            record.interest_rate,
-            record.loan_term_years,
-            record.vacancy_rate,
-            record.maintenance_pct,
-            record.management_pct,
+            monthly_rent=record.monthly_rent,
+            property_taxes=record.annual_property_tax,
+            insurance=record.annual_insurance,
+            down_payment_pct=record.down_payment_pct,
+            interest_rate=record.interest_rate,
+            loan_term_years=record.loan_term_years,
+            vacancy_rate=record.vacancy_rate,
+            maintenance_pct=record.maintenance_pct,
+            management_pct=record.management_pct,
         )
         
         return CachedMetrics(
