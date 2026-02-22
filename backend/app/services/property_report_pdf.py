@@ -518,7 +518,7 @@ class PropertyReportPDFExporter:
 
         steps = [
             generate_step_item(1, "Gross Scheduled Rent", _fmt_money(inc.annual_gross_rent),
-                               f"Based on market rent estimate of {_fmt_money(inc.monthly_rent)}/month", self.theme),
+                               f"Based on RentCast estimate of {_fmt_money(inc.monthly_rent)}/month", self.theme),
             generate_step_item(2, f"Less Vacancy Allowance ({inc.vacancy_percent:.0f}%)",
                                f"-{_fmt_money(inc.vacancy_allowance)}",
                                f"Conservative {inc.vacancy_percent:.0f}% vacancy rate", self.theme),
@@ -1016,7 +1016,7 @@ class PropertyReportPDFExporter:
   <div class="card" style="margin-top:24px;">
     <h3 class="card-title">Data Sources</h3>
     <div class="detail-row">
-      <span>Rent Estimate</span>
+      <span>RentCast Estimate</span>
       <span class="detail-value">{self.data.sources.rent_estimate_source}</span>
     </div>
     <div class="detail-row">

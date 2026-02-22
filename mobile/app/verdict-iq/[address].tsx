@@ -243,7 +243,7 @@ export default function VerdictIQScreen() {
   const bedroomCount = beds ? parseInt(beds, 10) : 3;
   const bathroomCount = baths ? parseFloat(baths) : 2;
   const sqftValue = sqft ? parseInt(sqft, 10) : 1500;
-  const monthlyRent = rent ? parseFloat(rent) : Math.round(listPrice * 0.008);
+  const monthlyRent = rent ? parseFloat(rent) : 0;
   const propertyTaxes = Math.round(listPrice * 0.012);
   const insurance = Math.round(1500 + sqftValue * 3);
 

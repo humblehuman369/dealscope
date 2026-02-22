@@ -10,8 +10,8 @@ import {
 
 describe('priceUtils', () => {
   describe('getPriceLabel', () => {
-    it('returns "Est. Market Value" for off-market properties', () => {
-      expect(getPriceLabel(true)).toBe('Est. Market Value')
+    it('returns "Zestimate" for off-market properties', () => {
+      expect(getPriceLabel(true)).toBe('Zestimate')
     })
 
     it('returns "List Price (Pending)" for pending status', () => {
@@ -26,8 +26,8 @@ describe('priceUtils', () => {
       expect(getPriceLabel()).toBe('List Price')
     })
 
-    it('returns "Est. Market Value" when off-market regardless of status', () => {
-      expect(getPriceLabel(true, 'PENDING')).toBe('Est. Market Value')
+    it('returns "Zestimate" when off-market regardless of status', () => {
+      expect(getPriceLabel(true, 'PENDING')).toBe('Zestimate')
     })
   })
 
@@ -91,8 +91,8 @@ describe('priceUtils', () => {
       expect(getAtPriceLabel(false)).toBe('At List Price')
     })
 
-    it('returns "At Est. Market Value" for off-market', () => {
-      expect(getAtPriceLabel(true)).toBe('At Est. Market Value')
+    it('returns "At Zestimate" for off-market', () => {
+      expect(getAtPriceLabel(true)).toBe('At Zestimate')
     })
 
     it('returns "At List Price (Pending)" for pending status', () => {
@@ -106,7 +106,7 @@ describe('priceUtils', () => {
     })
 
     it('returns returns label for off-market', () => {
-      expect(getReturnsAtPriceLabel(true)).toBe('Returns at Est. Market Value')
+      expect(getReturnsAtPriceLabel(true)).toBe('Returns at Zestimate')
     })
   })
 })

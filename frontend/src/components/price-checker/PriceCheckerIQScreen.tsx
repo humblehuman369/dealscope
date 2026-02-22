@@ -6,7 +6,7 @@
  * Unified comps page with Sale/Rent sub-tabs.
  * Features:
  * - Live API fetch with pagination and exclusion
- * - Dual valuation panel (Market Value + ARV, or Market Rent + Improved Rent)
+ * - Dual valuation panel (Zestimate + ARV, or RentCast Estimate + Improved Rent)
  * - Weighted hybrid appraisal calculations
  * - Selective comp refresh (per-comp and bulk unselected)
  * - Expandable adjustment breakdown grid
@@ -884,11 +884,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
             {/* Dual values */}
             <div className="grid grid-cols-2 gap-3 mb-3">
-              {/* Left: Market Value / Market Rent */}
+              {/* Left: Zestimate / RentCast Estimate */}
               <div className="bg-white/[0.05] rounded-lg p-3 border border-white/[0.07]">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wide">
-                    {isSale ? 'Est. Market Value' : 'Est. Market Rent'}
+                    {isSale ? 'Zestimate' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)

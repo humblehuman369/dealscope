@@ -721,14 +721,10 @@ class DealGapIQNormalizer:
             self._set_field(result, "rent_zestimate", float(zl_rent_val),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
-        # Create merged best estimate
-        if rc_rent or zl_rent_val:
-            value, source, conf, conflict, pct = self._merge_numeric(
-                rc_rent, zl_rent_val, self.WEIGHTS["rent"]
-            )
-            self._set_field(result, "monthly_rent_estimate", value,
-                          source, conf, {"rentcast": rc_rent, "zillow": zl_rent_val},
-                          conflict, pct)
+        # RentCast rent is single source of truth for rent estimate
+        if rc_rent:
+            self._set_field(result, "monthly_rent_estimate", float(rc_rent),
+                          DataSource.RENTCAST, ConfidenceLevel.HIGH)
         
         # Rent ranges (RentCast only)
         if rent.get("rentRangeLow"):
@@ -940,17 +936,10 @@ class DealGapIQNormalizer:
             self._set_field(result, "rental_zillow_estimate", float(zl_rent_val),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
-        # Calculate IQ proprietary estimate (average of both sources when available)
-        if rc_rent and zl_rent_val:
-            iq_estimate = (float(rc_rent) + float(zl_rent_val)) / 2
-            self._set_field(result, "rental_iq_estimate", round(iq_estimate, 2),
-                          DataSource.MERGED, ConfidenceLevel.HIGH)
-        elif rc_rent:
+        # RentCast rent is single source of truth for rent estimate
+        if rc_rent:
             self._set_field(result, "rental_iq_estimate", float(rc_rent),
-                          DataSource.RENTCAST, ConfidenceLevel.MEDIUM)
-        elif zl_rent_val:
-            self._set_field(result, "rental_iq_estimate", float(zl_rent_val),
-                          DataSource.ZILLOW, ConfidenceLevel.MEDIUM)
+                          DataSource.RENTCAST, ConfidenceLevel.HIGH)
         
         # Extract market-wide rental stats from rentalData
         market = rc.get("market", {}) or {}

@@ -191,8 +191,8 @@ If you find hardcoded defaults during development:
 ### Off-Market Properties
 
 When `listing_status` is not FOR_SALE:
-- Use AVM (Zestimate) as baseline for Deal Gap calculation
-- Display: "No asking price - using market estimate of $X"
+- Use Zestimate (direct from Zillow API) as baseline for Deal Gap calculation
+- Display: "No asking price - using Zestimate of $X"
 - Allow user to input expected price in Deal Maker
 
 ### Seller Motivation Score

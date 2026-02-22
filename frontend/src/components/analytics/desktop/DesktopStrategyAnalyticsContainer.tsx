@@ -124,7 +124,7 @@ function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
     interestRate: 0.0725,
     loanTermYears: 30,
     closingCostsPct: 0.03,
-    monthlyRent: property.monthlyRent || property.listPrice * 0.007,
+    monthlyRent: property.monthlyRent || 0,
     averageDailyRate: property.averageDailyRate || 150,
     occupancyRate: property.occupancyRate || 0.70,
     vacancyRate: 0.05,

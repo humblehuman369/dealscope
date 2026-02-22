@@ -218,7 +218,7 @@ export function IQVerdictScreen({
     baths: property.baths,
     sqft: property.sqft || 0,
     price: property.price,
-    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    rent: property.monthlyRent || 0,
     status: 'OFF-MARKET',
     image: property.imageUrl,
   }), [property]);

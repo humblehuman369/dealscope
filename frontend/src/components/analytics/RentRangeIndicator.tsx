@@ -143,7 +143,7 @@ export function RentRangeIndicator({
         {/* IQ Estimate - Featured prominently */}
         <div className="text-center mb-4">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-            IQ Rent Estimate
+            RentCast Estimate
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
             {formatCurrency(iqEstimate)}

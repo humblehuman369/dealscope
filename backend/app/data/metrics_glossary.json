@@ -58,9 +58,9 @@
     }
   },
   "market_price_off_market": {
-    "description": "Market Price is the value displayed when the property is not listed (status off-market). When the property is listed, Market Price = List Price (asking price). Off-market Market Price gives DealGapIQ a proprietary blended number different from single-source sites.",
+    "description": "Market Price is the Zestimate (Zillow API) for off-market properties. When the property is listed, Market Price = List Price (asking price).",
     "source": "backend/app/core/defaults.compute_market_price",
-    "usage": "Property API valuations.market_price; Verdict request/response when off-market (list_price = market price).",
+    "usage": "Property API valuations.market_price; Verdict request/response when off-market (list_price = Zestimate).",
     "metrics": {
       "market_price_listed": {
         "formula": "If listed: market_price = list_price",
@@ -68,9 +68,9 @@
         "description": "When property is actively listed, Market Price is the list (asking) price."
       },
       "market_price_off_market": {
-        "formula": "(1) (Zestimate + RentCast AVM) / 2 when both available; (2) if one missing, use the other; (3) if both missing, use calculated Income Value; (4) if still none, use tax_assessed_value / 0.75",
-        "inputs": ["zestimate", "current_value_avm", "income_value", "tax_assessed_value"],
-        "description": "Off-market only. Two-source blended average when both Zestimate and RentCast AVM exist; otherwise single source, then Income Value, then tax/0.75."
+        "formula": "market_price = zestimate (direct from Zillow API via search_by_address.zestimate)",
+        "inputs": ["zestimate"],
+        "description": "Off-market only. Zestimate is the single source of truth for market value."
       }
     }
   },
@@ -137,24 +137,18 @@
     }
   },
   "rental_market_statistics": {
-    "description": "Rental market statistics from RentCast rentalData and Zillow for rental investment analysis",
-    "source": "RentCast Markets API (rentalData), Zillow Property API (rentZestimate), Zillow Market API (medianRentPriceOverTime)",
+    "description": "Rental market statistics — RentCast rent estimate is single source of truth",
+    "source": "RentCast Markets API (rent_estimate.rent)",
     "metrics": {
       "rental_rentcast_estimate": {
-        "formula": "rental_rentcast_estimate = rent.rent",
+        "formula": "monthly_rent = rent_estimate.rent (direct from RentCast API)",
         "inputs": ["RentCast rent estimate"],
-        "description": "RentCast's property-specific rent estimate based on comparable rentals."
+        "description": "RentCast's property-specific rent estimate — single source of truth for all rent calculations."
       },
       "rental_zillow_estimate": {
         "formula": "rental_zillow_estimate = property.rentZestimate",
         "inputs": ["Zillow rentZestimate"],
-        "description": "Zillow's estimated monthly rent (rentZestimate) for the property."
-      },
-      "iq_estimate": {
-        "formula": "iq_estimate = (rental_rentcast_estimate + rental_zillow_estimate) / 2; if only one source available, uses that value",
-        "inputs": ["rental_rentcast_estimate", "rental_zillow_estimate"],
-        "description": "DealGapIQ proprietary rent estimate. Averages RentCast and Zillow estimates when both are available to provide a more balanced estimate. When only one source is available, uses that value with reduced confidence.",
-        "notes": "This is a unique DealGapIQ metric that combines the best data from both sources."
+        "description": "Zillow's estimated monthly rent (rentZestimate). Stored for reference but not used in calculations."
       },
       "market_avg_rent": {
         "formula": "market_avg_rent = rentalData.averageRent",
@@ -667,7 +661,7 @@
       "id": "brrrr",
       "name": "BRRRR",
       "metrics": {
-        "purchase_price": { "formula": "purchase_price = market_value * (1 - purchase_discount_pct)", "inputs": ["market_value", "purchase_discount_pct"] },
+        "purchase_price": { "formula": "purchase_price = zestimate * (1 - purchase_discount_pct)", "inputs": ["zestimate", "purchase_discount_pct"] },
         "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
         "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
         "initial_loan_amount": { "formula": "initial_loan_amount = purchase_price - down_payment", "inputs": ["purchase_price", "down_payment"] },
@@ -722,7 +716,7 @@
       "id": "flip",
       "name": "Fix & Flip",
       "metrics": {
-        "purchase_price": { "formula": "purchase_price = market_value * (1 - purchase_discount_pct)", "inputs": ["market_value", "purchase_discount_pct"] },
+        "purchase_price": { "formula": "purchase_price = zestimate * (1 - purchase_discount_pct)", "inputs": ["zestimate", "purchase_discount_pct"] },
         "hard_money_loan": { "formula": "hard_money_loan = purchase_price * hard_money_ltv", "inputs": ["purchase_price", "hard_money_ltv"] },
         "down_payment": { "formula": "down_payment = purchase_price - hard_money_loan", "inputs": ["purchase_price", "hard_money_loan"] },
         "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },

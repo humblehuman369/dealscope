@@ -433,11 +433,11 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
 
     Pure function: no I/O, no DB access, no side-effects.
     Raises ValueError on nonsensical inputs (should be caught by Pydantic first).
-    When is_listed is False and valuations are provided, uses compute_market_price
-    as the effective list_price (DealGapIQ off-market Market Price).
+    When is_listed is False, uses Zestimate (via compute_market_price) as the
+    effective list_price for deal gap calculation.
     """
     list_price = input_data.list_price
-    monthly_rent = input_data.monthly_rent or (list_price * 0.007)
+    monthly_rent = input_data.monthly_rent or 0
     property_taxes = input_data.property_taxes or (list_price * 0.012)
     insurance = input_data.insurance or (list_price * OPERATING.insurance_pct)
     arv = input_data.arv or (list_price * 1.15)
@@ -460,19 +460,12 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
     )
-    # Off-market: replace list_price with DealGapIQ Market Price when valuations provided
-    if input_data.is_listed is False and (
-        input_data.zestimate is not None
-        or input_data.current_value_avm is not None
-        or input_data.tax_assessed_value is not None
-    ):
+    # Off-market: replace list_price with Zestimate when available
+    if input_data.is_listed is False and input_data.zestimate is not None:
         computed_market = compute_market_price(
             is_listed=False,
             list_price=input_data.list_price,
             zestimate=input_data.zestimate,
-            current_value_avm=input_data.current_value_avm,
-            income_value=income_value,
-            tax_assessed_value=input_data.tax_assessed_value,
         )
         if computed_market is not None:
             list_price = float(computed_market)

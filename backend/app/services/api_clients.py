@@ -261,8 +261,8 @@ class DataNormalizer:
         "last_sale_date": ("lastSaleDate", "lastSoldDate", "rentcast"),
         "tax_assessed_value": ("taxAssessedValue", "taxAssessedValue", "rentcast"),
         
-        # Rental Data - Zillow averageRent from rentalData
-        "monthly_rent_ltr": ("rent", "rentZestimate", "rentcast"),
+        # Rental Data — RentCast is single source of truth for rent estimate
+        "monthly_rent_ltr": ("rent", None, "rentcast"),
         "average_rent": (None, "rentalData.averageRent", "axesso"),
         "rent_range_low": ("rentRangeLow", None, "rentcast"),
         "rent_range_high": ("rentRangeHigh", None, "rentcast"),

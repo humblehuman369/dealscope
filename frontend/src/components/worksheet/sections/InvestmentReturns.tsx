@@ -30,7 +30,7 @@ export function InvestmentReturns() {
       icon: Percent,
     },
     {
-      label: 'Cap Rate (Market Value)',
+      label: 'Cap Rate (Zestimate)',
       value: worksheetMetrics?.arv ? (derived.noi / worksheetMetrics.arv) * 100 : 0,
       threshold: { low: 4, good: 6 },
       icon: Percent,

@@ -472,9 +472,9 @@ class PropertyService:
         list_price = (
             float(list_price_val)
             if list_price_val is not None and list_price_val > 0
-            else (float(valuations.market_price) if valuations.market_price is not None else float(valuations.zestimate or valuations.current_value_avm or 0) or 1)
+            else float(valuations.zestimate or 0) or 1
         )
-        monthly_rent = (rentals.monthly_rent_ltr or rentals.average_rent) or (list_price * 0.007)
+        monthly_rent = rentals.monthly_rent_ltr or 0
         listing_status_val = getattr(listing, "listing_status", None) if listing is not None else None
         if listing_status_val is None and listing is not None and isinstance(listing, dict):
             listing_status_val = listing.get("listing_status")
@@ -571,7 +571,7 @@ class PropertyService:
         return _normalize_zestimate_keys(chosen)
 
     def _apply_market_price_to_cached(self, cached_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Recompute market_price on cached response so stale cache uses current formula."""
+        """Recompute market_price on cached response — Zestimate is single source for off-market."""
         valuations = (cached_data.get("valuations") or {}).copy()
         listing = cached_data.get("listing") or {}
         listing_status = listing.get("listing_status")
@@ -587,15 +587,12 @@ class PropertyService:
             is_listed=is_listed,
             list_price=list_price,
             zestimate=valuations.get("zestimate"),
-            current_value_avm=valuations.get("current_value_avm"),
-            income_value=None,
-            tax_assessed_value=valuations.get("tax_assessed_value"),
         )
         valuations["market_price"] = market_price_val
         return {**cached_data, "valuations": valuations}
 
     def _build_valuations(self, normalized: Dict) -> ValuationData:
-        """Build ValuationData including off-market market_price when applicable."""
+        """Build ValuationData — Zestimate is single source for off-market market_price."""
         listing_status = normalized.get("listing_status")
         list_price = normalized.get("list_price")
         off_market_statuses = ("OFF_MARKET", "SOLD", "FOR_RENT")
@@ -611,9 +608,6 @@ class PropertyService:
                 is_listed=False,
                 list_price=None,
                 zestimate=normalized.get("zestimate"),
-                current_value_avm=normalized.get("current_value_avm"),
-                income_value=None,
-                tax_assessed_value=normalized.get("tax_assessed_value"),
             )
         return ValuationData(
             current_value_avm=normalized.get("current_value_avm"),
@@ -968,9 +962,10 @@ class PropertyService:
         ]
         strategies_to_calc = strategies or all_strategies
         
-        # Extract values with defaults
-        purchase_price = assumptions.financing.purchase_price or property_data.valuations.current_value_avm or 425000
-        monthly_rent = property_data.rentals.monthly_rent_ltr or 2100
+        # Extract values — Zestimate is single source of truth for market value,
+        # RentCast rent is single source of truth for rent estimate
+        purchase_price = assumptions.financing.purchase_price or property_data.valuations.zestimate or property_data.valuations.current_value_avm or 0
+        monthly_rent = property_data.rentals.monthly_rent_ltr or 0
         property_taxes = property_data.market.property_taxes_annual or 4500
         hoa = property_data.market.hoa_fees_monthly or 0
         adr = property_data.rentals.average_daily_rate or 250

@@ -51,7 +51,7 @@ const METHODOLOGY_SECTIONS = [
     description: 'The discount needed from asking price to reach your breakeven price.',
     formula: 'Deal Gap = (List Price − Breakeven) ÷ List Price × 100',
     explanation: 'Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).',
-    priceNote: 'For listed properties, List Price is used. For off-market properties, Market Value (Zestimate) is used.',
+    priceNote: 'For listed properties, List Price is used. For off-market properties, Zestimate is used.',
     note: 'Based on LTR (rental) revenue model.',
   },
   {

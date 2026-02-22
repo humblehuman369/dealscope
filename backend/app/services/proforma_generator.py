@@ -62,7 +62,7 @@ per Available Night (RevPAN), Break-Even Occupancy, Cash-on-Cash Return. The
 model includes seasonality adjustments and platform fee structures.""",
 
     "brrrr": """**BRRRR** — Buy, Rehab, Rent, Refinance, Repeat.
-You purchase a distressed property below market value, renovate to increase its
+You purchase a distressed property below Zestimate, renovate to increase its
 value (to ARV — After Repair Value), rent it out, then refinance based on the
 new higher value to pull out most or all of your initial investment. Key metrics:
 Capital Recycled %, Post-Refi Cash-on-Cash, Cash Left in Deal. The goal is to

@@ -5,7 +5,7 @@
  * 
  * Rental comparables page featuring:
  * - CompactHeader with strategy selector
- * - IQ Rent Estimate card with editable value
+ * - RentCast Estimate card with editable value
  * - Selectable rental comp cards with match scores
  * - Bottom action bar
  * 
@@ -260,7 +260,7 @@ export function RentalCompsScreen({
         {/* Section Header */}
         <div className="flex justify-between items-start p-4 bg-white border-b border-[#CBD5E1]">
           <div>
-            <h2 className="text-lg font-bold text-[#0A1628]">Rental Comps & Rent Estimate</h2>
+            <h2 className="text-lg font-bold text-[#0A1628]">Rental Comps & RentCast Estimate</h2>
             <p className="text-xs text-[#64748B] mt-0.5">Comparable rentals for {property.address}</p>
           </div>
           <button 
@@ -286,7 +286,7 @@ export function RentalCompsScreen({
 
             {/* Rent Details */}
             <div className="flex-1">
-              <div className="text-[10px] font-semibold text-[#0891B2] uppercase tracking-wider mb-0.5">IQ Rent Estimate</div>
+              <div className="text-[10px] font-semibold text-[#0891B2] uppercase tracking-wider mb-0.5">RentCast Estimate</div>
               <div className="flex items-baseline gap-0.5">
                 {isEditingRent ? (
                   <input

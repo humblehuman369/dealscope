@@ -142,14 +142,11 @@ function StrategyContent() {
         setIsLoading(true)
         const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
         const v = propData.valuations || {}
-        // Same fallback as Verdict page when no valuations (2500/0.007 not 350000)
-        const verdictFallback = Math.round(2500 / 0.007)
+        // Zestimate is single source of truth for off-market market value
         let price = v.market_price
-          ?? (v.zestimate != null && v.current_value_avm != null ? Math.round((v.zestimate + v.current_value_avm) / 2) : null)
-          ?? v.current_value_avm
           ?? v.zestimate
-          ?? verdictFallback
-        let monthlyRent = propData.rentals?.monthly_rent_ltr || propData.rentals?.average_rent || Math.round(price * 0.007)
+          ?? 0
+        let monthlyRent = propData.rentals?.monthly_rent_ltr || 0
         let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
         let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)
 
@@ -256,13 +253,13 @@ function StrategyContent() {
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
   // Same fallback as Verdict when no valuations (single source of truth)
-  const listPriceFallback = Math.round(2500 / 0.007)
+  const listPriceFallback = 0
   const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? listPriceFallback
   // DealMaker/verdict overrides: purchasePrice from verdict or Deal Maker, then backend
   const targetPrice = dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice
     ?? data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const monthlyRent = dealMakerOverrides?.monthlyRent
-    || propertyInfo?.monthlyRent || Math.round(listPrice * 0.007)
+    || propertyInfo?.monthlyRent || 0
   const propertyTaxes = dealMakerOverrides?.propertyTaxes
     || propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
   const insurance = dealMakerOverrides?.insurance

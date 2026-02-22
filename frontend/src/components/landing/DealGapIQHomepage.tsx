@@ -553,7 +553,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </div>
               </div>
               <div className="strat-subtitle">Find deals, assign contracts, profit</div>
-              <p className="strat-body">Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.</p>
+              <p className="strat-body">Find properties under Zestimate, get them under contract, then assign to other investors for a fee. Zero capital required.</p>
             </Link>
           </div>
         </div>

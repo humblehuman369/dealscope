@@ -104,7 +104,7 @@ const STRATEGY_CONTENT: Record<StrategyId, StrategyContent> = {
       { title: 'Forced Appreciation', desc: 'Add value through renovation', icon: 'hammer-outline' },
     ],
     howItWorks: [
-      'Buy a distressed property below market value',
+      'Buy a distressed property below Zestimate',
       'Rehab to increase value (target 70% rule)',
       'Rent to a qualified tenant at market rate',
       'Refinance based on new appraised value (75% LTV)',

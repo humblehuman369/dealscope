@@ -116,7 +116,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   // ============================================
   // Measures: How obtainable is this deal? (discount from list to breakeven)
   // For Wholesale, we estimate monthly rent based on ARV
-  const estimatedMonthlyRent = arv * 0.007 // 0.7% of ARV as potential rent
+  const estimatedMonthlyRent = 0
   
   const { result: dealScoreResult } = useDealScore({
     listPrice: listPrice,

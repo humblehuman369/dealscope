@@ -198,7 +198,7 @@ export function IQVerdictScreen({
     baths: property.baths,
     sqft: property.sqft || 0,
     price: property.price,
-    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    rent: property.monthlyRent || 0,
     status: 'OFF-MARKET',
     image: property.imageUrl,
     zpid: property.zpid?.toString(),
@@ -222,7 +222,7 @@ export function IQVerdictScreen({
   
   // Market Price: when listed = list price; when off-market = backend market_price (property.price set from API)
   const marketValue = property.price
-  const priceSource = isOffMarket ? 'Market Estimate' : 'Asking Price'
+  const priceSource = isOffMarket ? 'Zestimate' : 'Asking Price'
 
   // Calculate prices
   const incomeValue = analysis.incomeValue || Math.round(marketValue * 1.1)
@@ -289,7 +289,7 @@ export function IQVerdictScreen({
   // Calculate metrics for Summary Snapshot
   const metrics = useMemo(() => {
     const effectivePrice = userTargetPrice
-    const monthlyRent = property.monthlyRent ?? effectivePrice * 0.007
+    const monthlyRent = property.monthlyRent ?? 0
     const propertyTaxes = property.propertyTaxes ?? effectivePrice * 0.012
     const insurance = property.insurance ?? effectivePrice * 0.01
 
@@ -580,7 +580,7 @@ export function IQVerdictScreen({
 
           <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Market Estimate' : 'Asking Price'}</span>
+              <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
               <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">

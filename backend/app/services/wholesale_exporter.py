@@ -132,7 +132,7 @@ class WholesaleExcelExporter:
         r += 1
         r = self._section_header(ws, r, "KEY NUMBERS AT A GLANCE")
         glance = [
-            ("Est. After-Market Value (AMV)", self._amv, _CUR),
+            ("Zestimate (AMV)", self._amv, _CUR),
             ("Est. Monthly Rent", self._rent, _CUR),
             ("Assignment / Wholesale Fee", self._fee, _CUR),
             ("Contract Price (MAO)", self.ws_data.get("contract_price", 0), _CUR),
@@ -193,7 +193,7 @@ class WholesaleExcelExporter:
         discount = ((self._amv - contract) / self._amv * 100) if self._amv else 0
         buyer_disc = ((self._amv - end_buyer) / self._amv * 100) if self._amv else 0
         rows3 = [
-            ("Est. Market Value (AMV)", self._amv, _CUR),
+            ("Zestimate (AMV)", self._amv, _CUR),
             ("Your Contract Price", contract, _CUR),
             ("Your Discount from AMV", f"{discount:.1f}%", None),
             ("End-Buyer Price", end_buyer, _CUR),
@@ -419,7 +419,7 @@ class WholesaleExcelExporter:
         r = self._section_header(ws, r, "DATA SOURCES")
         src = self.d.sources
         sources = [
-            ("Rent Estimate", src.rent_estimate_source),
+            ("RentCast Estimate", src.rent_estimate_source),
             ("Property Value", src.property_value_source),
             ("Tax Data", src.tax_data_source),
             ("Market Data", src.market_data_source),

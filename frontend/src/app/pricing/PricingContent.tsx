@@ -625,7 +625,7 @@ export default function PricingContent() {
 
   const methodologyCards = [
     {
-      label: "Rent Estimate",
+      label: "RentCast Estimate",
       value: "$1,850/mo",
       detail: "Based on 14 comps within 0.5mi",
       color: "#0EA5E9",

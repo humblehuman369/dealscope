@@ -203,7 +203,7 @@ export function VerdictIQCombined({
   
   const marketValue = property.price
   const priceSource = isOffMarket 
-    ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
+    ? 'Zestimate'
     : 'Asking Price'
 
   // Base prices from analysis (before any overrides)
@@ -218,7 +218,7 @@ export function VerdictIQCombined({
     if (!overrideValues) return baseIncomeValue
     
     // Recalculate income value based on new terms
-    const monthlyRent = overrideValues.monthlyRent ?? property.monthlyRent ?? effectiveBuyPrice * 0.007
+    const monthlyRent = overrideValues.monthlyRent ?? property.monthlyRent ?? 0
     const annualRent = monthlyRent * 12
     const vacancyRate = (overrideValues.vacancyRate ?? 1) / 100
     const effectiveIncome = annualRent * (1 - vacancyRate)
@@ -288,7 +288,7 @@ export function VerdictIQCombined({
       ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)
     const monthlyRent = overrideValues?.monthlyRent 
       ?? property.monthlyRent 
-      ?? effectivePrice * 0.007
+      ?? 0
     const propertyTaxes = overrideValues?.propertyTaxes 
       ?? property.propertyTaxes 
       ?? effectivePrice * 0.012
@@ -371,7 +371,7 @@ export function VerdictIQCombined({
     // Build calculation inputs
     const effectivePrice = overrideValues?.buyPrice 
       ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)
-    const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? effectivePrice * 0.007
+    const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? 0
     const propertyTaxes = overrideValues?.propertyTaxes ?? property.propertyTaxes ?? effectivePrice * 0.012
     const insurance = overrideValues?.insurance ?? property.insurance ?? effectivePrice * 0.01
     
@@ -797,7 +797,7 @@ export function VerdictIQCombined({
           downPaymentPct={defaults.financing.down_payment_pct * 100}
           interestRate={defaults.financing.interest_rate * 100}
           loanTermYears={defaults.financing.loan_term_years}
-          monthlyRent={overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007)}
+          monthlyRent={overrideValues?.monthlyRent ?? property.monthlyRent ?? 0}
           vacancyRate={defaults.operating.vacancy_rate * 100}
           otherIncome={0}
           propertyTaxes={overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012)}
@@ -825,7 +825,7 @@ export function VerdictIQCombined({
           refinanceLtv={overrideValues?.refinanceLtv ?? 75}
           refinanceInterestRate={overrideValues?.refinanceInterestRate ?? defaults.financing.interest_rate * 100}
           refinanceTermYears={overrideValues?.refinanceTermYears ?? 30}
-          postRehabMonthlyRent={overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007)}
+          postRehabMonthlyRent={overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? 0}
           // Flip props
           rehabTimeMonths={overrideValues?.rehabTimeMonths ?? 4}
           daysOnMarket={overrideValues?.daysOnMarket ?? 45}
@@ -837,7 +837,7 @@ export function VerdictIQCombined({
           // House Hack props
           totalUnits={overrideValues?.totalUnits ?? 4}
           ownerOccupiedUnits={overrideValues?.ownerOccupiedUnits ?? 1}
-          avgRentPerUnit={overrideValues?.avgRentPerUnit ?? Math.round((property.monthlyRent ?? buyPrice * 0.007) / (overrideValues?.totalUnits ?? 4))}
+          avgRentPerUnit={overrideValues?.avgRentPerUnit ?? Math.round((property.monthlyRent ?? 0) / (overrideValues?.totalUnits ?? 4))}
           currentHousingPayment={overrideValues?.currentHousingPayment ?? 2000}
           pmiRate={overrideValues?.pmiRate ?? 0.85}
           // Wholesale props
@@ -883,7 +883,7 @@ export function VerdictIQCombined({
 
               <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
                 <div className="flex justify-between items-center py-1.5">
-                  <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Market Estimate' : 'Asking Price'}</span>
+                  <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
                   <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1.5">
@@ -1039,7 +1039,7 @@ export function VerdictIQCombined({
           propertyTaxes: overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012),
           insurance: overrideValues?.insurance ?? property.insurance ?? Math.round(buyPrice * 0.01),
           // LTR fields
-          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
+          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? 0,
           vacancyRate: (defaults.operating.vacancy_rate * 100),
           managementRate: (defaults.operating.property_management_pct * 100),
           // STR fields
@@ -1058,7 +1058,7 @@ export function VerdictIQCombined({
           hardMoneyRate: overrideValues?.hardMoneyRate ?? 12,
           holdingPeriodMonths: overrideValues?.holdingPeriodMonths ?? 6,
           holdingCostsMonthly: overrideValues?.holdingCostsMonthly ?? 1500,
-          postRehabMonthlyRent: overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
+          postRehabMonthlyRent: overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? 0,
           refinanceLtv: overrideValues?.refinanceLtv ?? 75,
           refinanceInterestRate: overrideValues?.refinanceInterestRate ?? 6.5,
           refinanceTermYears: overrideValues?.refinanceTermYears ?? 30,

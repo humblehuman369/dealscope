@@ -138,7 +138,7 @@ class BRRRRExcelExporter:
         discount = ((arv - purchase) / arv) if arv else 0
 
         rows = [
-            ("Market Value / ARV", arv, _CUR),
+            ("Zestimate / ARV", arv, _CUR),
             ("Purchase Discount", discount, _PCT),
             ("Purchase Price", purchase, _CUR),
         ]
@@ -357,7 +357,7 @@ class BRRRRExcelExporter:
 
         r = self._section_header(ws, r, "BRRRR ASSUMPTIONS")
         assumptions = [
-            ("Purchase Discount", "20% off market value"),
+            ("Purchase Discount", "20% off Zestimate"),
             ("Down Payment (Initial)", "20%"),
             ("Initial Interest Rate", "7%"),
             ("Renovation Contingency", "10%"),
@@ -374,7 +374,7 @@ class BRRRRExcelExporter:
         r = self._section_header(ws, r, "DATA SOURCES")
         src = self.d.sources
         sources = [
-            ("Rent Estimate", src.rent_estimate_source),
+            ("RentCast Estimate", src.rent_estimate_source),
             ("Property Value", src.property_value_source),
             ("Tax Data", src.tax_data_source),
             ("Market Data", src.market_data_source),

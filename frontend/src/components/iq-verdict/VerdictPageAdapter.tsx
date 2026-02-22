@@ -134,7 +134,7 @@ export function VerdictPageAdapter({
   const effectiveClosingCostsPct = (overrideValues?.closingCosts ?? 3) / 100
   const effectiveInterestRate = (overrideValues?.interestRate ?? 6) / 100
   const effectiveLoanTerm = overrideValues?.loanTerm ?? 30
-  const effectiveRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(property.price * 0.007)
+  const effectiveRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? 0
   const effectiveVacancyRate = (overrideValues?.vacancyRate ?? 5) / 100
   const effectiveManagementPct = (overrideValues?.managementRate ?? 8) / 100
   const effectiveTaxes = overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(property.price * 0.012)
@@ -156,7 +156,7 @@ export function VerdictPageAdapter({
     baths: property.baths,
     sqft: property.sqft,
     price: property.price,
-    monthlyRent: property.monthlyRent || (property.price * 0.007),
+    monthlyRent: property.monthlyRent || 0,
     listingStatus: (property.listingStatus || 'OFF_MARKET') as 'FOR_SALE' | 'PENDING' | 'OFF_MARKET',
     zpid: property.zpid,
   }), [property])

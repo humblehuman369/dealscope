@@ -172,7 +172,7 @@ export function FlipWorksheet({
   // ============================================
   // Measures: How obtainable is this deal? (discount from list to breakeven)
   // For Flip, we don't have rental income, so we estimate based on potential rental value
-  const estimatedMonthlyRent = listPrice * 0.007 // 0.7% of list price as potential rent
+  const estimatedMonthlyRent = 0
   
   const { result: dealScoreResult } = useDealScore({
     listPrice: listPrice,
