@@ -873,7 +873,7 @@ export const DEFAULT_FLIP_DEAL_MAKER_STATE: FlipDealMakerState = {
   daysOnMarket: 45,              // 45 days DOM
   
   // Phase 5: Sell
-  sellingCostsPct: 0.06,         // Matches FLIP.selling_costs_pct
+  sellingCostsPct: 0.08,         // Matches FLIP.selling_costs_pct
   capitalGainsRate: 0.22,        // 22% short-term cap gains (ordinary income)
 }
 
