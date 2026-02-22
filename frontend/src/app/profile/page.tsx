@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { User, Building2, TrendingUp, Bell, Mail, Camera, X, Check } from 'lucide-react'
 import { useProfileData } from './_components/useProfileData'
 import { AccountTab } from './_components/AccountTab'
 import { BusinessTab } from './_components/BusinessTab'
 import { InvestorTab } from './_components/InvestorTab'
 import { PreferencesTab } from './_components/PreferencesTab'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import type { TabType } from './_components/types'
 
 // ===========================================
@@ -26,7 +27,7 @@ const tabs = [
   { id: 'preferences' as TabType, label: 'Preferences', icon: Bell },
 ]
 
-export default function ProfilePage() {
+function ProfileContent() {
   const [activeTab, setActiveTab] = useState<TabType>('account')
 
   const {
@@ -57,9 +58,7 @@ export default function ProfilePage() {
     toggleMarket,
   } = useProfileData()
 
-  // ── Loading state ────────────────────────────
-
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
@@ -194,5 +193,19 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+      </div>
+    }>
+      <AuthGuard>
+        <ProfileContent />
+      </AuthGuard>
+    </Suspense>
   )
 }

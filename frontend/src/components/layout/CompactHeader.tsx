@@ -177,11 +177,7 @@ export function CompactHeader({
   };
 
   const handleDashboard = () => {
-    if (isAuthenticated) {
-      router.push('/search');
-    } else {
-      openAuthModal('login');
-    }
+    router.push('/search');
   };
 
   return (
