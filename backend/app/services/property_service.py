@@ -226,14 +226,30 @@ class PropertyService:
             cached_data = await self._cache.get_property(address)
             timings["cache_lookup_ms"] = (time.perf_counter() - t_cache) * 1000
             if cached_data:
-                logger.info(f"Cache hit for property: {address}")
-                try:
-                    cached_data = self._apply_market_price_to_cached(cached_data)
-                    timings["total_ms"] = (time.perf_counter() - t0) * 1000
-                    logger.info("search_property timings (cache hit): %s", timings)
-                    return PropertyResponse(**cached_data)
-                except Exception as e:
-                    logger.warning(f"Failed to deserialize cached property: {e}")
+                valuations = cached_data.get("valuations") or {}
+                listing = cached_data.get("listing") or {}
+                is_off_market_cached = listing.get("listing_status") in (
+                    None, "OFF_MARKET", "SOLD", "FOR_RENT", "OTHER",
+                )
+                stale = (
+                    is_off_market_cached
+                    and valuations.get("zestimate") is None
+                    and valuations.get("market_price") in (None, 1)
+                )
+                if stale:
+                    logger.info(
+                        "Cache hit for %s but zestimate missing — forcing re-fetch", address
+                    )
+                    await self._cache.clear_property_cache(address)
+                else:
+                    logger.info(f"Cache hit for property: {address}")
+                    try:
+                        cached_data = self._apply_market_price_to_cached(cached_data)
+                        timings["total_ms"] = (time.perf_counter() - t0) * 1000
+                        logger.info("search_property timings (cache hit): %s", timings)
+                        return PropertyResponse(**cached_data)
+                    except Exception as e:
+                        logger.warning(f"Failed to deserialize cached property: {e}")
 
             # Fetch from RentCast
             t_rc = time.perf_counter()
@@ -600,14 +616,27 @@ class PropertyService:
             ad_z = _extract_zestimate_from_ad_targets(out)
             if ad_z is not None and ad_z > 0:
                 out["zestimate"] = ad_z
+                logger.info("Zestimate extracted from adTargets: $%s", ad_z)
             elif out.get("price") is not None:
                 home_status = str(out.get("homeStatus") or "").upper()
                 listed_statuses = ("FOR_SALE", "PENDING", "RECENTLY_SOLD")
                 if home_status not in listed_statuses:
                     try:
                         out["zestimate"] = float(out["price"])
+                        logger.info(
+                            "Zestimate promoted from price field: $%s (homeStatus=%s)",
+                            out["price"], home_status,
+                        )
                     except (ValueError, TypeError):
                         pass
+            if out.get("zestimate") is None:
+                logger.warning(
+                    "No zestimate extracted — keys=%s, has_adTargets=%s, price=%s, homeStatus=%s",
+                    [k for k in out.keys() if k in ("zestimate", "Zestimate", "price", "adTargets", "homeStatus")],
+                    "adTargets" in out,
+                    out.get("price"),
+                    out.get("homeStatus"),
+                )
 
         return out
 
