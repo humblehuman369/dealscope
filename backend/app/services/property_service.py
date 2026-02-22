@@ -21,7 +21,7 @@ from app.services.calculators import (
     calculate_flip, calculate_house_hack, calculate_wholesale
 )
 from app.services.cache_service import get_cache_service, CacheService
-from app.core.defaults import compute_market_price
+from app.core.formulas import compute_market_price
 from app.schemas.analytics import IQVerdictInput
 from app.services.iq_verdict_service import compute_iq_verdict
 from app.schemas.property import (

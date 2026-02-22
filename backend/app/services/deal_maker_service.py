@@ -31,8 +31,8 @@ from app.schemas.deal_maker import (
 from app.core.defaults import (
     FINANCING, OPERATING, GROWTH, STR, BRRRR, FLIP,
     get_all_defaults,
-    estimate_income_value,
 )
+from app.core.formulas import estimate_income_value
 from app.services.assumptions_service import get_market_adjustments
 from app.services.calculators import (
     calculate_monthly_mortgage,
