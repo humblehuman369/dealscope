@@ -625,10 +625,6 @@ function RegistrationInner() {
     } catch (err: unknown) {
       const message = (err instanceof Error ? err.message : "Registration failed. Please try again.") ?? "Unknown error";
       const safeMessage = String(message);
-      // #region agent log
-      const errStatus = (err as { status?: number })?.status;
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '29fd32' }, body: JSON.stringify({ sessionId: '29fd32', location: 'RegistrationContent.tsx:handleCreateAccount', message: 'register catch', data: { errMessage: safeMessage.slice(0, 80), errStatus, hasFullName: !!form.firstName?.trim(), payloadKeys: ['email', 'password', 'fullName'] }, hypothesisId: 'H4', timestamp: Date.now() }) }).catch(() => {});
-      // #endregion
       setError(safeMessage);
     } finally {
       setLoading(false);

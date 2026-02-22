@@ -3,12 +3,13 @@
 /**
  * useSession — React Query based session management.
  *
- * Replaces AuthContext.  React Query cache is the single source of truth
- * for the current user.  No Context Provider is needed.
+ * React Query cache is the single source of truth for the current user.
+ * No Context Provider is needed.
  *
- * An in-memory fallback (`_lastKnownUser`) prevents a brief cache miss
- * from triggering a redirect loop after login.  The value is set on
- * login success and cleared on logout.
+ * Persistence strategy (layered, most-durable first):
+ *   1. localStorage indicator — survives page refresh / new tab
+ *   2. In-memory fallback     — survives React Query cache misses
+ *   3. React Query cache      — authoritative after /me resolves
  *
  * Usage:
  *   const { user, isLoading, isAuthenticated } = useSession()
@@ -32,6 +33,89 @@ import {
 export const SESSION_QUERY_KEY = ['session', 'me'] as const
 
 // ------------------------------------------------------------------
+// localStorage session indicator
+//
+// Persists a lightweight snapshot (no tokens) so that after a page
+// refresh or new-tab open we can render an "authenticated" placeholder
+// immediately, avoiding a flash of login prompts while /me resolves.
+// ------------------------------------------------------------------
+const SESSION_STORAGE_KEY = 'dgiq_session'
+const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours — well within session TTL
+
+interface PersistedSession {
+  id: string
+  email: string
+  full_name: string | null
+  subscription_tier: 'free' | 'pro'
+  subscription_status: string
+  roles: string[]
+  permissions: string[]
+  is_superuser: boolean
+  onboarding_completed: boolean
+  ts: number
+}
+
+function persistSession(user: UserResponse): void {
+  try {
+    const data: PersistedSession = {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      subscription_tier: user.subscription_tier,
+      subscription_status: user.subscription_status,
+      roles: user.roles ?? [],
+      permissions: user.permissions ?? [],
+      is_superuser: user.is_superuser,
+      onboarding_completed: user.onboarding_completed,
+      ts: Date.now(),
+    }
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data))
+  } catch {
+    // localStorage unavailable (SSR, private browsing quota) — silent
+  }
+}
+
+function readPersistedSession(): UserResponse | null {
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY)
+    if (!raw) return null
+    const data: PersistedSession = JSON.parse(raw)
+    if (Date.now() - data.ts > SESSION_MAX_AGE_MS) {
+      localStorage.removeItem(SESSION_STORAGE_KEY)
+      return null
+    }
+    return {
+      id: data.id,
+      email: data.email,
+      full_name: data.full_name,
+      avatar_url: null,
+      is_active: true,
+      is_verified: true,
+      is_superuser: data.is_superuser,
+      mfa_enabled: false,
+      created_at: '',
+      last_login: null,
+      has_profile: true,
+      onboarding_completed: data.onboarding_completed,
+      roles: data.roles,
+      permissions: data.permissions,
+      subscription_tier: data.subscription_tier,
+      subscription_status: data.subscription_status,
+    } satisfies UserResponse
+  } catch {
+    return null
+  }
+}
+
+function clearPersistedSession(): void {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY)
+  } catch {
+    // silent
+  }
+}
+
+// ------------------------------------------------------------------
 // In-memory fallback for user data.
 //
 // Survives React Query cache misses / refetch races that happen
@@ -42,11 +126,32 @@ let _lastKnownUser: UserResponse | null = null
 /** Set the in-memory user fallback (called after login). */
 export function setLastKnownUser(user: UserResponse | null) {
   _lastKnownUser = user
+  if (user) persistSession(user)
+  else clearPersistedSession()
 }
 
 /** Read the in-memory user fallback. */
 export function getLastKnownUser(): UserResponse | null {
-  return _lastKnownUser
+  if (_lastKnownUser) return _lastKnownUser
+  return readPersistedSession()
+}
+
+// ------------------------------------------------------------------
+// Proactive token refresh
+// ------------------------------------------------------------------
+const JWT_LIFETIME_MS = 5 * 60 * 1000
+const REFRESH_BUFFER_MS = 90 * 1000
+
+let _lastTokenRefreshAt = 0
+
+function setLastTokenRefresh() {
+  _lastTokenRefreshAt = Date.now()
+}
+
+function shouldProactivelyRefresh(): boolean {
+  if (_lastTokenRefreshAt === 0) return false
+  const elapsed = Date.now() - _lastTokenRefreshAt
+  return elapsed >= JWT_LIFETIME_MS - REFRESH_BUFFER_MS
 }
 
 // ------------------------------------------------------------------
@@ -58,33 +163,32 @@ export function useSession() {
     queryKey: SESSION_QUERY_KEY,
     queryFn: async () => {
       try {
+        // Proactively refresh the access token before it expires so
+        // the /me call never hits a 401 unnecessarily.
+        if (shouldProactivelyRefresh()) {
+          const refreshed = await authApi.refresh()
+          if (refreshed) setLastTokenRefresh()
+        }
+
         const me = await authApi.me()
         if (me) {
           _lastKnownUser = me
+          persistSession(me)
         }
         return me
       } catch {
-        // Don't clear _lastKnownUser on transient failures —
-        // the dashboard layout uses it as a grace-period fallback.
         return null
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes — keep cache longer to survive navigations
-    // Show last known user while loading so we don't flash logged-out on refresh/navigation.
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     placeholderData: () => getLastKnownUser(),
-    // Retry once on transient failures so a single network hiccup
-    // doesn't immediately drop the session.
     retry: 1,
     retryDelay: 1000,
     refetchOnWindowFocus: true,
-    // Proactively refresh 1 minute before the 5-minute access token
-    // expires, so the user never hits a stale-token gap.
-    refetchInterval: 4 * 60 * 1000, // 4 minutes
+    refetchInterval: 3.5 * 60 * 1000, // 3.5 min — ensures refresh before 5-min JWT expiry
   })
 
-  // Single source of truth: query data with fallback to last known user.
-  // Prevents "logged out" flash when /me is in flight or returned null transiently.
   const effectiveUser = user ?? getLastKnownUser()
 
   return {
@@ -105,7 +209,6 @@ export function useSession() {
 
 export function useLogin() {
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -121,13 +224,13 @@ export function useLogin() {
       return result
     },
     onSuccess: (data) => {
-      // If MFA is required, we don't update the cache yet
       if ('mfa_required' in data && data.mfa_required) {
         return
       }
-      // Login success — set user in cache AND in-memory fallback
       const loginData = data as LoginResponse
       _lastKnownUser = loginData.user
+      persistSession(loginData.user)
+      setLastTokenRefresh()
       queryClient.setQueryData(SESSION_QUERY_KEY, loginData.user)
     },
   })
@@ -154,6 +257,8 @@ export function useLoginMfa() {
     },
     onSuccess: (data) => {
       _lastKnownUser = data.user
+      persistSession(data.user)
+      setLastTokenRefresh()
       queryClient.setQueryData(SESSION_QUERY_KEY, data.user)
     },
   })
@@ -197,6 +302,8 @@ export function useLogout() {
     },
     onSettled: () => {
       _lastKnownUser = null
+      clearPersistedSession()
+      _lastTokenRefreshAt = 0
       queryClient.setQueryData(SESSION_QUERY_KEY, null)
       queryClient.clear()
       router.push('/')

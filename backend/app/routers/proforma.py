@@ -430,6 +430,7 @@ async def download_proforma_pdf(
 )
 async def view_proforma_report(
     property_id: str,
+    current_user: ProUser,
     address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy"),
     theme: str = Query("light", description="Report theme: 'light' for print, 'dark' for digital"),
@@ -438,7 +439,6 @@ async def view_proforma_report(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
-    # User override params (from DealMaker adjustments)
     purchase_price: Optional[float] = Query(None, description="Override purchase price"),
     monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
     interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
