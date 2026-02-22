@@ -25,76 +25,8 @@ interface AdminAssumptionsResponse {
   updated_by_email?: string | null
 }
 
-// ===========================================
-// System defaults — mirrors backend/app/core/defaults.py
-// ===========================================
-
-const SYSTEM_DEFAULTS: Record<string, any> = {
-  financing: {
-    down_payment_pct: 0.20,
-    interest_rate: 0.06,
-    loan_term_years: 30,
-    closing_costs_pct: 0.03,
-  },
-  operating: {
-    vacancy_rate: 0.01,
-    property_management_pct: 0.00,
-    maintenance_pct: 0.05,
-    insurance_pct: 0.01,
-    utilities_monthly: 100,
-    landscaping_annual: 0,
-    pest_control_annual: 200,
-  },
-  str: {
-    platform_fees_pct: 0.15,
-    str_management_pct: 0.10,
-    cleaning_cost_per_turnover: 150,
-    cleaning_fee_revenue: 75,
-    avg_length_of_stay_days: 6,
-    supplies_monthly: 100,
-    additional_utilities_monthly: 0,
-    furniture_setup_cost: 6000,
-    str_insurance_pct: 0.01,
-  },
-  rehab: {
-    renovation_budget_pct: 0.05,
-    contingency_pct: 0.05,
-    holding_period_months: 4,
-    holding_costs_pct: 0.01,
-  },
-  brrrr: {
-    buy_discount_pct: 0.05,
-    refinance_ltv: 0.75,
-    refinance_interest_rate: 0.06,
-    refinance_term_years: 30,
-    refinance_closing_costs_pct: 0.03,
-    post_rehab_rent_increase_pct: 0.10,
-  },
-  flip: {
-    hard_money_ltv: 0.90,
-    hard_money_rate: 0.12,
-    selling_costs_pct: 0.06,
-    holding_period_months: 6,
-    purchase_discount_pct: 0.20,
-  },
-  house_hack: {
-    fha_down_payment_pct: 0.035,
-    fha_interest_rate: 0.065,
-    fha_mip_rate: 0.0085,
-    units_rented_out: 2,
-    buy_discount_pct: 0.05,
-  },
-  wholesale: {
-    assignment_fee: 15000,
-    marketing_costs: 500,
-    earnest_money_deposit: 1000,
-    days_to_close: 45,
-    target_purchase_discount_pct: 0.30,
-  },
-  appreciation_rate: 0.05,
-  rent_growth_rate: 0.05,
-  expense_growth_rate: 0.03,
-}
+// System defaults are fetched from the backend API (/api/v1/assumptions/defaults)
+// to prevent drift between frontend and backend.  No hardcoded constants here.
 
 // ===========================================
 // Field metadata — tooltips and display hints
@@ -229,6 +161,7 @@ function isDirty(a: Record<string, any> | null, b: Record<string, any> | null): 
 export function AdminAssumptionsSection() {
   const [assumptions, setAssumptions] = useState<Record<string, any> | null>(null)
   const [draft, setDraft] = useState<Record<string, any> | null>(null)
+  const [systemDefaults, setSystemDefaults] = useState<Record<string, any> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -241,13 +174,17 @@ export function AdminAssumptionsSection() {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await api.get<AdminAssumptionsResponse>('/api/v1/admin/assumptions')
-      setAssumptions(data.assumptions)
-      setDraft(data.assumptions)
+      const [adminData, defaultsData] = await Promise.all([
+        api.get<AdminAssumptionsResponse>('/api/v1/admin/assumptions'),
+        api.get<{ assumptions: Record<string, any> }>('/api/v1/assumptions/defaults'),
+      ])
+      setAssumptions(adminData.assumptions)
+      setDraft(adminData.assumptions)
+      setSystemDefaults(defaultsData.assumptions)
       setMeta({
-        updated_at: data.updated_at,
-        updated_by: data.updated_by,
-        updated_by_email: data.updated_by_email,
+        updated_at: adminData.updated_at,
+        updated_by: adminData.updated_by,
+        updated_by_email: adminData.updated_by_email,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load assumptions')
@@ -313,8 +250,12 @@ export function AdminAssumptionsSection() {
   }
 
   const handleResetToSystemDefaults = () => {
-    setDraft(SYSTEM_DEFAULTS)
-    toast.info('Reset to system defaults — save to apply')
+    if (systemDefaults) {
+      setDraft(systemDefaults)
+      toast.info('Reset to system defaults — save to apply')
+    } else {
+      toast.error('System defaults not loaded yet')
+    }
   }
 
   // ── Loading ──────────────────────────────────

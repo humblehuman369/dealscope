@@ -167,18 +167,19 @@ export function IQVerdictScreen({
         },
       }
     }
-    // Fallback to hardcoded defaults (these should match backend defaults)
+    // Use assumptions from the backend response (no hardcoded fallbacks)
+    const used = analysis.defaults_used || {}
     return {
       financing: {
-        down_payment_pct: 0.20,
-        interest_rate: 0.06,
-        loan_term_years: 30,
-        closing_costs_pct: 0.03,
+        down_payment_pct: used.financing?.down_payment_pct ?? 0.20,
+        interest_rate: used.financing?.interest_rate ?? 0.06,
+        loan_term_years: used.financing?.loan_term_years ?? 30,
+        closing_costs_pct: used.financing?.closing_costs_pct ?? 0.03,
       },
       operating: {
-        vacancy_rate: 0.01,
-        maintenance_pct: 0.05,
-        property_management_pct: 0.00,
+        vacancy_rate: used.operating?.vacancy_rate ?? 0.01,
+        maintenance_pct: used.operating?.maintenance_pct ?? 0.05,
+        property_management_pct: used.operating?.property_management_pct ?? 0.00,
       },
     }
   }, [isSavedPropertyMode, record])
