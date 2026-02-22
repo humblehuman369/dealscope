@@ -296,43 +296,57 @@ class DealGapIQNormalizer:
         return result
     
     def _flatten_rentcast(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Flatten RentCast nested structure for easier access."""
+        """Flatten RentCast nested structure for easier access.
+
+        Handles three data shapes:
+        1. ``endpoints`` wrapper from the fetch script
+        2. Flat-merged dict from ``search_property`` (rent/value fields at top level)
+        3. Single-endpoint dict (property data only)
+        """
         flat = {}
-        
-        # Handle endpoints wrapper from our fetch script
+
         if "endpoints" in data:
             endpoints = data["endpoints"]
-            
-            # Properties endpoint
+
             props = endpoints.get("properties", {}).get("data", [])
             if props and isinstance(props, list) and len(props) > 0:
                 flat["property"] = props[0]
-            
-            # AVM endpoint
+
             avm = endpoints.get("avm_value", {}).get("data", {})
             if avm:
                 flat["avm"] = avm
-            
-            # Rent endpoint
+
             rent = endpoints.get("rent_estimate", {}).get("data", {})
             if rent:
                 flat["rent"] = rent
-            
-            # Market stats
+
             market = endpoints.get("market_stats", {}).get("data", {})
             if market:
                 flat["market"] = market
-            
-            # Listings
+
             sale_listings = endpoints.get("sale_listings", {}).get("data", [])
             flat["sale_listings"] = sale_listings if sale_listings else []
-            
+
             rent_listings = endpoints.get("rental_listings", {}).get("data", [])
             flat["rental_listings"] = rent_listings if rent_listings else []
         else:
-            # Direct data structure
             flat["property"] = data
-        
+
+            if isinstance(data.get("rent"), (int, float)):
+                flat["rent"] = {
+                    "rent": data["rent"],
+                    "rentRangeLow": data.get("rentRangeLow"),
+                    "rentRangeHigh": data.get("rentRangeHigh"),
+                }
+
+            price = data.get("price")
+            if isinstance(price, (int, float)):
+                flat["avm"] = {
+                    "price": price,
+                    "priceRangeLow": data.get("priceRangeLow"),
+                    "priceRangeHigh": data.get("priceRangeHigh"),
+                }
+
         return flat
     
     def _flatten_zillow(self, data: Dict[str, Any]) -> Dict[str, Any]:

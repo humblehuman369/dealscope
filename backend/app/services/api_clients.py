@@ -259,7 +259,7 @@ class DataNormalizer:
         "value_range_high": ("priceRangeHigh", "zestimateHighPercent", "rentcast"),
         "last_sale_price": ("lastSalePrice", "lastSoldPrice", "rentcast"),
         "last_sale_date": ("lastSaleDate", "lastSoldDate", "rentcast"),
-        "tax_assessed_value": ("taxAssessedValue", "taxAssessedValue", "rentcast"),
+        "tax_assessed_value": ("taxAssessments", "taxAssessedValue", "rentcast"),
         
         # Rental Data — RentCast is single source of truth for rent estimate
         "monthly_rent_ltr": ("rent", None, "rentcast"),
@@ -399,11 +399,20 @@ class DataNormalizer:
         keystone_status = axesso_data.get("keystoneHomeStatus")
         
         # Extract listingSubType for seller type determination
-        listing_sub_type = axesso_data.get("listingSubType", {}) or {}
-        is_foreclosure = listing_sub_type.get("isForeclosure", False)
-        is_bank_owned = listing_sub_type.get("isBankOwned", False)
-        is_fsbo = listing_sub_type.get("isFSBO", False)
-        is_auction = listing_sub_type.get("isForAuction", False)
+        # AXESSO may return this as a JSON string or under snake_case key
+        listing_sub_type = axesso_data.get("listingSubType") or axesso_data.get("listing_sub_type") or {}
+        if isinstance(listing_sub_type, str):
+            try:
+                import json
+                listing_sub_type = json.loads(listing_sub_type)
+            except (json.JSONDecodeError, TypeError):
+                listing_sub_type = {}
+        if not isinstance(listing_sub_type, dict):
+            listing_sub_type = {}
+        is_foreclosure = listing_sub_type.get("isForeclosure") or listing_sub_type.get("is_foreclosure", False)
+        is_bank_owned = listing_sub_type.get("isBankOwned") or listing_sub_type.get("is_bankOwned", False)
+        is_fsbo = listing_sub_type.get("isFSBO") or listing_sub_type.get("is_FSBO", False)
+        is_auction = listing_sub_type.get("isForAuction") or listing_sub_type.get("is_forAuction", False)
         
         # Check for new construction
         reso_facts = axesso_data.get("resoFacts", {}) or {}
@@ -432,7 +441,7 @@ class DataNormalizer:
         normalized["seller_type"] = seller_type
         
         # Determine if property is off-market
-        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD"] or \
+        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD", "OTHER"] or \
                         keystone_status in ["RecentlySold", "OffMarket"]
         
         # PENDING is still technically listed
@@ -502,14 +511,22 @@ class DataNormalizer:
         # Handle special cases where the API returns yearly data as a dict
         # e.g., propertyTaxes: {"2024": {"year": 2024, "total": 6471}, ...}
         if field == "propertyTaxes" and isinstance(value, dict):
-            # Find the most recent year's total tax
             years = [k for k in value.keys() if k.isdigit()]
             if years:
                 latest_year = max(years)
                 year_data = value.get(latest_year, {})
                 return year_data.get("total") if isinstance(year_data, dict) else None
             return None
-        
+
+        # taxAssessments: {"2024": {"year": 2024, "value": 346274}, ...}
+        if field == "taxAssessments" and isinstance(value, dict):
+            years = [k for k in value.keys() if k.isdigit()]
+            if years:
+                latest_year = max(years)
+                year_data = value.get(latest_year, {})
+                return year_data.get("value") if isinstance(year_data, dict) else None
+            return None
+
         return value
     
     def calculate_data_quality(
