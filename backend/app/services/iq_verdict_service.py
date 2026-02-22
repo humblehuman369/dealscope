@@ -1,18 +1,16 @@
-"""
-IQ Verdict Service — multi-strategy investment analysis engine.
+"""IQ Verdict Service — multi-strategy investment analysis engine.
 
-Extracted from app/routers/analytics.py as part of Phase 2 Architecture Cleanup.
 All calculation logic lives here; the router is a thin HTTP delegation layer.
+
+IMPORTANT: This service uses ONLY assumptions passed in via the
+``AllAssumptions`` object (resolved by assumption_resolver from the DB).
+No runtime reads from ``app.core.defaults`` singletons are allowed.
 """
 
 import logging
 from typing import Optional
 
-from app.core.defaults import (
-    FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK,
-    DEFAULT_BUY_DISCOUNT_PCT,
-    get_all_defaults,
-)
+from app.schemas.property import AllAssumptions
 from app.core.formulas import estimate_income_value, calculate_buy_price, compute_market_price
 from app.services.calculators import calculate_monthly_mortgage
 from app.schemas.analytics import (
@@ -29,7 +27,6 @@ logger = logging.getLogger(__name__)
 # ===========================================
 
 def _score_to_grade_label(score: int) -> tuple[str, str, str]:
-    """Map a 0-100 score to (grade, label, color)."""
     if score >= 85:
         return ("A+", "STRONG", "#22c55e")
     elif score >= 70:
@@ -58,19 +55,24 @@ def _format_compact_currency(value: float) -> str:
 
 
 # ===========================================
-# Strategy calculators
+# Strategy calculators (use assumptions param)
 # ===========================================
 
-def _calculate_ltr_strategy(price: float, monthly_rent: float, property_taxes: float, insurance: float) -> dict:
-    down_payment = price * FINANCING.down_payment_pct
-    closing_costs = price * FINANCING.closing_costs_pct
+def _calculate_ltr_strategy(
+    price: float, monthly_rent: float, property_taxes: float, insurance: float,
+    a: AllAssumptions,
+) -> dict:
+    f = a.financing
+    o = a.operating
+    down_payment = price * f.down_payment_pct
+    closing_costs = price * f.closing_costs_pct
     loan_amount = price - down_payment
     total_cash = down_payment + closing_costs
-    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
-    effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
-    op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
+    effective_income = annual_rent * (1 - o.vacancy_rate)
+    op_ex = property_taxes + insurance + (annual_rent * o.property_management_pct) + (annual_rent * o.maintenance_pct)
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -87,19 +89,25 @@ def _calculate_ltr_strategy(price: float, monthly_rent: float, property_taxes: f
     }
 
 
-def _calculate_str_strategy(price: float, adr: float, occupancy: float, property_taxes: float, insurance: float) -> dict:
-    down_payment = price * FINANCING.down_payment_pct
-    closing_costs = price * FINANCING.closing_costs_pct
-    total_cash = down_payment + closing_costs + STR.furniture_setup_cost
+def _calculate_str_strategy(
+    price: float, adr: float, occupancy: float, property_taxes: float, insurance: float,
+    a: AllAssumptions,
+) -> dict:
+    f = a.financing
+    o = a.operating
+    s = a.str_assumptions
+    down_payment = price * f.down_payment_pct
+    closing_costs = price * f.closing_costs_pct
+    total_cash = down_payment + closing_costs + s.furniture_setup_cost
     loan_amount = price - down_payment
-    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_revenue = adr * 365 * occupancy
-    mgmt_fee = annual_revenue * STR.str_management_pct
-    platform_fees = annual_revenue * STR.platform_fees_pct
-    utilities = OPERATING.utilities_monthly * 12
-    supplies = STR.supplies_monthly * 12
-    maintenance = annual_revenue * OPERATING.maintenance_pct
+    mgmt_fee = annual_revenue * s.str_management_pct
+    platform_fees = annual_revenue * s.platform_fees_pct
+    utilities = o.utilities_monthly * 12
+    supplies = s.supplies_monthly * 12
+    maintenance = annual_revenue * o.maintenance_pct
     op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
@@ -117,17 +125,24 @@ def _calculate_str_strategy(price: float, adr: float, occupancy: float, property
     }
 
 
-def _calculate_brrrr_strategy(price: float, monthly_rent: float, property_taxes: float, insurance: float, arv: float, rehab_cost: float) -> dict:
-    initial_cash = (price * 0.10) + rehab_cost + (price * FINANCING.closing_costs_pct)
-    refi_loan = arv * BRRRR.refinance_ltv
+def _calculate_brrrr_strategy(
+    price: float, monthly_rent: float, property_taxes: float, insurance: float,
+    arv: float, rehab_cost: float,
+    a: AllAssumptions,
+) -> dict:
+    f = a.financing
+    o = a.operating
+    b = a.brrrr
+    initial_cash = (price * 0.10) + rehab_cost + (price * f.closing_costs_pct)
+    refi_loan = arv * b.refinance_ltv
     cash_back = refi_loan - (price * 0.90)
     cash_left = max(0, initial_cash - max(0, cash_back))
     recovery_pct = ((initial_cash - cash_left) / initial_cash * 100) if initial_cash > 0 else 0
-    monthly_pi = calculate_monthly_mortgage(refi_loan, BRRRR.refinance_interest_rate, BRRRR.refinance_term_years)
+    monthly_pi = calculate_monthly_mortgage(refi_loan, b.refinance_interest_rate, b.refinance_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
-    effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
-    op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
+    effective_income = annual_rent * (1 - o.vacancy_rate)
+    op_ex = property_taxes + insurance + (annual_rent * o.property_management_pct) + (annual_rent * o.maintenance_pct)
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     min_cash_for_coc = max(cash_left, initial_cash * 0.10)
@@ -152,15 +167,20 @@ def _calculate_brrrr_strategy(price: float, monthly_rent: float, property_taxes:
     }
 
 
-def _calculate_flip_strategy(price: float, arv: float, rehab_cost: float, property_taxes: float, insurance: float) -> dict:
-    purchase_costs = price * FINANCING.closing_costs_pct
-    holding_months = FLIP.holding_period_months
+def _calculate_flip_strategy(
+    price: float, arv: float, rehab_cost: float, property_taxes: float, insurance: float,
+    a: AllAssumptions,
+) -> dict:
+    f = a.financing
+    fl = a.flip
+    purchase_costs = price * f.closing_costs_pct
+    holding_months = fl.holding_period_months
     holding_costs = (
-        (price * FLIP.hard_money_rate / 12 * holding_months) +
-        (property_taxes / 12 * holding_months) +
-        (insurance / 12 * holding_months)
+        (price * fl.hard_money_rate / 12 * holding_months)
+        + (property_taxes / 12 * holding_months)
+        + (insurance / 12 * holding_months)
     )
-    selling_costs = arv * FLIP.selling_costs_pct
+    selling_costs = arv * fl.selling_costs_pct
     total_investment = price + purchase_costs + rehab_cost + holding_costs
     net_profit = arv - total_investment - selling_costs
     roi = net_profit / total_investment if total_investment > 0 else 0
@@ -174,20 +194,26 @@ def _calculate_flip_strategy(price: float, arv: float, rehab_cost: float, proper
     }
 
 
-def _calculate_house_hack_strategy(price: float, monthly_rent: float, bedrooms: int, property_taxes: float, insurance: float) -> dict:
+def _calculate_house_hack_strategy(
+    price: float, monthly_rent: float, bedrooms: int, property_taxes: float, insurance: float,
+    a: AllAssumptions,
+) -> dict:
+    f = a.financing
+    o = a.operating
+    h = a.house_hack
     total_beds = max(bedrooms, 2)
     rooms_rented = max(1, total_beds - 1)
     rent_per_room = monthly_rent / total_beds
     rental_income = rent_per_room * rooms_rented
-    down_payment = price * HOUSE_HACK.fha_down_payment_pct
-    closing_costs = price * FINANCING.closing_costs_pct
+    down_payment = price * h.fha_down_payment_pct
+    closing_costs = price * f.closing_costs_pct
     loan_amount = price - down_payment
-    monthly_pi = calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_pi = calculate_monthly_mortgage(loan_amount, h.fha_interest_rate, f.loan_term_years)
     monthly_taxes = property_taxes / 12
     monthly_insurance = insurance / 12
-    pmi = loan_amount * HOUSE_HACK.fha_mip_rate / 12
-    maintenance = rental_income * OPERATING.maintenance_pct
-    vacancy = rental_income * OPERATING.vacancy_rate
+    pmi = loan_amount * h.fha_mip_rate / 12
+    maintenance = rental_income * o.maintenance_pct
+    vacancy = rental_income * o.vacancy_rate
     monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     annual_savings = rental_income * 12
@@ -221,13 +247,6 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 # ===========================================
 
 def _calculate_deal_gap_component(target_price: float, list_price: float) -> int:
-    """
-    Deal Gap Score component (0-90).
-    Measures how favorably the property is priced relative to Target Price.
-
-    Deal Gap = (List Price - Target Price) / List Price × 100
-    Target Price = Income Value × (1 - buy_discount_pct)
-    """
     if list_price <= 0:
         return 0
     gap_pct = ((list_price - target_price) / list_price) * 100
@@ -248,25 +267,9 @@ def _calculate_deal_gap_component(target_price: float, list_price: float) -> int
 
 
 def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str, str]:
-    """
-    Assess pricing quality based on Income Gap (List Price - Income Value).
-
-    Returns (tier, sentence_fragment) for use in verdict descriptions.
-    The Income Gap is NEVER surfaced by name — only as pricing quality sentences.
-
-    Tiers:
-      <= 0%:  below_income_value  — priced below its Income Value
-      0-5%:   investment_grade    — priced near its Income Value
-      5-10%:  fair                — modestly above its Income Value
-      10-20%: above_income_value  — priced above its income-generating capacity
-      20-30%: overpriced          — significantly above its Income Value
-      30%+:   substantially_overpriced — substantially overpriced relative to income potential
-    """
     if list_price <= 0 or income_value <= 0:
         return ("unknown", "pricing cannot be assessed with available data")
-
     income_gap_pct = ((list_price - income_value) / list_price) * 100
-
     if income_gap_pct <= 0:
         return ("below_income_value", "priced below its Income Value")
     elif income_gap_pct <= 5:
@@ -282,24 +285,16 @@ def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str
 
 
 def _calculate_return_quality_component(top_strategy_score: int) -> int:
-    """Return Quality Score component (0-90)."""
     return min(90, round(top_strategy_score * 0.9))
 
 
-def _calculate_deal_probability_component(
-    deal_gap_pct: float,
-    motivation_score: int,
-) -> int:
-    """Deal Probability Score component (0-90)."""
+def _calculate_deal_probability_component(deal_gap_pct: float, motivation_score: int) -> int:
     if deal_gap_pct <= 0:
         return min(90, round(80 + motivation_score * 0.1))
-
     max_discount = (motivation_score / 100) * 0.25
     gap_decimal = deal_gap_pct / 100
-
     if max_discount <= 0:
         return max(5, round(25 - deal_gap_pct * 1.5))
-
     ratio = gap_decimal / max_discount
     if ratio <= 0.6:
         return min(90, round(75 + (1 - ratio / 0.6) * 15))
@@ -313,34 +308,19 @@ def _calculate_deal_probability_component(
 
 
 def _calculate_composite_verdict_score(
-    target_price: float,
-    list_price: float,
-    top_strategy_score: int,
-    motivation_score: int,
+    target_price: float, list_price: float,
+    top_strategy_score: int, motivation_score: int,
 ) -> tuple[int, int, int, int, int]:
-    """
-    Composite IQ Verdict Score.
-
-    Deal Gap component uses Target Price (the true Deal Gap),
-    NOT Income Value (which is the internal Income Gap).
-
-    Returns (composite_score, deal_gap, return_quality, market_alignment, deal_probability).
-    """
     deal_gap_pct = ((list_price - target_price) / list_price) * 100 if list_price > 0 else 100
-
     deal_gap = _calculate_deal_gap_component(target_price, list_price)
     return_quality = _calculate_return_quality_component(top_strategy_score)
     market_alignment = min(90, motivation_score)
     deal_probability = _calculate_deal_probability_component(deal_gap_pct, motivation_score)
-
     composite = round(
-        deal_gap * 0.35
-        + return_quality * 0.30
-        + market_alignment * 0.20
-        + deal_probability * 0.15
+        deal_gap * 0.35 + return_quality * 0.30
+        + market_alignment * 0.20 + deal_probability * 0.15
     )
     composite = max(5, min(95, composite))
-
     return composite, deal_gap, return_quality, market_alignment, deal_probability
 
 
@@ -369,22 +349,11 @@ def _calculate_opportunity_score(income_value: float, list_price: float) -> tupl
 
 
 def _get_verdict_description(
-    score: int,
-    top_strategy: dict,
-    income_value: float,
-    list_price: float,
-    target_price: float,
-    income_gap_pct: float,
-    deal_gap_pct: float,
+    score: int, top_strategy: dict,
+    income_value: float, list_price: float, target_price: float,
+    income_gap_pct: float, deal_gap_pct: float,
     motivation_label: str,
 ) -> str:
-    """Generate a natural-language verdict that weaves in Income Value and
-    pricing quality as contextual intelligence.
-
-    Income Gap (List Price - Income Value) is NEVER surfaced by that name.
-    Instead, its intelligence appears as pricing quality sentences.
-    Deal Gap (List Price - Target Price) is the public metric.
-    """
     name = top_strategy["name"]
     fmt_iv = f"${income_value:,.0f}"
 
@@ -428,39 +397,45 @@ def _get_verdict_description(
 # Public API — called by the analytics router
 # ===========================================
 
-def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
+def compute_iq_verdict(
+    input_data: IQVerdictInput,
+    assumptions: Optional[AllAssumptions] = None,
+) -> IQVerdictResponse:
     """Run the full IQ Verdict multi-strategy analysis.
 
     Pure function: no I/O, no DB access, no side-effects.
-    Raises ValueError on nonsensical inputs (should be caught by Pydantic first).
-    When is_listed is False, uses Zestimate (via compute_market_price) as the
-    effective list_price for deal gap calculation.
+
+    ``assumptions`` should be a fully-resolved AllAssumptions object
+    (from assumption_resolver). When not provided, Pydantic schema
+    defaults are used as a last-resort fallback.
     """
+    a = assumptions or AllAssumptions()
+
     list_price = input_data.list_price
     monthly_rent = input_data.monthly_rent or 0
     property_taxes = input_data.property_taxes or (list_price * 0.012)
-    insurance = input_data.insurance or (list_price * OPERATING.insurance_pct)
+    insurance = input_data.insurance or (list_price * a.operating.insurance_pct)
     arv = input_data.arv or (list_price * 1.15)
-    rehab_cost = arv * REHAB.renovation_budget_pct
+    rehab_cost = arv * a.rehab.renovation_budget_pct
     adr = input_data.average_daily_rate or ((monthly_rent / 30) * 1.5)
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
-    # Resolve assumptions from request or backend defaults so Income Value and Target Buy are always from the same assumptions
-    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else FINANCING.down_payment_pct
-    rate = input_data.interest_rate if input_data.interest_rate is not None else FINANCING.interest_rate
-    term = input_data.loan_term_years if input_data.loan_term_years is not None else FINANCING.loan_term_years
-    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else OPERATING.vacancy_rate
-    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else OPERATING.maintenance_pct
-    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else OPERATING.property_management_pct
-    buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
+    # Resolve per-request overrides on top of DB assumptions
+    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
+    rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
+    term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
+    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
+    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
+    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
     income_value = estimate_income_value(
-        monthly_rent, property_taxes, insurance,
+        monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
     )
-    # Off-market: replace list_price with Zestimate (primary), fallback to AVM/tax
+
     if input_data.is_listed is False and (
         input_data.zestimate is not None
         or input_data.current_value_avm is not None
@@ -476,21 +451,22 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         if computed_market is not None:
             list_price = float(computed_market)
             arv = input_data.arv or (list_price * 1.15)
-            rehab_cost = arv * REHAB.renovation_budget_pct
+            rehab_cost = arv * a.rehab.renovation_budget_pct
 
     buy_price = input_data.purchase_price or calculate_buy_price(
-        list_price, monthly_rent, property_taxes, insurance,
+        market_price=list_price, monthly_rent=monthly_rent,
+        property_taxes=property_taxes, insurance=insurance,
         buy_discount_pct=buy_discount,
         down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
         vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
     )
 
     strategies = [
-        _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance),
-        _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance),
-        _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost),
-        _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance),
-        _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance),
+        _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, a),
+        _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance, a),
+        _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a),
+        _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance, a),
+        _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance, a),
         _calculate_wholesale_strategy(buy_price, arv, rehab_cost),
     ]
 
@@ -501,7 +477,6 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
 
     top_strategy = max(strategies, key=lambda x: x["score"])
 
-    # Motivation from listing context (defaults to 50 when unknown)
     motivation_score = 50
     motivation_label = "Medium"
     is_distressed = input_data.is_foreclosure or input_data.is_bank_owned
@@ -518,26 +493,19 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
         motivation_score = avail["score"]
         motivation_label = avail["motivation"].capitalize()
 
-    # Income Gap (internal) — List Price vs Income Value
     income_gap_amount = list_price - income_value if list_price > 0 else 0
     income_gap_pct = max(0, (income_gap_amount / list_price) * 100) if list_price > 0 else 0
 
-    # Deal Gap (public hero metric) — List Price vs Target Price
     deal_gap_amount = list_price - buy_price if list_price > 0 else 0
     deal_gap_pct = max(0, (deal_gap_amount / list_price) * 100) if list_price > 0 else 0
 
-    # Pricing quality assessment (from Income Gap, never shown by name)
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
-    # Composite verdict score — uses Target Price for Deal Gap component
     deal_score, comp_gap, comp_return, comp_market, comp_prob = _calculate_composite_verdict_score(
-        target_price=buy_price,
-        list_price=list_price,
-        top_strategy_score=top_strategy["score"],
-        motivation_score=motivation_score,
+        target_price=buy_price, list_price=list_price,
+        top_strategy_score=top_strategy["score"], motivation_score=motivation_score,
     )
 
-    # Verdict label based on Income Gap (pricing quality perspective)
     deal_verdict = (
         "Strong Opportunity" if income_gap_pct <= 5
         else "Great Opportunity" if income_gap_pct <= 10
@@ -550,6 +518,8 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
 
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
     ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
+
+    defaults_dict = a.model_dump(by_alias=True)
 
     return IQVerdictResponse(
         deal_score=deal_score, deal_verdict=deal_verdict,
@@ -568,12 +538,10 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
             "provided_rent": input_data.monthly_rent, "provided_taxes": input_data.property_taxes,
             "provided_insurance": input_data.insurance,
         },
-        defaults_used=get_all_defaults(),
-        # Income Gap (internal pricing quality)
+        defaults_used=defaults_dict,
         income_gap_amount=round(income_gap_amount, 0),
         income_gap_percent=round(income_gap_pct, 1),
         pricing_quality_tier=pricing_tier,
-        # Deal Gap (public hero metric)
         deal_gap_amount=round(deal_gap_amount, 0),
         deal_gap_percent=round(deal_gap_pct, 1),
         opportunity=ScoreDisplayResponse(score=deal_score, grade=opp_grade, label=opp_label, color=opp_color),
@@ -596,11 +564,16 @@ def compute_iq_verdict(input_data: IQVerdictInput) -> IQVerdictResponse:
     )
 
 
-def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
+def compute_deal_score(
+    input_data: DealScoreInput,
+    assumptions: Optional[AllAssumptions] = None,
+) -> DealScoreResponse:
     """Run the Deal Opportunity Score calculation.
 
     Pure function: no I/O, no DB access, no side-effects.
     """
+    a = assumptions or AllAssumptions()
+
     from app.services.calculators import calculate_deal_opportunity_score
 
     list_price = input_data.list_price
@@ -609,12 +582,12 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
     property_taxes = input_data.property_taxes
     insurance = input_data.insurance
 
-    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else OPERATING.vacancy_rate
-    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else OPERATING.maintenance_pct
-    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else OPERATING.property_management_pct
-    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else FINANCING.down_payment_pct
-    rate = input_data.interest_rate if input_data.interest_rate is not None else FINANCING.interest_rate
-    term = input_data.loan_term_years if input_data.loan_term_years is not None else FINANCING.loan_term_years
+    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
+    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
+    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
+    rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
+    term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
 
     income_value = estimate_income_value(
         monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
@@ -623,10 +596,10 @@ def compute_deal_score(input_data: DealScoreInput) -> DealScoreResponse:
     )
 
     has_listing_context = (
-        input_data.listing_status is not None or input_data.seller_type is not None or
-        input_data.is_foreclosure or input_data.is_bank_owned or input_data.is_fsbo or
-        input_data.days_on_market is not None or input_data.price_reductions > 0 or
-        input_data.market_temperature is not None
+        input_data.listing_status is not None or input_data.seller_type is not None
+        or input_data.is_foreclosure or input_data.is_bank_owned or input_data.is_fsbo
+        or input_data.days_on_market is not None or input_data.price_reductions > 0
+        or input_data.market_temperature is not None
     )
 
     if has_listing_context:
