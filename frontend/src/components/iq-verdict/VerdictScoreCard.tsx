@@ -158,7 +158,7 @@ const COMPONENTS: { key: keyof VerdictScoreCardProps['componentScores']; label: 
 
 export function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['componentScores'] }) {
   return (
-    <div className="mt-6 text-left max-w-sm mx-auto">
+    <div className="mt-3 text-left max-w-sm mx-auto">
       <p
         className="text-[10px] font-bold uppercase tracking-wider mb-3"
         style={{ color: colors.text.secondary }}
@@ -217,12 +217,12 @@ export function VerdictScoreCard({
 
   return (
     <section
-      className="px-5 pt-10 pb-8"
+      className="px-5 pt-10 pb-3"
     >
       {/* Section label */}
       <p
         className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6"
-        style={{ color: colors.text.muted }}
+        style={{ color: colors.text.secondary }}
       >
         The Verdict
       </p>
