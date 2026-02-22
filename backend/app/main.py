@@ -168,8 +168,28 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Scheduler failed to start (non-fatal): {e}")
 
+    # Flush stale property caches on deploy so updated extraction logic takes effect
+    try:
+        from app.services.cache_service import get_cache_service
+        cache = get_cache_service()
+        if cache.use_redis and cache.redis_client:
+            keys = []
+            async for key in cache.redis_client.scan_iter(match="property:*"):
+                keys.append(key)
+            async for key in cache.redis_client.scan_iter(match="prop_id:*"):
+                keys.append(key)
+            if keys:
+                await cache.redis_client.delete(*keys)
+                logger.info("Flushed %d stale property cache keys on deploy", len(keys))
+            else:
+                logger.info("No property cache keys to flush")
+        else:
+            logger.info("No Redis — in-memory cache already empty on startup")
+    except Exception as e:
+        logger.warning("Failed to flush property cache on startup (non-fatal): %s", e)
+
     logger.info("Lifespan startup complete - yielding to app")
-    
+
     yield  # Application runs here
     
     # Shutdown
