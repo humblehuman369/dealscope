@@ -322,7 +322,7 @@ class FlipExcelExporter:
         ann_roi = self.bd.get("annualized_roi", 0)
         margin = self.bd.get("profit_margin", 0)
         total_cash = self.bd.get("total_cash_required", 0)
-        income_value = self.bd.get("minimum_sale_for_income_value", 0)
+        income_value = self.bd.get("minimum_sale_for_breakeven", 0)
         arv = self.bd.get("arv", 0)
         meets_rule = self.bd.get("meets_70_rule", False)
 

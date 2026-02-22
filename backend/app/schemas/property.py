@@ -711,8 +711,8 @@ class FlipResults(BaseModel):
     seventy_pct_max_price: float
     meets_70_rule: bool
     
-    # Income Value (minimum sale price to cover all costs)
-    minimum_sale_for_income_value: float
+    # Breakeven sale price (minimum to cover all project costs after selling costs)
+    minimum_sale_for_breakeven: float
 
 
 class HouseHackResults(BaseModel):
@@ -788,6 +788,9 @@ class WholesaleResults(BaseModel):
     
     # Timeline
     timeline_days: int
+
+    # Breakeven
+    breakeven_assignment_fee: float
 
 
 class StrategyComparison(BaseModel):

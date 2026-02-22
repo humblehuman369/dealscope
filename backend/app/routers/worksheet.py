@@ -466,7 +466,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
         total_renovation = result["total_renovation"]
         all_in_cost = input_data.purchase_price + total_renovation + input_data.purchase_costs
         purchase_rehab_cost = input_data.purchase_price + input_data.rehab_costs
-        income_value = result["minimum_sale_for_income_value"]
+        income_value = result["minimum_sale_for_breakeven"]
         target_fifteen_all_in = (input_data.arv * 0.85) - input_data.rehab_costs - input_data.purchase_costs
         total_cash_required = result["down_payment"] + input_data.purchase_costs + input_data.inspection_costs + points_cost + total_renovation + total_holding_costs
         total_project_cost = input_data.purchase_price + input_data.purchase_costs + input_data.inspection_costs + total_renovation + total_holding_costs
