@@ -249,6 +249,7 @@ function StrategyContent() {
     ? sortedStrategies.find(s => s.id === selectedStrategyId) || sortedStrategies[0] || null
     : sortedStrategies[0] || null
   const topStrategyName = topStrategy?.name || 'Long-Term Rental'
+  const recommendedStrategyName = sortedStrategies[0]?.name || 'Long-Term Rental'
   const activeStrategyId = topStrategy?.id || 'ltr'
 
   // Score — capped at 95 (no deal is 100% certain)
@@ -472,7 +473,7 @@ function StrategyContent() {
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
           <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
           <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-            This {verdictScore} assumes a {topStrategyName} at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
+            This {verdictScore} assumes a {recommendedStrategyName} at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
             <button
               onClick={handleOpenDealMaker}
               className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
@@ -480,25 +481,6 @@ function StrategyContent() {
             >Change Terms</button>
             {' '}to adjust any assumption and see how the deal shifts in real time.
           </p>
-
-          {/* Score + strategy badge — no VerdictIQ sub-brand; acknowledge when best strategy still loses money */}
-          {(() => {
-            const viewingBestStrategy = !selectedStrategyId || selectedStrategyId === sortedStrategies[0]?.id
-            const bestIsNegative = viewingBestStrategy && (
-              isFlipOrWholesale ? strategyAnnualCashFlow < 0 : strategyCashFlow < 0
-            )
-            const strategySuffix = (selectedStrategyId && selectedStrategyId !== sortedStrategies[0]?.id)
-              ? ''
-              : bestIsNegative
-                ? ' — best available strategy'
-                : ' recommended'
-            return (
-              <div className="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: verdictScore >= 65 ? colors.accentBg.green : colors.accentBg.gold, border: `1px solid ${verdictScore >= 65 ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`, color: verdictScore >= 65 ? colors.status.positive : colors.brand.gold }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Score: {verdictScore} · {topStrategyName}{strategySuffix}
-              </div>
-            )
-          })()}
 
           {/* Top Action Buttons — always 3 across */}
           <div className="grid grid-cols-3 gap-2 mt-5 mb-2">
