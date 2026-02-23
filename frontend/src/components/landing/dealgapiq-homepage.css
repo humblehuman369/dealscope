@@ -85,7 +85,7 @@
 .iq-landing .hero-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(14,165,233,.35); }
 .iq-landing .hero-meta { font-size: .78rem; color: var(--muted); margin-bottom: 3.5rem; }
 .iq-landing .hero-stats { display: flex; gap: 1.25rem; max-width: 700px; margin: 0 auto; }
-.iq-landing .hero-stat { padding: 1.25rem 1.5rem; text-align: center; flex: 1; }
+.iq-landing .hero-stat { padding: 1.25rem 1.5rem; text-align: center; flex: 1; min-width: 0; }
 .iq-landing .hero-stat-num { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--teal); line-height: 1; margin-bottom: .35rem; }
 .iq-landing .hero-stat-label { font-size: .85rem; font-weight: 600; margin-bottom: .2rem; }
 .iq-landing .hero-stat-sub { font-size: .72rem; color: var(--muted); }
@@ -425,7 +425,11 @@
 @media(max-width:768px) {
   .iq-landing .hero { padding: 8rem 1.5rem 3rem; }
   .iq-landing .sec { padding: 3.5rem 1.5rem; }
-  .iq-landing .hero-stats { flex-direction: column; }
+  .iq-landing .hero-stats { gap: .75rem; }
+  .iq-landing .hero-stat { padding: .85rem .75rem; }
+  .iq-landing .hero-stat-num { font-size: 1.15rem; }
+  .iq-landing .hero-stat-label { font-size: .72rem; }
+  .iq-landing .hero-stat-sub { font-size: .6rem; }
   .iq-landing .demo-prop { flex-direction: column; gap: 1rem; }
   .iq-landing .demo-gap-row, .iq-landing .demo-verdict { grid-template-columns: 1fr; }
   .iq-landing .demo-metrics { grid-template-columns: 1fr; }
