@@ -351,8 +351,8 @@ class PropertyService:
             ),
             valuations=self._build_valuations(normalized),
             rentals=RentalData(
-                # Use IQ proprietary estimate as primary rent value
-                monthly_rent_ltr=normalized.get("rental_iq_estimate") or normalized.get("monthly_rent_ltr"),
+                # IQ Estimate (avg of Zillow + RentCast, or single source) -- never fabricated
+                monthly_rent_ltr=normalized.get("rental_iq_estimate"),
                 rent_range_low=normalized.get("rent_range_low"),
                 rent_range_high=normalized.get("rent_range_high"),
                 average_daily_rate=normalized.get("average_daily_rate") or self._estimate_adr(normalized),
@@ -685,6 +685,8 @@ class PropertyService:
             )
         return ValuationData(
             current_value_avm=normalized.get("current_value_avm"),
+            value_iq_estimate=normalized.get("value_iq_estimate"),
+            rentcast_avm=normalized.get("rentcast_avm"),
             value_range_low=normalized.get("value_range_low"),
             value_range_high=normalized.get("value_range_high"),
             last_sale_price=normalized.get("last_sale_price"),

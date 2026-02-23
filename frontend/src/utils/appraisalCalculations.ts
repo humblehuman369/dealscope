@@ -153,8 +153,12 @@ export function calculateSimilarityScore(
     bedBathScore = Math.max(50, 100 - (bedDiff * 15) - (bathDiff * 10))
   }
   
-  // Age score
-  const yearDiff = Math.abs(subject.yearBuilt - comp.yearBuilt)
+  // Age score -- skip if either yearBuilt is missing/invalid
+  const currentYear = new Date().getFullYear()
+  const validYear = (y: number) => y >= 1800 && y <= currentYear
+  const yearDiff = (validYear(subject.yearBuilt) && validYear(comp.yearBuilt))
+    ? Math.abs(subject.yearBuilt - comp.yearBuilt)
+    : 0
   const ageScore = Math.max(0, 100 - (yearDiff * 2))
   
   // Lot score
@@ -197,11 +201,18 @@ export function calculateSaleAdjustments(
 ): { size: number; bedroom: number; bathroom: number; age: number; lot: number; total: number } {
   const f = SALE_ADJUSTMENT_FACTORS
   
+  const currentYear = new Date().getFullYear()
+  const validYear = (y: number) => y >= 1800 && y <= currentYear
+  
   const size = (subject.sqft - comp.sqft) * f.sqftAdjustmentPerSqft
   const bedroom = (subject.beds - comp.beds) * f.bedroomAdjustment
   const bathroom = (subject.baths - comp.baths) * f.bathroomAdjustment
-  const age = (subject.yearBuilt - comp.yearBuilt) * f.ageAdjustmentPerYear
-  const lot = (subject.lotSize - comp.lotSize) * f.lotAdjustmentPerAcre
+  const age = (validYear(subject.yearBuilt) && validYear(comp.yearBuilt))
+    ? (subject.yearBuilt - comp.yearBuilt) * f.ageAdjustmentPerYear
+    : 0
+  const lot = (subject.lotSize > 0 && comp.lotSize > 0)
+    ? (subject.lotSize - comp.lotSize) * f.lotAdjustmentPerAcre
+    : 0
   const total = size + bedroom + bathroom + age + lot
   
   return { size, bedroom, bathroom, age, lot, total }

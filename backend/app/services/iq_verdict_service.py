@@ -431,11 +431,11 @@ def compute_iq_verdict(
 
     list_price = input_data.list_price
     monthly_rent = input_data.monthly_rent or 0
-    property_taxes = input_data.property_taxes or (list_price * 0.012)
-    insurance = input_data.insurance or (list_price * a.operating.insurance_pct)
+    property_taxes = input_data.property_taxes or 0
+    insurance = input_data.insurance or 0
     arv = input_data.arv or (list_price * 1.15)
     rehab_cost = arv * a.rehab.renovation_budget_pct
-    adr = input_data.average_daily_rate or ((monthly_rent / 30) * 1.5)
+    adr = input_data.average_daily_rate or (((monthly_rent / 30) * 1.5) if monthly_rent > 0 else 0)
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
