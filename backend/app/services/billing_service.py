@@ -261,11 +261,11 @@ class BillingService:
         """Get or create Stripe customer for user."""
         subscription = await self.get_or_create_subscription(db, user.id)
         
-        if subscription.stripe_customer_id:
-            return subscription.stripe_customer_id
+        existing_id = subscription.stripe_customer_id
+        if existing_id and not existing_id.startswith("cus_dev_"):
+            return existing_id
         
         if not self.is_configured:
-            # Dev mode - return fake ID
             fake_id = f"cus_dev_{user.id}"
             subscription.stripe_customer_id = fake_id
             await db.commit()
