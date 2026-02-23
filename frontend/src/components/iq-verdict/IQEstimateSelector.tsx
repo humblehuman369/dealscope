@@ -122,10 +122,11 @@ function resolveDefaults(
   stored: { value: DataSourceId; rent: DataSourceId },
 ): { value: DataSourceId; rent: DataSourceId } {
   const resolve = (group: { iq: number | null; zillow: number | null; rentcast: number | null }, sel: DataSourceId): DataSourceId => {
-    const providerCount = [group.zillow, group.rentcast].filter((v) => v != null).length
-    if (providerCount <= 1 && group.iq != null) return 'iq'
-    if (group[sel] == null && group.iq != null) return 'iq'
-    return sel
+    if (group.iq != null) return 'iq'
+    if (group[sel] != null) return sel
+    if (group.zillow != null) return 'zillow'
+    if (group.rentcast != null) return 'rentcast'
+    return 'iq'
   }
   return {
     value: resolve(sources.value, stored.value),
@@ -139,8 +140,9 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
   )
 
   useEffect(() => {
+    const stored = getStoredSelections(sessionKey)
+    const next = resolveDefaults(sources, stored)
     setSelections((prev) => {
-      const next = resolveDefaults(sources, prev)
       if (next.value !== prev.value || next.rent !== prev.rent) {
         persistSelections(sessionKey, next.value, next.rent)
         return next

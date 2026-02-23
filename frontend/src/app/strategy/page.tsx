@@ -279,11 +279,11 @@ function StrategyContent() {
     ?? (sourceOverrides.price != null ? Math.round(sourceOverrides.price * 0.85) : null)
     ?? data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const monthlyRent = dealMakerOverrides?.monthlyRent
-    || sourceOverrides.monthlyRent || propertyInfo?.monthlyRent || 0
+    ?? sourceOverrides.monthlyRent ?? propertyInfo?.monthlyRent ?? 0
   const propertyTaxes = dealMakerOverrides?.propertyTaxes
-    || propertyInfo?.propertyTaxes || 0
+    ?? propertyInfo?.propertyTaxes ?? 0
   const insurance = dealMakerOverrides?.insurance
-    || propertyInfo?.insurance || 0
+    ?? propertyInfo?.insurance ?? 0
   const parsed = parseAddressString(addressParam)
 
   // Condition / location adjustments for display
