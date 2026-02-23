@@ -330,7 +330,7 @@ function VerdictContent() {
           propertyType: data.details?.property_type,
           listingStatus: data.listing?.listing_status || undefined,
           // Enriched data for dynamic scoring
-          monthlyRent: monthlyRentLTR,
+          monthlyRent: monthlyRent,
           propertyTaxes,
           insurance,
           averageDailyRate,
