@@ -62,6 +62,15 @@ function dealGapLabel(gapPct: number): string {
   return 'Excessive'
 }
 
+/** Deal Gap color based on gap severity — small gap = good (teal), large gap = bad (red). */
+function dealGapColor(gapPct: number): string {
+  if (gapPct <= 5)  return colors.brand.teal
+  if (gapPct <= 15) return '#38bdf8'
+  if (gapPct <= 25) return colors.brand.gold
+  if (gapPct <= 35) return '#f97316'
+  return colors.status.negative
+}
+
 /** Per-component label functions — each uses language appropriate to its domain. */
 const COMPONENT_LABELS: Record<string, (v: number) => string> = {
   'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
@@ -182,12 +191,13 @@ export function ComponentScoreBars({ scores, dealGapPercent }: { scores: Verdict
 
       {COMPONENTS.map(({ key, label }) => {
         const value = scores[key]
-        const clr = componentColor(value)
-        const lbl = key === 'dealGap'
-          ? dealGapLabel(dealGapPercent ?? Math.max(0, (90 - value) / 2))
-          : componentLabel(value, label)
-        // Map 0–90 to 0–100% bar width
-        const barPct = Math.min(100, (value / 90) * 100)
+        const isDealGap = key === 'dealGap'
+        const gapPct = isDealGap ? (dealGapPercent ?? Math.max(0, (90 - value) / 2)) : 0
+        const clr = isDealGap ? dealGapColor(gapPct) : componentColor(value)
+        const lbl = isDealGap ? dealGapLabel(gapPct) : componentLabel(value, label)
+        const barPct = isDealGap
+          ? Math.max(0, Math.min(100, 100 - gapPct))
+          : Math.min(100, (value / 90) * 100)
 
         return (
           <div key={key} className="flex items-center gap-2.5 mb-2.5">
