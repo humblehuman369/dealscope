@@ -36,6 +36,7 @@ interface BackendAnalysisResponse {
     metric_value: number; score: number; rank: number; badge: string | null;
     cap_rate?: number; cash_on_cash?: number; dscr?: number;
     monthly_cash_flow?: number; annual_cash_flow?: number;
+    breakdown?: Record<string, number>;
   }>
   purchase_price: number
   income_value: number
