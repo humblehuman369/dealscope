@@ -60,6 +60,29 @@ class BillingService:
                     "empty — webhook events will NOT be verified. Set "
                     "STRIPE_WEBHOOK_SECRET to enable signature verification."
                 )
+
+            # Validate the key actually authenticates with Stripe
+            try:
+                stripe.Account.retrieve()
+                key_mode = "TEST" if (self.api_key or "").startswith("sk_test") else "LIVE"
+                logger.info("Stripe API key validated (%s mode)", key_mode)
+            except Exception as e:
+                logger.error(
+                    "Stripe API key is set but FAILED authentication: %s — "
+                    "billing will not work until a valid key is configured.",
+                    e,
+                )
+                self.is_configured = False
+
+            # Warn about missing price IDs
+            if not settings.STRIPE_PRICE_PRO_MONTHLY:
+                logger.error(
+                    "STRIPE_PRICE_PRO_MONTHLY is not set — checkout will fail. "
+                    "Create a recurring price in Stripe Dashboard and set the ID."
+                )
+            if not settings.STRIPE_PRICE_PRO_YEARLY:
+                logger.warning("STRIPE_PRICE_PRO_YEARLY is not set — annual billing unavailable.")
+
             logger.info("Billing service initialized with Stripe")
         else:
             logger.warning("Billing service running in dev mode (no payments)")

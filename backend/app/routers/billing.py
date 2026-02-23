@@ -298,6 +298,112 @@ async def create_portal_session(
 
 
 # ===========================================
+# Diagnostics (admin-only)
+# ===========================================
+
+@router.get(
+    "/config-check",
+    summary="Verify Stripe configuration (admin only)",
+)
+async def stripe_config_check(current_user: CurrentUser):
+    """
+    Validate that Stripe API key authenticates and configured price IDs
+    exist. Returns mode (test/live) and flags any mismatches.
+    Does NOT expose actual key values.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    result: dict = {
+        "stripe_configured": billing_service.is_configured,
+        "api_key_valid": False,
+        "api_key_mode": None,
+        "prices": {"monthly": None, "yearly": None},
+        "webhook_secret_set": bool(billing_service.webhook_secret),
+        "mode_mismatch": False,
+        "errors": [],
+    }
+
+    if not billing_service.is_configured:
+        result["errors"].append(
+            "STRIPE_SECRET_KEY is empty or stripe package not installed."
+        )
+        return result
+
+    try:
+        import stripe
+        account = stripe.Account.retrieve()
+        # Test keys return a "charges_enabled" field; the key prefix is
+        # the most reliable indicator of mode.
+        key_prefix = (settings.STRIPE_SECRET_KEY or "")[:7]
+        if key_prefix.startswith("sk_test"):
+            result["api_key_mode"] = "test"
+        elif key_prefix.startswith("sk_live"):
+            result["api_key_mode"] = "live"
+        else:
+            result["api_key_mode"] = "unknown"
+        result["api_key_valid"] = True
+        result["account_name"] = account.get("settings", {}).get(
+            "dashboard", {}
+        ).get("display_name") or account.get("business_profile", {}).get("name")
+    except Exception as e:
+        result["errors"].append(f"API key validation failed: {e}")
+        return result
+
+    # Verify price IDs
+    price_configs = {
+        "monthly": settings.STRIPE_PRICE_PRO_MONTHLY,
+        "yearly": settings.STRIPE_PRICE_PRO_YEARLY,
+    }
+    modes_seen: set = set()
+    if result["api_key_mode"]:
+        modes_seen.add(result["api_key_mode"])
+
+    for label, price_id in price_configs.items():
+        if not price_id:
+            result["prices"][label] = {"id": None, "status": "not_configured"}
+            result["errors"].append(
+                f"STRIPE_PRICE_PRO_{label.upper()} is not set."
+            )
+            continue
+        try:
+            price = stripe.Price.retrieve(price_id)
+            price_mode = "test" if price.get("livemode") is False else "live"
+            modes_seen.add(price_mode)
+            result["prices"][label] = {
+                "id": price_id,
+                "active": price.get("active", False),
+                "mode": price_mode,
+                "amount": price.get("unit_amount"),
+                "currency": price.get("currency"),
+                "interval": price.get("recurring", {}).get("interval")
+                if price.get("recurring")
+                else None,
+            }
+            if not price.get("active"):
+                result["errors"].append(
+                    f"Price {price_id} ({label}) exists but is not active."
+                )
+        except Exception as e:
+            result["prices"][label] = {"id": price_id, "status": "error"}
+            result["errors"].append(
+                f"Could not retrieve price {price_id} ({label}): {e}"
+            )
+
+    if len(modes_seen) > 1:
+        result["mode_mismatch"] = True
+        result["errors"].append(
+            f"Mode mismatch detected: {modes_seen}. "
+            "All keys and prices must be from the same Stripe mode (test or live)."
+        )
+
+    return result
+
+
+# ===========================================
 # Payment History
 # ===========================================
 
