@@ -40,8 +40,11 @@ class ApiError extends Error {
   }
 }
 
-/** Turn FastAPI 422/400 detail (string or array of { loc, msg }) into one readable message. */
-function formatApiErrorDetail(detail: unknown, status: number): string {
+/**
+ * Extract a human-readable message from an error response body.
+ * Handles FastAPI `{detail}`, Vercel/Railway proxy `{error}`, and other common shapes.
+ */
+function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<string, unknown>): string {
   if (typeof detail === 'string') return detail
   if (Array.isArray(detail) && detail.length > 0) {
     const parts = detail.map((e: { loc?: string[]; msg?: string }) => {
@@ -55,6 +58,19 @@ function formatApiErrorDetail(detail: unknown, status: number): string {
     const msg = 'msg' in detail ? (detail as { msg?: string }).msg : (detail as { message?: string }).message
     if (typeof msg === 'string') return msg
   }
+
+  // Proxy error formats: { error: "Bad Gateway" } or { error: { message: "..." } }
+  if (rawBody) {
+    const err = rawBody.error
+    if (typeof err === 'string') return err
+    if (err && typeof err === 'object' && 'message' in err) {
+      const m = (err as { message?: string }).message
+      if (typeof m === 'string') return m
+    }
+    const msg = rawBody.message
+    if (typeof msg === 'string') return msg
+  }
+
   if (status === 409) {
     return "This email is already registered. Sign in or use a different email."
   }
@@ -211,12 +227,12 @@ async function apiRequest<T>(
 
   if (!response.ok) {
     const text = await response.text()
-    let errBody: { detail?: unknown; code?: string }
+    let errBody: Record<string, unknown>
     try {
       errBody = text.length ? JSON.parse(text) : {}
     } catch {
-      // Server returned HTML or non-JSON (e.g. proxy error page, 404 page)
       const status = response.status
+      if (status >= 500) console.error(`[API ${status}] ${endpoint} — raw body:`, text.slice(0, 500))
       const fallback =
         status >= 500
           ? `Server error (${status}). Please try again in a moment.`
@@ -225,8 +241,9 @@ async function apiRequest<T>(
             : `Request failed (${status}). Please try again.`
       throw new ApiError(fallback, status)
     }
-    const message = formatApiErrorDetail(errBody.detail, response.status)
-    throw new ApiError(message, response.status, errBody.code)
+    if (response.status >= 500) console.error(`[API ${response.status}] ${endpoint}`, errBody)
+    const message = formatApiErrorDetail(errBody.detail, response.status, errBody)
+    throw new ApiError(message, response.status, errBody.code as string | undefined)
   }
 
   // 204 No Content has no body — return undefined instead of parsing
