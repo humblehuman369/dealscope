@@ -21,6 +21,7 @@ import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
+import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 import { AuthGate } from '@/components/auth/AuthGate'
 
@@ -76,6 +77,10 @@ function StrategyContent() {
   const [error, setError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState<string | null>(null)
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null },
+    rent: { iq: null, zillow: null, rentcast: null },
+  })
 
   // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
   // key uses canonical address so it matches when navigating Verdict → Strategy).
@@ -169,6 +174,21 @@ function StrategyContent() {
         }
 
         setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal })
+
+        // Populate IQ Estimate 3-value sources for the selector
+        const rentalStats = propData.rentals?.rental_stats
+        setIqSources({
+          value: {
+            iq: propData.valuations?.value_iq_estimate ?? null,
+            zillow: propData.valuations?.zestimate ?? null,
+            rentcast: propData.valuations?.rentcast_avm ?? null,
+          },
+          rent: {
+            iq: rentalStats?.iq_estimate ?? propData.rentals?.monthly_rent_ltr ?? null,
+            zillow: rentalStats?.zillow_estimate ?? null,
+            rentcast: rentalStats?.rentcast_estimate ?? null,
+          },
+        })
 
         const listingStatus = propData.listing?.listing_status
         const isListed = listingStatus && !['OFF_MARKET', 'SOLD', 'FOR_RENT', 'OTHER'].includes(String(listingStatus)) && price > 0
@@ -542,6 +562,14 @@ function StrategyContent() {
             </button>
           </div>
         </section>
+
+        {/* IQ Estimate Source Selector */}
+        {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null ||
+          iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
+          <section className="px-5 pt-2 pb-4">
+            <IQEstimateSelector sources={iqSources} />
+          </section>
+        )}
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">

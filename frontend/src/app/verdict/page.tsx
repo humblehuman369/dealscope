@@ -25,6 +25,7 @@ import {
 } from '@/components/iq-verdict'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { VerdictScoreCard, ComponentScoreBars } from '@/components/iq-verdict/VerdictScoreCard'
+import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
@@ -203,6 +204,12 @@ function VerdictContent() {
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
 
+  // IQ Estimate 3-value sources (populated from API response)
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null },
+    rent: { iq: null, zillow: null, rentcast: null },
+  })
+
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
   // This handles navigation between different saved properties
@@ -333,7 +340,22 @@ function VerdictContent() {
         }
 
         setProperty(propertyData)
-        
+
+        // Populate IQ Estimate 3-value sources from API response
+        const rentalStats = data.rentals?.rental_stats
+        setIqSources({
+          value: {
+            iq: data.valuations?.value_iq_estimate ?? null,
+            zillow: data.valuations?.zestimate ?? null,
+            rentcast: data.valuations?.rentcast_avm ?? null,
+          },
+          rent: {
+            iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
+            zillow: rentalStats?.zillow_estimate ?? null,
+            rentcast: rentalStats?.rentcast_estimate ?? null,
+          },
+        })
+
         // Store property info to sessionStorage so global AppHeader can access it
         try {
           const existingData = sessionStorage.getItem('dealMakerOverrides')
@@ -831,6 +853,21 @@ function VerdictContent() {
             <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
               <ComponentScoreBars scores={verdictComponentScores} />
             </section>
+
+            {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
+            {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null ||
+              iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
+              <section className="px-5 pb-5">
+                <IQEstimateSelector
+                  sources={iqSources}
+                  onSourceChange={(type, _sourceId, _value) => {
+                    if (type === 'rent' && _value != null) {
+                      setProperty((prev) => prev ? { ...prev, monthlyRent: _value } as IQProperty : prev)
+                    }
+                  }}
+                />
+              </section>
+            )}
           </div>
 
           {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
