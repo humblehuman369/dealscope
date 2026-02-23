@@ -180,20 +180,26 @@ async def create_checkout_session(
     
     Returns a URL to redirect the user to Stripe's hosted checkout page.
     """
-    if not data.price_id and not data.lookup_key:
+    try:
+        return await billing_service.create_checkout_session(
+            db,
+            current_user,
+            price_id=data.price_id or None,
+            lookup_key=data.lookup_key or None,
+            success_url=data.success_url,
+            cancel_url=data.cancel_url,
+        )
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Either price_id or lookup_key must be provided",
+            detail=str(e),
         )
-    
-    return await billing_service.create_checkout_session(
-        db,
-        current_user,
-        price_id=data.price_id,
-        lookup_key=data.lookup_key,
-        success_url=data.success_url,
-        cancel_url=data.cancel_url,
-    )
+    except Exception as e:
+        logger.error(f"Checkout session creation failed for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not connect to payment provider. Please try again shortly.",
+        )
 
 
 @router.post(
@@ -281,7 +287,14 @@ async def create_portal_session(
     - Cancel subscription
     - Change plan
     """
-    return await billing_service.create_portal_session(db, current_user)
+    try:
+        return await billing_service.create_portal_session(db, current_user)
+    except Exception as e:
+        logger.error(f"Portal session creation failed for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not connect to payment provider. Please try again shortly.",
+        )
 
 
 # ===========================================

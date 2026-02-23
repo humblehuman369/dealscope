@@ -18,7 +18,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react'
-import { UpgradeModal } from '@/components/billing/UpgradeModal'
+import { billingApi } from '@/lib/api-client'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 
 interface Subscription {
@@ -55,8 +55,8 @@ function BillingContent() {
   const [usage, setUsage] = useState<Usage | null>(null)
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -86,6 +86,24 @@ function BillingContent() {
     }
     if (!authLoading) fetchData()
   }, [isAuthenticated, authLoading])
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true)
+    setMessage(null)
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const { checkout_url } = await billingApi.createCheckoutSession({
+        success_url: `${origin}/billing?success=true`,
+        cancel_url: `${origin}/billing?canceled=true`,
+      })
+      window.location.href = checkout_url
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not start checkout. Please try again.'
+      setMessage({ type: 'error', text: msg })
+    } finally {
+      setCheckoutLoading(false)
+    }
+  }
 
   const handleManageBilling = async () => {
     setPortalLoading(true)
@@ -254,12 +272,14 @@ function BillingContent() {
             ) : (
               <button
                 type="button"
-                onClick={() => setUpgradeModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white"
+                onClick={handleUpgrade}
+                disabled={checkoutLoading}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-60"
                 style={{ background: 'linear-gradient(135deg, #0EA5E9, #0284C7)' }}
               >
+                {checkoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                 Upgrade to Pro
-                <ArrowRight className="w-4 h-4" />
+                <ExternalLink className="w-3 h-3 opacity-60" />
               </button>
             )}
           </div>
@@ -325,12 +345,6 @@ function BillingContent() {
             </div>
           )}
         </div>
-
-        <UpgradeModal
-          isOpen={upgradeModalOpen}
-          onClose={() => setUpgradeModalOpen(false)}
-          returnTo="/billing"
-        />
 
         {/* Trust badges */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs" style={{ color: '#475569' }}>
