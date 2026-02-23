@@ -45,8 +45,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const sectionRefs = useRef<(HTMLDivElement | HTMLElement | null)[]>([]);
   const [gatewayOpen, setGatewayOpen] = useState(false);
   const [gatewayStep, setGatewayStep] = useState<'start' | 'address' | 'scan'>('start');
-  const [ctaAddress, setCtaAddress] = useState('');
-  const [ctaFocused, setCtaFocused] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -86,16 +84,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
     setGatewayOpen(true);
   };
 
-  const handleCtaSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = ctaAddress.trim();
-    if (trimmed) {
-      router.push(`/analyzing?address=${encodeURIComponent(trimmed)}`);
-    } else {
-      handleStartAnalysis();
-    }
-  };
-
   return (
     <div className="iq-landing">
       <Suspense fallback={null}>
@@ -111,7 +99,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div className="logo-text">DealGap<span>IQ</span></div>
           </Link>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            <Link href="/what-is-dealgapiq" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>What is it?</Link>
+            <Link href="/what-is-dealgapiq" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>What is DealGapIQ</Link>
             <Link href="/pricing" style={{ color: '#0EA5E9', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>Pricing</Link>
           </div>
           <div className="nav-actions">
@@ -580,7 +568,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </svg>
               </div>
               <div className="tk-title">Scan</div>
-              <p className="tk-text">The field companion app. Snap a photo of any property or For Sale sign to pull data instantly. Syncs to desktop.</p>
+              <p className="tk-text">The field companion app. Scan any property with smart phone to pull data instantly. Syncs to desktop.</p>
             </div>
             <div className="toolkit-card">
               <div className="tk-icon gr">
@@ -606,7 +594,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
                 </svg>
               </div>
-              <div className="tk-title">Price</div>
+              <div className="tk-title">Comps</div>
               <p className="tk-text">Three numbers that define your deal: Income Value, Target, and Wholesale — calculated in 60 seconds flat.</p>
             </div>
             <div className="toolkit-card">
@@ -670,74 +658,21 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[6] = el; }}
       >
         <div className="cta-inner">
-          <h2 className="cta-title">Find Your Deal.<br />Close Your Gap.</h2>
-          <p className="cta-desc">Every property has a Deal Gap. Only DealGapIQ measures it.</p>
-          <form onSubmit={handleCtaSubmit} className="cta-address-form">
-            <div
-              className="cta-address-row"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#0D1424',
-                border: `1px solid ${ctaFocused ? 'rgba(14,165,233,0.35)' : 'rgba(148,163,184,0.1)'}`,
-                borderRadius: '10px',
-                padding: '4px 4px 4px 16px',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-                boxShadow: ctaFocused ? '0 0 0 3px rgba(14,165,233,0.06)' : 'none',
-                maxWidth: '520px',
-                margin: '0 auto',
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-                <circle cx="7.5" cy="7.5" r="5.5" stroke="#475569" strokeWidth="1.5" />
-                <path d="M12 12L16 16" stroke="#475569" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              <input
-                type="text"
-                value={ctaAddress}
-                onChange={(e) => setCtaAddress(e.target.value)}
-                onFocus={() => setCtaFocused(true)}
-                onBlur={() => setCtaFocused(false)}
-                placeholder="Enter any property address..."
-                style={{
-                  flex: 1,
-                  background: 'none',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#E2E8F0',
-                  fontSize: '14px',
-                  padding: '12px 12px',
-                  fontFamily: 'inherit',
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  padding: '10px 20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                  transition: 'opacity 0.2s',
-                }}
-              >
-                Analyze
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
-          </form>
-          <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#64748b' }}>
-            Free during beta · <Link href="/pricing" style={{ color: '#38bdf8', textDecoration: 'none' }}>View pricing plans</Link>
+          <h2 className="cta-title">Every property has a Deal Gap.<br />Only DealGapIQ measures it.</h2>
+          <p className="cta-desc">And once you see it, you&apos;ll never analyze real estate the old way again.</p>
+          <Link href="/register" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            background: '#0EA5E9', color: '#000', padding: '0.85rem 2rem',
+            borderRadius: 10, fontWeight: 700, fontSize: '1rem', textDecoration: 'none',
+            marginTop: '0.5rem',
+          }}>
+            Start Free — Analyze Your First Property
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+          <p style={{ marginTop: '1rem', fontSize: '0.82rem', color: '#0EA5E9' }}>
+            5 free analyses per month · No credit card required
           </p>
         </div>
       </section>
@@ -755,9 +690,9 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               </p>
             </div>
 
-            {/* Product column */}
+            {/* What is DealGapIQ column */}
             <div>
-              <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Product</p>
+              <p style={{ color: '#e2e8f0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>What is DealGapIQ</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <a href="#strategies" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Strategies</a>
                 <a href="#toolkit" style={{ color: 'rgba(148,163,184,0.7)', fontSize: '0.82rem', textDecoration: 'none' }}>Toolkit</a>
