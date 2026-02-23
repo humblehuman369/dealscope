@@ -861,9 +861,13 @@ function VerdictContent() {
                 <IQEstimateSelector
                   sources={iqSources}
                   onSourceChange={(type, _sourceId, _value) => {
-                    if (type === 'rent' && _value != null) {
-                      setProperty((prev) => prev ? { ...prev, monthlyRent: _value } as IQProperty : prev)
-                    }
+                    if (_value == null) return
+                    setProperty((prev) => {
+                      if (!prev) return prev
+                      if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                      if (type === 'value') return { ...prev, price: _value } as IQProperty
+                      return prev
+                    })
                   }}
                 />
               </section>
