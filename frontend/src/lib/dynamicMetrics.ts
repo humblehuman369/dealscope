@@ -1,9 +1,10 @@
 /**
- * Dynamic Metrics Calculator
- * 
- * Calculates any metric given strategy, price target, and property data.
- * Used by InvestmentAnalysis and VerdictIQCombined for dynamic recalculation
- * when users change price targets or strategy.
+ * @deprecated — DEAD CODE. Only imported by VerdictIQCombined (also deprecated/unused).
+ * All financial calculations are now performed by the backend API
+ * (/api/v1/analysis/verdict). Do not import or extend this file.
+ *
+ * Dynamic Metrics Calculator (legacy)
+ * Calculated metrics given strategy, price target, and property data.
  */
 
 import { PriceTarget } from '@/lib/priceUtils'

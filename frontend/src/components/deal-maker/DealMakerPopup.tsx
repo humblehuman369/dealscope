@@ -11,6 +11,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
 import { PriceTarget } from '@/lib/priceUtils'
+import { calculateMortgagePayment } from '@/utils/calculations'
 import { useSession } from '@/hooks/useSession'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -275,13 +276,7 @@ function getDefaultValues(strategy: PopupStrategyType): DealMakerValues {
   }
 }
 
-// Calculate monthly mortgage payment
-function calculateMonthlyMortgage(principal: number, annualRate: number, years: number): number {
-  if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
-  const monthlyRate = annualRate / 12
-  const numPayments = years * 12
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
-}
+// Mortgage calculation: use shared calculateMortgagePayment from @/utils/calculations
 
 // Section divider component
 function SectionDivider({ text }: { text: string }) {
@@ -399,9 +394,9 @@ export function DealMakerPopup({
     
     // Calculate break-even occupancy
     // Fixed monthly costs
-    const monthlyMortgage = calculateMonthlyMortgage(
+    const monthlyMortgage = calculateMortgagePayment(
       values.buyPrice * (1 - values.downPayment / 100),
-      values.interestRate / 100,
+      values.interestRate,
       values.loanTerm
     )
     const monthlyTaxes = values.propertyTaxes / 12
@@ -510,7 +505,7 @@ export function DealMakerPopup({
     
     // Calculate PITI
     const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
-    const monthlyMortgage = calculateMonthlyMortgage(loanAmount, values.interestRate / 100, values.loanTerm)
+    const monthlyMortgage = calculateMortgagePayment(loanAmount, values.interestRate, values.loanTerm)
     const monthlyTaxes = values.propertyTaxes / 12
     const monthlyInsurance = values.insurance / 12
     const monthlyPMI = loanAmount * (values.pmiRate / 100) / 12
