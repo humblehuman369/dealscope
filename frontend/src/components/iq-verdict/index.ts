@@ -51,6 +51,9 @@ export { VerdictHeader, type VerdictTab } from './VerdictHeader'
 export { VerdictPageFresh } from './VerdictPageFresh'
 export { VerdictPageAdapter } from './VerdictPageAdapter'
 
+// Active: IQ Estimate 3-value source selector
+export { IQEstimateSelector, useIQSourceSelection, type IQEstimateSources, type DataSourceId } from './IQEstimateSelector'
+
 // Active: Design tokens used across verdict and strategy pages
 export * from './verdict-design-tokens'
 
