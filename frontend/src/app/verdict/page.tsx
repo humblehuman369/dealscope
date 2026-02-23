@@ -16,7 +16,7 @@
  * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
-import { useCallback, useEffect, useState, useMemo, Suspense } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   IQProperty, 
@@ -214,6 +214,10 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null },
     rent: { iq: null, zillow: null, rentcast: null },
   })
+
+  // Stores the static analysis inputs so the verdict can be re-calculated
+  // when the user switches data source without re-fetching property data
+  const analysisInputsRef = useRef<Record<string, any> | null>(null)
 
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
@@ -455,25 +459,28 @@ function VerdictContent() {
             ? dealMakerStore.record.buy_price
             : undefined
 
+        const analysisBody = {
+          list_price: listPriceForCalc,
+          purchase_price: purchasePriceOverride,
+          monthly_rent: rentForCalc,
+          property_taxes: taxesForCalc,
+          insurance: insuranceForCalc,
+          bedrooms: propertyData.beds,
+          bathrooms: propertyData.baths,
+          sqft: propertyData.sqft,
+          arv: arvForCalc,
+          average_daily_rate: propertyData.averageDailyRate,
+          occupancy_rate: propertyData.occupancyRate,
+          is_listed: isListed,
+          zestimate: zestimate ?? undefined,
+          current_value_avm: currentAvm ?? undefined,
+          tax_assessed_value: taxAssessed ?? undefined,
+        }
+        analysisInputsRef.current = analysisBody
+
         const analysisPromise = api.post<BackendAnalysisResponse & Record<string, any>>(
           '/api/v1/analysis/verdict',
-          {
-            list_price: listPriceForCalc,
-            purchase_price: purchasePriceOverride,
-            monthly_rent: rentForCalc,
-            property_taxes: taxesForCalc,
-            insurance: insuranceForCalc,
-            bedrooms: propertyData.beds,
-            bathrooms: propertyData.baths,
-            sqft: propertyData.sqft,
-            arv: arvForCalc,
-            average_daily_rate: propertyData.averageDailyRate,
-            occupancy_rate: propertyData.occupancyRate,
-            is_listed: isListed,
-            zestimate: zestimate ?? undefined,
-            current_value_avm: currentAvm ?? undefined,
-            tax_assessed_value: taxAssessed ?? undefined,
-          },
+          analysisBody,
         )
 
         const [analysisData, photosResult] = await Promise.all([
@@ -492,54 +499,8 @@ function VerdictContent() {
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
         console.log('[IQ Verdict] dealScore:', (analysisData as any).dealScore ?? (analysisData as any).deal_score)
           
-        // Convert backend response to frontend IQAnalysisResult format
-        // Backend now returns camelCase for new fields via Pydantic alias_generator
         try {
-          const analysisResult: IQAnalysisResult = {
-            propertyId: data?.property_id || propertyData?.id, // Include property ID for exports
-            analyzedAt: new Date().toISOString(),
-            dealScore: Math.min(95, Math.max(0, analysisData.deal_score ?? analysisData.dealScore ?? 0)),
-            dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
-            verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
-            discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
-            purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
-            incomeValue: analysisData.income_value ?? analysisData.incomeValue,
-            listPrice: analysisData.list_price ?? analysisData.listPrice,
-            incomeGapPercent: analysisData.income_gap_percent ?? analysisData.incomeGapPercent ?? (() => {
-              const lp = analysisData.list_price ?? analysisData.listPrice
-              const iv = analysisData.income_value ?? analysisData.incomeValue
-              return lp != null && iv != null && lp > 0 ? Math.round(((lp - iv) / lp) * 1000) / 10 : undefined
-            })(),
-            incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
-            // Include inputs used for transparency
-            inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
-            strategies: analysisData.strategies.map((s) => ({
-              id: s.id as IQStrategy['id'],
-              name: s.name,
-              icon: getStrategyIcon(s.id),
-              metric: s.metric,
-              metricLabel: (s.metric_label ?? s.metricLabel ?? '') as string,
-              metricValue: (s.metric_value ?? s.metricValue ?? 0) as number,
-              score: s.score,
-              rank: s.rank,
-              badge: s.badge as IQStrategy['badge'],
-            })),
-            // NEW: Grade-based display fields (backend returns camelCase)
-            opportunity: analysisData.opportunity,
-            opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
-            returnRating: analysisData.return_rating ?? analysisData.returnRating,
-            returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-            // Component scores — bulletproof extraction handles flat OR nested, camelCase OR snake_case
-            componentScores: (() => {
-              const cs = extractComponentScores(analysisData as Record<string, unknown>)
-              return {
-                dealGapScore: cs.dealGap,
-                returnQualityScore: cs.returnQuality,
-                marketAlignmentScore: cs.marketAlignment,
-                dealProbabilityScore: cs.dealProbability,
-              }
-            })(),
-          }
+          const analysisResult = parseAnalysisResponse(analysisData, data?.property_id || propertyData?.id)
           setAnalysis(analysisResult)
 
           // Single source of truth: persist backend list_price, income_value, purchase_price
@@ -609,8 +570,68 @@ function VerdictContent() {
   }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient,
       overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv])
 
-  // Analysis is now fetched from backend API (stored in state)
-  // No local calculations are performed
+  // Parse backend analysis response into IQAnalysisResult
+  const parseAnalysisResponse = useCallback(
+    (analysisData: Record<string, any>, propertyId?: string): IQAnalysisResult => ({
+      propertyId: propertyId || property?.id,
+      analyzedAt: new Date().toISOString(),
+      dealScore: Math.min(95, Math.max(0, analysisData.deal_score ?? analysisData.dealScore ?? 0)),
+      dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
+      verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
+      discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
+      purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
+      incomeValue: analysisData.income_value ?? analysisData.incomeValue,
+      listPrice: analysisData.list_price ?? analysisData.listPrice,
+      incomeGapPercent: analysisData.income_gap_percent ?? analysisData.incomeGapPercent ?? (() => {
+        const lp = analysisData.list_price ?? analysisData.listPrice
+        const iv = analysisData.income_value ?? analysisData.incomeValue
+        return lp != null && iv != null && lp > 0 ? Math.round(((lp - iv) / lp) * 1000) / 10 : undefined
+      })(),
+      incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
+      inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
+      strategies: (analysisData.strategies ?? []).map((s: any) => ({
+        id: s.id as IQStrategy['id'],
+        name: s.name,
+        icon: getStrategyIcon(s.id),
+        metric: s.metric,
+        metricLabel: (s.metric_label ?? s.metricLabel ?? '') as string,
+        metricValue: (s.metric_value ?? s.metricValue ?? 0) as number,
+        score: s.score,
+        rank: s.rank,
+        badge: s.badge as IQStrategy['badge'],
+      })),
+      opportunity: analysisData.opportunity,
+      opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
+      returnRating: analysisData.return_rating ?? analysisData.returnRating,
+      returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
+      componentScores: (() => {
+        const cs = extractComponentScores(analysisData as Record<string, unknown>)
+        return {
+          dealGapScore: cs.dealGap,
+          returnQualityScore: cs.returnQuality,
+          marketAlignmentScore: cs.marketAlignment,
+          dealProbabilityScore: cs.dealProbability,
+        }
+      })(),
+    }),
+    [property?.id],
+  )
+
+  // Re-run verdict analysis when the user switches data sources
+  const recalculateVerdict = useCallback(
+    async (overrides: { list_price?: number; monthly_rent?: number }) => {
+      const base = analysisInputsRef.current
+      if (!base) return
+      try {
+        const body = { ...base, ...overrides }
+        const result = await api.post<Record<string, any>>('/api/v1/analysis/verdict', body)
+        setAnalysis(parseAnalysisResponse(result))
+      } catch (err) {
+        console.error('[IQ Verdict] Recalculation failed:', err)
+      }
+    },
+    [parseAnalysisResponse],
+  )
 
   // Auto-open DealMaker popup if navigated from StrategyIQ with openDealMaker=1
   useEffect(() => {
@@ -871,6 +892,11 @@ function VerdictContent() {
                       if (type === 'value') return { ...prev, price: _value } as IQProperty
                       return prev
                     })
+                    recalculateVerdict(
+                      type === 'value'
+                        ? { list_price: _value }
+                        : { monthly_rent: _value },
+                    )
                   }}
                 />
               </section>
