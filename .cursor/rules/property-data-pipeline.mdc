@@ -1,0 +1,97 @@
+---
+description: Property data pipeline architecture — normalizer, IQ Estimates, caching, and data flow
+alwaysApply: true
+---
+
+# Property Data Pipeline
+
+## Two Normalizers — Only One Is Active
+
+There are TWO `DataNormalizer` classes. Only the one in `api_clients.py` is used.
+
+| File | Status | Used By |
+|------|--------|---------|
+| `backend/app/services/api_clients.py` | **ACTIVE** | `PropertyService` via `create_api_clients()` |
+| `backend/app/services/data_normalizer.py` | UNUSED | Nothing — legacy reference only |
+
+**Never modify `data_normalizer.py` expecting it to affect production.** All normalizer
+changes must go in `api_clients.py :: DataNormalizer`.
+
+## Active Normalizer Architecture (`api_clients.py`)
+
+```
+FIELD_MAPPING (declarative)          _compute_iq_estimates (post-processing)
+─────────────────────────────        ──────────────────────────────────────
+rentcast_data + axesso_data   →      rental_iq_estimate   = avg(rc, zl)
+  ↓ priority-based extraction        value_iq_estimate    = avg(rc, zl)
+  ↓ conflict detection (>15%)        (single source if only one available)
+  ↓ weighted merge when conflict
+  ↓
+normalized dict + provenance dict
+```
+
+### Key FIELD_MAPPING entries for rent/value sources
+
+```python
+"rental_rentcast_estimate": ("rent", None, "rentcast"),
+"rental_zillow_estimate":   (None, "rentZestimate", "axesso"),
+"rentcast_avm":             ("price", None, "rentcast"),
+"zestimate":                (None, "zestimate", "axesso"),
+```
+
+### IQ Estimate Computation
+
+`_compute_iq_estimates()` runs after FIELD_MAPPING and computes:
+- `rental_iq_estimate` = round((rc_rent + zl_rent) / 2) — or single source
+- `value_iq_estimate`  = round((rc_avm + zestimate) / 2) — or single source
+- Both are `None` when neither source has data — **never fabricated**
+
+## Data Flow: Backend → Frontend
+
+```
+RentCast API + Zillow/AXESSO API
+        ↓
+DataNormalizer.normalize()  (api_clients.py)
+        ↓
+normalized dict  { rental_iq_estimate, rental_rentcast_estimate, ... }
+        ↓
+PropertyService._build_valuations()  →  ValuationData { value_iq_estimate, rentcast_avm, zestimate }
+PropertyService → RentalData          →  RentalMarketStatistics { iq_estimate, zillow_estimate, rentcast_estimate }
+        ↓
+PropertyResponse (JSON)
+        ↓
+Frontend: usePropertyData() hook  →  React Query cache (5 min TTL)
+        ↓
+Verdict page + Strategy page  →  IQEstimateSelector component
+```
+
+## Frontend Shared Cache
+
+Both Verdict and Strategy pages use `usePropertyData()` from `hooks/usePropertyData.ts`:
+
+```typescript
+const { fetchProperty } = usePropertyData()
+const data = await fetchProperty(address)  // cached via React Query
+```
+
+- Uses `queryClient.ensureQueryData()` — first call hits network, subsequent calls return cache
+- Cache key: `['property-search', address]`
+- Validates numeric fields via `finiteOrNull()` before caching (prevents NaN/Infinity)
+
+## Backend Cache Staleness
+
+`PropertyService.search_property()` invalidates Redis cache when:
+1. Off-market property missing zestimate and market_price
+2. **Source data exists but IQ estimate fields are missing** (pre-IQ-Estimate cached data)
+
+The staleness check at lines ~234-249 of `property_service.py` ensures old cached
+data without `value_iq_estimate` / `rental_stats` is re-fetched automatically.
+
+## Critical Rules
+
+1. **Never use fake data.** If a source is unavailable → show "Unavailable", never fabricate
+2. **IQ Estimate = average of available sources**, or equals the single available source
+3. **Both sources unavailable → IQ Estimate is null**, analysis should warn the user
+4. **`monthly_rent_ltr`** in PropertyResponse reads from `normalized["rental_iq_estimate"]`
+5. **Zillow `rentZestimate`** is extracted via `_unwrap_axesso_property()` which normalizes
+   both `RentZestimate` and `rentZestimate` casing

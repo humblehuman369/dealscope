@@ -1,0 +1,87 @@
+---
+description: IQ Estimate 3-value source selector — UI, state, and recalculation rules
+globs: frontend/src/components/iq-verdict/IQEstimateSelector.tsx, frontend/src/app/verdict/page.tsx, frontend/src/app/strategy/page.tsx
+alwaysApply: false
+---
+
+# IQ Estimate Source Selector
+
+## 3-Value Model
+
+For both **Property Value** and **Monthly Rent**, three values are displayed:
+
+| Source | Description | Backend Field (rent) | Backend Field (value) |
+|--------|-------------|---------------------|----------------------|
+| IQ Estimate | 50/50 avg of both providers (default) | `rental_stats.iq_estimate` | `valuations.value_iq_estimate` |
+| Zillow | Raw Zillow value | `rental_stats.zillow_estimate` | `valuations.zestimate` |
+| RentCast | Raw RentCast value | `rental_stats.rentcast_estimate` | `valuations.rentcast_avm` |
+
+## Selection Rules
+
+1. **IQ Estimate is always the default** when it has a value (`resolveDefaults` enforces this)
+2. User can click to select a different source — handled by `handleSelect`, bypasses `resolveDefaults`
+3. On page load or property change, selection resets to IQ Estimate
+4. Selection persists in `sessionStorage` (key: `iq_source_selection`) for within-session use
+
+### `resolveDefaults` logic
+
+```typescript
+// Always prefer IQ when available
+if (group.iq != null) return 'iq'
+// Fall back to stored selection if that source has data
+if (group[sel] != null) return sel
+// Then any available source
+if (group.zillow != null) return 'zillow'
+if (group.rentcast != null) return 'rentcast'
+return 'iq'
+```
+
+## Recalculation on Source Change
+
+When a user selects a different provider, calculations must update instantly (no API call).
+
+### Verdict Page
+
+```typescript
+onSourceChange={(type, _sourceId, _value) => {
+  if (_value == null) return
+  setProperty((prev) => {
+    if (type === 'rent')  return { ...prev, monthlyRent: _value }
+    if (type === 'value') return { ...prev, price: _value }
+  })
+}}
+```
+
+Changing `property.price` or `property.monthlyRent` triggers re-render of all derived
+values: purchase price, income value, wholesale price, income gap, DealMaker initial values.
+
+### Strategy Page
+
+Uses `sourceOverrides` state to inject user-selected values at the top of the priority chain:
+
+```
+Priority (highest → lowest):
+1. dealMakerOverrides  (explicit DealMaker adjustments — user typed a value)
+2. sourceOverrides     (IQ Estimate selector — user picked a provider)
+3. backend data        (API response values)
+4. propertyInfo        (fallback from property search)
+```
+
+```typescript
+const listPrice = sourceOverrides.price ?? data.list_price ?? propertyInfo?.price ?? 0
+const monthlyRent = dealMakerOverrides?.monthlyRent
+  ?? sourceOverrides.monthlyRent ?? propertyInfo?.monthlyRent ?? 0
+```
+
+**Use `??` (nullish coalescing), never `||`** — a DealMaker value of `0` is intentional
+and must not fall through to the next source.
+
+## Key Files
+
+| File | Role |
+|------|------|
+| `frontend/src/components/iq-verdict/IQEstimateSelector.tsx` | UI component + `useIQSourceSelection` hook |
+| `frontend/src/app/verdict/page.tsx` | Verdict page integration (lines ~860) |
+| `frontend/src/app/strategy/page.tsx` | Strategy page integration (lines ~575) |
+| `backend/app/services/api_clients.py` | `_compute_iq_estimates()` — backend computation |
+| `backend/app/schemas/property.py` | `RentalMarketStatistics`, `ValuationData` schemas |

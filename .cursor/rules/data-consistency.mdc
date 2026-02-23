@@ -1,0 +1,68 @@
+---
+description: Data consistency rules — single source of truth, no fake data, shared cache
+alwaysApply: true
+---
+
+# Data Consistency Rules
+
+## Single Source of Truth
+
+Property data is fetched ONCE via `usePropertyData()` hook and cached client-side
+via React Query. Both Verdict and Strategy pages consume from the same cache.
+
+```typescript
+// ✅ CORRECT: Use shared hook
+import { usePropertyData } from '@/hooks/usePropertyData'
+const { fetchProperty } = usePropertyData()
+const data = await fetchProperty(address)
+
+// ❌ WRONG: Direct API call (bypasses cache, causes inconsistency)
+const data = await api.post('/api/v1/properties/search', { address })
+```
+
+## Never Use Fake Data
+
+If a data source (RentCast or Zillow) is unavailable:
+
+```typescript
+// ✅ CORRECT: Show unavailable, use null
+rentcast_estimate: null  // displays "Unavailable" in UI
+
+// ❌ WRONG: Fabricate a fallback
+monthlyRent: listPrice * 0.012  // NEVER do this
+propertyTaxes: listPrice * 0.01  // NEVER do this
+insurance: listPrice * 0.005     // NEVER do this
+```
+
+## Nullish Coalescing Over Logical OR
+
+When chaining fallback values for financial inputs, always use `??` not `||`.
+A user-entered value of `0` is intentional and must be preserved.
+
+```typescript
+// ✅ CORRECT: 0 is preserved
+const monthlyRent = dealMakerOverrides?.monthlyRent
+  ?? sourceOverrides.monthlyRent ?? propertyInfo?.monthlyRent ?? 0
+
+// ❌ WRONG: 0 falls through to next source
+const monthlyRent = dealMakerOverrides?.monthlyRent
+  || sourceOverrides.monthlyRent || propertyInfo?.monthlyRent || 0
+```
+
+## Validate API Responses
+
+The `usePropertyData` hook runs `validatePropertyResponse()` before caching.
+All critical numeric fields are sanitized via `finiteOrNull()` — non-finite values
+(NaN, Infinity, string coercion failures) become `null`.
+
+If adding new numeric fields to the property response, add them to the
+validation list in `hooks/usePropertyData.ts`.
+
+## Backend Cache Invalidation
+
+Redis-cached property data is automatically invalidated when:
+1. Zestimate is missing for off-market properties
+2. IQ Estimate fields are missing but source data exists (stale pre-IQ cache)
+
+When adding new required fields to PropertyResponse, add a corresponding
+staleness check in `property_service.py :: search_property()` (~line 234).
