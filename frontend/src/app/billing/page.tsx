@@ -98,7 +98,14 @@ function BillingContent() {
       })
       window.location.href = checkout_url
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not start checkout. Please try again.'
+      console.error('Checkout error:', err)
+      let msg = 'Could not start checkout. Please try again.'
+      if (err instanceof Error) {
+        msg = err.message
+        if (msg.includes('502') || msg.includes('Bad Gateway')) {
+          msg = 'Payment service temporarily unavailable. The backend may be restarting — please wait 30 seconds and try again.'
+        }
+      }
       setMessage({ type: 'error', text: msg })
     } finally {
       setCheckoutLoading(false)

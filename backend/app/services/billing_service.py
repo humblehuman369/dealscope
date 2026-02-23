@@ -264,6 +264,12 @@ class BillingService:
         existing_id = subscription.stripe_customer_id
         if existing_id and not existing_id.startswith("cus_dev_"):
             return existing_id
+
+        if existing_id and existing_id.startswith("cus_dev_"):
+            logger.info(
+                "Replacing dev customer ID %s for user %s with real Stripe customer",
+                existing_id, user.id,
+            )
         
         if not self.is_configured:
             fake_id = f"cus_dev_{user.id}"
@@ -271,7 +277,6 @@ class BillingService:
             await db.commit()
             return fake_id
         
-        # Create Stripe customer
         customer = stripe.Customer.create(
             email=user.email,
             name=user.full_name,
@@ -328,6 +333,11 @@ class BillingService:
                 "No Stripe price configured. Set STRIPE_PRICE_PRO_MONTHLY in environment."
             )
         
+        logger.info(
+            "Creating checkout session: user=%s customer=%s price=%s",
+            user.id, customer_id, resolved_price_id,
+        )
+
         sep = "&" if "?" in success_url else "?"
         session = stripe.checkout.Session.create(
             customer=customer_id,
@@ -348,7 +358,7 @@ class BillingService:
             allow_promotion_codes=True,
         )
         
-        logger.info(f"Created checkout session {session.id} for user {user.id} (7-day trial)")
+        logger.info("Created checkout session %s for user %s (7-day trial)", session.id, user.id)
         
         return CheckoutSessionResponse(
             checkout_url=session.url,
