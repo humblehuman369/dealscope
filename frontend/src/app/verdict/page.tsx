@@ -1050,21 +1050,16 @@ function VerdictContent() {
           strategyType={currentStrategy}
           onStrategyChange={(s) => setCurrentStrategy(s)}
           initialValues={(() => {
-            // Restore previous DealMaker values from sessionStorage if available
-            const defaults = {
+            // Only pass property-specific values; financing defaults come from
+            // the DealMakerPopup's strategy-specific getDefaultValues()
+            const propertyValues = {
               buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
               monthlyRent: property.monthlyRent || 0,
               propertyTaxes: property.propertyTaxes || 0,
               insurance: property.insurance || 0,
               arv: property.arv || property.price,
-              downPayment: 20,
-              closingCosts: 3,
-              interestRate: 6,
-              loanTerm: 30,
-              vacancyRate: 5,
-              managementRate: 8,
             }
-            if (typeof window === 'undefined') return defaults
+            if (typeof window === 'undefined') return propertyValues
             try {
               const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
               const fullAddr = [property.address, property.city, stateZip].filter(Boolean).join(', ')
@@ -1072,11 +1067,11 @@ function VerdictContent() {
               if (stored) {
                 const parsed = JSON.parse(stored)
                 if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
-                  return { ...defaults, ...parsed }
+                  return { ...propertyValues, ...parsed }
                 }
               }
             } catch { /* ignore */ }
-            return defaults
+            return propertyValues
           })()}
         />
       )}

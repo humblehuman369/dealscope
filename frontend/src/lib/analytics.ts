@@ -1,9 +1,10 @@
 /**
- * DealGapIQ - Deal Scoring & Sensitivity Analysis
- * 
- * Deal Score is based on Investment Opportunity - how much discount from 
- * list price is needed to reach Income Value. Lower discount = better opportunity.
- * 
+ * @deprecated — Only imported by dead components (SensitivityAnalysis, DealScoreCard, RehabEstimator).
+ * Deal scoring is now performed by the backend API (/api/v1/analysis/verdict).
+ * Do not import or extend this file for new features.
+ *
+ * DealGapIQ - Deal Scoring & Sensitivity Analysis (legacy)
+ *
  * Enhanced Deal Opportunity Score considers:
  * 1. Deal Gap (50%) - ((List Price - Income Value) / List Price) × 100
  * 2. Availability (30%) - Listing status and seller motivation
