@@ -70,6 +70,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             className="hero-input"
             type="text"
             placeholder="Enter any address..."
+            name="address"
+            autoComplete="street-address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
           />
