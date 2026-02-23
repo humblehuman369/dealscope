@@ -196,9 +196,12 @@ async def create_checkout_session(
         )
     except Exception as e:
         logger.error(f"Checkout session creation failed for user {current_user.id}: {e}")
+        detail = str(e)
+        if hasattr(e, "user_message"):
+            detail = e.user_message
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Could not connect to payment provider. Please try again shortly.",
+            detail=f"Stripe error: {detail}",
         )
 
 
@@ -291,9 +294,12 @@ async def create_portal_session(
         return await billing_service.create_portal_session(db, current_user)
     except Exception as e:
         logger.error(f"Portal session creation failed for user {current_user.id}: {e}")
+        detail = str(e)
+        if hasattr(e, "user_message"):
+            detail = e.user_message
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Could not connect to payment provider. Please try again shortly.",
+            detail=f"Stripe error: {detail}",
         )
 
 
