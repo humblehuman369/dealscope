@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PriceCheckerIQScreen } from '@/components/price-checker'
 import { Loader2 } from 'lucide-react'
+import { AuthGate } from '@/components/auth/AuthGate'
 
 /**
  * PriceCheckerIQ Page
@@ -29,16 +30,18 @@ function PriceIntelContent() {
   const zipCode = stateZipParts[1] || ''
 
   return (
-    <PriceCheckerIQScreen
-      property={{
-        address: streetAddress,
-        city,
-        state,
-        zipCode,
-        zpid: zpidParam,
-      }}
-      initialView={viewParam}
-    />
+    <AuthGate feature="view comparable properties" mode="section">
+      <PriceCheckerIQScreen
+        property={{
+          address: streetAddress,
+          city,
+          state,
+          zipCode,
+          zpid: zpidParam,
+        }}
+        initialView={viewParam}
+      />
+    </AuthGate>
   )
 }
 

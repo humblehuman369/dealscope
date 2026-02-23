@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { api } from '@/lib/api-client'
-import Link from 'next/link'
 import {
   Check,
   X,
@@ -20,6 +19,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 
 interface Subscription {
   id: string
@@ -104,17 +104,6 @@ function BillingContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white gap-4">
-        <p className="text-slate-400">Log in to manage your subscription.</p>
-        <Link href="/billing?auth=required&redirect=%2Fbilling" className="px-6 py-2 rounded-lg bg-sky-500 text-white font-semibold">
-          Log In
-        </Link>
       </div>
     )
   }
@@ -365,12 +354,14 @@ function BillingContent() {
 
 export default function BillingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
-      </div>
-    }>
-      <BillingContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+        </div>
+      }>
+        <BillingContent />
+      </Suspense>
+    </AuthGuard>
   )
 }

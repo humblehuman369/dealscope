@@ -187,16 +187,26 @@ async function apiRequest<T>(
 
   let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
-  // 401 → try a silent token refresh, then retry.
-  // Auth has been removed from the public flow so we NEVER hard-redirect
-  // to a login page. If refresh fails the 401 falls through to the
-  // generic error handler below.
+  // 401 → try a silent token refresh, then retry with fresh headers.
   if (response.status === 401 && !skipAuth) {
     const refreshed = await refreshTokens()
     if (refreshed) {
-      response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+      const retryHeaders: Record<string, string> = { ...requestHeaders }
+      const freshToken = getMemoryToken()
+      if (freshToken) {
+        retryHeaders['Authorization'] = `Bearer ${freshToken}`
+      }
+      const retryConfig: RequestInit = {
+        method,
+        headers: retryHeaders,
+        credentials: 'include',
+        ...(signal && { signal }),
+      }
+      if (body !== undefined) {
+        retryConfig.body = JSON.stringify(body)
+      }
+      response = await fetch(`${API_BASE_URL}${endpoint}`, retryConfig)
     }
-    // No redirect — let the error propagate naturally
   }
 
   if (!response.ok) {

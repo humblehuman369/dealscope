@@ -19,8 +19,8 @@ export type SubscriptionTier = 'free' | 'pro'
 export function useSubscription() {
   const { user, isLoading, isAuthenticated } = useSession()
 
-  const tier: SubscriptionTier = (user?.subscription_tier as SubscriptionTier) || 'free'
-  const status = user?.subscription_status || 'active'
+  const tier: SubscriptionTier = (user?.subscription_tier as SubscriptionTier) ?? 'free'
+  const status = user?.subscription_status ?? 'active'
   const isPro = tier === 'pro'
   const isFree = tier === 'free'
   const isTrialing = status === 'trialing'

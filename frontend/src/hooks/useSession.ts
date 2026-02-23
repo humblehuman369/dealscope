@@ -22,6 +22,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import {
   authApi,
+  ApiError,
   type UserResponse,
   type LoginResponse,
   type MFAChallengeResponse,
@@ -144,7 +145,7 @@ const REFRESH_BUFFER_MS = 90 * 1000
 
 let _lastTokenRefreshAt = 0
 
-function setLastTokenRefresh() {
+export function setLastTokenRefresh() {
   _lastTokenRefreshAt = Date.now()
 }
 
@@ -163,8 +164,6 @@ export function useSession() {
     queryKey: SESSION_QUERY_KEY,
     queryFn: async () => {
       try {
-        // Proactively refresh the access token before it expires so
-        // the /me call never hits a 401 unnecessarily.
         if (shouldProactivelyRefresh()) {
           const refreshed = await authApi.refresh()
           if (refreshed) setLastTokenRefresh()
@@ -176,8 +175,19 @@ export function useSession() {
           persistSession(me)
         }
         return me
-      } catch {
-        return null
+      } catch (err) {
+        // 401 after refresh attempt = session is definitively invalid.
+        // Clear all fallback state so isAuthenticated becomes false
+        // and the UI shows auth prompts instead of a phantom session.
+        if (err instanceof ApiError && err.status === 401) {
+          _lastKnownUser = null
+          clearPersistedSession()
+          _lastTokenRefreshAt = 0
+          return null
+        }
+        // Transient errors (network, 5xx) — preserve fallback so the
+        // user doesn't get logged out by a momentary outage.
+        return _lastKnownUser
       }
     },
     staleTime: 5 * 60 * 1000,

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth'
-import { useRegister, SESSION_QUERY_KEY, setLastKnownUser } from '@/hooks/useSession'
+import { useRegister, SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
 import { setMemoryToken } from '@/lib/api-client'
 
 interface RegisterFormProps {
@@ -57,6 +57,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       if (result.user && result.access_token) {
         setMemoryToken(result.access_token)
         setLastKnownUser(result.user)
+        setLastTokenRefresh()
         queryClient.setQueryData(SESSION_QUERY_KEY, result.user)
         onSuccess?.()
       } else {
