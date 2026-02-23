@@ -16,7 +16,7 @@ import type { SubscriptionTier } from './useSubscription'
 export function useAuth() {
   const session = useSession()
   const subscriptionTier: SubscriptionTier =
-    (session.user?.subscription_tier as SubscriptionTier) || 'free'
+    (session.user?.subscription_tier as SubscriptionTier) ?? 'free'
   const subscriptionStatus = session.user?.subscription_status ?? 'active'
 
   return {

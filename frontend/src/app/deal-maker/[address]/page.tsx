@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
+import { AuthGate } from '@/components/auth/AuthGate'
 
 // DealMakerScreen is ~1,500+ lines with 6 strategy calculators.
 // Dynamic import keeps it out of the initial page bundle.
@@ -80,9 +81,11 @@ export default function DealMakerRoutePage() {
   }
   
   return (
-    <DealMakerScreen
-      property={property}
-      listPrice={listPrice}
-    />
+    <AuthGate feature="adjust deal inputs" mode="section">
+      <DealMakerScreen
+        property={property}
+        listPrice={listPrice}
+      />
+    </AuthGate>
   )
 }
