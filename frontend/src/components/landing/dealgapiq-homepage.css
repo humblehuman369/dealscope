@@ -386,7 +386,7 @@
 /* SHARED SECTION */
 .iq-landing .section { position: relative; z-index: 1; padding: 6rem 2rem; }
 .iq-landing .section-inner { max-width: 1240px; margin: 0 auto; }
-.iq-landing .section-alt { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.iq-landing .section-alt { background: #000000; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .iq-landing .section-header { text-align: center; max-width: 680px; margin: 0 auto 3.5rem; }
 .iq-landing .section-tag {
   font-variant-numeric: tabular-nums; font-size: 0.75rem; font-weight: 700;
