@@ -17,6 +17,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
+import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
@@ -72,6 +73,7 @@ function StrategyContent() {
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
   const strategyParam = searchParams.get('strategy')
+  const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -140,7 +142,7 @@ function StrategyContent() {
       if (!addressParam) { setError('No address'); setIsLoading(false); return }
       try {
         setIsLoading(true)
-        const propData = await api.post<any>('/api/v1/properties/search', { address: addressParam })
+        const propData = await fetchProperty(addressParam)
         const v = propData.valuations || {}
         // Zestimate is primary source for off-market; sequential fallbacks prevent crashes
         let price = v.market_price

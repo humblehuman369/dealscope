@@ -32,6 +32,7 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { useSession } from '@/hooks/useSession'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
+import { usePropertyData } from '@/hooks/usePropertyData'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
@@ -194,6 +195,10 @@ function VerdictContent() {
   // Has any overrides (from URL or session)
   const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
   
+  // Shared property data cache (React Query) — prevents redundant API calls
+  // when navigating between Verdict ↔ Strategy for the same property
+  const { fetchProperty } = usePropertyData()
+
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
@@ -249,10 +254,8 @@ function VerdictContent() {
         setIsLoading(true)
         setError(null)
 
-        // Fetch property data via api-client (handles CSRF + auth automatically)
-        const data = await api.post<Record<string, any>>('/api/v1/properties/search', {
-          address: addressParam,
-        })
+        // Fetch property data (React Query cache — shared with Strategy page)
+        const data = await fetchProperty(addressParam)
 
         // Start photo fetch in parallel (resolved later after property data is built)
         const photoPromise = data.zpid

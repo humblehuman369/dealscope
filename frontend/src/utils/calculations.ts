@@ -16,6 +16,23 @@ import {
 } from '../types/analytics';
 
 // ============================================
+// SAFE VALUE UTILITIES
+// ============================================
+
+/**
+ * Coerce a value to a finite number, returning `fallback` for null,
+ * undefined, NaN, Infinity, and non-numeric types.
+ */
+export const safeNum = (
+  value: unknown,
+  fallback: number = 0,
+): number => {
+  if (value == null) return fallback
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
+
+// ============================================
 // MORTGAGE CALCULATIONS
 // ============================================
 
