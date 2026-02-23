@@ -24,7 +24,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark, CreditCard } from 'lucide-react'
-import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -191,7 +190,6 @@ export function AppHeader({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   
-  const [showSearchModal, setShowSearchModal] = useState(false)
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
@@ -352,7 +350,7 @@ export function AppHeader({
   }
 
   const handleSearchClick = () => {
-    setShowSearchModal(true)
+    router.push('/search')
   }
 
   const handleProfileClick = () => {
@@ -727,11 +725,6 @@ export function AppHeader({
         )}
       </header>
 
-      {/* Search Modal */}
-      <SearchPropertyModal 
-        isOpen={showSearchModal} 
-        onClose={() => setShowSearchModal(false)} 
-      />
     </>
   )
 }
