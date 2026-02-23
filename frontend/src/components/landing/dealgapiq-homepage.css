@@ -287,6 +287,129 @@
 .iq-landing .footer-bottom p { font-size: .75rem; color: var(--muted); }
 
 /* =====================================================
+   WHAT-IS-IT PAGE — Section labels (aliases)
+   ===================================================== */
+.iq-landing .section-label { font-family: var(--font); font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); margin-bottom: 1rem; }
+.iq-landing .section-title { font-size: clamp(1.5rem,3.5vw,2.25rem); font-weight: 700; letter-spacing: -.025em; line-height: 1.2; margin-bottom: 1.25rem; }
+.iq-landing .section-subtitle { font-size: 1.05rem; color: var(--text); max-width: 640px; line-height: 1.75; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Hero overrides
+   ===================================================== */
+.iq-landing .hero-label { font-family: var(--font); font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); margin-bottom: 1.5rem; display: inline-block; }
+.iq-landing .hero h1 em { font-style: normal; color: var(--teal); }
+.iq-landing .hero-para { font-size: 1.15rem; color: var(--text); max-width: 680px; margin: 0 auto; line-height: 1.8; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Deal Gap Explainer
+   ===================================================== */
+.iq-landing .deal-gap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; margin-top: 3rem; }
+.iq-landing .deal-gap-narrative { font-size: 1.05rem; color: var(--text); line-height: 1.85; }
+.iq-landing .deal-gap-narrative p + p { margin-top: 1.25rem; }
+.iq-landing .deal-gap-narrative strong { font-weight: 600; }
+.iq-landing .gap-visual { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; position: relative; overflow: hidden; }
+.iq-landing .gap-visual::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,var(--teal),var(--coral)); }
+.iq-landing .gap-visual-label { font-family: var(--font); font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text); margin-bottom: 2rem; }
+.iq-landing .price-bar { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+.iq-landing .price-row { display: flex; align-items: center; gap: 1rem; }
+.iq-landing .price-label { font-size: .8rem; color: var(--text); width: 90px; text-align: right; flex-shrink: 0; }
+.iq-landing .price-track { flex: 1; height: 32px; border-radius: 6px; position: relative; display: flex; align-items: center; padding: 0 1rem; }
+.iq-landing .price-track.target { background: rgba(14,165,233,.1); border: 1px solid rgba(14,165,233,.2); width: 55%; }
+.iq-landing .price-track.income { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.15); width: 72%; }
+.iq-landing .price-track.list { background: rgba(249,112,102,.08); border: 1px solid rgba(249,112,102,.15); width: 100%; }
+.iq-landing .price-val { font-family: var(--mono); font-size: .8rem; font-weight: 700; }
+.iq-landing .price-track.target .price-val { color: var(--teal); }
+.iq-landing .price-track.income .price-val { color: var(--green); }
+.iq-landing .price-track.list .price-val { color: var(--coral); }
+.iq-landing .gap-arrow { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem 0; }
+.iq-landing .gap-arrow-line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg,var(--teal),var(--teal) 4px,transparent 4px,transparent 8px); }
+.iq-landing .gap-badge { background: rgba(14,165,233,.1); color: var(--teal); font-family: var(--mono); font-size: .75rem; font-weight: 700; padding: .35rem .9rem; border-radius: 20px; border: 1px solid rgba(14,165,233,.2); white-space: nowrap; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Three Numbers
+   ===================================================== */
+.iq-landing .three-numbers { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 3rem; }
+.iq-landing .number-card { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; transition: border-color .3s, transform .3s; }
+.iq-landing .number-card:hover { border-color: rgba(14,165,233,0.4); transform: translateY(-2px); }
+.iq-landing .number-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-family: var(--mono); font-weight: 700; font-size: .85rem; }
+.iq-landing .number-card:nth-child(1) .number-icon { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.15); color: var(--green); }
+.iq-landing .number-card:nth-child(2) .number-icon { background: rgba(14,165,233,.1); border: 1px solid rgba(14,165,233,.15); color: var(--teal); }
+.iq-landing .number-card:nth-child(3) .number-icon { background: rgba(249,112,102,.1); border: 1px solid rgba(249,112,102,.15); color: var(--coral); }
+.iq-landing .number-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; letter-spacing: -.01em; }
+.iq-landing .number-card p { font-size: .9rem; color: var(--text); line-height: 1.65; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Methodology
+   ===================================================== */
+.iq-landing .method-section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+.iq-landing .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
+.iq-landing .method-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; }
+.iq-landing .method-card-label { font-family: var(--font); font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+.iq-landing .method-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .75rem; }
+.iq-landing .method-card-body { font-size: .88rem; color: var(--text); line-height: 1.7; }
+.iq-landing .method-card-body strong { font-weight: 600; }
+.iq-landing .method-card-source { margin-top: .75rem; display: inline-flex; align-items: center; gap: .4rem; font-family: var(--mono); font-size: .65rem; color: var(--teal); background: rgba(14,165,233,.06); border: 1px solid rgba(14,165,233,.12); padding: .2rem .6rem; border-radius: 4px; }
+.iq-landing .method-note { margin-top: 2.5rem; padding: 1.75rem 2rem; background: rgba(14,165,233,.04); border: 1px solid rgba(14,165,233,.12); border-radius: 14px; }
+.iq-landing .method-note-title { font-family: var(--font); font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin-bottom: .75rem; }
+.iq-landing .method-note-body { font-size: .9rem; line-height: 1.75; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Calculation Walkthrough
+   ===================================================== */
+.iq-landing .calc-walkthrough { margin-top: 3rem; }
+.iq-landing .calc-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.iq-landing .calc-header { padding: 1.75rem 2rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+.iq-landing .calc-header-label { font-family: var(--font); font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+.iq-landing .calc-header-addr { font-size: 1rem; font-weight: 600; }
+.iq-landing .calc-steps { padding: 2rem; display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+.iq-landing .calc-step-num { font-family: var(--font); font-size: .68rem; font-weight: 700; letter-spacing: .08em; color: var(--teal); margin-bottom: .5rem; }
+.iq-landing .calc-step-title { font-size: .9rem; font-weight: 700; margin-bottom: .35rem; }
+.iq-landing .calc-step-detail { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+.iq-landing .calc-step-value { font-family: var(--mono); font-size: 1rem; font-weight: 700; margin-top: .5rem; }
+.iq-landing .calc-result { padding: 1.5rem 2rem; border-top: 1px solid rgba(255,255,255,.06); background: rgba(14,165,233,.04); display: flex; justify-content: space-between; align-items: center; }
+.iq-landing .calc-result-item { text-align: center; }
+.iq-landing .calc-result-label { font-size: .7rem; color: var(--muted); margin-bottom: .2rem; }
+.iq-landing .calc-result-val { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Strategy Pills
+   ===================================================== */
+.iq-landing .strategies-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 3rem; }
+.iq-landing .strategy-pill { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 10px; padding: 1.15rem 1.5rem; display: flex; align-items: center; gap: .75rem; transition: border-color .3s; }
+.iq-landing .strategy-pill:hover { border-color: rgba(14,165,233,0.4); }
+.iq-landing .strategy-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+.iq-landing .strategy-pill span { font-size: .95rem; font-weight: 500; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Workflow Steps
+   ===================================================== */
+.iq-landing .workflow-steps { margin-top: 3rem; display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+.iq-landing .wf-step { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; transition: border-color .3s; }
+.iq-landing .wf-step:hover { border-color: rgba(14,165,233,0.4); }
+.iq-landing .wf-step-num { font-family: var(--font); font-size: .75rem; font-weight: 700; color: var(--teal); letter-spacing: .1em; margin-bottom: .75rem; }
+.iq-landing .wf-step h3 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
+.iq-landing .wf-step p { font-size: .88rem; color: var(--text); line-height: 1.65; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Before/After Comparison
+   ===================================================== */
+.iq-landing .compare-section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+.iq-landing .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
+.iq-landing .compare-card { padding: 2rem; border-radius: 14px; }
+.iq-landing .compare-card.old { background: rgba(249,112,102,.04); border: 1px solid rgba(249,112,102,.12); }
+.iq-landing .compare-card.new { background: rgba(14,165,233,.04); border: 1px solid rgba(14,165,233,.15); }
+.iq-landing .compare-label { font-family: var(--font); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1rem; }
+.iq-landing .compare-card.old .compare-label { color: var(--coral); }
+.iq-landing .compare-card.new .compare-label { color: var(--teal); }
+.iq-landing .compare-item { font-size: .88rem; line-height: 1.7; padding: .5rem 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.iq-landing .compare-item:last-child { border-bottom: none; }
+
+/* =====================================================
+   WHAT-IS-IT PAGE — Simple CTA variant
+   ===================================================== */
+.iq-landing .cta-wrap .cta-sub-simple { font-size: .82rem; color: var(--muted); margin-top: 1rem; }
+
+/* =====================================================
    ANIMATIONS
    ===================================================== */
 @keyframes dgiq-fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -320,4 +443,19 @@
   .iq-landing .founder-stats { grid-template-columns: repeat(2,1fr); }
   .iq-landing .footer-grid { grid-template-columns: 1fr 1fr; }
   .iq-landing .nav-links a:not(.nav-cta) { display: none; }
+  /* What-Is-It page */
+  .iq-landing .deal-gap-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .iq-landing .three-numbers { grid-template-columns: 1fr; }
+  .iq-landing .method-section { padding: 3.5rem 1.5rem; }
+  .iq-landing .method-grid { grid-template-columns: 1fr; }
+  .iq-landing .calc-steps { grid-template-columns: 1fr; }
+  .iq-landing .strategies-grid { grid-template-columns: 1fr 1fr; }
+  .iq-landing .workflow-steps { grid-template-columns: 1fr; }
+  .iq-landing .compare-section { padding: 3.5rem 1.5rem; }
+  .iq-landing .compare-grid { grid-template-columns: 1fr; }
+  .iq-landing .founder-inner { padding: 2rem 1.5rem 0; }
+  .iq-landing .founder-body { gap: 1.5rem; padding: 1.5rem; }
+}
+@media(max-width:480px) {
+  .iq-landing .strategies-grid { grid-template-columns: 1fr; }
 }

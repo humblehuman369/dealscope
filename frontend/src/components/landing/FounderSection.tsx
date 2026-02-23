@@ -2,15 +2,21 @@
 
 interface FounderSectionProps {
   photoSrc?: string;
+  title?: React.ReactNode;
+  titleStyle?: React.CSSProperties;
 }
 
-export function FounderSection({ photoSrc }: FounderSectionProps) {
+export function FounderSection({ photoSrc, title, titleStyle }: FounderSectionProps) {
   return (
     <section className="founder-section">
       <div className="label">Who Built This</div>
-      <div className="sec-title">
-        From the founder of Foreclosure.com — institutional-grade intelligence,
-        now in every investor&apos;s hands.
+      <div className="sec-title" style={titleStyle}>
+        {title ?? (
+          <>
+            From the founder of Foreclosure.com — institutional-grade intelligence,
+            now in every investor&apos;s hands.
+          </>
+        )}
       </div>
       <div className="card-lg founder-card">
         <div className="founder-top-bar"></div>
