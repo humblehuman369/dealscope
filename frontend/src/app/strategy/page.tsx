@@ -149,8 +149,8 @@ function StrategyContent() {
           ?? (v.tax_assessed_value ? Math.round(v.tax_assessed_value / 0.75) : null)
           ?? 1
         let monthlyRent = propData.rentals?.monthly_rent_ltr || 0
-        let propertyTaxes = propData.taxes?.annual_tax_amount || Math.round(price * 0.012)
-        let insuranceVal = propData.expenses?.insurance_annual || Math.round(price * 0.01)
+        let propertyTaxes = propData.taxes?.annual_tax_amount || 0
+        let insuranceVal = propData.expenses?.insurance_annual || 0
 
         // Apply condition / location slider adjustments (from IQ Gateway)
         if (conditionParam) {
@@ -264,9 +264,9 @@ function StrategyContent() {
   const monthlyRent = dealMakerOverrides?.monthlyRent
     || propertyInfo?.monthlyRent || 0
   const propertyTaxes = dealMakerOverrides?.propertyTaxes
-    || propertyInfo?.propertyTaxes || Math.round(listPrice * 0.012)
+    || propertyInfo?.propertyTaxes || 0
   const insurance = dealMakerOverrides?.insurance
-    || propertyInfo?.insurance || Math.round(listPrice * 0.01)
+    || propertyInfo?.insurance || 0
   const parsed = parseAddressString(addressParam)
 
   // Condition / location adjustments for display

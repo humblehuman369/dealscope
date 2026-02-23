@@ -884,11 +884,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
             {/* Dual values */}
             <div className="grid grid-cols-2 gap-3 mb-3">
-              {/* Left: Zestimate / RentCast Estimate */}
+              {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-white/[0.05] rounded-lg p-3 border border-white/[0.07]">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wide">
-                    {isSale ? 'Zestimate' : 'RentCast Estimate'}
+                    {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)

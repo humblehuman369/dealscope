@@ -162,6 +162,8 @@ class PropertyDetails(BaseModel):
 class ValuationData(BaseModel):
     """Property valuation information."""
     current_value_avm: Optional[float] = None
+    value_iq_estimate: Optional[float] = None
+    rentcast_avm: Optional[float] = None
     value_range_low: Optional[float] = None
     value_range_high: Optional[float] = None
     price_confidence: Optional[Confidence] = None
@@ -172,11 +174,9 @@ class ValuationData(BaseModel):
     last_sale_date: Optional[str] = None
     arv: Optional[float] = None
     arv_flip: Optional[float] = None
-    # Raw Zestimate data for frontend calculations
     zestimate: Optional[float] = None
     zestimate_high_pct: Optional[float] = None
     zestimate_low_pct: Optional[float] = None
-    # Off-market Market Price = Zestimate (direct from Zillow API)
     market_price: Optional[float] = None
 
 
@@ -196,10 +196,10 @@ class RentalMarketStatistics(BaseModel):
     - Market-wide rental statistics
     - Trend indicators for rental market direction
     """
-    # Property-specific estimates
-    rentcast_estimate: Optional[float] = None     # RentCast rent estimate (single source of truth)
-    zillow_estimate: Optional[float] = None       # Zillow rentZestimate (reference only)
-    iq_estimate: Optional[float] = None           # = RentCast rent estimate
+    # Property-specific estimates (null = unavailable, never fabricated)
+    rentcast_estimate: Optional[float] = None     # RentCast rent estimate
+    zillow_estimate: Optional[float] = None       # Zillow rentZestimate
+    iq_estimate: Optional[float] = None           # DealGapIQ: avg of both, or single source if only one available
     
     # Estimate range (from RentCast)
     estimate_low: Optional[float] = None

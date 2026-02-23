@@ -257,9 +257,8 @@ function VerdictContent() {
             })
           : Promise.resolve(null)
 
-        // Get monthly rent (used for rent estimates and API payload)
-        const monthlyRentLTR = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || null
-        const monthlyRent = monthlyRentLTR || 2500
+        // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
+        const monthlyRent = data.rentals?.monthly_rent_ltr || 0
 
         // Market Price: when listed = List Price; when off-market = API market_price or same fallback as backend
         const isListed =
@@ -391,10 +390,10 @@ function VerdictContent() {
             : (propertyData.monthlyRent || 0)
           taxesForCalc = overridePropertyTaxes 
             ? parseFloat(overridePropertyTaxes) 
-            : (propertyData.propertyTaxes || (listPriceForCalc * 0.012)) // ~1.2%
+            : (propertyData.propertyTaxes || 0)
           insuranceForCalc = overrideInsurance 
             ? parseFloat(overrideInsurance) 
-            : (propertyData.insurance || (listPriceForCalc * 0.01)) // 1%
+            : (propertyData.insurance || 0)
           arvForCalc = overrideArv 
             ? parseFloat(overrideArv) 
             : (propertyData.arv ?? null)
@@ -1055,8 +1054,8 @@ function VerdictContent() {
             const defaults = {
               buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
               monthlyRent: property.monthlyRent || 0,
-              propertyTaxes: property.propertyTaxes || Math.round(property.price * 0.012),
-              insurance: property.insurance || Math.round(property.price * 0.01),
+              propertyTaxes: property.propertyTaxes || 0,
+              insurance: property.insurance || 0,
               arv: property.arv || property.price,
               downPayment: 20,
               closingCosts: 3,

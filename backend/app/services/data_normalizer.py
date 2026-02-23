@@ -100,6 +100,7 @@ class NormalizedProperty:
     
     # Valuations - PRIMARY INVESTOR DATA
     current_value_avm: Optional[float] = None      # Best estimate of current value
+    value_iq_estimate: Optional[float] = None      # DealGapIQ proprietary (avg of both)
     value_range_low: Optional[float] = None
     value_range_high: Optional[float] = None
     zestimate: Optional[float] = None              # Zillow specific
@@ -574,9 +575,13 @@ class DealGapIQNormalizer:
                           source, conf, {"rentcast": rc_sqft, "zillow": zl_sqft},
                           conflict, pct)
         
-        # Lot size
+        # Lot size -- normalize Zillow to sqft before merging
         rc_lot = prop.get("lotSize")
-        zl_lot = zl_prop.get("lotAreaValue")
+        zl_lot_raw = zl_prop.get("lotAreaValue")
+        zl_lot_units = zl_prop.get("lotAreaUnits", "")
+        zl_lot = zl_lot_raw
+        if zl_lot_raw and zl_lot_units and "acre" in str(zl_lot_units).lower():
+            zl_lot = zl_lot_raw * 43560
         if rc_lot is not None or zl_lot is not None:
             value, source, conf, conflict, pct = self._merge_numeric(
                 rc_lot, zl_lot, self.WEIGHTS["property_records"]
@@ -661,10 +666,11 @@ class DealGapIQNormalizer:
         """
         Merge valuation data - CRITICAL FOR INVESTMENT ANALYSIS.
         
-        Strategy:
-        - Keep both Zestimate and RentCast AVM separately for comparison
-        - Create merged "current_value_avm" as best estimate
-        - Flag conflicts for investor review
+        3-Value IQ Estimate model:
+        - Store Zillow Zestimate and RentCast AVM individually
+        - Compute IQ Estimate as 50/50 average when both available,
+          or equal to the single available source
+        - Never fabricate values -- null means unavailable
         """
         avm = rc.get("avm", {}) or {}
         zl_prop = zl.get("property", {}) or {}
@@ -672,7 +678,7 @@ class DealGapIQNormalizer:
         rc_value = avm.get("price")
         zl_value = zl_prop.get("zestimate")
         
-        # Store both individual values
+        # Store both individual values (null if unavailable)
         if rc_value:
             self._set_field(result, "rentcast_avm", float(rc_value),
                           DataSource.RENTCAST, ConfidenceLevel.HIGH)
@@ -680,14 +686,30 @@ class DealGapIQNormalizer:
             self._set_field(result, "zestimate", float(zl_value),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
-        # Create merged best estimate
-        if rc_value or zl_value:
-            value, source, conf, conflict, pct = self._merge_numeric(
-                rc_value, zl_value, self.WEIGHTS["valuation"]
-            )
-            self._set_field(result, "current_value_avm", value,
-                          source, conf, {"rentcast": rc_value, "zillow": zl_value},
-                          conflict, pct)
+        # IQ Estimate: 50/50 average when both available, single source otherwise
+        if rc_value and zl_value:
+            iq_value = round((float(rc_value) + float(zl_value)) / 2)
+            conflict_pct = abs(float(rc_value) - float(zl_value)) / float(rc_value)
+            is_conflict = conflict_pct > self.CONFLICT_THRESHOLD
+            conf = ConfidenceLevel.MEDIUM if is_conflict else ConfidenceLevel.HIGH
+            self._set_field(result, "value_iq_estimate", iq_value,
+                          DataSource.MERGED, conf,
+                          {"rentcast": rc_value, "zillow": zl_value},
+                          is_conflict, conflict_pct)
+            self._set_field(result, "current_value_avm", iq_value,
+                          DataSource.MERGED, conf,
+                          {"rentcast": rc_value, "zillow": zl_value},
+                          is_conflict, conflict_pct)
+        elif rc_value:
+            self._set_field(result, "value_iq_estimate", float(rc_value),
+                          DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            self._set_field(result, "current_value_avm", float(rc_value),
+                          DataSource.RENTCAST, ConfidenceLevel.HIGH)
+        elif zl_value:
+            self._set_field(result, "value_iq_estimate", float(zl_value),
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
+            self._set_field(result, "current_value_avm", float(zl_value),
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
         # Value ranges
         if avm.get("priceRangeLow"):
@@ -735,10 +757,18 @@ class DealGapIQNormalizer:
             self._set_field(result, "rent_zestimate", float(zl_rent_val),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
-        # RentCast rent is single source of truth for rent estimate
-        if rc_rent:
+        # monthly_rent_estimate = IQ Estimate (50/50 avg, or single source)
+        if rc_rent and zl_rent_val:
+            iq_rent = round((float(rc_rent) + float(zl_rent_val)) / 2)
+            self._set_field(result, "monthly_rent_estimate", iq_rent,
+                          DataSource.MERGED, ConfidenceLevel.HIGH,
+                          {"rentcast": rc_rent, "zillow": zl_rent_val})
+        elif rc_rent:
             self._set_field(result, "monthly_rent_estimate", float(rc_rent),
                           DataSource.RENTCAST, ConfidenceLevel.HIGH)
+        elif zl_rent_val:
+            self._set_field(result, "monthly_rent_estimate", float(zl_rent_val),
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
         # Rent ranges (RentCast only)
         if rent.get("rentRangeLow"):
@@ -942,7 +972,7 @@ class DealGapIQNormalizer:
             (zl_prop.get("rentZestimate") if zl_prop else None)
         )
         
-        # Store individual estimates
+        # Store individual estimates (null if unavailable -- never fabricate)
         if rc_rent:
             self._set_field(result, "rental_rentcast_estimate", float(rc_rent),
                           DataSource.RENTCAST, ConfidenceLevel.HIGH)
@@ -950,10 +980,18 @@ class DealGapIQNormalizer:
             self._set_field(result, "rental_zillow_estimate", float(zl_rent_val),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
-        # RentCast rent is single source of truth for rent estimate
-        if rc_rent:
+        # IQ Estimate: 50/50 average when both available, single source otherwise
+        if rc_rent and zl_rent_val:
+            iq_rent = round((float(rc_rent) + float(zl_rent_val)) / 2)
+            self._set_field(result, "rental_iq_estimate", iq_rent,
+                          DataSource.MERGED, ConfidenceLevel.HIGH,
+                          {"rentcast": rc_rent, "zillow": zl_rent_val})
+        elif rc_rent:
             self._set_field(result, "rental_iq_estimate", float(rc_rent),
                           DataSource.RENTCAST, ConfidenceLevel.HIGH)
+        elif zl_rent_val:
+            self._set_field(result, "rental_iq_estimate", float(zl_rent_val),
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
         # Extract market-wide rental stats from rentalData
         market = rc.get("market", {}) or {}
