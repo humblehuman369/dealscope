@@ -468,81 +468,26 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         ref={(el: HTMLDivElement | null) => { sectionRefs.current[4] = el; }}
       >
         <div className="section-inner">
-          <div className="section-header">
-            <div className="strategies-label">6 Investment Strategies</div>
-            <h2 className="section-title">One Property, Multiple Opportunities</h2>
-            <p className="section-desc">Instantly see how any property performs across all major real estate investment strategies.</p>
+          <div style={{ maxWidth: 1100 }}>
+            <div className="strategies-label">Six Strategies, One Scan</div>
+            <h2 className="section-title" style={{ textAlign: 'left' }}>Every address analyzed six ways — automatically.</h2>
+            <p className="section-desc" style={{ textAlign: 'left', margin: '0 0 2.5rem' }}>This reveals opportunities other investors miss and shows the best strategy for that specific property — not a one-size-fits-all analysis.</p>
           </div>
-          <div className="strategies-grid">
-            <Link href="/strategies/long-term-rental" className="strat-card strat-green">
-              <div className="strat-card-top">
-                <div className="strat-name">Long-Term Rental</div>
-                <div className="strat-metric">
-                  <div className="strat-metric-value green">8-12%</div>
-                  <div className="strat-metric-label">Cash-on-Cash</div>
-                </div>
+          <div className="strategies-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            {['Long-Term Rental', 'Short-Term Rental', 'BRRRR', 'Fix & Flip', 'House Hack', 'Wholesale'].map((s) => (
+              <div key={s} style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 10,
+                padding: '1.15rem 1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+              }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0EA5E9', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#fff' }}>{s}</span>
               </div>
-              <div className="strat-subtitle">Steady income &amp; build equity</div>
-              <p className="strat-body">Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.</p>
-            </Link>
-            <Link href="/strategies/short-term-rental" className="strat-card strat-blue">
-              <div className="strat-card-top">
-                <div className="strat-name">Short-Term Rental</div>
-                <div className="strat-metric">
-                  <div className="strat-metric-value blue">15-25%</div>
-                  <div className="strat-metric-label">Cash-on-Cash</div>
-                </div>
-              </div>
-              <div className="strat-subtitle">Vacation &amp; business rental income</div>
-              <p className="strat-body">Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.</p>
-            </Link>
-            <Link href="/strategies/brrrr" className="strat-card strat-purple">
-              <div className="strat-card-top">
-                <div className="strat-name">BRRRR</div>
-                <div className="strat-metric">
-                  <svg className="strat-trend-icon" width="24" height="16" viewBox="0 0 24 16" fill="none">
-                    <path d="M1 14L8 7L13 10L23 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M17 1H23V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <div className="strat-metric-label">Scale</div>
-                </div>
-              </div>
-              <div className="strat-subtitle">Buy-Rehab-Rent-Refi-Repeat wealth builder</div>
-              <p className="strat-body">Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.</p>
-            </Link>
-            <Link href="/strategies/fix-flip" className="strat-card strat-red">
-              <div className="strat-card-top">
-                <div className="strat-name">Fix &amp; Flip</div>
-                <div className="strat-metric">
-                  <div className="strat-metric-value red">$50K+</div>
-                  <div className="strat-metric-label">Profit</div>
-                </div>
-              </div>
-              <div className="strat-subtitle">Buy low, fix up, sell high</div>
-              <p className="strat-body">Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.</p>
-            </Link>
-            <Link href="/strategies/house-hack" className="strat-card strat-teal">
-              <div className="strat-card-top">
-                <div className="strat-name">House Hack</div>
-                <div className="strat-metric">
-                  <div className="strat-metric-value teal">75%</div>
-                  <div className="strat-metric-label">Cost Savings</div>
-                </div>
-              </div>
-              <div className="strat-subtitle">Cut your housing costs up to 100%</div>
-              <p className="strat-body">Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.</p>
-            </Link>
-            <Link href="/strategies/wholesale" className="strat-card strat-gold">
-              <div className="strat-card-top">
-                <div className="strat-name">Wholesale</div>
-                <div className="strat-metric">
-                  <div className="strat-metric-value gold">$10K+</div>
-                  <div className="strat-metric-label">Per Deal</div>
-                </div>
-              </div>
-              <div className="strat-subtitle">Find deals, assign contracts, profit</div>
-              <p className="strat-body">Find properties under Zestimate, get them under contract, then assign to other investors for a fee. Zero capital required.</p>
-            </Link>
+            ))}
           </div>
         </div>
       </section>
