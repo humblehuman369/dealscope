@@ -231,14 +231,25 @@ class PropertyService:
                 is_off_market_cached = listing.get("listing_status") in (
                     None, "OFF_MARKET", "SOLD", "FOR_RENT", "OTHER",
                 )
+                rentals_cached = cached_data.get("rentals") or {}
+                rental_stats_cached = rentals_cached.get("rental_stats") or {}
+                has_source_value = (
+                    valuations.get("zestimate") is not None
+                    or valuations.get("current_value_avm") is not None
+                    or rentals_cached.get("monthly_rent_ltr") is not None
+                )
+                missing_iq_fields = has_source_value and (
+                    valuations.get("value_iq_estimate") is None
+                    and not rental_stats_cached
+                )
                 stale = (
                     is_off_market_cached
                     and valuations.get("zestimate") is None
                     and valuations.get("market_price") in (None, 1)
-                )
+                ) or missing_iq_fields
                 if stale:
                     logger.info(
-                        "Cache hit for %s but zestimate missing — forcing re-fetch", address
+                        "Cache hit for %s but IQ estimate data missing — forcing re-fetch", address
                     )
                     await self._cache.clear_property_cache(address)
                 else:
