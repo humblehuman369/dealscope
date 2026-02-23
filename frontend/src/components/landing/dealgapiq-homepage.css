@@ -120,7 +120,7 @@
 .iq-landing .hero-prominent {
   position: relative;
   overflow: hidden;
-  background: #0B1120;
+  background: #000000;
 }
 .iq-landing .hero-prominent::before {
   content: '';
