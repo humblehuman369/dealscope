@@ -287,7 +287,7 @@ class BillingService:
                 session_id="cs_dev_test_session",
             )
         
-        # Resolve price — lookup_key takes precedence if provided
+        # Resolve price — explicit price_id > lookup_key > default Pro monthly
         resolved_price_id = price_id
         if lookup_key and not price_id:
             prices = stripe.Price.list(
@@ -299,7 +299,11 @@ class BillingService:
             resolved_price_id = prices.data[0].id
         
         if not resolved_price_id:
-            raise ValueError("Either price_id or lookup_key must be provided")
+            resolved_price_id = settings.STRIPE_PRICE_PRO_MONTHLY
+        if not resolved_price_id:
+            raise ValueError(
+                "No Stripe price configured. Set STRIPE_PRICE_PRO_MONTHLY in environment."
+            )
         
         sep = "&" if "?" in success_url else "?"
         session = stripe.checkout.Session.create(
