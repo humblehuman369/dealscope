@@ -71,16 +71,14 @@ def _calculate_ltr_strategy(
     monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
-    effective_income = annual_rent * (1 - o.vacancy_rate)
+    vacancy_loss = annual_rent * o.vacancy_rate
+    effective_income = annual_rent - vacancy_loss
     utilities_annual = o.utilities_monthly * 12
     other_annual = o.landscaping_annual + o.pest_control_annual
-    op_ex = (
-        property_taxes + insurance
-        + (annual_rent * o.property_management_pct)
-        + (annual_rent * o.maintenance_pct)
-        + (annual_rent * o.capex_pct)
-        + utilities_annual + other_annual
-    )
+    mgmt = annual_rent * o.property_management_pct
+    maint = annual_rent * o.maintenance_pct
+    capex = annual_rent * o.capex_pct
+    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -94,6 +92,29 @@ def _calculate_ltr_strategy(
         "metric": f"{coc_pct:.1f}%", "metric_label": "CoC Return", "metric_value": coc_pct, "score": score,
         "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc_pct, 2), "dscr": round(dscr, 2),
         "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(monthly_cash_flow, 0),
+        "breakdown": {
+            "purchase_price": round(price),
+            "down_payment": round(down_payment), "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "total_cash_needed": round(total_cash),
+            "loan_amount": round(loan_amount),
+            "interest_rate": round(f.interest_rate * 100, 1),
+            "loan_term_years": f.loan_term_years,
+            "monthly_payment": round(monthly_pi),
+            "monthly_rent": round(monthly_rent),
+            "annual_gross_rent": round(annual_rent),
+            "vacancy_rate": round(o.vacancy_rate * 100, 1),
+            "vacancy_loss": round(vacancy_loss),
+            "effective_income": round(effective_income),
+            "property_taxes": round(property_taxes),
+            "insurance": round(insurance),
+            "management": round(mgmt), "management_pct": round(o.property_management_pct * 100, 1),
+            "maintenance": round(maint), "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "total_operating_expenses": round(op_ex),
+            "noi": round(noi),
+            "annual_debt_service": round(annual_debt),
+        },
     }
 
 
@@ -131,6 +152,32 @@ def _calculate_str_strategy(
         "metric": f"{coc_pct:.1f}%", "metric_label": "CoC Return", "metric_value": coc_pct, "score": score,
         "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc_pct, 2), "dscr": round(dscr, 2),
         "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(monthly_cash_flow, 0),
+        "breakdown": {
+            "purchase_price": round(price),
+            "down_payment": round(down_payment), "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "furniture_setup": round(s.furniture_setup_cost),
+            "total_cash_needed": round(total_cash),
+            "loan_amount": round(loan_amount),
+            "interest_rate": round(f.interest_rate * 100, 1),
+            "loan_term_years": f.loan_term_years,
+            "monthly_payment": round(monthly_pi),
+            "adr": round(adr),
+            "occupancy_rate": round(occupancy * 100, 1),
+            "annual_gross_revenue": round(annual_revenue),
+            "effective_income": round(annual_revenue),
+            "property_taxes": round(property_taxes),
+            "insurance": round(insurance),
+            "management": round(mgmt_fee), "management_pct": round(s.str_management_pct * 100, 1),
+            "platform_fees": round(platform_fees), "platform_fees_pct": round(s.platform_fees_pct * 100, 1),
+            "maintenance": round(maintenance), "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "supplies": round(supplies),
+            "utilities": round(utilities),
+            "total_operating_expenses": round(op_ex),
+            "noi": round(noi),
+            "annual_debt_service": round(annual_debt),
+        },
     }
 
 
@@ -150,16 +197,14 @@ def _calculate_brrrr_strategy(
     monthly_pi = calculate_monthly_mortgage(refi_loan, b.refinance_interest_rate, b.refinance_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
-    effective_income = annual_rent * (1 - o.vacancy_rate)
+    vacancy_loss = annual_rent * o.vacancy_rate
+    effective_income = annual_rent - vacancy_loss
     utilities_annual = o.utilities_monthly * 12
     other_annual = o.landscaping_annual + o.pest_control_annual
-    op_ex = (
-        property_taxes + insurance
-        + (annual_rent * o.property_management_pct)
-        + (annual_rent * o.maintenance_pct)
-        + (annual_rent * o.capex_pct)
-        + utilities_annual + other_annual
-    )
+    mgmt = annual_rent * o.property_management_pct
+    maint = annual_rent * o.maintenance_pct
+    capex = annual_rent * o.capex_pct
+    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     min_cash_for_coc = max(cash_left, initial_cash * 0.10)
@@ -181,6 +226,34 @@ def _calculate_brrrr_strategy(
         "metric": display_coc, "metric_label": "CoC Return", "metric_value": recovery_pct, "score": score,
         "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc * 100, 2) if coc < 100 else 999,
         "dscr": round(dscr_val, 2), "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(annual_cash_flow / 12, 0),
+        "breakdown": {
+            "purchase_price": round(price),
+            "initial_cash_in": round(initial_cash),
+            "rehab_cost": round(rehab_cost),
+            "arv": round(arv),
+            "refi_loan": round(refi_loan),
+            "cash_back": round(max(0, cash_back)),
+            "cash_left_in_deal": round(cash_left),
+            "recovery_pct": round(recovery_pct, 1),
+            "total_cash_needed": round(cash_left),
+            "loan_amount": round(refi_loan),
+            "interest_rate": round(b.refinance_interest_rate * 100, 1),
+            "loan_term_years": b.refinance_term_years,
+            "monthly_payment": round(monthly_pi),
+            "monthly_rent": round(monthly_rent),
+            "annual_gross_rent": round(annual_rent),
+            "vacancy_rate": round(o.vacancy_rate * 100, 1),
+            "vacancy_loss": round(vacancy_loss),
+            "effective_income": round(effective_income),
+            "property_taxes": round(property_taxes),
+            "insurance": round(insurance),
+            "management": round(mgmt), "management_pct": round(o.property_management_pct * 100, 1),
+            "maintenance": round(maint), "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "total_operating_expenses": round(op_ex),
+            "noi": round(noi),
+            "annual_debt_service": round(annual_debt),
+        },
     }
 
 
@@ -208,6 +281,21 @@ def _calculate_flip_strategy(
         "metric": _format_compact_currency(net_profit), "metric_label": "Profit", "metric_value": net_profit, "score": score,
         "cap_rate": None, "cash_on_cash": round(roi_pct, 2), "dscr": None,
         "annual_cash_flow": round(net_profit, 0), "monthly_cash_flow": None,
+        "breakdown": {
+            "purchase_price": round(price),
+            "purchase_costs": round(purchase_costs),
+            "rehab_cost": round(rehab_cost),
+            "holding_months": holding_months,
+            "holding_costs": round(holding_costs),
+            "total_investment": round(total_investment),
+            "arv": round(arv),
+            "selling_costs": round(selling_costs), "selling_costs_pct": round(fl.selling_costs_pct * 100, 1),
+            "net_profit": round(net_profit),
+            "roi_pct": round(roi_pct, 1),
+            "total_cash_needed": round(total_investment),
+            "property_taxes": round(property_taxes),
+            "insurance": round(insurance),
+        },
     }
 
 
@@ -236,11 +324,34 @@ def _calculate_house_hack_strategy(
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     annual_savings = rental_income * 12
     score = _performance_score(housing_offset, 1)
+    total_cash = down_payment + closing_costs
     return {
         "id": "house-hack", "name": "House Hack",
         "metric": f"{round(housing_offset)}%", "metric_label": "Savings", "metric_value": housing_offset, "score": score,
         "cap_rate": None, "cash_on_cash": round(housing_offset, 2), "dscr": None,
         "annual_cash_flow": round(annual_savings, 0), "monthly_cash_flow": round(rental_income, 0),
+        "breakdown": {
+            "purchase_price": round(price),
+            "down_payment": round(down_payment), "down_payment_pct": round(h.fha_down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "total_cash_needed": round(total_cash),
+            "loan_amount": round(loan_amount),
+            "interest_rate": round(h.fha_interest_rate * 100, 1),
+            "loan_term_years": f.loan_term_years,
+            "monthly_payment": round(monthly_pi),
+            "pmi": round(pmi),
+            "total_bedrooms": total_beds,
+            "rooms_rented": rooms_rented,
+            "rent_per_room": round(rent_per_room),
+            "monthly_rental_income": round(rental_income),
+            "annual_rental_income": round(annual_savings),
+            "monthly_expenses": round(monthly_expenses),
+            "housing_offset_pct": round(housing_offset, 1),
+            "property_taxes": round(property_taxes),
+            "insurance": round(insurance),
+            "maintenance": round(maintenance * 12),
+            "reserves": round(capex * 12),
+        },
     }
 
 
@@ -257,6 +368,17 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
         "metric_value": assignment_fee, "score": score,
         "cap_rate": None, "cash_on_cash": round(roi_pct, 2), "dscr": None,
         "annual_cash_flow": round(assignment_fee, 0), "monthly_cash_flow": None,
+        "breakdown": {
+            "purchase_price": round(price),
+            "arv": round(arv),
+            "rehab_cost": round(rehab_cost),
+            "wholesale_fee": round(wholesale_fee),
+            "mao": round(mao),
+            "assignment_fee": round(assignment_fee),
+            "emd": emd,
+            "roi_pct": round(roi_pct, 1),
+            "total_cash_needed": emd,
+        },
     }
 
 

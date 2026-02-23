@@ -59,13 +59,6 @@ function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
 
-function normalizePercentMetric(value?: number): number | null {
-  if (typeof value !== 'number' || Number.isNaN(value)) return null
-  // Some payloads send ratios (0.0605), others already send percent (6.05).
-  return Math.abs(value) <= 1 ? value * 100 : value
-}
-
-
 function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -273,46 +266,66 @@ function StrategyContent() {
   const rehabCost = dealMakerOverrides?.rehabBudget
     || (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
 
-  // Financial calcs — use DealMaker values when available
-  const downPaymentPct = (dealMakerOverrides?.downPayment || 20) / 100
-  const closingCostsPct = (dealMakerOverrides?.closingCosts || 3) / 100
-  const downPayment = targetPrice * downPaymentPct
-  const closingCosts = targetPrice * closingCostsPct
-  const loanAmount = targetPrice * (1 - downPaymentPct)
-  const rate = (dealMakerOverrides?.interestRate || 6) / 100
-  const loanTermYears = dealMakerOverrides?.loanTerm || 30
+  // Strategy-specific financial breakdown from backend — each strategy (LTR, BRRRR, STR, etc.)
+  // returns its own breakdown with the correct financing terms and expense structure
+  const bd = topStrategy?.breakdown as Record<string, number> | undefined
+
+  // DealMaker overrides signal the user adjusted assumptions in real-time
+  const hasDealMakerOverrides = !!(
+    dealMakerOverrides?.downPayment || dealMakerOverrides?.closingCosts ||
+    dealMakerOverrides?.interestRate || dealMakerOverrides?.loanTerm ||
+    dealMakerOverrides?.vacancyRate || dealMakerOverrides?.managementRate
+  )
+
+  // Input percentages: DealMaker override > backend strategy breakdown > conservative default
+  const downPaymentPct = (dealMakerOverrides?.downPayment ?? bd?.down_payment_pct ?? 20) / 100
+  const closingCostsPct = (dealMakerOverrides?.closingCosts ?? bd?.closing_costs_pct ?? 3) / 100
+  const rate = (dealMakerOverrides?.interestRate ?? bd?.interest_rate ?? 6) / 100
+  const loanTermYears = dealMakerOverrides?.loanTerm ?? bd?.loan_term_years ?? 30
+  const vacancyPct = (dealMakerOverrides?.vacancyRate ?? bd?.vacancy_rate ?? 5) / 100
+  const mgmtPct = (dealMakerOverrides?.managementRate ?? bd?.management_pct ?? 8) / 100
+  const maintPct = (bd?.maintenance_pct ?? 5) / 100
+  const reservesPct = (bd?.reserves_pct ?? 5) / 100
+
+  // Derived financials: use backend breakdown when no user adjustments, recalculate otherwise
+  const downPayment = !hasDealMakerOverrides && bd?.down_payment != null ? bd.down_payment : targetPrice * downPaymentPct
+  const closingCosts = !hasDealMakerOverrides && bd?.closing_costs != null ? bd.closing_costs : targetPrice * closingCostsPct
+  const loanAmount = !hasDealMakerOverrides && bd?.loan_amount != null ? bd.loan_amount : targetPrice - downPayment
   const term = loanTermYears * 12
   const monthlyRate = rate / 12
-  const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1)
-  const vacancyPct = (dealMakerOverrides?.vacancyRate || 5) / 100
-  const mgmtPct = (dealMakerOverrides?.managementRate || 8) / 100
-  const maintPct = 0.05
-  const reservesPct = 0.05
+  const monthlyPICalc = monthlyRate > 0
+    ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1)
+    : loanAmount / term
+  const monthlyPI = !hasDealMakerOverrides && bd?.monthly_payment != null ? bd.monthly_payment : monthlyPICalc
   const annualRent = monthlyRent * 12
-  const vacancyLoss = annualRent * vacancyPct
-  const effectiveIncome = annualRent - vacancyLoss
-  const mgmt = annualRent * mgmtPct
-  const maint = annualRent * maintPct
-  const reserves = annualRent * reservesPct
-  const totalExpenses = propertyTaxes + insurance + mgmt + maint + reserves
-  const noi = effectiveIncome - totalExpenses
-  const annualDebt = monthlyPI * 12
+  const vacancyLoss = !hasDealMakerOverrides && bd?.vacancy_loss != null ? bd.vacancy_loss : annualRent * vacancyPct
+  const effectiveIncome = !hasDealMakerOverrides && bd?.effective_income != null ? bd.effective_income : annualRent - vacancyLoss
+  const mgmt = !hasDealMakerOverrides && bd?.management != null ? bd.management : annualRent * mgmtPct
+  const maint = !hasDealMakerOverrides && bd?.maintenance != null ? bd.maintenance : annualRent * maintPct
+  const reserves = !hasDealMakerOverrides && bd?.reserves != null ? bd.reserves : annualRent * reservesPct
+  const totalExpenses = !hasDealMakerOverrides && bd?.total_operating_expenses != null ? bd.total_operating_expenses : propertyTaxes + insurance + mgmt + maint + reserves
+  const noi = !hasDealMakerOverrides && bd?.noi != null ? bd.noi : effectiveIncome - totalExpenses
+  const annualDebt = !hasDealMakerOverrides && bd?.annual_debt_service != null ? bd.annual_debt_service : monthlyPI * 12
   const annualCashFlow = noi - annualDebt
   const monthlyCashFlow = annualCashFlow / 12
 
-  // Benchmarks — use per-strategy metrics from the backend, fall back to local calcs
-  const strategyCapRate = topStrategy?.cap_rate ?? null
-  const strategyCoc = topStrategy?.cash_on_cash ?? null
-  const strategyDscr = topStrategy?.dscr ?? null
-  const strategyCashFlow = topStrategy?.monthly_cash_flow ?? monthlyCashFlow
-  const strategyAnnualCashFlow = topStrategy?.annual_cash_flow ?? annualCashFlow
+  // Benchmarks — backend strategy metrics are authoritative; fall back to local calc
+  // When DealMaker overrides change the underlying financials, use locally-derived values
+  const strategyCapRate = hasDealMakerOverrides
+    ? (targetPrice > 0 ? noi / targetPrice * 100 : 0)
+    : (topStrategy?.cap_rate ?? null)
+  const totalCashNeeded = downPayment + closingCosts + rehabCost
+  const strategyCoc = hasDealMakerOverrides
+    ? (totalCashNeeded > 0 ? annualCashFlow / totalCashNeeded * 100 : 0)
+    : (topStrategy?.cash_on_cash ?? null)
+  const strategyDscr = hasDealMakerOverrides
+    ? (annualDebt > 0 ? noi / annualDebt : 0)
+    : (topStrategy?.dscr ?? null)
+  const strategyCashFlow = hasDealMakerOverrides ? monthlyCashFlow : (topStrategy?.monthly_cash_flow ?? monthlyCashFlow)
+  const strategyAnnualCashFlow = hasDealMakerOverrides ? annualCashFlow : (topStrategy?.annual_cash_flow ?? annualCashFlow)
 
-  // Local calc benchmarks as fallback (always LTR style)
-  const capRateLocal = normalizePercentMetric(data.return_factors?.capRate ?? (data as any).returnFactors?.capRate)
-  const cocLocal = normalizePercentMetric(data.return_factors?.cashOnCash ?? (data as any).returnFactors?.cashOnCash)
-
-  const capRateVal = strategyCapRate ?? capRateLocal
-  const cocVal = strategyCoc ?? cocLocal
+  const capRateVal = strategyCapRate
+  const cocVal = strategyCoc
 
   const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
   const benchmarks = isFlipOrWholesale
