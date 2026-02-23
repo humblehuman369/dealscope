@@ -56,11 +56,11 @@ function getPopupStrategyType(headerStrategy: string): PopupStrategyType {
 // Get verdict label from score
 // Unified rating system across all VerdictIQ pages
 function getVerdictLabel(score: number): { label: string; subtitle: string } {
-  if (score >= 90) return { label: 'Strong', subtitle: 'Deal Gap easily achievable' }
-  if (score >= 80) return { label: 'Good', subtitle: 'Deal Gap likely achievable' }
-  if (score >= 65) return { label: 'Average', subtitle: 'Negotiation required' }
-  if (score >= 50) return { label: 'Marginal', subtitle: 'Aggressive discount needed' }
-  if (score >= 30) return { label: 'Unlikely', subtitle: 'Deal Gap probably too large' }
+  if (score >= 90) return { label: 'Strong Opportunity', subtitle: 'Numbers work at or near asking price' }
+  if (score >= 80) return { label: 'Good Opportunity', subtitle: 'Minimal negotiation needed' }
+  if (score >= 65) return { label: 'Moderate Opportunity', subtitle: 'Negotiation required' }
+  if (score >= 50) return { label: 'Marginal Opportunity', subtitle: 'Significant discount needed' }
+  if (score >= 30) return { label: 'Unlikely Opportunity', subtitle: 'Gap too large to bridge' }
   return { label: 'Pass', subtitle: 'Not a viable investment' }
 }
 

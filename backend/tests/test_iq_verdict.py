@@ -28,7 +28,7 @@ class TestScoreToGradeLabel:
     def test_a_plus(self):
         grade, label, _ = _score_to_grade_label(90)
         assert grade == "A+"
-        assert label == "STRONG"
+        assert label == "STRONG OPPORTUNITY"
 
     def test_f_grade(self):
         grade, label, _ = _score_to_grade_label(10)

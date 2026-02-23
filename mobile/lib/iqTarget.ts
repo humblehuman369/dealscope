@@ -275,12 +275,12 @@ export function getOpportunityGradeFromScore(score: number): {
   if (score >= 85)
     return { grade: 'A+', label: 'Strong Opportunity', color: '#22c55e' };
   if (score >= 70)
-    return { grade: 'A', label: 'Great Opportunity', color: '#22c55e' };
+    return { grade: 'A', label: 'Good Opportunity', color: '#22c55e' };
   if (score >= 55)
     return { grade: 'B', label: 'Moderate Opportunity', color: '#84cc16' };
   if (score >= 40)
-    return { grade: 'C', label: 'Potential Opportunity', color: '#f97316' };
+    return { grade: 'C', label: 'Marginal Opportunity', color: '#f97316' };
   if (score >= 25)
-    return { grade: 'D', label: 'Mild Opportunity', color: '#ef4444' };
-  return { grade: 'F', label: 'Weak Opportunity', color: '#dc2626' };
+    return { grade: 'D', label: 'Unlikely Opportunity', color: '#ef4444' };
+  return { grade: 'F', label: 'Pass', color: '#dc2626' };
 }

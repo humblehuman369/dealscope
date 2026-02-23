@@ -127,21 +127,13 @@ export interface VerdictComponentScores {
  */
 export type ProfitGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
-export type IQDealVerdict = 
+export type IQDealVerdict =
   | 'Strong Opportunity'
-  | 'Great Opportunity'
+  | 'Good Opportunity'
   | 'Moderate Opportunity'
-  | 'Potential Opportunity'
-  | 'Mild Opportunity'
-  | 'Weak Opportunity'
-  | 'Poor Opportunity'
-  // Legacy values for backwards compatibility
-  | 'Excellent Investment'
-  | 'Strong Investment'
-  | 'Good Investment'
-  | 'Fair Investment'
-  | 'Weak Investment'
-  | 'Poor Investment';
+  | 'Marginal Opportunity'
+  | 'Unlikely Opportunity'
+  | 'Pass';
 
 // ===================
 // GRADE-BASED SCORING (NEW)
@@ -151,7 +143,7 @@ export type IQDealVerdict =
  * Grade labels for score display
  * Used instead of numeric scores to avoid confusion with percentages
  */
-export type ScoreLabel = 'STRONG' | 'GOOD' | 'MODERATE' | 'POTENTIAL' | 'WEAK' | 'POOR';
+export type ScoreLabel = 'STRONG OPPORTUNITY' | 'GOOD OPPORTUNITY' | 'MODERATE OPPORTUNITY' | 'MARGINAL OPPORTUNITY' | 'UNLIKELY OPPORTUNITY' | 'PASS';
 export type ScoreGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
 /**
@@ -161,7 +153,7 @@ export type ScoreGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 export interface ScoreDisplay {
   score: number;      // Internal 0-100 score (not displayed)
   grade: ScoreGrade;  // Letter grade: A+, A, B, C, D, F
-  label: ScoreLabel;  // Word label: STRONG, GOOD, MODERATE, POTENTIAL, WEAK, POOR
+  label: ScoreLabel;
   color: string;      // UI color for the grade
 }
 
@@ -251,12 +243,12 @@ export const getStrategyBadge = (rank: number, score: number): IQStrategyBadge |
  * Get deal verdict based on overall score
  */
 export const getDealVerdict = (score: number): IQDealVerdict => {
-  if (score >= 90) return 'Excellent Investment';
-  if (score >= 75) return 'Strong Investment';
-  if (score >= 60) return 'Good Investment';
-  if (score >= 45) return 'Fair Investment';
-  if (score >= 30) return 'Weak Investment';
-  return 'Poor Investment';
+  if (score >= 90) return 'Strong Opportunity';
+  if (score >= 80) return 'Good Opportunity';
+  if (score >= 65) return 'Moderate Opportunity';
+  if (score >= 50) return 'Marginal Opportunity';
+  if (score >= 30) return 'Unlikely Opportunity';
+  return 'Pass';
 };
 
 /**
@@ -295,43 +287,41 @@ export const getVerdictDescription = (
     }
 
     if (score >= 90) {
-      return `Strong — ${pricingQuality} ${motivationText} motivation makes this easily achievable.`;
+      return `Strong Opportunity — ${pricingQuality} ${motivationText} motivation makes this easily achievable.`;
     }
     if (score >= 80) {
-      return `Good — ${pricingQuality} ${motivationText} motivation suggests good negotiation potential.`;
+      return `Good Opportunity — ${pricingQuality} ${motivationText} motivation suggests good negotiation potential.`;
     }
     if (score >= 65) {
-      return `Average — ${pricingQuality} ${motivationText} motivation means negotiation is possible.`;
+      return `Moderate Opportunity — ${pricingQuality} ${motivationText} motivation means negotiation is possible.`;
     }
     if (score >= 50) {
-      return `Marginal — ${pricingQuality} ${motivationText} motivation requires aggressive negotiation.`;
+      return `Marginal Opportunity — ${pricingQuality} ${motivationText} motivation requires aggressive negotiation.`;
     }
     if (score >= 30) {
-      return `Unlikely — ${pricingQuality} ${motivationText} motivation makes this discount hard to achieve.`;
+      return `Unlikely Opportunity — ${pricingQuality} ${motivationText} motivation makes this discount hard to achieve.`;
     }
     return `Pass — ${pricingQuality} The required discount is unrealistic given ${motivationText.toLowerCase()} seller motivation.`;
   }
 
-  // Fallback: deal-gap-only descriptions (old behavior)
   const dealGapText = dealGapPercent !== undefined 
     ? `${dealGapPercent > 0 ? dealGapPercent.toFixed(1) : '0'}% discount needed`
     : '';
   
-  // Unified rating system across all VerdictIQ pages
   if (score >= 90) {
-    return `Strong — ${dealGapText}. ${motivationText} motivation makes this easily achievable.`;
+    return `Strong Opportunity — ${dealGapText}. ${motivationText} motivation makes this easily achievable.`;
   }
   if (score >= 80) {
-    return `Good — ${dealGapText}. ${motivationText} motivation suggests good negotiation potential.`;
+    return `Good Opportunity — ${dealGapText}. ${motivationText} motivation suggests good negotiation potential.`;
   }
   if (score >= 65) {
-    return `Average — ${dealGapText}. ${motivationText} motivation means negotiation is possible.`;
+    return `Moderate Opportunity — ${dealGapText}. ${motivationText} motivation means negotiation is possible.`;
   }
   if (score >= 50) {
-    return `Marginal — ${dealGapText}. ${motivationText} motivation requires aggressive negotiation.`;
+    return `Marginal Opportunity — ${dealGapText}. ${motivationText} motivation requires aggressive negotiation.`;
   }
   if (score >= 30) {
-    return `Unlikely — ${dealGapText}. ${motivationText} motivation makes this discount hard to achieve.`;
+    return `Unlikely Opportunity — ${dealGapText}. ${motivationText} motivation makes this discount hard to achieve.`;
   }
   return `Pass — ${dealGapText}. The required discount is unrealistic given ${motivationText.toLowerCase()} seller motivation.`;
 };
@@ -367,27 +357,20 @@ export const getDealScoreColor = (score: number) => {
 /**
  * Convert a numeric score (0-100) to grade, label, and color
  * 
- * Grade mapping:
- * - 85-100: A+ / STRONG / green
- * - 70-84:  A  / GOOD / green  
- * - 55-69:  B  / MODERATE / lime
- * - 40-54:  C  / POTENTIAL / orange
- * - 25-39:  D  / WEAK / orange
- * - 0-24:   F  / POOR / red
  */
 export const scoreToGradeLabel = (score: number): ScoreDisplay => {
   if (score >= 85) {
-    return { score, grade: 'A+', label: 'STRONG', color: '#22c55e' };
+    return { score, grade: 'A+', label: 'STRONG OPPORTUNITY', color: '#22c55e' };
   } else if (score >= 70) {
-    return { score, grade: 'A', label: 'GOOD', color: '#22c55e' };
+    return { score, grade: 'A', label: 'GOOD OPPORTUNITY', color: '#22c55e' };
   } else if (score >= 55) {
-    return { score, grade: 'B', label: 'MODERATE', color: '#84cc16' };
+    return { score, grade: 'B', label: 'MODERATE OPPORTUNITY', color: '#84cc16' };
   } else if (score >= 40) {
-    return { score, grade: 'C', label: 'POTENTIAL', color: '#f97316' };
+    return { score, grade: 'C', label: 'MARGINAL OPPORTUNITY', color: '#f97316' };
   } else if (score >= 25) {
-    return { score, grade: 'D', label: 'WEAK', color: '#f97316' };
+    return { score, grade: 'D', label: 'UNLIKELY OPPORTUNITY', color: '#f97316' };
   } else {
-    return { score, grade: 'F', label: 'POOR', color: '#ef4444' };
+    return { score, grade: 'F', label: 'PASS', color: '#ef4444' };
   }
 };
 

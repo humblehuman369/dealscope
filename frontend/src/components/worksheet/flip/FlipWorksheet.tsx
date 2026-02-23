@@ -355,11 +355,11 @@ export function FlipWorksheet({
   const allInDiscount = Math.max(0, calc.allInPctArv - 55)
   let verdict: string, verdictSub: string
   if (allInDiscount <= 5) { verdict = "Strong Opportunity"; verdictSub = "Excellent deal - great all-in cost" }
-  else if (allInDiscount <= 10) { verdict = "Great Opportunity"; verdictSub = "Very good flip fundamentals" }
+  else if (allInDiscount <= 10) { verdict = "Good Opportunity"; verdictSub = "Very good flip fundamentals" }
   else if (allInDiscount <= 15) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - negotiate firmly" }
-  else if (allInDiscount <= 25) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - need better purchase price" }
-  else if (allInDiscount <= 35) { verdict = "Mild Opportunity"; verdictSub = "Challenging - major price reduction needed" }
-  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - unrealistic discount needed" }
+  else if (allInDiscount <= 25) { verdict = "Marginal Opportunity"; verdictSub = "Possible deal - need better purchase price" }
+  else if (allInDiscount <= 35) { verdict = "Unlikely Opportunity"; verdictSub = "Challenging - major price reduction needed" }
+  else { verdict = "Pass"; verdictSub = "Not recommended - unrealistic discount needed" }
 
   const targets = [
     { label: 'ROI', actual: calc.roi, target: 20, unit: '%', met: calc.roi >= 20 },

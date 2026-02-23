@@ -720,7 +720,7 @@ export function calculateDealOpportunityScore(
     color = '#22c55e' // green-500
   } else if (compositeScore >= 70) {
     grade = 'A'
-    label = 'Great Opportunity'
+    label = 'Good Opportunity'
     color = '#22c55e' // green-500
   } else if (compositeScore >= 55) {
     grade = 'B'
@@ -728,15 +728,15 @@ export function calculateDealOpportunityScore(
     color = '#84cc16' // lime-500
   } else if (compositeScore >= 40) {
     grade = 'C'
-    label = 'Potential Opportunity'
+    label = 'Marginal Opportunity'
     color = '#f97316' // orange-500
   } else if (compositeScore >= 25) {
     grade = 'D'
-    label = 'Weak Opportunity'
+    label = 'Unlikely Opportunity'
     color = '#f97316' // orange-500
   } else {
     grade = 'F'
-    label = 'Poor Opportunity'
+    label = 'Pass'
     color = '#ef4444' // red-500
   }
   

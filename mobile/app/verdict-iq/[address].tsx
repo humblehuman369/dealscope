@@ -132,9 +132,17 @@ function buildMetricsFromAPI(
   ];
 }
 
-/** Qualitative label for a component score (0-90 scale) */
-function componentLabel(v: number): string {
-  return v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak';
+/** Per-component label functions — each uses language appropriate to its domain. */
+const COMPONENT_LABELS: Record<string, (v: number) => string> = {
+  'Deal Gap':         v => v >= 75 ? 'Minimal' : v >= 55 ? 'Mild' : v >= 40 ? 'Moderate' : v >= 20 ? 'Large' : 'Excessive',
+  'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
+  'Market Alignment': v => v >= 75 ? 'Strong' : v >= 55 ? 'Favorable' : v >= 40 ? 'Neutral' : v >= 20 ? 'Weak' : 'Misaligned',
+  'Deal Probability': v => v >= 75 ? 'Highly Probable' : v >= 55 ? 'Probable' : v >= 40 ? 'Possible' : v >= 20 ? 'Unlikely' : 'Improbable',
+};
+
+function componentLabel(v: number, componentName?: string): string {
+  const labelFn = componentName ? COMPONENT_LABELS[componentName] : undefined;
+  return labelFn ? labelFn(v) : COMPONENT_LABELS['Return Quality'](v);
 }
 
 function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: string; value: number; qualLabel: string; color: 'teal' | 'amber' | 'negative' }> {
@@ -146,17 +154,16 @@ function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: s
       { label: 'Deal Probability', value: 0, qualLabel: '—', color: 'negative' },
     ];
   }
-  // Use backend composite component scores (real values, 0-90 scale)
   const cs = raw.componentScores;
   const dealGap = cs?.dealGapScore ?? 0;
   const returnQuality = cs?.returnQualityScore ?? 0;
   const marketAlignment = cs?.marketAlignmentScore ?? 0;
   const dealProbability = cs?.dealProbabilityScore ?? 0;
   return [
-    { label: 'Deal Gap', value: dealGap, qualLabel: componentLabel(dealGap), color: getColorFromScore(dealGap) },
-    { label: 'Return Quality', value: returnQuality, qualLabel: componentLabel(returnQuality), color: getColorFromScore(returnQuality) },
-    { label: 'Market Alignment', value: marketAlignment, qualLabel: componentLabel(marketAlignment), color: getColorFromScore(marketAlignment) },
-    { label: 'Deal Probability', value: dealProbability, qualLabel: componentLabel(dealProbability), color: getColorFromScore(dealProbability) },
+    { label: 'Deal Gap', value: dealGap, qualLabel: componentLabel(dealGap, 'Deal Gap'), color: getColorFromScore(dealGap) },
+    { label: 'Return Quality', value: returnQuality, qualLabel: componentLabel(returnQuality, 'Return Quality'), color: getColorFromScore(returnQuality) },
+    { label: 'Market Alignment', value: marketAlignment, qualLabel: componentLabel(marketAlignment, 'Market Alignment'), color: getColorFromScore(marketAlignment) },
+    { label: 'Deal Probability', value: dealProbability, qualLabel: componentLabel(dealProbability, 'Deal Probability'), color: getColorFromScore(dealProbability) },
   ];
 }
 

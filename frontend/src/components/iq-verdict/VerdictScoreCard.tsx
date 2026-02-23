@@ -6,7 +6,7 @@
  * Displays:
  *  - "THE VERDICT" label
  *  - SVG arc gauge with numeric score
- *  - Verdict badge pill (Strong Deal, Good Deal, etc.)
+ *  - Verdict badge pill (Strong Opportunity, Good Opportunity, etc.)
  *  - Verdict description text
  *  - "How Verdict Score Works" link
  *  - Score Components — four labeled bars with qualitative labels
@@ -23,7 +23,7 @@ import { colors } from './verdict-design-tokens'
 export interface VerdictScoreCardProps {
   /** Overall deal score, 0–100 */
   score: number
-  /** Human-readable verdict label, e.g. "Strong Deal" */
+  /** Human-readable verdict label, e.g. "Strong Opportunity" */
   verdictLabel: string
   /** One-liner explaining the verdict */
   description: string
@@ -51,13 +51,17 @@ function scoreColor(score: number): string {
   return colors.status.negative                     // red
 }
 
-/** Map a component score (0–90) to a qualitative label. */
-function componentLabel(value: number): string {
-  if (value >= 75) return 'Excellent'
-  if (value >= 55) return 'Strong'
-  if (value >= 40) return 'Good'
-  if (value >= 20) return 'Fair'
-  return 'Weak'
+/** Per-component label functions — each uses language appropriate to its domain. */
+const COMPONENT_LABELS: Record<string, (v: number) => string> = {
+  'Deal Gap':         v => v >= 75 ? 'Minimal' : v >= 55 ? 'Mild' : v >= 40 ? 'Moderate' : v >= 20 ? 'Large' : 'Excessive',
+  'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
+  'Market Alignment': v => v >= 75 ? 'Strong' : v >= 55 ? 'Favorable' : v >= 40 ? 'Neutral' : v >= 20 ? 'Weak' : 'Misaligned',
+  'Deal Probability': v => v >= 75 ? 'Highly Probable' : v >= 55 ? 'Probable' : v >= 40 ? 'Possible' : v >= 20 ? 'Unlikely' : 'Improbable',
+}
+
+function componentLabel(value: number, componentName?: string): string {
+  const labelFn = componentName ? COMPONENT_LABELS[componentName] : undefined
+  return labelFn ? labelFn(value) : COMPONENT_LABELS['Return Quality'](value)
 }
 
 /** Map a component score (0–90) to a colour. */
@@ -126,7 +130,7 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
 // ─── Verdict Badge ────────────────────────────────────────────────────────────
 
 function VerdictBadge({ label, color }: { label: string; color: string }) {
-  const isPositive = label.includes('Strong') || label.includes('Good')
+  const isPositive = label.includes('Strong') || label.includes('Good') || label.includes('Moderate')
 
   return (
     <div
@@ -169,7 +173,7 @@ export function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['
       {COMPONENTS.map(({ key, label }) => {
         const value = scores[key]
         const clr = componentColor(value)
-        const lbl = componentLabel(value)
+        const lbl = componentLabel(value, label)
         // Map 0–90 to 0–100% bar width
         const barPct = Math.min(100, (value / 90) * 100)
 

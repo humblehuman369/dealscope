@@ -81,12 +81,12 @@ const SCORE_FORMULA = {
 // GRADE TIERS
 // =============================================================================
 const GRADE_TIERS = [
-  { grade: 'A+', range: '90–100', label: 'Strong Deal', color: T.teal, meaning: 'Deal Gap easily achievable' },
-  { grade: 'A',  range: '80–89',  label: 'Good Deal',   color: T.teal, meaning: 'Deal Gap likely achievable' },
-  { grade: 'B',  range: '65–79',  label: 'Average',     color: T.amber, meaning: 'Negotiation required' },
-  { grade: 'C',  range: '50–64',  label: 'Marginal',    color: T.amber, meaning: 'Aggressive discount needed' },
-  { grade: 'D',  range: '30–49',  label: 'Unlikely',    color: T.red, meaning: 'Deal Gap probably too large' },
-  { grade: 'F',  range: '0–29',   label: 'Pass',        color: T.red, meaning: 'Not a viable investment' },
+  { grade: 'A+', range: '90–100', label: 'Strong Opportunity', color: T.teal, meaning: 'Numbers work at or near asking price' },
+  { grade: 'A',  range: '80–89',  label: 'Good Opportunity',   color: T.teal, meaning: 'Minimal negotiation needed' },
+  { grade: 'B',  range: '65–79',  label: 'Moderate Opportunity', color: T.amber, meaning: 'Negotiation required' },
+  { grade: 'C',  range: '50–64',  label: 'Marginal Opportunity', color: T.amber, meaning: 'Significant discount needed' },
+  { grade: 'D',  range: '30–49',  label: 'Unlikely Opportunity', color: T.red, meaning: 'Gap too large to bridge' },
+  { grade: 'F',  range: '0–29',   label: 'Pass',                 color: T.red, meaning: 'Not a viable investment' },
 ]
 
 // =============================================================================

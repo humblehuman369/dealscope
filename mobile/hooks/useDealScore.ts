@@ -222,12 +222,12 @@ export function getDealScoreGaugeAngle(score: number): number {
 
 export type DealScoreGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 export type DealScoreLabel =
-  | 'STRONG'
-  | 'GOOD'
-  | 'MODERATE'
-  | 'POTENTIAL'
-  | 'WEAK'
-  | 'POOR';
+  | 'STRONG OPPORTUNITY'
+  | 'GOOD OPPORTUNITY'
+  | 'MODERATE OPPORTUNITY'
+  | 'MARGINAL OPPORTUNITY'
+  | 'UNLIKELY OPPORTUNITY'
+  | 'PASS';
 
 export interface DealScoreGradeDisplay {
   grade: DealScoreGrade;
@@ -235,21 +235,11 @@ export interface DealScoreGradeDisplay {
   color: string;
 }
 
-/**
- * Convert a numeric deal score to a grade display.
- * Grade mapping:
- * - 85-100: A+ / STRONG / green
- * - 70-84:  A  / GOOD / green
- * - 55-69:  B  / MODERATE / lime
- * - 40-54:  C  / POTENTIAL / orange
- * - 25-39:  D  / WEAK / orange
- * - 0-24:   F  / POOR / red
- */
 export function getDealScoreGrade(score: number): DealScoreGradeDisplay {
-  if (score >= 85) return { grade: 'A+', label: 'STRONG', color: '#22c55e' };
-  if (score >= 70) return { grade: 'A', label: 'GOOD', color: '#22c55e' };
-  if (score >= 55) return { grade: 'B', label: 'MODERATE', color: '#84cc16' };
-  if (score >= 40) return { grade: 'C', label: 'POTENTIAL', color: '#f97316' };
-  if (score >= 25) return { grade: 'D', label: 'WEAK', color: '#f97316' };
-  return { grade: 'F', label: 'POOR', color: '#ef4444' };
+  if (score >= 85) return { grade: 'A+', label: 'STRONG OPPORTUNITY', color: '#22c55e' };
+  if (score >= 70) return { grade: 'A', label: 'GOOD OPPORTUNITY', color: '#22c55e' };
+  if (score >= 55) return { grade: 'B', label: 'MODERATE OPPORTUNITY', color: '#84cc16' };
+  if (score >= 40) return { grade: 'C', label: 'MARGINAL OPPORTUNITY', color: '#f97316' };
+  if (score >= 25) return { grade: 'D', label: 'UNLIKELY OPPORTUNITY', color: '#f97316' };
+  return { grade: 'F', label: 'PASS', color: '#ef4444' };
 }

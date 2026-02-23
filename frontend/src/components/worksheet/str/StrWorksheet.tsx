@@ -510,19 +510,19 @@ export function StrWorksheet({
     verdict = "Strong Opportunity"
     verdictSub = "Excellent deal - minimal negotiation needed"
   } else if (discountNeeded <= 10) {
-    verdict = "Great Opportunity"
+    verdict = "Good Opportunity"
     verdictSub = "Very good deal - reasonable negotiation required"
   } else if (discountNeeded <= 15) {
     verdict = "Moderate Opportunity"
     verdictSub = "Good potential - negotiate firmly"
   } else if (discountNeeded <= 25) {
-    verdict = "Potential Opportunity"
+    verdict = "Marginal Opportunity"
     verdictSub = "Possible deal - significant discount needed"
   } else if (discountNeeded <= 35) {
-    verdict = "Mild Opportunity"
+    verdict = "Unlikely Opportunity"
     verdictSub = "Challenging deal - major price reduction required"
   } else {
-    verdict = "Weak Opportunity"
+    verdict = "Pass"
     verdictSub = "Not recommended - unrealistic discount needed"
   }
 

@@ -213,13 +213,13 @@ function ScoreBar({ item }: ScoreBarProps) {
 /**
  * Helper function to create deal score data from Income Value and list price
  * 
- * Uses the new opportunity-based scoring:
+ * Uses opportunity-based scoring:
  * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
+ * - 5-10% = Good Opportunity (A)
  * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
+ * - 15-25% = Marginal Opportunity (C)
+ * - 25-35% = Unlikely Opportunity (D)
+ * - 35%+ = Pass (F)
  */
 /**
  * Build DealScoreData from backend API result. Use this when deal score comes from POST /api/v1/worksheet/deal-score or verdict so all values are backend-derived.
@@ -267,11 +267,11 @@ export function calculateDealScoreData(
   const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
   const getGradeInfo = (dp: number): { grade: OpportunityGrade; label: string; verdict: string } => {
     if (dp <= 5) return { grade: 'A+', label: 'Strong Opportunity', verdict: 'Excellent deal - minimal negotiation needed' }
-    if (dp <= 10) return { grade: 'A', label: 'Great Opportunity', verdict: 'Very good deal - reasonable negotiation required' }
+    if (dp <= 10) return { grade: 'A', label: 'Good Opportunity', verdict: 'Very good deal - reasonable negotiation required' }
     if (dp <= 15) return { grade: 'B', label: 'Moderate Opportunity', verdict: 'Good potential - negotiate firmly' }
-    if (dp <= 25) return { grade: 'C', label: 'Potential Opportunity', verdict: 'Possible deal - significant discount needed' }
-    if (dp <= 35) return { grade: 'D', label: 'Mild Opportunity', verdict: 'Challenging deal - major price reduction required' }
-    return { grade: 'F', label: 'Weak Opportunity', verdict: 'Not recommended - unrealistic discount needed' }
+    if (dp <= 25) return { grade: 'C', label: 'Marginal Opportunity', verdict: 'Possible deal - significant discount needed' }
+    if (dp <= 35) return { grade: 'D', label: 'Unlikely Opportunity', verdict: 'Challenging deal - major price reduction required' }
+    return { grade: 'F', label: 'Pass', verdict: 'Not recommended - unrealistic discount needed' }
   }
   const { grade, label, verdict } = getGradeInfo(discountPercent)
   return {

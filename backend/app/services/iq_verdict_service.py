@@ -28,17 +28,17 @@ logger = logging.getLogger(__name__)
 
 def _score_to_grade_label(score: int) -> tuple[str, str, str]:
     if score >= 85:
-        return ("A+", "STRONG", "#22c55e")
+        return ("A+", "STRONG OPPORTUNITY", "#22c55e")
     elif score >= 70:
-        return ("A", "GOOD", "#22c55e")
+        return ("A", "GOOD OPPORTUNITY", "#22c55e")
     elif score >= 55:
-        return ("B", "MODERATE", "#84cc16")
+        return ("B", "MODERATE OPPORTUNITY", "#84cc16")
     elif score >= 40:
-        return ("C", "POTENTIAL", "#f97316")
+        return ("C", "MARGINAL OPPORTUNITY", "#f97316")
     elif score >= 25:
-        return ("D", "WEAK", "#f97316")
+        return ("D", "UNLIKELY OPPORTUNITY", "#f97316")
     else:
-        return ("F", "POOR", "#ef4444")
+        return ("F", "PASS", "#ef4444")
 
 
 def _performance_score(metric_value: float, multiplier: float) -> int:
@@ -474,17 +474,17 @@ def _calculate_opportunity_score(income_value: float, list_price: float) -> tupl
     if discount_pct <= 5:
         verdict = "Strong Opportunity"
     elif discount_pct <= 10:
-        verdict = "Great Opportunity"
+        verdict = "Good Opportunity"
     elif discount_pct <= 15:
         verdict = "Moderate Opportunity"
     elif discount_pct <= 25:
-        verdict = "Potential Opportunity"
+        verdict = "Marginal Opportunity"
     elif discount_pct <= 35:
-        verdict = "Mild Opportunity"
+        verdict = "Unlikely Opportunity"
     elif discount_pct <= 45:
-        verdict = "Weak Opportunity"
+        verdict = "Pass"
     else:
-        verdict = "Poor Opportunity"
+        verdict = "Pass"
     return (score, discount_pct, verdict)
 
 
@@ -656,12 +656,11 @@ def compute_iq_verdict(
 
     deal_verdict = (
         "Strong Opportunity" if income_gap_pct <= 5
-        else "Great Opportunity" if income_gap_pct <= 10
+        else "Good Opportunity" if income_gap_pct <= 10
         else "Moderate Opportunity" if income_gap_pct <= 15
-        else "Potential Opportunity" if income_gap_pct <= 25
-        else "Mild Opportunity" if income_gap_pct <= 35
-        else "Weak Opportunity" if income_gap_pct <= 45
-        else "Poor Opportunity"
+        else "Marginal Opportunity" if income_gap_pct <= 25
+        else "Unlikely Opportunity" if income_gap_pct <= 35
+        else "Pass"
     )
 
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)

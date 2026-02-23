@@ -287,11 +287,11 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   const housingCostPercent = marketRent > 0 ? Math.max(0, (calc.yourHousingCost / marketRent) * 100) : 0
   let verdict: string, verdictSub: string
   if (housingCostPercent <= 5 || calc.liveFree) { verdict = "Strong Opportunity"; verdictSub = calc.liveFree ? "Live for FREE!" : "Excellent deal - minimal housing cost" }
-  else if (housingCostPercent <= 15) { verdict = "Great Opportunity"; verdictSub = "Very good - major housing savings" }
+  else if (housingCostPercent <= 15) { verdict = "Good Opportunity"; verdictSub = "Very good - major housing savings" }
   else if (housingCostPercent <= 25) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - significant savings" }
-  else if (housingCostPercent <= 40) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - some savings" }
-  else if (housingCostPercent <= 60) { verdict = "Mild Opportunity"; verdictSub = "Limited savings vs renting" }
-  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - little benefit" }
+  else if (housingCostPercent <= 40) { verdict = "Marginal Opportunity"; verdictSub = "Possible deal - some savings" }
+  else if (housingCostPercent <= 60) { verdict = "Unlikely Opportunity"; verdictSub = "Limited savings vs renting" }
+  else { verdict = "Pass"; verdictSub = "Not recommended - little benefit" }
 
   const targets = [
     { label: 'Housing Cost', actual: calc.yourHousingCost, target: 0, unit: '$', met: calc.yourHousingCost <= 0 },

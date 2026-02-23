@@ -248,11 +248,11 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const discountFromMao = calc.mao > 0 ? Math.max(0, ((contractPrice - calc.mao) / calc.mao) * 100) : 0
   let verdict: string, verdictSub: string
   if (discountFromMao <= 0) { verdict = "Strong Opportunity"; verdictSub = "Excellent deal - at or below MAO" }
-  else if (discountFromMao <= 5) { verdict = "Great Opportunity"; verdictSub = "Very good - slightly above MAO" }
+  else if (discountFromMao <= 5) { verdict = "Good Opportunity"; verdictSub = "Very good - slightly above MAO" }
   else if (discountFromMao <= 10) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - negotiate lower" }
-  else if (discountFromMao <= 20) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - need better price" }
-  else if (discountFromMao <= 30) { verdict = "Mild Opportunity"; verdictSub = "Challenging - significant gap to MAO" }
-  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - too far above MAO" }
+  else if (discountFromMao <= 20) { verdict = "Marginal Opportunity"; verdictSub = "Possible deal - need better price" }
+  else if (discountFromMao <= 30) { verdict = "Unlikely Opportunity"; verdictSub = "Challenging - significant gap to MAO" }
+  else { verdict = "Pass"; verdictSub = "Not recommended - too far above MAO" }
 
   const targets = [
     { label: 'Assignment Fee', actual: assignmentFee, target: 10000, unit: '$', met: assignmentFee >= 10000 },

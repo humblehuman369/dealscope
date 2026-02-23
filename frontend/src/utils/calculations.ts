@@ -439,11 +439,11 @@ const calculateIRR = (cashFlows: number[], guess: number = 0.1): number => {
  * 
  * Thresholds:
  * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
+ * - 5-10% = Good Opportunity (A)
  * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
+ * - 15-25% = Marginal Opportunity (C)
+ * - 25-35% = Unlikely Opportunity (D)
+ * - 35%+ = Pass (F)
  */
 export const calculateDealScore = (
   incomeValue: number,
@@ -555,7 +555,7 @@ const getOpportunityGradeInfo = (discountPercent: number): {
   if (discountPercent <= 10) {
     return { 
       grade: 'A', 
-      label: 'Great Opportunity', 
+      label: 'Good Opportunity', 
       verdict: 'Very good deal - reasonable negotiation required',
       color: '#22c55e' 
     };
@@ -571,7 +571,7 @@ const getOpportunityGradeInfo = (discountPercent: number): {
   if (discountPercent <= 25) {
     return { 
       grade: 'C', 
-      label: 'Potential Opportunity', 
+      label: 'Marginal Opportunity', 
       verdict: 'Possible deal - significant discount needed',
       color: '#f97316' 
     };
@@ -579,14 +579,14 @@ const getOpportunityGradeInfo = (discountPercent: number): {
   if (discountPercent <= 35) {
     return { 
       grade: 'D', 
-      label: 'Mild Opportunity', 
+      label: 'Unlikely Opportunity', 
       verdict: 'Challenging deal - major price reduction required',
       color: '#f97316' 
     };
   }
   return { 
     grade: 'F', 
-    label: 'Weak Opportunity', 
+    label: 'Pass', 
     verdict: 'Not recommended - unrealistic discount needed',
     color: '#ef4444' 
   };
