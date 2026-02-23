@@ -56,8 +56,8 @@ export function AnalysisNav() {
   if (!isVerdict && !isStrategy) return null
 
   const primaryTabs = [
-    { label: 'VerdictIQ', href: `/verdict?${params}`, active: isVerdict, icon: verdictIcon },
-    { label: 'StrategyIQ', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
+    { label: 'Verdict', href: `/verdict?${params}`, active: isVerdict, icon: verdictIcon },
+    { label: 'Strategy', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
   ]
 
   // Build secondary nav links (Property Profile needs zpid)
@@ -115,7 +115,7 @@ export function AnalysisNav() {
             className="text-[11px] font-medium transition-colors hover:text-slate-200"
             style={{ color: colors.text.muted }}
           >
-            Price
+            Comps
           </Link>
         </div>
 
