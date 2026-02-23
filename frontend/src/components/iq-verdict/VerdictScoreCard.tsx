@@ -34,6 +34,8 @@ export interface VerdictScoreCardProps {
     marketAlignment: number
     dealProbability: number
   }
+  /** Actual deal gap percentage (0–100) for label thresholds. Falls back to score-based if omitted. */
+  dealGapPercent?: number
   /** Callback when "How Verdict Score Works" is clicked */
   onHowItWorks?: () => void
   /** When true, do not render Score Components (e.g. when shown later on page) */
@@ -51,9 +53,17 @@ function scoreColor(score: number): string {
   return colors.status.negative                     // red
 }
 
+/** Deal Gap label uses the actual gap percentage, not the component score. */
+function dealGapLabel(gapPct: number): string {
+  if (gapPct <= 5)  return 'Minimal'
+  if (gapPct <= 15) return 'Mild'
+  if (gapPct <= 25) return 'Moderate'
+  if (gapPct <= 35) return 'Large'
+  return 'Excessive'
+}
+
 /** Per-component label functions — each uses language appropriate to its domain. */
 const COMPONENT_LABELS: Record<string, (v: number) => string> = {
-  'Deal Gap':         v => v >= 75 ? 'Minimal' : v >= 55 ? 'Mild' : v >= 40 ? 'Moderate' : v >= 20 ? 'Large' : 'Excessive',
   'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
   'Market Alignment': v => v >= 75 ? 'Strong' : v >= 55 ? 'Favorable' : v >= 40 ? 'Neutral' : v >= 20 ? 'Weak' : 'Misaligned',
   'Deal Probability': v => v >= 75 ? 'Highly Probable' : v >= 55 ? 'Probable' : v >= 40 ? 'Possible' : v >= 20 ? 'Unlikely' : 'Improbable',
@@ -160,7 +170,7 @@ const COMPONENTS: { key: keyof VerdictScoreCardProps['componentScores']; label: 
   { key: 'dealProbability', label: 'Deal Probability' },
 ]
 
-export function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['componentScores'] }) {
+export function ComponentScoreBars({ scores, dealGapPercent }: { scores: VerdictScoreCardProps['componentScores']; dealGapPercent?: number }) {
   return (
     <div className="mt-3 text-left max-w-sm mx-auto">
       <p
@@ -173,7 +183,9 @@ export function ComponentScoreBars({ scores }: { scores: VerdictScoreCardProps['
       {COMPONENTS.map(({ key, label }) => {
         const value = scores[key]
         const clr = componentColor(value)
-        const lbl = componentLabel(value, label)
+        const lbl = key === 'dealGap' && dealGapPercent != null
+          ? dealGapLabel(dealGapPercent)
+          : componentLabel(value, label)
         // Map 0–90 to 0–100% bar width
         const barPct = Math.min(100, (value / 90) * 100)
 
@@ -214,6 +226,7 @@ export function VerdictScoreCard({
   verdictLabel,
   description,
   componentScores,
+  dealGapPercent,
   onHowItWorks,
   hideScoreComponents = false,
 }: VerdictScoreCardProps) {
@@ -259,7 +272,7 @@ export function VerdictScoreCard({
       )}
 
       {/* Component score bars — optional for page flow reorder */}
-      {!hideScoreComponents && <ComponentScoreBars scores={componentScores} />}
+      {!hideScoreComponents && <ComponentScoreBars scores={componentScores} dealGapPercent={dealGapPercent} />}
     </section>
   )
 }

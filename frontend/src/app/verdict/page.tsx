@@ -870,12 +870,13 @@ function VerdictContent() {
               verdictLabel={verdictLabel}
               description={shortVerdictDescription}
               componentScores={verdictComponentScores}
+              dealGapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined}
               onHowItWorks={handleShowMethodology}
               hideScoreComponents
             />
             {/* Score Components — why did it score this way */}
             <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
-              <ComponentScoreBars scores={verdictComponentScores} />
+              <ComponentScoreBars scores={verdictComponentScores} dealGapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined} />
             </section>
 
             {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
