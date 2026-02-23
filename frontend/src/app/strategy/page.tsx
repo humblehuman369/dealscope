@@ -82,6 +82,7 @@ function StrategyContent() {
     value: { iq: null, zillow: null, rentcast: null },
     rent: { iq: null, zillow: null, rentcast: null },
   })
+  const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
 
   // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
   // key uses canonical address so it matches when navigating Verdict → Strategy).
@@ -270,13 +271,15 @@ function StrategyContent() {
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
   // Same fallback as Verdict when no valuations (single source of truth)
+  // Source selector override takes priority so switching providers recalculates instantly
   const listPriceFallback = 0
-  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? listPriceFallback
+  const listPrice = sourceOverrides.price ?? data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? listPriceFallback
   // DealMaker/verdict overrides: purchasePrice from verdict or Deal Maker, then backend
   const targetPrice = dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice
+    ?? (sourceOverrides.price != null ? Math.round(sourceOverrides.price * 0.85) : null)
     ?? data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const monthlyRent = dealMakerOverrides?.monthlyRent
-    || propertyInfo?.monthlyRent || 0
+    || sourceOverrides.monthlyRent || propertyInfo?.monthlyRent || 0
   const propertyTaxes = dealMakerOverrides?.propertyTaxes
     || propertyInfo?.propertyTaxes || 0
   const insurance = dealMakerOverrides?.insurance
@@ -568,7 +571,17 @@ function StrategyContent() {
         {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null ||
           iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
           <section className="px-5 pt-2 pb-4">
-            <IQEstimateSelector sources={iqSources} />
+            <IQEstimateSelector
+              sources={iqSources}
+              onSourceChange={(type, _sourceId, _value) => {
+                if (_value == null) return
+                if (type === 'value') {
+                  setSourceOverrides((prev) => ({ ...prev, price: _value }))
+                } else {
+                  setSourceOverrides((prev) => ({ ...prev, monthlyRent: _value }))
+                }
+              }}
+            />
           </section>
         )}
 
