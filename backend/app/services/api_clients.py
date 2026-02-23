@@ -261,11 +261,16 @@ class DataNormalizer:
         "last_sale_date": ("lastSaleDate", "lastSoldDate", "rentcast"),
         "tax_assessed_value": ("taxAssessments", "taxAssessedValue", "rentcast"),
         
-        # Rental Data — RentCast is single source of truth for rent estimate
+        # Rental Data
         "monthly_rent_ltr": ("rent", None, "rentcast"),
         "average_rent": (None, "rentalData.averageRent", "axesso"),
         "rent_range_low": ("rentRangeLow", None, "rentcast"),
         "rent_range_high": ("rentRangeHigh", None, "rentcast"),
+        
+        # IQ Estimate source values — individual provider estimates for selector UI
+        "rental_rentcast_estimate": ("rent", None, "rentcast"),
+        "rental_zillow_estimate": (None, "rentZestimate", "axesso"),
+        "rentcast_avm": ("price", None, "rentcast"),
         
         # Mortgage Rates - Zillow mortgage data
         "mortgage_rate_arm5": (None, "mortgageZHLRates.arm5Bucket.rate", "axesso"),
@@ -371,6 +376,9 @@ class DataNormalizer:
         
         # Extract complex listing info from AXESSO data
         self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
+        
+        # Compute proprietary IQ Estimates (50/50 average or single source)
+        self._compute_iq_estimates(normalized, provenance, timestamp)
         
         return normalized, provenance
     
@@ -495,6 +503,65 @@ class DataNormalizer:
                 "conflict_flag": False
             }
     
+    def _compute_iq_estimates(
+        self,
+        normalized: Dict[str, Any],
+        provenance: Dict[str, Any],
+        timestamp: datetime,
+    ):
+        """Compute IQ proprietary estimates — 50/50 average when both sources
+        are available, single-source value otherwise, None when neither exists."""
+        ts = timestamp.isoformat()
+
+        def _iq(rc_val, zl_val, field_name):
+            if rc_val is not None and zl_val is not None:
+                normalized[field_name] = round((float(rc_val) + float(zl_val)) / 2)
+                provenance[field_name] = {
+                    "source": "merged",
+                    "fetched_at": ts,
+                    "confidence": "high",
+                    "raw_values": {"rentcast": rc_val, "axesso": zl_val},
+                    "conflict_flag": False,
+                }
+            elif rc_val is not None:
+                normalized[field_name] = float(rc_val)
+                provenance[field_name] = {
+                    "source": "rentcast",
+                    "fetched_at": ts,
+                    "confidence": "high",
+                    "raw_values": {"rentcast": rc_val},
+                    "conflict_flag": False,
+                }
+            elif zl_val is not None:
+                normalized[field_name] = float(zl_val)
+                provenance[field_name] = {
+                    "source": "axesso",
+                    "fetched_at": ts,
+                    "confidence": "high",
+                    "raw_values": {"axesso": zl_val},
+                    "conflict_flag": False,
+                }
+            else:
+                normalized[field_name] = None
+                provenance[field_name] = {
+                    "source": "missing",
+                    "fetched_at": ts,
+                    "confidence": "low",
+                    "raw_values": None,
+                    "conflict_flag": False,
+                }
+
+        _iq(
+            normalized.get("rental_rentcast_estimate"),
+            normalized.get("rental_zillow_estimate"),
+            "rental_iq_estimate",
+        )
+        _iq(
+            normalized.get("rentcast_avm"),
+            normalized.get("zestimate"),
+            "value_iq_estimate",
+        )
+
     def _get_nested_value(self, data: Optional[Dict], field: str) -> Any:
         """Get value from potentially nested dict using dot notation."""
         if data is None or field is None:
