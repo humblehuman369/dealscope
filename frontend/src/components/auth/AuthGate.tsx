@@ -74,23 +74,27 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
   }
 
   return (
-    <div className="relative">
-      <div className="blur-sm pointer-events-none select-none opacity-50">
+    <div className="relative overflow-hidden" style={{ maxHeight: 320 }}>
+      <div className="blur-sm pointer-events-none select-none opacity-40">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Gradient fade — reinforces "there's more behind the gate" */}
+      <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #000)' }} />
+      {/* CTA — pinned near top so it's immediately visible */}
+      <div className="absolute inset-0 flex flex-col items-center pt-10">
         <Link
           href={signInUrl}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+          className="flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.03]"
           style={{
-            background: 'rgba(148,163,184,0.2)',
-            border: '1px solid rgba(148,163,184,0.3)',
-            color: '#e2e8f0',
+            background: '#0891B2',
+            color: '#fff',
+            boxShadow: '0 4px 24px rgba(8,145,178,0.4)',
           }}
         >
-          <LogIn size={14} />
+          <LogIn size={15} />
           {label}
         </Link>
+        <p className="mt-3 text-xs" style={{ color: '#64748B' }}>Free account — no credit card required</p>
       </div>
     </div>
   )
