@@ -111,7 +111,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div className="logo-text">DealGap<span>IQ</span></div>
           </Link>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            <a href="#strategies" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>Product</a>
+            <Link href="/what-is-dealgapiq" style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none' }}>What is it?</Link>
             <Link href="/pricing" style={{ color: '#0EA5E9', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>Pricing</Link>
           </div>
           <div className="nav-actions">

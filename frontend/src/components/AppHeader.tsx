@@ -105,7 +105,7 @@ const TABS: { id: AppTab; label: string }[] = [
 // Pages where header should be completely hidden
 // Verdict & strategy have their own AnalysisNav — no need for AppHeader there
 // Home (/) shows header when authenticated so user can access profile and Sign Out
-const HIDDEN_ROUTES = ['/verdict', '/strategy', '/pricing', '/register']
+const HIDDEN_ROUTES = ['/verdict', '/strategy', '/pricing', '/register', '/what-is-dealgapiq']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
