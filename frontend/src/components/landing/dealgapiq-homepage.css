@@ -12,9 +12,9 @@
   --muted: #71717A;
   --border: rgba(255,255,255,0.1);
   --border-s: rgba(255,255,255,0.06);
-  --glow-sm: 0 0 15px rgba(14,165,233,0.05), 0 0 30px rgba(14,165,233,0.02);
-  --glow-md: 0 0 20px rgba(14,165,233,0.06), 0 0 40px rgba(14,165,233,0.03);
-  --glow-lg: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04);
+  --glow-sm: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04);
+  --glow-md: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04);
+  --glow-lg: 0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05);
   --font: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
   --mono: var(--font-space-mono), 'Space Mono', monospace;
 
@@ -37,10 +37,10 @@
 /* =====================================================
    CARDS
    ===================================================== */
-.iq-landing .card-sm { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--glow-sm); }
-.iq-landing .card-md { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--glow-md); }
-.iq-landing .card-lg { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--glow-lg); }
-.iq-landing .card-md:hover, .iq-landing .card-sm:hover { border-color: rgba(14,165,233,0.4); box-shadow: 0 0 30px rgba(14,165,233,0.1), 0 0 60px rgba(14,165,233,0.05); }
+.iq-landing .card-sm { background: var(--bg); border: 1px solid rgba(14,165,233,0.25); border-radius: 12px; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .card-md { background: var(--bg); border: 1px solid rgba(14,165,233,0.25); border-radius: 14px; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .card-lg { background: var(--bg); border: 1px solid rgba(14,165,233,0.3); border-radius: 20px; box-shadow: 0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .card-md:hover, .iq-landing .card-sm:hover { border-color: rgba(14,165,233,0.55); box-shadow: 0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07); }
 
 /* =====================================================
    MONO LABEL
@@ -307,7 +307,7 @@
 .iq-landing .deal-gap-narrative { font-size: 1.05rem; color: var(--text); line-height: 1.85; }
 .iq-landing .deal-gap-narrative p + p { margin-top: 1.25rem; }
 .iq-landing .deal-gap-narrative strong { font-weight: 600; }
-.iq-landing .gap-visual { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; position: relative; overflow: hidden; }
+.iq-landing .gap-visual { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(14,165,233,0.3); border-radius: 16px; padding: 2.5rem; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05); transition: border-color .3s, box-shadow .3s; }
 .iq-landing .gap-visual::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,var(--teal),var(--coral)); }
 .iq-landing .gap-visual-label { font-family: var(--font); font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text); margin-bottom: 2rem; }
 .iq-landing .price-bar { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
@@ -329,8 +329,8 @@
    WHAT-IS-IT PAGE — Three Numbers
    ===================================================== */
 .iq-landing .three-numbers { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 3rem; }
-.iq-landing .number-card { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; transition: border-color .3s, transform .3s; }
-.iq-landing .number-card:hover { border-color: rgba(14,165,233,0.4); transform: translateY(-2px); }
+.iq-landing .number-card { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(14,165,233,0.25); border-radius: 14px; padding: 2rem; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s, transform .3s; }
+.iq-landing .number-card:hover { border-color: rgba(14,165,233,0.55); box-shadow: 0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07); transform: translateY(-2px); }
 .iq-landing .number-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-family: var(--mono); font-weight: 700; font-size: .85rem; }
 .iq-landing .number-card:nth-child(1) .number-icon { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.15); color: var(--green); }
 .iq-landing .number-card:nth-child(2) .number-icon { background: rgba(14,165,233,.1); border: 1px solid rgba(14,165,233,.15); color: var(--teal); }
@@ -343,7 +343,7 @@
    ===================================================== */
 .iq-landing .method-section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
 .iq-landing .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
-.iq-landing .method-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; }
+.iq-landing .method-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(14,165,233,0.25); border-radius: 14px; padding: 2rem; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
 .iq-landing .method-card-label { font-family: var(--font); font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
 .iq-landing .method-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .75rem; }
 .iq-landing .method-card-body { font-size: .88rem; color: var(--text); line-height: 1.7; }
@@ -357,7 +357,7 @@
    WHAT-IS-IT PAGE — Calculation Walkthrough
    ===================================================== */
 .iq-landing .calc-walkthrough { margin-top: 3rem; }
-.iq-landing .calc-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.iq-landing .calc-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(14,165,233,0.3); border-radius: 16px; overflow: hidden; box-shadow: 0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05); transition: border-color .3s, box-shadow .3s; }
 .iq-landing .calc-header { padding: 1.75rem 2rem; border-bottom: 1px solid rgba(255,255,255,.06); }
 .iq-landing .calc-header-label { font-family: var(--font); font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
 .iq-landing .calc-header-addr { font-size: 1rem; font-weight: 600; }
@@ -375,8 +375,8 @@
    WHAT-IS-IT PAGE — Strategy Pills
    ===================================================== */
 .iq-landing .strategies-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 3rem; }
-.iq-landing .strategy-pill { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 10px; padding: 1.15rem 1.5rem; display: flex; align-items: center; gap: .75rem; transition: border-color .3s; }
-.iq-landing .strategy-pill:hover { border-color: rgba(14,165,233,0.4); }
+.iq-landing .strategy-pill { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(14,165,233,0.25); border-radius: 10px; padding: 1.15rem 1.5rem; display: flex; align-items: center; gap: .75rem; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .strategy-pill:hover { border-color: rgba(14,165,233,0.55); box-shadow: 0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07); }
 .iq-landing .strategy-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
 .iq-landing .strategy-pill span { font-size: .95rem; font-weight: 500; }
 
@@ -384,8 +384,8 @@
    WHAT-IS-IT PAGE — Workflow Steps
    ===================================================== */
 .iq-landing .workflow-steps { margin-top: 3rem; display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
-.iq-landing .wf-step { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; transition: border-color .3s; }
-.iq-landing .wf-step:hover { border-color: rgba(14,165,233,0.4); }
+.iq-landing .wf-step { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(14,165,233,0.25); border-radius: 14px; padding: 2rem; box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .wf-step:hover { border-color: rgba(14,165,233,0.55); box-shadow: 0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07); }
 .iq-landing .wf-step-num { font-family: var(--font); font-size: .75rem; font-weight: 700; color: var(--teal); letter-spacing: .1em; margin-bottom: .75rem; }
 .iq-landing .wf-step h3 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
 .iq-landing .wf-step p { font-size: .88rem; color: var(--text); line-height: 1.65; }
@@ -396,8 +396,8 @@
 .iq-landing .compare-section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
 .iq-landing .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
 .iq-landing .compare-card { padding: 2rem; border-radius: 14px; }
-.iq-landing .compare-card.old { background: rgba(249,112,102,.04); border: 1px solid rgba(249,112,102,.12); }
-.iq-landing .compare-card.new { background: rgba(14,165,233,.04); border: 1px solid rgba(14,165,233,.15); }
+.iq-landing .compare-card.old { background: rgba(249,112,102,.04); border: 1px solid rgba(249,112,102,0.2); box-shadow: 0 0 20px rgba(249,112,102,0.06), 0 0 40px rgba(249,112,102,0.03); transition: border-color .3s, box-shadow .3s; }
+.iq-landing .compare-card.new { background: rgba(14,165,233,.04); border: 1px solid rgba(14,165,233,0.25); box-shadow: 0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04); transition: border-color .3s, box-shadow .3s; }
 .iq-landing .compare-label { font-family: var(--font); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1rem; }
 .iq-landing .compare-card.old .compare-label { color: var(--coral); }
 .iq-landing .compare-card.new .compare-label { color: var(--teal); }
