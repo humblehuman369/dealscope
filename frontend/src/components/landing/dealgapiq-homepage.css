@@ -1069,11 +1069,9 @@
   background: var(--surface); padding: 3rem 2rem;
 }
 
-/* ADJUST FOR REALITY — own section, dark background */
+/* ADJUST FOR REALITY */
 .iq-landing .adjust-section {
-  background: #0B1120;
   padding: 4rem 2rem;
-  border-top: 1px solid var(--border);
 }
 .iq-landing .adjust-section-inner {
   max-width: 720px;
