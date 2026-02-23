@@ -44,24 +44,21 @@ export default function AuthModal() {
   // Dismiss modal (X button or backdrop click) — stay on current page
   const close = useCallback(() => {
     setIsOpen(false)
-    // Strip only the auth param, preserving all others (e.g. address)
     const params = new URLSearchParams(searchParams.toString())
     params.delete('auth')
+    params.delete('redirect')
     const qs = params.toString()
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [router, pathname, searchParams])
 
-  // Post-login redirect — navigate to the intended destination
+  // Post-login redirect — navigate to the intended destination.
+  // searchParams.get() already URL-decodes the value — do NOT
+  // call decodeURIComponent again (double-decoding corrupts
+  // addresses with encoded commas/spaces, causing wrong-page redirects).
   const onLoginSuccess = useCallback(() => {
-    let redirect = searchParams.get('redirect')
+    const redirect = searchParams.get('redirect')
     setIsOpen(false)
     if (redirect) {
-      try {
-        redirect = decodeURIComponent(redirect)
-      } catch {
-        // leave as-is if not encoded
-      }
-      // Same-origin only: must start with / and not be protocol-relative or absolute
       const isSameOriginPath = redirect.startsWith('/') && !redirect.startsWith('//')
       if (isSameOriginPath) {
         router.replace(redirect)
@@ -73,7 +70,6 @@ export default function AuthModal() {
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
       }
     } else {
-      // No explicit redirect — stay on current page, strip only auth/redirect params
       const params = new URLSearchParams(searchParams.toString())
       params.delete('auth')
       params.delete('redirect')
