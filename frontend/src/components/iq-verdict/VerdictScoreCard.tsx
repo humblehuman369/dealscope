@@ -195,8 +195,8 @@ export function ComponentScoreBars({ scores, dealGapPercent }: { scores: Verdict
         const gapPct = isDealGap ? (dealGapPercent ?? Math.max(0, (90 - value) / 2)) : 0
         const clr = isDealGap ? dealGapColor(gapPct) : componentColor(value)
         const lbl = isDealGap ? dealGapLabel(gapPct) : componentLabel(value, label)
-        const barPct = isDealGap
-          ? Math.max(0, Math.min(100, 100 - gapPct))
+        const barPct = isDealGap && dealGapPercent != null
+          ? Math.max(0, Math.min(100, 100 - dealGapPercent))
           : Math.min(100, (value / 90) * 100)
 
         return (
