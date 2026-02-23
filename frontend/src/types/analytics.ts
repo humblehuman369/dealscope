@@ -154,11 +154,11 @@ export interface CalculatedMetrics {
  * 
  * Thresholds:
  * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
+ * - 5-10% = Good Opportunity (A)
  * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
+ * - 15-25% = Marginal Opportunity (C)
+ * - 25-35% = Unlikely Opportunity (D)
+ * - 35%+ = Pass (F)
  */
 
 export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
@@ -176,7 +176,7 @@ export interface DealScore {
   score: number;
   grade: OpportunityGrade;
   verdict: string;
-  label: string;  // "Strong Opportunity", "Great Opportunity", etc.
+  label: string;  // "Strong Opportunity", "Good Opportunity", etc.
   color: string;
   discountPercent: number;  // How much discount from list needed
   incomeValue: number;     // Max price where cash flow = $0 (formerly breakevenPrice)

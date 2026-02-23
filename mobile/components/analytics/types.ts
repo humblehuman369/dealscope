@@ -82,7 +82,7 @@ export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 export interface DealScore {
   score: number;
   grade: OpportunityGrade;
-  label: string;  // "Strong Opportunity", "Great Opportunity", etc.
+  label: string;  // "Strong Opportunity", "Good Opportunity", etc.
   verdict: string;
   color: string;
   discountPercent: number;  // How much discount from list needed

@@ -785,7 +785,7 @@ function VerdictContent() {
 
   // Derived values for display
   const score = analysis.dealScore
-  const verdictLabel = score >= 90 ? 'Strong Deal' : score >= 80 ? 'Good Deal' : score >= 65 ? 'Average Deal' : score >= 50 ? 'High Deal Gap' : score >= 30 ? 'Unlikely Deal' : 'Pass'
+  const verdictLabel = score >= 90 ? 'Strong Opportunity' : score >= 80 ? 'Good Opportunity' : score >= 65 ? 'Moderate Opportunity' : score >= 50 ? 'Marginal Opportunity' : score >= 30 ? 'Unlikely Opportunity' : 'Pass'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
@@ -801,7 +801,7 @@ function VerdictContent() {
   // Short verdict description (override backend long copy for this page)
   const shortVerdictDescription = incomeGapPct != null
     ? (incomeGapPct > 0
-      ? `${priceLabel} price is ${incomeGapPct}% above Income Value. At this gap, the deal doesn't work at your target return.`
+      ? `${priceLabel} price is ${incomeGapPct}% above Income Value. Negotiation is needed to reach your target return.`
       : `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`)
     : (analysis.verdictDescription || 'Calculating deal metrics...')
 

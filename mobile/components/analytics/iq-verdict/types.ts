@@ -102,13 +102,13 @@ export interface IQAnalysisResult {
  */
 export type ProfitGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
-export type IQDealVerdict = 
-  | 'Excellent Investment'
-  | 'Strong Investment'
-  | 'Good Investment'
-  | 'Fair Investment'
-  | 'Weak Investment'
-  | 'Poor Investment';
+export type IQDealVerdict =
+  | 'Strong Opportunity'
+  | 'Good Opportunity'
+  | 'Moderate Opportunity'
+  | 'Marginal Opportunity'
+  | 'Unlikely Opportunity'
+  | 'Pass';
 
 // ===================
 // BRAND COLORS
@@ -146,12 +146,12 @@ export const getStrategyBadge = (rank: number, score: number): IQStrategyBadge |
  * Get deal verdict based on overall score
  */
 export const getDealVerdict = (score: number): IQDealVerdict => {
-  if (score >= 90) return 'Excellent Investment';
-  if (score >= 75) return 'Strong Investment';
-  if (score >= 60) return 'Good Investment';
-  if (score >= 45) return 'Fair Investment';
-  if (score >= 30) return 'Weak Investment';
-  return 'Poor Investment';
+  if (score >= 90) return 'Strong Opportunity';
+  if (score >= 75) return 'Good Opportunity';
+  if (score >= 60) return 'Moderate Opportunity';
+  if (score >= 45) return 'Marginal Opportunity';
+  if (score >= 30) return 'Unlikely Opportunity';
+  return 'Pass';
 };
 
 /**

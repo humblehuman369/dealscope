@@ -103,7 +103,7 @@ function buildEmptyAnalysis(): IQAnalysisResult {
   return {
     analyzedAt: new Date().toISOString(),
     dealScore: 0,
-    dealVerdict: 'Poor Investment',
+    dealVerdict: 'Pass',
     verdictDescription: 'Analyzing...',
     strategies: [],
   };

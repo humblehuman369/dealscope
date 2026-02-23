@@ -45,12 +45,12 @@ export interface ProfitZoneDashboardProps {
 
 
 const getDealScoreLabel = (score: number): string => {
-  if (score >= 80) return 'Excellent'
-  if (score >= 70) return 'Strong'
-  if (score >= 60) return 'Good'
-  if (score >= 50) return 'Average'
-  if (score >= 40) return 'Fair'
-  return 'Weak'
+  if (score >= 90) return 'Strong Opportunity'
+  if (score >= 80) return 'Good Opportunity'
+  if (score >= 65) return 'Moderate Opportunity'
+  if (score >= 50) return 'Marginal Opportunity'
+  if (score >= 30) return 'Unlikely Opportunity'
+  return 'Pass'
 }
 
 const getDealScoreColor = (score: number): string => {

@@ -180,9 +180,17 @@ function buildBenchmarkRows(raw: IQVerdictResponse | null, monthlyCashFlow: numb
   ];
 }
 
-/** Qualitative label for a component score (0-90 scale) */
-function componentQualLabel(v: number): string {
-  return v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak';
+/** Per-component label functions — each uses language appropriate to its domain. */
+const COMPONENT_LABELS: Record<string, (v: number) => string> = {
+  'Deal Gap':         v => v >= 75 ? 'Minimal' : v >= 55 ? 'Mild' : v >= 40 ? 'Moderate' : v >= 20 ? 'Large' : 'Excessive',
+  'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
+  'Market Alignment': v => v >= 75 ? 'Strong' : v >= 55 ? 'Favorable' : v >= 40 ? 'Neutral' : v >= 20 ? 'Weak' : 'Misaligned',
+  'Deal Probability': v => v >= 75 ? 'Highly Probable' : v >= 55 ? 'Probable' : v >= 40 ? 'Possible' : v >= 20 ? 'Unlikely' : 'Improbable',
+};
+
+function componentQualLabel(v: number, componentName?: string): string {
+  const labelFn = componentName ? COMPONENT_LABELS[componentName] : undefined;
+  return labelFn ? labelFn(v) : COMPONENT_LABELS['Return Quality'](v);
 }
 
 function buildConfidence(raw: IQVerdictResponse | null): ConfidenceMetric[] {
@@ -194,17 +202,16 @@ function buildConfidence(raw: IQVerdictResponse | null): ConfidenceMetric[] {
       { label: 'Deal Probability', value: 0, qualLabel: '—', color: 'blue' },
     ];
   }
-  // Use backend composite component scores (real values, 0-90 scale)
   const cs = raw.componentScores;
   const dealGap = cs?.dealGapScore ?? 0;
   const returnQuality = cs?.returnQualityScore ?? 0;
   const marketAlignment = cs?.marketAlignmentScore ?? 0;
   const dealProbability = cs?.dealProbabilityScore ?? 0;
   return [
-    { label: 'Deal Gap', value: dealGap, qualLabel: componentQualLabel(dealGap), color: 'teal' },
-    { label: 'Return Quality', value: returnQuality, qualLabel: componentQualLabel(returnQuality), color: 'blue' },
-    { label: 'Market Alignment', value: marketAlignment, qualLabel: componentQualLabel(marketAlignment), color: 'teal' },
-    { label: 'Deal Probability', value: dealProbability, qualLabel: componentQualLabel(dealProbability), color: 'blue' },
+    { label: 'Deal Gap', value: dealGap, qualLabel: componentQualLabel(dealGap, 'Deal Gap'), color: 'teal' },
+    { label: 'Return Quality', value: returnQuality, qualLabel: componentQualLabel(returnQuality, 'Return Quality'), color: 'blue' },
+    { label: 'Market Alignment', value: marketAlignment, qualLabel: componentQualLabel(marketAlignment, 'Market Alignment'), color: 'teal' },
+    { label: 'Deal Probability', value: dealProbability, qualLabel: componentQualLabel(dealProbability, 'Deal Probability'), color: 'blue' },
   ];
 }
 

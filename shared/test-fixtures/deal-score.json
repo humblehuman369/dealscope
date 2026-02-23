@@ -1,18 +1,18 @@
 {
   "_description": "Cross-platform test fixtures for deal scoring. Validates grade assignment, color mapping, and score calculation consistency.",
   "grade_thresholds": [
-    { "score": 95, "expected_grade": "A", "expected_label": "Excellent Investment" },
-    { "score": 80, "expected_grade": "A", "expected_label": "Excellent Investment" },
-    { "score": 79, "expected_grade": "B+", "expected_label": "Strong Investment" },
-    { "score": 70, "expected_grade": "B+", "expected_label": "Strong Investment" },
-    { "score": 69, "expected_grade": "B", "expected_label": "Good Investment" },
-    { "score": 60, "expected_grade": "B", "expected_label": "Good Investment" },
-    { "score": 59, "expected_grade": "C+", "expected_label": "Fair Investment" },
-    { "score": 50, "expected_grade": "C+", "expected_label": "Fair Investment" },
-    { "score": 49, "expected_grade": "C", "expected_label": "Below Average" },
-    { "score": 40, "expected_grade": "C", "expected_label": "Below Average" },
-    { "score": 39, "expected_grade": "D", "expected_label": "Poor Investment" },
-    { "score": 0, "expected_grade": "D", "expected_label": "Poor Investment" }
+    { "score": 95, "expected_grade": "A", "expected_label": "Strong Opportunity" },
+    { "score": 80, "expected_grade": "A", "expected_label": "Strong Opportunity" },
+    { "score": 79, "expected_grade": "B+", "expected_label": "Good Opportunity" },
+    { "score": 70, "expected_grade": "B+", "expected_label": "Good Opportunity" },
+    { "score": 69, "expected_grade": "B", "expected_label": "Moderate Opportunity" },
+    { "score": 60, "expected_grade": "B", "expected_label": "Moderate Opportunity" },
+    { "score": 59, "expected_grade": "C+", "expected_label": "Marginal Opportunity" },
+    { "score": 50, "expected_grade": "C+", "expected_label": "Marginal Opportunity" },
+    { "score": 49, "expected_grade": "C", "expected_label": "Unlikely Opportunity" },
+    { "score": 40, "expected_grade": "C", "expected_label": "Unlikely Opportunity" },
+    { "score": 39, "expected_grade": "D", "expected_label": "Pass" },
+    { "score": 0, "expected_grade": "D", "expected_label": "Pass" }
   ],
   "score_colors": [
     { "score": 85, "expected_color": "#34d399", "tier": "positive" },

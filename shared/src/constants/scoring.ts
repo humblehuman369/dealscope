@@ -24,12 +24,12 @@ export const SCORE_THRESHOLDS = {
  * Score-to-grade mapping with labels and colors.
  */
 export const SCORE_GRADES = {
-  A: { min: 80, label: 'Excellent Investment', color: '#22c55e' },
-  'B+': { min: 70, label: 'Strong Investment', color: '#22c55e' },
-  B: { min: 60, label: 'Good Investment', color: '#84cc16' },
-  'C+': { min: 50, label: 'Fair Investment', color: '#f97316' },
-  C: { min: 40, label: 'Below Average', color: '#f97316' },
-  D: { min: 0, label: 'Poor Investment', color: '#ef4444' },
+  A: { min: 80, label: 'Strong Opportunity', color: '#22c55e' },
+  'B+': { min: 70, label: 'Good Opportunity', color: '#22c55e' },
+  B: { min: 60, label: 'Moderate Opportunity', color: '#84cc16' },
+  'C+': { min: 50, label: 'Marginal Opportunity', color: '#f97316' },
+  C: { min: 40, label: 'Unlikely Opportunity', color: '#f97316' },
+  D: { min: 0, label: 'Pass', color: '#ef4444' },
 } as const;
 
 export type ScoreGradeKey = keyof typeof SCORE_GRADES;

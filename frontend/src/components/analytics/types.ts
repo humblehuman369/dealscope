@@ -255,7 +255,7 @@ export interface ScoreItem {
 export interface DealScoreData {
   overall: number
   grade: OpportunityGrade
-  label: string  // "Strong Opportunity", "Great Opportunity", etc.
+  label: string  // "Strong Opportunity", "Good Opportunity", etc.
   verdict: string
   discountPercent: number  // How much discount from list needed
   incomeValue: number

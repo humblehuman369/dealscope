@@ -85,11 +85,11 @@ export interface ListingInfo {
  * 
  * Thresholds (with full scoring):
  * - 85-100 = Strong Opportunity (A+)
- * - 70-84 = Great Opportunity (A)
+ * - 70-84 = Good Opportunity (A)
  * - 55-69 = Moderate Opportunity (B)
- * - 40-54 = Potential Opportunity (C)
- * - 25-39 = Weak Opportunity (D)
- * - 0-24 = Poor Opportunity (F)
+ * - 40-54 = Marginal Opportunity (C)
+ * - 25-39 = Unlikely Opportunity (D)
+ * - 0-24 = Pass (F)
  */
 export function calculateDealScore(
   incomeValue: number,
@@ -224,7 +224,7 @@ export function calculateDealScore(
     verdict = 'Excellent deal - minimal negotiation needed'
   } else if (discountPercent <= 10) {
     grade = 'A'
-    label = 'Great Opportunity'
+    label = 'Good Opportunity'
     verdict = 'Very good deal - reasonable negotiation required'
   } else if (discountPercent <= 15) {
     grade = 'B'
@@ -232,15 +232,15 @@ export function calculateDealScore(
     verdict = 'Good potential - negotiate firmly'
   } else if (discountPercent <= 25) {
     grade = 'C'
-    label = 'Potential Opportunity'
+    label = 'Marginal Opportunity'
     verdict = 'Possible deal - significant discount needed'
   } else if (discountPercent <= 35) {
     grade = 'D'
-    label = 'Weak Opportunity'
+    label = 'Unlikely Opportunity'
     verdict = 'Challenging deal - major price reduction required'
   } else {
     grade = 'F'
-    label = 'Poor Opportunity'
+    label = 'Pass'
     verdict = 'Not recommended - unrealistic discount needed'
   }
   

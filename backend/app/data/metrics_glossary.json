@@ -229,11 +229,11 @@
         },
         "grading": {
           "A+": { "min_score": 85, "label": "Strong Opportunity", "color": "#22c55e" },
-          "A": { "min_score": 70, "label": "Great Opportunity", "color": "#22c55e" },
+          "A": { "min_score": 70, "label": "Good Opportunity", "color": "#22c55e" },
           "B": { "min_score": 55, "label": "Moderate Opportunity", "color": "#84cc16" },
-          "C": { "min_score": 40, "label": "Potential Opportunity", "color": "#f97316" },
-          "D": { "min_score": 25, "label": "Weak Opportunity", "color": "#f97316" },
-          "F": { "min_score": 0, "label": "Poor Opportunity", "color": "#ef4444" }
+          "C": { "min_score": 40, "label": "Marginal Opportunity", "color": "#f97316" },
+          "D": { "min_score": 25, "label": "Unlikely Opportunity", "color": "#f97316" },
+          "F": { "min_score": 0, "label": "Pass", "color": "#ef4444" }
         }
       },
       "deal_gap": {
