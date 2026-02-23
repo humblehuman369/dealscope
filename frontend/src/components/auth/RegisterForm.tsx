@@ -2,12 +2,15 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle, Check, Crown, Sparkles } from 'lucide-react'
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth'
 import { useRegister, SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
 import { setMemoryToken } from '@/lib/api-client'
+
+type SelectedPlan = 'free' | 'pro'
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -35,8 +38,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [requiresVerification, setRequiresVerification] = useState(true)
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan>('free')
   const registerMutation = useRegister()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -59,7 +64,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         setLastKnownUser(result.user)
         setLastTokenRefresh()
         queryClient.setQueryData(SESSION_QUERY_KEY, result.user)
-        onSuccess?.()
+        if (selectedPlan === 'pro') {
+          router.replace('/billing')
+        } else {
+          onSuccess?.()
+        }
       } else {
         setRequiresVerification(result.requires_verification ?? true)
         setSuccess(true)
@@ -214,15 +223,76 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         {errors.confirmPassword && <p className="mt-1 text-xs text-red-400">{errors.confirmPassword.message}</p>}
       </div>
 
+      {/* Plan Selection */}
+      <div>
+        <p className="text-sm font-medium mb-2" style={{ color: '#CBD5E1' }}>Choose your plan</p>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Free */}
+          <button
+            type="button"
+            onClick={() => setSelectedPlan('free')}
+            className="relative flex flex-col items-start p-3 rounded-xl text-left transition-all"
+            style={{
+              backgroundColor: selectedPlan === 'free' ? '#0c2d47' : '#103351',
+              border: selectedPlan === 'free' ? '2px solid #0891B2' : '2px solid #15446c',
+            }}
+          >
+            {selectedPlan === 'free' && (
+              <span className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0891B2' }}>
+                <Check className="w-3 h-3 text-white" />
+              </span>
+            )}
+            <Sparkles className="w-4 h-4 mb-1.5" style={{ color: '#0891B2' }} />
+            <span className="text-sm font-bold text-white">Free</span>
+            <span className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>3 scans/month</span>
+            <ul className="mt-2 space-y-0.5">
+              {['Full analysis', 'Strategy recs', 'Comp data'].map((f) => (
+                <li key={f} className="flex items-center gap-1 text-[10px]" style={{ color: '#94A3B8' }}>
+                  <Check className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#0891B2' }} />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </button>
+          {/* Pro */}
+          <button
+            type="button"
+            onClick={() => setSelectedPlan('pro')}
+            className="relative flex flex-col items-start p-3 rounded-xl text-left transition-all"
+            style={{
+              backgroundColor: selectedPlan === 'pro' ? '#1a1a0a' : '#103351',
+              border: selectedPlan === 'pro' ? '2px solid #F59E0B' : '2px solid #15446c',
+            }}
+          >
+            {selectedPlan === 'pro' && (
+              <span className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F59E0B' }}>
+                <Check className="w-3 h-3 text-white" />
+              </span>
+            )}
+            <Crown className="w-4 h-4 mb-1.5" style={{ color: '#F59E0B' }} />
+            <span className="text-sm font-bold text-white">Pro</span>
+            <span className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>Unlimited scans</span>
+            <ul className="mt-2 space-y-0.5">
+              {['Everything in Free', 'PDF exports', 'Priority data'].map((f) => (
+                <li key={f} className="flex items-center gap-1 text-[10px]" style={{ color: '#94A3B8' }}>
+                  <Check className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#F59E0B' }} />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </button>
+        </div>
+      </div>
+
       {/* Submit */}
       <button
         type="submit"
         disabled={registerMutation.isPending}
         className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
-        style={{ backgroundColor: '#0891B2' }}
+        style={{ backgroundColor: selectedPlan === 'pro' ? '#F59E0B' : '#0891B2' }}
       >
         {registerMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-        Create Account
+        {selectedPlan === 'pro' ? 'Create Account & Choose Pro' : 'Create Free Account'}
       </button>
 
       <p className="text-xs text-center" style={{ color: '#64748B' }}>
