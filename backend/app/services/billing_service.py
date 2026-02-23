@@ -258,25 +258,41 @@ class BillingService:
         db: AsyncSession, 
         user: User
     ) -> str:
-        """Get or create Stripe customer for user."""
-        subscription = await self.get_or_create_subscription(db, user.id)
-        
-        existing_id = subscription.stripe_customer_id
-        if existing_id and not existing_id.startswith("cus_dev_"):
-            return existing_id
+        """Get or create Stripe customer for user.
 
-        if existing_id and existing_id.startswith("cus_dev_"):
+        Validates that a stored customer ID actually exists in the current
+        Stripe account/mode before returning it.  IDs created in test mode
+        don't exist in live mode (and vice-versa), so a retrieve check is
+        required to avoid "No such customer" errors downstream.
+        """
+        subscription = await self.get_or_create_subscription(db, user.id)
+        existing_id = subscription.stripe_customer_id
+
+        if not self.is_configured:
+            fake_id = existing_id or f"cus_dev_{user.id}"
+            if not existing_id:
+                subscription.stripe_customer_id = fake_id
+                await db.commit()
+            return fake_id
+
+        # Validate that the stored ID exists in the current Stripe mode
+        if existing_id and not existing_id.startswith("cus_dev_"):
+            try:
+                stripe.Customer.retrieve(existing_id)
+                return existing_id
+            except Exception:
+                logger.warning(
+                    "Stored Stripe customer %s for user %s not found in "
+                    "current Stripe account/mode — creating a new one",
+                    existing_id, user.id,
+                )
+
+        if existing_id:
             logger.info(
-                "Replacing dev customer ID %s for user %s with real Stripe customer",
+                "Replacing invalid customer ID %s for user %s",
                 existing_id, user.id,
             )
-        
-        if not self.is_configured:
-            fake_id = f"cus_dev_{user.id}"
-            subscription.stripe_customer_id = fake_id
-            await db.commit()
-            return fake_id
-        
+
         customer = stripe.Customer.create(
             email=user.email,
             name=user.full_name,
@@ -288,7 +304,7 @@ class BillingService:
         subscription.stripe_customer_id = customer.id
         await db.commit()
         
-        logger.info(f"Created Stripe customer {customer.id} for user {user.id}")
+        logger.info("Created Stripe customer %s for user %s", customer.id, user.id)
         return customer.id
 
     async def create_checkout_session(
