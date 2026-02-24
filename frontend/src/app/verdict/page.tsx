@@ -309,11 +309,11 @@ function VerdictContent() {
         const insurance = data.expenses?.insurance_annual || null
 
         // Get STR data if available (use null checks to properly handle 0 values)
-        const averageDailyRate = data.rentals?.str_adr ?? data.rentals?.average_daily_rate ?? null
-        const occupancyRate = data.rentals?.str_occupancy ?? data.rentals?.occupancy_rate ?? null
+        const averageDailyRate = data.rentals?.average_daily_rate ?? null
+        const occupancyRate = data.rentals?.occupancy_rate ?? null
 
         // Get ARV if available (for flip/BRRRR strategies)
-        const arv = data.valuations?.arv || data.valuations?.after_repair_value || null
+        const arv = data.valuations?.arv ?? null
 
         // Parse address from URL parameter as fallback when API data is incomplete
         // This ensures city/state/zip are preserved even if API doesn't return them
@@ -322,7 +322,7 @@ function VerdictContent() {
         // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
           id: data.property_id,
-          zpid: data.zpid,
+          zpid: data.zpid ?? undefined,
           // Note: addressParam from searchParams is already decoded
           address: data.address?.street || parsedAddress.street || addressParam,
           city: data.address?.city || parsedAddress.city,
@@ -334,18 +334,18 @@ function VerdictContent() {
           price: Math.round(price),
           zestimate: zestimate != null && zestimate > 0 ? Math.round(zestimate) : undefined,
           imageUrl: SAMPLE_PHOTOS[0], // Placeholder until photo promise resolves
-          yearBuilt: data.details?.year_built,
-          lotSize: data.details?.lot_size,
-          propertyType: data.details?.property_type,
+          yearBuilt: data.details?.year_built ?? undefined,
+          lotSize: data.details?.lot_size ?? undefined,
+          propertyType: (data.details?.property_type ?? undefined) as IQProperty['propertyType'],
           listingStatus: data.listing?.listing_status || undefined,
           // Enriched data for dynamic scoring
           monthlyRent: monthlyRent,
           propertyTaxes,
           insurance,
-          averageDailyRate,
+          averageDailyRate: averageDailyRate ?? undefined,
           // Use null check (not truthy check) to properly handle 0% occupancy
           occupancyRate: occupancyRate != null ? occupancyRate / 100 : undefined,
-          arv,
+          arv: arv ?? undefined,
         }
 
         setProperty(propertyData)
@@ -485,7 +485,7 @@ function VerdictContent() {
           is_foreclosure: data.listing?.is_foreclosure || false,
           is_bank_owned: data.listing?.is_bank_owned || false,
           is_fsbo: data.listing?.is_fsbo || false,
-          market_temperature: data.listing?.market_temperature || undefined,
+          market_temperature: data.market?.market_stats?.market_temperature || undefined,
         }
         analysisInputsRef.current = analysisBody
 

@@ -38,3 +38,21 @@ export type {
   StrategyAnalysisType,
   StrategyAnalysis,
 } from './analytics';
+
+export type {
+  PropertyAddress,
+  PropertyDetails,
+  ValuationData,
+  RentalMarketStatistics,
+  RentalData,
+  MarketStatistics,
+  MarketData,
+  DataQuality,
+  ListingInfo,
+  PropertyResponse,
+  PropertyDataSnapshot,
+} from './property';
+
+export type {
+  WorksheetMetrics,
+} from './worksheet';

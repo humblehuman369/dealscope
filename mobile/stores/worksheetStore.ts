@@ -21,46 +21,13 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/apiClient';
 import { getResolvedDefaults } from '../services/defaultsService';
+import { WORKSHEET_ENDPOINTS } from '@dealscope/shared';
 import type { StrategyId } from '../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface WorksheetMetrics {
-  gross_income: number;
-  annual_gross_rent: number;
-  vacancy_loss: number;
-  gross_expenses: number;
-  property_taxes: number;
-  insurance: number;
-  property_management: number;
-  maintenance: number;
-  maintenance_only: number;
-  capex: number;
-  hoa_fees: number;
-  loan_amount: number;
-  down_payment: number;
-  closing_costs: number;
-  monthly_payment: number;
-  annual_debt_service: number;
-  noi: number;
-  monthly_cash_flow: number;
-  annual_cash_flow: number;
-  cap_rate: number;
-  cash_on_cash_return: number;
-  dscr: number;
-  grm: number;
-  one_percent_rule: number;
-  arv: number;
-  arv_psf: number;
-  price_psf: number;
-  rehab_psf: number;
-  equity: number;
-  equity_after_rehab: number;
-  mao: number;
-  total_cash_needed: number;
-  ltv: number;
-  deal_score: number;
-}
+export type { WorksheetMetrics } from '@dealscope/shared';
+import type { WorksheetMetrics } from '@dealscope/shared';
 
 /** One entry per property+strategy combo */
 export interface WorksheetEntry {
@@ -73,15 +40,8 @@ export interface WorksheetEntry {
 }
 
 // ─── API endpoints per strategy ─────────────────────────────────────────────
-
-const STRATEGY_ENDPOINTS: Record<StrategyId, string> = {
-  ltr: '/api/v1/worksheet/ltr/calculate',
-  str: '/api/v1/worksheet/str/calculate',
-  brrrr: '/api/v1/worksheet/brrrr/calculate',
-  flip: '/api/v1/worksheet/flip/calculate',
-  house_hack: '/api/v1/worksheet/house_hack/calculate',
-  wholesale: '/api/v1/worksheet/wholesale/calculate',
-};
+// Imported from @dealscope/shared (WORKSHEET_ENDPOINTS) — single source of truth.
+// Previously had a bug: house_hack used '/house_hack/' instead of '/househack/'.
 
 // ─── Default worksheet inputs (matches frontend/src/stores/worksheetStore.ts)
 // Used as fallback when initialInputs are incomplete.
@@ -305,7 +265,7 @@ export const useWorksheetStore = create<WorksheetState>()(
         const entry = get().entries[key];
         if (!entry) return;
 
-        const endpoint = STRATEGY_ENDPOINTS[activeStrategy];
+        const endpoint = WORKSHEET_ENDPOINTS[activeStrategy];
         set({ isCalculating: true, calculationError: null });
 
         try {
