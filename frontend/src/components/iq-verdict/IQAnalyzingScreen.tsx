@@ -83,7 +83,7 @@ export function IQAnalyzingScreen({
   const dashOffset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: IQ_COLORS.deepNavy }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
       <div className="flex flex-col items-center px-8 max-w-md">
         {/* Animated progress ring with IQ logo */}
         <div className="relative mb-8" style={{ width: size, height: size }}>
