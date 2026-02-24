@@ -8,7 +8,7 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -62,6 +62,12 @@ import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyA
 import { PropertyData } from '../../types/analytics';
 import { VerdictFooter } from '../../components/verdict-iq/VerdictCTA';
 import { useAddPortfolioProperty } from '../../hooks/useDatabase';
+import { usePropertyData } from '../../hooks/usePropertyData';
+import {
+  IQEstimateSelector,
+  type IQEstimateSources,
+} from '../../components/verdict-iq/IQEstimateSelector';
+import { useIQSourceOverrides, resolveOverrideChain } from '../../hooks/useIQSourceOverrides';
 
 // =============================================================================
 // HELPERS
@@ -309,6 +315,39 @@ export default function StrategyIQScreen() {
 
   const analysisResult = usePropertyAnalysis(propertyData);
   const { raw, targetPrice, isLoading, error } = analysisResult;
+
+  // Fetch full property data for IQ Estimate sources
+  const { fetchProperty } = usePropertyData();
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+  });
+
+  useEffect(() => {
+    if (!decodedAddress) return;
+    fetchProperty(decodedAddress)
+      .then((data) => {
+        const rentalStats = data.rentals?.rental_stats;
+        setIqSources({
+          value: {
+            iq: data.valuations?.value_iq_estimate ?? null,
+            zillow: data.valuations?.zestimate ?? null,
+            rentcast: data.valuations?.rentcast_avm ?? null,
+            redfin: data.valuations?.redfin_estimate ?? null,
+          },
+          rent: {
+            iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
+            zillow: rentalStats?.zillow_estimate ?? null,
+            rentcast: rentalStats?.rentcast_estimate ?? null,
+            redfin: rentalStats?.redfin_estimate ?? null,
+          },
+        });
+      })
+      .catch(() => {});
+  }, [decodedAddress, fetchProperty]);
+
+  // 3-tier override chain: dealMakerOverrides ?? sourceOverrides ?? propertyInfo
+  const { sourceOverrides, handleSourceChange } = useIQSourceOverrides(iqSources);
 
   // Financial calculations
   const leftColumn = useMemo(() => [
@@ -639,6 +678,15 @@ export default function StrategyIQScreen() {
               onChangeTerms={handleChangeTerms}
               onStrategyPress={handleStrategyPress}
             />
+
+            {/* Data Sources — IQ Estimate Selector */}
+            <View style={{ marginBottom: rs(16) }}>
+              <IQEstimateSelector
+                sources={iqSources}
+                onSourceChange={handleSourceChange}
+                storageKey="iq_source_selection_strategy"
+              />
+            </View>
 
             {/* Financial Breakdown */}
             <FinancialBreakdown

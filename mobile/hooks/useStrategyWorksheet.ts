@@ -36,16 +36,16 @@ function buildPayload(
       purchase_price: s.purchasePrice,
       average_daily_rate: s.averageDailyRate,
       occupancy_rate: s.occupancyRate,
-      down_payment_pct: (s.downPaymentPercent || 0.2) * 100,
-      interest_rate: (s.interestRate || 0.06) * 100,
-      loan_term_years: s.loanTermYears || 30,
-      closing_costs: s.purchasePrice * (s.closingCostsPercent || 0.03),
-      furnishing_budget: s.furnitureSetupCost || s.furnishingBudget || 0,
+      down_payment_pct: (s.downPaymentPercent ?? 0.2) * 100,
+      interest_rate: (s.interestRate ?? 0.06) * 100,
+      loan_term_years: s.loanTermYears ?? 30,
+      closing_costs: s.purchasePrice * (s.closingCostsPercent ?? 0.03),
+      furnishing_budget: s.furnitureSetupCost ?? s.furnishingBudget ?? 0,
       platform_fees_pct: s.platformFeesPct ?? s.platformFeeRate ?? 0.03,
       property_management_pct: s.strManagementRate ?? s.managementPct ?? s.managementRate ?? 0.2,
       cleaning_cost_per_turn: s.cleaningCostPerTurnover ?? s.cleaningCostPerTurn ?? 75,
-      property_taxes_annual: s.annualPropertyTax || 3600,
-      insurance_annual: s.annualInsurance || 1500,
+      property_taxes_annual: s.annualPropertyTax ?? 3600,
+      insurance_annual: s.annualInsurance ?? 1500,
       maintenance_pct: s.maintenancePct ?? s.maintenanceRate ?? 0.05,
       utilities_monthly: s.utilities ?? 0,
     };
@@ -55,26 +55,26 @@ function buildPayload(
     const s = inputs as Record<string, number>;
     return {
       purchase_price: s.purchasePrice,
-      rehab_costs: s.rehabBudget || s.rehabCosts || 0,
-      arv: s.arv || 0,
-      monthly_rent: s.monthlyRent || 0,
-      down_payment_pct: (s.downPaymentPercent || 0.2) * 100,
-      interest_rate: (s.interestRate || 0.06) * 100,
-      holding_months: s.holdingPeriodMonths || 6,
-      refi_ltv: (s.refinanceLtv || 0.75) * 100,
-      refi_interest_rate: (s.refinanceInterestRate || s.interestRate || 0.06) * 100,
-      refi_loan_term: s.refinanceLoanTerm || 30,
-      property_taxes_annual: s.annualPropertyTax || 3600,
-      insurance_annual: s.annualInsurance || 1500,
-      vacancy_rate: s.vacancyRate || 0.05,
-      property_management_pct: s.managementPct || 0.08,
-      maintenance_pct: s.maintenancePct || 0.05,
+      rehab_costs: s.rehabBudget ?? s.rehabCosts ?? 0,
+      arv: s.arv ?? 0,
+      monthly_rent: s.monthlyRent ?? 0,
+      down_payment_pct: (s.downPaymentPercent ?? 0.2) * 100,
+      interest_rate: (s.interestRate ?? 0.06) * 100,
+      holding_months: s.holdingPeriodMonths ?? 6,
+      refi_ltv: (s.refinanceLtv ?? 0.75) * 100,
+      refi_interest_rate: (s.refinanceInterestRate ?? s.interestRate ?? 0.06) * 100,
+      refi_loan_term: s.refinanceLoanTerm ?? 30,
+      property_taxes_annual: s.annualPropertyTax ?? 3600,
+      insurance_annual: s.annualInsurance ?? 1500,
+      vacancy_rate: s.vacancyRate ?? 0.05,
+      property_management_pct: s.managementPct ?? 0.08,
+      maintenance_pct: s.maintenancePct ?? 0.05,
     };
   }
 
   if (strategy === 'flip') {
     const s = inputs as Record<string, number>;
-    const purchasePrice = s.purchasePrice || 0;
+    const purchasePrice = s.purchasePrice ?? 0;
     const loanAmount = s.loanAmount ?? 0;
     const downPct =
       purchasePrice > 0 && loanAmount < purchasePrice
@@ -98,39 +98,39 @@ function buildPayload(
 
   if (strategy === 'house_hack') {
     const s = inputs as Record<string, unknown>;
-    const rentPerUnit = (s.rentPerUnit as number[]) || [1500];
-    const purchasePrice = (s.purchasePrice as number) || 500000;
-    const closingCosts = purchasePrice * ((s.closingCostsPercent as number) || 0.03);
+    const rentPerUnit = (s.rentPerUnit as number[]) ?? [1500];
+    const purchasePrice = (s.purchasePrice as number) ?? 500000;
+    const closingCosts = purchasePrice * ((s.closingCostsPercent as number) ?? 0.03);
     return {
       purchase_price: purchasePrice,
       unit_rents: rentPerUnit,
-      owner_market_rent: (rentPerUnit[0] as number) || (s.currentHousingPayment as number) || 1500,
-      down_payment_pct: ((s.downPaymentPercent as number) || 0.05) * 100,
-      interest_rate: ((s.interestRate as number) || 0.06) * 100,
-      loan_term_years: (s.loanTermYears as number) || 30,
-      property_taxes_annual: (s.annualPropertyTax as number) || 6000,
-      insurance_annual: (s.annualInsurance as number) || 2400,
-      vacancy_rate: (s.vacancyRate as number) || 0.05,
+      owner_market_rent: (rentPerUnit[0] as number) ?? (s.currentHousingPayment as number) ?? 1500,
+      down_payment_pct: ((s.downPaymentPercent as number) ?? 0.05) * 100,
+      interest_rate: ((s.interestRate as number) ?? 0.06) * 100,
+      loan_term_years: (s.loanTermYears as number) ?? 30,
+      property_taxes_annual: (s.annualPropertyTax as number) ?? 6000,
+      insurance_annual: (s.annualInsurance as number) ?? 2400,
+      vacancy_rate: (s.vacancyRate as number) ?? 0.05,
       maintenance_pct: (s.maintenanceRate as number) ?? (s.maintenancePct as number) ?? 0.05,
       closing_costs: closingCosts,
-      utilities_monthly: (s.sharedUtilities as number) || 0,
-      maintenance_monthly: (s.additionalMaintenance as number) || 0,
+      utilities_monthly: (s.sharedUtilities as number) ?? 0,
+      maintenance_monthly: (s.additionalMaintenance as number) ?? 0,
     };
   }
 
   // wholesale
   const s = inputs as Record<string, number>;
-  const contractPrice = s.contractPrice || 0;
-  const assignmentFee = s.assignmentFee || 10000;
-  const marketingCosts = s.marketingCosts || 500;
+  const contractPrice = s.contractPrice ?? 0;
+  const assignmentFee = s.assignmentFee ?? 10000;
+  const marketingCosts = s.marketingCosts ?? 500;
   return {
-    arv: s.arv || 0,
+    arv: s.arv ?? 0,
     contract_price: contractPrice,
     investor_price: contractPrice + assignmentFee + marketingCosts,
-    rehab_costs: s.estimatedRepairs || s.rehabCosts || 0,
+    rehab_costs: s.estimatedRepairs ?? s.rehabCosts ?? 0,
     assignment_fee: assignmentFee,
     marketing_costs: marketingCosts,
-    earnest_money: s.earnestMoney || 1000,
+    earnest_money: s.earnestMoney ?? 1000,
   };
 }
 
@@ -240,7 +240,7 @@ export function useStrategyWorksheet(
           payload,
         );
 
-        const score = (result.deal_score as number) || 0;
+        const score = (result.deal_score as number) ?? 0;
         const grade = getGrade(score);
 
         // Map backend result to screen-expected camelCase metrics per strategy
