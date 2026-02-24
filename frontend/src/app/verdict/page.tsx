@@ -26,7 +26,7 @@ import {
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { VerdictScoreCard, ComponentScoreBars } from '@/components/iq-verdict/VerdictScoreCard'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
-import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
+import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
@@ -929,10 +929,11 @@ function VerdictContent() {
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
                 { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-2 text-center transition-all ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`} style={{
-                  background: card.active ? colors.background.cardUp : colors.background.card,
-                  border: card.active ? `2px solid ${colors.brand.blue}` : `1px solid ${colors.ui.border}`,
-                  boxShadow: card.active ? `0 0 16px ${colors.brand.blue}25` : undefined,
+                <div key={i} className={`rounded-xl py-3 px-2 text-center ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`} style={{
+                  background: card.active ? cardGlow.active.background : cardGlow.sm.background,
+                  border: card.active ? cardGlow.active.border : cardGlow.sm.border,
+                  boxShadow: card.active ? cardGlow.active.boxShadow : cardGlow.sm.boxShadow,
+                  transition: cardGlow.sm.transition,
                 }}>
                   <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : colors.text.tertiary }}>{card.label}</p>
                   <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : colors.text.secondary }}>{fmtShort(card.value)}</p>
@@ -1013,7 +1014,7 @@ function VerdictContent() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {signals.map((s, i) => (
-                <div key={i} className="flex flex-col rounded-xl py-3 px-3" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                <div key={i} className="flex flex-col rounded-xl py-3 px-3" style={{ background: cardGlow.sm.background, border: cardGlow.sm.border, boxShadow: cardGlow.sm.boxShadow, transition: cardGlow.sm.transition }}>
                   <p className="text-[0.65rem] font-semibold uppercase tracking-wide" style={{ color: colors.text.body }}>{s.label}</p>
                   <p className="text-[0.65rem] font-medium mt-0.5" style={{ color: s.color }}>{s.sub}</p>
                   <span className="text-base font-bold tabular-nums mt-1.5" style={{ color: s.color }}>{s.value}</span>
@@ -1024,7 +1025,7 @@ function VerdictContent() {
 
           {/* 60-second screen callout */}
           <section className="px-5 pb-6">
-            <div className="flex gap-3.5 rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+            <div className="flex gap-3.5 rounded-[14px] p-5" style={{ background: cardGlow.lg.background, border: cardGlow.lg.border, boxShadow: cardGlow.lg.boxShadow, transition: cardGlow.lg.transition }}>
               <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.teal }}>
                 <svg width="18" height="18" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
               </div>
@@ -1044,8 +1045,8 @@ function VerdictContent() {
             <ProGate feature="Export Full Report" mode="inline">
               <button
                 onClick={() => handleExport('light')}
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[12px] text-[0.85rem] font-semibold transition-all hover:opacity-90"
-                style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[12px] text-[0.85rem] font-semibold hover:opacity-90"
+                style={{ background: cardGlow.sm.background, border: cardGlow.sm.border, boxShadow: cardGlow.sm.boxShadow, transition: cardGlow.sm.transition, color: colors.text.body }}
               >
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Export Full Report
