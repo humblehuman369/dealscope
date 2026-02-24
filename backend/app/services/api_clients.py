@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 class APIProvider(str, Enum):
     RENTCAST = "rentcast"
     AXESSO = "axesso"
+    REDFIN = "redfin"
 
 
 @dataclass
@@ -234,6 +235,109 @@ class AXESSOClient(BaseAPIClient[APIResponse]):
         return await self._make_request("photos", params)
 
 
+class RedfinClient(BaseAPIClient[APIResponse]):
+    """
+    Client for Redfin Base API via RapidAPI.
+
+    Two-step lookup:
+    1. auto-complete  → resolve address to Redfin property name
+    2. detail         → fetch AVM (predictedValue) and rental estimate
+    """
+
+    RAPIDAPI_HOST = "redfin-base.p.rapidapi.com"
+
+    def __init__(self, api_key: str, base_url: str = "https://redfin-base.p.rapidapi.com"):
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=15.0,
+            connect_timeout=5.0,
+            max_retries=2,
+            enable_circuit_breaker=True,
+        )
+
+    def _get_headers(self) -> Dict[str, str]:
+        return {
+            "x-rapidapi-key": self.api_key,
+            "x-rapidapi-host": self.RAPIDAPI_HOST,
+            "Accept": "application/json",
+        }
+
+    def _create_response(
+        self,
+        success: bool,
+        data: Optional[Dict[str, Any]],
+        error: Optional[str],
+        status_code: Optional[int],
+        raw_response: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ) -> APIResponse:
+        return APIResponse(
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
+            provider=APIProvider.REDFIN,
+            raw_response=raw_response,
+        )
+
+    def _get_provider_name(self) -> str:
+        return "REDFIN"
+
+    async def search_address(self, address: str) -> APIResponse:
+        """Resolve a full address to Redfin's short location name via auto-complete."""
+        return await self._make_request(
+            "redfin/1.1/auto-complete", params={"location": address}
+        )
+
+    async def get_detail(self, location: str) -> APIResponse:
+        """Fetch full property detail (AVM, rental estimate, etc.)."""
+        return await self._make_request(
+            "redfin/detail", params={"location": location}
+        )
+
+    async def get_property_estimate(self, address: str) -> Optional[Dict[str, Any]]:
+        """Convenience: auto-complete → detail → extract AVM + rental estimate.
+
+        Returns a dict with ``redfin_estimate`` (property value) and
+        ``redfin_rental_estimate`` (monthly rent), or ``None`` on failure.
+        """
+        ac = await self.search_address(address)
+        if not ac.success or not ac.data:
+            return None
+
+        # Auto-complete wraps results under a nested "data" key
+        inner = ac.data.get("data") or ac.data
+        rows = inner.get("rows") or []
+        exact = inner.get("exactMatch")
+        match = exact or (rows[0] if rows else None)
+        if not match:
+            return None
+
+        location_name = match.get("name")
+        if not location_name:
+            return None
+
+        detail = await self.get_detail(location_name)
+        if not detail.success or not detail.data:
+            return None
+
+        payload = detail.data.get("data") or detail.data
+        result: Dict[str, Any] = {}
+
+        avm = payload.get("avm") or {}
+        result["redfin_estimate"] = avm.get("predictedValue")
+        result["redfin_last_sold_price"] = avm.get("lastSoldPrice")
+
+        rental = payload.get("rental-estimate") or {}
+        rental_info = rental.get("rentalEstimateInfo") or {}
+        result["redfin_rental_estimate"] = rental_info.get("predictedValue")
+        result["redfin_rental_low"] = rental_info.get("predictedValueLow")
+        result["redfin_rental_high"] = rental_info.get("predictedValueHigh")
+
+        return result
+
+
 class DataNormalizer:
     """
     Normalizes and merges data from multiple API providers
@@ -300,10 +404,11 @@ class DataNormalizer:
         self,
         rentcast_data: Optional[Dict[str, Any]],
         axesso_data: Optional[Dict[str, Any]],
-        timestamp: datetime
+        timestamp: datetime,
+        redfin_data: Optional[Dict[str, Any]] = None,
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """
-        Normalize and merge data from both providers.
+        Normalize and merge data from all providers.
         Returns: (normalized_data, provenance_map)
         """
         normalized = {}
@@ -374,14 +479,43 @@ class DataNormalizer:
                 "conflict_flag": conflict
             }
         
+        # Inject Redfin estimate as a standalone source (value-only, bypasses FIELD_MAPPING)
+        self._inject_redfin_data(normalized, provenance, redfin_data, timestamp)
+
         # Extract complex listing info from AXESSO data
         self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
         
-        # Compute proprietary IQ Estimates (50/50 average or single source)
+        # Compute proprietary IQ Estimates (average of all available sources)
         self._compute_iq_estimates(normalized, provenance, timestamp)
         
         return normalized, provenance
     
+    def _inject_redfin_data(
+        self,
+        normalized: Dict[str, Any],
+        provenance: Dict[str, Any],
+        redfin_data: Optional[Dict[str, Any]],
+        timestamp: datetime,
+    ):
+        """Inject Redfin estimate into normalized data with provenance tracking."""
+        ts = timestamp.isoformat()
+        rf_value = redfin_data.get("redfin_estimate") if redfin_data else None
+
+        if rf_value is not None:
+            try:
+                rf_value = float(rf_value)
+            except (TypeError, ValueError):
+                rf_value = None
+
+        normalized["redfin_estimate"] = rf_value
+        provenance["redfin_estimate"] = {
+            "source": "redfin" if rf_value is not None else "missing",
+            "fetched_at": ts,
+            "confidence": "high" if rf_value is not None else "low",
+            "raw_values": {"redfin": rf_value} if rf_value is not None else None,
+            "conflict_flag": False,
+        }
+
     def _extract_listing_info(
         self,
         normalized: Dict[str, Any],
@@ -509,36 +643,22 @@ class DataNormalizer:
         provenance: Dict[str, Any],
         timestamp: datetime,
     ):
-        """Compute IQ proprietary estimates — 50/50 average when both sources
-        are available, single-source value otherwise, None when neither exists."""
+        """Compute IQ proprietary estimates — average of all available sources,
+        single-source value when only one exists, None when none exist."""
         ts = timestamp.isoformat()
 
-        def _iq(rc_val, zl_val, field_name):
-            if rc_val is not None and zl_val is not None:
-                normalized[field_name] = round((float(rc_val) + float(zl_val)) / 2)
+        def _iq_multi(vals_map: Dict[str, Any], field_name: str):
+            """Average all non-None values from *vals_map* into *field_name*."""
+            present = {k: float(v) for k, v in vals_map.items() if v is not None}
+            if present:
+                avg = round(sum(present.values()) / len(present))
+                normalized[field_name] = avg
+                source = next(iter(present)) if len(present) == 1 else "merged"
                 provenance[field_name] = {
-                    "source": "merged",
+                    "source": source,
                     "fetched_at": ts,
                     "confidence": "high",
-                    "raw_values": {"rentcast": rc_val, "axesso": zl_val},
-                    "conflict_flag": False,
-                }
-            elif rc_val is not None:
-                normalized[field_name] = float(rc_val)
-                provenance[field_name] = {
-                    "source": "rentcast",
-                    "fetched_at": ts,
-                    "confidence": "high",
-                    "raw_values": {"rentcast": rc_val},
-                    "conflict_flag": False,
-                }
-            elif zl_val is not None:
-                normalized[field_name] = float(zl_val)
-                provenance[field_name] = {
-                    "source": "axesso",
-                    "fetched_at": ts,
-                    "confidence": "high",
-                    "raw_values": {"axesso": zl_val},
+                    "raw_values": present,
                     "conflict_flag": False,
                 }
             else:
@@ -551,14 +671,19 @@ class DataNormalizer:
                     "conflict_flag": False,
                 }
 
-        _iq(
-            normalized.get("rental_rentcast_estimate"),
-            normalized.get("rental_zillow_estimate"),
+        _iq_multi(
+            {
+                "rentcast": normalized.get("rental_rentcast_estimate"),
+                "axesso": normalized.get("rental_zillow_estimate"),
+            },
             "rental_iq_estimate",
         )
-        _iq(
-            normalized.get("rentcast_avm"),
-            normalized.get("zestimate"),
+        _iq_multi(
+            {
+                "rentcast": normalized.get("rentcast_avm"),
+                "axesso": normalized.get("zestimate"),
+                "redfin": normalized.get("redfin_estimate"),
+            },
             "value_iq_estimate",
         )
 
@@ -626,11 +751,14 @@ def create_api_clients(
     rentcast_api_key: str,
     rentcast_url: str,
     axesso_api_key: str,
-    axesso_url: str
-) -> Tuple[RentCastClient, AXESSOClient, DataNormalizer]:
+    axesso_url: str,
+    redfin_api_key: str = "",
+    redfin_url: str = "https://redfin-base.p.rapidapi.com",
+) -> Tuple[RentCastClient, AXESSOClient, DataNormalizer, Optional[RedfinClient]]:
     """Create configured API clients and normalizer."""
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
     normalizer = DataNormalizer()
-    
-    return rentcast, axesso, normalizer
+    redfin = RedfinClient(redfin_api_key, redfin_url) if redfin_api_key else None
+
+    return rentcast, axesso, normalizer, redfin

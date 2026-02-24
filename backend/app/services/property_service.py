@@ -13,7 +13,7 @@ import logging
 import re
 
 from app.services.api_clients import (
-    RentCastClient, AXESSOClient, DataNormalizer, create_api_clients
+    RentCastClient, AXESSOClient, RedfinClient, DataNormalizer, create_api_clients
 )
 from app.services.zillow_client import ZillowClient, ZillowDataExtractor, create_zillow_client
 from app.services.calculators import (
@@ -45,11 +45,13 @@ class PropertyService:
     """
     
     def __init__(self):
-        self.rentcast, self.axesso, self.normalizer = create_api_clients(
+        self.rentcast, self.axesso, self.normalizer, self.redfin = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
-            axesso_url=settings.AXESSO_URL
+            axesso_url=settings.AXESSO_URL,
+            redfin_api_key=settings.REDFIN_API_KEY,
+            redfin_url=settings.REDFIN_URL,
         )
         
         # Use the comprehensive ZillowClient for Zillow data
@@ -213,6 +215,7 @@ class PropertyService:
         axesso_export_for_return: Optional[Dict[str, Any]] = None
 
         zillow_zpid = None
+        redfin_data: Optional[Dict[str, Any]] = None
         if pre_fetched is not None:
             rentcast_merged, (axesso_unwrapped, axesso_export) = pre_fetched
             rentcast_data = rentcast_merged
@@ -307,12 +310,29 @@ class PropertyService:
                 logger.error(f"Error fetching Zillow data: {e}")
             timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
 
+            # Fetch from Redfin (value estimate only)
+            if self.redfin:
+                t_rf = time.perf_counter()
+                try:
+                    redfin_data = await self.redfin.get_property_estimate(address)
+                    if redfin_data:
+                        logger.info(
+                            "Redfin data retrieved - estimate: $%s",
+                            redfin_data.get("redfin_estimate"),
+                        )
+                    else:
+                        logger.warning("Redfin estimate unavailable for: %s", address)
+                except Exception as e:
+                    logger.error("Error fetching Redfin data: %s", e)
+                timings["redfin_ms"] = (time.perf_counter() - t_rf) * 1000
+
         # Normalize and merge data
         t_norm = time.perf_counter()
         normalized, provenance = self.normalizer.normalize(
             rentcast_data or None,
             axesso_data,
-            timestamp
+            timestamp,
+            redfin_data=redfin_data,
         )
         
         # Calculate data quality
@@ -708,6 +728,7 @@ class PropertyService:
             zestimate=normalized.get("zestimate"),
             zestimate_high_pct=normalized.get("zestimate_high_pct"),
             zestimate_low_pct=normalized.get("zestimate_low_pct"),
+            redfin_estimate=normalized.get("redfin_estimate"),
             market_price=market_price_val,
         )
 
