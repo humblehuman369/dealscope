@@ -3,6 +3,10 @@
  * Matches backend SavedPropertyResponse schema exactly
  */
 
+import type { PropertyDataSnapshot } from '@dealscope/shared'
+
+export type { PropertyDataSnapshot }
+
 export type PropertyStatus = 
   | 'watching' 
   | 'analyzing' 
@@ -18,58 +22,23 @@ export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'P
 // Seller type classification
 export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
 
-export interface PropertyDataSnapshot {
-  // Zillow Property ID for API calls
-  zpid?: string | number
-  
-  // Address info (stored in snapshot for reliability)
-  street?: string
-  city?: string
-  state?: string
-  zipCode?: string
-  
-  // Property details
-  listPrice?: number
-  monthlyRent?: number
-  propertyTaxes?: number
-  insurance?: number
-  bedrooms?: number
-  bathrooms?: number
-  sqft?: number
-  arv?: number
-  averageDailyRate?: number
-  occupancyRate?: number
-  photos?: string[]
-  
-  // Listing status info (for header display)
-  listingStatus?: ListingStatus
-  isOffMarket?: boolean
-  sellerType?: SellerType
-  isForeclosure?: boolean
-  isBankOwned?: boolean
-  isAuction?: boolean
-  isNewConstruction?: boolean
-  daysOnMarket?: number
-  zestimate?: number  // Estimated value for off-market properties
-}
-
 /** Light-weight summary returned by GET /api/v1/properties/saved (list endpoint). */
 export interface SavedPropertySummary {
   id: string
   address_street: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  nickname?: string
+  address_city: string | null
+  address_state: string | null
+  address_zip: string | null
+  nickname: string | null
   status: PropertyStatus
-  tags?: string[]
-  color_label?: string
-  priority?: number
-  best_strategy?: string
-  best_cash_flow?: number
-  best_coc_return?: number
+  tags: string[] | null
+  color_label: string | null
+  priority: number | null
+  best_strategy: string | null
+  best_cash_flow: number | null
+  best_coc_return: number | null
   saved_at: string
-  last_viewed_at?: string
+  last_viewed_at: string | null
   updated_at: string
 }
 
@@ -82,59 +51,62 @@ export interface SavedPropertyStats {
 export interface SavedProperty {
   // Core identification
   id: string
-  user_id?: string
-  external_property_id?: string
-  zpid?: string
+  user_id: string
+  external_property_id: string | null
+  zpid: string | null
   
   // Address fields (from backend)
   address_street: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  full_address?: string
+  address_city: string | null
+  address_state: string | null
+  address_zip: string | null
+  full_address: string | null
   
   // User customization
-  nickname?: string
-  status?: PropertyStatus
-  tags?: string[]
-  color_label?: string
-  priority?: number
-  notes?: string
+  nickname: string | null
+  status: PropertyStatus
+  tags: string[] | null
+  color_label: string | null
+  priority: number | null
+  notes: string | null
   
   // Property data at time of save
-  property_data_snapshot: PropertyDataSnapshot
+  property_data_snapshot: PropertyDataSnapshot | null
   
-  // Custom adjustments
-  custom_purchase_price?: number
-  custom_rent_estimate?: number
-  custom_arv?: number
-  custom_rehab_budget?: number
-  custom_daily_rate?: number
-  custom_occupancy_rate?: number
-  custom_assumptions?: Record<string, any>
+  // Custom adjustments (DEPRECATED - use deal_maker_record)
+  custom_purchase_price: number | null
+  custom_rent_estimate: number | null
+  custom_arv: number | null
+  custom_rehab_budget: number | null
+  custom_daily_rate: number | null
+  custom_occupancy_rate: number | null
+  custom_assumptions: Record<string, any> | null
   
-  // Worksheet assumptions (detailed analysis settings)
-  worksheet_assumptions?: Record<string, any>
+  // Worksheet assumptions (DEPRECATED - use deal_maker_record)
+  worksheet_assumptions: Record<string, any> | null
+  
+  // Deal Maker Record - the central analysis data structure
+  deal_maker_record: Record<string, any> | null
   
   // Analytics cache
-  last_analytics_result?: Record<string, any>
-  analytics_calculated_at?: string
+  last_analytics_result: Record<string, any> | null
+  analytics_calculated_at: string | null
   
-  // Quick metrics (from analytics)
-  best_strategy?: string
-  best_cash_flow?: number
-  best_coc_return?: number
+  // Quick metrics (inherited from Summary in backend)
+  best_strategy: string | null
+  best_cash_flow: number | null
+  best_coc_return: number | null
   
   // Timestamps
   created_at?: string
-  saved_at?: string
-  updated_at?: string
-  last_viewed_at?: string
-  data_refreshed_at?: string
+  saved_at: string
+  updated_at: string
+  last_viewed_at: string | null
+  data_refreshed_at: string | null
   
   // Related counts
-  document_count?: number
-  adjustment_count?: number
+  document_count: number
+  adjustment_count: number
 }
 
 /**

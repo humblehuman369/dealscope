@@ -74,7 +74,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
         // Check if we at least have assumptions we can use
         if (worksheetStore.assumptions?.purchasePrice > 0) {
           // Build a minimal synthetic property from worksheetStore
-          const syntheticProperty: SavedProperty = {
+          const syntheticProperty = {
             id: propertyId,
             user_id: '',
             address_street: extractAddressFromTempId(propertyId),
@@ -90,7 +90,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
             worksheet_assumptions: worksheetStore.assumptions,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          }
+          } as unknown as SavedProperty
           setProperty(syntheticProperty)
           setIsLoading(false)
           setError(null)

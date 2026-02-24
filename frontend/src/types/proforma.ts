@@ -349,11 +349,9 @@ export interface FinancialProforma {
   // Multi-Year Projections
   projections: ProformaProjections;
   
-  // Amortization
-  amortization: {
-    schedule: ProformaAmortizationRow[];
-    summary: ProformaAmortizationSummary;
-  };
+  // Amortization (flat fields — matches backend FinancialProforma schema)
+  amortizationSchedule: ProformaAmortizationRow[];
+  amortizationSummary: ProformaAmortizationSummary;
   
   // Exit Analysis
   exit: ExitAnalysis;
@@ -382,8 +380,9 @@ export interface FinancialProforma {
  */
 export interface ProformaRequest {
   propertyId: string;
-  strategy: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house-hack' | 'wholesale';
-  
+  address: string;
+  strategy?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house-hack' | 'wholesale';
+
   // Optional overrides
   purchasePrice?: number;
   monthlyRent?: number;

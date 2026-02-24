@@ -275,7 +275,7 @@ export interface DealScoreSummary {
   score: number;
   grade: string;
   verdict: string;
-  breakeven_price: number;
+  income_value: number;
   discount_required: number;
 }
 
@@ -361,19 +361,19 @@ export interface FinancialProforma {
 export interface ProformaRequest {
   property_id: string;
   address: string;
-  strategy: StrategyType;
+  strategy?: StrategyType;
 
   // Optional overrides
   purchase_price?: number | null;
   monthly_rent?: number | null;
 
-  // Tax configuration
-  land_value_percent: number;
-  marginal_tax_rate: number;
-  capital_gains_tax_rate: number;
+  // Tax configuration (backend has defaults: 0.20, 0.24, 0.15)
+  land_value_percent?: number;
+  marginal_tax_rate?: number;
+  capital_gains_tax_rate?: number;
 
-  // Projection settings
-  hold_period_years: number;
+  // Projection settings (backend default: 10)
+  hold_period_years?: number;
 
   // Export format
   format: ProformaFormat;

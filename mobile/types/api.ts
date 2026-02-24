@@ -77,7 +77,15 @@ export type DocumentType = 'contract' | 'inspection' | 'appraisal' | 'photos' | 
 // ===========================================
 // Strategy Enums
 // ===========================================
-export type StrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
+
+import type { StrategyId } from '@dealscope/shared';
+
+/**
+ * StrategyType in mobile = StrategyId from shared (snake_case API identifiers).
+ * This is intentionally different from shared's StrategyType which uses
+ * camelCase display names ('longTermRental', etc.) for UI components.
+ */
+export type StrategyType = StrategyId;
 
 export const STRATEGY_LABELS: Record<StrategyType, string> = {
   ltr: 'Long-Term Rental',

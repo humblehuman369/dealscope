@@ -127,7 +127,7 @@ export function useWorksheetProperty(
           worksheet_assumptions: worksheetStore.assumptions,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        } as SavedPropertyResponse;
+        } as unknown as SavedPropertyResponse;
         setProperty(syntheticProperty);
         setIsLoading(false);
         setError(null);

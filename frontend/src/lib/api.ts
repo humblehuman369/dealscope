@@ -16,6 +16,10 @@
 
 import { apiRequest } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
+import type { PropertyResponse } from '@dealscope/shared'
+
+// Re-export so existing consumers can still import from this file
+export type { PropertyResponse }
 
 // ------------------------------------------------------------------
 // Types
@@ -26,45 +30,6 @@ export interface PropertySearchRequest {
   city?: string
   state?: string
   zip_code?: string
-}
-
-export interface PropertyResponse {
-  property_id: string
-  address: {
-    street: string
-    city: string
-    state: string
-    zip_code: string
-    full_address: string
-  }
-  details: {
-    property_type: string
-    bedrooms: number
-    bathrooms: number
-    square_footage: number
-    year_built: number
-  }
-  valuations: {
-    current_value_avm: number
-    value_range_low: number
-    value_range_high: number
-    arv: number
-    arv_flip: number
-  }
-  rentals: {
-    monthly_rent_ltr: number
-    average_daily_rate: number
-    occupancy_rate: number
-  }
-  market: {
-    property_taxes_annual: number
-    hoa_fees_monthly: number
-  }
-  data_quality: {
-    completeness_score: number
-    missing_fields: string[]
-    conflict_fields: string[]
-  }
 }
 
 export interface AnalyticsRequest {

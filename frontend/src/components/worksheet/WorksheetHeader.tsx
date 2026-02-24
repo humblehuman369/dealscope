@@ -12,7 +12,7 @@ import {
   Check,
   ArrowLeft,
 } from 'lucide-react'
-import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { SavedProperty, getDisplayAddress, type ListingStatus, type SellerType } from '@/types/savedProperty'
 import { PropertyStatusPills } from './PropertyStatusPills'
 import { formatCurrency } from '@/utils/formatters'
 
@@ -109,11 +109,11 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           {/* Center: Status Pills (hidden on small screens) */}
           <div className="hidden lg:flex flex-shrink-0">
             <PropertyStatusPills
-              listingStatus={property.property_data_snapshot?.listingStatus}
+              listingStatus={property.property_data_snapshot?.listingStatus as ListingStatus | undefined}
               isOffMarket={property.property_data_snapshot?.isOffMarket}
               listPrice={property.property_data_snapshot?.listPrice}
               zestimate={property.property_data_snapshot?.zestimate}
-              sellerType={property.property_data_snapshot?.sellerType}
+              sellerType={property.property_data_snapshot?.sellerType as SellerType | undefined}
               isForeclosure={property.property_data_snapshot?.isForeclosure}
               isBankOwned={property.property_data_snapshot?.isBankOwned}
               isAuction={property.property_data_snapshot?.isAuction}

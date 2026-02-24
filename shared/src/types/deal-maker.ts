@@ -10,7 +10,7 @@
  * All field names use snake_case to match backend schemas/deal_maker.py exactly.
  */
 
-import type { StrategyType } from './strategy';
+import type { StrategyId } from './strategy';
 
 // =============================================================================
 // INITIAL ASSUMPTIONS (locked at creation)
@@ -83,6 +83,7 @@ export interface CachedMetrics {
   // Deal analysis
   deal_gap_pct?: number | null;
   breakeven_price?: number | null;
+  income_value?: number | null;
 
   // Metadata
   calculated_at?: string | null;
@@ -196,7 +197,7 @@ export interface DealMakerRecord {
   wholesale_closing_costs?: number | null;
 
   // Strategy type
-  strategy_type?: StrategyType | null;
+  strategy_type?: StrategyId | null;
 
   // === Cached Metrics ===
   cached_metrics?: CachedMetrics | null;

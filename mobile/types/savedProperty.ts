@@ -4,6 +4,7 @@
 
 import { PropertyStatus, ColorLabel, StrategyType } from './api';
 import { DealMakerRecord } from './dealMaker';
+import type { PropertyDataSnapshot } from '@dealscope/shared';
 
 // ===========================================
 // Saved Property Summary (list view)
@@ -40,8 +41,8 @@ export interface SavedPropertyResponse extends SavedPropertySummary {
   zpid: string | null;
   full_address: string | null;
 
-  // Full property data
-  property_data_snapshot: Record<string, unknown> | null;
+  // Full property data (typed via shared PropertyDataSnapshot)
+  property_data_snapshot: PropertyDataSnapshot | null;
 
   // Custom adjustments (DEPRECATED - use deal_maker_record)
   custom_purchase_price: number | null;
@@ -89,7 +90,7 @@ export interface SavedPropertyCreate {
   full_address?: string | null;
 
   // Property data snapshot
-  property_data_snapshot?: Record<string, unknown> | null;
+  property_data_snapshot?: PropertyDataSnapshot | null;
 
   // Deal Maker Record
   deal_maker_record?: DealMakerRecord | null;

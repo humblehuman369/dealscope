@@ -14,6 +14,15 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/apiClient';
+import type { PropertyResponse } from '@dealscope/shared';
+
+export type { PropertyResponse };
+
+/**
+ * Extended PropertyResponse that allows dynamic field access for backward
+ * compatibility. Matches frontend's PropertyResponseCompat approach.
+ */
+type PropertyResponseCompat = PropertyResponse & Record<string, any>;
 
 const PROPERTY_STALE_TIME = 5 * 60 * 1000; // 5 min — matches frontend
 
@@ -30,9 +39,9 @@ export function finiteOrNull(v: unknown): number | null {
  * Field list matches frontend validatePropertyResponse exactly.
  */
 export function validatePropertyResponse(
-  data: Record<string, any>,
-): Record<string, any> {
-  const v = data.valuations;
+  data: PropertyResponseCompat,
+): PropertyResponseCompat {
+  const v = data.valuations as Record<string, any> | undefined;
   if (v) {
     for (const k of [
       'zestimate',
@@ -47,11 +56,11 @@ export function validatePropertyResponse(
     }
   }
 
-  const r = data.rentals;
+  const r = data.rentals as Record<string, any> | undefined;
   if (r) {
     if (r.monthly_rent_ltr != null)
       r.monthly_rent_ltr = finiteOrNull(r.monthly_rent_ltr);
-    const rs = r.rental_stats;
+    const rs = r.rental_stats as Record<string, any> | undefined;
     if (rs) {
       for (const k of [
         'iq_estimate',
@@ -78,11 +87,11 @@ export function usePropertyData() {
   const queryClient = useQueryClient();
 
   const fetchProperty = useCallback(
-    async (address: string): Promise<Record<string, any>> => {
+    async (address: string): Promise<PropertyResponseCompat> => {
       return queryClient.ensureQueryData({
         queryKey: ['property-search', address],
         queryFn: async () => {
-          const raw = await api.post<Record<string, any>>(
+          const raw = await api.post<PropertyResponseCompat>(
             '/api/v1/properties/search',
             { address },
           );
