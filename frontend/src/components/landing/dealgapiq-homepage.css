@@ -75,7 +75,7 @@
 /* =====================================================
    HERO
    ===================================================== */
-.iq-landing .hero { padding: 10rem 2rem 4rem; max-width: 900px; margin: 0 auto; text-align: center; }
+.iq-landing .hero { padding: 5rem 2rem 4rem; max-width: 900px; margin: 0 auto; text-align: center; }
 .iq-landing .hero h1 { font-size: clamp(2.25rem,5vw,3.5rem); font-weight: 700; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 1.75rem; }
 .iq-landing .hero-desc { font-size: 1.1rem; color: var(--text); max-width: 680px; margin: 0 auto 2.5rem; line-height: 1.8; }
 .iq-landing .hero-search { display: flex; gap: .75rem; max-width: 520px; margin: 0 auto 1rem; }
@@ -423,7 +423,7 @@
    RESPONSIVE
    ===================================================== */
 @media(max-width:768px) {
-  .iq-landing .hero { padding: 8rem 1.5rem 3rem; }
+  .iq-landing .hero { padding: 4.5rem 1.5rem 3rem; }
   .iq-landing .sec { padding: 3.5rem 1.5rem; }
   .iq-landing .hero-stats { gap: .75rem; }
   .iq-landing .hero-stat { padding: .85rem .75rem; }
