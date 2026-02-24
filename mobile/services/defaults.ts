@@ -280,17 +280,22 @@ export const defaultsService = {
     }
     
     try {
-      const response = await apiRequest<AllDefaults>('/api/v1/defaults');
+      // Use /api/v1/assumptions/defaults (matches frontend) which may
+      // include DB-level overrides. Response is { assumptions, descriptions }.
+      const response = await apiRequest<{ assumptions: AllDefaults; descriptions?: unknown }>(
+        '/api/v1/assumptions/defaults',
+      );
+      const defaults = response.assumptions ?? (response as unknown as AllDefaults);
       
       // Update caches
-      memoryCache = response;
+      memoryCache = defaults;
       memoryCacheTimestamp = Date.now();
       
       // Persist to AsyncStorage for offline access
-      await AsyncStorage.setItem(STORAGE_KEYS.DEFAULTS, JSON.stringify(response));
+      await AsyncStorage.setItem(STORAGE_KEYS.DEFAULTS, JSON.stringify(defaults));
       await AsyncStorage.setItem(STORAGE_KEYS.DEFAULTS_TIMESTAMP, String(Date.now()));
       
-      return response;
+      return defaults;
     } catch (error) {
       if (__DEV__) console.warn('Failed to fetch defaults from API:', error);
       

@@ -32,13 +32,19 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_MIN_HEIGHT = 280;
 const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.5;
 
+/**
+ * M17 parity note: useIQVerdictFlow and onWrongProperty are intentional
+ * mobile-only enhancements. The frontend ScanResultSheet has only the base
+ * props (result, onClose, onViewDetails) because the web scanner UX doesn't
+ * need disambiguation or verdict flow gating. The core props match.
+ */
 interface ScanResultSheetProps {
   result: ScanResult;
   onClose: () => void;
   onViewDetails: () => void;
-  /** Enable the new IQ Verdict flow (Analyze → Verdict → Worksheet) */
+  /** Mobile-only: enable the IQ Verdict flow (Analyze → Verdict → Worksheet) */
   useIQVerdictFlow?: boolean;
-  /** Called when user taps "Not the right property?" to re-open disambiguation */
+  /** Mobile-only: re-open disambiguation when the scanned property is wrong */
   onWrongProperty?: () => void;
 }
 

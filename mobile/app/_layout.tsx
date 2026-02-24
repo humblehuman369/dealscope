@@ -317,6 +317,15 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* Billing & Subscription */}
+        <Stack.Screen 
+          name="billing" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Offline connectivity banner — slides down when no internet */}

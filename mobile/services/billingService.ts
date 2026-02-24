@@ -152,6 +152,29 @@ export function formatPrice(cents: number, yearly = false): string {
 }
 
 // ===========================================
+// Setup Intent & Subscribe Endpoints (M5 parity)
+// ===========================================
+
+/**
+ * Create a Stripe setup intent for saving a payment method
+ */
+export async function setupIntent(): Promise<{ client_secret: string }> {
+  return api.post<{ client_secret: string }>('/api/v1/billing/setup-intent', {});
+}
+
+/**
+ * Subscribe to a plan directly (alternative to checkout flow)
+ */
+export async function subscribe(
+  priceId: string,
+): Promise<{ subscription_id: string; status: string }> {
+  return api.post<{ subscription_id: string; status: string }>(
+    '/api/v1/billing/subscribe',
+    { price_id: priceId },
+  );
+}
+
+// ===========================================
 // Export as billingService object
 // ===========================================
 export const billingService = {
@@ -166,6 +189,8 @@ export const billingService = {
   // Checkout & Portal
   createCheckoutSession,
   createPortalSession,
+  setupIntent,
+  subscribe,
 
   // Payment History
   getPaymentHistory,

@@ -40,14 +40,24 @@ export interface SignalIndicator {
 }
 
 export interface VerdictHeroProps {
-  score: number;
+  /** Mobile-native prop name — also accepts `dealScore` for frontend parity */
+  score?: number;
+  /** Frontend-compatible alias for `score` */
+  dealScore?: number;
   verdictLabel: string;
-  verdictSubtitle: string;
+  /** Mobile-native prop name — also accepts `verdictSublabel` for frontend parity */
+  verdictSubtitle?: string;
+  /** Frontend-compatible alias for `verdictSubtitle` */
+  verdictSublabel?: string;
   confidenceMetrics: ConfidenceMetric[];
   signalIndicators?: SignalIndicator[];
+  /** Frontend-parity props — surfaced in signal indicators when provided */
+  dealGap?: number;
+  motivationLevel?: string;
+  motivationScore?: number;
+  /** Frontend-compatible alias for onHowItWorksPress */
+  onShowMethodology?: () => void;
   onHowItWorksPress?: () => void;
-  /** @deprecated Use onHowItWorksPress — the two links have been merged */
-  onHowWeScorePress?: () => void;
 }
 
 // =============================================================================
@@ -88,15 +98,18 @@ const getSignalAccentBg = (color: 'teal' | 'amber' | 'negative'): string => {
 // COMPONENT
 // =============================================================================
 
-export function VerdictHero({
-  score,
-  verdictLabel,
-  verdictSubtitle,
-  confidenceMetrics,
-  signalIndicators,
-  onHowItWorksPress,
-  onHowWeScorePress,
-}: VerdictHeroProps) {
+export function VerdictHero(props: VerdictHeroProps) {
+  const {
+    verdictLabel,
+    confidenceMetrics,
+    signalIndicators,
+  } = props;
+
+  // Resolve aliased props for frontend parity
+  const score = props.score ?? props.dealScore ?? 0;
+  const verdictSubtitle = props.verdictSubtitle ?? props.verdictSublabel ?? '';
+  const onHowItWorksPress = props.onHowItWorksPress ?? props.onShowMethodology;
+
   const verdictColor = getVerdictColor(score);
   const pillBg = getVerdictPillBg(score);
 

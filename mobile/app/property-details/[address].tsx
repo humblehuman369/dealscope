@@ -16,6 +16,8 @@ export default function PropertyDetailsRoute() {
   const { isDark } = useTheme();
   const params = useLocalSearchParams<{
     address: string;
+    zpid?: string;
+    propertyId?: string;
     price?: string;
     beds?: string;
     baths?: string;
@@ -30,20 +32,22 @@ export default function PropertyDetailsRoute() {
 
   const decodedAddress = decodeURIComponent(params.address || '');
 
-  // Build property object from route params
+  // Build property object from route params — no hardcoded fallbacks
   const property = {
     address: decodedAddress || 'Unknown Address',
-    city: params.city || 'Boca Raton',
-    state: params.state || 'FL',
-    zip: params.zip || '33486',
-    price: params.price ? parseInt(params.price, 10) : 821000,
-    beds: params.beds ? parseInt(params.beds, 10) : 4,
-    baths: params.baths ? parseFloat(params.baths) : 2,
-    sqft: params.sqft ? parseInt(params.sqft, 10) : 1722,
-    rent: params.rent ? parseInt(params.rent, 10) : 5555,
-    yearBuilt: 1969,
+    zpid: params.zpid ?? null,
+    propertyId: params.propertyId ?? null,
+    city: params.city ?? '',
+    state: params.state ?? '',
+    zip: params.zip ?? '',
+    price: params.price ? parseInt(params.price, 10) : 0,
+    beds: params.beds ? parseInt(params.beds, 10) : 0,
+    baths: params.baths ? parseFloat(params.baths) : 0,
+    sqft: params.sqft ? parseInt(params.sqft, 10) : 0,
+    rent: params.rent ? parseInt(params.rent, 10) : 0,
+    yearBuilt: 0,
     status: 'FOR SALE',
-    images: Array(12).fill('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&q=80'),
+    images: [] as string[],
     latitude: params.lat ? parseFloat(params.lat) : undefined,
     longitude: params.lng ? parseFloat(params.lng) : undefined,
   };
