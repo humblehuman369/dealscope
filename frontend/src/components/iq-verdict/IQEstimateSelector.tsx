@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { colors } from './verdict-design-tokens'
+import { colors, cardGlow } from './verdict-design-tokens'
 
 export type DataSourceId = 'iq' | 'zillow' | 'rentcast'
 
@@ -170,7 +170,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+      style={{ background: cardGlow.lg.background, border: cardGlow.lg.border, boxShadow: cardGlow.lg.boxShadow, transition: cardGlow.lg.transition }}
     >
       <div className="flex items-center gap-2 mb-3">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={colors.brand.teal} strokeWidth="2" strokeLinecap="round">

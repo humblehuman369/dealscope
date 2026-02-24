@@ -238,6 +238,36 @@ export const colors = {
 } as const
 
 // ===================
+// CARD GLOW SYSTEM — persistent teal illumination per DealGapIQ Design System
+// ===================
+
+export const cardGlow = {
+  sm: {
+    background: '#000000',
+    border: '1px solid rgba(14,165,233,0.25)',
+    boxShadow: '0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04)',
+    transition: 'border-color .3s, box-shadow .3s',
+    hoverBorder: '1px solid rgba(14,165,233,0.55)',
+    hoverBoxShadow: '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)',
+  },
+  lg: {
+    background: '#000000',
+    border: '1px solid rgba(14,165,233,0.3)',
+    boxShadow: '0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05)',
+    transition: 'border-color .3s, box-shadow .3s',
+    hoverBorder: '1px solid rgba(14,165,233,0.55)',
+    hoverBoxShadow: '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)',
+  },
+  /** Active/dominant card — brighter glow for selected state (e.g. Target Buy) */
+  active: {
+    background: '#000000',
+    border: '2px solid rgba(14,165,233,0.5)',
+    boxShadow: '0 0 40px rgba(14,165,233,0.18), 0 0 80px rgba(14,165,233,0.08)',
+    transition: 'border-color .3s, box-shadow .3s',
+  },
+} as const
+
+// ===================
 // COMPONENT PATTERNS
 // ===================
 
@@ -374,10 +404,10 @@ export function getMarketTempColor(temp: string): string {
  * True black base, 7% white borders, Inter typography
  */
 export const tw = {
-  // Cards
-  card: 'rounded-[14px] border border-white/[0.07]',
-  cardBg: 'bg-[#0C1220]',
-  cardHover: 'hover:border-sky-400/25 transition-all',
+  // Cards — glow system (pure black + teal borders)
+  card: 'rounded-[14px] border border-[rgba(14,165,233,0.25)]',
+  cardBg: 'bg-black',
+  cardHover: 'hover:border-[rgba(14,165,233,0.55)] transition-all',
 
   // Section headers
   sectionHeader: 'text-xs font-bold text-sky-400 uppercase tracking-[0.12em]',
@@ -397,9 +427,9 @@ export const tw = {
   // Dividers
   divider: 'border-t border-white/[0.07]',
 
-  // VerdictIQ Visual Polish
-  investmentCard: 'bg-[#0C1220] rounded-[14px] border border-white/[0.07] p-5',
-  metricCard: 'bg-[#0C1220] rounded-xl border border-white/[0.07] p-4 text-center',
+  // VerdictIQ Visual Polish — glow system
+  investmentCard: 'bg-black rounded-[14px] border border-[rgba(14,165,233,0.3)] p-5',
+  metricCard: 'bg-black rounded-xl border border-[rgba(14,165,233,0.25)] p-4 text-center',
   pillBadge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.03em]',
   glowRing: 'drop-shadow-[0_0_12px_rgba(56,189,248,0.25)]',
 
