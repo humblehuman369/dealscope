@@ -181,7 +181,7 @@ const COMPONENTS: { key: keyof VerdictScoreCardProps['componentScores']; label: 
 
 export function ComponentScoreBars({ scores, dealGapPercent }: { scores: VerdictScoreCardProps['componentScores']; dealGapPercent?: number }) {
   return (
-    <div className="mt-3 text-left max-w-sm mx-auto">
+    <div className="mt-3 text-left">
       <p
         className="text-[10px] font-bold uppercase tracking-wider mb-3"
         style={{ color: colors.text.secondary }}
