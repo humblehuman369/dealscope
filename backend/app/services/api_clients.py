@@ -497,24 +497,27 @@ class DataNormalizer:
         redfin_data: Optional[Dict[str, Any]],
         timestamp: datetime,
     ):
-        """Inject Redfin estimate into normalized data with provenance tracking."""
+        """Inject Redfin value and rental estimates into normalized data."""
         ts = timestamp.isoformat()
-        rf_value = redfin_data.get("redfin_estimate") if redfin_data else None
 
-        if rf_value is not None:
-            try:
-                rf_value = float(rf_value)
-            except (TypeError, ValueError):
-                rf_value = None
+        def _inject_field(raw_key: str, norm_key: str):
+            val = redfin_data.get(raw_key) if redfin_data else None
+            if val is not None:
+                try:
+                    val = float(val)
+                except (TypeError, ValueError):
+                    val = None
+            normalized[norm_key] = val
+            provenance[norm_key] = {
+                "source": "redfin" if val is not None else "missing",
+                "fetched_at": ts,
+                "confidence": "high" if val is not None else "low",
+                "raw_values": {"redfin": val} if val is not None else None,
+                "conflict_flag": False,
+            }
 
-        normalized["redfin_estimate"] = rf_value
-        provenance["redfin_estimate"] = {
-            "source": "redfin" if rf_value is not None else "missing",
-            "fetched_at": ts,
-            "confidence": "high" if rf_value is not None else "low",
-            "raw_values": {"redfin": rf_value} if rf_value is not None else None,
-            "conflict_flag": False,
-        }
+        _inject_field("redfin_estimate", "redfin_estimate")
+        _inject_field("redfin_rental_estimate", "redfin_rental_estimate")
 
     def _extract_listing_info(
         self,
@@ -675,6 +678,7 @@ class DataNormalizer:
             {
                 "rentcast": normalized.get("rental_rentcast_estimate"),
                 "axesso": normalized.get("rental_zillow_estimate"),
+                "redfin": normalized.get("redfin_rental_estimate"),
             },
             "rental_iq_estimate",
         )

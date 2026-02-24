@@ -30,7 +30,7 @@ function validatePropertyResponse(data: Record<string, any>): Record<string, any
     if (r.monthly_rent_ltr != null) r.monthly_rent_ltr = finiteOrNull(r.monthly_rent_ltr)
     const rs = r.rental_stats
     if (rs) {
-      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate']) {
+      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate']) {
         if (rs[k] != null) rs[k] = finiteOrNull(rs[k])
       }
     }

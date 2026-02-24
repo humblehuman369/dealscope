@@ -214,7 +214,7 @@ function VerdictContent() {
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null },
-    rent: { iq: null, zillow: null, rentcast: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
   })
 
   // Stores the static analysis inputs so the verdict can be re-calculated
@@ -363,6 +363,7 @@ function VerdictContent() {
             iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
+            redfin: rentalStats?.redfin_estimate ?? null,
           },
         })
 

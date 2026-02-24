@@ -8,14 +8,14 @@ alwaysApply: false
 
 ## Multi-Source Model
 
-**Property Value** has 4 selectable sources; **Monthly Rent** has 3 (Redfin has no rental data):
+Both **Property Value** and **Monthly Rent** have 4 selectable sources:
 
 | Source | Description | Backend Field (rent) | Backend Field (value) |
 |--------|-------------|---------------------|----------------------|
 | IQ Estimate | avg of all available providers (default) | `rental_stats.iq_estimate` | `valuations.value_iq_estimate` |
 | Zillow | Raw Zillow value | `rental_stats.zillow_estimate` | `valuations.zestimate` |
 | RentCast | Raw RentCast value | `rental_stats.rentcast_estimate` | `valuations.rentcast_avm` |
-| Redfin | Redfin AVM estimate (value only) | — | `valuations.redfin_estimate` |
+| Redfin | Redfin estimate | `rental_stats.redfin_estimate` | `valuations.redfin_estimate` |
 
 ## Selection Rules
 

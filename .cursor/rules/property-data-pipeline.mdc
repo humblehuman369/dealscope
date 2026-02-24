@@ -22,8 +22,8 @@ changes must go in `api_clients.py :: DataNormalizer`.
 ```
 FIELD_MAPPING (declarative)          _compute_iq_estimates (post-processing)
 ─────────────────────────────        ──────────────────────────────────────
-rentcast_data + axesso_data   →      rental_iq_estimate   = avg(rc, zl)
-  ↓ priority-based extraction        value_iq_estimate    = avg(rc, zl)
+rentcast_data + axesso_data   →      rental_iq_estimate   = avg(rc, zl, rf)
+  ↓ priority-based extraction        value_iq_estimate    = avg(rc, zl, rf)
   ↓ conflict detection (>15%)        (single source if only one available)
   ↓ weighted merge when conflict
   ↓
@@ -42,9 +42,9 @@ normalized dict + provenance dict
 ### IQ Estimate Computation
 
 `_compute_iq_estimates()` runs after FIELD_MAPPING and computes:
-- `rental_iq_estimate` = avg of available [rc_rent, zl_rent] — or single source
+- `rental_iq_estimate` = avg of available [rc_rent, zl_rent, rf_rent] — or single source
 - `value_iq_estimate`  = avg of available [rc_avm, zestimate, redfin_estimate] — or single source
-- Redfin estimate is injected via `_inject_redfin_data()` before IQ computation
+- Redfin value and rental estimates are injected via `_inject_redfin_data()` before IQ computation
 - Both are `None` when no source has data — **never fabricated**
 
 ## Data Flow: Backend → Frontend
@@ -57,7 +57,7 @@ DataNormalizer.normalize()  (api_clients.py)
 normalized dict  { rental_iq_estimate, rental_rentcast_estimate, ... }
         ↓
 PropertyService._build_valuations()  →  ValuationData { value_iq_estimate, rentcast_avm, zestimate }
-PropertyService → RentalData          →  RentalMarketStatistics { iq_estimate, zillow_estimate, rentcast_estimate }
+PropertyService → RentalData          →  RentalMarketStatistics { iq_estimate, zillow_estimate, rentcast_estimate, redfin_estimate }
         ↓
 PropertyResponse (JSON)
         ↓
