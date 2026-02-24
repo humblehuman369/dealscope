@@ -82,7 +82,7 @@ function StrategyContent() {
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null },
-    rent: { iq: null, zillow: null, rentcast: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
 
@@ -192,6 +192,7 @@ function StrategyContent() {
             iq: rentalStats?.iq_estimate ?? propData.rentals?.monthly_rent_ltr ?? null,
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
+            redfin: rentalStats?.redfin_estimate ?? null,
           },
         })
 

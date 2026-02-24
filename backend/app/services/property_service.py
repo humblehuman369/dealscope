@@ -394,6 +394,7 @@ class PropertyService:
                 rental_stats=RentalMarketStatistics(
                     rentcast_estimate=normalized.get("rental_rentcast_estimate"),
                     zillow_estimate=normalized.get("rental_zillow_estimate"),
+                    redfin_estimate=normalized.get("redfin_rental_estimate"),
                     iq_estimate=normalized.get("rental_iq_estimate"),
                     estimate_low=normalized.get("rent_range_low"),
                     estimate_high=normalized.get("rent_range_high"),
@@ -410,6 +411,7 @@ class PropertyService:
                 ) if any([
                     normalized.get("rental_rentcast_estimate") is not None,
                     normalized.get("rental_zillow_estimate") is not None,
+                    normalized.get("redfin_rental_estimate") is not None,
                     normalized.get("rental_iq_estimate") is not None,
                     normalized.get("rental_market_avg") is not None,
                     normalized.get("rental_market_median") is not None,

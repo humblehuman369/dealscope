@@ -200,7 +200,8 @@ class RentalMarketStatistics(BaseModel):
     # Property-specific estimates (null = unavailable, never fabricated)
     rentcast_estimate: Optional[float] = None     # RentCast rent estimate
     zillow_estimate: Optional[float] = None       # Zillow rentZestimate
-    iq_estimate: Optional[float] = None           # DealGapIQ: avg of both, or single source if only one available
+    redfin_estimate: Optional[float] = None       # Redfin rental estimate
+    iq_estimate: Optional[float] = None           # DealGapIQ: avg of available sources
     
     # Estimate range (from RentCast)
     estimate_low: Optional[float] = None
