@@ -25,8 +25,8 @@ export interface VerdictScoreCardProps {
   score: number
   /** Human-readable verdict label, e.g. "Strong Opportunity" */
   verdictLabel: string
-  /** One-liner explaining the verdict */
-  description: string
+  /** Verdict explanation — plain string or structured JSX */
+  description: React.ReactNode
   /** Four component scores, each 0–90 */
   componentScores: {
     dealGap: number

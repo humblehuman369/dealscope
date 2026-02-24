@@ -798,19 +798,27 @@ function VerdictContent() {
     return lp != null && lp > 0 && incomeValue != null ? Math.round(((lp - incomeValue) / lp) * 1000) / 10 : undefined
   })()
 
+  // Deal gap needed for both description and signal indicators
+  const of = analysis.opportunityFactors
+  const dealGap = of?.dealGap ?? discountPct
+
   // Short verdict description (override backend long copy for this page)
   const shortVerdictDescription = incomeGapPct != null
     ? (incomeGapPct > 0
-      ? `${priceLabel} price is ${incomeGapPct}% above Income Value. Negotiation is needed to reach your target return.`
+      ? (
+        <>
+          <span>Income Value is <strong style={{ color: '#f87171' }}>-{incomeGapPct}%</strong> below {priceLabel} Price</span>
+          <br />
+          <span>Target Buy is <strong style={{ color: '#f87171' }}>-{dealGap.toFixed(1)}%</strong> below {priceLabel} Price</span>
+          <br />
+          <span style={{ opacity: 0.7, fontSize: '0.8rem', marginTop: '2px', display: 'inline-block' }}>Negotiation is needed to reach your target return.</span>
+        </>
+      )
       : `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`)
     : (analysis.verdictDescription || 'Calculating deal metrics...')
 
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
-
-  // Signal indicators — only real data, no hardcoded values
-  const of = analysis.opportunityFactors
-  const dealGap = of?.dealGap ?? discountPct
   const urgency = of?.motivation ?? 50
   const market = of?.buyerMarket || 'Warm'
   const signals = [
