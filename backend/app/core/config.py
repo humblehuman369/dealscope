@@ -74,6 +74,9 @@ class Settings(BaseSettings):
     AXESSO_API_KEY: str = ""
     AXESSO_URL: str = "https://api.axesso.de/zil"
     
+    REDFIN_API_KEY: str = ""
+    REDFIN_URL: str = "https://redfin-base.p.rapidapi.com"
+    
     # ===========================================
     # JWT Authentication
     # ===========================================
@@ -308,6 +311,7 @@ def validate_settings(settings: Settings) -> None:
         _prod_keys = [
             ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY, "property data"),
             ("AXESSO_API_KEY", settings.AXESSO_API_KEY, "Zillow data"),
+            ("REDFIN_API_KEY", settings.REDFIN_API_KEY, "Redfin data"),
             ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY, "billing"),
             ("RESEND_API_KEY", settings.RESEND_API_KEY, "email delivery"),
         ]
@@ -323,6 +327,7 @@ def validate_settings(settings: Settings) -> None:
         _optional_keys = [
             ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY),
             ("AXESSO_API_KEY", settings.AXESSO_API_KEY),
+            ("REDFIN_API_KEY", settings.REDFIN_API_KEY),
             ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY),
         ]
         for key_name, key_value in _optional_keys:

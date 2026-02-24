@@ -20,7 +20,7 @@ function finiteOrNull(v: unknown): number | null {
 function validatePropertyResponse(data: Record<string, any>): Record<string, any> {
   const v = data.valuations
   if (v) {
-    for (const k of ['zestimate', 'current_value_avm', 'market_price', 'tax_assessed_value', 'value_iq_estimate', 'rentcast_avm']) {
+    for (const k of ['zestimate', 'current_value_avm', 'market_price', 'tax_assessed_value', 'value_iq_estimate', 'rentcast_avm', 'redfin_estimate']) {
       if (v[k] != null) v[k] = finiteOrNull(v[k])
     }
   }

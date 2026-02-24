@@ -1,20 +1,21 @@
 ---
-description: IQ Estimate 3-value source selector — UI, state, and recalculation rules
+description: IQ Estimate multi-source selector — UI, state, and recalculation rules
 globs: frontend/src/components/iq-verdict/IQEstimateSelector.tsx, frontend/src/app/verdict/page.tsx, frontend/src/app/strategy/page.tsx
 alwaysApply: false
 ---
 
 # IQ Estimate Source Selector
 
-## 3-Value Model
+## Multi-Source Model
 
-For both **Property Value** and **Monthly Rent**, three values are displayed:
+**Property Value** has 4 selectable sources; **Monthly Rent** has 3 (Redfin has no rental data):
 
 | Source | Description | Backend Field (rent) | Backend Field (value) |
 |--------|-------------|---------------------|----------------------|
-| IQ Estimate | 50/50 avg of both providers (default) | `rental_stats.iq_estimate` | `valuations.value_iq_estimate` |
+| IQ Estimate | avg of all available providers (default) | `rental_stats.iq_estimate` | `valuations.value_iq_estimate` |
 | Zillow | Raw Zillow value | `rental_stats.zillow_estimate` | `valuations.zestimate` |
 | RentCast | Raw RentCast value | `rental_stats.rentcast_estimate` | `valuations.rentcast_avm` |
+| Redfin | Redfin AVM estimate (value only) | — | `valuations.redfin_estimate` |
 
 ## Selection Rules
 

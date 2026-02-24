@@ -1,17 +1,19 @@
 'use client'
 
 /**
- * IQEstimateSelector — 3-value data source selector
+ * IQEstimateSelector — multi-source data source selector
  *
- * Displays IQ Estimate (avg of Zillow + RentCast), Zillow, and RentCast
- * values for both property value and monthly rent. The user can select
- * which source drives calculations. Selection persists in sessionStorage.
+ * Displays IQ Estimate (avg of all available sources), Zillow, RentCast,
+ * and Redfin values for property value, and IQ/Zillow/RentCast for
+ * monthly rent. The user can select which source drives calculations.
+ * Selection persists in sessionStorage.
  */
 
 import { useCallback, useEffect, useState } from 'react'
 import { colors, cardGlow } from './verdict-design-tokens'
 
-export type DataSourceId = 'iq' | 'zillow' | 'rentcast'
+export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin'
+type RentSourceId = 'iq' | 'zillow' | 'rentcast'
 
 interface SourceValue {
   value: number | null
@@ -23,6 +25,7 @@ export interface IQEstimateSources {
     iq: number | null
     zillow: number | null
     rentcast: number | null
+    redfin: number | null
   }
   rent: {
     iq: number | null
@@ -41,6 +44,7 @@ const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   iq: { label: 'IQ Estimate', color: colors.brand.teal },
   zillow: { label: 'Zillow', color: '#4A90D9' },
   rentcast: { label: 'RentCast', color: '#F59E0B' },
+  redfin: { label: 'Redfin', color: '#A02B2D' },
 }
 
 function getStoredSelections(sessionKey: string): { value: DataSourceId; rent: DataSourceId } {
@@ -121,16 +125,24 @@ function resolveDefaults(
   sources: IQEstimateSources,
   stored: { value: DataSourceId; rent: DataSourceId },
 ): { value: DataSourceId; rent: DataSourceId } {
-  const resolve = (group: { iq: number | null; zillow: number | null; rentcast: number | null }, sel: DataSourceId): DataSourceId => {
+  const resolveValue = (group: IQEstimateSources['value'], sel: DataSourceId): DataSourceId => {
     if (group.iq != null) return 'iq'
     if (group[sel] != null) return sel
+    if (group.zillow != null) return 'zillow'
+    if (group.rentcast != null) return 'rentcast'
+    if (group.redfin != null) return 'redfin'
+    return 'iq'
+  }
+  const resolveRent = (group: IQEstimateSources['rent'], sel: DataSourceId): DataSourceId => {
+    if (group.iq != null) return 'iq'
+    if (sel !== 'redfin' && group[sel] != null) return sel
     if (group.zillow != null) return 'zillow'
     if (group.rentcast != null) return 'rentcast'
     return 'iq'
   }
   return {
-    value: resolve(sources.value, stored.value),
-    rent: resolve(sources.rent, stored.rent),
+    value: resolveValue(sources.value, stored.value),
+    rent: resolveRent(sources.rent, stored.rent),
   }
 }
 
@@ -153,8 +165,8 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
 
   const handleSelect = useCallback(
     (type: 'value' | 'rent', sourceId: DataSourceId) => {
-      const sourceGroup = sources[type]
-      const newValue = sourceGroup[sourceId]
+      const sourceGroup = sources[type] as Record<string, number | null>
+      const newValue = sourceGroup[sourceId] ?? null
       setSelections((prev) => {
         const next = { ...prev, [type]: sourceId }
         persistSelections(sessionKey, next.value, next.rent)
@@ -165,7 +177,8 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
     [sources, sessionKey, onSourceChange],
   )
 
-  const sourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast']
+  const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin']
+  const rentSourceIds: RentSourceId[] = ['iq', 'zillow', 'rentcast']
 
   return (
     <div
@@ -182,13 +195,13 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Property Value column */}
+        {/* Property Value column (4 sources: IQ, Zillow, RentCast, Redfin) */}
         <div>
           <p className="text-[11px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
             Property Value
           </p>
           <div className="flex flex-col gap-0.5">
-            {sourceIds.map((id) => (
+            {valueSourceIds.map((id) => (
               <SourceRow
                 key={`value-${id}`}
                 sourceId={id}
@@ -201,13 +214,13 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           </div>
         </div>
 
-        {/* Monthly Rent column */}
+        {/* Monthly Rent column (3 sources: IQ, Zillow, RentCast — Redfin has no rental data) */}
         <div>
           <p className="text-[11px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
             Monthly Rent
           </p>
           <div className="flex flex-col gap-0.5">
-            {sourceIds.map((id) => (
+            {rentSourceIds.map((id) => (
               <SourceRow
                 key={`rent-${id}`}
                 sourceId={id}
@@ -238,10 +251,11 @@ export function useIQSourceSelection(
   selectedRent: number | null
 } {
   const stored = getStoredSelections(sessionKey)
+  const rentKey = stored.rent === 'redfin' ? 'iq' : stored.rent
   return {
     valueSource: stored.value,
     rentSource: stored.rent,
     selectedValue: sources.value[stored.value],
-    selectedRent: sources.rent[stored.rent],
+    selectedRent: sources.rent[rentKey as RentSourceId],
   }
 }

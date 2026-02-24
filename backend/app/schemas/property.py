@@ -177,6 +177,7 @@ class ValuationData(BaseModel):
     zestimate: Optional[float] = None
     zestimate_high_pct: Optional[float] = None
     zestimate_low_pct: Optional[float] = None
+    redfin_estimate: Optional[float] = None
     market_price: Optional[float] = None
 
 

@@ -213,7 +213,7 @@ function VerdictContent() {
 
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
-    value: { iq: null, zillow: null, rentcast: null },
+    value: { iq: null, zillow: null, rentcast: null, redfin: null },
     rent: { iq: null, zillow: null, rentcast: null },
   })
 
@@ -357,6 +357,7 @@ function VerdictContent() {
             iq: data.valuations?.value_iq_estimate ?? null,
             zillow: data.valuations?.zestimate ?? null,
             rentcast: data.valuations?.rentcast_avm ?? null,
+            redfin: data.valuations?.redfin_estimate ?? null,
           },
           rent: {
             iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
@@ -906,7 +907,7 @@ function VerdictContent() {
             </section>
 
             {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
-            {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null ||
+            {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
               iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
               <section className="px-5 pb-5">
                 <IQEstimateSelector

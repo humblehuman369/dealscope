@@ -42,9 +42,10 @@ normalized dict + provenance dict
 ### IQ Estimate Computation
 
 `_compute_iq_estimates()` runs after FIELD_MAPPING and computes:
-- `rental_iq_estimate` = round((rc_rent + zl_rent) / 2) — or single source
-- `value_iq_estimate`  = round((rc_avm + zestimate) / 2) — or single source
-- Both are `None` when neither source has data — **never fabricated**
+- `rental_iq_estimate` = avg of available [rc_rent, zl_rent] — or single source
+- `value_iq_estimate`  = avg of available [rc_avm, zestimate, redfin_estimate] — or single source
+- Redfin estimate is injected via `_inject_redfin_data()` before IQ computation
+- Both are `None` when no source has data — **never fabricated**
 
 ## Data Flow: Backend → Frontend
 
