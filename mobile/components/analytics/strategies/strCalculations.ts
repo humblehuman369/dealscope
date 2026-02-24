@@ -1,6 +1,7 @@
 /**
- * Short-Term Rental (STR) Calculations
- * Airbnb/VRBO style rental analysis
+ * @deprecated — LOCAL CALCULATIONS. All financial calculations should use
+ * the backend API via useStrategyWorksheet hook. This file is kept for
+ * legacy scoring/insight logic only. Do not add new calculation logic here.
  */
 
 import { STRInputs, STRMetrics, Insight, StrategyAnalysis } from '../types';
@@ -27,7 +28,7 @@ export const DEFAULT_STR_INPUTS: STRInputs = {
   managementRate: 20,            // percentage
   platformFeeRate: 15,           // percentage — matches frontend (Airbnb effective rate ~14-16%)
   
-  furnishingBudget: 25000,
+  furnishingBudget: 6000,
 };
 
 /**

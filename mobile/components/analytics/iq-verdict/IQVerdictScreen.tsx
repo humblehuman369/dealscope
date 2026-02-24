@@ -216,9 +216,9 @@ export function IQVerdictScreen({
     zip: property.zip || '',
     beds: property.beds,
     baths: property.baths,
-    sqft: property.sqft || 0,
+    sqft: property.sqft ?? 0,
     price: property.price,
-    rent: property.monthlyRent || 0,
+    rent: property.monthlyRent ?? 0,
     status: 'OFF-MARKET',
     image: property.imageUrl,
   }), [property]);

@@ -1,6 +1,7 @@
 /**
- * Wholesale Strategy Calculations
- * Contract assignment without taking ownership
+ * @deprecated — LOCAL CALCULATIONS. All financial calculations should use
+ * the backend API via useStrategyWorksheet hook. This file is kept for
+ * legacy scoring/insight logic only. Do not add new calculation logic here.
  */
 
 import { WholesaleInputs, WholesaleMetrics, Insight, StrategyAnalysis } from '../types';
@@ -57,9 +58,9 @@ export function calculateWholesaleMetrics(inputs: WholesaleInputs): WholesaleMet
   // Spread between MAO and contract
   const endBuyerSpread = endBuyerMaxProfit;
 
-  // 70% Rule — MAO accounts for repairs AND wholesale fee (matches frontend)
-  const maxAllowableOffer = (arv * 0.70) - estimatedRepairs - assignmentFee;
-  const meetsSeventyPercentRule = endBuyerAllInPrice <= maxAllowableOffer;
+  // 70% Rule — standard MAO: ARV * 0.70 - repairs (matches frontend)
+  const maxAllowableOffer = (arv * 0.70) - estimatedRepairs;
+  const meetsSeventyPercentRule = contractPrice <= maxAllowableOffer;
 
   return {
     netProfit,

@@ -1,5 +1,7 @@
 /**
- * Fix & Flip Strategy Calculations
+ * @deprecated — LOCAL CALCULATIONS. All financial calculations should use
+ * the backend API via useStrategyWorksheet hook. This file is kept for
+ * legacy scoring/insight logic only. Do not add new calculation logic here.
  */
 
 import { FlipInputs, FlipMetrics, Insight, StrategyAnalysis } from '../types';

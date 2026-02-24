@@ -1,6 +1,7 @@
 /**
- * BRRRR Strategy Calculations
- * Buy, Rehab, Rent, Refinance, Repeat
+ * @deprecated — LOCAL CALCULATIONS. All financial calculations should use
+ * the backend API via useStrategyWorksheet hook. This file is kept for
+ * legacy scoring/insight logic only. Do not add new calculation logic here.
  */
 
 import { BRRRRInputs, BRRRRMetrics, Insight, StrategyAnalysis } from '../types';

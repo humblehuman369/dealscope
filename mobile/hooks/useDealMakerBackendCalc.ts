@@ -76,7 +76,7 @@ function buildPayload(
   if (strategyType === 'ltr') {
     return {
       purchase_price: state.buyPrice,
-      monthly_rent: state.monthlyRent + (state.otherIncome || 0),
+      monthly_rent: state.monthlyRent + (state.otherIncome ?? 0),
       down_payment_pct: state.downPaymentPercent,
       interest_rate: state.interestRate * 100, // Backend expects percentage (6.0 not 0.06)
       loan_term_years: state.loanTermYears,
@@ -96,19 +96,19 @@ function buildPayload(
   if (strategyType === 'str') {
     return {
       purchase_price: state.buyPrice,
-      average_daily_rate: state['averageDailyRate'] || 200,
-      occupancy_rate: state['occupancyRate'] || 0.70,
+      average_daily_rate: state['averageDailyRate'] ?? 200,
+      occupancy_rate: state['occupancyRate'] ?? 0.70,
       down_payment_pct: state.downPaymentPercent * 100,
       interest_rate: state.interestRate * 100,
       loan_term_years: state.loanTermYears,
       closing_costs: state.buyPrice * state.closingCostsPercent,
-      furnishing_budget: state['furnitureSetupCost'] || state['furnishingBudget'] || 0,
-      platform_fees_pct: state['platformFeesPct'] || 0.03,
-      property_management_pct: state['strManagementRate'] || state.managementRate || 0.20,
-      cleaning_cost_per_turn: state['cleaningCostPerTurnover'] || 75,
+      furnishing_budget: state['furnitureSetupCost'] ?? state['furnishingBudget'] ?? 0,
+      platform_fees_pct: state['platformFeesPct'] ?? 0.03,
+      property_management_pct: state['strManagementRate'] ?? state.managementRate ?? 0.20,
+      cleaning_cost_per_turn: state['cleaningCostPerTurnover'] ?? 75,
       property_taxes_annual: state.annualPropertyTax,
       insurance_annual: state.annualInsurance,
-      maintenance_pct: state.maintenanceRate || 0.05,
+      maintenance_pct: state.maintenanceRate ?? 0.05,
     };
   }
 
@@ -116,20 +116,20 @@ function buildPayload(
   if (strategyType === 'brrrr') {
     return {
       purchase_price: state.buyPrice,
-      rehab_costs: state.rehabBudget || 0,
-      arv: state.arv || 0,
-      monthly_rent: state.monthlyRent || 0,
+      rehab_costs: state.rehabBudget ?? 0,
+      arv: state.arv ?? 0,
+      monthly_rent: state.monthlyRent ?? 0,
       down_payment_pct: state.downPaymentPercent * 100,
       interest_rate: state.interestRate * 100,
-      holding_months: state['holdingPeriodMonths'] || 6,
-      refi_ltv: (state['refinanceLtv'] || 0.75) * 100,
-      refi_interest_rate: (state['refinanceInterestRate'] || state.interestRate || 0.06) * 100,
-      refi_loan_term: state['refinanceLoanTerm'] || 30,
+      holding_months: state['holdingPeriodMonths'] ?? 6,
+      refi_ltv: (state['refinanceLtv'] ?? 0.75) * 100,
+      refi_interest_rate: (state['refinanceInterestRate'] ?? state.interestRate ?? 0.06) * 100,
+      refi_loan_term: state['refinanceLoanTerm'] ?? 30,
       property_taxes_annual: state.annualPropertyTax,
       insurance_annual: state.annualInsurance,
-      vacancy_rate: state.vacancyRate || 0.05,
-      property_management_pct: state.managementRate || 0.08,
-      maintenance_pct: state.maintenanceRate || 0.05,
+      vacancy_rate: state.vacancyRate ?? 0.05,
+      property_management_pct: state.managementRate ?? 0.08,
+      maintenance_pct: state.maintenanceRate ?? 0.05,
     };
   }
 
@@ -137,13 +137,13 @@ function buildPayload(
   if (strategyType === 'flip') {
     return {
       purchase_price: state.buyPrice,
-      rehab_costs: state.rehabBudget || 0,
-      arv: state.arv || 0,
+      rehab_costs: state.rehabBudget ?? 0,
+      arv: state.arv ?? 0,
       down_payment_pct: state.downPaymentPercent * 100,
       interest_rate: state.interestRate * 100,
-      holding_months: state['holdingPeriodMonths'] || 6,
-      selling_costs_pct: (state['sellingCostsPct'] || 0.08) * 100,
-      capital_gains_rate: (state['capitalGainsRate'] || 0.15) * 100,
+      holding_months: state['holdingPeriodMonths'] ?? 6,
+      selling_costs_pct: (state['sellingCostsPct'] ?? 0.08) * 100,
+      capital_gains_rate: (state['capitalGainsRate'] ?? 0.15) * 100,
       property_taxes_annual: state.annualPropertyTax,
       insurance_annual: state.annualInsurance,
     };
@@ -153,27 +153,27 @@ function buildPayload(
   if (strategyType === 'house_hack') {
     return {
       purchase_price: state.buyPrice,
-      unit_rents: state['unitRents'] || [state['avgRentPerUnit'] || 1500],
+      unit_rents: state['unitRents'] ?? [state['avgRentPerUnit'] ?? 1500],
       down_payment_pct: state.downPaymentPercent * 100,
       interest_rate: state.interestRate * 100,
       loan_term_years: state.loanTermYears,
       property_taxes_annual: state.annualPropertyTax,
       insurance_annual: state.annualInsurance,
-      vacancy_rate: state.vacancyRate || 0.05,
-      maintenance_pct: state.maintenanceRate || 0.05,
+      vacancy_rate: state.vacancyRate ?? 0.05,
+      maintenance_pct: state.maintenanceRate ?? 0.05,
     };
   }
 
   // Wholesale
   return {
-    arv: state.arv || 0,
-    contract_price: state['contractPrice'] || 0,
+    arv: state.arv ?? 0,
+    contract_price: state['contractPrice'] ?? 0,
     investor_price:
-      state['investorPrice'] ||
-      (state['contractPrice'] || 0) + (state['assignmentFee'] || 10000),
-    rehab_costs: state['estimatedRepairs'] || state.rehabBudget || 0,
-    assignment_fee: state['assignmentFee'] || 10000,
-    earnest_money: state['earnestMoney'] || 1000,
+      state['investorPrice'] ??
+      (state['contractPrice'] ?? 0) + (state['assignmentFee'] ?? 10000),
+    rehab_costs: state['estimatedRepairs'] ?? state.rehabBudget ?? 0,
+    assignment_fee: state['assignmentFee'] ?? 10000,
+    earnest_money: state['earnestMoney'] ?? 1000,
   };
 }
 

@@ -20,6 +20,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/apiClient';
+import { getResolvedDefaults } from '../services/defaultsService';
 import type { StrategyId } from '../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -193,6 +194,45 @@ export const useWorksheetStore = create<WorksheetState>()(
             },
           },
         }));
+
+        // Async: fetch resolved defaults from API and merge (matches frontend)
+        const zipCode = (initialInputs as Record<string, unknown>).zip_code as string | undefined;
+        if (!existing) {
+          getResolvedDefaults(zipCode).then((resp) => {
+            if (!resp?.resolved) return;
+            const r = resp.resolved;
+            const apiDefaults: Record<string, number> = {};
+            if (r.financing?.down_payment_pct != null) apiDefaults.down_payment_pct = r.financing.down_payment_pct;
+            if (r.financing?.closing_costs_pct != null) apiDefaults.closing_costs_pct = r.financing.closing_costs_pct;
+            if (r.financing?.interest_rate != null) apiDefaults.interest_rate = r.financing.interest_rate;
+            if (r.financing?.loan_term_years != null) apiDefaults.loan_term_years = r.financing.loan_term_years;
+            if (r.operating?.vacancy_rate != null) apiDefaults.vacancy_rate = r.operating.vacancy_rate;
+            if (r.operating?.property_management_pct != null) apiDefaults.management_pct = r.operating.property_management_pct;
+            if (r.operating?.maintenance_pct != null) apiDefaults.maintenance_pct = r.operating.maintenance_pct;
+            if (r.appreciation_rate != null) apiDefaults.annual_appreciation = r.appreciation_rate as number;
+            if (r.rent_growth_rate != null) apiDefaults.annual_rent_growth = r.rent_growth_rate as number;
+
+            if (Object.keys(apiDefaults).length === 0) return;
+
+            set((state) => {
+              const entry = state.entries[key];
+              if (!entry) return state;
+              return {
+                entries: {
+                  ...state.entries,
+                  [key]: {
+                    ...entry,
+                    inputs: { ...apiDefaults, ...entry.inputs },
+                  },
+                },
+              };
+            });
+
+            get().debouncedCalculate();
+          }).catch(() => {
+            // Silently fall back to static defaults
+          });
+        }
       },
 
       updateInput: (inputKey, value) => {
@@ -218,6 +258,7 @@ export const useWorksheetStore = create<WorksheetState>()(
         });
 
         get().debouncedCalculate();
+        get().debouncedSave();
       },
 
       updateMultipleInputs: (updates) => {
@@ -243,6 +284,7 @@ export const useWorksheetStore = create<WorksheetState>()(
         });
 
         get().debouncedCalculate();
+        get().debouncedSave();
       },
 
       getEntry: (propertyId, strategy) => {

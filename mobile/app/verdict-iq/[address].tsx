@@ -8,7 +8,7 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -53,6 +53,12 @@ import {
 import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
 import { PropertyData } from '../../types/analytics';
 import { useAddPortfolioProperty } from '../../hooks/useDatabase';
+import { usePropertyData } from '../../hooks/usePropertyData';
+import {
+  IQEstimateSelector,
+  type IQEstimateSources,
+} from '../../components/verdict-iq/IQEstimateSelector';
+import { useIQSourceOverrides } from '../../hooks/useIQSourceOverrides';
 
 // =============================================================================
 // CONSTANTS
@@ -286,6 +292,42 @@ export default function VerdictIQScreen() {
   const { raw, targetPrice, incomeValue, discountPercent, dealScore, isLoading, error } = analysisResult;
 
   const marketPrice = raw?.listPrice ?? listPrice;
+
+  // IQ source override chain
+  const { sourceOverrides, handleSourceChange } = useIQSourceOverrides({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+  });
+
+  // Fetch full property data for IQ Estimate sources (value + rent)
+  const { fetchProperty } = usePropertyData();
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+  });
+
+  useEffect(() => {
+    if (!decodedAddress) return;
+    fetchProperty(decodedAddress)
+      .then((data) => {
+        const rentalStats = data.rentals?.rental_stats;
+        setIqSources({
+          value: {
+            iq: data.valuations?.value_iq_estimate ?? null,
+            zillow: data.valuations?.zestimate ?? null,
+            rentcast: data.valuations?.rentcast_avm ?? null,
+            redfin: data.valuations?.redfin_estimate ?? null,
+          },
+          rent: {
+            iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
+            zillow: rentalStats?.zillow_estimate ?? null,
+            rentcast: rentalStats?.rentcast_estimate ?? null,
+            redfin: rentalStats?.redfin_estimate ?? null,
+          },
+        });
+      })
+      .catch(() => {});
+  }, [decodedAddress, fetchProperty]);
 
   const property: PropertyContextData = useMemo(() => ({
     street: decodedAddress || 'Unknown Address',
@@ -574,6 +616,14 @@ export default function VerdictIQScreen() {
 
           {/* Market Snapshot */}
           <MarketSnapshot tiles={marketTiles} />
+
+          {/* Data Sources — IQ Estimate Selector */}
+          <View style={{ marginHorizontal: rs(16), marginTop: rs(16) }}>
+            <IQEstimateSelector
+              sources={iqSources}
+              onSourceChange={handleSourceChange}
+            />
+          </View>
 
           {/* Beginner Tip — dynamic based on actual score */}
           <BeginnerTip

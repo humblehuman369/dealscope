@@ -372,11 +372,11 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       city: property.address?.city || '',
       state: property.address?.state || '',
       zip: property.address?.zip_code || '',
-      bedrooms: property.details?.bedrooms || 0,
-      bathrooms: property.details?.bathrooms || 0,
-      sqft: property.details?.square_footage || 0,
-      yearBuilt: property.details?.year_built || 0,
-      lotSize: property.details?.lot_size || 0,
+      bedrooms: property.details?.bedrooms ?? 0,
+      bathrooms: property.details?.bathrooms ?? 0,
+      sqft: property.details?.square_footage ?? 0,
+      yearBuilt: property.details?.year_built ?? 0,
+      lotSize: property.details?.lot_size ?? 0,
       propertyType: property.details?.property_type || 'Single Family',
     },
     pricing: {
@@ -385,14 +385,14 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       pricePerSqft: property.details?.square_footage 
         ? Math.floor((property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0) / property.details.square_footage)
         : 0,
-      rentEstimate: property.rentals?.monthly_rent_ltr || 0,
-      strEstimate: property.rentals?.average_daily_rate || 0,
+      rentEstimate: property.rentals?.monthly_rent_ltr ?? 0,
+      strEstimate: property.rentals?.average_daily_rate ?? 0,
     },
     strategies: (() => {
       // Calculate Flip Margin for Fix & Flip (matching frontend)
       const purchasePrice = property.valuations?.market_price ?? property.valuations?.current_value_avm ?? 0;
       const rehabCost = 25000; // Default rehab estimate
-      const arv = property.valuations?.arv || purchasePrice * 1.1;
+      const arv = property.valuations?.arv ?? purchasePrice * 1.1;
       const flipMargin = arv - purchasePrice - rehabCost;
       const flipMarginPct = purchasePrice > 0 ? flipMargin / purchasePrice : 0;
       const maxPurchase70Rule = (arv * 0.70) - rehabCost;
@@ -401,27 +401,27 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       return {
         longTermRental: {
           name: 'Long-Term Rental',
-          primaryValue: analytics.ltr?.monthly_cash_flow || 0,
+          primaryValue: analytics.ltr?.monthly_cash_flow ?? 0,
           primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: analytics.ltr?.cash_on_cash_return || 0,
+          secondaryValue: analytics.ltr?.cash_on_cash_return ?? 0,
           secondaryLabel: 'Cash-on-Cash',
-          isProfit: (analytics.ltr?.monthly_cash_flow || 0) > 0,
+          isProfit: (analytics.ltr?.monthly_cash_flow ?? 0) > 0,
         },
         shortTermRental: {
           name: 'Short-Term Rental',
-          primaryValue: analytics.str?.monthly_cash_flow || 0,
+          primaryValue: analytics.str?.monthly_cash_flow ?? 0,
           primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: analytics.str?.cash_on_cash_return || 0,
+          secondaryValue: analytics.str?.cash_on_cash_return ?? 0,
           secondaryLabel: 'Cash-on-Cash',
-          isProfit: (analytics.str?.monthly_cash_flow || 0) > 0,
+          isProfit: (analytics.str?.monthly_cash_flow ?? 0) > 0,
         },
         brrrr: {
           name: 'BRRRR',
-          primaryValue: analytics.brrrr?.monthly_cash_flow || 0,
+          primaryValue: analytics.brrrr?.monthly_cash_flow ?? 0,
           primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: analytics.brrrr?.cash_on_cash_return || 0,
+          secondaryValue: analytics.brrrr?.cash_on_cash_return ?? 0,
           secondaryLabel: 'Cash-on-Cash',
-          isProfit: (analytics.brrrr?.monthly_cash_flow || 0) > 0,
+          isProfit: (analytics.brrrr?.monthly_cash_flow ?? 0) > 0,
         },
         fixAndFlip: {
           name: 'Fix & Flip',
@@ -437,28 +437,28 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
         },
         houseHack: {
           name: 'House Hacking',
-          primaryValue: analytics.house_hack?.savings_vs_renting_a || 0,
+          primaryValue: analytics.house_hack?.savings_vs_renting_a ?? 0,
           primaryLabel: 'Monthly Savings',
-          secondaryValue: analytics.house_hack?.net_housing_cost_scenario_a || 0,
+          secondaryValue: analytics.house_hack?.net_housing_cost_scenario_a ?? 0,
           secondaryLabel: 'Net Housing Cost',
-          isProfit: (analytics.house_hack?.savings_vs_renting_a || 0) > 0,
+          isProfit: (analytics.house_hack?.savings_vs_renting_a ?? 0) > 0,
         },
         wholesale: {
           name: 'Wholesale',
-          primaryValue: analytics.wholesale?.net_profit || 0,
+          primaryValue: analytics.wholesale?.net_profit ?? 0,
           primaryLabel: 'Net Profit',
-          secondaryValue: analytics.wholesale?.roi || 0,
+          secondaryValue: analytics.wholesale?.roi ?? 0,
           secondaryLabel: 'ROI',
-          isProfit: (analytics.wholesale?.net_profit || 0) > 0,
+          isProfit: (analytics.wholesale?.net_profit ?? 0) > 0,
         },
       };
     })(),
     metrics: {
-      capRate: analytics.ltr?.cap_rate || 0,
-      cashOnCash: analytics.ltr?.cash_on_cash_return || 0,
-      grossRentMultiplier: analytics.ltr?.grm || 0,
-      dscr: analytics.ltr?.dscr || 0,
-      breakeven: analytics.str?.break_even_occupancy || 0,
+      capRate: analytics.ltr?.cap_rate ?? 0,
+      cashOnCash: analytics.ltr?.cash_on_cash_return ?? 0,
+      grossRentMultiplier: analytics.ltr?.grm ?? 0,
+      dscr: analytics.ltr?.dscr ?? 0,
+      breakeven: analytics.str?.break_even_occupancy ?? 0,
     },
     assumptions: {
       downPayment: 0.20,
@@ -468,7 +468,7 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       managementFee: 0.08,
       maintenance: 0.05,
       rehabCost: 25000,
-      arv: property.valuations?.arv || 0,
+      arv: property.valuations?.arv ?? 0,
     },
   };
 }
