@@ -5,12 +5,7 @@
 
 import axios from 'axios';
 import { API_BASE_URL } from './apiClient';
-
-// DISABLED: Local fallback analytics
-// All financial calculations must come from the backend. Showing locally-computed
-// estimates risks inconsistent numbers that could mislead investment decisions.
-// When the backend is unavailable, the UI should show an error state instead.
-const USE_FALLBACK_ON_ERROR = false;
+import { validatePropertyResponse } from '../hooks/usePropertyData';
 
 // Track API health for better error messaging
 let lastApiError: { timestamp: number; message: string } | null = null;
@@ -106,158 +101,6 @@ export function getLastApiError(): string | null {
 }
 
 /**
- * @deprecated LOCAL FALLBACK — DISABLED
- *
- * All financial calculations must come from the backend (single source of truth).
- * This function is no longer called because USE_FALLBACK_ON_ERROR = false.
- * It remains here temporarily until the dead code is fully removed.
- *
- * When the backend is unreachable, the app shows an error state instead
- * of potentially misleading estimated numbers.
- */
-export function generateEstimatedAnalytics(
-  address: string, 
-  parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number },
-  marketAssumptions?: MarketAssumptions
-): InvestmentAnalytics {
-  // Use location-based price estimation
-  // These are rough median home price estimates by state (simplified)
-  const statePriceMultipliers: Record<string, number> = {
-    'CA': 1.8, 'NY': 1.5, 'FL': 1.1, 'TX': 0.95, 'AZ': 1.05,
-    'CO': 1.2, 'WA': 1.3, 'MA': 1.4, 'NJ': 1.3, 'GA': 0.9,
-    'NC': 0.85, 'VA': 1.0, 'TN': 0.8, 'OH': 0.7, 'IL': 0.85,
-  };
-  
-  const state = parcelData?.state || 'FL';
-  const multiplier = statePriceMultipliers[state.toUpperCase()] || 1.0;
-  
-  // Base median home price ~$350K, adjusted by state
-  const listPrice = Math.floor(350000 * multiplier);
-  
-  // No rent fallback — use 0 when no rent data available
-  const rentToPriceRatio = marketAssumptions?.rent_to_price_ratio || 0.006;
-  const rentEstimate = 0;
-  const strEstimate = 0;
-  
-  // Use market-specific rates if available
-  const vacancyRate = marketAssumptions?.vacancy_rate || 0.05;
-  const insuranceRate = marketAssumptions?.insurance_rate || 0.01;
-  const propertyTaxRate = marketAssumptions?.property_tax_rate || 0.012;
-  
-  return {
-    property: {
-      address,
-      city: parcelData?.city || '',
-      state: parcelData?.state || '',
-      zip: parcelData?.zip || '',
-      bedrooms: 3, // Estimated typical value
-      bathrooms: 2,
-      sqft: 1800,
-      yearBuilt: 2005,
-      lotSize: 7500,
-      propertyType: 'Single Family',
-    },
-    pricing: {
-      listPrice,
-      estimatedValue: Math.floor(listPrice * 1.05),
-      pricePerSqft: Math.floor(listPrice / 1800),
-      rentEstimate,
-      strEstimate,
-    },
-    strategies: (() => {
-      // Calculate Flip Margin for mock data
-      const rehabCost = 25000;
-      const arv = Math.floor(listPrice * 1.25);
-      const flipMargin = arv - listPrice - rehabCost;
-      const flipMarginPct = listPrice > 0 ? flipMargin / listPrice : 0;
-      const maxPurchase70Rule = (arv * 0.70) - rehabCost;
-      const passes70Rule = listPrice <= maxPurchase70Rule;
-      const monthlyCashFlow = rentEstimate * 0.35;
-
-      return {
-        longTermRental: {
-          name: 'Long-Term Rental',
-          primaryValue: monthlyCashFlow,
-          primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: 0.08,
-          secondaryLabel: 'Cash-on-Cash',
-          isProfit: monthlyCashFlow > 0,
-        },
-        shortTermRental: {
-          name: 'Short-Term Rental',
-          primaryValue: monthlyCashFlow * 2.5,
-          primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: 0.15,
-          secondaryLabel: 'Cash-on-Cash',
-          isProfit: true,
-        },
-        brrrr: {
-          name: 'BRRRR',
-          primaryValue: monthlyCashFlow * 0.8,
-          primaryLabel: 'Monthly Cash Flow',
-          secondaryValue: 0.12,
-          secondaryLabel: 'Cash-on-Cash',
-          isProfit: true,
-        },
-        fixAndFlip: {
-          name: 'Fix & Flip',
-          primaryValue: flipMargin,
-          primaryLabel: 'Flip Margin',
-          secondaryValue: flipMarginPct,
-          secondaryLabel: 'Margin %',
-          isProfit: flipMargin >= 20000,
-          flipMargin,
-          flipMarginPct,
-          passes70Rule,
-          maxPurchase70Rule,
-        },
-        houseHack: {
-          name: 'House Hacking',
-          primaryValue: rentEstimate * 0.6,
-          primaryLabel: 'Monthly Savings',
-          secondaryValue: Math.floor(listPrice * 0.035 / 12),
-          secondaryLabel: 'Net Housing Cost',
-          isProfit: true,
-        },
-        wholesale: {
-          name: 'Wholesale',
-          primaryValue: listPrice * 0.08,
-          primaryLabel: 'Net Profit',
-          secondaryValue: 4.5,
-          secondaryLabel: 'ROI',
-          isProfit: true,
-        },
-      };
-    })(),
-    metrics: {
-      capRate: 0.068,
-      cashOnCash: 0.095,
-      grossRentMultiplier: 10.5,
-      dscr: 1.32,
-      breakeven: 0.72,
-    },
-    assumptions: {
-      downPayment: 0.25,
-      interestRate: 0.0725,
-      loanTerm: 30,
-      vacancyRate: vacancyRate,
-      managementFee: 0.08,
-      maintenance: 0.05,
-      rehabCost: 25000,
-      arv: Math.floor(listPrice * (1 + (marketAssumptions?.appreciation_rate || 0.25))),
-    },
-    // Include market assumptions metadata for UI display
-    marketData: marketAssumptions ? {
-      region: marketAssumptions.region,
-      insuranceRate: insuranceRate,
-      propertyTaxRate: propertyTaxRate,
-      rentToPriceRatio: rentToPriceRatio,
-      appreciationRate: marketAssumptions.appreciation_rate,
-    } : undefined,
-  };
-}
-
-/**
  * Fetch complete investment analytics for a property.
  * 
  * @param address - Full property address
@@ -277,7 +120,7 @@ export async function fetchPropertyAnalytics(
       { timeout: 30000 }
     );
 
-    const propertyData = searchResponse.data;
+    const propertyData = validatePropertyResponse(searchResponse.data);
     if (__DEV__) console.log('[Analytics] Property found:', propertyData.property_id);
     const analyticsResponse = await axios.post(
       `${API_BASE_URL}/api/v1/analytics/calculate`,
@@ -327,32 +170,6 @@ export async function fetchPropertyAnalytics(
       throw new Error('Too many requests. Please wait a moment and try again.');
     }
     
-    // Use fallback analytics when API fails
-    if (USE_FALLBACK_ON_ERROR) {
-      if (__DEV__) console.log('[Analytics] Using fallback estimated analytics');
-      
-      // Try to get market-specific assumptions for better estimates
-      let marketAssumptions: MarketAssumptions | undefined;
-      if (parcelData?.zip) {
-        try {
-          marketAssumptions = await fetchMarketAssumptions(parcelData.zip);
-        } catch (e) {
-          if (__DEV__) console.log('[Analytics] Could not fetch market assumptions, using defaults');
-        }
-      }
-      
-      const estimated = generateEstimatedAnalytics(address, parcelData, marketAssumptions);
-      
-      // Mark the analytics as estimated (for UI indication)
-      (estimated as any).isEstimated = true;
-      (estimated as any).estimateReason = statusCode === 500 
-        ? 'Backend service temporarily unavailable'
-        : 'Could not connect to analytics service';
-      
-      return estimated;
-    }
-    
-    // If fallback is disabled, throw with detailed error
     if (statusCode === 500) {
       throw new Error('Analytics service error. Our team has been notified.');
     }

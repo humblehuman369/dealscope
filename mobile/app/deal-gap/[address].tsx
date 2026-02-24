@@ -69,7 +69,7 @@ export default function DealGapScreen() {
       listPrice,
       monthlyRent: 0,
       propertyTaxes: Math.round(listPrice * 0.012),
-      insurance: Math.round(1500 + (sqftValue || 1500) * 3),
+      insurance: Math.round(listPrice * 0.01),
       bedrooms,
       bathrooms: 2,
       sqft: sqftValue || 1500,

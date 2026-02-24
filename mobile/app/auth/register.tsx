@@ -96,13 +96,13 @@ export default function RegisterScreen() {
               : 'Your account has been created successfully. You can now sign in.'}
           </Text>
           <TouchableOpacity
-            onPress={() => router.replace('/auth/login')}
+            onPress={() => router.replace(requiresVerification ? '/auth/login' : '/billing' as any)}
             accessibilityRole="button"
-            accessibilityLabel={requiresVerification ? "Go to sign in" : "Sign in now"}
+            accessibilityLabel={requiresVerification ? "Go to sign in" : "View plans"}
             style={{ marginTop: 24, backgroundColor: accentColor, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
           >
             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-              {requiresVerification ? 'Go to Sign In' : 'Sign In Now'}
+              {requiresVerification ? 'Go to Sign In' : 'View Plans'}
             </Text>
           </TouchableOpacity>
         </View>

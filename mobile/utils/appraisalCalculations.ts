@@ -430,17 +430,17 @@ export function parseCompFromApi(
       (apiComp.monthlyRent as number) ||
       0,
     sqft:
-      (apiComp.sqft as number) ||
-      (apiComp.squareFootage as number) ||
-      (apiComp.livingArea as number) ||
+      (apiComp.sqft as number) ??
+      (apiComp.squareFootage as number) ??
+      (apiComp.livingArea as number) ??
       1500,
-    beds: (apiComp.beds as number) || (apiComp.bedrooms as number) || 3,
-    baths: (apiComp.baths as number) || (apiComp.bathrooms as number) || 2,
+    beds: (apiComp.beds as number) ?? (apiComp.bedrooms as number) ?? 3,
+    baths: (apiComp.baths as number) ?? (apiComp.bathrooms as number) ?? 2,
     yearBuilt:
-      (apiComp.yearBuilt as number) || (apiComp.year_built as number) || 2000,
+      (apiComp.yearBuilt as number) ?? (apiComp.year_built as number) ?? 2000,
     lotSize:
-      (apiComp.lotSize as number) || (apiComp.lot_size as number) || 0.25,
-    distance: (apiComp.distance as number) || 1.0,
+      (apiComp.lotSize as number) ?? (apiComp.lot_size as number) ?? 0.25,
+    distance: (apiComp.distance as number) ?? 1.0,
     pricePerSqft:
       (apiComp.pricePerSqft as number) ||
       (apiComp.price_per_sqft as number),

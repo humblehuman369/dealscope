@@ -219,11 +219,11 @@ export const useDealMakerStore = create<DealMakerState>()(
           case 'breakeven':
             return metrics.income_value ?? metrics.breakeven_price ?? 0;
           case 'targetBuy':
-            return record.buy_price || 0;
+            return record.buy_price ?? 0;
           case 'wholesale':
-            return Math.round((metrics.income_value || 0) * 0.70);
+            return Math.round((metrics.income_value ?? 0) * 0.70);
           default:
-            return record.buy_price || 0;
+            return record.buy_price ?? 0;
         }
       },
     }),
