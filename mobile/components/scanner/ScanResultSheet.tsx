@@ -230,7 +230,7 @@ export function ScanResultSheet({
   }));
 
   // Get estimated value (Zestimate / AVM)
-  const estimatedValue = fullAnalytics.pricing?.estimatedValue || fullAnalytics.pricing?.listPrice || 0;
+  const estimatedValue = fullAnalytics.pricing?.estimatedValue ?? fullAnalytics.pricing?.listPrice ?? 0;
 
   // Dark mode theme colors
   const theme = {

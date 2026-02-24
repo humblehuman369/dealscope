@@ -291,8 +291,8 @@ export function CompactHeader({
                 <Text style={styles.statLabel}>Est. Value</Text>
               </View>
               <View style={styles.propertyStat}>
-                <Text style={[styles.statValue, styles.statValueCyan]}>{formatPrice(property.rent || 3200)}</Text>
-                <Text style={styles.statLabel}>Est. Rent</Text>
+                <Text style={[styles.statValue, styles.statValueCyan]}>{property.rent != null ? formatPrice(property.rent) : '—'}</Text>
+                <Text style={styles.statLabel}>{property.rent != null ? 'Est. Rent' : 'Rent'}</Text>
               </View>
               <View style={styles.propertyStat}>
                 <Text style={styles.propertyStatus}>

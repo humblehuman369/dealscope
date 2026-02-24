@@ -292,7 +292,7 @@ export default function StrategyIQScreen() {
   const sqftValue = sqft ? parseInt(sqft, 10) : 1500;
   const monthlyRent = rent ? parseFloat(rent) : 0;
   const propertyTaxes = Math.round(listPrice * 0.012);
-  const insurance = Math.round(1500 + sqftValue * 3);
+  const insurance = Math.round(listPrice * 0.01);
 
   const propertyData = useMemo((): PropertyData => ({
     address: decodedAddress || 'Unknown Address',
@@ -306,9 +306,9 @@ export default function StrategyIQScreen() {
     bedrooms: bedroomCount,
     bathrooms: bathroomCount,
     sqft: sqftValue,
-    arv: Math.round(listPrice * 1.2),
-    averageDailyRate: 195,
-    occupancyRate: 0.72,
+    arv: Math.round(listPrice * 1.15),
+    averageDailyRate: monthlyRent > 0 ? (monthlyRent / 30) * 1.5 : 200,
+    occupancyRate: 0.65,
     photos: image ? [image] : [],
     photoCount: 1,
   }), [decodedAddress, city, state, zip, listPrice, monthlyRent, propertyTaxes, insurance, bedroomCount, bathroomCount, sqftValue, image]);

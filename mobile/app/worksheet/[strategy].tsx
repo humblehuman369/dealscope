@@ -708,7 +708,7 @@ function preparePayload(
     const { unit_rent_1, unit_rent_2, unit_rent_3, ...rest } = inputs;
     return {
       ...rest,
-      unit_rents: [unit_rent_1 || 0, unit_rent_2 || 0, unit_rent_3 || 0],
+      unit_rents: [unit_rent_1 ?? 0, unit_rent_2 ?? 0, unit_rent_3 ?? 0],
     };
   }
   return { ...inputs };
