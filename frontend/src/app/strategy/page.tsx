@@ -373,6 +373,14 @@ function StrategyContent() {
   const priceConf = (data.opportunity || (data as any).opportunity)?.score || 65
 
   const handlePDFDownload = (theme: 'light' | 'dark' = 'light') => {
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
+    if (!isPro) {
+      alert('Full Report download is a Pro feature. Visit Pricing to upgrade.')
+      return
+    }
     setIsExporting('pdf')
     try {
       const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || 'general'
@@ -512,7 +520,7 @@ function StrategyContent() {
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
           <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
           <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-            This {verdictScore} assumes a {recommendedStrategyName} at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
+            This {verdictScore} assumes an annual rental at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
             <button
               onClick={handleOpenDealMaker}
               className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
@@ -555,16 +563,7 @@ function StrategyContent() {
               ) : (
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
               )}
-              <span>{isExporting === 'excel' ? 'Generating...' : (() => {
-                switch (activeStrategyId) {
-                  case 'wholesale': return 'Deal Proforma'
-                  case 'flip': return 'Flip Proforma'
-                  case 'brrrr': return 'BRRRR Proforma'
-                  case 'str': return 'STR Proforma'
-                  case 'house_hack': return 'House Hack Proforma'
-                  default: return 'Worksheet'
-                }
-              })()}</span>
+              <span>{isExporting === 'excel' ? 'Generating...' : 'Editable Proforma'}</span>
             </button>
           </div>
         </section>
