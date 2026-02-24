@@ -119,11 +119,9 @@
 .iq-landing .spec-gap-text { font-family: var(--mono); font-size: .68rem; font-weight: 700; color: var(--teal); padding: 0 .6rem; white-space: nowrap; }
 .iq-landing .spec-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg,var(--teal),var(--green) 55%,var(--amber) 78%,var(--coral)); position: relative; }
 .iq-landing .spec-marker { position: absolute; top: -4px; width: 2px; height: 18px; border-radius: 1px; }
-.iq-landing .spec-labels { display: flex; justify-content: space-between; margin-top: .75rem; }
-.iq-landing .spec-pt { flex: 1; }
-.iq-landing .spec-pt:first-child { text-align: left; }
-.iq-landing .spec-pt:nth-child(2) { text-align: center; }
-.iq-landing .spec-pt:last-child { text-align: right; }
+.iq-landing .spec-labels { position: relative; height: 3.5rem; margin-top: .75rem; }
+.iq-landing .spec-pt { position: absolute; top: 0; text-align: center; transform: translateX(-50%); }
+.iq-landing .spec-pt:last-child { transform: translateX(-100%); }
 .iq-landing .spec-pt-val { font-family: var(--mono); font-size: 1rem; font-weight: 700; margin-bottom: .15rem; }
 .iq-landing .spec-pt-name { font-family: var(--font); font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .15rem; }
 .iq-landing .spec-pt-sub { font-size: .75rem; font-weight: 600; }
