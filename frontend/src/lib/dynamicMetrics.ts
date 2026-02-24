@@ -224,7 +224,7 @@ function calculateSTRMetrics(
   
   // Break-even occupancy
   const fixedCosts = annualDebtService + inputs.propertyTaxes + inputs.insurance
-  const revenuePerNight = adr + (cleaningRevenue / nightsOccupied ?? 0)
+  const revenuePerNight = adr + (nightsOccupied > 0 ? cleaningRevenue / nightsOccupied : 0)
   const variableCostPerNight = revenuePerNight * ((inputs.platformFeeRate ?? 0.15) + (inputs.strManagementRate ?? 0.20))
   const netPerNight = revenuePerNight - variableCostPerNight
   const breakEvenNights = netPerNight > 0 ? fixedCosts / netPerNight : 365
