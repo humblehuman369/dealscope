@@ -71,6 +71,11 @@
 .iq-landing .nav-links { display: flex; gap: 2rem; align-items: center; }
 .iq-landing .nav-links a { font-size: .875rem; font-weight: 500; color: var(--text); }
 .iq-landing .nav-cta { color: var(--teal) !important; font-weight: 600 !important; }
+.iq-landing .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; flex-direction: column; gap: 5px; z-index: 101; }
+.iq-landing .nav-hamburger-bar { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 1px; transition: transform .3s, opacity .3s; }
+.iq-landing .nav-hamburger-bar.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.iq-landing .nav-hamburger-bar.open:nth-child(2) { opacity: 0; }
+.iq-landing .nav-hamburger-bar.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* =====================================================
    HERO
@@ -446,7 +451,8 @@
   .iq-landing .cta-pricing { flex-direction: column; gap: 1rem; }
   .iq-landing .founder-stats { grid-template-columns: repeat(2,1fr); }
   .iq-landing .footer-grid { grid-template-columns: 1fr 1fr; }
-  .iq-landing .nav-links a:not(.nav-cta) { display: none; }
+  .iq-landing .nav-links { gap: 1.25rem; }
+  .iq-landing .nav-links a { font-size: .8rem; }
   /* What-Is-It page */
   .iq-landing .deal-gap-grid { grid-template-columns: 1fr; gap: 2.5rem; }
   .iq-landing .three-numbers { grid-template-columns: 1fr; }
@@ -462,4 +468,9 @@
 }
 @media(max-width:480px) {
   .iq-landing .strategies-grid { grid-template-columns: 1fr; }
+  .iq-landing .nav-hamburger { display: flex; }
+  .iq-landing .nav-links { display: none; position: fixed; top: 64px; left: 0; right: 0; flex-direction: column; gap: 0; background: rgba(0,0,0,.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: .5rem 0; }
+  .iq-landing .nav-links.open { display: flex; }
+  .iq-landing .nav-links a { padding: .85rem 2rem; font-size: .95rem; }
+  .iq-landing .nav-links a:hover { background: rgba(255,255,255,.04); }
 }
