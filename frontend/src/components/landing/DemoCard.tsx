@@ -29,17 +29,17 @@ export function DemoCard() {
             <div className="spec-marker" style={{ left: '97%', background: 'var(--coral)' }}></div>
           </div>
           <div className="spec-labels">
-            <div className="spec-pt">
+            <div className="spec-pt" style={{ left: '30%' }}>
               <div className="spec-pt-val">$289K</div>
               <div className="spec-pt-name">Target Buy</div>
               <div className="spec-pt-sub" style={{ color: 'var(--teal)' }}>Profit</div>
             </div>
-            <div className="spec-pt">
+            <div className="spec-pt" style={{ left: '62%' }}>
               <div className="spec-pt-val">$312K</div>
               <div className="spec-pt-name">Income Value</div>
               <div className="spec-pt-sub" style={{ color: 'var(--green)' }}>Breakeven</div>
             </div>
-            <div className="spec-pt">
+            <div className="spec-pt" style={{ left: '100%' }}>
               <div className="spec-pt-val">$349.9K</div>
               <div className="spec-pt-name">List Price</div>
               <div className="spec-pt-sub" style={{ color: 'var(--coral)' }}>Loss</div>
