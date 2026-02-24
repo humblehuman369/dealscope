@@ -1054,25 +1054,28 @@ function VerdictContent() {
             </ProGate>
           </section>
 
+          {/* div-e gradient divider */}
+          <div className="mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, #0EA5E9 15%, #34D399 50%, #F97066 85%, transparent)', boxShadow: '0 0 8px rgba(14,165,233,0.4), 0 0 20px rgba(14,165,233,0.15)' }} />
+
           {/* CTA → Strategy — copy adapts to verdict score */}
-          <section className="px-5 py-10 text-center border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
+          <section className="px-5 py-10 text-center">
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>
               {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
             </p>
             <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>
               {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
             </h2>
-            <p className="text-[0.95rem] leading-relaxed max-w-xs mx-auto mb-7" style={{ color: colors.text.body }}>
+            <p className="text-[0.95rem] leading-relaxed mx-auto mb-7" style={{ color: colors.text.body }}>
               {score >= 65
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
                 : score >= 40
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
-            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full font-bold text-[1.05rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
+            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-[0.8rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
               style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
               Show Me the Numbers
-              <svg width="18" height="18" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             <div className="flex justify-center gap-6 mt-5">
               {['Free to use', 'No signup needed', '60 seconds'].map((f, i) => (
