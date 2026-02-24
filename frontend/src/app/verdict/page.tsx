@@ -601,7 +601,18 @@ function VerdictContent() {
         badge: s.badge as IQStrategy['badge'],
       })),
       opportunity: analysisData.opportunity,
-      opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
+      opportunityFactors: (() => {
+        const raw = analysisData.opportunity_factors ?? analysisData.opportunityFactors
+        if (!raw) return undefined
+        return {
+          dealGap: raw.deal_gap ?? raw.dealGap,
+          motivation: raw.motivation,
+          motivationLabel: raw.motivation_label ?? raw.motivationLabel,
+          daysOnMarket: raw.days_on_market ?? raw.daysOnMarket,
+          buyerMarket: raw.buyer_market ?? raw.buyerMarket,
+          distressedSale: raw.distressed_sale ?? raw.distressedSale,
+        }
+      })(),
       returnRating: analysisData.return_rating ?? analysisData.returnRating,
       returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
       componentScores: (() => {
