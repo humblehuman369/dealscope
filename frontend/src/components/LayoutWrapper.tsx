@@ -3,7 +3,8 @@
 /**
  * LayoutWrapper Component
  * 
- * Client-side wrapper for the root layout that includes the AppHeader.
+ * Client-side wrapper for the root layout that includes the AppHeader
+ * and the UsageBar (for Starter users).
  * This is needed because AppHeader uses client-side hooks (usePathname, useSearchParams, etc.)
  * and the root layout is a server component.
  * 
@@ -16,6 +17,7 @@
 
 import React, { Suspense } from 'react'
 import { AppHeader } from './AppHeader'
+import { UsageBar } from './UsageBar'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -30,6 +32,14 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
       */}
       <Suspense fallback={null}>
         <AppHeader />
+      </Suspense>
+
+      {/* 
+        Usage bar — Starter-only, hidden on /billing and non-dashboard routes.
+        Renders between the nav and page content.
+      */}
+      <Suspense fallback={null}>
+        <UsageBar />
       </Suspense>
       
       {/* Main content */}
