@@ -56,7 +56,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* HERO */}
       <header className="hero">
-        <div className="label anim" style={{ fontSize: '.7rem', marginBottom: '1.25rem', display: 'inline-block' }}>
+        <div className="label anim" style={{ fontSize: '.7rem', marginBottom: '1.75rem', display: 'inline-block' }}>
           Real Analytics for Real Estate Investors
         </div>
         <h1 className="anim d1">
