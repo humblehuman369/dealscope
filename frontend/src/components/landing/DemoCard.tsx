@@ -17,7 +17,7 @@ export function DemoCard() {
       </div>
       <div className="demo-spec">
         <div className="demo-spec-label">Your Price Spectrum</div>
-        <div style={{ position: 'relative', marginBottom: '.5rem' }}>
+        <div style={{ position: 'relative', marginBottom: '.5rem', marginTop: '2rem' }}>
           <div className="spec-gap-wrap">
             <div className="spec-gap-line"></div>
             <div className="spec-gap-text">DEAL GAP  17.4%</div>
