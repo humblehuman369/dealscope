@@ -475,6 +475,13 @@ function VerdictContent() {
           zestimate: zestimate ?? undefined,
           current_value_avm: currentAvm ?? undefined,
           tax_assessed_value: taxAssessed ?? undefined,
+          listing_status: data.listing?.listing_status || undefined,
+          days_on_market: data.listing?.days_on_market ?? undefined,
+          seller_type: data.listing?.seller_type || undefined,
+          is_foreclosure: data.listing?.is_foreclosure || false,
+          is_bank_owned: data.listing?.is_bank_owned || false,
+          is_fsbo: data.listing?.is_fsbo || false,
+          market_temperature: data.listing?.market_temperature || undefined,
         }
         analysisInputsRef.current = analysisBody
 
