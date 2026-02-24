@@ -34,6 +34,7 @@ import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
+import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AnalysisNav } from '@/components/navigation/AnalysisNav'
@@ -206,6 +207,7 @@ function VerdictContent() {
   const [error, setError] = useState<string | null>(null)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
 
@@ -1148,11 +1150,17 @@ function VerdictContent() {
           }}
           strategyType={currentStrategy}
           onStrategyChange={(s) => setCurrentStrategy(s)}
+          activePriceTarget={activePriceTarget}
+          onPriceTargetChange={(target) => setActivePriceTarget(target)}
           initialValues={(() => {
-            // Only pass property-specific values; financing defaults come from
-            // the DealMakerPopup's strategy-specific getDefaultValues()
+            const targetBuyPrice = analysis.purchasePrice || Math.round(property.price * 0.95)
+            const incomeVal = analysis.incomeValue || property.price
+            const wholesaleVal = Math.round((analysis.listPrice || property.price) * 0.70)
+            const buyPrice = activePriceTarget === 'breakeven' ? incomeVal
+              : activePriceTarget === 'wholesale' ? wholesaleVal
+              : targetBuyPrice
             const propertyValues = {
-              buyPrice: analysis.purchasePrice || Math.round(property.price * 0.95),
+              buyPrice,
               monthlyRent: property.monthlyRent || 0,
               propertyTaxes: property.propertyTaxes || 0,
               insurance: property.insurance || 0,

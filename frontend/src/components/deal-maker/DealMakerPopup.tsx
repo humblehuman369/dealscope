@@ -295,8 +295,8 @@ function SectionDivider({ text }: { text: string }) {
 function CalculatedField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center p-3.5 px-4 bg-white/[0.03] rounded-xl mb-5 border border-white/[0.07]">
-      <span className="text-sm text-[#94A3B8]">{label}</span>
-      <span className="text-base font-bold text-[#38bdf8]">{value}</span>
+      <span className="text-sm text-[#CBD5E1]">{label}</span>
+      <span className="text-base font-bold text-[#F1F5F9] tabular-nums">{value}</span>
     </div>
   )
 }
