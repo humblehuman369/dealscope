@@ -5,7 +5,8 @@
  * while adding MFA and new auth flow support.
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import {
   type UserResponse as User,
   login as authLogin,
@@ -16,6 +17,7 @@ import {
   getStoredUserData,
   initializeAuth,
   getRefreshToken,
+  refreshWithMutex,
   onAuthStateChange,
   AuthError,
   type MFAChallengeResponse,
@@ -117,6 +119,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     return () => onAuthStateChange(null);
   }, []);
+
+  // Proactive session refresh — matches frontend's 3.5 min refetchInterval.
+  // Also refreshes when the app returns to the foreground.
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    const REFRESH_INTERVAL_MS = 3.5 * 60 * 1000; // 3.5 minutes
+
+    const doRefresh = async () => {
+      if (!state.isAuthenticated) return;
+      const rt = await getRefreshToken();
+      if (!rt) return;
+      // Best-effort proactive refresh — errors handled by the interceptor
+      refreshWithMutex().catch(() => {});
+    };
+
+    // Set interval
+    refreshIntervalRef.current = setInterval(doRefresh, REFRESH_INTERVAL_MS);
+
+    // Also refresh on app foreground
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextState: AppStateStatus) => {
+        if (nextState === 'active' && state.isAuthenticated) {
+          doRefresh();
+        }
+      },
+    );
+
+    return () => {
+      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+      subscription.remove();
+    };
+  }, [state.isAuthenticated]);
 
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));

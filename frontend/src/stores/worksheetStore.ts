@@ -15,6 +15,13 @@ import { apiRequest } from '@/lib/api-client'
  * NOTE: Default values in this store are fallbacks only.
  * The store initializes from the centralized defaults API.
  * See docs/DEFAULTS_ARCHITECTURE.md for details.
+ *
+ * ARCHITECTURAL NOTE (M10 parity audit):
+ * The frontend store is single-property focused (one worksheet at a time),
+ * while the mobile store uses a multi-property map for offline persistence.
+ * This is intentional — the frontend doesn't need multi-property because
+ * tab-based navigation keeps a single property in context. Both platforms
+ * call the same backend worksheet calculation endpoints.
  */
 
 // Use relative paths for API calls to go through Next.js API routes

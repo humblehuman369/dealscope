@@ -28,6 +28,10 @@ export interface UserResponse {
   roles: string[];
   permissions: string[];
 
+  // Subscription
+  subscription_tier: 'free' | 'pro' | null;
+  subscription_status: string | null;
+
   // Business Profile
   business_name: string | null;
   business_type: string | null;

@@ -42,10 +42,13 @@ let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // ─── Store State ────────────────────────────────────────────────────────────
 
+const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+
 interface DealMakerState {
   propertyId: string | null;
   record: DealMakerRecord | null;
   activePriceTarget: PriceTarget;
+  lastFetchedAt: number | null;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
@@ -80,6 +83,7 @@ export const useDealMakerStore = create<DealMakerState>()(
       propertyId: null,
       record: null,
       activePriceTarget: 'targetBuy' as PriceTarget,
+      lastFetchedAt: null,
       isLoading: false,
       isSaving: false,
       error: null,
@@ -87,6 +91,15 @@ export const useDealMakerStore = create<DealMakerState>()(
       pendingUpdates: {},
 
       loadRecord: async (propertyId: string) => {
+        // Skip network if we have fresh data for this property
+        const state = get();
+        const isFresh =
+          state.propertyId === propertyId &&
+          state.record &&
+          state.lastFetchedAt &&
+          Date.now() - state.lastFetchedAt < STALE_THRESHOLD_MS;
+        if (isFresh) return;
+
         set({ isLoading: true, error: null });
 
         try {
@@ -97,6 +110,7 @@ export const useDealMakerStore = create<DealMakerState>()(
           set({
             propertyId,
             record: data.record,
+            lastFetchedAt: Date.now(),
             isLoading: false,
             isDirty: false,
             pendingUpdates: {},
@@ -174,6 +188,7 @@ export const useDealMakerStore = create<DealMakerState>()(
           propertyId: null,
           record: null,
           activePriceTarget: 'targetBuy' as PriceTarget,
+          lastFetchedAt: null,
           isLoading: false,
           isSaving: false,
           error: null,
@@ -202,11 +217,11 @@ export const useDealMakerStore = create<DealMakerState>()(
 
         switch (activePriceTarget) {
           case 'breakeven':
-            return metrics.breakeven_price || 0;
+            return metrics.income_value ?? metrics.breakeven_price ?? 0;
           case 'targetBuy':
             return record.buy_price || 0;
           case 'wholesale':
-            return Math.round((metrics.breakeven_price || 0) * 0.7);
+            return Math.round((metrics.income_value || 0) * 0.70);
           default:
             return record.buy_price || 0;
         }
@@ -220,6 +235,7 @@ export const useDealMakerStore = create<DealMakerState>()(
         propertyId: state.propertyId,
         record: state.record,
         activePriceTarget: state.activePriceTarget,
+        lastFetchedAt: state.lastFetchedAt,
       }),
     }
   )
@@ -264,7 +280,7 @@ export const useDealMakerDerived = () => {
     equityAfterRehab: safeNumber(metrics?.equity_after_rehab),
     dealGapPct: safeNumber(metrics?.deal_gap_pct),
     breakevenPrice: safeNumber(metrics?.breakeven_price),
-    incomeValue: safeNumber(metrics?.breakeven_price),  // Alias: price where cash flow = $0
+    incomeValue: safeNumber(metrics?.income_value ?? metrics?.breakeven_price),
     hasRecord: record !== null,
   };
 };

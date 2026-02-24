@@ -103,7 +103,7 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         if square_footage:
             params["squareFootage"] = square_footage
         
-        return await self._make_request("avm", params)
+        return await self._make_request("avm/value", params)
     
     async def get_rent_estimate(
         self,

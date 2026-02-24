@@ -6,7 +6,14 @@
  * handles all calculations — this store caches inputs and the
  * last-received results snapshot.
  *
- * Mirrors the frontend worksheetStore with mobile-appropriate storage.
+ * ARCHITECTURAL NOTE (M10 parity audit):
+ * The mobile store uses a multi-property map (`entries: Record<string, WorksheetEntry>`)
+ * keyed by "propertyId::strategy", while the frontend store is single-property focused.
+ * This is an intentional divergence — mobile needs offline persistence for multiple
+ * properties so users can switch between deals without losing edits. The frontend
+ * doesn't need this because tab-based navigation keeps a single property in context.
+ * Both platforms call the same backend worksheet calculation endpoints with the same
+ * payload shape.
  */
 
 import { create } from 'zustand';
@@ -75,6 +82,39 @@ const STRATEGY_ENDPOINTS: Record<StrategyId, string> = {
   wholesale: '/api/v1/worksheet/wholesale/calculate',
 };
 
+// ─── Default worksheet inputs (matches frontend/src/stores/worksheetStore.ts)
+// Used as fallback when initialInputs are incomplete.
+// Values match backend/app/core/defaults.py to minimize visual jumps.
+
+const DEFAULT_WORKSHEET_INPUTS: Record<string, number> = {
+  purchase_price: 0,
+  down_payment_pct: 0.20,
+  closing_costs_pct: 0.03,
+  closing_costs: 0,
+  rehab_costs: 0,
+  arv: 0,
+  interest_rate: 0.06,
+  loan_term_years: 30,
+  monthly_rent: 0,
+  annual_rent_growth: 0.05,
+  vacancy_rate: 0.01,
+  property_taxes: 0,
+  insurance: 0,
+  property_tax_growth: 0.02,
+  insurance_growth: 0.03,
+  management_pct: 0.00,
+  maintenance_pct: 0.05,
+  capex_reserve_pct: 0.05,
+  hoa_fees: 0,
+  utilities: 0,
+  landscaping: 0,
+  misc_expenses: 0,
+  annual_appreciation: 0.05,
+  income_tax_rate: 0.25,
+  depreciation_years: 27.5,
+  land_value_percent: 0.20,
+};
+
 // ─── Debounce ───────────────────────────────────────────────────────────────
 
 const CALC_DEBOUNCE_MS = 200;
@@ -132,11 +172,11 @@ export const useWorksheetStore = create<WorksheetState>()(
         const key = entryKey(propertyId, strategy);
         const existing = get().entries[key];
 
-        // If we already have an entry for this combo, re-use its inputs
-        // but allow new initial inputs to fill any gaps
+        // Layer defaults → caller-provided → previously saved inputs
+        // so no field is ever undefined in a calculation payload.
         const mergedInputs = existing
-          ? { ...initialInputs, ...existing.inputs }
-          : { ...initialInputs };
+          ? { ...DEFAULT_WORKSHEET_INPUTS, ...initialInputs, ...existing.inputs }
+          : { ...DEFAULT_WORKSHEET_INPUTS, ...initialInputs };
 
         set((state) => ({
           activePropertyId: propertyId,

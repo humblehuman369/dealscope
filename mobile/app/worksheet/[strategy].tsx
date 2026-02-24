@@ -724,6 +724,7 @@ export default function WorksheetScreen() {
   // ── Search / route params ───────────────────────────────────────────────
   const params = useLocalSearchParams<{
     strategy: string;
+    propertyId?: string;
     address?: string;
     price?: string;
     rent?: string;
@@ -811,7 +812,9 @@ export default function WorksheetScreen() {
 
   // Worksheet persistence store
   const worksheetStore = useWorksheetStore();
-  const propertyId = params.address ? encodeURIComponent(decodeURIComponent(params.address as string)) : 'default';
+  // Prefer explicit propertyId for unambiguous deep linking; fall back to address
+  const propertyId = params.propertyId
+    || (params.address ? encodeURIComponent(decodeURIComponent(params.address as string)) : 'default');
 
   // Initialise inputs from strategy defaults + store overrides + URL params
   // If the store has a persisted entry for this property+strategy, re-use it

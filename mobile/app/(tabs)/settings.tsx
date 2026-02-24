@@ -316,6 +316,22 @@ export default function SettingsScreen() {
                   </View>
                 </View>
                 <View style={[styles.divider, dynamicStyles.divider]} />
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => router.push('/billing' as any)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Billing & Subscription"
+                >
+                  <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                    <Ionicons name="card" size={18} color={colors.primary[isDark ? 300 : 600]} />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Billing & Subscription</Text>
+                    <Text style={[styles.menuSubtitle, dynamicStyles.menuSubtitle]}>Manage plan and payment history</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+                </TouchableOpacity>
+                <View style={[styles.divider, dynamicStyles.divider]} />
                 <TouchableOpacity style={styles.menuItem} onPress={handleLogout} accessibilityRole="button" accessibilityLabel="Sign Out">
                   <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.loss.dark + '30' : colors.loss.light }]}>
                     <Ionicons name="log-out" size={18} color={colors.loss.main} />

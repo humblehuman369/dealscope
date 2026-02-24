@@ -520,7 +520,8 @@ export default function StrategyIQScreen() {
       rent: String(monthlyRent),
     };
     if (tool.route === 'worksheet') {
-      router.push({ pathname: '/worksheet/[strategy]', params: { strategy: 'ltr', ...params } });
+      const worksheetPropertyId = raw?.property_id;
+      router.push({ pathname: '/worksheet/[strategy]', params: { strategy: 'ltr', ...params, ...(worksheetPropertyId ? { propertyId: worksheetPropertyId } : {}) } });
     } else if (tool.route === 'deal-gap') {
       router.push({ pathname: '/deal-gap/[address]', params });
     } else if (tool.route === 'price-intel') {

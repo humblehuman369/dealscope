@@ -288,6 +288,80 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
       name: 'dealgapiq-assumptions',
       storage: createJSONStorage(() => AsyncStorage),
       version: 2,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as AssumptionsStore;
+
+        if (version === 0 || version === 1) {
+          const assumptions = {
+            ...state.assumptions,
+          } as unknown as Record<string, Record<string, unknown>>;
+
+          if (assumptions.operating) {
+            const operating = assumptions.operating;
+            if ('insurance_annual' in operating && !('insurance_pct' in operating)) {
+              operating.insurance_pct = 0.01;
+              delete operating.insurance_annual;
+            }
+          }
+
+          if (assumptions.str) {
+            const str = assumptions.str;
+            if ('str_insurance_annual' in str && !('str_insurance_pct' in str)) {
+              str.str_insurance_pct = 0.01;
+              delete str.str_insurance_annual;
+            }
+            if (!('buy_discount_pct' in str)) {
+              str.buy_discount_pct = 0.05;
+            }
+          }
+
+          if (assumptions.rehab) {
+            const rehab = assumptions.rehab;
+            if ('renovation_budget' in rehab && !('renovation_budget_pct' in rehab)) {
+              rehab.renovation_budget_pct = 0.05;
+              delete rehab.renovation_budget;
+            }
+            if ('monthly_holding_costs' in rehab && !('holding_costs_pct' in rehab)) {
+              rehab.holding_costs_pct = 0.01;
+              delete rehab.monthly_holding_costs;
+            }
+          }
+
+          if (assumptions.brrrr) {
+            const brrrr = assumptions.brrrr;
+            if ('purchase_discount_pct' in brrrr) {
+              delete brrrr.purchase_discount_pct;
+            }
+            if (!('buy_discount_pct' in brrrr)) {
+              brrrr.buy_discount_pct = 0.05;
+            }
+            if ('refinance_closing_costs' in brrrr && !('refinance_closing_costs_pct' in brrrr)) {
+              brrrr.refinance_closing_costs_pct = 0.03;
+              delete brrrr.refinance_closing_costs;
+            }
+          }
+
+          if (!assumptions.ltr) {
+            assumptions.ltr = { buy_discount_pct: 0.05 };
+          }
+
+          if (assumptions.house_hack) {
+            const houseHack = assumptions.house_hack;
+            delete houseHack.room_rent_monthly;
+            delete houseHack.owner_unit_market_rent;
+            if (!('buy_discount_pct' in houseHack)) {
+              houseHack.buy_discount_pct = 0.05;
+            }
+          }
+
+          return {
+            ...state,
+            assumptions: assumptions as unknown as AllAssumptions,
+          };
+        }
+
+        return state;
+      },
     }
   )
 );

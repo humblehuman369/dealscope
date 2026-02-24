@@ -683,6 +683,69 @@ export async function checkBackendHealth(): Promise<{
   }
 }
 
+// ─── Missing endpoint parity (M6) ────────────────────────────────────────────
+
+/**
+ * Get quick analytics for a property (fast summary, no full calculation).
+ * Matches frontend api.analytics.quick().
+ */
+export async function getQuickAnalytics(
+  propertyId: string,
+  params?: {
+    purchase_price?: number;
+    down_payment_pct?: number;
+    interest_rate?: number;
+  },
+): Promise<Record<string, unknown>> {
+  const qs = new URLSearchParams();
+  if (params?.purchase_price != null) qs.set('purchase_price', String(params.purchase_price));
+  if (params?.down_payment_pct != null) qs.set('down_payment_pct', String(params.down_payment_pct));
+  if (params?.interest_rate != null) qs.set('interest_rate', String(params.interest_rate));
+  const query = qs.toString();
+  const url = `${API_BASE_URL}/api/v1/analytics/${propertyId}/quick${query ? `?${query}` : ''}`;
+  const response = await axios.get(url, { headers: getAuthHeaders() });
+  return response.data;
+}
+
+/**
+ * Get property comparison data.
+ * Matches frontend api.comparison.get().
+ */
+export async function getComparison(
+  propertyId: string,
+): Promise<Record<string, unknown>> {
+  const url = `${API_BASE_URL}/api/v1/comparison/${propertyId}`;
+  const response = await axios.get(url, { headers: getAuthHeaders() });
+  return response.data;
+}
+
+/**
+ * Run sensitivity analysis on a property.
+ * Matches frontend api.sensitivity.analyze().
+ */
+export async function analyzeSensitivity(payload: {
+  property_id: string;
+  assumptions: Record<string, unknown>;
+  variable: string;
+  range_pct?: number;
+}): Promise<Record<string, unknown>> {
+  const url = `${API_BASE_URL}/api/v1/sensitivity/analyze`;
+  const response = await axios.post(url, payload, { headers: getAuthHeaders() });
+  return response.data;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // Access token is managed by the apiClient interceptor for normal requests,
+  // but these use raw axios to match the existing pattern in this file.
+  try {
+    const { getAccessToken } = require('./authService');
+    const token = getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+  } catch { /* auth not available */ }
+  return headers;
+}
+
 // ─── Formatters (re-exported from canonical utils/formatters) ────────────────
 // New code should import directly from 'utils/formatters'.
 
