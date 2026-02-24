@@ -366,12 +366,6 @@ function StrategyContent() {
         ...(strategyDscr != null ? [{ metric: 'DSCR', value: strategyDscr.toFixed(2), target: '1.25', status: strategyDscr >= 1.25 ? 'good' : 'poor' }] : []),
       ]
 
-  // Confidence
-  const of = data.opportunity_factors || (data as any).opportunityFactors
-  const dealProb = of ? Math.min(100, Math.max(0, 50 + (of.dealGap || 0) * 5)) : 50
-  const marketAlign = of?.motivation || 50
-  const priceConf = (data.opportunity || (data as any).opportunity)?.score || 65
-
   const handlePDFDownload = (theme: 'light' | 'dark' = 'light') => {
     if (!isAuthenticated) {
       openAuthModal('login')
@@ -822,30 +816,6 @@ function StrategyContent() {
           </table>
         </section>
 
-        {/* Data Quality */}
-        <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
-          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Data Quality</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Reliable Is This Analysis?</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
-            No analysis is perfect. These scores show how much data we had to work with.
-          </p>
-          {[
-            { label: 'Deal Probability', value: dealProb, color: colors.brand.blue },
-            { label: 'Market Alignment', value: marketAlign, color: colors.brand.teal },
-            { label: 'Price Confidence', value: priceConf, color: colors.brand.blue },
-          ].map((m, i) => (
-            <div key={i} className="flex items-center gap-3.5 mb-4">
-              <span className="text-sm font-medium w-36 shrink-0" style={{ color: colors.text.body }}>{m.label}</span>
-              <div className="flex-1 h-[7px] rounded" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <div className="h-full rounded" style={{ width: `${m.value}%`, background: `linear-gradient(90deg, ${m.color}, ${m.color}cc)` }} />
-              </div>
-              <span className="text-sm font-bold tabular-nums w-12 text-right" style={{ color: m.color }}>{Math.round(m.value)}%</span>
-            </div>
-          ))}
-          <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
-            Price Confidence reflects comp availability in this price range. Luxury properties have fewer comparables.
-          </p>
-        </section>
         </AuthGate>
 
         {/* Save CTA — adapt for logged-in vs anonymous; future: scan limit → Pro upgrade */}

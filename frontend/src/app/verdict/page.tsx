@@ -824,13 +824,11 @@ function VerdictContent() {
   const shortVerdictDescription = incomeGapPct != null
     ? (incomeGapPct > 0
       ? (
-        <>
+        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
           <span>• Income Value is <strong style={{ color: '#f87171' }}>-{incomeGapPct}%</strong> below {priceLabel} Price</span>
-          <br />
           <span>• Target Buy is <strong style={{ color: '#f87171' }}>-{dealGap.toFixed(1)}%</strong> below {priceLabel} Price</span>
-          <br />
-          <span style={{ opacity: 0.7, fontSize: '0.8rem', marginTop: '2px', display: 'inline-block' }}>Negotiation is needed to reach your target return.</span>
-        </>
+          <span style={{ opacity: 0.7, fontSize: '0.8rem', marginTop: '2px', alignSelf: 'center' }}>Negotiation is needed to reach your target return.</span>
+        </span>
       )
       : `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`)
     : (analysis.verdictDescription || 'Calculating deal metrics...')
