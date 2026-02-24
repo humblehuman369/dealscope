@@ -114,8 +114,8 @@
 
 .iq-landing .demo-spec { padding: 2rem 2rem 1.75rem; border-bottom: 1px solid var(--border-s); }
 .iq-landing .demo-spec-label { font-family: var(--font); font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1.5rem; }
-.iq-landing .spec-gap-wrap { display: flex; align-items: center; justify-content: center; margin-bottom: .5rem; }
-.iq-landing .spec-gap-line { height: 1px; background: var(--teal); flex: 1; max-width: 80px; }
+.iq-landing .spec-gap-wrap { position: absolute; left: 30%; right: 3%; top: -1.6rem; display: flex; align-items: center; justify-content: center; }
+.iq-landing .spec-gap-line { height: 1px; background: var(--teal); flex: 1; }
 .iq-landing .spec-gap-text { font-family: var(--mono); font-size: .68rem; font-weight: 700; color: var(--teal); padding: 0 .6rem; white-space: nowrap; }
 .iq-landing .spec-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg,var(--teal),var(--green) 55%,var(--amber) 78%,var(--coral)); position: relative; }
 .iq-landing .spec-marker { position: absolute; top: -4px; width: 2px; height: 18px; border-radius: 1px; }
