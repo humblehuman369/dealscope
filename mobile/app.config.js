@@ -39,7 +39,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.dealgapiq.mobile",
-      buildNumber: "19",
+      buildNumber: "20",
 
       associatedDomains: [
         "applinks:dealgapiq.com",
@@ -146,7 +146,7 @@ export default {
         backgroundColor: "#0A0F1C"
       },
       package: "com.dealgapiq.mobile",
-      versionCode: 12,
+      versionCode: 13,
 
       permissions: [
         "android.permission.CAMERA",
