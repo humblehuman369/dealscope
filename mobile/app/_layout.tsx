@@ -19,6 +19,7 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { OfflineBanner } from '../components/OfflineBanner';
+import { GlobalToast } from '../components/GlobalToast';
 import { useDeepLinking } from '../hooks/useDeepLinking';
 import { useRegisterPushToken } from '../hooks/useRegisterPushToken';
 import { useAuth } from '../context/AuthContext';
@@ -330,6 +331,7 @@ function AppContent({
       
       {/* Offline connectivity banner — slides down when no internet */}
       <OfflineBanner />
+      <GlobalToast />
 
       {/* Animated Splash Screen with pulsating logo */}
       {appReady && showAnimatedSplash && (

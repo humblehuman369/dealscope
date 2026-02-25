@@ -76,7 +76,7 @@ const lightTheme: ThemeColors = {
 };
 
 const darkTheme: ThemeColors = {
-  background: colors.navy[950],
+  background: '#000000',
   backgroundSecondary: colors.navy[900],
   backgroundTertiary: colors.navy[800],
   card: colors.navy[900],
@@ -122,7 +122,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemColorScheme = useSystemColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>('system');
+  const [mode, setModeState] = useState<ThemeMode>('dark');
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load saved theme preference
@@ -142,8 +142,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     loadTheme();
   }, []);
 
-  // When theme preference is not yet loaded, use system so the app renders immediately (no blank screen).
-  const effectiveMode: ThemeMode = isLoaded ? mode : 'system';
+  // When theme preference is not yet loaded, default to dark so the app matches the frontend's always-dark aesthetic.
+  const effectiveMode: ThemeMode = isLoaded ? mode : 'dark';
   const activeTheme: ActiveTheme = effectiveMode === 'system'
     ? (systemColorScheme === 'dark' ? 'dark' : 'light')
     : effectiveMode;

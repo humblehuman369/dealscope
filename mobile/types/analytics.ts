@@ -23,12 +23,12 @@ export { ALL_STRATEGY_IDS, WORKSHEET_ENDPOINTS } from '@dealscope/shared';
 import type { StrategyId, StrategyInfo } from '@dealscope/shared';
 
 export const STRATEGY_CONFIG: Record<StrategyId, Omit<StrategyInfo, 'grade' | 'score'>> = {
-  ltr: { id: 'ltr', name: 'Long-Term Rental', shortName: 'Long Rental', icon: '🏠', color: '#0097a7' },
-  str: { id: 'str', name: 'Short-Term Rental', shortName: 'Short Rental', icon: '🏨', color: '#9333ea' },
+  ltr: { id: 'ltr', name: 'Long-Term Rental', shortName: 'Long Rental', icon: '🏠', color: '#0465f2' },
+  str: { id: 'str', name: 'Short-Term Rental', shortName: 'Short Rental', icon: '🏨', color: '#8b5cf6' },
   brrrr: { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', icon: '🔄', color: '#f97316' },
-  flip: { id: 'flip', name: 'Fix & Flip', shortName: 'Fix & Flip', icon: '🔨', color: '#22c55e' },
-  house_hack: { id: 'house_hack', name: 'House Hack', shortName: 'House Hack', icon: '🏡', color: '#3b82f6' },
-  wholesale: { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', icon: '📋', color: '#eab308' },
+  flip: { id: 'flip', name: 'Fix & Flip', shortName: 'Fix & Flip', icon: '🔨', color: '#ec4899' },
+  house_hack: { id: 'house_hack', name: 'House Hack', shortName: 'House Hack', icon: '🏡', color: '#14b8a6' },
+  wholesale: { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', icon: '📋', color: '#84cc16' },
 };
 
 // ============================================
