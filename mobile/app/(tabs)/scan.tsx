@@ -208,8 +208,8 @@ export default function ScanScreen() {
       // Get property details from analytics result
       const fullAnalytics = result.analytics as any;
       const propertyDetails = fullAnalytics?.property || result.property;
-      const estimatedValue = fullAnalytics?.pricing?.estimatedValue || 
-                             fullAnalytics?.pricing?.listPrice || 0;
+      const estimatedValue = fullAnalytics?.pricing?.estimatedValue ?? 
+                             fullAnalytics?.pricing?.listPrice ?? 0;
       
       // Build query params with property data for the IQ Verdict flow
       const queryParams = new URLSearchParams({

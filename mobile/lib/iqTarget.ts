@@ -232,7 +232,7 @@ export interface AvailabilityInfo {
 
 export interface DealOpportunityFactors {
   dealGap: {
-    breakevenPrice: number;
+    incomeValue: number;
     listPrice: number;
     gapAmount: number;
     gapPercent: number;
@@ -258,7 +258,7 @@ export interface DealOpportunityScore {
   color: string;
   factors: DealOpportunityFactors;
   discountPercent: number;
-  breakevenPrice: number;
+  incomeValue: number;
   listPrice: number;
 }
 
