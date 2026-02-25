@@ -9,7 +9,7 @@
  * Selection persists in sessionStorage.
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { colors, cardGlow } from './verdict-design-tokens'
 
 export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin'
@@ -88,17 +88,30 @@ function SourceRow({
   onSelect: () => void
 }) {
   const available = sourceValue != null
+  const [hovered, setHovered] = useState(false)
+  const showHover = hovered && !isSelected && available
+
+  const buttonStyle = useMemo(() => ({
+    background: isSelected
+      ? 'rgba(45,212,191,0.08)'
+      : showHover ? `${meta.color}0A` : 'transparent',
+    border: `1px solid ${
+      isSelected ? 'rgba(45,212,191,0.25)'
+      : showHover ? `${meta.color}20` : 'transparent'
+    }`,
+    boxShadow: showHover ? `0 0 14px ${meta.color}18` : 'none',
+    cursor: available ? 'pointer' : 'default',
+    opacity: available ? 1 : 0.45,
+  }), [isSelected, showHover, available, meta.color])
+
   return (
     <button
       onClick={available ? onSelect : undefined}
       disabled={!available}
-      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg transition-all text-left"
-      style={{
-        background: isSelected ? 'rgba(45,212,191,0.08)' : 'transparent',
-        border: `1px solid ${isSelected ? 'rgba(45,212,191,0.25)' : 'transparent'}`,
-        cursor: available ? 'pointer' : 'default',
-        opacity: available ? 1 : 0.45,
-      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg transition-all duration-200 text-left"
+      style={buttonStyle}
     >
       <div
         className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
