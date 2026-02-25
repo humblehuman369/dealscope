@@ -8,6 +8,9 @@ frontend/out/
 # Vercel
 .vercel
 
+# EAS build inspect output (generated, can be large)
+**/eas-archive/
+
 # OS files
 .DS_Store
 Thumbs.db
