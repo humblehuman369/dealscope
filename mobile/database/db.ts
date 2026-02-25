@@ -110,6 +110,25 @@ async function applyMigration(database: SQLite.SQLiteDatabase, version: number):
       break;
     }
 
+    case 4: {
+      // Add retry backoff and status tracking to offline queue.
+      // next_retry_at enables exponential backoff; status marks exhausted items.
+      const v4Columns: [string, string][] = [
+        ['next_retry_at', 'INTEGER'],
+        ['status', "TEXT DEFAULT 'pending'"],
+      ];
+      for (const [col, type] of v4Columns) {
+        try {
+          await database.execAsync(
+            `ALTER TABLE offline_queue ADD COLUMN ${col} ${type}`
+          );
+        } catch {
+          // Column already exists (fresh install) — safe to ignore.
+        }
+      }
+      break;
+    }
+
     default:
       if (__DEV__) console.warn(`Unknown migration version: ${version}`);
   }
