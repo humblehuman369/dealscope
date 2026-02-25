@@ -18,7 +18,7 @@ const IS_BETA = process.env.APP_ENV === 'beta';
 export default {
   expo: {
     name: IS_BETA ? "DealGapIQ (Beta)" : "DealGapIQ",
-    slug: "investiq",
+    slug: "dealgapiq",
     owner: "humblehuman369",
     version: "1.0.0",
     orientation: "portrait",
@@ -256,7 +256,8 @@ export default {
         origin: false,
       },
       eas: {
-        projectId: "c8258f15-a554-499a-a55f-adfc32d569d2",
+        // projectId removed — was linked to old "investiq" project.
+        // Run `eas build` to link to "dealgapiq" project; EAS will add the correct projectId.
       },
       webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://dealgapiq.com",
     },
@@ -266,7 +267,11 @@ export default {
       policy: "appVersion",
     },
     updates: {
-      url: "https://u.expo.dev/c8258f15-a554-499a-a55f-adfc32d569d2",
+      // Use EAS_BUILD_PROJECT_ID (set during EAS build) or fallback for local dev
+      url:
+        process.env.EAS_BUILD_PROJECT_ID
+          ? `https://u.expo.dev/${process.env.EAS_BUILD_PROJECT_ID}`
+          : undefined,
       fallbackToCacheTimeout: 3000,
       checkAutomatically: "ON_LOAD",
     },
