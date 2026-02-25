@@ -21,6 +21,20 @@
 
 ---
 
+## EAS Project Configuration
+
+For maintainers: the Expo/EAS project identifiers are defined in `app.config.js`:
+
+| Field | Value | Purpose |
+|-------|-------|---------|
+| **slug** | `dealgapiq` | Expo project slug; must match the project on expo.dev |
+| **projectId** | (set by EAS) | Removed from config — was linked to old "investiq" project. EAS adds the correct projectId when you run `eas build` and link to the "dealgapiq" project. |
+| **owner** | `humblehuman369` | Expo account/organization |
+
+**Important:** The slug must match the project at https://expo.dev/accounts/humblehuman369/projects/. If you see "Slug for project identified by extra.eas.projectId does not match", the projectId in config points to the wrong project — remove it and run `eas build` to re-link to the correct project.
+
+---
+
 ## Development Builds
 
 ### Local Development
@@ -146,9 +160,25 @@ GOOGLE_MAPS_API_KEY=your_key_here
 ```
 
 ### EAS Secrets (for builds)
+
+Before production builds, ensure these secrets are configured:
+
 ```bash
-eas secret:create --name GOOGLE_MAPS_API_KEY --value your_key
+# Google Maps (required for maps to work)
+eas secret:create --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value your_key --scope project
+
+# Sentry source maps (optional)
+eas secret:create --name SENTRY_AUTH_TOKEN --value your_token --scope project
+
+# Android: Upload Play service account key as file secret
+eas secret:create --scope project --name GOOGLE_PLAY_SERVICE_ACCOUNT_KEY --type file --value ./google-services-key.json
 ```
+
+**Verification checklist:**
+- [ ] `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` set for production
+- [ ] `SENTRY_AUTH_TOKEN` set if using Sentry
+- [ ] `google-services-key.json` exists and is configured for Android
+- [ ] Apple credentials (appleId, ascAppId, appleTeamId) valid in eas.json
 
 ---
 

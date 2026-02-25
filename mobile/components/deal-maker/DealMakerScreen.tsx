@@ -168,9 +168,9 @@ export function DealMakerScreen({
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* DealGapIQ Header */}
-      <View style={[styles.investIQHeader, { paddingTop: insets.top }]}>
+      <View style={[styles.dealGapIQHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity 
-          style={styles.investIQBackBtn} 
+          style={styles.dealGapIQBackBtn} 
           onPress={onBackPress}
           activeOpacity={0.7}
         >
@@ -180,7 +180,7 @@ export function DealMakerScreen({
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         
-        <View style={styles.investIQLogo}>
+        <View style={styles.dealGapIQLogo}>
           <Text style={styles.logoInvest}>DealGap</Text>
           <Text style={styles.logoIQ}>IQ</Text>
         </View>
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F1F5F9',
   },
-  investIQHeader: {
+  dealGapIQHeader: {
     backgroundColor: 'white',
     paddingHorizontal: 20,
     paddingBottom: 12,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  investIQBackBtn: {
+  dealGapIQBackBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#0891B2',
   },
-  investIQLogo: {
+  dealGapIQLogo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
