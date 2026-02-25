@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "44875bad-7b5e-4840-a23e-f6e5db87d3c1"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.humblehuman369.dealgapiqfrontend",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
