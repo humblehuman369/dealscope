@@ -831,8 +831,8 @@ function VerdictContent() {
     ? (incomeGapPct > 0
       ? (
         <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-          <span>• Income Value is <strong style={{ color: '#f87171' }}>-{incomeGapPct}%</strong> below {priceLabel} Price</span>
-          <span>• Target Buy is <strong style={{ color: '#f87171' }}>-{dealGap.toFixed(1)}%</strong> below {priceLabel} Price</span>
+          <span>• PRICE GAP is <strong style={{ color: '#f87171' }}>-{incomeGapPct}%</strong> below {priceLabel} Price</span>
+          <span>• DEAL GAP is <strong style={{ color: '#f87171' }}>-{dealGap.toFixed(1)}%</strong> below {priceLabel} Price</span>
           <span style={{ opacity: 0.7, fontSize: '0.8rem', marginTop: '2px', alignSelf: 'center' }}>Negotiation is needed to reach your target return.</span>
         </span>
       )
