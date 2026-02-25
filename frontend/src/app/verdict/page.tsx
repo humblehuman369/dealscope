@@ -966,7 +966,6 @@ function VerdictContent() {
             <div className="mt-6 relative pt-8">
               {(() => {
                 const markers = [
-                  { label: 'Wholesale', price: wholesalePrice, dotColor: colors.brand.teal },
                   { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
                   { label: 'Income Value', price: incomeValue, dotColor: colors.brand.gold },
                   { label: priceLabel, price: property.price, dotColor: colors.status.negative },
@@ -1009,7 +1008,7 @@ function VerdictContent() {
                     )}
 
                     {/* Bar with proportionally-positioned dots */}
-                    <div className="relative h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}30, ${colors.brand.blue}30, ${colors.brand.gold}30, ${colors.status.negative}25)` }}>
+                    <div className="relative h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.blue}30, ${colors.brand.gold}30, ${colors.status.negative}25)` }}>
                       {markers.map((m, i) => (
                         <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
                           style={{
