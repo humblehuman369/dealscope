@@ -474,37 +474,37 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
 
   // Computed helpers with safe defaults
   getMetrics: () => {
-    return get().record?.cached_metrics || null
+    return get().record?.cached_metrics ?? null
   },
 
   getCashNeeded: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.total_cash_needed || 0
+    return metrics?.total_cash_needed ?? 0
   },
 
   getDealGap: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.deal_gap_pct || 0
+    return metrics?.deal_gap_pct ?? 0
   },
 
   getAnnualProfit: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.annual_cash_flow || 0
+    return metrics?.annual_cash_flow ?? 0
   },
 
   getCapRate: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.cap_rate || 0
+    return metrics?.cap_rate ?? 0
   },
 
   getCocReturn: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.cash_on_cash || 0
+    return metrics?.cash_on_cash ?? 0
   },
 
   getMonthlyPayment: () => {
     const metrics = get().record?.cached_metrics
-    return metrics?.monthly_payment || 0
+    return metrics?.monthly_payment ?? 0
   },
 
   getActivePriceValue: () => {
@@ -517,12 +517,11 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
       case 'breakeven':
         return metrics.income_value ?? metrics.breakeven_price ?? 0
       case 'targetBuy':
-        return record.buy_price || 0
+        return record.buy_price ?? 0
       case 'wholesale':
-        // Wholesale is typically 70% of Income Value
-        return Math.round((metrics.income_value || 0) * 0.70)
+        return Math.round((metrics.income_value ?? 0) * 0.70)
       default:
-        return record.buy_price || 0
+        return record.buy_price ?? 0
     }
   },
 }))

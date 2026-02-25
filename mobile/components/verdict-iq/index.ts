@@ -38,3 +38,9 @@ export { BeginnerTip } from './BeginnerTip';
 export { PriceScale } from './PriceScale';
 
 export { VerdictCTA, TrustStrip, VerdictFooter } from './VerdictCTA';
+
+export { ReturnFactors } from './ReturnFactors';
+export type { ReturnFactorsData } from './ReturnFactors';
+
+export { OpportunityFactors } from './OpportunityFactors';
+export type { OpportunityFactorsData, SellerMotivationData } from './OpportunityFactors';

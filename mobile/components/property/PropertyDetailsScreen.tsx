@@ -199,7 +199,7 @@ export function PropertyDetailsScreen({
     { label: 'PROPERTY TYPE', value: property.propertyType || 'Single Family', icon: 'home-outline' as const },
     { label: 'STORIES', value: property.stories || 'N/A', icon: 'layers-outline' as const },
     { label: 'ZESTIMATE®', value: formatPrice(property.price), icon: 'trending-up-outline' as const, highlight: true },
-    { label: 'RENT ZESTIMATE®', value: `${formatPrice(property.rent || 0)}/mo`, icon: 'business-outline' as const, highlight: true },
+    { label: 'RENT ZESTIMATE®', value: `${formatPrice(property.rent ?? 0)}/mo`, icon: 'business-outline' as const, highlight: true },
     { label: 'HOA FEE', value: property.hoaFee || 'None', icon: 'shield-checkmark-outline' as const },
     { label: 'ANNUAL TAX', value: property.annualTax ? formatPrice(property.annualTax) : '$9,980', icon: 'receipt-outline' as const },
     { label: 'PARKING', value: property.parking || 'N/A', icon: 'car-outline' as const },
@@ -339,7 +339,7 @@ export function PropertyDetailsScreen({
                   <Text style={styles.statLabel}>Est. Value</Text>
                 </View>
                 <View style={styles.propertyStat}>
-                  <Text style={[styles.statValue, styles.statValueCyan]}>{formatPrice(property.rent || 0)}</Text>
+                  <Text style={[styles.statValue, styles.statValueCyan]}>{formatPrice(property.rent ?? 0)}</Text>
                   <Text style={styles.statLabel}>Est. Rent</Text>
                 </View>
                 <View style={styles.propertyStat}>
@@ -433,7 +433,7 @@ export function PropertyDetailsScreen({
             <View style={styles.imageCounter}>
               <Ionicons name="images-outline" size={14} color={COLORS.white} />
               <Text style={styles.imageCounterText}>
-                {currentImageIndex + 1}/{property.images?.length || 0}
+                {currentImageIndex + 1}/{property.images?.length ?? 0}
               </Text>
             </View>
           </View>

@@ -202,13 +202,13 @@ export const useDealMakerStore = create<DealMakerState>()(
       },
 
       // Computed helpers — safe defaults
-      getMetrics: () => get().record?.cached_metrics || null,
-      getCashNeeded: () => get().record?.cached_metrics?.total_cash_needed || 0,
-      getDealGap: () => get().record?.cached_metrics?.deal_gap_pct || 0,
-      getAnnualProfit: () => get().record?.cached_metrics?.annual_cash_flow || 0,
-      getCapRate: () => get().record?.cached_metrics?.cap_rate || 0,
-      getCocReturn: () => get().record?.cached_metrics?.cash_on_cash || 0,
-      getMonthlyPayment: () => get().record?.cached_metrics?.monthly_payment || 0,
+      getMetrics: () => get().record?.cached_metrics ?? null,
+      getCashNeeded: () => get().record?.cached_metrics?.total_cash_needed ?? 0,
+      getDealGap: () => get().record?.cached_metrics?.deal_gap_pct ?? 0,
+      getAnnualProfit: () => get().record?.cached_metrics?.annual_cash_flow ?? 0,
+      getCapRate: () => get().record?.cached_metrics?.cap_rate ?? 0,
+      getCocReturn: () => get().record?.cached_metrics?.cash_on_cash ?? 0,
+      getMonthlyPayment: () => get().record?.cached_metrics?.monthly_payment ?? 0,
 
       getActivePriceValue: () => {
         const { activePriceTarget, record } = get();

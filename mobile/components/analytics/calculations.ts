@@ -238,13 +238,12 @@ import { OpportunityGrade } from './types';
  * - 35%+ = Pass (F)
  */
 export function calculateDealScore(
-  breakevenPrice: number,
+  incomeValue: number,
   listPrice: number,
   metrics?: CalculatedMetrics
 ): DealScore {
-  // Calculate discount percentage needed to reach income value
   const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100)
     : 0;
   
   // Score is inverse of discount (lower discount = higher score)
@@ -278,7 +277,7 @@ export function calculateDealScore(
     verdict,
     color, 
     discountPercent,
-    incomeValue: breakevenPrice,
+    incomeValue,
     listPrice,
     breakdown 
   };
