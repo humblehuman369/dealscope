@@ -9,7 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { useRouter, Link, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -21,6 +21,7 @@ import type { MFAChallengeResponse } from '../../services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const insets = useSafeAreaInsets();
   const { login, loginMfa, isLoading } = useAuth();
   const { theme, isDark } = useTheme();
@@ -35,6 +36,22 @@ export default function LoginScreen() {
   // MFA state
   const [mfaChallenge, setMfaChallenge] = useState<string | null>(null);
   const [mfaCode, setMfaCode] = useState('');
+
+  /** Navigate to deep-link returnTo destination or default home */
+  const navigateAfterAuth = useCallback(() => {
+    if (returnTo) {
+      try {
+        const route = JSON.parse(returnTo) as { pathname: string; params: Record<string, string> };
+        if (route.pathname && typeof route.pathname === 'string') {
+          router.replace({ pathname: route.pathname as any, params: route.params });
+          return;
+        }
+      } catch {
+        // Invalid returnTo — fall through to default
+      }
+    }
+    router.replace('/(tabs)');
+  }, [returnTo, router]);
 
   const handleLogin = useCallback(async () => {
     setError(null);
@@ -58,12 +75,12 @@ export default function LoginScreen() {
       }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(tabs)');
+      navigateAfterAuth();
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(err.message || 'Login failed. Please try again.');
     }
-  }, [email, password, rememberMe, login, router]);
+  }, [email, password, rememberMe, login, navigateAfterAuth]);
 
   const handleMfaSubmit = useCallback(async () => {
     if (!mfaChallenge || mfaCode.length !== 6) return;
@@ -72,12 +89,12 @@ export default function LoginScreen() {
     try {
       await loginMfa(mfaChallenge, mfaCode, rememberMe);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(tabs)');
+      navigateAfterAuth();
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(err.message || 'Invalid MFA code');
     }
-  }, [mfaChallenge, mfaCode, rememberMe, loginMfa, router]);
+  }, [mfaChallenge, mfaCode, rememberMe, loginMfa, navigateAfterAuth]);
 
   const handleForgotPassword = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

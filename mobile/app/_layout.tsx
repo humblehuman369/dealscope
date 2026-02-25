@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider, onlineManager } from '@tanstack/react-query';
@@ -145,6 +145,21 @@ export default function RootLayout() {
   );
 }
 
+/** Top-level route segments that require authentication */
+const PROTECTED_SEGMENTS = new Set([
+  'verdict-iq',
+  'strategy-iq',
+  'worksheet',
+  'deal-maker',
+  'deal-gap',
+  'price-intel',
+  'portfolio',
+  'photos',
+  'rehab',
+  'billing',
+  'profile',
+]);
+
 function AppContent({ 
   appReady, 
   showAnimatedSplash, 
@@ -155,10 +170,22 @@ function AppContent({
   onAnimationComplete: () => void;
 }) {
   const { theme } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   // Handle deep links / universal links from shared property URLs
   useDeepLinking();
+
+  // Auth gate: redirect unauthenticated users away from protected stack screens.
+  // Tabs are separately guarded in (tabs)/_layout.tsx.
+  useEffect(() => {
+    if (isLoading) return;
+    const topSegment = segments[0];
+    if (topSegment && PROTECTED_SEGMENTS.has(topSegment) && !isAuthenticated) {
+      router.replace('/auth/login');
+    }
+  }, [segments, isAuthenticated, isLoading, router]);
 
   // Register push token with backend when authenticated
   useRegisterPushToken(isAuthenticated);
