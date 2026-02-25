@@ -24,8 +24,27 @@ import { useEffect, useRef } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ExpoLinking from 'expo-linking';
+import { useAuth } from '../context/AuthContext';
 
 // ─── URL → Route mapping ─────────────────────────────────────────
+
+/** Routes that require authentication before deep-link navigation */
+const PROTECTED_ROUTES = new Set([
+  '/verdict-iq/[address]',
+  '/strategy-iq/[address]',
+  '/worksheet/[strategy]',
+  '/deal-maker/[address]',
+  '/deal-gap/[address]',
+  '/price-intel/[address]',
+  '/portfolio/[id]',
+  '/photos/[zpid]',
+  '/rehab/index',
+  '/billing',
+  '/profile/index',
+]);
+
+/** Only accept deep links from our own domain or custom scheme (null host) */
+const ALLOWED_HOSTS = new Set<string | null>([null, '', 'dealgapiq.com', 'www.dealgapiq.com']);
 
 /** Max length for an address param — well beyond any real US address */
 const MAX_ADDRESS_LENGTH = 500;
@@ -60,6 +79,13 @@ interface ParsedRoute {
 function parseDeepLink(url: string): ParsedRoute | null {
   try {
     const parsed = ExpoLinking.parse(url);
+
+    // Reject URLs from unknown hosts (prevents open-redirect via crafted links)
+    if (parsed.hostname && !ALLOWED_HOSTS.has(parsed.hostname)) {
+      if (__DEV__) console.warn('[DeepLink] Rejected unknown host:', parsed.hostname);
+      return null;
+    }
+
     const path = (parsed.path || '').replace(/^\//, '').replace(/\/$/, '');
     const q = parsed.queryParams || {};
 
@@ -191,33 +217,61 @@ function parseDeepLink(url: string): ParsedRoute | null {
 
 export function useDeepLinking() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const processedRef = useRef<Set<string>>(new Set());
+  const pendingUrlRef = useRef<string | null>(null);
+
+  // Ref keeps current auth state accessible in event-listener callbacks
+  // without re-subscribing on every auth change
+  const authStateRef = useRef({ isAuthenticated, isLoading });
+  authStateRef.current = { isAuthenticated, isLoading };
 
   const handleUrl = (url: string) => {
-    // Dedupe — don't handle the same URL twice in rapid succession
     if (processedRef.current.has(url)) return;
-    processedRef.current.add(url);
-    // Clear after 2s to allow re-opening same link
-    setTimeout(() => processedRef.current.delete(url), 2000);
 
     const route = parseDeepLink(url);
     if (!route) return;
 
-    if (__DEV__) {
-      console.log('[DeepLink] Navigating:', route.pathname, route.params);
+    const { isAuthenticated: authed, isLoading: loading } = authStateRef.current;
+
+    // Queue URL while auth state is still resolving (cold-start race)
+    if (loading) {
+      pendingUrlRef.current = url;
+      return;
     }
 
-    // Use push so user can go back
+    processedRef.current.add(url);
+    setTimeout(() => processedRef.current.delete(url), 2000);
+
+    // Redirect unauthenticated users to login for protected routes,
+    // encoding the intended destination so login can restore it
+    if (PROTECTED_ROUTES.has(route.pathname) && !authed) {
+      if (__DEV__) console.log('[DeepLink] Auth required, redirecting to login');
+      router.replace({
+        pathname: '/auth/login' as any,
+        params: { returnTo: JSON.stringify(route) },
+      });
+      return;
+    }
+
+    if (__DEV__) console.log('[DeepLink] Navigating:', route.pathname, route.params);
     router.push({ pathname: route.pathname as any, params: route.params });
   };
 
+  // Process queued URL once auth state resolves
   useEffect(() => {
-    // 1. Cold start — check if app was opened via URL
+    if (!isLoading && pendingUrlRef.current) {
+      const url = pendingUrlRef.current;
+      pendingUrlRef.current = null;
+      handleUrl(url);
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
     ExpoLinking.getInitialURL().then((url) => {
       if (url) handleUrl(url);
     });
 
-    // 2. Warm open — app is already running, URL comes in
     const subscription = Linking.addEventListener('url', ({ url }) => {
       handleUrl(url);
     });
