@@ -18,8 +18,8 @@ const IS_BETA = process.env.APP_ENV === 'beta';
 export default {
   expo: {
     name: IS_BETA ? "DealGapIQ (Beta)" : "DealGapIQ",
-    slug: "dealgapiq",
-    owner: "dealgapiq",
+    slug: "investiq",
+    owner: "humblehuman369",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
