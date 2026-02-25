@@ -226,9 +226,8 @@ export function createIQInputsFromProperty(property: {
   insurance?: number;
 }): AnalyticsInputs {
   const estimatedRent = property.monthlyRent ?? 0;
-  const estimatedTaxes = property.propertyTaxes ?? Math.round(property.price * 0.012);
-  const estimatedInsurance =
-    property.insurance ?? Math.round(property.price * 0.01);
+  const estimatedTaxes = property.propertyTaxes;
+  const estimatedInsurance = property.insurance;
 
   return {
     purchasePrice: property.price,

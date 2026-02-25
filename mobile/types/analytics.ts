@@ -44,8 +44,8 @@ export interface AnalyticsPropertyData {
   monthlyRent: number;
   averageDailyRate?: number;
   occupancyRate?: number;
-  propertyTaxes: number;
-  insurance: number;
+  propertyTaxes?: number;
+  insurance?: number;
   bedrooms: number;
   bathrooms: number;
   sqft: number;
