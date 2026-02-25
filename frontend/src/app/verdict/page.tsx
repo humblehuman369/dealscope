@@ -841,14 +841,6 @@ function VerdictContent() {
 
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
-  const urgency = of?.motivation ?? 50
-  const market = of?.buyerMarket || 'Warm'
-  const signals = [
-    { label: 'Deal Gap', value: `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`, sub: dealGap >= 0 ? 'Favorable' : 'Difficult', color: dealGap >= 0 ? colors.brand.teal : colors.status.negative },
-    { label: 'Urgency', value: urgency >= 70 ? 'High' : urgency >= 40 ? 'Medium' : 'Low', sub: `${Math.round(urgency)}/100`, color: urgency >= 70 ? colors.brand.teal : colors.brand.gold },
-    { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
-  ]
-
   // Component scores for VerdictScoreCard (0-90 scale)
   const cs = analysis.componentScores
   const verdictComponentScores = {
@@ -857,6 +849,16 @@ function VerdictContent() {
     marketAlignment: cs?.marketAlignmentScore ?? 0,
     dealProbability: cs?.dealProbabilityScore ?? 0,
   }
+
+  const market = of?.buyerMarket || 'Warm'
+  const maScore = verdictComponentScores.marketAlignment
+  const maLabel = maScore >= 75 ? 'Strong' : maScore >= 55 ? 'Favorable' : maScore >= 40 ? 'Neutral' : maScore >= 20 ? 'Weak' : 'Misaligned'
+  const maColor = maScore >= 75 ? colors.brand.teal : maScore >= 55 ? '#38bdf8' : maScore >= 40 ? colors.brand.gold : maScore >= 20 ? '#f97316' : colors.status.negative
+  const signals = [
+    { label: 'Deal Gap', value: `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`, sub: dealGap >= 0 ? 'Favorable' : 'Difficult', color: dealGap >= 0 ? colors.brand.teal : colors.status.negative },
+    { label: 'Alignment', value: maLabel, sub: `${Math.round(maScore)}/90`, color: maColor },
+    { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
+  ]
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
