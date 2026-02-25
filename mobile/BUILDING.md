@@ -190,8 +190,8 @@ eas secret:create --scope project --name GOOGLE_PLAY_SERVICE_ACCOUNT_KEY --type 
 - **Patch**: Bug fixes, small improvements
 
 ### Build Numbers
-- **iOS**: Auto-incremented by EAS for production
-- **Android**: `versionCode` auto-incremented
+- **iOS**: Manually increment `ios.buildNumber` in `app.config.js` before each release (autoIncrement is not supported with app.config.js)
+- **Android**: Manually increment `android.versionCode` in `app.config.js` before each release
 
 ---
 

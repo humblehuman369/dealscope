@@ -64,7 +64,6 @@
       "extends": "base",
       "distribution": "internal",
       "channel": "beta",
-      "autoIncrement": true,
       "ios": {
         "simulator": false,
         "resourceClass": "m-medium"
@@ -82,7 +81,6 @@
       "extends": "base",
       "distribution": "store",
       "channel": "production",
-      "autoIncrement": true,
       "ios": {
         "simulator": false,
         "resourceClass": "m-medium",
