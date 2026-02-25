@@ -4,7 +4,7 @@
  */
 
 export const DATABASE_NAME = 'dealgapiq.db';
-export const DATABASE_VERSION = 3; // v3: added last_modified_at for conflict detection
+export const DATABASE_VERSION = 4; // v4: offline queue retry backoff + status
 
 /**
  * SQL statements to create all tables.
@@ -66,7 +66,9 @@ CREATE TABLE IF NOT EXISTS offline_queue (
   payload TEXT,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
   attempts INTEGER DEFAULT 0,
-  last_error TEXT
+  last_error TEXT,
+  next_retry_at INTEGER,
+  status TEXT DEFAULT 'pending'
 );
 
 -- Index for processing queue in order
@@ -254,6 +256,8 @@ export interface OfflineQueueItem {
   created_at: number;
   attempts: number;
   last_error: string | null;
+  next_retry_at: number | null;
+  status: 'pending' | 'failed';
 }
 
 export interface Setting {

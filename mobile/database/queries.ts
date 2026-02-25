@@ -427,6 +427,8 @@ export async function getPortfolioSummary(): Promise<{
 /**
  * Add an action to the offline queue.
  */
+const OFFLINE_QUEUE_MAX_SIZE = 1000;
+
 export async function queueOfflineAction(
   action: 'create' | 'update' | 'delete',
   tableName: string,
@@ -437,9 +439,23 @@ export async function queueOfflineAction(
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
 
+  // Cap queue size — drop oldest pending items to stay under the limit
+  const countResult = await db.getFirstAsync<{ cnt: number }>(
+    "SELECT COUNT(*) as cnt FROM offline_queue WHERE status = 'pending'"
+  );
+  if (countResult && countResult.cnt >= OFFLINE_QUEUE_MAX_SIZE) {
+    await db.runAsync(
+      `DELETE FROM offline_queue WHERE id IN (
+        SELECT id FROM offline_queue WHERE status = 'pending'
+        ORDER BY created_at ASC LIMIT ?
+      )`,
+      Math.max(1, countResult.cnt - OFFLINE_QUEUE_MAX_SIZE + 1)
+    );
+  }
+
   await db.runAsync(
-    `INSERT INTO offline_queue (id, action, table_name, record_id, payload, created_at, attempts)
-     VALUES (?, ?, ?, ?, ?, ?, 0)`,
+    `INSERT INTO offline_queue (id, action, table_name, record_id, payload, created_at, attempts, status)
+     VALUES (?, ?, ?, ?, ?, ?, 0, 'pending')`,
     id,
     action,
     tableName,

@@ -14,7 +14,8 @@
  */
 
 import NetInfo from '@react-native-community/netinfo';
-import { getDatabase } from '../database/db';
+import * as Sentry from '@sentry/react-native';
+import { getDatabase, withTransaction } from '../database/db';
 import {
   CachedSavedProperty,
   CachedSearchHistory,
@@ -28,6 +29,9 @@ import { savedPropertiesService } from './savedPropertiesService';
 import { searchHistoryService } from './searchHistoryService';
 import { documentsService } from './documentsService';
 import { loiService } from './loiService';
+
+const MAX_QUEUE_ATTEMPTS = 5;
+const QUEUE_WARNING_THRESHOLD = 200;
 import type {
   SavedPropertySummary,
   SearchHistoryResponse,
@@ -109,70 +113,73 @@ export async function syncSavedProperties(
       return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
     }
 
-    // Fetch all saved properties from API
+    // Fetch from API outside the transaction to avoid holding it during network I/O
     const properties = await savedPropertiesService.getSavedProperties({ limit: 500 });
     const total = properties.length;
 
-    const db = await getDatabase();
-    const now = Math.floor(Date.now() / 1000);
+    await withTransaction(async (db) => {
+      const now = Math.floor(Date.now() / 1000);
 
-    // Upsert each property
-    for (let i = 0; i < properties.length; i++) {
-      const prop = properties[i];
-      try {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO saved_properties 
-           (id, user_id, address_street, address_city, address_state, address_zip, 
-            list_price, status, nickname, notes, color_label, is_priority, tags,
-            best_strategy, best_cash_flow, best_coc_return, deal_maker_id, 
-            last_analysis_at, synced_at, last_modified_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          prop.id,
-          null, // user_id not in summary
-          prop.address_street,
-          prop.address_city,
-          prop.address_state,
-          prop.address_zip,
-          prop.list_price,
-          prop.status,
-          prop.nickname,
-          prop.notes,
-          prop.color_label,
-          prop.is_priority ? 1 : 0,
-          prop.tags ? JSON.stringify(prop.tags) : null,
-          prop.best_strategy,
-          prop.best_cash_flow,
-          prop.best_coc_return,
-          prop.deal_maker_id,
-          prop.last_analysis_at ? new Date(prop.last_analysis_at).getTime() / 1000 : null,
-          now,
-          null, // last_modified_at = NULL → clean, matches server
-          prop.created_at ? new Date(prop.created_at).getTime() / 1000 : now,
-          prop.updated_at ? new Date(prop.updated_at).getTime() / 1000 : now
-        );
-        itemsSynced++;
-        onProgress?.(i + 1, total);
-      } catch (err: any) {
-        errors.push(`Property ${prop.id}: ${err.message}`);
+      for (let i = 0; i < properties.length; i++) {
+        const prop = properties[i];
+        try {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO saved_properties 
+             (id, user_id, address_street, address_city, address_state, address_zip, 
+              list_price, status, nickname, notes, color_label, is_priority, tags,
+              best_strategy, best_cash_flow, best_coc_return, deal_maker_id, 
+              last_analysis_at, synced_at, last_modified_at, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            prop.id,
+            null,
+            prop.address_street,
+            prop.address_city,
+            prop.address_state,
+            prop.address_zip,
+            prop.list_price,
+            prop.status,
+            prop.nickname,
+            prop.notes,
+            prop.color_label,
+            prop.is_priority ? 1 : 0,
+            prop.tags ? JSON.stringify(prop.tags) : null,
+            prop.best_strategy,
+            prop.best_cash_flow,
+            prop.best_coc_return,
+            prop.deal_maker_id,
+            prop.last_analysis_at ? new Date(prop.last_analysis_at).getTime() / 1000 : null,
+            now,
+            null,
+            prop.created_at ? new Date(prop.created_at).getTime() / 1000 : now,
+            prop.updated_at ? new Date(prop.updated_at).getTime() / 1000 : now
+          );
+          itemsSynced++;
+          onProgress?.(i + 1, total);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Unknown error';
+          errors.push(`Property ${prop.id}: ${msg}`);
+        }
       }
-    }
 
-    // Remove local properties that no longer exist on server,
-    // but preserve any that have pending local modifications (last_modified_at IS NOT NULL).
-    const serverIds = properties.map((p) => p.id);
-    if (serverIds.length > 0) {
-      const placeholders = serverIds.map(() => '?').join(',');
-      await db.runAsync(
-        `DELETE FROM saved_properties WHERE id NOT IN (${placeholders}) AND synced_at IS NOT NULL AND last_modified_at IS NULL`,
-        ...serverIds
-      );
-    }
+      // Remove local properties that no longer exist on server,
+      // but preserve any with pending local modifications.
+      const serverIds = properties.map((p) => p.id);
+      if (serverIds.length > 0) {
+        const placeholders = serverIds.map(() => '?').join(',');
+        await db.runAsync(
+          `DELETE FROM saved_properties WHERE id NOT IN (${placeholders}) AND synced_at IS NOT NULL AND last_modified_at IS NULL`,
+          ...serverIds
+        );
+      }
 
-    await updateSyncMetadata('saved_properties', 'success', itemsSynced);
+      await updateSyncMetadata('saved_properties', 'success', itemsSynced);
+    });
+
     return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
     await updateSyncMetadata('saved_properties', 'error', itemsSynced);
-    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+    return { success: false, itemsSynced, errors: [msg], timestamp: Date.now() };
   }
 }
 
@@ -191,49 +198,52 @@ export async function syncSearchHistory(
       return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
     }
 
-    // Fetch search history from API
     const historyList = await searchHistoryService.getSearchHistory({ limit: 100 });
     const total = historyList.items.length;
 
-    const db = await getDatabase();
-    const now = Math.floor(Date.now() / 1000);
+    await withTransaction(async (db) => {
+      const now = Math.floor(Date.now() / 1000);
 
-    for (let i = 0; i < historyList.items.length; i++) {
-      const entry = historyList.items[i];
-      try {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO search_history 
-           (id, user_id, search_type, query, results_count, source, 
-            location_city, location_state, property_types, 
-            price_range_min, price_range_max, synced_at, last_modified_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          entry.id,
-          null,
-          entry.search_type,
-          entry.query,
-          entry.results_count,
-          entry.source,
-          entry.location?.city,
-          entry.location?.state,
-          entry.property_types ? JSON.stringify(entry.property_types) : null,
-          entry.price_range?.min,
-          entry.price_range?.max,
-          now,
-          null, // last_modified_at = NULL → clean
-          entry.created_at ? new Date(entry.created_at).getTime() / 1000 : now
-        );
-        itemsSynced++;
-        onProgress?.(i + 1, total);
-      } catch (err: any) {
-        errors.push(`Search ${entry.id}: ${err.message}`);
+      for (let i = 0; i < historyList.items.length; i++) {
+        const entry = historyList.items[i];
+        try {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO search_history 
+             (id, user_id, search_type, query, results_count, source, 
+              location_city, location_state, property_types, 
+              price_range_min, price_range_max, synced_at, last_modified_at, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            entry.id,
+            null,
+            entry.search_type,
+            entry.query,
+            entry.results_count,
+            entry.source,
+            entry.location?.city,
+            entry.location?.state,
+            entry.property_types ? JSON.stringify(entry.property_types) : null,
+            entry.price_range?.min,
+            entry.price_range?.max,
+            now,
+            null,
+            entry.created_at ? new Date(entry.created_at).getTime() / 1000 : now
+          );
+          itemsSynced++;
+          onProgress?.(i + 1, total);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Unknown error';
+          errors.push(`Search ${entry.id}: ${msg}`);
+        }
       }
-    }
 
-    await updateSyncMetadata('search_history', 'success', itemsSynced);
+      await updateSyncMetadata('search_history', 'success', itemsSynced);
+    });
+
     return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
     await updateSyncMetadata('search_history', 'error', itemsSynced);
-    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+    return { success: false, itemsSynced, errors: [msg], timestamp: Date.now() };
   }
 }
 
@@ -252,46 +262,49 @@ export async function syncDocuments(
       return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
     }
 
-    // Fetch documents from API
     const docsList = await documentsService.getDocuments({ limit: 200 });
     const total = docsList.items.length;
 
-    const db = await getDatabase();
-    const now = Math.floor(Date.now() / 1000);
+    await withTransaction(async (db) => {
+      const now = Math.floor(Date.now() / 1000);
 
-    for (let i = 0; i < docsList.items.length; i++) {
-      const doc = docsList.items[i];
-      try {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO documents 
-           (id, user_id, saved_property_id, document_type, original_filename, 
-            file_size, mime_type, description, synced_at, last_modified_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          doc.id,
-          null,
-          doc.saved_property_id,
-          doc.document_type,
-          doc.original_filename,
-          doc.file_size,
-          doc.mime_type,
-          doc.description,
-          now,
-          null, // last_modified_at = NULL → clean
-          doc.created_at ? new Date(doc.created_at).getTime() / 1000 : now,
-          doc.updated_at ? new Date(doc.updated_at).getTime() / 1000 : now
-        );
-        itemsSynced++;
-        onProgress?.(i + 1, total);
-      } catch (err: any) {
-        errors.push(`Document ${doc.id}: ${err.message}`);
+      for (let i = 0; i < docsList.items.length; i++) {
+        const doc = docsList.items[i];
+        try {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO documents 
+             (id, user_id, saved_property_id, document_type, original_filename, 
+              file_size, mime_type, description, synced_at, last_modified_at, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            doc.id,
+            null,
+            doc.saved_property_id,
+            doc.document_type,
+            doc.original_filename,
+            doc.file_size,
+            doc.mime_type,
+            doc.description,
+            now,
+            null,
+            doc.created_at ? new Date(doc.created_at).getTime() / 1000 : now,
+            doc.updated_at ? new Date(doc.updated_at).getTime() / 1000 : now
+          );
+          itemsSynced++;
+          onProgress?.(i + 1, total);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Unknown error';
+          errors.push(`Document ${doc.id}: ${msg}`);
+        }
       }
-    }
 
-    await updateSyncMetadata('documents', 'success', itemsSynced);
+      await updateSyncMetadata('documents', 'success', itemsSynced);
+    });
+
     return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
     await updateSyncMetadata('documents', 'error', itemsSynced);
-    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+    return { success: false, itemsSynced, errors: [msg], timestamp: Date.now() };
   }
 }
 
@@ -310,53 +323,71 @@ export async function syncLOIHistory(
       return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
     }
 
-    // Fetch LOI history from API
     const loiHistory = await loiService.getHistory();
     const total = loiHistory.length;
 
-    const db = await getDatabase();
-    const now = Math.floor(Date.now() / 1000);
+    await withTransaction(async (db) => {
+      const now = Math.floor(Date.now() / 1000);
 
-    for (let i = 0; i < loiHistory.length; i++) {
-      const loi = loiHistory[i];
-      try {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO loi_history 
-           (id, user_id, saved_property_id, property_address, offer_price, 
-            earnest_money, inspection_days, closing_days, status, pdf_url, 
-            synced_at, last_modified_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          loi.id,
-          null,
-          loi.saved_property_id,
-          loi.property_address,
-          loi.offer_price,
-          loi.earnest_money,
-          loi.inspection_days,
-          loi.closing_days,
-          loi.status,
-          loi.pdf_url,
-          now,
-          null, // last_modified_at = NULL → clean
-          loi.created_at ? new Date(loi.created_at).getTime() / 1000 : now
-        );
-        itemsSynced++;
-        onProgress?.(i + 1, total);
-      } catch (err: any) {
-        errors.push(`LOI ${loi.id}: ${err.message}`);
+      for (let i = 0; i < loiHistory.length; i++) {
+        const loi = loiHistory[i];
+        try {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO loi_history 
+             (id, user_id, saved_property_id, property_address, offer_price, 
+              earnest_money, inspection_days, closing_days, status, pdf_url, 
+              synced_at, last_modified_at, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            loi.id,
+            null,
+            loi.saved_property_id,
+            loi.property_address,
+            loi.offer_price,
+            loi.earnest_money,
+            loi.inspection_days,
+            loi.closing_days,
+            loi.status,
+            loi.pdf_url,
+            now,
+            null,
+            loi.created_at ? new Date(loi.created_at).getTime() / 1000 : now
+          );
+          itemsSynced++;
+          onProgress?.(i + 1, total);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Unknown error';
+          errors.push(`LOI ${loi.id}: ${msg}`);
+        }
       }
-    }
 
-    await updateSyncMetadata('loi_history', 'success', itemsSynced);
+      await updateSyncMetadata('loi_history', 'success', itemsSynced);
+    });
+
     return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
     await updateSyncMetadata('loi_history', 'error', itemsSynced);
-    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+    return { success: false, itemsSynced, errors: [msg], timestamp: Date.now() };
   }
 }
 
 /**
+ * Get the number of pending items in the offline queue.
+ */
+export async function getQueueSize(): Promise<number> {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ cnt: number }>(
+    "SELECT COUNT(*) as cnt FROM offline_queue WHERE status = 'pending'"
+  );
+  return result?.cnt ?? 0;
+}
+
+/**
  * Process the offline queue - push local changes to server.
+ *
+ * Items are retried up to MAX_QUEUE_ATTEMPTS times with exponential backoff
+ * (2^attempts seconds). Exhausted items are marked status='failed' and
+ * excluded from future processing.
  */
 export async function processOfflineQueue(): Promise<SyncResult> {
   const errors: string[] = [];
@@ -369,19 +400,37 @@ export async function processOfflineQueue(): Promise<SyncResult> {
     }
 
     const db = await getDatabase();
+    const now = Math.floor(Date.now() / 1000);
+
+    // Monitor queue health
+    const queueSize = await getQueueSize();
+    if (queueSize > QUEUE_WARNING_THRESHOLD) {
+      Sentry.addBreadcrumb({
+        category: 'sync',
+        message: `Offline queue has ${queueSize} pending items`,
+        level: 'warning',
+      });
+    }
+
+    // Only fetch items that are pending, under the retry limit, and past their backoff window
     const queueItems = await db.getAllAsync<OfflineQueueItem>(
-      'SELECT * FROM offline_queue ORDER BY created_at ASC LIMIT 50'
+      `SELECT * FROM offline_queue
+       WHERE status = 'pending'
+         AND attempts < ?
+         AND (next_retry_at IS NULL OR next_retry_at <= ?)
+       ORDER BY created_at ASC
+       LIMIT 50`,
+      MAX_QUEUE_ATTEMPTS,
+      now
     );
 
     for (const item of queueItems) {
       try {
         const payload = item.payload ? JSON.parse(item.payload) : null;
 
-        // Process based on table and action
         if (item.table_name === 'saved_properties') {
           await processSavedPropertyAction(item.action, item.record_id, payload);
         } else if (item.table_name === 'scanned_properties') {
-          // Scanned properties might be saved to server as saved properties
           if (item.action === 'create' && payload) {
             await savedPropertiesService.saveProperty({
               address_street: payload.address,
@@ -395,20 +444,37 @@ export async function processOfflineQueue(): Promise<SyncResult> {
         // Remove from queue on success
         await db.runAsync('DELETE FROM offline_queue WHERE id = ?', item.id);
         itemsSynced++;
-      } catch (err: any) {
-        errors.push(`Queue item ${item.id}: ${err.message}`);
-        // Increment attempt count
-        await db.runAsync(
-          'UPDATE offline_queue SET attempts = attempts + 1, last_error = ? WHERE id = ?',
-          err.message,
-          item.id
-        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        errors.push(`Queue item ${item.id}: ${message}`);
+
+        const newAttempts = item.attempts + 1;
+        if (newAttempts >= MAX_QUEUE_ATTEMPTS) {
+          // Exhausted — mark as failed so it stops retrying
+          await db.runAsync(
+            "UPDATE offline_queue SET attempts = ?, last_error = ?, status = 'failed' WHERE id = ?",
+            newAttempts,
+            message,
+            item.id
+          );
+        } else {
+          // Exponential backoff: 2s, 4s, 8s, 16s
+          const backoffSeconds = Math.pow(2, newAttempts);
+          await db.runAsync(
+            'UPDATE offline_queue SET attempts = ?, last_error = ?, next_retry_at = ? WHERE id = ?',
+            newAttempts,
+            message,
+            now + backoffSeconds,
+            item.id
+          );
+        }
       }
     }
 
     return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
-  } catch (err: any) {
-    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return { success: false, itemsSynced, errors: [message], timestamp: Date.now() };
   }
 }
 
@@ -609,6 +675,7 @@ export async function clearCache(): Promise<void> {
 export const syncManager = {
   isOnline,
   getSyncMetadata,
+  getQueueSize,
   syncSavedProperties,
   syncSearchHistory,
   syncDocuments,
