@@ -198,6 +198,17 @@ eas secret:create --scope project --name GOOGLE_PLAY_SERVICE_ACCOUNT_KEY --type 
 ## Troubleshooting
 
 ### Build Fails
+
+**Get full build logs:** The "Unknown error" message hides the real failure. View the full log:
+1. Go to https://expo.dev/accounts/humblehuman369/projects/dealgapiq/builds
+2. Open the failed build
+3. Expand the "Install dependencies" phase to see the actual npm error
+
+**Common fixes for "Install dependencies" failures:**
+- `legacy-peer-deps=true` is already in `mobile/.npmrc` — helps with peer dependency conflicts
+- If the shared package is missing: ensure `shared/` is committed to git (EAS uploads from repo root)
+- Try a clean build: `eas build --profile production --platform ios --clear-cache`
+
 ```bash
 # Clear cache and rebuild
 eas build --profile production --clear-cache
