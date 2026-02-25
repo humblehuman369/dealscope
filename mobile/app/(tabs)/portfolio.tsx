@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useCallback } from 'react';
 import { 
   View, 
@@ -28,7 +31,7 @@ import {
   useDatabaseInit,
 } from '../../hooks/useDatabase';
 import { PortfolioProperty } from '../../database';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, type ThemeColors } from '../../context/ThemeContext';
 
 const STRATEGY_OPTIONS = [
   { label: 'Long-Term Rental', value: 'long_term_rental' },
@@ -47,7 +50,7 @@ export default function PortfolioScreen() {
   
   // Database hooks
   const { isReady: dbReady } = useDatabaseInit();
-  const { data: properties, isLoading, refetch, isRefetching } = usePortfolioProperties();
+  const { data: properties, isLoading, refetch, isRefetching, isError, error } = usePortfolioProperties();
   const { data: summary } = usePortfolioSummary();
   const addProperty = useAddPortfolioProperty();
   const deleteProperty = useDeletePortfolioProperty();
@@ -115,6 +118,26 @@ export default function PortfolioScreen() {
       <View style={[styles.container, styles.centerContent, dynamicStyles.container, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary[600]} />
         <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Loading portfolio...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={[styles.container, styles.centerContent, dynamicStyles.container, { paddingTop: insets.top }]}>
+        <Ionicons name="alert-circle-outline" size={48} color={theme.textMuted} />
+        <Text style={{ fontSize: 16, fontWeight: '600', color: theme.text, marginTop: 12, textAlign: 'center' }}>
+          Something went wrong
+        </Text>
+        <Text style={{ fontSize: 14, color: theme.textMuted, marginTop: 4, textAlign: 'center' }}>
+          {error instanceof Error ? error.message : 'Failed to load portfolio. Please try again.'}
+        </Text>
+        <TouchableOpacity
+          onPress={() => refetch()}
+          style={{ marginTop: 16, backgroundColor: '#0d9488', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}
+        >
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Try Again</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -225,7 +248,7 @@ interface PropertyCardProps {
   property: PortfolioProperty;
   onPress: () => void;
   onDelete: () => void;
-  theme: any;
+  theme: ThemeColors;
   isDark: boolean;
 }
 

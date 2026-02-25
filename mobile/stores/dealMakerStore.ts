@@ -231,6 +231,10 @@ export const useDealMakerStore = create<DealMakerState>()(
       name: 'dealgapiq-deal-maker',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as DealMakerState;
+        return state;
+      },
       partialize: (state) => ({
         propertyId: state.propertyId,
         record: state.record,

@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 import { API_BASE_URL } from './apiClient';
-import { validatePropertyResponse } from '../hooks/usePropertyData';
+import { validatePropertyResponse } from '../utils/validation';
 
 // Track API health for better error messaging
 let lastApiError: { timestamp: number; message: string } | null = null;

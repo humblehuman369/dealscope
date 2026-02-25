@@ -899,8 +899,9 @@ export default function WorksheetScreen() {
         setResults(data);
         // Also persist inputs + results snapshot to store
         worksheetStore.initWorksheet(propertyId, strategy, inputs);
-      } catch (err: any) {
-        setError(err?.message || 'Calculation failed');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setError(message || 'Calculation failed');
       } finally {
         setIsCalculating(false);
       }

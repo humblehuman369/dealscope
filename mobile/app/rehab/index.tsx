@@ -3,6 +3,9 @@
  * Route: /rehab
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useCallback } from 'react';
 import {
   View,

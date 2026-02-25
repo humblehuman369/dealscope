@@ -5,6 +5,9 @@
  * Shows local recent searches and backend search history (when authenticated).
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -92,6 +95,7 @@ export default function SearchHistoryScreen() {
   const [searchesThisWeek, setSearchesThisWeek] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchBackendHistory = useCallback(async () => {
     if (!isAuthenticated) {
@@ -101,6 +105,7 @@ export default function SearchHistoryScreen() {
       return;
     }
     try {
+      setError(null);
       const data = await api.get<BackendSearchResponse>('/api/v1/search-history');
       const items = data.searches ?? data.items ?? [];
       setBackendSearches(Array.isArray(items) ? items : []);
@@ -112,10 +117,11 @@ export default function SearchHistoryScreen() {
         return t >= oneWeekAgo;
       }).length;
       setSearchesThisWeek(backendWeekCount);
-    } catch {
+    } catch (e) {
       setBackendSearches([]);
       setTotalBackend(0);
       setSearchesThisWeek(0);
+      setError(e instanceof Error ? e.message : 'Failed to load search history. Please try again.');
     }
   }, [isAuthenticated]);
 
@@ -284,6 +290,22 @@ export default function SearchHistoryScreen() {
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color={accentColor} />
+          </View>
+        ) : error && isEmpty ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+            <Ionicons name="alert-circle-outline" size={48} color={mutedColor} />
+            <Text style={{ fontSize: 16, fontWeight: '600', color: textColor, marginTop: 12, textAlign: 'center' }}>
+              Something went wrong
+            </Text>
+            <Text style={{ fontSize: 14, color: mutedColor, marginTop: 4, textAlign: 'center' }}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              onPress={loadData}
+              style={{ marginTop: 16, backgroundColor: '#0d9488', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}
+            >
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Try Again</Text>
+            </TouchableOpacity>
           </View>
         ) : isEmpty ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>

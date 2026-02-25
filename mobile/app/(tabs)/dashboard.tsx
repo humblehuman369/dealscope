@@ -5,6 +5,9 @@
  * All data comes from the API directly rather than loading a web page.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useCallback } from 'react';
 import {
   View,

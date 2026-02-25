@@ -3,6 +3,9 @@
  * Route: /help
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';

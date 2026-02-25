@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useState, useCallback } from 'react';
 import {
   View,
@@ -72,10 +75,11 @@ export default function ResetPasswordScreen() {
       setStatus('success');
       setMessage(data.message || 'Password reset successfully!');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setStatus('error');
-      setMessage(err.message || 'Reset failed. The link may have expired.');
+      setMessage(message || 'Reset failed. The link may have expired.');
     }
   }, [isValid, token, password]);
 

@@ -6,6 +6,9 @@
  * ltr, str, brrrr, flip, house_hack, wholesale.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React from 'react';
 import {
   View,

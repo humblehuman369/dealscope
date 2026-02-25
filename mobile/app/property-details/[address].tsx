@@ -6,6 +6,9 @@
  * property facts, features, and bottom action bar.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useCallback } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
@@ -76,17 +79,14 @@ export default function PropertyDetailsRoute() {
   }, [router, property]);
 
   const handleSave = useCallback(() => {
-    console.log('Save property');
     // TODO: Implement save functionality
   }, []);
 
   const handleShare = useCallback(() => {
-    console.log('Share property');
     // TODO: Implement share functionality
   }, []);
 
-  const handleStrategyChange = useCallback((strategy: string) => {
-    console.log('Strategy changed to:', strategy);
+  const handleStrategyChange = useCallback((_strategy: string) => {
   }, []);
 
   const handleNavChange = useCallback((navId: string) => {

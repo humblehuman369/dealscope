@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useState, useCallback, useRef } from 'react';
 import {
   View,
@@ -76,9 +79,10 @@ export default function LoginScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigateAfterAuth();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(err.message || 'Login failed. Please try again.');
+      setError(message || 'Login failed. Please try again.');
     }
   }, [email, password, rememberMe, login, navigateAfterAuth]);
 
@@ -90,9 +94,10 @@ export default function LoginScreen() {
       await loginMfa(mfaChallenge, mfaCode, rememberMe);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigateAfterAuth();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(err.message || 'Invalid MFA code');
+      setError(message || 'Invalid MFA code');
     }
   }, [mfaChallenge, mfaCode, rememberMe, loginMfa, navigateAfterAuth]);
 

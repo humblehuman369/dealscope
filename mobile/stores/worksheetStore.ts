@@ -282,10 +282,11 @@ export const useWorksheetStore = create<WorksheetState>()(
               },
             },
           }));
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Unknown error';
           set({
             isCalculating: false,
-            calculationError: err?.message || 'Calculation failed',
+            calculationError: message || 'Calculation failed',
           });
         }
       },
@@ -349,6 +350,10 @@ export const useWorksheetStore = create<WorksheetState>()(
       name: 'dealgapiq-worksheets',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as WorksheetState;
+        return state;
+      },
       partialize: (state) => ({
         entries: state.entries,
       }),
@@ -363,6 +368,19 @@ const safeNumber = (value?: number | null, maxAbs: number = 1e12): number => {
   if (Math.abs(value) > maxAbs) return value > 0 ? maxAbs : -maxAbs;
   return value;
 };
+
+export const useWorksheetInputs = () =>
+  useWorksheetStore((s) => {
+    if (!s.activePropertyId || !s.activeStrategy) return null;
+    const key = `${s.activePropertyId}::${s.activeStrategy}`;
+    return s.entries[key]?.inputs ?? null;
+  });
+
+export const useWorksheetCalculating = () =>
+  useWorksheetStore((s) => s.isCalculating);
+
+export const useWorksheetError = () =>
+  useWorksheetStore((s) => s.calculationError);
 
 /** Convenience hook returning derived metrics for the active worksheet */
 export const useWorksheetDerived = () => {

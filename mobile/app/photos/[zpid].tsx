@@ -5,6 +5,9 @@
  * Displays property photos in a grid with full-screen lightbox.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,

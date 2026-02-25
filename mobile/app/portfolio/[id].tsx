@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -80,8 +83,9 @@ export default function PropertyDetailScreen() {
       setColorLabel(data.color_label);
       setPriority(data.priority);
       setTags(data.tags || []);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load property');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', message || 'Failed to load property');
       router.back();
     } finally {
       setIsLoading(false);
@@ -108,8 +112,9 @@ export default function PropertyDetailScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       Alert.alert('Success', 'Property updated');
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', message || 'Failed to save');
     } finally {
       setIsSaving(false);
     }
@@ -138,8 +143,9 @@ export default function PropertyDetailScreen() {
             await savedPropertiesService.deleteSavedProperty(id!);
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             router.back();
-          } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to delete');
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            Alert.alert('Error', message || 'Failed to delete');
           }
         },
       },

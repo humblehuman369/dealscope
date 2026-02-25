@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useEffect, useState } from 'react';
 import {
   View,
@@ -42,9 +45,10 @@ export default function VerifyEmailScreen() {
         const data = await verifyEmail(token);
         setStatus('success');
         setMessage(data.message || 'Email verified successfully!');
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         setStatus('error');
-        setMessage(err.message || 'Verification failed. The link may have expired.');
+        setMessage(message || 'Verification failed. The link may have expired.');
       }
     };
 
