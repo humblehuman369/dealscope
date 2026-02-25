@@ -19,6 +19,7 @@ import {
 import { usePropertyStore } from '../../stores';
 import { useProgressiveProfiling } from '../../hooks/useProgressiveProfiling';
 import ProgressiveProfilingPrompt from '../../components/ProgressiveProfilingPrompt';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
@@ -130,6 +131,8 @@ export default function AnalyzingScreen() {
       handleAnswer(currentQuestion, answer);
     }
   }, [currentQuestion, handleAnswer]);
+
+  if (!isValidAddress(params.address)) return <InvalidParamFallback message="Property not found" />;
 
   return (
     <>

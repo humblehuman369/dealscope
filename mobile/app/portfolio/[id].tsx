@@ -28,6 +28,7 @@ import type {
 import { PROPERTY_STATUS_LABELS, PROPERTY_STATUS_OPTIONS } from '../../types';
 import PropertyStatusBadge from '../../components/property/PropertyStatusBadge';
 import StatusPipeline from '../../components/property/StatusPipeline';
+import { isValidId, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 const COLOR_OPTIONS: { value: ColorLabel; color: string }[] = [
   { value: 'red', color: '#ef4444' },
@@ -182,6 +183,8 @@ export default function PropertyDetailScreen() {
     label: { color: theme.textSecondary },
     input: { backgroundColor: theme.backgroundTertiary, color: theme.text, borderColor: theme.border },
   };
+
+  if (!isValidId(id)) return <InvalidParamFallback message="Property not found" />;
 
   if (isLoading) {
     return (

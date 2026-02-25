@@ -24,6 +24,7 @@ import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../context/ThemeContext';
 import { api } from '../../services/apiClient';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 interface SaleComp {
   address?: string;
@@ -191,6 +192,8 @@ export default function PriceIntelScreen() {
     { id: 'rent', label: 'Rent Comps' },
     { id: 'valuation', label: 'Valuation' },
   ];
+
+  if (!isValidAddress(params.address)) return <InvalidParamFallback message="Property not found" />;
 
   return (
     <>

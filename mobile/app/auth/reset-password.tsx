@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../context/ThemeContext';
 import { resetPassword } from '../../services/authService';
+import { isValidToken } from '../../hooks/useValidatedParams';
 
 function validatePassword(pwd: string): string[] {
   const errors: string[] = [];
@@ -79,7 +80,7 @@ export default function ResetPasswordScreen() {
   }, [isValid, token, password]);
 
   // Invalid / missing token
-  if (!token) {
+  if (!isValidToken(token)) {
     return (
       <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
         <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>

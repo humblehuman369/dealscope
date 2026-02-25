@@ -27,6 +27,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { usePropertyAnalysis } from '../../hooks/usePropertyAnalysis';
 import type { PropertyData } from '../../types/analytics';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 function formatPrice(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -113,6 +114,8 @@ export default function DealGapScreen() {
   }, [router]);
 
   const isOnline = useIsOnline();
+
+  if (!isValidAddress(params.address)) return <InvalidParamFallback message="Property not found" />;
 
   if (isLoading) {
     return (

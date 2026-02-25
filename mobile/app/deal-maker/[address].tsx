@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { DealMakerScreen } from '../../components/deal-maker';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 export default function DealMakerPage() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function DealMakerPage() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
   }, [router]);
+
+  if (!isValidAddress(params.address)) return <InvalidParamFallback message="Property not found" />;
 
   return (
     <>

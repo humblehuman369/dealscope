@@ -30,6 +30,7 @@ export { ErrorBoundary };
 import { VerdictSkeleton } from '../../components/Skeleton';
 import { useIsOnline } from '../../hooks/useNetworkStatus';
 import { buildVerdictShareUrl } from '../../hooks/useDeepLinking';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
 import {
@@ -442,6 +443,8 @@ export default function VerdictIQScreen() {
       },
     });
   }, [router, property, monthlyRent, lat, lng]);
+
+  if (!isValidAddress(address)) return <InvalidParamFallback message="Property not found" />;
 
   // Loading — show skeleton instead of spinner
   if (isLoading && !raw) {

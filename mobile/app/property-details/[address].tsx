@@ -10,6 +10,7 @@ import React, { useCallback } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { PropertyDetailsScreen } from '../../components/property';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 export default function PropertyDetailsRoute() {
   const router = useRouter();
@@ -119,6 +120,8 @@ export default function PropertyDetailsRoute() {
         console.log('Navigate to:', navId);
     }
   }, [router, property]);
+
+  if (!isValidAddress(params.address)) return <InvalidParamFallback message="Property not found" />;
 
   return (
     <>
