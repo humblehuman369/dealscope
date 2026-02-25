@@ -103,7 +103,7 @@
     "production": {
       "ios": {
         "appleId": "dev@dealgapiq.com",
-        "ascAppId": "ASC_APP_ID_PLACEHOLDER",
+        "ascAppId": "6759636866",
         "appleTeamId": "A2Y6C3NNSY",
         "sku": "com.dealgapiq.mobile",
         "language": "en-US"
@@ -118,7 +118,7 @@
     "beta": {
       "ios": {
         "appleId": "dev@dealgapiq.com",
-        "ascAppId": "ASC_APP_ID_PLACEHOLDER",
+        "ascAppId": "6759636866",
         "appleTeamId": "A2Y6C3NNSY",
         "sku": "com.dealgapiq.mobile",
         "language": "en-US"
