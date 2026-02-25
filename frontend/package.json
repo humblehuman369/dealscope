@@ -24,6 +24,7 @@
     "@tanstack/react-query": "^5.17.0",
     "@vis.gl/react-google-maps": "^1.7.1",
     "axios": "^1.6.5",
+    "baseline-browser-mapping": "^2.10.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.303.0",
     "next": "^16.1.6",
