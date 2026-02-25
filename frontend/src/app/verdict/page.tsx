@@ -822,7 +822,9 @@ function VerdictContent() {
 
   // Deal gap needed for both description and signal indicators
   const of = analysis.opportunityFactors
-  const dealGap = of?.dealGap ?? discountPct
+  const dealGap = property.price > 0
+    ? Math.max(0, ((property.price - purchasePrice) / property.price) * 100)
+    : 0
 
   // Short verdict description (override backend long copy for this page)
   const shortVerdictDescription = incomeGapPct != null
