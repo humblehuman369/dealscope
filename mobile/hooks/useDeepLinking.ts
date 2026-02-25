@@ -228,6 +228,7 @@ export function useDeepLinking() {
 
   const handleUrl = (url: string) => {
     if (processedRef.current.has(url)) return;
+    if (pendingUrlRef.current === url) return;
 
     const route = parseDeepLink(url);
     if (!route) return;
