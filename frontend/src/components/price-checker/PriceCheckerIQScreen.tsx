@@ -34,7 +34,6 @@ import {
   type CompAdjustment,
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
-import { AuthGate } from '@/components/auth/AuthGate'
 
 // ============================================
 // TYPES
@@ -100,6 +99,7 @@ async function fetchSimilarSold(params: FetchParams) {
   const response = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
   const data = await response.json()
   if (!response.ok) throw new Error(data.error || `API Error ${response.status}`)
+  if (data.success === false) throw new Error(data.error || 'Sale comps unavailable — upstream provider error')
   return data
 }
 
@@ -113,6 +113,7 @@ async function fetchSimilarRent(params: FetchParams) {
   const response = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
   const data = await response.json()
   if (!response.ok) throw new Error(data.error || `API Error ${response.status}`)
+  if (data.success === false) throw new Error(data.error || 'Rental comps unavailable — upstream provider error')
   return data
 }
 
@@ -809,7 +810,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
-      <AuthGate feature="view comps" mode="section">
       <main className="max-w-[640px] mx-auto pb-6">
         {/* Page Header */}
         <div className="bg-[#0C1220] border-b border-white/[0.07] p-4">
@@ -1060,7 +1060,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
       </main>
-      </AuthGate>
 
       {/* Toast */}
       {saveMessage && (
