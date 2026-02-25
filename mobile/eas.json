@@ -102,9 +102,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "APPLE_ID_PLACEHOLDER",
+        "appleId": "dev@dealgapiq.com",
         "ascAppId": "ASC_APP_ID_PLACEHOLDER",
-        "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
+        "appleTeamId": "A2Y6C3NNSY",
         "sku": "com.dealgapiq.mobile",
         "language": "en-US"
       },
@@ -117,9 +117,9 @@
     },
     "beta": {
       "ios": {
-        "appleId": "APPLE_ID_PLACEHOLDER",
+        "appleId": "dev@dealgapiq.com",
         "ascAppId": "ASC_APP_ID_PLACEHOLDER",
-        "appleTeamId": "APPLE_TEAM_ID_PLACEHOLDER",
+        "appleTeamId": "A2Y6C3NNSY",
         "sku": "com.dealgapiq.mobile",
         "language": "en-US"
       },
