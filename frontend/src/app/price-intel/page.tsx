@@ -16,7 +16,8 @@ import { AuthGate } from '@/components/auth/AuthGate'
 
 function PriceIntelContent() {
   const searchParams = useSearchParams()
-  const addressParam = searchParams.get('address') || ''
+  const rawAddress = searchParams.get('address') || ''
+  const addressParam = decodeURIComponent(rawAddress)
   const viewParam = (searchParams.get('view') as 'sale' | 'rent') || 'sale'
   const zpidParam = searchParams.get('zpid') || searchParams.get('propertyId') || ''
 
