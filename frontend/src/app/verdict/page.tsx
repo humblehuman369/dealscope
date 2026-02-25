@@ -985,6 +985,14 @@ function VerdictContent() {
                 const bracketRight = Math.max(targetBuyPos, marketPos)
                 const showBracket = dealGap > 0 && (bracketRight - bracketLeft) >= 3
 
+                const incomePos = pos(incomeValue)
+                const priceGapLeft = Math.min(incomePos, marketPos)
+                const priceGapRight = Math.max(incomePos, marketPos)
+                const priceGap = property.price > 0
+                  ? ((incomeValue - property.price) / property.price) * 100
+                  : 0
+                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+
                 return (
                   <>
                     {showBracket && (
@@ -1023,6 +1031,27 @@ function VerdictContent() {
                         />
                       ))}
                     </div>
+
+                    {showPriceGap && (
+                      <div
+                        className="relative flex items-center mt-2"
+                        style={{
+                          marginLeft: `${priceGapLeft}%`,
+                          width: `${priceGapRight - priceGapLeft}%`,
+                        }}
+                      >
+                        <div style={{ width: 1, height: 12, background: colors.brand.gold, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: colors.brand.gold, flex: 1 }} />
+                        <span
+                          className="text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          style={{ color: colors.brand.gold }}
+                        >
+                          PRICE GAP &nbsp;{priceGap.toFixed(1)}%
+                        </span>
+                        <div style={{ height: 1, background: colors.brand.gold, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: colors.brand.gold, flexShrink: 0 }} />
+                      </div>
+                    )}
 
                     {/* Legend — sorted by price (matches left-to-right dot order) */}
                     <div className="flex justify-between mt-3">
