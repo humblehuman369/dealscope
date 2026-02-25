@@ -1012,7 +1012,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           <div className="mx-4 mt-3 bg-[#f87171]/10 border border-[#f87171]/20 rounded-xl p-4 text-center">
             <AlertCircle className="mx-auto mb-2 text-[#f87171] w-8 h-8" />
             <h3 className="text-sm font-semibold text-[#f87171] mb-1">Failed to Load {isSale ? 'Sale' : 'Rental'} Comps</h3>
-            <p className="text-xs text-[#f87171]/80 mb-3">{error}</p>
+            <p className="text-xs text-[#f87171]/80 mb-3">
+              {error.includes('500') || error.includes('Internal Server')
+                ? 'The data provider is temporarily unavailable. Please try again in a moment.'
+                : error.includes('429') || error.includes('rate')
+                ? 'Too many requests — please wait a moment and try again.'
+                : error.includes('timeout') || error.includes('Timeout')
+                ? 'The request timed out. Please try again.'
+                : error}
+            </p>
             <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-[#f87171]/15 hover:bg-[#f87171]/25 text-[#f87171] text-sm font-medium rounded-lg border border-[#f87171]/20">Try Again</button>
           </div>
         )}
