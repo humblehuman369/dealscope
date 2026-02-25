@@ -944,7 +944,7 @@ function VerdictContent() {
               {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
             </h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
-              Every investment property has three price levels. The gap between {isListed ? 'asking price' : 'Zestimate'} and your target buy price is what makes or breaks this deal.
+              Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
             </p>
 
             <div className="flex gap-2.5 items-stretch">
