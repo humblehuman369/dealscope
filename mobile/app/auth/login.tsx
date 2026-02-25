@@ -45,8 +45,16 @@ export default function LoginScreen() {
     if (returnTo) {
       try {
         const route = JSON.parse(returnTo) as { pathname: string; params: Record<string, string> };
-        if (route.pathname && typeof route.pathname === 'string') {
-          router.replace({ pathname: route.pathname as any, params: route.params });
+        const p = route.pathname;
+        if (
+          p &&
+          typeof p === 'string' &&
+          p.startsWith('/') &&
+          !p.startsWith('//') &&
+          !p.includes('://') &&
+          !p.includes('..')
+        ) {
+          router.replace({ pathname: p as any, params: route.params });
           return;
         }
       } catch {
