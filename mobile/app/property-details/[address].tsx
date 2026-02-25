@@ -117,7 +117,7 @@ export default function PropertyDetailsRoute() {
         } as any);
         break;
       default:
-        console.log('Navigate to:', navId);
+        if (__DEV__) console.log('Navigate to:', navId);
     }
   }, [router, property]);
 

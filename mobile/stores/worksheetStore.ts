@@ -26,8 +26,8 @@ import type { StrategyId } from '../types/analytics';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type { WorksheetMetrics } from '@dealscope/shared';
 import type { WorksheetMetrics } from '@dealscope/shared';
+export type { WorksheetMetrics };
 
 /** One entry per property+strategy combo */
 export interface WorksheetEntry {
