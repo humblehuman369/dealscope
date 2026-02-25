@@ -84,10 +84,9 @@ describe('formatWithSign', () => {
 });
 
 describe('abbreviateNumber', () => {
-  it('abbreviates thousands (rounded to nearest K)', () => {
-    // .toFixed(0) rounds: 2500 → "3K", 5000 → "5K"
-    expect(abbreviateNumber(5000)).toBe('5K');
-    expect(abbreviateNumber(2500)).toBe('3K');
+  it('abbreviates thousands with one decimal', () => {
+    expect(abbreviateNumber(5000)).toBe('5.0K');
+    expect(abbreviateNumber(2500)).toBe('2.5K');
   });
 
   it('abbreviates millions with one decimal', () => {
