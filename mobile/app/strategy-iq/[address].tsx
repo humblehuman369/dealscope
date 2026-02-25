@@ -34,6 +34,7 @@ export { ErrorBoundary };
 import { StrategySkeleton } from '../../components/Skeleton';
 import { useIsOnline } from '../../hooks/useNetworkStatus';
 import { buildShareUrl } from '../../hooks/useDeepLinking';
+import { isValidAddress, InvalidParamFallback } from '../../hooks/useValidatedParams';
 import { useUIStore } from '../../stores';
 import { verdictDark } from '../../theme/colors';
 import { verdictTypography } from '../../theme/textStyles';
@@ -572,6 +573,8 @@ export default function StrategyIQScreen() {
       router.push({ pathname: '/learn/[strategy]', params: { strategy: strategyId } });
     }
   }, [router, decodedAddress, listPrice, bedroomCount, bathroomCount, sqftValue, monthlyRent, currentStrategy]);
+
+  if (!isValidAddress(address)) return <InvalidParamFallback message="Property not found" />;
 
   // Short address for back strip
   const shortAddress = decodedAddress.split(',')[0] || decodedAddress;

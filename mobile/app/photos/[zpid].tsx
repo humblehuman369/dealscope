@@ -25,6 +25,7 @@ import * as Haptics from 'expo-haptics';
 import { api } from '../../services/apiClient';
 import { useTheme } from '../../context/ThemeContext';
 import { usePropertyStore } from '../../stores';
+import { isValidZpid, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_GAP = 8;
@@ -150,6 +151,8 @@ export default function PhotosScreen() {
   );
 
   const currentPhoto = lightboxIndex !== null ? photos[lightboxIndex] : null;
+
+  if (!isValidZpid(zpid)) return <InvalidParamFallback message="Property not found" />;
 
   return (
     <>

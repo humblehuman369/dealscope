@@ -20,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../context/ThemeContext';
 import type { StrategyId } from '../../types/analytics';
+import { isValidStrategy, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -237,6 +238,8 @@ export default function LearnStrategyScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push('/(tabs)/home');
   };
+
+  if (!isValidStrategy(params.strategy)) return <InvalidParamFallback message="Unknown strategy" />;
 
   if (!content) {
     return (

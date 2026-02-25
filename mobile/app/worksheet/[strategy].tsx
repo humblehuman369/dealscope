@@ -32,6 +32,7 @@ import { api } from '../../services/apiClient';
 import { useTheme } from '../../context/ThemeContext';
 import { useAssumptionsStore, useWorksheetStore } from '../../stores';
 import type { StrategyId } from '../../types/analytics';
+import { isValidStrategy, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -945,6 +946,8 @@ export default function WorksheetScreen() {
 
   // ── Derived: strategy color for accents ─────────────────────────────────
   const strategyColor = config.color;
+
+  if (!isValidStrategy(params.strategy)) return <InvalidParamFallback message="Unknown strategy" />;
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (

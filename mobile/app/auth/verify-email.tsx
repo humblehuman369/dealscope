@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../context/ThemeContext';
 import { verifyEmail } from '../../services/authService';
+import { isValidToken, InvalidParamFallback } from '../../hooks/useValidatedParams';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
@@ -49,6 +50,8 @@ export default function VerifyEmailScreen() {
 
     verify();
   }, [token]);
+
+  if (!isValidToken(token)) return <InvalidParamFallback message="Invalid verification link" />;
 
   return (
     <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
