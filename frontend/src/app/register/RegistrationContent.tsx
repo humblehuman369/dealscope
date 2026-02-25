@@ -846,7 +846,7 @@ function RegistrationInner() {
         }}
       >
         Already have an account?{" "}
-        <Link href="/?auth=login" style={{ color: "#0EA5E9", textDecoration: "none", fontWeight: 600 }}>
+        <Link href="/login" style={{ color: "#0EA5E9", textDecoration: "none", fontWeight: 600 }}>
           Log in
         </Link>
       </p>
