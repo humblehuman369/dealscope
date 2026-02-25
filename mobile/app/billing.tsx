@@ -6,6 +6,9 @@
  * and payment history.
  */
 
+import { ScreenErrorFallback as ErrorBoundary } from '../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,

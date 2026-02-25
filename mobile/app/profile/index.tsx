@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -74,6 +77,7 @@ export default function ProfileScreen() {
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // User data
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -121,6 +125,7 @@ export default function ProfileScreen() {
   const loadUserData = async () => {
     try {
       setIsLoading(true);
+      setLoadError(null);
       const [userData, profileData] = await Promise.all([
         userService.getCurrentUser(),
         userService.getUserProfile().catch(() => null),
@@ -152,9 +157,9 @@ export default function ProfileScreen() {
         setBudgetMin(profileData.investment_budget_min?.toString() || '');
         setBudgetMax(profileData.investment_budget_max?.toString() || '');
       }
-    } catch (error) {
-      console.error('Failed to load user data:', error);
-      Alert.alert('Error', 'Failed to load profile data');
+    } catch (e) {
+      console.error('Failed to load user data:', e);
+      setLoadError(e instanceof Error ? e.message : 'Failed to load profile data. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -182,8 +187,9 @@ export default function ProfileScreen() {
 
       await refreshUser?.();
       Alert.alert('Success', 'Account information saved');
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save account');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', message || 'Failed to save account');
     } finally {
       setIsSaving(false);
     }
@@ -206,8 +212,9 @@ export default function ProfileScreen() {
       });
 
       Alert.alert('Success', 'Investor profile saved');
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save profile');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', message || 'Failed to save profile');
     } finally {
       setIsSaving(false);
     }
@@ -234,8 +241,9 @@ export default function ProfileScreen() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to change password');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', message || 'Failed to change password');
     } finally {
       setIsChangingPassword(false);
     }
@@ -255,8 +263,9 @@ export default function ProfileScreen() {
               await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               await userService.deleteAccount();
               router.replace('/auth/login');
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete account');
+            } catch (error: unknown) {
+              const message = error instanceof Error ? error.message : 'Unknown error';
+              Alert.alert('Error', message || 'Failed to delete account');
             }
           },
         },
@@ -321,6 +330,26 @@ export default function ProfileScreen() {
     return (
       <View style={[styles.container, dynamicStyles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={colors.primary[500]} />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={[styles.container, dynamicStyles.container, styles.loadingContainer]}>
+        <Ionicons name="alert-circle-outline" size={48} color={theme.textMuted} />
+        <Text style={{ fontSize: 16, fontWeight: '600', color: theme.text, marginTop: 12, textAlign: 'center' }}>
+          Something went wrong
+        </Text>
+        <Text style={{ fontSize: 14, color: theme.textMuted, marginTop: 4, textAlign: 'center', paddingHorizontal: 24 }}>
+          {loadError}
+        </Text>
+        <TouchableOpacity
+          onPress={loadUserData}
+          style={{ marginTop: 16, backgroundColor: '#0d9488', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}
+        >
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Try Again</Text>
+        </TouchableOpacity>
       </View>
     );
   }

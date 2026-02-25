@@ -105,5 +105,17 @@ export const useUIStore = create<UIStore>((set) => ({
 export const useActiveStrategy = () =>
   useUIStore((state) => state.activeStrategy);
 
+export const useShowAssumptionsPanel = () =>
+  useUIStore((state) => state.showAssumptionsPanel);
+
+export const useShowDataProvenance = () =>
+  useUIStore((state) => state.showDataProvenance);
+
+export const useWorksheetViewMode = () =>
+  useUIStore((state) => state.worksheetViewMode);
+
+export const useActiveBottomSheet = () =>
+  useUIStore((state) => state.activeBottomSheet);
+
 export const useToast = () =>
   useUIStore((state) => state.toast);

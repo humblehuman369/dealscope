@@ -109,6 +109,11 @@ export const usePropertyStore = create<PropertyStore>()(
     {
       name: 'dealgapiq-property',
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as PropertyStore;
+        return state;
+      },
     }
   )
 );

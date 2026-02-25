@@ -75,10 +75,11 @@ export function WorksheetExport({
       } else {
         Alert.alert('Downloaded', `Report saved to ${result.uri}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       Alert.alert(
         'Export Failed',
-        err?.message || 'Could not download the report. Please try again.',
+        message || 'Could not download the report. Please try again.',
       );
     } finally {
       setDownloading(null);

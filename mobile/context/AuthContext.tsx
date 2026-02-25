@@ -173,11 +173,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         error: null,
       });
       return loginData;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err.message || 'Login failed',
+        error: message || 'Login failed',
       }));
       throw err;
     }
@@ -194,11 +195,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         error: null,
       });
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err.message || 'MFA verification failed',
+        error: message || 'MFA verification failed',
       }));
       throw err;
     }
@@ -210,11 +212,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const result = await authRegister(email, password, fullName);
       setState((prev) => ({ ...prev, isLoading: false }));
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err.message || 'Registration failed',
+        error: message || 'Registration failed',
       }));
       throw err;
     }

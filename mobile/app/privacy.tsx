@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import React from 'react';
 import {
   View,
@@ -12,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '../theme/colors';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, type ThemeColors } from '../context/ThemeContext';
 
 export default function PrivacyPolicyScreen() {
   const router = useRouter();
@@ -162,7 +165,7 @@ export default function PrivacyPolicyScreen() {
   );
 }
 
-function Section({ title, children, theme }: { title: string; children: React.ReactNode; theme: any }) {
+function Section({ title, children, theme }: { title: string; children: React.ReactNode; theme: ThemeColors }) {
   return (
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
@@ -171,7 +174,7 @@ function Section({ title, children, theme }: { title: string; children: React.Re
   );
 }
 
-function BulletPoint({ text, theme }: { text: string; theme: any }) {
+function BulletPoint({ text, theme }: { text: string; theme: ThemeColors }) {
   return (
     <View style={styles.bulletRow}>
       <Text style={[styles.bullet, { color: theme.textTertiary }]}>•</Text>

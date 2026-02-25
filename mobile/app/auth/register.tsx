@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useState, useCallback, useRef } from 'react';
 import {
   View,
@@ -65,9 +68,10 @@ export default function RegisterScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setRequiresVerification((result as any).requires_verification ?? true);
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(err.message || 'Registration failed');
+      setError(message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

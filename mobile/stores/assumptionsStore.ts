@@ -365,3 +365,16 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
     }
   )
 );
+
+// ─── Granular Selectors ──────────────────────────────────────────────────────
+
+type StrategyAssumptionKey = 'ltr' | 'str' | 'rehab' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
+
+export const useAssumptionsByStrategy = (strategy: StrategyAssumptionKey) =>
+  useAssumptionsStore((s) => s.assumptions[strategy]);
+
+export const useOperatingAssumptions = () =>
+  useAssumptionsStore((s) => s.assumptions.operating);
+
+export const useFinancingAssumptions = () =>
+  useAssumptionsStore((s) => s.assumptions.financing);

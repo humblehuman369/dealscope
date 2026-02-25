@@ -1,3 +1,6 @@
+import { ScreenErrorFallback as ErrorBoundary } from '../../components/ScreenErrorFallback';
+export { ErrorBoundary };
+
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
   View, 
