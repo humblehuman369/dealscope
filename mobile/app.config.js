@@ -256,8 +256,7 @@ export default {
         origin: false,
       },
       eas: {
-        // projectId removed — was linked to old "investiq" project.
-        // Run `eas build` to link to "dealgapiq" project; EAS will add the correct projectId.
+        projectId: "413e1c97-3bfc-44ef-9437-e8a89b79cde8",
       },
       webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://dealgapiq.com",
     },
@@ -267,11 +266,7 @@ export default {
       policy: "appVersion",
     },
     updates: {
-      // Use EAS_BUILD_PROJECT_ID (set during EAS build) or fallback for local dev
-      url:
-        process.env.EAS_BUILD_PROJECT_ID
-          ? `https://u.expo.dev/${process.env.EAS_BUILD_PROJECT_ID}`
-          : undefined,
+      url: "https://u.expo.dev/413e1c97-3bfc-44ef-9437-e8a89b79cde8",
       fallbackToCacheTimeout: 3000,
       checkAutomatically: "ON_LOAD",
     },

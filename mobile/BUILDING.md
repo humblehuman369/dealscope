@@ -28,7 +28,7 @@ For maintainers: the Expo/EAS project identifiers are defined in `app.config.js`
 | Field | Value | Purpose |
 |-------|-------|---------|
 | **slug** | `dealgapiq` | Expo project slug; must match the project on expo.dev |
-| **projectId** | (set by EAS) | Removed from config — was linked to old "investiq" project. EAS adds the correct projectId when you run `eas build` and link to the "dealgapiq" project. |
+| **projectId** | `413e1c97-3bfc-44ef-9437-e8a89b79cde8` | EAS project UUID; used for OTA updates and build linking |
 | **owner** | `humblehuman369` | Expo account/organization |
 
 **Important:** The slug must match the project at https://expo.dev/accounts/humblehuman369/projects/. If you see "Slug for project identified by extra.eas.projectId does not match", the projectId in config points to the wrong project — remove it and run `eas build` to re-link to the correct project.
