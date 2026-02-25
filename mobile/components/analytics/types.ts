@@ -21,8 +21,8 @@ export interface AnalyticsInputs {
   vacancyRate: number;
   maintenanceRate: number;
   managementRate: number;
-  annualPropertyTax: number;
-  annualInsurance: number;
+  annualPropertyTax?: number;
+  annualInsurance?: number;
   monthlyHoa: number;
   
   // Projections
