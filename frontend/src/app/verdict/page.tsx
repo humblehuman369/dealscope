@@ -963,9 +963,8 @@ function VerdictContent() {
             </div>
 
             {/* Price Scale Bar — proportional positions with legend */}
-            <div className="mt-6">
+            <div className="mt-6 relative pt-8">
               {(() => {
-                // All price points sorted for the scale
                 const markers = [
                   { label: 'Wholesale', price: wholesalePrice, dotColor: colors.brand.teal },
                   { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
@@ -979,8 +978,36 @@ function VerdictContent() {
                 const range = scaleMax - scaleMin
                 const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
 
+                const targetBuyPos = pos(purchasePrice)
+                const marketPos = pos(property.price)
+                const bracketLeft = Math.min(targetBuyPos, marketPos)
+                const bracketRight = Math.max(targetBuyPos, marketPos)
+                const showBracket = dealGap > 0 && (bracketRight - bracketLeft) >= 3
+
                 return (
                   <>
+                    {showBracket && (
+                      <div
+                        className="absolute flex items-center"
+                        style={{
+                          left: `${bracketLeft}%`,
+                          width: `${bracketRight - bracketLeft}%`,
+                          top: '0.25rem',
+                        }}
+                      >
+                        <div style={{ width: 1, height: 12, background: colors.brand.blue, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: colors.brand.blue, flex: 1 }} />
+                        <span
+                          className="text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          style={{ color: colors.brand.blue }}
+                        >
+                          DEAL GAP &nbsp;-{Math.abs(dealGap).toFixed(1)}%
+                        </span>
+                        <div style={{ height: 1, background: colors.brand.blue, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: colors.brand.blue, flexShrink: 0 }} />
+                      </div>
+                    )}
+
                     {/* Bar with proportionally-positioned dots */}
                     <div className="relative h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.teal}30, ${colors.brand.blue}30, ${colors.brand.gold}30, ${colors.status.negative}25)` }}>
                       {markers.map((m, i) => (
