@@ -12,6 +12,9 @@ frontend/out/
 .DS_Store
 Thumbs.db
 
+# TypeScript incremental build cache (machine-specific paths break EAS)
+*.tsbuildinfo
+
 # Python
 __pycache__/
 *.py[cod]
