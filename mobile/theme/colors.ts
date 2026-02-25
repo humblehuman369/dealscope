@@ -80,7 +80,7 @@ export const colors = {
   // Profit/Positive - Green (STATUS ONLY - not for strategies)
   profit: {
     light: '#d1fae5',
-    main: '#22c55e',
+    main: '#34d399',
     dark: '#16a34a',
     text: '#15803d',
     textStrong: '#166534', // Higher contrast for mobile
@@ -89,7 +89,7 @@ export const colors = {
   // Loss/Negative - Red (STATUS ONLY - not for strategies)
   loss: {
     light: '#fee2e2',
-    main: '#ef4444',
+    main: '#f87171',
     dark: '#dc2626',
     text: '#b91c1c',
     textStrong: '#991b1b', // Higher contrast for mobile
@@ -201,7 +201,7 @@ export const colors = {
     primary: '#ffffff',
     secondary: '#f8fafc',
     tertiary: '#e1e8ed',      // Icy Silver
-    dark: '#0A1628',          // Navy (aligned with frontend)
+    dark: '#000000',          // True black (aligned with frontend bg-black)
     darkAlt: '#0f2744',       // Elevated dark surface
     darkElevated: '#1a3a5c',  // Cards on dark
     panelHover: '#152238',    // Panel hover state (matches frontend base.panel-hover)
@@ -353,7 +353,7 @@ export const decisionGrade = {
 export const verdictDark = {
   // Base surfaces
   black: '#000000',          // True black base
-  bg: '#060B14',             // Page background
+  bg: '#000000',             // True black base (aligned with frontend)
   card: '#0C1220',           // Card / deep navy
   cardUp: '#101828',         // Elevated card
 

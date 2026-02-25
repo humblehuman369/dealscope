@@ -17,12 +17,12 @@ interface Strategy {
 }
 
 export const STRATEGY_LIST: Strategy[] = [
-  { id: 'longTermRental', name: 'Long-Term Rental', shortName: 'LTR', icon: '🏠', color: '#0097a7' },
-  { id: 'shortTermRental', name: 'Short-Term Rental', shortName: 'STR', icon: '🏨', color: '#9333ea' },
+  { id: 'longTermRental', name: 'Long-Term Rental', shortName: 'LTR', icon: '🏠', color: '#0465f2' },
+  { id: 'shortTermRental', name: 'Short-Term Rental', shortName: 'STR', icon: '🏨', color: '#8b5cf6' },
   { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', icon: '🔄', color: '#f97316' },
-  { id: 'fixAndFlip', name: 'Fix & Flip', shortName: 'Flip', icon: '🔨', color: '#22c55e' },
-  { id: 'houseHack', name: 'House Hack', shortName: 'Hack', icon: '🏡', color: '#3b82f6' },
-  { id: 'wholesale', name: 'Wholesale', shortName: 'WS', icon: '📋', color: '#eab308' },
+  { id: 'fixAndFlip', name: 'Fix & Flip', shortName: 'Flip', icon: '🔨', color: '#ec4899' },
+  { id: 'houseHack', name: 'House Hack', shortName: 'Hack', icon: '🏡', color: '#14b8a6' },
+  { id: 'wholesale', name: 'Wholesale', shortName: 'WS', icon: '📋', color: '#84cc16' },
 ];
 
 interface StrategySelectorProps {
