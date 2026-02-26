@@ -38,22 +38,22 @@ export function SummarySnapshot({
       
       <div className="grid grid-cols-3 gap-2">
         {/* Cap Rate */}
-        <div className="bg-white rounded-lg p-3 text-center border border-[#0891B2]">
-          <div className="text-base font-bold text-[#0891B2]">{capRate.toFixed(1)}%</div>
+        <div className="bg-white rounded-lg p-3 text-center border border-[#0EA5E9]">
+          <div className="text-base font-bold text-[#0EA5E9]">{capRate.toFixed(1)}%</div>
           <div className="text-[10px] text-[#64748B] uppercase tracking-wide">Cap Rate</div>
         </div>
         
         {/* Cash on Cash */}
-        <div className="bg-white rounded-lg p-3 text-center border border-[#0891B2]">
-          <div className="text-base font-bold text-[#0891B2]">
+        <div className="bg-white rounded-lg p-3 text-center border border-[#0EA5E9]">
+          <div className="text-base font-bold text-[#0EA5E9]">
             {cashOnCash.toFixed(1)}%
           </div>
           <div className="text-[10px] text-[#64748B] uppercase tracking-wide">Cash-on-Cash</div>
         </div>
         
         {/* DSCR */}
-        <div className="bg-white rounded-lg p-3 text-center border border-[#0891B2]">
-          <div className="text-base font-bold text-[#0891B2]">
+        <div className="bg-white rounded-lg p-3 text-center border border-[#0EA5E9]">
+          <div className="text-base font-bold text-[#0EA5E9]">
             {dscr.toFixed(2)}
           </div>
           <div className="text-[10px] text-[#64748B] uppercase tracking-wide">DSCR</div>

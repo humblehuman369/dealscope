@@ -36,8 +36,8 @@ import { SummarySnapshot } from './SummarySnapshot'
 // =============================================================================
 const COLORS = {
   navy: '#0A1628',
-  teal: '#0891B2',
-  tealLight: '#0891B2', // Synced with design tokens - was #06B6D4
+  teal: '#0EA5E9',
+  tealLight: '#0EA5E9', // Synced with design tokens - was #06B6D4
   cyan: '#00D4FF',
   rose: '#EF4444',      // Red - Unified with verdict-design-tokens
   warning: '#D97706',   // Amber - Unified with verdict-design-tokens
@@ -337,16 +337,16 @@ export function IQVerdictScreen({
   const PriceCard = ({ label, value, desc, recommended = false }: { label: string; value: number; desc: string; recommended?: boolean }) => (
     <div className={`rounded-lg p-3 text-center border ${
       recommended 
-        ? 'bg-white border-2 border-[#0891B2]' 
+        ? 'bg-white border-2 border-[#0EA5E9]' 
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
       <div className={`text-[9px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        recommended ? 'text-[#0891B2]' : 'text-[#64748B]'
+        recommended ? 'text-[#0EA5E9]' : 'text-[#64748B]'
       }`}>
         {label}
         <HelpCircle className="w-3 h-3 text-[#CBD5E1]" />
       </div>
-      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
+      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
         {formatPrice(value)}
       </div>
       <div className="text-[9px] text-[#94A3B8] leading-tight">{desc}</div>
@@ -364,7 +364,7 @@ export function IQVerdictScreen({
         )}
         {label}
       </div>
-      <span className={`text-[13px] font-semibold ${positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
+      <span className={`text-[13px] font-semibold ${positive ? 'text-[#0EA5E9]' : 'text-[#94A3B8]'}`}>
         {value}
       </span>
     </div>
@@ -396,26 +396,26 @@ export function IQVerdictScreen({
         {/* VERDICT HERO */}
         <div className="bg-white p-5 px-6 border-b border-[#E2E8F0] flex items-center gap-4">
           <div 
-            className="w-[72px] h-[72px] rounded-full border-4 border-[#0891B2] flex items-center justify-center flex-shrink-0"
+            className="w-[72px] h-[72px] rounded-full border-4 border-[#0EA5E9] flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%)' }}
           >
-            <span className="text-[28px] font-extrabold text-[#0891B2]">{analysis.dealScore}</span>
+            <span className="text-[28px] font-extrabold text-[#0EA5E9]">{analysis.dealScore}</span>
           </div>
           <div className="flex-1">
-            <div className="text-lg font-bold text-[#0891B2] mb-0.5">{verdictInfo.label}</div>
+            <div className="text-lg font-bold text-[#0EA5E9] mb-0.5">{verdictInfo.label}</div>
             <div className="text-[13px] text-[#64748B] mb-2">{verdictInfo.sublabel}</div>
             <div className="flex gap-3 flex-wrap">
               <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
                 <TrendingDown className="w-3 h-3 text-[#94A3B8]" />
-                Gap: <span className="font-semibold text-[#0891B2]">{opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%</span>
+                Gap: <span className="font-semibold text-[#0EA5E9]">{opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%</span>
               </span>
               <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
                 <Settings2 className="w-3 h-3 text-[#94A3B8]" />
-                Motivation: <span className="font-semibold text-[#0891B2]">{sellerMotivation.level}</span>
+                Motivation: <span className="font-semibold text-[#0EA5E9]">{sellerMotivation.level}</span>
               </span>
             </div>
             <button 
-              className="flex items-center gap-1 text-[#0891B2] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0"
+              className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0"
               onClick={() => setShowMethodology(true)}
             >
               <Info className="w-3.5 h-3.5" />
@@ -434,23 +434,23 @@ export function IQVerdictScreen({
               </div>
             </div>
             <button 
-              className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer"
+              className="text-[#0EA5E9] text-[13px] font-medium bg-transparent border-none cursor-pointer"
               onClick={() => setShowAssumptions(!showAssumptions)}
             >
               Change terms
             </button>
           </div>
 
-          <div className="text-xs font-semibold text-[#0891B2] mt-2 mb-3">
+          <div className="text-xs font-semibold text-[#0EA5E9] mt-2 mb-3">
             WHAT PRICE MAKES THIS DEAL WORK?
           </div>
 
           {/* Info Banner for Off-Market */}
           {isOffMarket && (
-            <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
-              <AlertCircle className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0EA5E9]">
+              <AlertCircle className="w-[18px] h-[18px] text-[#0EA5E9] flex-shrink-0 mt-0.5" />
               <div className="text-xs text-[#475569] leading-relaxed">
-                <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
+                <strong className="text-[#0EA5E9]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
               </div>
             </div>
           )}
@@ -459,7 +459,7 @@ export function IQVerdictScreen({
           <div className="flex items-center justify-between mb-3">
             <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
             <button 
-              className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1.5 text-[#0EA5E9] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setShowCalculation(!showCalculation)}
             >
               <ChevronDown 
@@ -503,7 +503,7 @@ export function IQVerdictScreen({
                       : `/deal-maker/${encodeURIComponent(fullAddr)}`
                     router.push(dealMakerUrl)
                   }}
-                  className="flex items-center gap-1 text-[10px] font-medium text-[#0891B2] hover:opacity-80"
+                  className="flex items-center gap-1 text-[10px] font-medium text-[#0EA5E9] hover:opacity-80"
                 >
                   <Settings2 className="w-3 h-3" />
                   Edit in Deal Maker
@@ -564,7 +564,7 @@ export function IQVerdictScreen({
 
         {/* How Likely Section */}
         <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-          <div className="text-xs font-semibold text-[#0891B2] mb-3">
+          <div className="text-xs font-semibold text-[#0EA5E9] mb-3">
             HOW LIKELY CAN YOU GET THIS PRICE?
           </div>
 
@@ -574,7 +574,7 @@ export function IQVerdictScreen({
               <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
               Deal Gap
             </div>
-            <div className="text-lg font-bold text-[#0891B2]">
+            <div className="text-lg font-bold text-[#0EA5E9]">
               {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
             </div>
           </div>
@@ -586,11 +586,11 @@ export function IQVerdictScreen({
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
+              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(userTargetPrice)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Discount needed</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(Math.abs(discountNeeded))}</span>
+              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(Math.abs(discountNeeded))}</span>
             </div>
           </div>
 
@@ -615,15 +615,15 @@ export function IQVerdictScreen({
 
           {/* Suggested Offer */}
           <div 
-            className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
+            className="relative rounded-[10px] p-4 mt-3 border border-[#0EA5E9]"
             style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
           >
-            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+            <span className="absolute -top-2 left-4 bg-[#0EA5E9] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
               Recommended
             </span>
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
-              <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
+              <span className="text-base font-bold text-[#0EA5E9]">{sellerMotivation.suggestedOffer}</span>
             </div>
           </div>
         </div>
@@ -638,7 +638,7 @@ export function IQVerdictScreen({
               Additional Opportunity Factors
             </span>
             <button 
-              className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium bg-transparent border-none cursor-pointer"
               onClick={() => setShowFactors(!showFactors)}
             >
               {showFactors ? 'Hide' : 'Show'}
@@ -663,7 +663,7 @@ export function IQVerdictScreen({
       {/* Fixed Bottom Actions */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-6">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0EA5E9] transition-colors"
           onClick={() => onViewStrategy(topStrategy)}
         >
           Continue to Analysis

@@ -92,7 +92,7 @@ function ProfileContent() {
             className="h-24"
             style={{
               background:
-                'radial-gradient(ellipse at 50% 100%, rgba(56, 189, 248, 0.12), rgba(45, 212, 191, 0.06) 50%, transparent 80%)',
+                'radial-gradient(ellipse at 50% 100%, rgba(56, 189, 248, 0.12), rgba(14, 165, 233, 0.06) 50%, transparent 80%)',
             }}
           />
           <div className="relative px-6 pb-6">

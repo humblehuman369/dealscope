@@ -66,7 +66,7 @@ interface MarketPageData {
 const MarketTemperatureGauge = ({ temperature }: { temperature: string }) => {
   const temps: Record<string, { position: number; color: string; icon: React.ElementType; label: string; description: string }> = {
     'Cold': { position: 10, color: '#3B82F6', icon: Snowflake, label: 'Cold Market', description: "Buyer's market - prices declining" },
-    'Cool': { position: 30, color: '#06B6D4', icon: Snowflake, label: 'Cool Market', description: 'Slight buyer advantage' },
+    'Cool': { position: 30, color: '#0EA5E9', icon: Snowflake, label: 'Cool Market', description: 'Slight buyer advantage' },
     'Neutral': { position: 50, color: '#F59E0B', icon: Sun, label: 'Balanced Market', description: 'Even supply and demand' },
     'Warm': { position: 70, color: '#F97316', icon: Flame, label: 'Warm Market', description: 'Slight seller advantage' },
     'Hot': { position: 90, color: '#EF4444', icon: Flame, label: 'Hot Market', description: "Seller's market - high demand" },
@@ -225,12 +225,12 @@ const RentTrendChart = ({ currentYear, prevYear }: { currentYear: MarketPageData
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
           {[0, 25, 50, 75, 100].map((y) => (<line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#E2E8F0" strokeWidth="0.2" />))}
           <path d={createPath(prevYear)} fill="none" stroke="#CBD5E1" strokeWidth="0.8" strokeDasharray="2,2" />
-          <path d={createPath(currentYear)} fill="none" stroke="#0891B2" strokeWidth="1" />
+          <path d={createPath(currentYear)} fill="none" stroke="#0EA5E9" strokeWidth="1" />
           <path d={`${createPath(currentYear)} L 100 100 L 0 100 Z`} fill="url(#tealGradient)" />
           <defs>
             <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0891B2" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#0891B2" stopOpacity="0" />
+              <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0" />
             </linearGradient>
           </defs>
         </svg>
@@ -377,7 +377,7 @@ const IQMarketScore = ({ summary, temperature }: { summary: MarketPageData['summ
   const overallScore = Math.round((tempScore * 0.4 + yoyScore * 0.4 + supplyScore * 0.2))
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return { label: 'Strong Growth', color: '#0891B2' }
+    if (score >= 80) return { label: 'Strong Growth', color: '#0EA5E9' }
     if (score >= 60) return { label: 'Moderate Growth', color: '#0E7490' }
     if (score >= 40) return { label: 'Stable', color: '#F59E0B' }
     return { label: 'Declining', color: '#EF4444' }

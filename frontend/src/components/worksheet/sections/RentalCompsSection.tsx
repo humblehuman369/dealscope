@@ -265,7 +265,7 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${value}%`,
-          backgroundColor: value >= 90 ? '#0891B2' : value >= 75 ? '#0E7490' : '#F59E0B'
+          backgroundColor: value >= 90 ? '#0EA5E9' : value >= 75 ? '#0E7490' : '#F59E0B'
         }}
       />
     </div>
@@ -331,7 +331,7 @@ const DualRentValuationPanel = ({
           </div>
           <div className="text-center px-3 py-1 rounded-lg bg-white/60">
             <div className="text-lg font-bold tabular-nums" style={{ 
-              color: appraisalResult.confidence >= 85 ? '#0891B2' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
+              color: appraisalResult.confidence >= 85 ? '#0EA5E9' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
             }}>
               {loading ? '...' : appraisalResult.confidence}%
             </div>
@@ -658,7 +658,7 @@ const RentalCompCard = ({
         {/* Match Score */}
         <div className="w-16 flex flex-col items-center justify-center bg-slate-50 border-l border-slate-100">
           <div className="text-xl font-bold tabular-nums" style={{ 
-            color: similarity.overall >= 90 ? '#0891B2' : similarity.overall >= 75 ? '#0E7490' : '#F59E0B' 
+            color: similarity.overall >= 90 ? '#0EA5E9' : similarity.overall >= 75 ? '#0E7490' : '#F59E0B' 
           }}>
             {similarity.overall}
           </div>

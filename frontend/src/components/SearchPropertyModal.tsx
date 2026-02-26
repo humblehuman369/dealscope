@@ -112,7 +112,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(8, 145, 178, 0.1)';
-                  e.currentTarget.style.borderColor = '#0891b2';
+                  e.currentTarget.style.borderColor = '#0EA5E9';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
@@ -122,7 +122,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+                    background: 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)',
                   }}
                 >
                   <Camera size={22} className="text-white sm:hidden" />
@@ -146,7 +146,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(8, 145, 178, 0.1)';
-                  e.currentTarget.style.borderColor = '#0891b2';
+                  e.currentTarget.style.borderColor = '#0EA5E9';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
@@ -156,7 +156,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+                    background: 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)',
                   }}
                 >
                   <Search size={22} className="text-white sm:hidden" />
@@ -214,7 +214,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: address.trim() 
-                      ? 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)' 
+                      ? 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' 
                       : 'rgba(8, 145, 178, 0.3)',
                     color: 'white',
                   }}

@@ -28,7 +28,7 @@ function getAssessmentStyle(assessment: Assessment): { bg: string; text: string;
     case 'GOOD':
       return { bg: 'bg-[#10B981]', text: 'text-white', border: 'border-[#10B981]' }
     case 'STANDARD':
-      return { bg: 'bg-[#0891B2]', text: 'text-white', border: 'border-[#0891B2]' }
+      return { bg: 'bg-[#0EA5E9]', text: 'text-white', border: 'border-[#0EA5E9]' }
     case 'FAIR':
       return { bg: 'bg-transparent', text: 'text-[#D97706]', border: 'border-[#D97706]' }
     case 'POOR':

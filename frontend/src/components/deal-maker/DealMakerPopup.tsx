@@ -681,7 +681,7 @@ export function DealMakerPopup({
                       idx === 0 ? 'rounded-l-md' : ''
                     } ${idx === arr.length - 1 ? 'rounded-r-md' : ''} ${
                       strategyType === s
-                        ? 'bg-[#14B8A6] text-white'
+                        ? 'bg-[#0EA5E9] text-white'
                         : 'bg-white/[0.05] text-[#94A3B8] hover:bg-white/[0.1]'
                     }`}
                   >
@@ -714,7 +714,7 @@ export function DealMakerPopup({
                 onClick={() => onPriceTargetChange?.(target)}
                 className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all ${
                   activePriceTarget === target
-                    ? 'bg-[#14B8A6] text-white shadow-sm'
+                    ? 'bg-[#0EA5E9] text-white shadow-sm'
                     : 'bg-white/[0.05] text-[#94A3B8] hover:bg-white/[0.1]'
                 }`}
               >
@@ -725,11 +725,11 @@ export function DealMakerPopup({
         </div>
 
         {/* Instructions */}
-        <div className="flex items-start gap-2.5 px-5 py-3.5 bg-[#14B8A6]/[0.06] border-b border-white/[0.07] flex-shrink-0">
+        <div className="flex items-start gap-2.5 px-5 py-3.5 bg-[#0EA5E9]/[0.06] border-b border-white/[0.07] flex-shrink-0">
           <div className="w-7 h-7 bg-white/[0.06] rounded-lg flex items-center justify-center flex-shrink-0">
-            <Info className="w-4 h-4 text-[#14B8A6]" />
+            <Info className="w-4 h-4 text-[#0EA5E9]" />
           </div>
-          <p className="text-[13px] text-[#14B8A6] leading-relaxed">
+          <p className="text-[13px] text-[#0EA5E9] leading-relaxed">
             Adjust the sliders or tap values to edit. Changes will recalculate your deal analytics in real-time.
           </p>
         </div>
@@ -1060,7 +1060,7 @@ export function DealMakerPopup({
                   onClick={() => handleChange('financingType', 'cash')}
                   className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                     values.financingType === 'cash'
-                      ? 'bg-[#14B8A6] text-white'
+                      ? 'bg-[#0EA5E9] text-white'
                       : 'bg-white/[0.05] text-[#94A3B8]'
                   }`}
                 >
@@ -1070,7 +1070,7 @@ export function DealMakerPopup({
                   onClick={() => handleChange('financingType', 'hardMoney')}
                   className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                     values.financingType === 'hardMoney'
-                      ? 'bg-[#14B8A6] text-white'
+                      ? 'bg-[#0EA5E9] text-white'
                       : 'bg-white/[0.05] text-[#94A3B8]'
                   }`}
                 >
@@ -1268,7 +1268,7 @@ export function DealMakerPopup({
                     onClick={() => handleChange('loanType', type)}
                     className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors ${
                       values.loanType === type
-                        ? 'bg-[#14B8A6] text-white'
+                        ? 'bg-[#0EA5E9] text-white'
                         : 'bg-white/[0.05] text-[#94A3B8]'
                     }`}
                   >
@@ -1749,7 +1749,7 @@ export function DealMakerPopup({
           </button>
           <button 
             onClick={handleApply}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#14B8A6] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0D9488] active:scale-[0.98] transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#0EA5E9] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0EA5E9] active:scale-[0.98] transition-all"
           >
             Apply Changes
             <Check className="w-4 h-4" />

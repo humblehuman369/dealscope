@@ -1041,7 +1041,7 @@ export function StrWorksheet({
                     <line 
                       x1="80" y1="80" 
                       x2={needleX} y2={needleY} 
-                      stroke={dealScore >= 50 ? '#0891B2' : '#EF4444'} 
+                      stroke={dealScore >= 50 ? '#0EA5E9' : '#EF4444'} 
                       strokeWidth="3" strokeLinecap="round"
                       style={{ transition: 'all 0.3s ease-out' }}
                     />

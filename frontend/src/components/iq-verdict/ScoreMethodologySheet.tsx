@@ -34,7 +34,7 @@ const T = {
 
   // Semantic accent colors
   blue: '#38bdf8',        // Primary actions, key data
-  teal: '#2dd4bf',        // Positive signals, educational
+  teal: '#0EA5E9',        // Positive signals, educational
   amber: '#fbbf24',       // Caution, scores
   red: '#f87171',         // Negatives, losses
   green: '#34d399',       // Income, success
@@ -198,8 +198,8 @@ export function ScoreMethodologySheet({
             <div
               className="p-5 rounded-xl"
               style={{
-                background: `radial-gradient(ellipse at 50% 0%, rgba(45,212,191,0.06) 0%, transparent 70%), ${T.card}`,
-                border: `1px solid rgba(45,212,191,0.15)`,
+                background: `radial-gradient(ellipse at 50% 0%, rgba(14,165,233,0.06) 0%, transparent 70%), ${T.card}`,
+                border: `1px solid rgba(14,165,233,0.15)`,
               }}
             >
               <p className="text-sm font-normal text-center" style={{ color: T.body }}>
@@ -359,7 +359,7 @@ export function ScoreMethodologySheet({
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(45,212,191,0.05)', border: `1px solid rgba(45,212,191,0.12)` }}>
+                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(14,165,233,0.05)', border: `1px solid rgba(14,165,233,0.12)` }}>
                   <p className="text-xs leading-relaxed" style={{ color: T.body }}>
                     <span className="font-semibold" style={{ color: T.teal }}>Example: </span>
                     {SCORE_FORMULA.example}

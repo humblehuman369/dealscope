@@ -4,9 +4,9 @@
  * 
  * Design specs:
  * - Input label: 14px, font-weight 600, color #0A1628
- * - Input value: 16px, font-weight 700, color #0891B2 (clickable to edit)
+ * - Input value: 16px, font-weight 700, color #0EA5E9 (clickable to edit)
  * - Slider track: #E2E8F0
- * - Slider fill: #0891B2
+ * - Slider fill: #0EA5E9
  * - Range text: 11px, color #94A3B8
  */
 
@@ -179,11 +179,11 @@ export function DealMakerSlider({
               backgroundColor: '#F1F5F9',
               borderRadius: '6px',
               padding: '4px 8px',
-              border: '1px solid #0891B2',
+              border: '1px solid #0EA5E9',
             }}
           >
             {(config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear') && (
-              <span style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2', marginRight: '2px' }}>$</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9', marginRight: '2px' }}>$</span>
             )}
             <input
               ref={inputRef}
@@ -196,7 +196,7 @@ export function DealMakerSlider({
               style={{
                 fontSize: '16px',
                 fontWeight: 700,
-                color: '#0891B2',
+                color: '#0EA5E9',
                 width: '80px',
                 textAlign: 'right',
                 background: 'transparent',
@@ -222,7 +222,7 @@ export function DealMakerSlider({
           <button
             onClick={handleValueClick}
             className="tabular-nums hover:bg-slate-100 rounded px-2 py-1 transition-colors cursor-pointer"
-            style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2', background: 'transparent', border: 'none' }}
+            style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9', background: 'transparent', border: 'none' }}
             title="Click to edit value directly"
           >
             {formattedValue}
@@ -244,13 +244,13 @@ export function DealMakerSlider({
           style={{ 
             height: '6px', 
             width: `${fillPercent}%`,
-            background: '#0891B2',
+            background: '#0EA5E9',
           }}
         />
         
         {/* Custom thumb */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[#0891B2]"
+          className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[#0EA5E9]"
           style={{ 
             left: `calc(${fillPercent}% - 8px)`,
             width: '16px',

@@ -45,7 +45,7 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
           If an account exists with that email, we&apos;ve sent a password reset link.
         </p>
         {onBack && (
-          <button onClick={onBack} className="font-medium text-sm" style={{ color: '#0891B2' }}>
+          <button onClick={onBack} className="font-medium text-sm" style={{ color: '#0EA5E9' }}>
             Back to sign in
           </button>
         )}
@@ -96,7 +96,7 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
         type="submit"
         disabled={isLoading}
         className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
-        style={{ backgroundColor: '#0891B2' }}
+        style={{ backgroundColor: '#0EA5E9' }}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Send Reset Link

@@ -19,8 +19,8 @@ export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
       className={`
         rounded-2xl border transition-all duration-300 cursor-pointer
         ${isCollapsed 
-          ? 'p-3 bg-transparent border-brand-500/10 dark:border-[#4dd0e1]/10' 
-          : 'p-6 bg-gradient-to-br from-brand-500/8 to-blue-500/4 dark:from-[#4dd0e1]/8 dark:to-[#0465f2]/4 border-brand-500/20 dark:border-[#4dd0e1]/20'
+          ? 'p-3 bg-transparent border-brand-500/10 dark:border-[#0EA5E9]/10' 
+          : 'p-6 bg-gradient-to-br from-brand-500/8 to-blue-500/4 dark:from-[#0EA5E9]/8 dark:to-[#0465f2]/4 border-brand-500/20 dark:border-[#0EA5E9]/20'
         }
       `}
       onClick={onToggle}
@@ -28,7 +28,7 @@ export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
       {/* Expanded State */}
       {!isCollapsed && (
         <>
-          <h3 className="text-lg font-bold text-brand-500 dark:text-[#4dd0e1] mb-4">
+          <h3 className="text-lg font-bold text-brand-500 dark:text-[#0EA5E9] mb-4">
             Welcome to DealGapIQ
           </h3>
           <p className="text-[15px] text-gray-700 dark:text-white/85 leading-relaxed mb-4">
@@ -44,7 +44,7 @@ export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
       {isCollapsed && (
         <p className="text-center text-sm text-gray-600 dark:text-white/60">
           Most investors see list price.{' '}
-          <span className="text-brand-500 dark:text-[#4dd0e1] font-semibold">
+          <span className="text-brand-500 dark:text-[#0EA5E9] font-semibold">
             IQ investors see 6 profit paths.
           </span>
         </p>

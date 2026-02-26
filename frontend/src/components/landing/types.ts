@@ -225,7 +225,7 @@ export const strategies: Strategy[] = [
     description: 'Live in one unit, rent the others. Eliminate your housing payment while building equity.',
     statValue: '75%',
     statLabel: 'Cost Cut',
-    color: '#14b8a6',
+    color: '#0EA5E9',
     href: '/strategies/house-hack',
     badge: 'Beginner Friendly',
   },
@@ -314,7 +314,7 @@ export const howItWorksSteps: HowItWorksStep[] = [
     number: 1,
     title: 'Point & Scan',
     description: 'Open DealGapIQ and point your camera at any address, For Sale sign, or MLS listing. Our AI reads it instantly.',
-    color: '#0891B2',
+    color: '#0EA5E9',
   },
   {
     number: 2,
@@ -326,7 +326,7 @@ export const howItWorksSteps: HowItWorksStep[] = [
     number: 3,
     title: 'Decide with Confidence',
     description: 'Get clear recommendations on the best strategy. Compare deals and invest with confidence.',
-    color: '#06B6D4',
+    color: '#0EA5E9',
   },
 ];
 

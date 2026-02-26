@@ -345,7 +345,7 @@ export function VerdictIQPageNew({
       {/* Fixed Bottom Actions */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white border-t border-[#E2E8F0] p-4 px-5">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] active:scale-[0.98] transition-all"
           onClick={handleOpenDealMaker}
         >
           Go to DealMakerIQ

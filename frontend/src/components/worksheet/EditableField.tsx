@@ -175,7 +175,7 @@ export function EditableField({
             value={value}
             onChange={handleSliderChange}
             style={{
-              background: `linear-gradient(to right, var(--iq-teal, #007ea7) 0%, var(--iq-teal, #007ea7) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
+              background: `linear-gradient(to right, var(--iq-teal, #0EA5E9) 0%, var(--iq-teal, #0EA5E9) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
             }}
             aria-label={`Adjust value`}
           />

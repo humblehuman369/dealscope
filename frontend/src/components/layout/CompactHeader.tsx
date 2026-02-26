@@ -189,7 +189,7 @@ export function CompactHeader({
           <Link href="/" className="flex flex-col">
             <div className="text-xl font-extrabold leading-tight tracking-tight">
               <span className="text-[#0A1628]">DealGap</span>
-              <span className="text-[#0891B2]">IQ</span>
+              <span className="text-[#0EA5E9]">IQ</span>
             </div>
           </Link>
           <div className="flex items-center gap-3">
@@ -204,12 +204,12 @@ export function CompactHeader({
             </button>
             <button
               onClick={handleDashboard}
-              className="bg-[#F1F5F9] border-none cursor-pointer text-[13px] font-semibold text-[#475569] px-3 py-2 rounded-lg hover:bg-[#E2E8F0] hover:text-[#0891B2] transition-all"
+              className="bg-[#F1F5F9] border-none cursor-pointer text-[13px] font-semibold text-[#475569] px-3 py-2 rounded-lg hover:bg-[#E2E8F0] hover:text-[#0EA5E9] transition-all"
             >
               Dashboard
             </button>
             {isAuthenticated ? (
-              <div className="w-9 h-9 bg-[#0891B2] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_4px_rgba(8,145,178,0.3)]">
+              <div className="w-9 h-9 bg-[#0EA5E9] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_4px_rgba(8,145,178,0.3)]">
                 {userInitial}
               </div>
             ) : (
@@ -239,18 +239,18 @@ export function CompactHeader({
           </button>
           <div className="text-xl font-black tracking-wide">
             <span className="text-[#0A1628]">{pageTitle} </span>
-            <span className="text-[#0891B2]">{pageTitleAccent}</span>
+            <span className="text-[#0EA5E9]">{pageTitleAccent}</span>
           </div>
         </div>
 
         {/* Address Selector - Pill Style with more weight */}
         <button
-          className="flex items-center justify-center gap-2 cursor-pointer px-5 py-2.5 rounded-full border-2 border-[#0891B2] bg-[rgba(8,145,178,0.08)] hover:bg-[rgba(8,145,178,0.15)] hover:shadow-[0_2px_8px_rgba(8,145,178,0.2)] mx-4 mb-3 transition-all w-[calc(100%-32px)]"
+          className="flex items-center justify-center gap-2 cursor-pointer px-5 py-2.5 rounded-full border-2 border-[#0EA5E9] bg-[rgba(8,145,178,0.08)] hover:bg-[rgba(8,145,178,0.15)] hover:shadow-[0_2px_8px_rgba(8,145,178,0.2)] mx-4 mb-3 transition-all w-[calc(100%-32px)]"
           onClick={handlePropertyToggle}
         >
           <span className="text-sm text-[#0A1628] font-semibold truncate">{fullAddress}</span>
           <svg 
-            className={`w-4 h-4 text-[#0891B2] transition-transform duration-700 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-[#0EA5E9] transition-transform duration-700 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -293,11 +293,11 @@ export function CompactHeader({
                 <span className="text-[10px] text-[#64748B] uppercase tracking-wide mt-0.5 font-medium">Sqft</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#0891B2]">{formatPrice(property.price)}</span>
+                <span className="text-sm font-bold text-[#0EA5E9]">{formatPrice(property.price)}</span>
                 <span className="text-[10px] text-[#64748B] uppercase tracking-wide mt-0.5 font-medium">Est. Value</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#0891B2]">{formatPrice(property.rent || 5555)}</span>
+                <span className="text-sm font-bold text-[#0EA5E9]">{formatPrice(property.rent || 5555)}</span>
                 <span className="text-[10px] text-[#64748B] uppercase tracking-wide mt-0.5 font-medium">Est. Rent</span>
               </div>
               <div className="flex flex-col">
@@ -329,7 +329,7 @@ export function CompactHeader({
                   isDisabled
                     ? 'opacity-40 cursor-not-allowed text-[#94A3B8]'
                     : isActive 
-                      ? 'bg-[#0891B2] text-white shadow-[0_2px_6px_rgba(8,145,178,0.4)]' 
+                      ? 'bg-[#0EA5E9] text-white shadow-[0_2px_6px_rgba(8,145,178,0.4)]' 
                       : 'text-[#64748B] hover:bg-white hover:text-[#0A1628] hover:shadow-sm'
                 }`}
                 onClick={() => {

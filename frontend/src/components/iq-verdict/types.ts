@@ -214,7 +214,7 @@ export interface ReturnFactors {
 export const IQ_COLORS = {
   deepNavy: '#0A1628',
   electricCyan: '#00D4FF',
-  pacificTeal: '#0891B2',
+  pacificTeal: '#0EA5E9',
   success: '#10B981',
   warning: '#F59E0B',
   danger: '#EF4444',

@@ -146,7 +146,7 @@ function PerformanceBenchmarkBar({ label, displayValue, range, rangePos }: Bench
         <div 
           className="relative h-3.5 rounded-full"
           style={{ 
-            background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0891B2 75%, #06B6D4 90%, #00D4FF 100%)',
+            background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0EA5E9 75%, #0EA5E9 90%, #00D4FF 100%)',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
           }}
         >
@@ -474,14 +474,14 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
       <main>
         {/* Profit Rating Section */}
         <section className="bg-white p-5 border-b border-[#CBD5E1]">
-          <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-[0.08em] mb-4">Profit Rating</div>
+          <div className="text-[11px] font-bold text-[#0EA5E9] uppercase tracking-[0.08em] mb-4">Profit Rating</div>
           
           <div className="flex items-center gap-5">
             {/* Conic Gradient Score Circle */}
             <div 
               className="w-[90px] h-[90px] rounded-full flex items-center justify-center flex-shrink-0"
               style={{ 
-                background: `conic-gradient(#0891B2 0deg ${(score / 100) * 360}deg, #E2E8F0 ${(score / 100) * 360}deg 360deg)` 
+                background: `conic-gradient(#0EA5E9 0deg ${(score / 100) * 360}deg, #E2E8F0 ${(score / 100) * 360}deg 360deg)` 
               }}
             >
               <div className="w-[70px] h-[70px] rounded-full bg-white flex flex-col items-center justify-center">
@@ -545,12 +545,12 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
 
         {/* Summary Banner */}
         <div className="p-4 px-5 bg-white border-b border-[#CBD5E1] flex items-start gap-3">
-          <div className="w-1 h-6 bg-[#0891B2] rounded flex-shrink-0 mt-0.5" />
+          <div className="w-1 h-6 bg-[#0EA5E9] rounded flex-shrink-0 mt-0.5" />
           <p className="text-sm text-[#475569] leading-relaxed">
             {score >= 70 
-              ? <>This deal shows <strong className="text-[#0891B2] font-semibold">strong fundamentals</strong> with good return potential.</>
+              ? <>This deal shows <strong className="text-[#0EA5E9] font-semibold">strong fundamentals</strong> with good return potential.</>
               : score >= 50 
-              ? <>This deal has potential but requires careful consideration. <strong className="text-[#0891B2] font-semibold">Value-add improvements</strong> may improve returns.</>
+              ? <>This deal has potential but requires careful consideration. <strong className="text-[#0EA5E9] font-semibold">Value-add improvements</strong> may improve returns.</>
               : <>This deal shows <strong className="text-[#E11D48] font-semibold">weak metrics</strong>. Consider negotiating a lower price.</>
             }
           </p>
@@ -689,7 +689,7 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
                       style={{ 
                         width: `${bar.value}%`, 
                         background: bar.value >= 70 
-                          ? 'linear-gradient(90deg, #0891B2, #06B6D4)' 
+                          ? 'linear-gradient(90deg, #0EA5E9, #0EA5E9)' 
                           : bar.value >= 40 
                             ? 'linear-gradient(90deg, #D97706, #F59E0B)' 
                             : 'linear-gradient(90deg, #DC2626, #EF4444)'
@@ -712,7 +712,7 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
         {/* Bottom Actions */}
         <div className="p-4 px-5 bg-white border-b border-[#CBD5E1]">
           <button 
-            className="w-full bg-[#0891B2] text-white text-[15px] font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 hover:bg-[#0E7490] transition-colors mb-3"
+            className="w-full bg-[#0EA5E9] text-white text-[15px] font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 hover:bg-[#0E7490] transition-colors mb-3"
             onClick={handleContinue}
           >
             <span>Continue to Deal Maker</span>

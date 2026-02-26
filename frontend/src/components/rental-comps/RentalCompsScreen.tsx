@@ -247,7 +247,7 @@ export function RentalCompsScreen({
   }
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return '#0891B2'
+    if (score >= 90) return '#0EA5E9'
     return '#64748B'
   }
 
@@ -279,19 +279,19 @@ export function RentalCompsScreen({
           <div className="flex items-start gap-3">
             {/* Icon */}
             <div className="w-12 h-12 bg-gradient-to-br from-[#E0F7FA] to-[#B2EBF2] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#0EA5E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
               </svg>
             </div>
 
             {/* Rent Details */}
             <div className="flex-1">
-              <div className="text-[10px] font-semibold text-[#0891B2] uppercase tracking-wider mb-0.5">RentCast Estimate</div>
+              <div className="text-[10px] font-semibold text-[#0EA5E9] uppercase tracking-wider mb-0.5">RentCast Estimate</div>
               <div className="flex items-baseline gap-0.5">
                 {isEditingRent ? (
                   <input
                     type="text"
-                    className="text-[26px] font-extrabold text-[#0A1628] tabular-nums border-2 border-[#0891B2] rounded-lg px-2 py-1 w-32 outline-none focus:ring-2 focus:ring-[#0891B2]/20 font-inherit"
+                    className="text-[26px] font-extrabold text-[#0A1628] tabular-nums border-2 border-[#0EA5E9] rounded-lg px-2 py-1 w-32 outline-none focus:ring-2 focus:ring-[#0EA5E9]/20 font-inherit"
                     value={rentEstimate}
                     onChange={handleRentChange}
                     onBlur={handleRentBlur}
@@ -300,7 +300,7 @@ export function RentalCompsScreen({
                   />
                 ) : (
                   <span
-                    className="text-[26px] font-extrabold text-[#0A1628] tabular-nums cursor-pointer hover:text-[#0891B2] transition-colors"
+                    className="text-[26px] font-extrabold text-[#0A1628] tabular-nums cursor-pointer hover:text-[#0EA5E9] transition-colors"
                     onClick={() => setIsEditingRent(true)}
                     title="Click to edit"
                   >
@@ -321,11 +321,11 @@ export function RentalCompsScreen({
                 <div className="text-[9px] font-medium text-[#94A3B8] uppercase">Est. Cap Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-[#0891B2]">{rentConfidence}</div>
+                <div className="text-lg font-bold text-[#0EA5E9]">{rentConfidence}</div>
                 <div className="text-[9px] font-medium text-[#94A3B8] uppercase">Confidence</div>
               </div>
               <button 
-                className="px-4 py-2.5 bg-[#0891B2] text-white rounded-lg text-[13px] font-semibold hover:bg-[#0E7490] transition-colors"
+                className="px-4 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-[13px] font-semibold hover:bg-[#0E7490] transition-colors"
                 onClick={handleApplyRent}
               >
                 Apply Rent
@@ -341,7 +341,7 @@ export function RentalCompsScreen({
             </div>
             <div className="bg-[#F8FAFC] rounded-lg p-2.5 text-center">
               <div className="text-[9px] font-medium text-[#64748B] uppercase tracking-wide mb-1">Annual Gross</div>
-              <div className="text-base font-bold text-[#0891B2] tabular-nums">{formatPrice(annualGross)}</div>
+              <div className="text-base font-bold text-[#0EA5E9] tabular-nums">{formatPrice(annualGross)}</div>
             </div>
             <div className="bg-[#F8FAFC] rounded-lg p-2.5 text-center">
               <div className="text-[9px] font-medium text-[#64748B] uppercase tracking-wide mb-1">Est. NOI (60%)</div>
@@ -356,10 +356,10 @@ export function RentalCompsScreen({
             <strong className="text-[#0A1628]">{selectedComps.length}</strong> of <strong className="text-[#0A1628]">{comps.length}</strong> rentals selected
           </div>
           <div className="flex gap-4">
-            <button className="text-[#0891B2] text-[13px] font-medium hover:text-[#0E7490]" onClick={selectAllComps}>
+            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={selectAllComps}>
               Select All
             </button>
-            <button className="text-[#0891B2] text-[13px] font-medium hover:text-[#0E7490]" onClick={clearComps}>
+            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={clearComps}>
               Clear
             </button>
           </div>
@@ -370,7 +370,7 @@ export function RentalCompsScreen({
           <div
             key={comp.id}
             className={`bg-white border-b border-[#CBD5E1] border-l-[3px] overflow-hidden transition-all ${
-              selectedComps.includes(comp.id) ? 'border-l-[#0891B2] bg-[#F0FDFA]' : 'border-l-transparent'
+              selectedComps.includes(comp.id) ? 'border-l-[#0EA5E9] bg-[#F0FDFA]' : 'border-l-transparent'
             }`}
           >
             <div className="flex p-4 gap-3">
@@ -385,7 +385,7 @@ export function RentalCompsScreen({
                 <div
                   className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all ${
                     selectedComps.includes(comp.id) 
-                      ? 'bg-[#0891B2] border-[#0891B2]' 
+                      ? 'bg-[#0EA5E9] border-[#0EA5E9]' 
                       : 'bg-white border-2 border-[#CBD5E1]'
                   }`}
                   onClick={() => toggleCompSelection(comp.id)}
@@ -395,7 +395,7 @@ export function RentalCompsScreen({
                   </svg>
                 </div>
                 {/* Distance Badge */}
-                <div className="absolute bottom-1 left-1 bg-[#0891B2] text-white px-1.5 py-0.5 rounded text-[9px] font-semibold">
+                <div className="absolute bottom-1 left-1 bg-[#0EA5E9] text-white px-1.5 py-0.5 rounded text-[9px] font-semibold">
                   {comp.distance.toFixed(2)} mi
                 </div>
               </div>
@@ -425,7 +425,7 @@ export function RentalCompsScreen({
                   </span>
                 </div>
                 <div className="text-[10px] text-[#94A3B8]">
-                  Listed {comp.listedDate} · <span className="text-[#0891B2]">{comp.timeAgo}</span>
+                  Listed {comp.listedDate} · <span className="text-[#0EA5E9]">{comp.timeAgo}</span>
                 </div>
               </div>
 
@@ -449,7 +449,7 @@ export function RentalCompsScreen({
 
             {/* Expand Button */}
             <button
-              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[#F1F5F9] text-[#0891B2] text-xs font-medium hover:bg-[#F8FAFC] transition-colors`}
+              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[#F1F5F9] text-[#0EA5E9] text-xs font-medium hover:bg-[#F8FAFC] transition-colors`}
               onClick={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
             >
               Details
@@ -475,7 +475,7 @@ export function RentalCompsScreen({
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[#E2E8F0] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         {/* Search Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
           onClick={() => router.push('/search')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -486,7 +486,7 @@ export function RentalCompsScreen({
 
         {/* Analyze Property Button - Primary CTA */}
         <button 
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0891B2] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0EA5E9] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] transition-colors"
           onClick={handleAnalyze}
         >
           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ export function RentalCompsScreen({
 
         {/* Share Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
           onClick={handleShare}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

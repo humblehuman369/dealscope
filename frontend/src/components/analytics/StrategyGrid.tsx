@@ -71,7 +71,7 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Cut your housing costs up to 100%',
     statValue: '75%',
     statLabel: 'Cost Savings',
-    color: '#14b8a6',
+    color: '#0EA5E9',
     icon: Users
   },
   { 

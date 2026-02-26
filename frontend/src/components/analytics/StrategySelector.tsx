@@ -211,7 +211,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     shortName: 'House Hack',
     description: 'Live in one unit, rent the others',
     icon: '🏡',
-    color: '#06b6d4',
+    color: '#0EA5E9',
     gradient: 'from-cyan-500 to-teal-600'
   },
   {

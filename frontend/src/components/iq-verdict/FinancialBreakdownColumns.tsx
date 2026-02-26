@@ -72,7 +72,7 @@ export function FinancialBreakdownColumns({
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9]">
         <h3 className="text-base font-semibold text-[#0A1628]">Financial Breakdown</h3>
         <button 
-          className="flex items-center gap-1.5 text-[#0891B2] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+          className="flex items-center gap-1.5 text-[#0EA5E9] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <ChevronDown 
@@ -87,11 +87,11 @@ export function FinancialBreakdownColumns({
         {/* Column 1: Purchase Terms */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+            <span className="text-xs font-semibold text-[#0EA5E9] uppercase tracking-wide">
               Purchase Terms
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0891B2] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustPurchase}
             >
               Adjust →
@@ -101,7 +101,7 @@ export function FinancialBreakdownColumns({
           <div className="space-y-2.5">
             <div className="flex justify-between items-center">
               <span className="text-sm text-[#475569]">Target Buy Price</span>
-              <span className="text-sm font-semibold text-[#0891B2]">{formatCurrency(targetBuyPrice)}</span>
+              <span className="text-sm font-semibold text-[#0EA5E9]">{formatCurrency(targetBuyPrice)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-[#475569]">Down Payment</span>
@@ -133,11 +133,11 @@ export function FinancialBreakdownColumns({
         {/* Column 2: Rental Income */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+            <span className="text-xs font-semibold text-[#0EA5E9] uppercase tracking-wide">
               Rental Income
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0891B2] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustIncome}
             >
               Adjust →
@@ -169,11 +169,11 @@ export function FinancialBreakdownColumns({
         {/* Column 3: Expenses */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+            <span className="text-xs font-semibold text-[#0EA5E9] uppercase tracking-wide">
               Expenses
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0891B2] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustExpenses}
             >
               Adjust →

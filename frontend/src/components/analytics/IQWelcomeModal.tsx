@@ -23,10 +23,10 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-[#0d1f35] to-[#091525] border border-[#4dd0e1]/30 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-[#4dd0e1]/10">
+      <div className="relative bg-gradient-to-br from-[#0d1f35] to-[#091525] border border-[#0EA5E9]/30 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-[#0EA5E9]/10">
         {/* IQ Brain Icon */}
         <div className="flex justify-start mb-6">
-          <div className="w-12 h-12 rounded-full bg-[#4dd0e1]/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-[#0EA5E9]/10 flex items-center justify-center">
             <IQBrainIcon size={28} mode="dark" />
           </div>
         </div>
@@ -50,7 +50,7 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
         <div className="flex justify-end mt-6">
           <button
             onClick={onClose}
-            className="px-8 py-2.5 bg-[#4dd0e1] hover:bg-[#5dd8e8] text-[#07172e] font-bold rounded-lg transition-colors"
+            className="px-8 py-2.5 bg-[#0EA5E9] hover:bg-[#5dd8e8] text-[#07172e] font-bold rounded-lg transition-colors"
           >
             OK
           </button>

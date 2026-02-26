@@ -122,7 +122,7 @@ export function SliderInput({
             [&::-moz-range-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-moz-range-thumb]:cursor-pointer"
           style={{
-            background: `linear-gradient(to right, #14B8A6 0%, #14B8A6 ${fillPercent}%, rgba(255,255,255,0.08) ${fillPercent}%, rgba(255,255,255,0.08) 100%)`
+            background: `linear-gradient(to right, #0EA5E9 0%, #0EA5E9 ${fillPercent}%, rgba(255,255,255,0.08) ${fillPercent}%, rgba(255,255,255,0.08) 100%)`
           }}
         />
       </div>

@@ -153,7 +153,7 @@ export function ConfirmDialog({
             style={{
               background: isDanger
                 ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
-                : 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+                : 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)',
             }}
           >
             {confirmLabel}
@@ -244,7 +244,7 @@ export function InfoDialog({
             onClick={onClose}
             autoFocus
             className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' }}
           >
             {closeLabel}
           </button>

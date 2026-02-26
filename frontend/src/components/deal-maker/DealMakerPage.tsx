@@ -279,15 +279,15 @@ export function DealMakerPage({
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
           style={{ cursor: 'pointer', background: 'none', border: 'none' }}
         >
-          <svg width="18" height="18" fill="none" stroke="#0891B2" strokeWidth="2" viewBox="0 0 24 24">
+          <svg width="18" height="18" fill="none" stroke="#0EA5E9" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
-          <span style={{ fontSize: '16px', fontWeight: 500, color: '#0891B2' }}>Back</span>
+          <span style={{ fontSize: '16px', fontWeight: 500, color: '#0EA5E9' }}>Back</span>
         </button>
         
         <div style={{ fontSize: '22px', fontWeight: 700 }}>
           <span style={{ color: '#0A1628' }}>DealGap</span>
-          <span style={{ color: '#0891B2' }}>IQ</span>
+          <span style={{ color: '#0EA5E9' }}>IQ</span>
         </div>
         
         {/* Reset to IQ Defaults button */}
@@ -370,7 +370,7 @@ export function DealMakerPage({
             </span>
             <span 
               className="tabular-nums"
-              style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2' }}
+              style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9' }}
             >
               {formatSliderValue(metrics.loanAmount, 'currency')}
             </span>
@@ -388,7 +388,7 @@ export function DealMakerPage({
                   onClick={() => handleLoanTypeChange(type)}
                   className="flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all"
                   style={{
-                    background: state.loanType === type ? '#0891B2' : 'transparent',
+                    background: state.loanType === type ? '#0EA5E9' : 'transparent',
                     color: state.loanType === type ? 'white' : '#64748B',
                   }}
                 >

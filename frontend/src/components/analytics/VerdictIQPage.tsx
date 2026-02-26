@@ -174,18 +174,18 @@ export function VerdictIQPage({
   const PriceCard = ({ label, value, desc, recommended = false }: { label: string; value: number; desc: string; recommended?: boolean }) => (
     <div className={`rounded-lg p-3 text-center border ${
       recommended 
-        ? 'bg-white border-2 border-[#0891B2]' 
+        ? 'bg-white border-2 border-[#0EA5E9]' 
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
       <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        recommended ? 'text-[#0891B2]' : 'text-[#64748B]'
+        recommended ? 'text-[#0EA5E9]' : 'text-[#64748B]'
       }`}>
         {label}
         <svg className="w-3 h-3 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
         </svg>
       </div>
-      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
+      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
         {formatPrice(value)}
       </div>
       <div className="text-[10px] text-[#94A3B8] leading-tight">{desc}</div>
@@ -208,7 +208,7 @@ export function VerdictIQPage({
           </svg>
           {label}
         </div>
-        <span className={`text-[13px] font-semibold ${positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
+        <span className={`text-[13px] font-semibold ${positive ? 'text-[#0EA5E9]' : 'text-[#94A3B8]'}`}>
           {value}
         </span>
       </div>
@@ -237,30 +237,30 @@ export function VerdictIQPage({
         {/* VERDICT HERO */}
         <div className="bg-white p-5 px-6 border-b border-[#E2E8F0] flex items-center gap-4">
           <div 
-            className="w-[72px] h-[72px] rounded-full border-4 border-[#0891B2] flex items-center justify-center flex-shrink-0"
+            className="w-[72px] h-[72px] rounded-full border-4 border-[#0EA5E9] flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%)' }}
           >
-            <span className="text-[28px] font-extrabold text-[#0891B2]">{verdict.score}</span>
+            <span className="text-[28px] font-extrabold text-[#0EA5E9]">{verdict.score}</span>
           </div>
           <div className="flex-1">
-            <div className="text-lg font-bold text-[#0891B2] mb-0.5">{verdict.label}</div>
+            <div className="text-lg font-bold text-[#0EA5E9] mb-0.5">{verdict.label}</div>
             <div className="text-[13px] text-[#64748B] mb-2">{verdict.subtitle}</div>
             <div className="flex gap-3 flex-wrap">
               <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
                 <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
                 </svg>
-                Gap: <span className="font-semibold text-[#0891B2]">{verdict.dealGap}</span>
+                Gap: <span className="font-semibold text-[#0EA5E9]">{verdict.dealGap}</span>
               </span>
               <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
                 <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                Motivation: <span className="font-semibold text-[#0891B2]">{verdict.motivation}</span>
+                Motivation: <span className="font-semibold text-[#0EA5E9]">{verdict.motivation}</span>
               </span>
             </div>
-            <button className="flex items-center gap-1 text-[#0891B2] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0">
+            <button className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
               </svg>
@@ -276,23 +276,23 @@ export function VerdictIQPage({
               <div className="text-[15px] font-bold text-[#0A1628]">YOUR INVESTMENT ANALYSIS</div>
               <div className="text-xs text-[#64748B]">Based on YOUR financing terms (20% down, 6.0%)</div>
             </div>
-            <button className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer">
+            <button className="text-[#0EA5E9] text-[13px] font-medium bg-transparent border-none cursor-pointer">
               Change terms
             </button>
           </div>
 
-          <div className="text-xs font-semibold text-[#0891B2] mt-2 mb-3">
+          <div className="text-xs font-semibold text-[#0EA5E9] mt-2 mb-3">
             WHAT PRICE MAKES THIS DEAL WORK?
           </div>
 
           {/* Info Banner for Off-Market */}
           {isOffMarket && (
-            <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
-              <svg className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0EA5E9]">
+              <svg className="w-[18px] h-[18px] text-[#0EA5E9] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
               </svg>
               <div className="text-xs text-[#475569] leading-relaxed">
-                <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using Market Estimate of {formatPrice(pricing.marketEstimate)} for Deal Gap calculation.
+                <strong className="text-[#0EA5E9]">Off-Market Property:</strong> No asking price available. Using Market Estimate of {formatPrice(pricing.marketEstimate)} for Deal Gap calculation.
               </div>
             </div>
           )}
@@ -301,7 +301,7 @@ export function VerdictIQPage({
           <div className="flex items-center justify-between mb-3">
             <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
             <button 
-              className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1.5 text-[#0EA5E9] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setShowCalculation(!showCalculation)}
             >
               <svg 
@@ -338,7 +338,7 @@ export function VerdictIQPage({
 
         {/* How Likely Section */}
         <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-          <div className="text-xs font-semibold text-[#0891B2] mb-3">
+          <div className="text-xs font-semibold text-[#0EA5E9] mb-3">
             HOW LIKELY CAN YOU GET THIS PRICE?
           </div>
 
@@ -350,7 +350,7 @@ export function VerdictIQPage({
               </svg>
               Deal Gap
             </div>
-            <div className="text-lg font-bold text-[#0891B2]">{verdict.dealGap}</div>
+            <div className="text-lg font-bold text-[#0EA5E9]">{verdict.dealGap}</div>
           </div>
 
           <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
@@ -360,11 +360,11 @@ export function VerdictIQPage({
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(pricing.incomeValue)}</span>
+              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(pricing.incomeValue)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Discount needed</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(pricing.discountNeeded)}</span>
+              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(pricing.discountNeeded)}</span>
             </div>
           </div>
 
@@ -378,7 +378,7 @@ export function VerdictIQPage({
               Seller Motivation
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-semibold text-[#0891B2]">{sellerMotivation.level}</span>
+              <span className="text-sm font-semibold text-[#0EA5E9]">{sellerMotivation.level}</span>
               <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
             </div>
           </div>
@@ -390,15 +390,15 @@ export function VerdictIQPage({
 
           {/* Suggested Offer */}
           <div 
-            className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
+            className="relative rounded-[10px] p-4 mt-3 border border-[#0EA5E9]"
             style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
           >
-            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+            <span className="absolute -top-2 left-4 bg-[#0EA5E9] text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
               Recommended
             </span>
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
-              <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
+              <span className="text-base font-bold text-[#0EA5E9]">{sellerMotivation.suggestedOffer}</span>
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ export function VerdictIQPage({
               Additional Opportunity Factors
             </span>
             <button 
-              className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium bg-transparent border-none cursor-pointer"
               onClick={() => setShowFactors(!showFactors)}
             >
               {showFactors ? 'Hide' : 'Show'}
@@ -442,7 +442,7 @@ export function VerdictIQPage({
       {/* Fixed Bottom Actions */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white border-t border-[#E2E8F0] p-4 px-6">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] transition-colors"
           onClick={handleContinueToAnalysis}
         >
           Continue to Analysis

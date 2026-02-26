@@ -56,7 +56,7 @@ function CircularProgress({
   // Score color based on value
   const getScoreColor = () => {
     if (score >= 80) return '#22c55e'; // green
-    if (score >= 60) return '#0891B2'; // teal
+    if (score >= 60) return '#0EA5E9'; // teal
     if (score >= 40) return '#f59e0b'; // amber
     return '#ef4444'; // red
   };
@@ -129,7 +129,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
   const getProtectionColor = () => {
     switch (data.protection) {
       case 'Good': return 'text-green-500';
-      case 'Fair': return 'text-[#0891B2]';
+      case 'Fair': return 'text-[#0EA5E9]';
       case 'Poor': return 'text-red-500';
       default: return isDark ? 'text-white' : 'text-[#0A1628]';
     }
@@ -138,7 +138,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
   return (
     <div className={`rounded-xl p-4 mb-3 ${isDark ? 'bg-[#0F1D32]' : 'bg-white'}`}>
       {/* Header */}
-      <h3 className="text-[11px] font-bold tracking-wide text-[#0891B2] mb-4">
+      <h3 className="text-[11px] font-bold tracking-wide text-[#0EA5E9] mb-4">
         PROFIT QUALITY
       </h3>
 
@@ -196,7 +196,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
 
         {/* How we calculate this */}
         <button 
-          className="flex items-center gap-1 py-1 text-[#0891B2] hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1 py-1 text-[#0EA5E9] hover:opacity-80 transition-opacity"
           onClick={() => setShowMethodology(true)}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +232,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       )}
 
       {/* Insight */}
-      <div className="mt-4 pl-3 border-l-[3px] border-[#0891B2]">
+      <div className="mt-4 pl-3 border-l-[3px] border-[#0EA5E9]">
         <p className={`text-[13px] leading-[18px] ${isDark ? 'text-white/80' : 'text-gray-700'}`}>
           {data.insight}
         </p>

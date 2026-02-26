@@ -8,8 +8,8 @@
   /* Shared accent colors */
   --deep-navy: #07172e;
   --card-bg: #0d1e38;
-  --electric-cyan: #0891b2;
-  --teal: #007ea7;
+  --electric-cyan: #0EA5E9;
+  --teal: #0EA5E9;
   --white: #ffffff;
   --green: #10b981;
   --red: #ef4444;
@@ -26,7 +26,7 @@
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
   --border-color: rgba(0, 126, 167, 0.2);
-  --teal-accent: #007ea7;
+  --teal-accent: #0EA5E9;
 }
 
 /* Dark mode variables */
@@ -37,7 +37,7 @@ html.dark {
   --text-secondary: rgba(255, 255, 255, 0.7);
   --text-muted: rgba(255, 255, 255, 0.5);
   --border-color: rgba(255, 255, 255, 0.08);
-  --electric-cyan: #4dd0e1;
+  --electric-cyan: #0EA5E9;
 }
 
 /* ========================================
@@ -480,14 +480,14 @@ html:not(.dark) .desktop-auth-ghost:hover {
 
 /* ========================================
    LIGHT MODE SECTION BOXES - PACIFIC TEAL THEME
-   Border: #007ea7 (Pacific Teal) - 2px solid
+   Border: #0EA5E9 (Pacific Teal) - 2px solid
    Background: rgba(0, 126, 167, 0.1) - 10% opacity
 ======================================== */
 
 /* Light mode property card */
 html:not(.dark) .desktop-property-card {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-photo-carousel {
@@ -516,7 +516,7 @@ html:not(.dark) .desktop-thumb-item {
 }
 
 html:not(.dark) .desktop-thumb-item.active {
-  border-color: #007ea7;
+  border-color: #0EA5E9;
 }
 
 html:not(.dark) .desktop-thumb-more {
@@ -526,7 +526,7 @@ html:not(.dark) .desktop-thumb-more {
 
 html:not(.dark) .desktop-property-info-bar {
   background: #ffffff;
-  border-color: #007ea7;
+  border-color: #0EA5E9;
 }
 
 html:not(.dark) .desktop-property-mini-address {
@@ -2173,8 +2173,8 @@ html:not(.dark) .desktop-analytics-container {
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
   --border-color: rgba(0, 126, 167, 0.2);
-  --electric-cyan: #0891b2;
-  --teal-accent: #007ea7;
+  --electric-cyan: #0EA5E9;
+  --teal-accent: #0EA5E9;
   background: linear-gradient(180deg, rgba(0, 126, 167, 0.08) 0%, rgba(0, 126, 167, 0.04) 100%);
   color: var(--text-primary);
 }
@@ -2222,7 +2222,7 @@ html:not(.dark) .desktop-property-mini-price-label {
 /* Welcome Section - Light mode */
 html:not(.dark) .desktop-welcome-section {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-welcome-message {
@@ -2254,13 +2254,13 @@ html:not(.dark) .desktop-strategy-pill.active {
 /* Strategy Selector Section - Light mode */
 html:not(.dark) .desktop-strategy-selector-section {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 /* Sub-Tab Section - Light mode */
 html:not(.dark) .desktop-subtab-section {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-subtab-label {
@@ -2299,7 +2299,7 @@ html:not(.dark) .desktop-sub-tab.active {
 /* IQ Target Hero - Light mode */
 html:not(.dark) .desktop-iq-target-hero {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(0, 126, 167, 0.1) 100%);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-iq-target-label {
@@ -2313,7 +2313,7 @@ html:not(.dark) .desktop-iq-target-rationale {
 /* Price Ladder - Light mode */
 html:not(.dark) .desktop-price-ladder {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-price-ladder-title {
@@ -2347,7 +2347,7 @@ html:not(.dark) .desktop-price-rung.highlight {
 /* Returns Grid - Light mode */
 html:not(.dark) .desktop-returns-at-target {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(0, 126, 167, 0.1) 100%);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-return-item {
@@ -2363,7 +2363,7 @@ html:not(.dark) .desktop-return-item-label {
 /* Metrics Grid - Light mode */
 html:not(.dark) .desktop-metric-card {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-metric-label {
@@ -2373,7 +2373,7 @@ html:not(.dark) .desktop-metric-label {
 /* Hero Metric - Light mode */
 html:not(.dark) .desktop-hero-metric {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(0, 126, 167, 0.1) 100%);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-hero-metric-label {
@@ -2387,7 +2387,7 @@ html:not(.dark) .desktop-hero-metric-subtitle {
 /* Benchmarks - Light mode */
 html:not(.dark) .desktop-benchmarks-section {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-benchmarks-title {
@@ -2444,7 +2444,7 @@ html:not(.dark) .desktop-insight-text {
 /* Tune Section - Light mode */
 html:not(.dark) .desktop-tune-section-collapsible {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-tune-section-header {
@@ -2487,12 +2487,12 @@ html:not(.dark) .desktop-slider-track {
 /* Negotiation Plan - Light mode */
 html:not(.dark) .desktop-negotiation-plan {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-offer-card {
   background: rgba(0, 126, 167, 0.05);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-offer-card-label {
@@ -2545,7 +2545,7 @@ html:not(.dark) .desktop-compare-option.negative.active {
 /* Performance Section - Light mode */
 html:not(.dark) .desktop-performance-section {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-performance-row {
@@ -2563,7 +2563,7 @@ html:not(.dark) .desktop-performance-value {
 /* Formula Card - Light mode */
 html:not(.dark) .desktop-formula-card {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-formula-label {
@@ -2589,7 +2589,7 @@ html:not(.dark) .desktop-loan-summary {
 
 html:not(.dark) .desktop-loan-stat {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-loan-stat-value {
@@ -2603,7 +2603,7 @@ html:not(.dark) .desktop-loan-stat-label {
 /* Deal Score Card - Light mode */
 html:not(.dark) .desktop-deal-score-card {
   background: rgba(0, 126, 167, 0.1);
-  border: 2px solid #007ea7;
+  border: 2px solid #0EA5E9;
 }
 
 html:not(.dark) .desktop-deal-score-label {

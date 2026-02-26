@@ -138,7 +138,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   justifyContent: 'center',
                   gap: '0.5rem',
                   padding: '0.625rem 1rem',
-                  backgroundColor: '#14b8a6',
+                  backgroundColor: '#0EA5E9',
                   color: '#ffffff',
                   fontWeight: 500,
                   borderRadius: '0.5rem',
@@ -147,8 +147,8 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   fontSize: '1rem',
                   transition: 'background-color 0.2s'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0d9488'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#14b8a6'}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0EA5E9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0EA5E9'}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M23 4v6h-6" />

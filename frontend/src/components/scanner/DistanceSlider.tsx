@@ -33,7 +33,7 @@ export function DistanceSlider({ value, onChange, min = 10, max = 200 }: Distanc
           onChange={(e) => onChange(Number(e.target.value))}
           className="w-full h-2 appearance-none cursor-pointer rounded-full"
           style={{
-            background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${percentage}%, rgba(255,255,255,0.2) ${percentage}%, rgba(255,255,255,0.2) 100%)`,
+            background: `linear-gradient(to right, #0EA5E9 0%, #0EA5E9 ${percentage}%, rgba(255,255,255,0.2) ${percentage}%, rgba(255,255,255,0.2) 100%)`,
           }}
         />
       </div>

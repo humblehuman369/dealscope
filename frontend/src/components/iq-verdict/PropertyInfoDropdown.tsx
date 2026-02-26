@@ -65,12 +65,12 @@ export function PropertyInfoDropdown({
       >
         <div className="flex items-center gap-3">
           {/* Pin Icon */}
-          <div className="w-6 h-6 rounded-full border-2 border-[#0891B2] flex items-center justify-center flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-[#0891B2]" />
+          <div className="w-6 h-6 rounded-full border-2 border-[#0EA5E9] flex items-center justify-center flex-shrink-0">
+            <div className="w-2 h-2 rounded-full bg-[#0EA5E9]" />
           </div>
           
           <div className="flex flex-col items-start">
-            <span className="text-[10px] text-[#0891B2] uppercase tracking-wide font-semibold">
+            <span className="text-[10px] text-[#0EA5E9] uppercase tracking-wide font-semibold">
               Property
             </span>
             <span className="text-sm text-[#0A1628] font-medium">
@@ -121,11 +121,11 @@ export function PropertyInfoDropdown({
 
               {/* Bottom Row: Est. Value, Est. Rent, Status */}
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0891B2]">{formatCurrency(estimatedValue)}</span>
+                <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedValue)}</span>
                 <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Est. Value</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0891B2]">{formatCurrency(estimatedRent)}</span>
+                <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedRent)}</span>
                 <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Est. Rent</span>
               </div>
               <div className="flex flex-col">

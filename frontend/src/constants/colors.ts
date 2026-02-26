@@ -5,13 +5,13 @@
  * Brand Colors:
  * - Navy/Black-Blue: #07172e
  * - Medium Blue (Primary): #0465f2
- * - Soft Cyan (Accent Dark Mode): #4dd0e1 (updated from #00e5ff for premium feel)
- * - Pacific Teal (Accent Light Mode): #007ea7
+ * - Soft Cyan (Accent Dark Mode): #0EA5E9 (updated from #00e5ff for premium feel)
+ * - Pacific Teal (Accent Light Mode): #0EA5E9
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
  * 
  * UPDATED:
- * - Softened dark mode accent from #00e5ff → #4dd0e1 (less harsh, more premium)
+ * - Softened dark mode accent from #00e5ff → #0EA5E9 (less harsh, more premium)
  * - Strategy colors shifted to avoid conflicts with profit/loss/warning status colors
  */
 
@@ -34,19 +34,19 @@ export const colors = {
   },
 
   // Accent - Cyan/Teal (Theme-aware)
-  // Dark Mode: #4dd0e1 (Soft Cyan) | Light Mode: #007ea7 (Pacific Teal)
+  // Dark Mode: #0EA5E9 (Soft Cyan) | Light Mode: #0EA5E9 (Pacific Teal)
   accent: {
-    50: '#e0f7fa',
-    100: '#b2ebf2',
-    200: '#80deea',
-    300: '#4dd0e1',  // Softened - use for highlights
-    400: '#26c6da',
-    500: '#4dd0e1',  // Dark mode accent (Soft Cyan - was #00e5ff)
-    light: '#007ea7', // Light mode accent (Pacific Teal)
-    600: '#00acc1',
-    700: '#0097a7',
-    800: '#00838f',
-    900: '#006064',
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    200: '#bae6fd',
+    300: '#7dd3fc',  // Sky blue highlight
+    400: '#38bdf8',
+    500: '#0EA5E9',  // Dark mode accent — unified sky blue
+    light: '#0EA5E9', // Light mode accent — unified sky blue
+    600: '#0284c7',
+    700: '#0369a1',
+    800: '#075985',
+    900: '#0c4a6e',
   },
 
   // Navy - Dark backgrounds & text
@@ -145,9 +145,9 @@ export const colors = {
       label: 'Fix & Flip',
     },
     houseHack: {
-      primary: '#14b8a6',  // Teal (shifted from #00e5ff)
+      primary: '#0EA5E9',  // Sky blue (unified accent)
       light: '#ccfbf1',
-      dark: '#0d9488',
+      dark: '#0284c7',
       icon: '🏡',
       label: 'House Hack',
     },
@@ -202,9 +202,9 @@ export const colors = {
 
 export const gradients = {
   /** CTA buttons, hero elements - dark mode */
-  brandDark: 'linear-gradient(135deg, #0465f2 0%, #4dd0e1 100%)',
+  brandDark: 'linear-gradient(135deg, #0465f2 0%, #0EA5E9 100%)',
   /** CTA buttons, hero elements - light mode */
-  brandLight: 'linear-gradient(135deg, #0465f2 0%, #007ea7 100%)',
+  brandLight: 'linear-gradient(135deg, #0465f2 0%, #0EA5E9 100%)',
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds */

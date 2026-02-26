@@ -135,7 +135,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             className="relative w-12 h-6 rounded-full border border-slate-500/20 transition-colors"
             style={{
               background: annual
-                ? 'linear-gradient(135deg, #0ea5e9, #06b6d4)'
+                ? 'linear-gradient(135deg, #0ea5e9, #0EA5E9)'
                 : '#1e293b',
             }}
           >
@@ -154,7 +154,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
               style={{
-                background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
+                background: 'linear-gradient(135deg, #0ea5e9, #0EA5E9)',
                 color: '#fff',
               }}
             >

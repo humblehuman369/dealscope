@@ -18,7 +18,7 @@ interface IQBrainIconProps {
  * 
  * Colors:
  * - Light mode: #1976d2 (blue)
- * - Dark mode: #4dd0e1 (electric cyan)
+ * - Dark mode: #0EA5E9 (electric cyan)
  */
 export function IQBrainIcon({ 
   size = 20, 
@@ -26,7 +26,7 @@ export function IQBrainIcon({
   mode = 'dark',
   usePng = true
 }: IQBrainIconProps) {
-  const strokeColor = mode === 'dark' ? '#4dd0e1' : '#1976d2';
+  const strokeColor = mode === 'dark' ? '#0EA5E9' : '#1976d2';
 
   if (usePng) {
     return (
