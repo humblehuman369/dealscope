@@ -663,7 +663,7 @@ export function IQVerdictScreen({
       {/* Fixed Bottom Actions */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-6">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0EA5E9] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0284c7] transition-colors"
           onClick={() => onViewStrategy(topStrategy)}
         >
           Continue to Analysis

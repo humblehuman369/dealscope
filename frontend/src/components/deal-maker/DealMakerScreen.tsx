@@ -2696,7 +2696,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           onClick={handleSeeResults}
           className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
           style={{ 
-            background: 'linear-gradient(135deg, #0EA5E9 0%, #0EA5E9 100%)',
+            background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
             boxShadow: '0 4px 20px rgba(8, 145, 178, 0.25)'
           }}
         >

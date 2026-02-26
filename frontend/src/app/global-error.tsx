@@ -147,7 +147,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   fontSize: '1rem',
                   transition: 'background-color 0.2s'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0EA5E9'}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0EA5E9'}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

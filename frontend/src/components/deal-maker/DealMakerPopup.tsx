@@ -1749,7 +1749,7 @@ export function DealMakerPopup({
           </button>
           <button 
             onClick={handleApply}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#0EA5E9] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0EA5E9] active:scale-[0.98] transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[#0EA5E9] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0284c7] active:scale-[0.98] transition-all"
           >
             Apply Changes
             <Check className="w-4 h-4" />
