@@ -24,7 +24,7 @@ const strategies = [
   { name: 'Short-Term Rental', roi: '28%', icon: '🏨', color: '#8b5cf6', bgColor: 'rgba(139,92,246,0.15)' },
   { name: 'Fix & Flip', roi: '22%', icon: '🔨', color: '#ec4899', bgColor: 'rgba(236,72,153,0.15)' },
   { name: 'BRRRR', roi: '25%', icon: '🔄', color: '#f97316', bgColor: 'rgba(249,115,22,0.15)' },
-  { name: 'House Hack', roi: '31%', icon: '🏡', color: '#14b8a6', bgColor: 'rgba(20,184,166,0.15)' },
+  { name: 'House Hack', roi: '31%', icon: '🏡', color: '#0EA5E9', bgColor: 'rgba(14,165,233,0.15)' },
   { name: 'Wholesale', roi: '$12K', icon: '📋', color: '#84cc16', bgColor: 'rgba(132,204,22,0.15)', isProfit: true },
 ];
 
@@ -191,8 +191,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 }`}
               style={searchAddress.trim() ? {
                 background: isDark 
-                  ? 'linear-gradient(135deg, #0097a7 0%, #4dd0e1 100%)'
-                  : 'linear-gradient(135deg, #007ea7 0%, #0097a7 100%)',
+                  ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
+                  : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
                 boxShadow: '0 4px 20px rgba(0, 151, 167, 0.4)'
               } : undefined}
             >
@@ -275,8 +275,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             className="w-full py-4 rounded-xl font-bold text-base text-white"
             style={{
               background: isDark 
-                ? 'linear-gradient(135deg, #0097a7 0%, #4dd0e1 100%)'
-                : 'linear-gradient(135deg, #007ea7 0%, #0097a7 100%)',
+                ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
+                : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
               boxShadow: '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
           >

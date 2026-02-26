@@ -10,7 +10,7 @@
  * - Metrics grid: 2 columns, gap 6px 24px
  * - Metric label: 12px, color #94A3B8
  * - Metric value: 13px, font-weight 600, white
- *   - Deal Gap: #00D4FF, Annual Profit: #06B6D4
+ *   - Deal Gap: #00D4FF, Annual Profit: #0EA5E9
  * - NO score badges
  */
 
@@ -101,7 +101,7 @@ export function MetricsHeader({
             style={{ 
               fontSize: '13px', 
               fontWeight: 600, 
-              color: metrics.annualProfit < 0 ? '#E11D48' : '#06B6D4' 
+              color: metrics.annualProfit < 0 ? '#E11D48' : '#0EA5E9' 
             }}
           >
             {formatCurrency(metrics.annualProfit)}

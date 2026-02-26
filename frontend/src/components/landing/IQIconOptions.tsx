@@ -14,9 +14,9 @@ export function IQIconBrain() {
       <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z"/>
       <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/>
       {/* Sparkle */}
-      <path d="M12 2v1" stroke="#4dd0e1" strokeWidth="2"/>
-      <path d="M17 4l-.7.7" stroke="#4dd0e1" strokeWidth="2"/>
-      <path d="M7 4l.7.7" stroke="#4dd0e1" strokeWidth="2"/>
+      <path d="M12 2v1" stroke="#0EA5E9" strokeWidth="2"/>
+      <path d="M17 4l-.7.7" stroke="#0EA5E9" strokeWidth="2"/>
+      <path d="M7 4l.7.7" stroke="#0EA5E9" strokeWidth="2"/>
     </svg>
   );
 }
@@ -29,7 +29,7 @@ export function IQIconLightbulb() {
       <path d="M9 18h6"/>
       <path d="M10 22h4"/>
       {/* IQ spark */}
-      <circle cx="12" cy="8" r="2" fill="#4dd0e1" stroke="none"/>
+      <circle cx="12" cy="8" r="2" fill="#0EA5E9" stroke="none"/>
     </svg>
   );
 }
@@ -40,12 +40,12 @@ export function IQIconRobot() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="8" width="18" height="12" rx="3"/>
       <path d="M12 2v4"/>
-      <circle cx="12" cy="2" r="1" fill="#4dd0e1"/>
+      <circle cx="12" cy="2" r="1" fill="#0EA5E9"/>
       {/* Eyes */}
-      <circle cx="9" cy="13" r="1.5" fill="#4dd0e1"/>
-      <circle cx="15" cy="13" r="1.5" fill="#4dd0e1"/>
+      <circle cx="9" cy="13" r="1.5" fill="#0EA5E9"/>
+      <circle cx="15" cy="13" r="1.5" fill="#0EA5E9"/>
       {/* Smile */}
-      <path d="M9 17h6" stroke="#4dd0e1"/>
+      <path d="M9 17h6" stroke="#0EA5E9"/>
     </svg>
   );
 }
@@ -56,12 +56,12 @@ export function IQIconTarget() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <circle cx="12" cy="12" r="6"/>
-      <circle cx="12" cy="12" r="2" fill="#4dd0e1"/>
+      <circle cx="12" cy="12" r="2" fill="#0EA5E9"/>
       {/* Crosshairs */}
-      <path d="M12 2v4" stroke="#4dd0e1"/>
-      <path d="M12 18v4" stroke="#4dd0e1"/>
-      <path d="M2 12h4" stroke="#4dd0e1"/>
-      <path d="M18 12h4" stroke="#4dd0e1"/>
+      <path d="M12 2v4" stroke="#0EA5E9"/>
+      <path d="M12 18v4" stroke="#0EA5E9"/>
+      <path d="M2 12h4" stroke="#0EA5E9"/>
+      <path d="M18 12h4" stroke="#0EA5E9"/>
     </svg>
   );
 }
@@ -69,8 +69,8 @@ export function IQIconTarget() {
 // Option E: Sparkles/Magic (Instant insights)
 export function IQIconSparkles() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4dd0e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" fill="#4dd0e1" fillOpacity="0.2"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" fill="#0EA5E9" fillOpacity="0.2"/>
       <path d="M19 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/>
       <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z"/>
     </svg>
@@ -84,7 +84,7 @@ export function IQIconChart() {
       <path d="M3 3v18h18"/>
       <path d="M7 16l4-4 4 4 5-5"/>
       {/* Checkmark bubble */}
-      <circle cx="19" cy="7" r="4" fill="#4dd0e1" stroke="none"/>
+      <circle cx="19" cy="7" r="4" fill="#0EA5E9" stroke="none"/>
       <path d="M17 7l1 1 2-2" stroke="white" strokeWidth="1.5"/>
     </svg>
   );
@@ -132,7 +132,7 @@ export function IQIconOptionsDemo() {
             borderRadius: '100px',
             fontSize: '0.8rem',
             fontWeight: 600,
-            color: '#4dd0e1'
+            color: '#0EA5E9'
           }}>
             {opt.icon}
             Powered by IQ

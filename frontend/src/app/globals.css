@@ -46,9 +46,9 @@
   --color-sky: #38bdf8;          /* Primary actions & key data */
   --color-sky-deep: #0EA5E9;
   --color-sky-dim: rgba(56,189,248,0.10);
-  --color-teal: #2dd4bf;         /* Positive signals & education */
-  --color-teal-deep: #0d9488;
-  --color-teal-dim: rgba(45,212,191,0.10);
+  --color-teal: #0EA5E9;         /* Unified accent — sky blue */
+  --color-teal-deep: #0EA5E9;
+  --color-teal-dim: rgba(14,165,233,0.10);
   --color-gold: #fbbf24;         /* Caution & scores */
   --color-gold-dim: rgba(251,191,36,0.10);
   --color-red: #f87171;          /* Negatives & losses */
@@ -74,7 +74,7 @@
 
   /* ---- Legacy aliases (for backward compat) ---- */
   --color-navy: #0A1628;
-  --color-teal-rgb: 45, 212, 191;
+  --color-teal-rgb: 14, 165, 233;
   --color-cyan-electric: #38bdf8;
   --color-danger: #f87171;
   --color-warning: #fbbf24;
@@ -91,16 +91,16 @@
 
   /* ---- Decision-Grade UI (legacy compat) ---- */
   --dg-deep-navy: #000000;
-  --dg-pacific-teal: #2dd4bf;
-  --dg-teal-light: #2dd4bf;
+  --dg-pacific-teal: #0EA5E9;
+  --dg-teal-light: #0EA5E9;
   --dg-electric-cyan: #38bdf8;
-  --dg-positive: #2dd4bf;
+  --dg-positive: #0EA5E9;
   --dg-caution: #fbbf24;
   --dg-negative: #f87171;
   --dg-info-blue: #38bdf8;
   --dg-bg-primary: #0C1220;
   --dg-bg-secondary: #101828;
-  --dg-bg-selected: rgba(45,212,191,0.08);
+  --dg-bg-selected: rgba(14,165,233,0.08);
   --dg-border-strong: #64748B;
   --dg-border-medium: rgba(255,255,255,0.07);
   --dg-border-light: rgba(255,255,255,0.05);
@@ -599,7 +599,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .btn-accent:hover {
-    box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
   }
 
   .btn-sm {
@@ -1590,7 +1590,7 @@ input[type="range"]::-moz-range-thumb {
 .dg-property-status.active {
   color: var(--color-teal);
   background: var(--color-teal-dim);
-  border: 1px solid rgba(45, 212, 191, 0.2);
+  border: 1px solid rgba(14, 165, 233, 0.2);
 }
 
 .dg-property-status.pending {

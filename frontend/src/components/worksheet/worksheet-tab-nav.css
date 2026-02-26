@@ -100,7 +100,7 @@
 
 .worksheet-tabs-scroll-btn:hover {
   background: #f1f5f9;
-  color: #0891b2;
+  color: #0EA5E9;
   border-color: #cbd5e1;
 }
 
@@ -127,7 +127,7 @@
 
 .worksheet-tab.active {
   background: rgba(8, 145, 178, 0.1);
-  color: #0891b2;
+  color: #0EA5E9;
 }
 
 .worksheet-tab.disabled {
@@ -173,7 +173,7 @@
 
 .worksheet-help-btn:hover {
   background: #f1f5f9;
-  color: #0891b2;
+  color: #0EA5E9;
 }
 
 /* ============================================
@@ -245,7 +245,7 @@
 
 .worksheet-mobile-tab.active {
   background: rgba(8, 145, 178, 0.1);
-  color: #0891b2;
+  color: #0EA5E9;
 }
 
 .worksheet-mobile-tab.disabled {

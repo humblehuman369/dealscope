@@ -876,7 +876,7 @@ export function VerdictIQCombined({
                   <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
                   Deal Gap
                 </div>
-                <div className="text-lg font-bold text-[#0891B2]">
+                <div className="text-lg font-bold text-[#0EA5E9]">
                   {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
                 </div>
               </div>
@@ -888,11 +888,11 @@ export function VerdictIQCombined({
                 </div>
                 <div className="flex justify-between items-center py-1.5">
                   <span className="text-[13px] text-[#64748B]">Your Target</span>
-                  <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
+                  <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(userTargetPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1.5">
                   <span className="text-[13px] text-[#64748B]">Discount needed</span>
-                  <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(Math.abs(discountNeeded))}</span>
+                  <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(Math.abs(discountNeeded))}</span>
                 </div>
               </div>
 
@@ -930,7 +930,7 @@ export function VerdictIQCombined({
                       )}
                       {factor.label}
                     </div>
-                    <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
+                    <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0EA5E9]' : 'text-[#94A3B8]'}`}>
                       {factor.value}
                     </span>
                   </div>

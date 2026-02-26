@@ -74,7 +74,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
               <defs>
                 <linearGradient id="cashFlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#06b6d4" />
+                  <stop offset="100%" stopColor="#0EA5E9" />
                 </linearGradient>
                 <filter id="cashGlow" x="-50%" y="-50%" width="200%" height="200%">
                   <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.5" />

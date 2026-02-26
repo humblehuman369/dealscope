@@ -135,17 +135,17 @@ export const typography = {
 export const colors = {
   // Brand
   brand: {
-    /** #4dd0e1 - DealGapIQ cyan — primary accent */
-    blue: '#4dd0e1',
+    /** #0EA5E9 - DealGapIQ cyan — primary accent */
+    blue: '#0EA5E9',
     /** #00acc1 - Deep cyan — CTA buttons */
     blueDeep: '#00acc1',
-    /** #2dd4bf - Teal — positive / interactive */
-    teal: '#2dd4bf',
+    /** #0EA5E9 - Teal — positive / interactive */
+    teal: '#0EA5E9',
     /** #fbbf24 - Gold — caution / moderate */
     gold: '#fbbf24',
     // Legacy aliases
-    tealBright: '#4dd0e1',
-    cyan: '#4dd0e1',
+    tealBright: '#0EA5E9',
+    cyan: '#0EA5E9',
   },
 
   // Text — Four-tier Slate hierarchy
@@ -197,7 +197,7 @@ export const colors = {
   // Accent backgrounds (10% opacity)
   accentBg: {
     blue: 'rgba(56,189,248,0.10)',
-    teal: 'rgba(45,212,191,0.10)',
+    teal: 'rgba(14,165,233,0.10)',
     gold: 'rgba(251,191,36,0.10)',
     red: 'rgba(248,113,113,0.10)',
     green: 'rgba(52,211,153,0.10)',

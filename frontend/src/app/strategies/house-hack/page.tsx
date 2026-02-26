@@ -6,7 +6,7 @@ import {
   Prose,
 } from '@/components/strategies/StrategyPageLayout';
 
-const ACCENT = '#2dd4bf';
+const ACCENT = '#0EA5E9';
 
 export default function HouseHackPage() {
   return (

@@ -69,16 +69,16 @@ function PriceCard({
   return (
     <div className={`rounded-xl p-4 text-center border ${
       isRecommended 
-        ? 'bg-white border-2 border-[#0891B2]' 
+        ? 'bg-white border-2 border-[#0EA5E9]' 
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
       <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        isRecommended ? 'text-[#0891B2]' : 'text-[#64748B]'
+        isRecommended ? 'text-[#0EA5E9]' : 'text-[#64748B]'
       }`}>
         {label}
         <HelpCircle className="w-3 h-3 text-[#E2E8F0]" />
       </div>
-      <div className={`text-xl font-bold mb-1 ${isRecommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
+      <div className={`text-xl font-bold mb-1 ${isRecommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
         {formatCurrency(value)}
       </div>
       <div className="text-[10px] text-[#94A3B8] leading-tight">{description}</div>
@@ -104,7 +104,7 @@ function MetricCard({
 
   return (
     <div className="flex flex-col items-center">
-      <span className={`text-lg font-bold tabular-nums ${isPositive ? 'text-[#0891B2]' : 'text-[#E11D48]'}`}>
+      <span className={`text-lg font-bold tabular-nums ${isPositive ? 'text-[#0EA5E9]' : 'text-[#E11D48]'}`}>
         {displayValue}
       </span>
       <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">{label}</span>
@@ -146,7 +146,7 @@ export function InvestmentAnalysisNew({
           </div>
           <div className="flex flex-col items-end gap-1.5">
             <button 
-              className="text-[#0891B2] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+              className="text-[#0EA5E9] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
               onClick={onChangeTerms}
             >
               Change terms
@@ -154,7 +154,7 @@ export function InvestmentAnalysisNew({
             {/* Strategy Dropdown */}
             <div className="relative">
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0891B2] text-white text-xs font-medium rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0EA5E9] text-white text-xs font-medium rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
                 onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
               >
                 {currentStrategy}
@@ -170,7 +170,7 @@ export function InvestmentAnalysisNew({
                       key={strategy.short}
                       className={`w-full text-left px-3 py-2 text-xs hover:bg-[#F8FAFC] border-none cursor-pointer ${
                         currentStrategy === strategy.short 
-                          ? 'bg-[#F0FDFA] text-[#0891B2] font-semibold' 
+                          ? 'bg-[#F0FDFA] text-[#0EA5E9] font-semibold' 
                           : 'bg-transparent text-[#475569]'
                       }`}
                       onClick={() => {
@@ -191,7 +191,7 @@ export function InvestmentAnalysisNew({
         <div className="flex items-center justify-between mt-3 mb-4">
           <span className="text-sm text-[#64748B]">Three ways to approach this deal:</span>
           <button 
-            className="flex items-center gap-1.5 text-[#0891B2] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+            className="flex items-center gap-1.5 text-[#0EA5E9] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
             onClick={() => setShowCalculation(!showCalculation)}
           >
             <Info className="w-3.5 h-3.5" />
@@ -216,7 +216,7 @@ export function InvestmentAnalysisNew({
               </div>
               <div className="flex justify-between pt-2 border-t border-[#E2E8F0]">
                 <span className="text-[#64748B]">NOI ÷ Mortgage Constant</span>
-                <span className="font-bold text-[#0891B2]">= Income Value</span>
+                <span className="font-bold text-[#0EA5E9]">= Income Value</span>
               </div>
             </div>
           </div>

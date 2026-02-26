@@ -14,7 +14,7 @@ export function IncomeExpensesPie() {
     { label: 'Insurance', value: (worksheetMetrics?.insurance ?? assumptions.insurance) * multiplier, color: '#f97316' },
     { label: 'Management', value: derived.propertyManagement * multiplier, color: '#eab308' },
     { label: 'Maintenance', value: derived.maintenance * multiplier, color: '#22c55e' },
-    { label: 'CapEx', value: derived.capex * multiplier, color: '#06b6d4' },
+    { label: 'CapEx', value: derived.capex * multiplier, color: '#0EA5E9' },
     { label: 'HOA', value: (worksheetMetrics?.hoa_fees ?? assumptions.hoaFees) * multiplier, color: '#8b5cf6' },
   ].filter(e => e.value > 0)
 

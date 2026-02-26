@@ -41,8 +41,8 @@ const colors = {
     elevated: '#1E293B',
   },
   brand: {
-    teal: '#0891B2',
-    tealBright: '#0891B2',
+    teal: '#0EA5E9',
+    tealBright: '#0EA5E9',
   },
   text: {
     white: '#FFFFFF',

@@ -160,12 +160,12 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
     <div className="mt-4">
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm font-semibold text-[#0A1628]">{label}</span>
-        <span className="text-base font-bold text-[#0891B2] tabular-nums">{displayValue}</span>
+        <span className="text-base font-bold text-[#0EA5E9] tabular-nums">{displayValue}</span>
       </div>
       <div className="relative h-6 flex items-center">
         <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full relative">
           <div 
-            className="absolute left-0 top-0 h-full bg-[#0891B2] rounded-full"
+            className="absolute left-0 top-0 h-full bg-[#0EA5E9] rounded-full"
             style={{ width: `${fillPercent}%` }}
           />
           <input
@@ -177,7 +177,7 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div 
-            className="absolute w-4 h-4 bg-[#0891B2] border-2 border-white rounded-full shadow-md -translate-y-1/2 top-1/2"
+            className="absolute w-4 h-4 bg-[#0EA5E9] border-2 border-white rounded-full shadow-md -translate-y-1/2 top-1/2"
             style={{ left: `calc(${fillPercent}% - 8px)` }}
           />
         </div>
@@ -1021,7 +1021,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             key={section.id}
             className={`bg-white rounded-xl mb-2.5 shadow-sm border overflow-hidden transition-all ${
               activeAccordion === section.id 
-                ? 'border-[#0891B2]/20 shadow-[0_0_0_2px_rgba(8,145,178,0.1)]' 
+                ? 'border-[#0EA5E9]/20 shadow-[0_0_0_2px_rgba(14,165,233,0.1)]' 
                 : 'border-[#F1F5F9]'
             }`}
           >
@@ -1030,7 +1030,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               className="flex items-center gap-3 p-3.5 w-full text-left"
               onClick={() => toggleAccordion(section.id)}
             >
-              <div className="w-6 h-6 text-[#0891B2]">{section.icon}</div>
+              <div className="w-6 h-6 text-[#0EA5E9]">{section.icon}</div>
               <span className="flex-1 text-[15px] font-semibold text-[#0A1628]">{section.title}</span>
               <svg
                 className={`w-5 h-5 text-[#94A3B8] transition-transform ${activeAccordion === section.id ? 'rotate-180' : ''}`}
@@ -1193,7 +1193,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                         <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">RENTED UNITS</div>
-                            <div className="text-xl font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-xl font-bold text-[#0EA5E9] tabular-nums">
                               {'rentedUnits' in metrics ? (metrics as HouseHackMetrics).rentedUnits : state.totalUnits - state.ownerOccupiedUnits}
                             </div>
                           </div>
@@ -1305,7 +1305,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-[#64748B]">Initial Hard Money Loan</span>
-                              <span className="font-bold text-[#0891B2] tabular-nums">
+                              <span className="font-bold text-[#0EA5E9] tabular-nums">
                                 {formatPrice('initialLoanAmount' in metrics ? (metrics as BRRRRMetrics).initialLoanAmount : 0)}
                               </span>
                             </div>
@@ -1344,7 +1344,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                                 key={type}
                                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                                   state.financingType === type
-                                    ? 'bg-[#0891B2] text-white'
+                                    ? 'bg-[#0EA5E9] text-white'
                                     : 'bg-white border border-[#E2E8F0] text-[#64748B]'
                                 }`}
                                 onClick={() => updateState('financingType', type)}
@@ -1391,7 +1391,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                         <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">LOAN AMOUNT</div>
-                            <div className="text-xl font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-xl font-bold text-[#0EA5E9] tabular-nums">
                               {formatPrice('loanAmount' in metrics ? (metrics as FlipMetrics).loanAmount : 0)}
                             </div>
                           </div>
@@ -1414,7 +1414,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                                 key={type}
                                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
                                   state.loanType === type
-                                    ? 'bg-[#0891B2] text-white'
+                                    ? 'bg-[#0EA5E9] text-white'
                                     : 'bg-white border border-[#E2E8F0] text-[#64748B]'
                                 }`}
                                 onClick={() => updateState('loanType', type)}
@@ -1473,7 +1473,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">MONTHLY PITI</div>
-                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-base font-bold text-[#0EA5E9] tabular-nums">
                               {formatPrice('monthlyPITI' in metrics ? (metrics as HouseHackMetrics).monthlyPITI : 0)}/mo
                             </div>
                           </div>
@@ -1547,7 +1547,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           <>
                             <div className="flex justify-between items-center py-3 mt-4 mb-2 border-b border-[#E2E8F0]">
                               <span className="text-sm font-semibold text-[#0A1628]">Loan Amount</span>
-                              <span className="text-base font-bold text-[#0891B2] tabular-nums">{formatPrice('loanAmount' in ltrStrMetrics ? ltrStrMetrics.loanAmount : 0)}</span>
+                              <span className="text-base font-bold text-[#0EA5E9] tabular-nums">{formatPrice('loanAmount' in ltrStrMetrics ? ltrStrMetrics.loanAmount : 0)}</span>
                             </div>
                             <SliderInput
                               label="Interest Rate"
@@ -1645,7 +1645,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING COSTS</div>
-                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-base font-bold text-[#0EA5E9] tabular-nums">
                               {formatPrice('holdingCosts' in metrics ? (metrics as BRRRRMetrics).holdingCosts : 0)}
                             </div>
                           </div>
@@ -1939,7 +1939,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING PERIOD</div>
-                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-base font-bold text-[#0EA5E9] tabular-nums">
                               {'holdingPeriodMonths' in metrics ? `${(metrics as FlipMetrics).holdingPeriodMonths.toFixed(1)} months` : '0 months'}
                             </div>
                           </div>
@@ -2053,7 +2053,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             </div>
                             <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
                               <span className="text-sm font-semibold text-[#0A1628]">Buyer Profit</span>
-                              <span className={`text-lg font-bold tabular-nums ${'endBuyerProfit' in metrics && (metrics as WholesaleMetrics).endBuyerProfit >= 20000 ? 'text-[#10B981]' : (metrics as WholesaleMetrics).endBuyerProfit >= 10000 ? 'text-[#0891B2]' : 'text-[#F43F5E]'}`}>
+                              <span className={`text-lg font-bold tabular-nums ${'endBuyerProfit' in metrics && (metrics as WholesaleMetrics).endBuyerProfit >= 20000 ? 'text-[#10B981]' : (metrics as WholesaleMetrics).endBuyerProfit >= 10000 ? 'text-[#0EA5E9]' : 'text-[#F43F5E]'}`}>
                                 {formatPrice('endBuyerProfit' in metrics ? (metrics as WholesaleMetrics).endBuyerProfit : 0)}
                               </span>
                             </div>
@@ -2619,7 +2619,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">BREAK-EVEN OCC.</div>
-                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                            <div className="text-base font-bold text-[#0EA5E9] tabular-nums">
                               {formatPercent('breakEvenOccupancy' in metrics ? (metrics as STRMetrics).breakEvenOccupancy : 0)}
                             </div>
                           </div>
@@ -2676,7 +2676,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
                 {/* Continue Button */}
                 <button
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-[#0891B2] text-white rounded-xl text-base font-semibold mt-4 hover:bg-[#0E7490] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-[#0EA5E9] text-white rounded-xl text-base font-semibold mt-4 hover:bg-[#0EA5E9] transition-colors"
                   onClick={() => handleContinue(section.id)}
                 >
                   {section.id === 'expenses' ? 'View Analysis' : 'Continue to Next'}
@@ -2696,7 +2696,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           onClick={handleSeeResults}
           className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
           style={{ 
-            background: 'linear-gradient(135deg, #0891B2 0%, #06B6D4 100%)',
+            background: 'linear-gradient(135deg, #0EA5E9 0%, #0EA5E9 100%)',
             boxShadow: '0 4px 20px rgba(8, 145, 178, 0.25)'
           }}
         >

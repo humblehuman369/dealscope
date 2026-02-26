@@ -246,7 +246,7 @@ export function SalesCompsScreen({
   }
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return '#0891B2'
+    if (score >= 90) return '#0EA5E9'
     return '#64748B'
   }
 
@@ -285,11 +285,11 @@ export function SalesCompsScreen({
 
             {/* ARV Details */}
             <div className="flex-1">
-              <div className="text-[10px] font-semibold text-[#0891B2] uppercase tracking-wider mb-0.5">IQ ARV Estimate</div>
+              <div className="text-[10px] font-semibold text-[#0EA5E9] uppercase tracking-wider mb-0.5">IQ ARV Estimate</div>
               {isEditingArv ? (
                 <input
                   type="text"
-                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums border-2 border-[#0891B2] rounded-lg px-2 py-1 w-40 outline-none focus:ring-2 focus:ring-[#0891B2]/20 font-inherit"
+                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums border-2 border-[#0EA5E9] rounded-lg px-2 py-1 w-40 outline-none focus:ring-2 focus:ring-[#0EA5E9]/20 font-inherit"
                   value={arvEstimate}
                   onChange={handleArvChange}
                   onBlur={handleArvBlur}
@@ -298,7 +298,7 @@ export function SalesCompsScreen({
                 />
               ) : (
                 <div
-                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums flex items-center gap-2 cursor-pointer hover:text-[#0891B2] transition-colors"
+                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums flex items-center gap-2 cursor-pointer hover:text-[#0EA5E9] transition-colors"
                   onClick={() => setIsEditingArv(true)}
                   title="Click to edit"
                 >
@@ -316,11 +316,11 @@ export function SalesCompsScreen({
             {/* Confidence & Apply */}
             <div className="flex flex-col items-end gap-2">
               <div className="text-center">
-                <div className="text-[28px] font-bold text-[#0891B2] leading-none">{arvConfidence}</div>
+                <div className="text-[28px] font-bold text-[#0EA5E9] leading-none">{arvConfidence}</div>
                 <div className="text-[9px] font-medium text-[#94A3B8] uppercase tracking-wide">Confidence</div>
               </div>
               <button 
-                className="px-4 py-2.5 bg-[#0891B2] text-white rounded-lg text-[13px] font-semibold hover:bg-[#0E7490] transition-colors"
+                className="px-4 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-[13px] font-semibold hover:bg-[#0E7490] transition-colors"
                 onClick={handleApplyArv}
               >
                 Apply ARV
@@ -335,10 +335,10 @@ export function SalesCompsScreen({
             <strong className="text-[#0A1628]">{selectedComps.length}</strong> of <strong className="text-[#0A1628]">{comps.length}</strong> comps selected
           </div>
           <div className="flex gap-4">
-            <button className="text-[#0891B2] text-[13px] font-medium hover:text-[#0E7490]" onClick={selectAllComps}>
+            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={selectAllComps}>
               Select All
             </button>
-            <button className="text-[#0891B2] text-[13px] font-medium hover:text-[#0E7490]" onClick={clearComps}>
+            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={clearComps}>
               Clear
             </button>
           </div>
@@ -349,7 +349,7 @@ export function SalesCompsScreen({
           <div
             key={comp.id}
             className={`bg-white border-b border-[#CBD5E1] border-l-[3px] overflow-hidden transition-all ${
-              selectedComps.includes(comp.id) ? 'border-l-[#0891B2] bg-[#F0FDFA]' : 'border-l-transparent'
+              selectedComps.includes(comp.id) ? 'border-l-[#0EA5E9] bg-[#F0FDFA]' : 'border-l-transparent'
             }`}
           >
             <div className="flex p-4 gap-3">
@@ -364,7 +364,7 @@ export function SalesCompsScreen({
                 <div
                   className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all ${
                     selectedComps.includes(comp.id) 
-                      ? 'bg-[#0891B2] border-[#0891B2]' 
+                      ? 'bg-[#0EA5E9] border-[#0EA5E9]' 
                       : 'bg-white border-2 border-[#CBD5E1]'
                   }`}
                   onClick={() => toggleCompSelection(comp.id)}
@@ -374,7 +374,7 @@ export function SalesCompsScreen({
                   </svg>
                 </div>
                 {/* Distance Badge */}
-                <div className="absolute bottom-1 left-1 bg-[#0891B2] text-white px-1.5 py-0.5 rounded text-[9px] font-semibold">
+                <div className="absolute bottom-1 left-1 bg-[#0EA5E9] text-white px-1.5 py-0.5 rounded text-[9px] font-semibold">
                   {comp.distance.toFixed(2)} mi
                 </div>
               </div>
@@ -412,7 +412,7 @@ export function SalesCompsScreen({
                   )}
                 </div>
                 <div className="text-[10px] text-[#94A3B8]">
-                  Sold {comp.soldDate} · <span className="text-[#0891B2]">{comp.timeAgo}</span>
+                  Sold {comp.soldDate} · <span className="text-[#0EA5E9]">{comp.timeAgo}</span>
                 </div>
               </div>
 
@@ -434,7 +434,7 @@ export function SalesCompsScreen({
 
             {/* Expand Button */}
             <button
-              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[#F1F5F9] text-[#0891B2] text-xs font-medium hover:bg-[#F8FAFC] transition-colors`}
+              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[#F1F5F9] text-[#0EA5E9] text-xs font-medium hover:bg-[#F8FAFC] transition-colors`}
               onClick={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
             >
               Details
@@ -460,7 +460,7 @@ export function SalesCompsScreen({
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[#E2E8F0] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         {/* Search Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
           onClick={() => router.push('/search')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -471,7 +471,7 @@ export function SalesCompsScreen({
 
         {/* Analyze Property Button - Primary CTA */}
         <button 
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0891B2] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0EA5E9] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] transition-colors"
           onClick={handleAnalyze}
         >
           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,7 +482,7 @@ export function SalesCompsScreen({
 
         {/* Share Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
           onClick={handleShare}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

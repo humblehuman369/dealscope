@@ -125,7 +125,7 @@ const BillingToggle: React.FC<{
         height: "28px",
         borderRadius: "14px",
         background: annual
-          ? "linear-gradient(135deg, #0EA5E9, #06B6D4)"
+          ? "linear-gradient(135deg, #0EA5E9, #0EA5E9)"
           : "#1E293B",
         border: "1px solid rgba(148,163,184,0.1)",
         cursor: "pointer",
@@ -162,7 +162,7 @@ const BillingToggle: React.FC<{
         style={{
           display: "inline-block",
           marginLeft: "8px",
-          background: "linear-gradient(135deg, #0EA5E9, #06B6D4)",
+          background: "linear-gradient(135deg, #0EA5E9, #0EA5E9)",
           color: "#fff",
           fontSize: "10px",
           fontWeight: 700,
@@ -287,7 +287,7 @@ const PricingCard: React.FC<{
             top: "-1px",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "linear-gradient(135deg, #0EA5E9, #06B6D4)",
+            background: "linear-gradient(135deg, #0EA5E9, #0EA5E9)",
             color: "#fff",
             fontSize: "10px",
             fontWeight: 700,
@@ -619,7 +619,7 @@ export default function PricingContent() {
       suffix: "/yr",
       label: "Cost of Pro",
       sub: "Less than 1.5% of the average bad deal it helps you avoid",
-      color: "#06B6D4",
+      color: "#0EA5E9",
     },
   ];
 
@@ -634,7 +634,7 @@ export default function PricingContent() {
       label: "Vacancy Rate",
       value: "5.2%",
       detail: "Tampa metro — 12mo rolling avg",
-      color: "#06B6D4",
+      color: "#0EA5E9",
     },
     {
       label: "Financing",
@@ -786,7 +786,7 @@ export default function PricingContent() {
                 fontSize: "12px",
                 color: "#0B1120",
                 textDecoration: "none",
-                background: "linear-gradient(135deg, #0EA5E9, #06B6D4)",
+                background: "linear-gradient(135deg, #0EA5E9, #0EA5E9)",
                 padding: "8px 18px",
                 borderRadius: "6px",
                 fontWeight: 700,
@@ -846,7 +846,7 @@ export default function PricingContent() {
             <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #0EA5E9, #06B6D4)",
+                background: "linear-gradient(135deg, #0EA5E9, #0EA5E9)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}

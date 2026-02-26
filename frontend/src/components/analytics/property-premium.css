@@ -87,7 +87,7 @@ html:not(.dark) .premium-logo {
 }
 
 html:not(.dark) .premium-logo span {
-  color: #0891b2;
+  color: #0EA5E9;
 }
 
 .premium-spacer {
@@ -123,7 +123,7 @@ html:not(.dark) .premium-logo span {
 }
 
 html:not(.dark) .premium-try-btn {
-  background: #0891b2;
+  background: #0EA5E9;
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
 }
@@ -289,7 +289,7 @@ html:not(.dark) .premium-photo-counter {
 }
 
 .premium-thumb.active {
-  border-color: #0891b2;
+  border-color: #0EA5E9;
   opacity: 1;
 }
 
@@ -400,7 +400,7 @@ html.dark .premium-info-specs {
 .premium-info-price {
   font-size: 24px;
   font-weight: 700;
-  color: #0891b2;
+  color: #0EA5E9;
   line-height: 1.1;
 }
 
@@ -506,7 +506,7 @@ html:not(.dark) .premium-property-price {
 }
 
 html:not(.dark) .premium-status-dot {
-  background: #0891b2;
+  background: #0EA5E9;
   box-shadow: 0 0 12px rgba(8, 145, 178, 0.5);
 }
 
@@ -517,7 +517,7 @@ html:not(.dark) .premium-status-dot {
 }
 
 html:not(.dark) .premium-status-text {
-  color: #0891b2;
+  color: #0EA5E9;
 }
 
 /* Section Header */
@@ -881,7 +881,7 @@ html:not(.dark) .premium-action-btn-saved svg {
 }
 
 html:not(.dark) .premium-primary-btn {
-  background: #0891b2;
+  background: #0EA5E9;
   box-shadow: 0 4px 24px rgba(8, 145, 178, 0.35);
 }
 

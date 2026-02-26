@@ -8,7 +8,7 @@
  * 
  * Per DealMakerIQ Design System & Style Guide:
  * - Deep Navy #07172e: All text
- * - Pacific Teal #0891B2: Intelligence markers, positive signals
+ * - Pacific Teal #0EA5E9: Intelligence markers, positive signals
  * - No washed-out text, no decorative opacity
  */
 

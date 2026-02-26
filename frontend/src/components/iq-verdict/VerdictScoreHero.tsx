@@ -33,7 +33,7 @@ interface VerdictScoreHeroProps {
 // Get score color based on tier
 // Unified color system across all VerdictIQ pages
 function getScoreColor(score: number): string {
-  if (score >= 80) return '#0891B2' // Teal - Strong/Good (A+/A)
+  if (score >= 80) return '#0EA5E9' // Teal - Strong/Good (A+/A)
   if (score >= 50) return '#D97706' // Amber - Average/Marginal (B/C)
   return '#EF4444'                  // Red - Unlikely/Pass (D/F)
 }
@@ -51,7 +51,7 @@ function getUrgencyColor(urgency: string): string {
 // Get market temp color
 function getMarketTempColor(temp: string): string {
   switch (temp.toLowerCase()) {
-    case 'cold': return '#0891B2'
+    case 'cold': return '#0EA5E9'
     case 'warm': return '#D97706'
     case 'hot': return '#E11D48'
     default: return '#64748B'
@@ -61,7 +61,7 @@ function getMarketTempColor(temp: string): string {
 // Get bar color for confidence metrics
 function getBarColor(value: number): string {
   if (value >= 80) return '#10B981'
-  if (value >= 60) return '#0891B2'
+  if (value >= 60) return '#0EA5E9'
   if (value >= 40) return '#F59E0B'
   return '#E11D48'
 }
@@ -137,7 +137,7 @@ export function VerdictScoreHero({
         {/* How it works link */}
         <button 
           className="flex items-center gap-1.5 text-xs font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
-          style={{ color: '#0891B2' }}
+          style={{ color: '#0EA5E9' }}
           onClick={onShowMethodology}
         >
           <Info className="w-3.5 h-3.5" />

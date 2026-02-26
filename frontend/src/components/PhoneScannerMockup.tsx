@@ -48,11 +48,11 @@ export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress 
               className="scan-line absolute left-[10px] right-[10px] h-[2px] z-10 animate-scan-move"
               style={{
                 background: isDark 
-                  ? 'linear-gradient(90deg, transparent, #4dd0e1, transparent)'
-                  : 'linear-gradient(90deg, transparent, #007ea7, transparent)',
+                  ? 'linear-gradient(90deg, transparent, #0EA5E9, transparent)'
+                  : 'linear-gradient(90deg, transparent, #0EA5E9, transparent)',
                 boxShadow: isDark 
-                  ? '0 0 15px #4dd0e1, 0 0 30px #4dd0e1'
-                  : '0 0 15px #007ea7, 0 0 30px #007ea7'
+                  ? '0 0 15px #0EA5E9, 0 0 30px #0EA5E9'
+                  : '0 0 15px #0EA5E9, 0 0 30px #0EA5E9'
               }}
             />
             
@@ -87,8 +87,8 @@ export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress 
             className="flex-1 py-3.5 rounded-xl font-semibold text-sm text-white transition-all hover:-translate-y-0.5 hover:brightness-110"
             style={{
               background: isDark 
-                ? 'linear-gradient(135deg, #0097a7 0%, #4dd0e1 100%)'
-                : 'linear-gradient(135deg, #007ea7 0%, #0097a7 100%)'
+                ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
+                : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)'
             }}
           >
             Point &amp; Scan

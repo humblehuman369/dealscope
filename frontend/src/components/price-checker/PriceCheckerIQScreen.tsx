@@ -308,7 +308,7 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
       <span className="text-xs text-[#94A3B8] w-14">{label}</span>
       <div className="flex-1 h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#38bdf8' : safeValue >= 75 ? '#2dd4bf' : '#fbbf24' }} />
+          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#38bdf8' : safeValue >= 75 ? '#0EA5E9' : '#fbbf24' }} />
       </div>
       <span className="text-xs font-semibold text-[#CBD5E1] w-8 text-right tabular-nums">{safeValue}%</span>
     </div>
@@ -411,7 +411,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs font-semibold text-[#94A3B8] uppercase">Match Score:</span>
             <span className="text-lg font-bold tabular-nums" style={{
-              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#2dd4bf' : '#fbbf24'
+              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
             }}>{similarity.overall}%</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -859,7 +859,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Dual Valuation Panel */}
         <div className="mx-4 mt-4">
           <div className="relative rounded-xl p-4 border border-white/[0.07] overflow-hidden"
-            style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(56,189,248,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(45,212,191,0.06) 0%, transparent 50%), #0C1220' }}>
+            style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(56,189,248,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #0C1220' }}>
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">

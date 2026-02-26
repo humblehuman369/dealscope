@@ -93,10 +93,10 @@ function SourceRow({
 
   const buttonStyle = useMemo(() => ({
     background: isSelected
-      ? 'rgba(45,212,191,0.08)'
+      ? 'rgba(14,165,233,0.08)'
       : showHover ? `${meta.color}0A` : 'transparent',
     border: `1px solid ${
-      isSelected ? 'rgba(45,212,191,0.25)'
+      isSelected ? 'rgba(14,165,233,0.25)'
       : showHover ? `${meta.color}20` : 'transparent'
     }`,
     boxShadow: showHover ? `0 0 14px ${meta.color}18` : 'none',

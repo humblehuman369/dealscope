@@ -25,7 +25,7 @@ const strategies = [
 // ============================================
 const getGradeStyles = (grade: string) => {
   switch(grade) {
-    case 'A': return { bg: '#E0F7FA', text: '#0891B2' }
+    case 'A': return { bg: '#E0F7FA', text: '#0EA5E9' }
     case 'B': return { bg: '#F1F5F9', text: '#64748B' }
     case 'C': return { bg: '#FEF3C7', text: '#D97706' }
     case 'D': return { bg: '#FEE2E2', text: '#E11D48' }
@@ -35,7 +35,7 @@ const getGradeStyles = (grade: string) => {
 }
 
 const getBarColor = (value: number) => {
-  if (value >= 70) return '#0891B2'
+  if (value >= 70) return '#0EA5E9'
   if (value >= 40) return '#F59E0B'
   return '#E11D48'
 }
@@ -310,7 +310,7 @@ export function LTRWorksheet({
   const strokeDasharray = `${(profitQualityScore / 100) * circumference} ${circumference}`
   
   // Score color based on profit quality
-  const scoreColor = profitQualityScore >= 70 ? '#0891B2' : profitQualityScore >= 40 ? '#F59E0B' : '#E11D48'
+  const scoreColor = profitQualityScore >= 70 ? '#0EA5E9' : profitQualityScore >= 40 ? '#F59E0B' : '#E11D48'
 
   // Strategy fit and risk level
   const getStrategyFit = (score: number) => {
@@ -342,7 +342,7 @@ export function LTRWorksheet({
     if (score >= 40) return 'POTENTIAL DEAL'
     return 'WEAK DEAL'
   }
-  const dealRatingColor = profitQualityScore >= 60 ? '#0891B2' : profitQualityScore >= 40 ? '#D97706' : '#E11D48'
+  const dealRatingColor = profitQualityScore >= 60 ? '#0EA5E9' : profitQualityScore >= 40 ? '#D97706' : '#E11D48'
 
   // Summary text
   const getSummaryText = (score: number) => {
@@ -418,7 +418,7 @@ export function LTRWorksheet({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px 16px',
-              backgroundColor: showStrategyDropdown ? '#0891B2' : 'rgba(255,255,255,0.1)',
+              backgroundColor: showStrategyDropdown ? '#0EA5E9' : 'rgba(255,255,255,0.1)',
               border: '1px solid rgba(255,255,255,0.2)',
               borderRadius: '10px',
               cursor: 'pointer',
@@ -501,12 +501,12 @@ export function LTRWorksheet({
                   <span style={{
                     fontSize: '15px',
                     fontWeight: selectedStrategy === strategy ? 600 : 400,
-                    color: selectedStrategy === strategy ? '#0891B2' : '#0A1628'
+                    color: selectedStrategy === strategy ? '#0EA5E9' : '#0A1628'
                   }}>
                     {strategy}
                   </span>
                   {selectedStrategy === strategy && (
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={2}>
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#0EA5E9" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   )}
@@ -659,11 +659,11 @@ export function LTRWorksheet({
             display: 'flex',
             gap: '8px'
           }}>
-            <div style={{ width: '3px', backgroundColor: '#0891B2', borderRadius: '2px', flexShrink: 0 }} />
+            <div style={{ width: '3px', backgroundColor: '#0EA5E9', borderRadius: '2px', flexShrink: 0 }} />
             <p style={{ fontSize: '14px', color: '#475569', margin: 0, lineHeight: 1.5 }}>
               {getSummaryText(profitQualityScore)}{' '}
               {profitQualityScore < 70 && (
-                <span style={{ color: '#0891B2', fontWeight: 500 }}>Value-add improvements</span>
+                <span style={{ color: '#0EA5E9', fontWeight: 500 }}>Value-add improvements</span>
               )}
               {profitQualityScore < 70 && ' may improve returns.'}
             </p>
@@ -703,7 +703,7 @@ export function LTRWorksheet({
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0EA5E9" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
                 </svg>
               </div>
@@ -800,7 +800,7 @@ export function LTRWorksheet({
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0EA5E9" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -897,7 +897,7 @@ export function LTRWorksheet({
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0EA5E9" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                 </svg>
               </div>
@@ -966,7 +966,7 @@ export function LTRWorksheet({
           }}
           style={{
             width: '100%',
-            backgroundColor: '#0891B2',
+            backgroundColor: '#0EA5E9',
             color: '#FFFFFF',
             fontSize: '16px',
             fontWeight: 600,

@@ -29,8 +29,8 @@ import {
 // DealGapIQ Design System Colors
 const COLORS = {
   navy: '#0A1628',
-  teal: '#0891B2',
-  tealLight: '#06B6D4',
+  teal: '#0EA5E9',
+  tealLight: '#0EA5E9',
   electricCyan: '#00D4FF',
   danger: '#EF4444',
   warning: '#F59E0B',
@@ -230,10 +230,10 @@ function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: {
     ? {
         low: 'rgba(239, 68, 68, 0.25)',
         avg: 'rgba(245, 158, 11, 0.30)',
-        high: 'rgba(8, 145, 178, 0.25)',
+        high: 'rgba(14, 165, 233, 0.25)',
       }
     : {
-        low: 'rgba(8, 145, 178, 0.25)',
+        low: 'rgba(14, 165, 233, 0.25)',
         avg: 'rgba(245, 158, 11, 0.30)',
         high: 'rgba(239, 68, 68, 0.25)',
       }
@@ -474,7 +474,7 @@ export default function NationalAveragesPage() {
             {/* Conservative */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#0891B2]" />
+                <div className="w-3 h-3 rounded-full bg-[#0EA5E9]" />
                 <span className="text-sm font-semibold text-[#0A1628]">Conservative Investors</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-[#64748B]">

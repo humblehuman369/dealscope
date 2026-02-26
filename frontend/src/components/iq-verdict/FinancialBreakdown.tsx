@@ -148,7 +148,7 @@ function HighlightRow({
   return (
     <div className="flex justify-between items-center px-8 py-2.5 bg-[rgba(8,145,178,0.1)] border-b border-[rgba(8,145,178,0.2)]">
       <span className="text-sm font-semibold text-[#0A1628]">{label}</span>
-      <span className="text-base font-bold text-[#0891B2]">{value}</span>
+      <span className="text-base font-bold text-[#0EA5E9]">{value}</span>
     </div>
   )
 }
@@ -182,7 +182,7 @@ function TealHighlightRow({
   return (
     <div className="flex justify-between items-center px-8 py-2.5 bg-[rgba(8,145,178,0.15)]">
       <span className="text-xs font-semibold text-[#0A1628] uppercase tracking-wide">{label}</span>
-      <span className={`text-base font-bold ${isNegative ? 'text-[#EF4444]' : 'text-[#0891B2]'}`}>
+      <span className={`text-base font-bold ${isNegative ? 'text-[#EF4444]' : 'text-[#0EA5E9]'}`}>
         {value}
       </span>
     </div>
