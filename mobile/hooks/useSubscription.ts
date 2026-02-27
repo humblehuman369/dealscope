@@ -1,48 +1,39 @@
 /**
- * useSubscription — React Query hook for subscription status + purchase actions.
+ * useSubscription — unified subscription state with full edge-case coverage.
  *
- * Combines RevenueCat entitlement checks with the backend user tier
- * for a unified subscription state. The backend is the canonical source
- * (it receives RevenueCat webhooks), but RevenueCat is checked for
- * real-time receipt validation.
+ * Combines RevenueCat entitlement checks with the backend user tier.
+ * Handles: trial, paid, grace period, cancelled-but-active, refund,
+ * trial-expiring-soon, and billing retry states.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Platform, Alert, Linking } from 'react-native';
 import {
   getOfferings,
   purchasePackage,
   restorePurchases,
-  getSubscriptionStatus,
+  getDetailedSubscriptionStatus,
   isPaymentsInitialized,
+  type DetailedSubscriptionStatus,
 } from '@/services/payments';
 import { useAuth } from './useAuth';
 import { SESSION_QUERY_KEY } from './useSession';
 import type { PurchasesPackage, PurchasesOfferings } from 'react-native-purchases';
 
-export interface SubscriptionState {
-  isPro: boolean;
-  isLoading: boolean;
-  offerings: PurchasesOfferings | null;
-  expiresDate: string | null;
-  willRenew: boolean;
-}
-
 export function useSubscription() {
   const { subscriptionTier } = useAuth();
   const qc = useQueryClient();
 
-  // RevenueCat status (real-time check)
+  // Detailed RevenueCat status
   const rcQuery = useQuery({
     queryKey: ['subscription', 'status'],
-    queryFn: getSubscriptionStatus,
+    queryFn: getDetailedSubscriptionStatus,
     enabled: isPaymentsInitialized(),
     staleTime: 60_000,
     refetchInterval: 5 * 60 * 1000,
   });
 
-  // Offerings
   const offeringsQuery = useQuery({
     queryKey: ['subscription', 'offerings'],
     queryFn: getOfferings,
@@ -50,10 +41,12 @@ export function useSubscription() {
     staleTime: 10 * 60 * 1000,
   });
 
-  // Canonical Pro status: backend tier OR RevenueCat entitlement
-  const isPro = subscriptionTier === 'pro' || rcQuery.data?.isPro === true;
+  const rc = rcQuery.data;
 
-  // Purchase mutation
+  // Canonical Pro: backend tier OR RevenueCat entitlement (either is sufficient)
+  const isPro = subscriptionTier === 'pro' || rc?.isPro === true;
+
+  // Purchase
   const purchaseMutation = useMutation({
     mutationFn: async (pkg: PurchasesPackage) => {
       const info = await purchasePackage(pkg);
@@ -66,21 +59,18 @@ export function useSubscription() {
     },
   });
 
-  // Restore mutation
+  // Restore
   const restoreMutation = useMutation({
-    mutationFn: async () => {
-      const info = await restorePurchases();
-      return info;
-    },
+    mutationFn: restorePurchases,
     onSuccess: (info) => {
       qc.invalidateQueries({ queryKey: ['subscription'] });
       qc.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-      const hasEntitlement = info?.entitlements?.active?.['pro'];
+      const restored = !!info?.entitlements?.active?.['pro'];
       Alert.alert(
-        hasEntitlement ? 'Restored!' : 'No Purchases Found',
-        hasEntitlement
+        restored ? 'Restored!' : 'No Purchases Found',
+        restored
           ? 'Your Pro subscription has been restored.'
-          : 'No previous purchases were found for this account.',
+          : 'No previous purchases were found for this account. If you subscribed on another device, make sure you are signed in with the same Apple ID or Google account.',
       );
     },
   });
@@ -104,14 +94,30 @@ export function useSubscription() {
   }, []);
 
   return {
+    // Core state
     isPro,
     isLoading: rcQuery.isLoading,
     offerings: offeringsQuery.data ?? null,
-    expiresDate: rcQuery.data?.expiresDate ?? null,
-    willRenew: rcQuery.data?.willRenew ?? false,
+
+    // Detailed status
+    periodType: rc?.periodType ?? 'none',
+    expiresDate: rc?.expiresDate ?? null,
+    willRenew: rc?.willRenew ?? false,
+    productId: rc?.productId ?? null,
+
+    // Edge cases
+    trialExpiringSoon: rc?.trialExpiringSoon ?? false,
+    cancelledButActive: rc?.cancelledButActive ?? false,
+    inGracePeriod: rc?.inGracePeriod ?? false,
+    wasRefunded: rc?.wasRefunded ?? false,
+    isTrial: rc?.periodType === 'trial',
+
+    // Actions
     purchase,
     restore,
     manageSubscription,
+
+    // Loading states
     isPurchasing: purchaseMutation.isPending,
     isRestoring: restoreMutation.isPending,
     purchaseError: purchaseMutation.error,
