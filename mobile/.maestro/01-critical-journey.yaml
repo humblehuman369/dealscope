@@ -1,0 +1,88 @@
+# Critical User Journey
+# Launch → Search → Address → Analyzing → Verdict → Strategy → Deal Maker → Verdict
+#
+# This is the primary conversion funnel. If this flow breaks, users can't analyze properties.
+
+appId: com.dealgapiq.mobile
+name: Critical User Journey
+
+---
+
+# 1. App launches to Search tab
+- launchApp
+- assertVisible: "DealGapIQ"
+- assertVisible: "Is That Property"
+
+# 2. Tap search bar → opens full-screen search
+- tapOn: "Enter any property address..."
+- assertVisible: "Enter a property address..."
+
+# 3. Type an address
+- inputText: ${TEST_ADDRESS}
+- waitForAnimationToEnd
+
+# 4. Submit search (tap the manual search or press enter)
+- tapOn: "Search manually"
+  optional: true
+- pressKey: Enter
+  optional: true
+
+# 5. Analyzing screen appears with progress ring
+- waitForAnimationToEnd
+- assertVisible: "Analyzing Property"
+- assertVisible: "Just a moment while IQ evaluates this deal"
+
+# 6. Wait for analysis to complete → Verdict screen
+- extendedWaitUntil:
+    visible: "IQ Verdict"
+    timeout: 15000
+
+# 7. Verdict screen has all key sections
+- assertVisible: "The Verdict"
+- scrollUntilVisible:
+    element: "Deal Gap"
+    direction: DOWN
+- assertVisible: "Deal Gap"
+
+- scrollUntilVisible:
+    element: "Your Investment Analysis"
+    direction: DOWN
+
+- scrollUntilVisible:
+    element: "Deep Dive Strategy"
+    direction: DOWN
+
+# 8. Navigate to Strategy screen
+- tapOn: "Deep Dive Strategy"
+- waitForAnimationToEnd
+- assertVisible: "StrategyIQ"
+
+# 9. Strategy pills are visible
+- assertVisible: "Long Rental"
+
+# 10. Navigate to Deal Maker
+- scrollUntilVisible:
+    element: "Adjust in Deal Maker"
+    direction: DOWN
+- tapOn: "Adjust in Deal Maker"
+- waitForAnimationToEnd
+- assertVisible: "Deal Maker"
+
+# 11. Verify key metrics are displayed
+- assertVisible: "Cash-on-Cash"
+- assertVisible: "Cap Rate"
+
+# 12. Adjust a slider (buy price)
+- scrollUntilVisible:
+    element: "Buy Price"
+    direction: DOWN
+
+# 13. Apply and return to Verdict
+- scrollUntilVisible:
+    element: "Apply & Return to Verdict"
+    direction: DOWN
+- tapOn: "Apply & Return to Verdict"
+- waitForAnimationToEnd
+
+# 14. Back on Verdict screen
+- assertVisible: "IQ Verdict"
