@@ -603,6 +603,12 @@ function VerdictContent() {
         return lp != null && iv != null && lp > 0 ? Math.round(((lp - iv) / lp) * 1000) / 10 : undefined
       })(),
       incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
+      dealGapPercent: analysisData.deal_gap_percent ?? analysisData.dealGapPercent ?? (() => {
+        const lp = analysisData.list_price ?? analysisData.listPrice
+        const pp = analysisData.purchase_price ?? analysisData.purchasePrice
+        return lp != null && pp != null && lp > 0 ? Math.round(((lp - pp) / lp) * 1000) / 10 : undefined
+      })(),
+      dealGapAmount: analysisData.deal_gap_amount ?? analysisData.dealGapAmount,
       inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
       strategies: (analysisData.strategies ?? []).map((s: any) => ({
         id: s.id as IQStrategy['id'],
@@ -852,6 +858,10 @@ function VerdictContent() {
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
   const verdictDealFactors = analysis.dealFactors ?? []
   const verdictBracketLabel = analysis.discountBracketLabel ?? ''
+  const dealGapPct = analysis.dealGapPercent ?? (() => {
+    const lp = analysis.listPrice ?? property?.price
+    return lp != null && lp > 0 && purchasePrice != null ? Math.round(((lp - purchasePrice) / lp) * 1000) / 10 : undefined
+  })()
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -894,14 +904,14 @@ function VerdictContent() {
               score={score}
               verdictLabel={verdictLabel}
               description={shortVerdictDescription}
-              dealGapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined}
+              dealGapPercent={dealGapPct != null ? Math.max(0, dealGapPct) : undefined}
               discountBracketLabel={verdictBracketLabel}
               dealFactors={verdictDealFactors}
               onHowItWorks={handleShowMethodology}
             />
-            {/* Deal Gap + Deal Factors — why did it score this way */}
+            {/* Deal Gap (same % the score is based on) + Key Deal Factors */}
             <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
-              <DealGapCallout gapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined} bracketLabel={verdictBracketLabel} />
+              <DealGapCallout gapPercent={dealGapPct != null ? Math.max(0, dealGapPct) : undefined} bracketLabel={verdictBracketLabel} />
               <DealFactorsList factors={verdictDealFactors} />
             </section>
 
