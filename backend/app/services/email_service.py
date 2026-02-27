@@ -4,8 +4,8 @@ Email Service for sending transactional emails via Resend.
 
 import logging
 import os
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any
 
 from app.core.config import settings
 
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 # Try to import resend, fall back gracefully if not available
 try:
     import resend
+
     RESEND_AVAILABLE = True
 except ImportError:
     RESEND_AVAILABLE = False
@@ -23,41 +24,41 @@ except ImportError:
 class EmailService:
     """
     Service for sending transactional emails.
-    
+
     Uses Resend for email delivery with beautiful HTML templates.
     Falls back to logging emails in development mode.
     """
-    
+
     def __init__(self):
         self.api_key = os.getenv("RESEND_API_KEY")
         self.from_email = os.getenv("EMAIL_FROM", "DealGapIQ <noreply@dealgapiq.com>")
         self.frontend_url = os.getenv("FRONTEND_URL", "https://dealgapiq.com")
         self.is_configured = bool(self.api_key and RESEND_AVAILABLE)
-        
+
         if self.is_configured:
             resend.api_key = self.api_key
             logger.info("Email service initialized with Resend")
         else:
             logger.warning("Email service running in dev mode (no emails will be sent)")
-    
+
     async def send_email(
         self,
-        to: str | List[str],
+        to: str | list[str],
         subject: str,
         html: str,
-        text: Optional[str] = None,
-        reply_to: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        text: str | None = None,
+        reply_to: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send an email via Resend.
-        
+
         Args:
             to: Recipient email(s)
             subject: Email subject
             html: HTML body
             text: Plain text body (optional)
             reply_to: Reply-to address (optional)
-        
+
         Returns:
             Response from Resend API or mock response
         """
@@ -66,7 +67,7 @@ class EmailService:
             logger.info(f"[DEV EMAIL] To: {to} | Subject: {subject}")
             logger.debug(f"[DEV EMAIL] Body: {html[:200]}...")
             return {"id": "dev-mode", "success": True}
-        
+
         try:
             params = {
                 "from": self.from_email,
@@ -74,27 +75,27 @@ class EmailService:
                 "subject": subject,
                 "html": html,
             }
-            
+
             if text:
                 params["text"] = text
             if reply_to:
                 params["reply_to"] = reply_to
-            
+
             response = resend.Emails.send(params)
             logger.info(f"Email sent to {to}: {response.get('id', 'unknown')}")
             return {"id": response.get("id"), "success": True}
-            
+
         except Exception as e:
             logger.error(f"Failed to send email to {to}: {e}")
             return {"error": str(e), "success": False}
-    
+
     # ===========================================
     # Email Templates
     # ===========================================
-    
+
     def _base_template(self, content: str, preview_text: str = "") -> str:
         """Wrap content in the base email template."""
-        return f'''
+        return f"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -113,7 +114,7 @@ class EmailService:
     <div style="display: none; max-height: 0; overflow: hidden;">
         {preview_text}
     </div>
-    
+
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5;">
         <tr>
             <td align="center" style="padding: 40px 20px;">
@@ -130,7 +131,7 @@ class EmailService:
                             </table>
                         </td>
                     </tr>
-                    
+
                     <!-- Content Card -->
                     <tr>
                         <td>
@@ -143,7 +144,7 @@ class EmailService:
                             </table>
                         </td>
                     </tr>
-                    
+
                     <!-- Footer -->
                     <tr>
                         <td align="center" style="padding-top: 30px;">
@@ -161,8 +162,8 @@ class EmailService:
     </table>
 </body>
 </html>
-'''
-    
+"""
+
     def _button(self, text: str, url: str, color: str = "#0891b2") -> str:
         """Generate a styled button."""
         return f'''
@@ -176,20 +177,20 @@ class EmailService:
     </tr>
 </table>
 '''
-    
+
     # ===========================================
     # Transactional Emails
     # ===========================================
-    
+
     async def send_verification_email(
         self,
         to: str,
         user_name: str,
         verification_token: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send email verification email."""
         verification_url = f"{self.frontend_url}/verify-email?token={verification_token}"
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Verify your email address
@@ -217,24 +218,24 @@ class EmailService:
     <a href="{verification_url}" style="color: #0891b2; word-break: break-all;">{verification_url}</a>
 </p>
 '''
-        
+
         html = self._base_template(content, "Verify your email to get started with DealGapIQ")
-        
+
         return await self.send_email(
             to=to,
             subject="Verify your email address - DealGapIQ",
             html=html,
         )
-    
+
     async def send_password_reset_email(
         self,
         to: str,
         user_name: str,
         reset_token: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send password reset email."""
         reset_url = f"{self.frontend_url}/reset-password?token={reset_token}"
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Reset your password
@@ -262,24 +263,24 @@ class EmailService:
     <a href="{reset_url}" style="color: #0891b2; word-break: break-all;">{reset_url}</a>
 </p>
 '''
-        
+
         html = self._base_template(content, "Reset your DealGapIQ password")
-        
+
         return await self.send_email(
             to=to,
             subject="Reset your password - DealGapIQ",
             html=html,
         )
-    
+
     async def send_welcome_email(
         self,
         to: str,
         user_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send welcome email after verification."""
         dashboard_url = f"{self.frontend_url}/dashboard"
         strategies_url = f"{self.frontend_url}/strategies"
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Welcome to DealGapIQ! 🎉
@@ -351,20 +352,20 @@ class EmailService:
     Have questions? Reply to this email or visit our <a href="{strategies_url}" style="color: #0891b2;">Strategy Guides</a>.
 </p>
 '''
-        
+
         html = self._base_template(content, "Your DealGapIQ account is ready!")
-        
+
         return await self.send_email(
             to=to,
             subject="Welcome to DealGapIQ! 🎉",
             html=html,
         )
-    
+
     async def send_password_changed_email(
         self,
         to: str,
         user_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send notification that password was changed."""
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
@@ -392,29 +393,29 @@ class EmailService:
     Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
 </p>
 '''
-        
+
         html = self._base_template(content, "Your DealGapIQ password was changed")
-        
+
         return await self.send_email(
             to=to,
             subject="Your password was changed - DealGapIQ",
             html=html,
         )
-    
+
     # ===========================================
     # Billing & Subscription Emails
     # ===========================================
-    
+
     async def send_pro_welcome_email(
         self,
         to: str,
         user_name: str,
-        trial_end_date: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        trial_end_date: str | None = None,
+    ) -> dict[str, Any]:
         """Send welcome email when user starts a Pro subscription (trial or paid)."""
         billing_url = f"{self.frontend_url}/billing"
         dashboard_url = f"{self.frontend_url}/dashboard"
-        
+
         trial_note = ""
         if trial_end_date:
             trial_note = f'''
@@ -430,7 +431,7 @@ class EmailService:
     </tr>
 </table>
 '''
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     You're now a Pro Investor
@@ -498,25 +499,25 @@ class EmailService:
     Manage your subscription anytime from your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
 </p>
 '''
-        
+
         html = self._base_template(content, "You're now a DealGapIQ Pro Investor")
-        
+
         return await self.send_email(
             to=to,
             subject="Welcome to DealGapIQ Pro",
             html=html,
         )
-    
+
     async def send_trial_ending_email(
         self,
         to: str,
         user_name: str,
         trial_end_date: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send reminder 3 days before trial ends."""
         billing_url = f"{self.frontend_url}/billing"
         dashboard_url = f"{self.frontend_url}/dashboard"
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Your free trial ends on {trial_end_date}
@@ -558,15 +559,15 @@ class EmailService:
     </tr>
 </table>
 '''
-        
+
         html = self._base_template(content, f"Your DealGapIQ Pro trial ends on {trial_end_date}")
-        
+
         return await self.send_email(
             to=to,
             subject=f"Your Pro trial ends on {trial_end_date} - DealGapIQ",
             html=html,
         )
-    
+
     async def send_payment_receipt_email(
         self,
         to: str,
@@ -574,20 +575,22 @@ class EmailService:
         amount_cents: int,
         currency: str,
         description: str,
-        receipt_url: Optional[str] = None,
-        invoice_pdf_url: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        receipt_url: str | None = None,
+        invoice_pdf_url: str | None = None,
+    ) -> dict[str, Any]:
         """Send payment receipt after successful charge."""
         billing_url = f"{self.frontend_url}/billing"
-        amount_display = f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
-        
+        amount_display = (
+            f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
+        )
+
         receipt_link = ""
         if receipt_url:
             receipt_link = f'<a href="{receipt_url}" style="color: #0891b2; font-weight: 600;">View receipt</a>'
         if invoice_pdf_url:
             separator = " &middot; " if receipt_link else ""
             receipt_link += f'{separator}<a href="{invoice_pdf_url}" style="color: #0891b2; font-weight: 600;">Download invoice (PDF)</a>'
-        
+
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Payment received
@@ -630,27 +633,29 @@ class EmailService:
     Manage billing at your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
 </p>
 '''
-        
+
         html = self._base_template(content, f"Payment of {amount_display} received")
-        
+
         return await self.send_email(
             to=to,
             subject=f"Payment received ({amount_display}) - DealGapIQ",
             html=html,
         )
-    
+
     async def send_payment_failed_email(
         self,
         to: str,
         user_name: str,
         amount_cents: int,
         currency: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send notification when a payment fails."""
         billing_url = f"{self.frontend_url}/billing"
-        amount_display = f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
-        
-        content = f'''
+        amount_display = (
+            f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
+        )
+
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Payment failed
 </h1>
@@ -683,25 +688,25 @@ class EmailService:
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     If you believe this is an error, please check with your bank or reply to this email.
 </p>
-'''
-        
+"""
+
         html = self._base_template(content, f"Action required: payment of {amount_display} failed")
-        
+
         return await self.send_email(
             to=to,
-            subject=f"Payment failed - action required - DealGapIQ",
+            subject="Payment failed - action required - DealGapIQ",
             html=html,
         )
-    
+
     async def send_subscription_canceled_email(
         self,
         to: str,
         user_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send confirmation when subscription is fully canceled."""
         pricing_url = f"{self.frontend_url}/pricing"
-        
-        content = f'''
+
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Your Pro subscription has ended
 </h1>
@@ -731,20 +736,20 @@ class EmailService:
 </p>
 
 {self._button("View Plans", pricing_url)}
-'''
-        
+"""
+
         html = self._base_template(content, "Your DealGapIQ Pro subscription has ended")
-        
+
         return await self.send_email(
             to=to,
             subject="Your Pro subscription has ended - DealGapIQ",
             html=html,
         )
-    
+
     # ===========================================
     # Property & Alert Emails
     # ===========================================
-    
+
     async def send_property_alert_email(
         self,
         to: str,
@@ -752,11 +757,11 @@ class EmailService:
         property_address: str,
         alert_type: str,
         details: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send property alert notification."""
         property_url = f"{self.frontend_url}/property?address={property_address}"
-        
-        content = f'''
+
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Property Alert: {alert_type}
 </h1>
@@ -777,10 +782,10 @@ class EmailService:
 </table>
 
 {self._button("View Property Analysis", property_url)}
-'''
-        
+"""
+
         html = self._base_template(content, f"Alert: {alert_type} for {property_address}")
-        
+
         return await self.send_email(
             to=to,
             subject=f"Property Alert: {alert_type} - DealGapIQ",
@@ -790,4 +795,3 @@ class EmailService:
 
 # Singleton instance
 email_service = EmailService()
-

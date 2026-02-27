@@ -9,7 +9,7 @@ import secrets
 import time
 import uuid
 from collections import defaultdict
-from typing import Callable, Dict
+from collections.abc import Callable
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -24,9 +24,7 @@ logger = logging.getLogger(__name__)
 # Correlation / Request-ID context (async-safe via contextvars)
 # ---------------------------------------------------------------------------
 
-request_id_ctx: contextvars.ContextVar[str] = contextvars.ContextVar(
-    "request_id", default="-"
-)
+request_id_ctx: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
 
 
 class RequestIDLogFilter(logging.Filter):
@@ -46,6 +44,7 @@ class RequestIDLogFilter(logging.Filter):
 # RATE LIMITING MIDDLEWARE
 # ============================================
 
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Sliding-window rate limiter with optional Redis backend."""
 
@@ -53,11 +52,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.default_limit = default_limit
         self.default_period = default_period
-        self.requests: Dict[str, list] = defaultdict(list)
+        self.requests: dict[str, list] = defaultdict(list)
         self._redis_client = None
         self._redis_available = None
 
-        self.route_limits: Dict[str, tuple] = {
+        self.route_limits: dict[str, tuple] = {
             "/api/v1/auth/login": (5, 60),
             "/api/v1/auth/login/mfa": (10, 60),
             "/api/v1/auth/register": (3, 60),
@@ -72,6 +71,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if settings.REDIS_URL:
                 try:
                     import redis.asyncio as aioredis
+
                     self._redis_client = aioredis.from_url(
                         settings.REDIS_URL,
                         encoding="utf-8",
@@ -87,8 +87,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     )
                 except Exception as e:
                     logger.warning(
-                        "Redis not available for rate limiting, falling back to "
-                        "in-memory (per-worker) counters: %s", e,
+                        "Redis not available for rate limiting, falling back to in-memory (per-worker) counters: %s",
+                        e,
                     )
                     self._redis_available = False
             else:
@@ -151,7 +151,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if limited:
             return JSONResponse(
                 status_code=429,
-                content={"error": True, "code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests.", "details": {"retry_after": retry}},
+                content={
+                    "error": True,
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many requests.",
+                    "details": {"retry_after": retry},
+                },
                 headers={"Retry-After": str(retry)},
             )
         return await call_next(request)
@@ -160,6 +165,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # ============================================
 # CSRF PROTECTION MIDDLEWARE (double-submit cookie)
 # ============================================
+
 
 class CSRFMiddleware(BaseHTTPMiddleware):
     """Double-submit cookie CSRF protection for cookie-based auth.
@@ -225,6 +231,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 # SECURITY HEADERS MIDDLEWARE
 # ============================================
 
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
@@ -244,6 +251,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 # REQUEST TIMING MIDDLEWARE
 # ============================================
 
+
 class RequestTimingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start = time.time()
@@ -258,6 +266,7 @@ class RequestTimingMiddleware(BaseHTTPMiddleware):
 # ============================================
 # REQUEST ID MIDDLEWARE
 # ============================================
+
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """Inject a unique request ID for tracing.
@@ -311,7 +320,7 @@ class AuditLoggingMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
 
-        extra: Dict = {
+        extra: dict = {
             "method": request.method,
             "path": path,
             "status": response.status_code,

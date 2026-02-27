@@ -8,7 +8,7 @@ FastAPI BackgroundTasks so they don't block request handling.
 """
 
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Any
 from uuid import UUID
 
 import httpx
@@ -16,7 +16,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.device_token import DeviceToken
 from app.models.user import UserProfile
 from app.services.device_service import device_service
 
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
 
 # Default notification preferences when user has none set
-DEFAULT_NOTIFICATION_PREFS: Dict[str, bool] = {
+DEFAULT_NOTIFICATION_PREFS: dict[str, bool] = {
     "push_enabled": True,
     "property_alerts": True,
     "subscription_alerts": True,
@@ -41,13 +40,13 @@ class PushNotificationService:
     async def send_to_tokens(
         self,
         db: AsyncSession,
-        tokens: List[str],
+        tokens: list[str],
         *,
         title: str,
         body: str,
-        data: Optional[Dict[str, Any]] = None,
-        channel_id: Optional[str] = None,
-        badge: Optional[int] = None,
+        data: dict[str, Any] | None = None,
+        channel_id: str | None = None,
+        badge: int | None = None,
     ) -> None:
         """
         Send a push notification to a list of Expo push tokens.
@@ -61,7 +60,7 @@ class PushNotificationService:
         # Build messages
         messages = []
         for token in tokens:
-            msg: Dict[str, Any] = {
+            msg: dict[str, Any] = {
                 "to": token,
                 "title": title,
                 "body": body,
@@ -76,7 +75,7 @@ class PushNotificationService:
             messages.append(msg)
 
         # Send in batches of 100 (Expo limit)
-        headers: Dict[str, str] = {
+        headers: dict[str, str] = {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
@@ -119,9 +118,9 @@ class PushNotificationService:
         *,
         title: str,
         body: str,
-        data: Optional[Dict[str, Any]] = None,
+        data: dict[str, Any] | None = None,
         category: str = "property_alerts",
-        channel_id: Optional[str] = None,
+        channel_id: str | None = None,
     ) -> None:
         """
         Send a notification to all active devices for a user.
@@ -132,9 +131,7 @@ class PushNotificationService:
         """
         # Check user preferences
         if not await self._user_allows_category(db, user_id, category):
-            logger.debug(
-                "Notification skipped for user %s (category '%s' disabled)", user_id, category
-            )
+            logger.debug("Notification skipped for user %s (category '%s' disabled)", user_id, category)
             return
 
         tokens = await device_service.get_active_tokens_for_user(db, user_id)
@@ -157,7 +154,7 @@ class PushNotificationService:
         *,
         title: str,
         body: str,
-        data: Optional[Dict[str, Any]] = None,
+        data: dict[str, Any] | None = None,
         category: str = "marketing",
     ) -> int:
         """
@@ -198,13 +195,9 @@ class PushNotificationService:
 
         If no preferences are stored, defaults to True (opt-in).
         """
-        result = await db.execute(
-            select(UserProfile.notification_preferences).where(
-                UserProfile.user_id == user_id
-            )
-        )
+        result = await db.execute(select(UserProfile.notification_preferences).where(UserProfile.user_id == user_id))
         prefs_row = result.scalar_one_or_none()
-        prefs: Dict[str, Any] = prefs_row if isinstance(prefs_row, dict) else {}
+        prefs: dict[str, Any] = prefs_row if isinstance(prefs_row, dict) else {}
 
         # Merge with defaults (missing keys → True)
         effective = {**DEFAULT_NOTIFICATION_PREFS, **prefs}
@@ -221,14 +214,14 @@ class PushNotificationService:
     async def _handle_tickets(
         self,
         db: AsyncSession,
-        sent_messages: List[Dict[str, Any]],
-        tickets: List[Dict[str, Any]],
+        sent_messages: list[dict[str, Any]],
+        tickets: list[dict[str, Any]],
     ) -> None:
         """
         Process Expo push tickets and deactivate tokens that are no
         longer valid (DeviceNotRegistered).
         """
-        for msg, ticket in zip(sent_messages, tickets):
+        for msg, ticket in zip(sent_messages, tickets, strict=False):
             ticket_status = ticket.get("status")
             if ticket_status == "ok":
                 continue

@@ -1,5 +1,5 @@
 """
-Session service – server-side session lifecycle.
+Session service - server-side session lifecycle.
 
 A session represents a single login from a specific device.  It stores
 an opaque ``session_token`` (delivered as an httpOnly cookie for web /
@@ -17,12 +17,10 @@ from __future__ import annotations
 import logging
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Optional, List
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.models.session import UserSession
 from app.repositories.session_repository import session_repo
 from app.services.token_service import token_service
@@ -32,7 +30,7 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------
 # Constants
 # -----------------------------------------------------------------------
-SESSION_TOKEN_BYTES = 64     # 64 url-safe bytes → ~86 chars
+SESSION_TOKEN_BYTES = 64  # 64 url-safe bytes → ~86 chars
 DEFAULT_SESSION_DAYS = 7
 REMEMBER_ME_SESSION_DAYS = 30
 
@@ -49,18 +47,16 @@ class SessionService:
         db: AsyncSession,
         user_id: uuid.UUID,
         *,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        device_name: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        device_name: str | None = None,
         remember_me: bool = False,
     ) -> tuple[UserSession, str]:
         """Create a new session and return (session, jwt).
 
         The caller is responsible for committing the transaction.
         """
-        lifetime = timedelta(
-            days=REMEMBER_ME_SESSION_DAYS if remember_me else DEFAULT_SESSION_DAYS
-        )
+        lifetime = timedelta(days=REMEMBER_ME_SESSION_DAYS if remember_me else DEFAULT_SESSION_DAYS)
 
         session_obj = await session_repo.create(
             db,
@@ -70,7 +66,7 @@ class SessionService:
             ip_address=ip_address,
             user_agent=user_agent,
             device_name=device_name,
-            expires_at=datetime.now(timezone.utc) + lifetime,
+            expires_at=datetime.now(UTC) + lifetime,
         )
 
         access_jwt = token_service.create_jwt(user_id, session_obj.id)
@@ -80,7 +76,7 @@ class SessionService:
         self,
         db: AsyncSession,
         refresh_token: str,
-    ) -> Optional[tuple[UserSession, str, str]]:
+    ) -> tuple[UserSession, str, str] | None:
         """Validate a refresh token and rotate it.
 
         Returns ``(session, new_jwt, new_refresh_token)`` or ``None``.
@@ -88,7 +84,7 @@ class SessionService:
         session_obj = await session_repo.get_by_refresh_token(db, refresh_token)
         if session_obj is None:
             return None
-        if session_obj.expires_at < datetime.now(timezone.utc):
+        if session_obj.expires_at < datetime.now(UTC):
             await session_repo.revoke(db, session_obj.id)
             return None
 
@@ -103,7 +99,7 @@ class SessionService:
         self,
         db: AsyncSession,
         raw_jwt: str,
-    ) -> Optional[UserSession]:
+    ) -> UserSession | None:
         """Verify a JWT and load the backing session from the DB.
 
         Returns the session if valid and not revoked, else None.
@@ -124,7 +120,7 @@ class SessionService:
         session_obj = await session_repo.get_by_id(db, sid)
         if session_obj is None or session_obj.is_revoked:
             return None
-        if session_obj.expires_at < datetime.now(timezone.utc):
+        if session_obj.expires_at < datetime.now(UTC):
             return None
 
         # Verify user_id matches
@@ -147,17 +143,15 @@ class SessionService:
         db: AsyncSession,
         user_id: uuid.UUID,
         *,
-        except_session_id: Optional[uuid.UUID] = None,
+        except_session_id: uuid.UUID | None = None,
     ) -> int:
-        return await session_repo.revoke_all_for_user(
-            db, user_id, except_session_id=except_session_id
-        )
+        return await session_repo.revoke_all_for_user(db, user_id, except_session_id=except_session_id)
 
     async def list_sessions(
         self,
         db: AsyncSession,
         user_id: uuid.UUID,
-    ) -> List[UserSession]:
+    ) -> list[UserSession]:
         return await session_repo.list_active(db, user_id)
 
     async def cleanup_expired(self, db: AsyncSession) -> int:

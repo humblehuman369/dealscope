@@ -5,22 +5,25 @@ Access is controlled by RBAC permissions via ``require_permission``.
 The legacy ``SuperUser`` dependency is no longer used here.
 """
 
-import logging
-from typing import Optional, List
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+
 from app.core.deps import DbSession, require_permission
-from app.models.user import User
 from app.models.audit_log import AuditAction
+from app.models.user import User
 from app.repositories.audit_repository import audit_repo
-from app.services.admin_service import admin_service
 from app.schemas.admin import (
-    AdminUserResponse, AdminUserUpdate, PlatformStats,
-    AdminAssumptionsResponse, MetricsGlossaryResponse,
+    AdminAssumptionsResponse,
+    AdminUserResponse,
+    AdminUserUpdate,
+    MetricsGlossaryResponse,
+    PlatformStats,
 )
 from app.schemas.property import AllAssumptions
+from app.services.admin_service import admin_service
 from app.services.assumptions_service import (
     get_assumptions_record,
     get_default_assumptions,
@@ -35,6 +38,7 @@ router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 # ===========================================
 # Platform Statistics
 # ===========================================
+
 
 @router.get(
     "/stats",
@@ -59,16 +63,16 @@ _MAX_OFFSET = 10_000  # Hard ceiling to prevent deep-pagination perf degradation
 
 @router.get(
     "/users",
-    response_model=List[AdminUserResponse],
+    response_model=list[AdminUserResponse],
     summary="List all users",
     dependencies=[Depends(require_permission("admin:users"))],
 )
 async def list_users(
     db: DbSession,
     response: Response,
-    search: Optional[str] = Query(None, description="Search by email or name"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    is_superuser: Optional[bool] = Query(None, description="Filter by admin status"),
+    search: str | None = Query(None, description="Search by email or name"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    is_superuser: bool | None = Query(None, description="Filter by admin status"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0, le=_MAX_OFFSET),
     order_by: str = Query("created_at_desc", description="Order by field"),
@@ -94,6 +98,7 @@ async def list_users(
 # ===========================================
 # Assumptions & Metrics Glossary
 # ===========================================
+
 
 @router.get(
     "/assumptions",
@@ -121,10 +126,7 @@ async def get_admin_assumptions(
             updated_by = str(record.updated_by)
 
     return AdminAssumptionsResponse(
-        assumptions=assumptions,
-        updated_at=updated_at,
-        updated_by=updated_by,
-        updated_by_email=updated_by_email
+        assumptions=assumptions, updated_at=updated_at, updated_by=updated_by, updated_by_email=updated_by_email
     )
 
 
@@ -177,14 +179,14 @@ async def get_metrics_glossary():
         Path("/app/app/data/metrics_glossary.json"),  # Railway absolute path
         Path("app/data/metrics_glossary.json"),  # Relative from working dir
     ]
-    
+
     glossary_path = None
     for path in possible_paths:
         logger.info(f"Trying glossary path: {path} (exists: {path.exists()})")
         if path.exists():
             glossary_path = path
             break
-    
+
     if glossary_path is None:
         logger.error(f"Metrics glossary not found. Tried paths: {possible_paths}")
         raise HTTPException(status_code=404, detail=f"Metrics glossary not found. __file__={__file__}")
@@ -210,19 +212,21 @@ async def get_user(
 
     user = await admin_service.get_user_by_id(db, _UUID(user_id))
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     counts = await admin_service._get_user_property_counts(db, [user.id])
     saved_count = counts.get(user.id, 0)
 
     return AdminUserResponse(
-        id=str(user.id), email=user.email, full_name=user.full_name,
-        avatar_url=user.avatar_url, is_active=user.is_active,
-        is_verified=user.is_verified, is_superuser=user.is_superuser,
-        created_at=user.created_at, last_login=user.last_login,
+        id=str(user.id),
+        email=user.email,
+        full_name=user.full_name,
+        avatar_url=user.avatar_url,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        is_superuser=user.is_superuser,
+        created_at=user.created_at,
+        last_login=user.last_login,
         saved_properties_count=saved_count,
     )
 
@@ -276,10 +280,15 @@ async def update_user(
     saved_count = counts.get(user.id, 0)
 
     return AdminUserResponse(
-        id=str(updated_user.id), email=updated_user.email, full_name=updated_user.full_name,
-        avatar_url=updated_user.avatar_url, is_active=updated_user.is_active,
-        is_verified=updated_user.is_verified, is_superuser=updated_user.is_superuser,
-        created_at=updated_user.created_at, last_login=updated_user.last_login,
+        id=str(updated_user.id),
+        email=updated_user.email,
+        full_name=updated_user.full_name,
+        avatar_url=updated_user.avatar_url,
+        is_active=updated_user.is_active,
+        is_verified=updated_user.is_verified,
+        is_superuser=updated_user.is_superuser,
+        created_at=updated_user.created_at,
+        last_login=updated_user.last_login,
         saved_properties_count=saved_count,
     )
 
@@ -326,17 +335,19 @@ async def delete_user(
 # Cache Management
 # ===========================================
 
+
 @router.delete(
     "/cache/property",
     summary="Clear property cache",
     response_model=dict,
 )
 async def clear_property_cache(
-    address: Optional[str] = Query(None, description="Address to clear. Omit to flush all property keys."),
+    address: str | None = Query(None, description="Address to clear. Omit to flush all property keys."),
     admin_user: User = Depends(require_permission("admin:manage")),
 ):
     """Clear cached property data. Pass `address` for a single property, or omit to flush all."""
     from app.services.cache_service import get_cache_service
+
     cache = get_cache_service()
     if address:
         ok = await cache.clear_property_cache(address)

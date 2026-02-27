@@ -4,24 +4,24 @@ Shared utilities for investment calculators.
 Validation, mortgage math, and common financial formulas used
 across all strategy calculators.
 """
-from typing import Optional
 
 
 class CalculationInputError(ValueError):
     """Raised when calculator inputs are outside acceptable bounds."""
+
     pass
 
 
 def validate_financial_inputs(
-    purchase_price: Optional[float] = None,
-    monthly_rent: Optional[float] = None,
-    interest_rate: Optional[float] = None,
-    down_payment_pct: Optional[float] = None,
-    loan_term_years: Optional[int] = None,
-    arv: Optional[float] = None,
-    rehab_cost: Optional[float] = None,
-    holding_period_months: Optional[int] = None,
-    assignment_fee: Optional[float] = None,
+    purchase_price: float | None = None,
+    monthly_rent: float | None = None,
+    interest_rate: float | None = None,
+    down_payment_pct: float | None = None,
+    loan_term_years: int | None = None,
+    arv: float | None = None,
+    rehab_cost: float | None = None,
+    holding_period_months: int | None = None,
+    assignment_fee: float | None = None,
 ) -> None:
     """Validate financial inputs are within reasonable bounds."""
     errors = []
@@ -92,8 +92,7 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
     monthly_rate = annual_rate / 12
     num_payments = years * 12
 
-    payment = principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / \
-              ((1 + monthly_rate) ** num_payments - 1)
+    payment = principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
 
     return payment
 
@@ -113,21 +112,21 @@ def calculate_cap_rate(noi: float, property_value: float) -> float:
 def calculate_cash_on_cash(annual_cash_flow: float, total_cash_invested: float) -> float:
     """Calculate Cash-on-Cash Return."""
     if total_cash_invested == 0:
-        return float('inf') if annual_cash_flow > 0 else 0
+        return float("inf") if annual_cash_flow > 0 else 0
     return annual_cash_flow / total_cash_invested
 
 
 def calculate_dscr(noi: float, annual_debt_service: float) -> float:
     """Calculate Debt Service Coverage Ratio."""
     if annual_debt_service == 0:
-        return float('inf')
+        return float("inf")
     return noi / annual_debt_service
 
 
 def calculate_grm(property_price: float, annual_gross_rent: float) -> float:
     """Calculate Gross Rent Multiplier."""
     if annual_gross_rent == 0:
-        return float('inf')
+        return float("inf")
     return property_price / annual_gross_rent
 
 

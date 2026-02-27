@@ -3,7 +3,8 @@
 Pure calculation module — accepts only explicit, fully-resolved parameters.
 No imports from app.core.defaults allowed.
 """
-from typing import Dict, Any
+
+from typing import Any
 
 from .common import validate_financial_inputs
 
@@ -25,7 +26,7 @@ def calculate_flip(
     capital_gains_rate: float,
     inspection_costs: float = 1000,
     security_maintenance_monthly: float = 83,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate Fix & Flip metrics.
 
     Every financial assumption is a required parameter — the caller
@@ -58,15 +59,11 @@ def calculate_flip(
     utilities_total = utilities_monthly * holding_period_months
     security_maintenance = security_maintenance_monthly * holding_period_months
     total_holding_costs = (
-        hard_money_interest + property_taxes_holding + insurance_holding
-        + utilities_total + security_maintenance
+        hard_money_interest + property_taxes_holding + insurance_holding + utilities_total + security_maintenance
     )
 
     # Total Project Cost
-    total_project_cost = (
-        purchase_price + closing_costs + inspection_costs
-        + total_renovation + total_holding_costs
-    )
+    total_project_cost = purchase_price + closing_costs + inspection_costs + total_renovation + total_holding_costs
 
     # Total Cash Required
     total_cash_required = total_acquisition_cash + total_renovation + total_holding_costs

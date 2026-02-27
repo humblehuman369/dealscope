@@ -5,7 +5,7 @@ Moved from app/routers/admin.py as part of Phase 2 Architecture Cleanup.
 """
 
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any
 
 from pydantic import BaseModel, EmailStr
 
@@ -14,15 +14,16 @@ from app.schemas.property import AllAssumptions
 
 class AdminUserResponse(BaseModel):
     """User response for admin view."""
+
     id: str
     email: str
-    full_name: Optional[str]
-    avatar_url: Optional[str]
+    full_name: str | None
+    avatar_url: str | None
     is_active: bool
     is_verified: bool
     is_superuser: bool
     created_at: datetime
-    last_login: Optional[datetime]
+    last_login: datetime | None
     saved_properties_count: int = 0
 
     class Config:
@@ -31,14 +32,16 @@ class AdminUserResponse(BaseModel):
 
 class AdminUserUpdate(BaseModel):
     """Schema for admin updating a user."""
-    full_name: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_verified: Optional[bool] = None
-    is_superuser: Optional[bool] = None
+
+    full_name: str | None = None
+    is_active: bool | None = None
+    is_verified: bool | None = None
+    is_superuser: bool | None = None
 
 
 class PlatformStats(BaseModel):
     """Platform statistics."""
+
     total_users: int
     active_users: int
     total_properties_saved: int
@@ -49,12 +52,14 @@ class PlatformStats(BaseModel):
 
 class AdminAssumptionsResponse(BaseModel):
     """Response for admin assumption defaults."""
+
     assumptions: AllAssumptions
-    updated_at: Optional[datetime] = None
-    updated_by: Optional[str] = None
-    updated_by_email: Optional[EmailStr] = None
+    updated_at: datetime | None = None
+    updated_by: str | None = None
+    updated_by_email: EmailStr | None = None
 
 
 class MetricsGlossaryResponse(BaseModel):
     """Metrics glossary payload."""
+
     data: Any

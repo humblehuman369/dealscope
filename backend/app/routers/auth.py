@@ -1,5 +1,5 @@
 """
-Auth router – registration, login, logout, token refresh, password
+Auth router - registration, login, logout, token refresh, password
 management, email verification, MFA, and session management.
 
 Every endpoint delegates to the service layer.  No business logic here.
@@ -8,11 +8,10 @@ Every endpoint delegates to the service layer.  No business logic here.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 from urllib.parse import urlencode, urlparse
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,8 +20,6 @@ from app.core.deps import (
     CurrentSession,
     CurrentUser,
     DbSession,
-    get_current_session,
-    get_current_user,
 )
 from app.repositories.role_repository import role_repo
 from app.schemas.auth import (
@@ -47,7 +44,6 @@ from app.schemas.auth import (
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
 from app.services.session_service import session_service
-from app.services.token_service import token_service
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +54,8 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 # Helpers
 # ------------------------------------------------------------------
 
-def _client_ip(request: Request) -> Optional[str]:
+
+def _client_ip(request: Request) -> str | None:
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
         return forwarded.split(",")[0].strip()
@@ -75,8 +72,12 @@ def _set_auth_cookies(response: Response, session_token: str, refresh_token: str
         path="/",
     )
     response.set_cookie(key="access_token", value=access_jwt, max_age=300, **cookie_kwargs)
-    response.set_cookie(key="refresh_token", value=refresh_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs)
-    response.set_cookie(key="session_token", value=session_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs)
+    response.set_cookie(
+        key="refresh_token", value=refresh_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs
+    )
+    response.set_cookie(
+        key="session_token", value=session_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs
+    )
 
 
 def _clear_auth_cookies(response: Response) -> None:
@@ -115,11 +116,13 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
     profile = user.__dict__.get("profile")
     if profile is None and "profile" not in user.__dict__:
         from app.repositories.user_repository import user_repo
+
         profile_user = await user_repo.get_by_id(db, user.id, load_profile=True)
         profile = profile_user.profile if profile_user else None
 
     # -- Subscription tier (lightweight lookup) --
     from app.services.billing_service import billing_service
+
     subscription = await billing_service.get_subscription(db, user.id)
     tier = subscription.tier.value if subscription else "free"
     sub_status = subscription.status.value if subscription else "active"
@@ -147,6 +150,7 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
 # ------------------------------------------------------------------
 # Registration
 # ------------------------------------------------------------------
+
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: UserRegister, request: Request, response: Response, db: DbSession):
@@ -283,8 +287,9 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 
     # Verify id_token signature, audience, and issuer server-side
     try:
-        from google.oauth2 import id_token as google_id_token
         from google.auth.transport import requests as google_requests
+        from google.oauth2 import id_token as google_id_token
+
         idinfo = google_id_token.verify_oauth2_token(
             raw_id_token,
             google_requests.Request(),
@@ -334,6 +339,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 # ------------------------------------------------------------------
 # Login
 # ------------------------------------------------------------------
+
 
 @router.post("/login")
 async def login(body: UserLogin, request: Request, response: Response, db: DbSession):
@@ -400,8 +406,9 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
 # Token refresh
 # ------------------------------------------------------------------
 
+
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(request: Request, response: Response, db: DbSession, body: Optional[RefreshTokenRequest] = None):
+async def refresh_token(request: Request, response: Response, db: DbSession, body: RefreshTokenRequest | None = None):
     """Refresh the access token using a refresh token (cookie or body)."""
     rt = request.cookies.get("refresh_token")
     if body and body.refresh_token:
@@ -428,6 +435,7 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
 # Logout
 # ------------------------------------------------------------------
 
+
 @router.post("/logout", response_model=AuthMessage)
 async def logout(request: Request, response: Response, db: DbSession, session: CurrentSession):
     """Revoke the current session and clear cookies."""
@@ -446,6 +454,7 @@ async def logout(request: Request, response: Response, db: DbSession, session: C
 # Current user
 # ------------------------------------------------------------------
 
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(user: CurrentUser, db: DbSession):
     """Return the current authenticated user with roles and permissions."""
@@ -455,6 +464,7 @@ async def get_me(user: CurrentUser, db: DbSession):
 # ------------------------------------------------------------------
 # Email verification
 # ------------------------------------------------------------------
+
 
 @router.post("/verify-email", response_model=AuthMessage)
 async def verify_email(body: EmailVerification, request: Request, db: DbSession):
@@ -494,6 +504,7 @@ async def resend_verification(user: CurrentUser, db: DbSession):
 # Password management
 # ------------------------------------------------------------------
 
+
 @router.post("/forgot-password", response_model=AuthMessage)
 async def forgot_password(body: PasswordReset, request: Request, db: DbSession):
     result = await auth_service.request_password_reset(db, body.email, ip_address=_client_ip(request))
@@ -516,7 +527,10 @@ async def forgot_password(body: PasswordReset, request: Request, db: DbSession):
 async def reset_password(body: PasswordResetConfirm, request: Request, response: Response, db: DbSession):
     try:
         user = await auth_service.reset_password(
-            db, body.token, body.new_password, ip_address=_client_ip(request),
+            db,
+            body.token,
+            body.new_password,
+            ip_address=_client_ip(request),
         )
         await db.commit()
     except AuthError as e:
@@ -533,7 +547,9 @@ async def reset_password(body: PasswordResetConfirm, request: Request, response:
 
 
 @router.post("/change-password", response_model=AuthMessage)
-async def change_password(body: PasswordChange, request: Request, user: CurrentUser, db: DbSession, session: CurrentSession):
+async def change_password(
+    body: PasswordChange, request: Request, user: CurrentUser, db: DbSession, session: CurrentSession
+):
     try:
         await auth_service.change_password(
             db,
@@ -559,6 +575,7 @@ async def change_password(body: PasswordChange, request: Request, user: CurrentU
 # Session management
 # ------------------------------------------------------------------
 
+
 @router.get("/sessions", response_model=list[SessionInfo])
 async def list_sessions(user: CurrentUser, db: DbSession, session: CurrentSession):
     """List all active sessions for the current user."""
@@ -581,14 +598,15 @@ async def list_sessions(user: CurrentUser, db: DbSession, session: CurrentSessio
 async def revoke_session(session_id: str, user: CurrentUser, db: DbSession, request: Request):
     """Revoke a specific session."""
     import uuid as _uuid
+
     try:
         sid = _uuid.UUID(session_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid session ID")
 
-    from app.repositories.session_repository import session_repo
-    from app.repositories.audit_repository import audit_repo
     from app.models.audit_log import AuditAction
+    from app.repositories.audit_repository import audit_repo
+    from app.repositories.session_repository import session_repo
 
     target = await session_repo.get_by_id(db, sid)
     if target is None or target.user_id != user.id:
@@ -609,6 +627,7 @@ async def revoke_session(session_id: str, user: CurrentUser, db: DbSession, requ
 # ------------------------------------------------------------------
 # MFA management
 # ------------------------------------------------------------------
+
 
 @router.post("/mfa/setup", response_model=MFASetupResponse)
 async def mfa_setup(user: CurrentUser, db: DbSession):
@@ -644,17 +663,17 @@ async def mfa_disable(user: CurrentUser, request: Request, db: DbSession):
 # OAuth2 form login (for Swagger UI / API docs)
 # ------------------------------------------------------------------
 
+
 @router.post("/login/form", include_in_schema=False)
 async def login_form(request: Request, response: Response, db: DbSession):
     """OAuth2-compatible form login for Swagger UI."""
-    from fastapi.security import OAuth2PasswordRequestForm
 
     form = await request.form()
     email = form.get("username", "")
     password = form.get("password", "")
 
     try:
-        user, session_obj, jwt_token = await auth_service.authenticate(
+        _user, session_obj, jwt_token = await auth_service.authenticate(
             db,
             email=str(email),
             password=str(password),

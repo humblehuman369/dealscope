@@ -7,10 +7,10 @@ import asyncio
 from typing import AsyncGenerator, Generator
 from unittest.mock import MagicMock, AsyncMock
 
-# Set test environment before importing app modules
+# Set test environment before importing app modules (preserve CI DATABASE_URL if set)
 os.environ["ENVIRONMENT"] = "test"
 os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-characters-long-for-testing"
-os.environ["DATABASE_URL"] = "postgresql+psycopg://test:test@localhost:5432/test_db"
+os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test_db")
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool

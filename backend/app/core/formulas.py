@@ -6,8 +6,8 @@ The AssumptionResolver is responsible for providing resolved values.
 Functions moved here from defaults.py to enforce separation between
 "schema / seed defaults" and "calculation logic."
 """
+
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +24,11 @@ def _clamp(value: float, lo: float, hi: float, name: str) -> float:
 
 def compute_market_price(
     is_listed: bool,
-    list_price: Optional[float],
-    zestimate: Optional[float],
-    current_value_avm: Optional[float] = None,
-    tax_assessed_value: Optional[float] = None,
-) -> Optional[float]:
+    list_price: float | None,
+    zestimate: float | None,
+    current_value_avm: float | None = None,
+    tax_assessed_value: float | None = None,
+) -> float | None:
     """Compute Market Price for display and deal gap.
 
     Listed: Market Price = List Price.
@@ -94,9 +94,13 @@ def estimate_income_value(
     annual_management = annual_gross_rent * mgmt_pct
     annual_capex = annual_gross_rent * cap_pct
     operating_expenses = (
-        property_taxes + insurance
-        + annual_maintenance + annual_management + annual_capex
-        + utilities_annual + other_annual_expenses
+        property_taxes
+        + insurance
+        + annual_maintenance
+        + annual_management
+        + annual_capex
+        + utilities_annual
+        + other_annual_expenses
     )
 
     noi = effective_gross_income - operating_expenses

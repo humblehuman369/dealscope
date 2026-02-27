@@ -2,21 +2,20 @@
 SavedProperty service for CRUD operations on user's saved properties.
 """
 
-from typing import Optional, List
-from datetime import datetime, timezone
 import logging
 import uuid
+from datetime import UTC, datetime
 
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
-from sqlalchemy.orm import selectinload, defer
+from sqlalchemy.orm import defer, selectinload
 
-from app.models.saved_property import SavedProperty, PropertyAdjustment, PropertyStatus
+from app.models.saved_property import PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.subscription import Subscription
 from app.schemas.saved_property import (
+    PropertyAdjustmentCreate,
     SavedPropertyCreate,
     SavedPropertyUpdate,
-    PropertyAdjustmentCreate,
 )
 
 logger = logging.getLogger(__name__)
@@ -24,9 +23,7 @@ logger = logging.getLogger(__name__)
 
 async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: int) -> None:
     """Atomically adjust the denormalized properties_count on the subscription."""
-    result = await db.execute(
-        select(Subscription).where(Subscription.user_id == user_id)
-    )
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
     sub = result.scalar_one_or_none()
     if sub is not None:
         sub.properties_count = Subscription.properties_count + delta  # type: ignore[assignment]
@@ -37,17 +34,12 @@ class SavedPropertyService:
     Service for managing saved properties.
     Handles CRUD operations, filtering, and adjustments.
     """
-    
+
     # ===========================================
     # Create Operations
     # ===========================================
-    
-    async def save_property(
-        self,
-        db: AsyncSession,
-        user_id: str,
-        data: SavedPropertyCreate
-    ) -> SavedProperty:
+
+    async def save_property(self, db: AsyncSession, user_id: str, data: SavedPropertyCreate) -> SavedProperty:
         """
         Save a new property for a user.
 
@@ -65,7 +57,7 @@ class SavedPropertyService:
         if data.deal_maker_record:
             try:
                 # Handle both Pydantic model and dict cases
-                if hasattr(data.deal_maker_record, 'model_dump'):
+                if hasattr(data.deal_maker_record, "model_dump"):
                     deal_maker_dict = data.deal_maker_record.model_dump(mode="json")
                 elif isinstance(data.deal_maker_record, dict):
                     deal_maker_dict = data.deal_maker_record
@@ -84,7 +76,8 @@ class SavedPropertyService:
             address_city=data.address_city,
             address_state=data.address_state,
             address_zip=data.address_zip,
-            full_address=data.full_address or f"{data.address_street}, {data.address_city}, {data.address_state} {data.address_zip}",
+            full_address=data.full_address
+            or f"{data.address_street}, {data.address_city}, {data.address_state} {data.address_zip}",
             property_data_snapshot=data.property_data_snapshot,
             deal_maker_record=deal_maker_dict,
             status=data.status,
@@ -101,11 +94,13 @@ class SavedPropertyService:
             await db.commit()
         except IntegrityError as e:
             await db.rollback()
-            error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
-            if "uq_saved_properties_user_zpid" in error_msg or \
-               "uq_saved_properties_user_address" in error_msg or \
-               "duplicate" in error_msg.lower() or \
-               "unique" in error_msg.lower():
+            error_msg = str(e.orig) if hasattr(e, "orig") else str(e)
+            if (
+                "uq_saved_properties_user_zpid" in error_msg
+                or "uq_saved_properties_user_address" in error_msg
+                or "duplicate" in error_msg.lower()
+                or "unique" in error_msg.lower()
+            ):
                 logger.info(f"Duplicate property save rejected by DB constraint: {data.address_street}")
                 raise ValueError("This property is already in your saved list") from e
             raise
@@ -113,59 +108,43 @@ class SavedPropertyService:
 
         logger.info(f"Property saved: {saved_property.id} - {data.address_street}")
         return saved_property
-    
+
     # ===========================================
     # Read Operations
     # ===========================================
-    
-    async def get_by_id(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str
-    ) -> Optional[SavedProperty]:
+
+    async def get_by_id(self, db: AsyncSession, property_id: str, user_id: str) -> SavedProperty | None:
         """Get a saved property by ID, ensuring user ownership."""
         result = await db.execute(
             select(SavedProperty)
             .options(selectinload(SavedProperty.documents))
-            .where(
-                and_(
-                    SavedProperty.id == uuid.UUID(property_id),
-                    SavedProperty.user_id == uuid.UUID(user_id)
-                )
-            )
+            .where(and_(SavedProperty.id == uuid.UUID(property_id), SavedProperty.user_id == uuid.UUID(user_id)))
         )
         return result.scalar_one_or_none()
-    
+
     async def get_by_address_or_id(
-        self,
-        db: AsyncSession,
-        user_id: str,
-        external_id: Optional[str] = None,
-        address: Optional[str] = None
-    ) -> Optional[SavedProperty]:
+        self, db: AsyncSession, user_id: str, external_id: str | None = None, address: str | None = None
+    ) -> SavedProperty | None:
         """Check if a property is already saved."""
         conditions = [SavedProperty.user_id == uuid.UUID(user_id)]
-        
+
         if external_id:
             conditions.append(SavedProperty.external_property_id == external_id)
         elif address:
             conditions.append(SavedProperty.full_address.ilike(f"%{address}%"))
         else:
             return None
-        
-        result = await db.execute(
-            select(SavedProperty).where(and_(*conditions))
-        )
+
+        result = await db.execute(select(SavedProperty).where(and_(*conditions)))
         return result.scalar_one_or_none()
-    
+
     def _apply_list_filters(
         self,
         query,
         user_id: str,
-        status: Optional[PropertyStatus] = None,
-        tags: Optional[List[str]] = None,
-        search: Optional[str] = None,
+        status: PropertyStatus | None = None,
+        tags: list[str] | None = None,
+        search: str | None = None,
     ):
         """Apply shared WHERE clauses for list / count queries."""
         query = query.where(SavedProperty.user_id == uuid.UUID(user_id))
@@ -189,13 +168,13 @@ class SavedPropertyService:
         self,
         db: AsyncSession,
         user_id: str,
-        status: Optional[PropertyStatus] = None,
-        tags: Optional[List[str]] = None,
-        search: Optional[str] = None,
+        status: PropertyStatus | None = None,
+        tags: list[str] | None = None,
+        search: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        order_by: str = "saved_at_desc"
-    ) -> tuple[List[SavedProperty], int]:
+        order_by: str = "saved_at_desc",
+    ) -> tuple[list[SavedProperty], int]:
         """List saved properties with filtering and pagination.
 
         Returns ``(items, total_count)`` so the caller can set
@@ -204,7 +183,10 @@ class SavedPropertyService:
         # -- Total count (same filters, no pagination) --
         count_q = self._apply_list_filters(
             select(func.count(SavedProperty.id)),
-            user_id, status, tags, search,
+            user_id,
+            status,
+            tags,
+            search,
         )
         total = (await db.execute(count_q)).scalar() or 0
 
@@ -212,7 +194,10 @@ class SavedPropertyService:
         # Defer the large property_data_snapshot blob (50KB+ per row).
         query = self._apply_list_filters(
             select(SavedProperty).options(defer(SavedProperty.property_data_snapshot)),
-            user_id, status, tags, search,
+            user_id,
+            status,
+            tags,
+            search,
         )
 
         # Ordering
@@ -231,80 +216,64 @@ class SavedPropertyService:
 
         result = await db.execute(query)
         return list(result.scalars().all()), total
-    
-    async def count_properties(
-        self,
-        db: AsyncSession,
-        user_id: str,
-        status: Optional[PropertyStatus] = None
-    ) -> int:
+
+    async def count_properties(self, db: AsyncSession, user_id: str, status: PropertyStatus | None = None) -> int:
         """Count saved properties."""
-        query = select(func.count(SavedProperty.id)).where(
-            SavedProperty.user_id == uuid.UUID(user_id)
-        )
-        
+        query = select(func.count(SavedProperty.id)).where(SavedProperty.user_id == uuid.UUID(user_id))
+
         if status:
             query = query.where(SavedProperty.status == status)
-        
+
         result = await db.execute(query)
         return result.scalar() or 0
-    
-    async def get_stats(
-        self,
-        db: AsyncSession,
-        user_id: str
-    ) -> dict:
+
+    async def get_stats(self, db: AsyncSession, user_id: str) -> dict:
         """Get statistics about saved properties using GROUP BY (single query)."""
         from sqlalchemy import func
-        
+
         # Count by status with a single GROUP BY query
         result = await db.execute(
             select(SavedProperty.status, func.count(SavedProperty.id))
             .where(SavedProperty.user_id == uuid.UUID(user_id))
             .group_by(SavedProperty.status)
         )
-        
+
         # Initialize all status counts to 0
         status_counts = {status.value: 0 for status in PropertyStatus}
-        
+
         # Fill in actual counts from query
         for status, count in result.all():
             if status:
                 status_counts[status.value] = count
-        
+
         total = sum(status_counts.values())
-        
+
         return {
             "total": total,
             "by_status": status_counts,
         }
-    
+
     # ===========================================
     # Update Operations
     # ===========================================
-    
+
     async def update_property(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str,
-        data: SavedPropertyUpdate,
-        track_changes: bool = True
-    ) -> Optional[SavedProperty]:
+        self, db: AsyncSession, property_id: str, user_id: str, data: SavedPropertyUpdate, track_changes: bool = True
+    ) -> SavedProperty | None:
         """Update a saved property."""
         saved_property = await self.get_by_id(db, property_id, user_id)
-        
+
         if not saved_property:
             return None
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        
+
         for field, value in update_data.items():
             # Handle DealMakerRecord conversion to dict
             if field == "deal_maker_record" and value is not None:
                 if hasattr(value, "model_dump"):
                     value = value.model_dump(mode="json")
-            
+
             if track_changes and hasattr(saved_property, field):
                 old_value = getattr(saved_property, field)
                 if old_value != value:
@@ -317,42 +286,29 @@ class SavedPropertyService:
                             new_value={"value": value} if value is not None else None,
                         )
                         db.add(adjustment)
-            
+
             setattr(saved_property, field, value)
-        
-        saved_property.updated_at = datetime.now(timezone.utc)
-        
+
+        saved_property.updated_at = datetime.now(UTC)
+
         await db.commit()
         await db.refresh(saved_property)
-        
+
         logger.info(f"Property updated: {property_id}")
         return saved_property
-    
+
     async def update_status(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str,
-        status: PropertyStatus
-    ) -> Optional[SavedProperty]:
+        self, db: AsyncSession, property_id: str, user_id: str, status: PropertyStatus
+    ) -> SavedProperty | None:
         """Update just the status of a saved property."""
-        return await self.update_property(
-            db, 
-            property_id, 
-            user_id, 
-            SavedPropertyUpdate(status=status)
-        )
-    
+        return await self.update_property(db, property_id, user_id, SavedPropertyUpdate(status=status))
+
     async def bulk_update_status(
-        self,
-        db: AsyncSession,
-        user_id: str,
-        property_ids: List[str],
-        status: PropertyStatus
+        self, db: AsyncSession, user_id: str, property_ids: list[str], status: PropertyStatus
     ) -> int:
         """Bulk update status for multiple properties using a single query."""
         from sqlalchemy import update
-        
+
         # Convert string IDs to UUIDs
         uuid_ids = []
         for pid in property_ids:
@@ -360,61 +316,45 @@ class SavedPropertyService:
                 uuid_ids.append(uuid.UUID(pid))
             except ValueError:
                 continue
-        
+
         if not uuid_ids:
             return 0
-        
+
         # Bulk update with single query
         result = await db.execute(
             update(SavedProperty)
-            .where(
-                SavedProperty.id.in_(uuid_ids),
-                SavedProperty.user_id == uuid.UUID(user_id)
-            )
-            .values(
-                status=status,
-                updated_at=datetime.now(timezone.utc)
-            )
+            .where(SavedProperty.id.in_(uuid_ids), SavedProperty.user_id == uuid.UUID(user_id))
+            .values(status=status, updated_at=datetime.now(UTC))
         )
-        
+
         await db.commit()
         count = result.rowcount
-        
+
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
         return count
-    
+
     # ===========================================
     # Delete Operations
     # ===========================================
-    
-    async def delete_property(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str
-    ) -> bool:
+
+    async def delete_property(self, db: AsyncSession, property_id: str, user_id: str) -> bool:
         """Delete a saved property."""
         saved_property = await self.get_by_id(db, property_id, user_id)
-        
+
         if not saved_property:
             return False
-        
+
         db.delete(saved_property)  # delete() is synchronous in SQLAlchemy 2.0
         await _adjust_properties_count(db, uuid.UUID(user_id), -1)
         await db.commit()
-        
+
         logger.info(f"Property deleted: {property_id}")
         return True
-    
-    async def bulk_delete(
-        self,
-        db: AsyncSession,
-        user_id: str,
-        property_ids: List[str]
-    ) -> int:
+
+    async def bulk_delete(self, db: AsyncSession, user_id: str, property_ids: list[str]) -> int:
         """Bulk delete properties using a single query."""
         from sqlalchemy import delete
-        
+
         # Convert string IDs to UUIDs
         uuid_ids = []
         for pid in property_ids:
@@ -422,16 +362,12 @@ class SavedPropertyService:
                 uuid_ids.append(uuid.UUID(pid))
             except ValueError:
                 continue
-        
+
         if not uuid_ids:
             return 0
-        
+
         result = await db.execute(
-            delete(SavedProperty)
-            .where(
-                SavedProperty.id.in_(uuid_ids),
-                SavedProperty.user_id == uuid.UUID(user_id)
-            )
+            delete(SavedProperty).where(SavedProperty.id.in_(uuid_ids), SavedProperty.user_id == uuid.UUID(user_id))
         )
         count = result.rowcount
         if count > 0:
@@ -440,18 +376,14 @@ class SavedPropertyService:
 
         logger.info(f"Bulk delete: {count} properties deleted")
         return count
-    
+
     # ===========================================
     # Adjustment History
     # ===========================================
-    
+
     async def get_adjustment_history(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str,
-        limit: int = 50
-    ) -> List[PropertyAdjustment]:
+        self, db: AsyncSession, property_id: str, user_id: str, limit: int = 50
+    ) -> list[PropertyAdjustment]:
         """Get adjustment history for a property, verifying user ownership."""
         # Single query with join to verify ownership at database level
         result = await db.execute(
@@ -460,27 +392,23 @@ class SavedPropertyService:
             .where(
                 and_(
                     PropertyAdjustment.property_id == uuid.UUID(property_id),
-                    SavedProperty.user_id == uuid.UUID(user_id)
+                    SavedProperty.user_id == uuid.UUID(user_id),
                 )
             )
             .order_by(PropertyAdjustment.created_at.desc())
             .limit(limit)
         )
         return list(result.scalars().all())
-    
+
     async def add_adjustment(
-        self,
-        db: AsyncSession,
-        property_id: str,
-        user_id: str,
-        data: PropertyAdjustmentCreate
-    ) -> Optional[PropertyAdjustment]:
+        self, db: AsyncSession, property_id: str, user_id: str, data: PropertyAdjustmentCreate
+    ) -> PropertyAdjustment | None:
         """Manually add an adjustment record."""
         # Verify ownership
         saved_property = await self.get_by_id(db, property_id, user_id)
         if not saved_property:
             return None
-        
+
         adjustment = PropertyAdjustment(
             property_id=uuid.UUID(property_id),
             adjustment_type=data.adjustment_type,
@@ -489,14 +417,13 @@ class SavedPropertyService:
             new_value=data.new_value,
             reason=data.reason,
         )
-        
+
         db.add(adjustment)
         await db.commit()
         await db.refresh(adjustment)
-        
+
         return adjustment
 
 
 # Singleton instance
 saved_property_service = SavedPropertyService()
-

@@ -11,4 +11,3 @@ from app.services.property_service import property_service
 __all__ = [
     "property_service",
 ]
-

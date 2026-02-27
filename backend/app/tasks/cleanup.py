@@ -22,12 +22,12 @@ Or invoke individually via a management command / cron endpoint.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.db.session import get_session_factory
+from app.repositories.audit_repository import audit_repo
 from app.repositories.session_repository import session_repo
 from app.repositories.token_repository import token_repo
-from app.repositories.audit_repository import audit_repo
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,7 @@ async def archive_old_audit_logs(days: int | None = None) -> int:
     """
     if days is None:
         from app.core.config import settings
+
         days = getattr(settings, "AUDIT_LOG_RETENTION_DAYS", 90)
 
     factory = get_session_factory()
@@ -95,7 +96,8 @@ async def encrypt_plaintext_mfa_secrets() -> int:
     Safe to run multiple times (idempotent).
     """
     from sqlalchemy import text as sa_text
-    from app.core.encryption import encrypt_value, is_encrypted
+
+    from app.core.encryption import encrypt_value
 
     factory = get_session_factory()
     async with factory() as db:
@@ -140,5 +142,5 @@ async def run_all_cleanup() -> dict:
         "expired_tokens_removed": tokens,
         "old_audit_logs_archived": audit,
         "mfa_secrets_encrypted": mfa,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }

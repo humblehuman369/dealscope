@@ -3,9 +3,10 @@
 Pure calculation module — accepts only explicit, fully-resolved parameters.
 No imports from app.core.defaults allowed.
 """
-from typing import Dict, Any
 
-from .common import validate_financial_inputs, calculate_monthly_mortgage
+from typing import Any
+
+from .common import calculate_monthly_mortgage, validate_financial_inputs
 
 
 def calculate_brrrr(
@@ -29,7 +30,7 @@ def calculate_brrrr(
     vacancy_rate: float,
     operating_expense_pct: float,
     insurance_annual: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate BRRRR metrics.
 
     Every financial assumption is a required parameter — the caller
@@ -66,20 +67,14 @@ def calculate_brrrr(
     # Phase 3: Rent
     annual_gross_rent = monthly_rent_post_rehab * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
-    operating_expenses = (
-        annual_gross_rent * operating_expense_pct
-        + property_taxes_annual
-        + insurance_annual
-    )
+    operating_expenses = annual_gross_rent * operating_expense_pct + property_taxes_annual + insurance_annual
     noi = effective_gross_income - operating_expenses
     estimated_cap_rate = noi / arv if arv > 0 else 0
 
     # Phase 4: Refinance
     refinance_loan_amount = arv * refinance_ltv
     cash_out = refinance_loan_amount - initial_loan_amount - refinance_closing_costs
-    new_monthly_pi = calculate_monthly_mortgage(
-        refinance_loan_amount, refinance_interest_rate, refinance_term_years
-    )
+    new_monthly_pi = calculate_monthly_mortgage(refinance_loan_amount, refinance_interest_rate, refinance_term_years)
     new_annual_debt_service = new_monthly_pi * 12
 
     # Phase 5: Repeat Analysis
@@ -91,10 +86,7 @@ def calculate_brrrr(
     # Post-Refinance Cash Flow
     post_refi_annual_cash_flow = noi - new_annual_debt_service
     post_refi_monthly_cash_flow = post_refi_annual_cash_flow / 12
-    post_refi_cash_on_cash = (
-        post_refi_annual_cash_flow / cash_left_in_deal
-        if cash_left_in_deal > 0 else float('inf')
-    )
+    post_refi_cash_on_cash = post_refi_annual_cash_flow / cash_left_in_deal if cash_left_in_deal > 0 else float("inf")
     infinite_roi = cash_left_in_deal <= 0
 
     total_months = holding_period_months + 2 + 1

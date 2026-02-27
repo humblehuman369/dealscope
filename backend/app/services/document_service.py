@@ -8,11 +8,10 @@ File upload security:
 """
 
 import logging
-from typing import Optional, List, BinaryIO
-from datetime import datetime
+from typing import BinaryIO
 from uuid import UUID
 
-from sqlalchemy import select, func, desc, and_
+from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.document import Document, DocumentType
@@ -83,7 +82,7 @@ def _validate_magic_bytes(file: BinaryIO, declared_content_type: str) -> bool:
 
 class DocumentService:
     """Service for managing document uploads."""
-    
+
     async def upload_document(
         self,
         db: AsyncSession,
@@ -93,12 +92,12 @@ class DocumentService:
         content_type: str,
         file_size: int,
         document_type: DocumentType = DocumentType.OTHER,
-        property_id: Optional[str] = None,
-        description: Optional[str] = None,
+        property_id: str | None = None,
+        description: str | None = None,
     ) -> Document:
         """
         Upload a document and create a database record.
-        
+
         Args:
             db: Database session
             user_id: ID of the user uploading
@@ -109,14 +108,14 @@ class DocumentService:
             document_type: Type category
             property_id: Optional linked property ID
             description: Optional description
-        
+
         Returns:
             Created Document record
         """
         # Validate declared MIME type against allowlist
         if content_type not in ALLOWED_TYPES:
             raise ValueError(f"File type {content_type} is not allowed")
-        
+
         # Validate file size
         if file_size > MAX_FILE_SIZE:
             raise ValueError(f"File size exceeds maximum of {MAX_FILE_SIZE / 1024 / 1024:.0f} MB")
@@ -126,13 +125,15 @@ class DocumentService:
         if not _validate_magic_bytes(file, content_type):
             logger.warning(
                 "Magic-byte mismatch: declared=%s filename=%s user=%s",
-                content_type, filename, user_id,
+                content_type,
+                filename,
+                user_id,
             )
             raise ValueError(
                 f"File content does not match declared type {content_type}. "
                 "The file may be corrupted or incorrectly named."
             )
-        
+
         # Upload to storage
         path_prefix = f"documents/{user_id}"
         storage_path = await storage.upload(
@@ -141,7 +142,7 @@ class DocumentService:
             content_type=content_type,
             path_prefix=path_prefix,
         )
-        
+
         # Create database record
         document = Document(
             user_id=UUID(user_id),
@@ -153,21 +154,21 @@ class DocumentService:
             file_size=file_size,
             description=description,
         )
-        
+
         db.add(document)
         await db.commit()
         await db.refresh(document)
-        
+
         logger.info(f"Document uploaded: {document.id} for user {user_id}")
-        
+
         return document
-    
+
     async def get_by_id(
         self,
         db: AsyncSession,
         document_id: str,
         user_id: str,
-    ) -> Optional[Document]:
+    ) -> Document | None:
         """Get a document by ID, ensuring user ownership."""
         query = select(Document).where(
             and_(
@@ -175,22 +176,22 @@ class DocumentService:
                 Document.user_id == UUID(user_id),
             )
         )
-        
+
         result = await db.execute(query)
         return result.scalar_one_or_none()
-    
+
     async def list_user_documents(
         self,
         db: AsyncSession,
         user_id: str,
-        property_id: Optional[str] = None,
-        document_type: Optional[DocumentType] = None,
+        property_id: str | None = None,
+        document_type: DocumentType | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         List documents for a user.
-        
+
         Args:
             db: Database session
             user_id: User ID
@@ -200,36 +201,34 @@ class DocumentService:
             offset: Pagination offset
         """
         query = select(Document).where(Document.user_id == UUID(user_id))
-        
+
         if property_id:
             query = query.where(Document.property_id == UUID(property_id))
-        
+
         if document_type:
             query = query.where(Document.document_type == document_type)
-        
+
         query = query.order_by(desc(Document.uploaded_at))
         query = query.limit(limit).offset(offset)
-        
+
         result = await db.execute(query)
         return list(result.scalars().all())
-    
+
     async def get_document_count(
         self,
         db: AsyncSession,
         user_id: str,
-        property_id: Optional[str] = None,
+        property_id: str | None = None,
     ) -> int:
         """Get count of user's documents."""
-        query = select(func.count()).select_from(Document).where(
-            Document.user_id == UUID(user_id)
-        )
-        
+        query = select(func.count()).select_from(Document).where(Document.user_id == UUID(user_id))
+
         if property_id:
             query = query.where(Document.property_id == UUID(property_id))
-        
+
         result = await db.execute(query)
         return result.scalar() or 0
-    
+
     async def download_document(
         self,
         db: AsyncSession,
@@ -238,19 +237,19 @@ class DocumentService:
     ) -> tuple[bytes, str, str]:
         """
         Download a document.
-        
+
         Returns: (file_bytes, filename, mime_type)
         """
         document = await self.get_by_id(db, document_id, user_id)
-        
+
         if not document:
             raise FileNotFoundError("Document not found")
-        
+
         # Download from storage
         file_bytes = await storage.download(document.storage_path)
-        
+
         return file_bytes, document.original_filename, document.mime_type
-    
+
     async def get_document_url(
         self,
         db: AsyncSession,
@@ -260,12 +259,12 @@ class DocumentService:
     ) -> str:
         """Get a URL to access the document."""
         document = await self.get_by_id(db, document_id, user_id)
-        
+
         if not document:
             raise FileNotFoundError("Document not found")
-        
+
         return await storage.get_url(document.storage_path, expires_in)
-    
+
     async def delete_document(
         self,
         db: AsyncSession,
@@ -274,47 +273,46 @@ class DocumentService:
     ) -> bool:
         """Delete a document and its storage file."""
         document = await self.get_by_id(db, document_id, user_id)
-        
+
         if not document:
             return False
-        
+
         # Delete from storage
         await storage.delete(document.storage_path)
-        
+
         # Delete from database
         await db.delete(document)
         await db.commit()
-        
+
         logger.info(f"Document deleted: {document_id}")
-        
+
         return True
-    
+
     async def update_document(
         self,
         db: AsyncSession,
         document_id: str,
         user_id: str,
-        description: Optional[str] = None,
-        document_type: Optional[DocumentType] = None,
-    ) -> Optional[Document]:
+        description: str | None = None,
+        document_type: DocumentType | None = None,
+    ) -> Document | None:
         """Update document metadata."""
         document = await self.get_by_id(db, document_id, user_id)
-        
+
         if not document:
             return None
-        
+
         if description is not None:
             document.description = description
-        
+
         if document_type is not None:
             document.document_type = document_type
-        
+
         await db.commit()
         await db.refresh(document)
-        
+
         return document
 
 
 # Singleton instance
 document_service = DocumentService()
-

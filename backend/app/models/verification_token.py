@@ -6,13 +6,14 @@ and MFA setup.  The raw token is sent to the user; only the hash is
 persisted so a database leak does not expose usable tokens.
 """
 
-from sqlalchemy import String, DateTime, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional, TYPE_CHECKING
-import uuid
-from datetime import datetime, timezone
 import enum
+import uuid
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import DateTime, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -21,11 +22,12 @@ if TYPE_CHECKING:
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
-class TokenType(str, enum.Enum):
+class TokenType(enum.StrEnum):
     """Types of verification tokens."""
+
     EMAIL_VERIFICATION = "email_verification"
     PASSWORD_RESET = "password_reset"
     MFA_SETUP = "mfa_setup"
@@ -34,6 +36,7 @@ class TokenType(str, enum.Enum):
 
 class VerificationToken(Base):
     """A one-time-use verification token."""
+
     __tablename__ = "verification_tokens"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -48,7 +51,7 @@ class VerificationToken(Base):
         index=True,
     )
     token_hash: Mapped[str] = mapped_column(
-        String(64),          # SHA-256 hex digest
+        String(64),  # SHA-256 hex digest
         unique=True,
         nullable=False,
         index=True,
@@ -58,7 +61,7 @@ class VerificationToken(Base):
         DateTime(timezone=True),
         nullable=False,
     )
-    used_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=_utcnow,
@@ -67,6 +70,4 @@ class VerificationToken(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="verification_tokens")
 
-    __table_args__ = (
-        Index("ix_verification_tokens_user_type", "user_id", "token_type"),
-    )
+    __table_args__ = (Index("ix_verification_tokens_user_type", "user_id", "token_type"),)

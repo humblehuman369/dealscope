@@ -3,34 +3,31 @@ Saved Properties router for user's property portfolio management.
 """
 
 import logging
-from typing import Optional, List
-import sys
+from datetime import UTC
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Response, status, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Response, status
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.exc import IntegrityError, DatabaseError
+from sqlalchemy.exc import DatabaseError, IntegrityError
 
-from app.services.saved_property_service import saved_property_service
-from app.services.deal_maker_service import DealMakerService
-from app.services.billing_service import billing_service
+from app.core.config import settings
+from app.core.deps import CurrentUser, DbSession
 from app.models.saved_property import PropertyStatus
-from app.schemas.saved_property import (
-    SavedPropertyCreate,
-    SavedPropertyUpdate,
-    SavedPropertyResponse,
-    SavedPropertySummary,
-    PropertyAdjustmentCreate,
-    PropertyAdjustmentResponse,
-    BulkStatusUpdate,
-    BulkTagUpdate,
-)
 from app.schemas.deal_maker import (
-    DealMakerRecord,
     DealMakerRecordUpdate,
     DealMakerResponse,
 )
-from app.core.deps import CurrentUser, DbSession
-from app.core.config import settings
+from app.schemas.saved_property import (
+    BulkStatusUpdate,
+    PropertyAdjustmentCreate,
+    PropertyAdjustmentResponse,
+    SavedPropertyCreate,
+    SavedPropertyResponse,
+    SavedPropertySummary,
+    SavedPropertyUpdate,
+)
+from app.services.billing_service import billing_service
+from app.services.deal_maker_service import DealMakerService
+from app.services.saved_property_service import saved_property_service
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +43,7 @@ def _build_saved_property_response(
     adjustment_count: int = 0,
 ) -> SavedPropertyResponse:
     """Build a SavedPropertyResponse from a SavedProperty model instance.
-    
+
     Centralises the 30-field constructor so every endpoint returns the
     same shape without field-list duplication.
     """
@@ -96,15 +93,13 @@ router = APIRouter(prefix="/api/v1/properties/saved", tags=["Saved Properties"])
 # Lookup / Check
 # ===========================================
 
-@router.get(
-    "/check",
-    summary="Check if a property is saved"
-)
+
+@router.get("/check", summary="Check if a property is saved")
 async def check_property_saved(
     current_user: CurrentUser,
     db: DbSession,
-    address: Optional[str] = Query(None, description="Full address to check"),
-    external_id: Optional[str] = Query(None, description="External property ID to check"),
+    address: str | None = Query(None, description="Full address to check"),
+    external_id: str | None = Query(None, description="External property ID to check"),
 ):
     """
     Check if a property is already saved by the current user.
@@ -116,7 +111,7 @@ async def check_property_saved(
         external_id=external_id,
         address=address,
     )
-    
+
     if saved:
         return {
             "is_saved": True,
@@ -124,7 +119,7 @@ async def check_property_saved(
             "status": saved.status.value if saved.status else "watching",
             "saved_at": saved.saved_at,
         }
-    
+
     return {"is_saved": False, "saved_property_id": None, "status": None, "saved_at": None}
 
 
@@ -135,18 +130,14 @@ async def check_property_saved(
 _MAX_OFFSET = 10_000  # Hard ceiling to prevent deep-pagination perf degradation
 
 
-@router.get(
-    "",
-    response_model=List[SavedPropertySummary],
-    summary="List saved properties"
-)
+@router.get("", response_model=list[SavedPropertySummary], summary="List saved properties")
 async def list_saved_properties(
     current_user: CurrentUser,
     db: DbSession,
     response: Response,
-    status: Optional[PropertyStatus] = Query(None, description="Filter by status"),
-    tags: Optional[str] = Query(None, description="Filter by tags (comma-separated)"),
-    search: Optional[str] = Query(None, description="Search in address, nickname, notes"),
+    status: PropertyStatus | None = Query(None, description="Filter by status"),
+    tags: str | None = Query(None, description="Filter by tags (comma-separated)"),
+    search: str | None = Query(None, description="Search in address, nickname, notes"),
     order_by: str = Query("saved_at_desc", description="Order by field"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0, le=_MAX_OFFSET),
@@ -195,10 +186,7 @@ async def list_saved_properties(
     ]
 
 
-@router.get(
-    "/stats",
-    summary="Get saved properties statistics"
-)
+@router.get("/stats", summary="Get saved properties statistics")
 async def get_saved_properties_stats(
     current_user: CurrentUser,
     db: DbSession,
@@ -211,10 +199,8 @@ async def get_saved_properties_stats(
 # Bulk Operations (MUST be before /{property_id} routes)
 # ===========================================
 
-@router.post(
-    "/bulk/status",
-    summary="Bulk update property status"
-)
+
+@router.post("/bulk/status", summary="Bulk update property status")
 async def bulk_update_status(
     data: BulkStatusUpdate,
     current_user: CurrentUser,
@@ -227,16 +213,13 @@ async def bulk_update_status(
         property_ids=data.property_ids,
         status=data.status,
     )
-    
+
     return {"updated": count, "status": data.status.value}
 
 
-@router.delete(
-    "/bulk",
-    summary="Bulk delete properties"
-)
+@router.delete("/bulk", summary="Bulk delete properties")
 async def bulk_delete_properties(
-    property_ids: List[str],
+    property_ids: list[str],
     current_user: CurrentUser,
     db: DbSession,
 ):
@@ -246,7 +229,7 @@ async def bulk_delete_properties(
         user_id=str(current_user.id),
         property_ids=property_ids,
     )
-    
+
     return {"deleted": count}
 
 
@@ -254,12 +237,8 @@ async def bulk_delete_properties(
 # CRUD Operations
 # ===========================================
 
-@router.post(
-    "",
-    response_model=SavedPropertyResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Save a property"
-)
+
+@router.post("", response_model=SavedPropertyResponse, status_code=status.HTTP_201_CREATED, summary="Save a property")
 async def save_property(
     data: SavedPropertyCreate,
     current_user: CurrentUser,
@@ -268,7 +247,7 @@ async def save_property(
 ):
     """
     Save a property to the user's portfolio.
-    
+
     Includes property data snapshot at time of save.
     Also creates a DealMakerRecord with resolved defaults locked at save time.
     Enforces subscription property limit (Starter: 10, Pro: unlimited).
@@ -281,7 +260,9 @@ async def save_property(
         )
 
     logger.info(f"Save property request received for user {current_user.id}")
-    logger.debug(f"Property data: address={data.address_street}, zpid={data.zpid}, external_id={data.external_property_id}")
+    logger.debug(
+        f"Property data: address={data.address_street}, zpid={data.zpid}, external_id={data.external_property_id}"
+    )
     try:
         # If no deal_maker_record provided, create one from property data
         # Make this optional - if it fails, we can still save the property
@@ -296,11 +277,11 @@ async def save_property(
             except Exception as e:
                 # Log the error but don't fail the save operation
                 logger.warning(
-                    f"Failed to create DealMakerRecord for property save: {str(e)}. "
+                    f"Failed to create DealMakerRecord for property save: {e!s}. "
                     f"Property will be saved without DealMakerRecord."
                 )
                 logger.debug(f"DealMakerRecord creation error details: {e}", exc_info=True)
-        
+
         # Update data with deal_maker_record if we successfully created one
         # Only do this if data.deal_maker_record is not already set
         if deal_maker_record_obj is not None and not data.deal_maker_record:
@@ -309,17 +290,17 @@ async def save_property(
             try:
                 # Convert DealMakerRecord object to dict if needed
                 deal_maker_dict = None
-                if hasattr(deal_maker_record_obj, 'model_dump'):
+                if hasattr(deal_maker_record_obj, "model_dump"):
                     deal_maker_dict = deal_maker_record_obj.model_dump(mode="json")
                 elif isinstance(deal_maker_record_obj, dict):
                     deal_maker_dict = deal_maker_record_obj
                 else:
                     # Unexpected type, skip adding it
                     logger.warning(f"Unexpected deal_maker_record_obj type: {type(deal_maker_record_obj)}")
-                
+
                 if deal_maker_dict is not None:
                     data_dict = data.model_dump(exclude_unset=True)
-                    data_dict['deal_maker_record'] = deal_maker_dict
+                    data_dict["deal_maker_record"] = deal_maker_dict
                     data = SavedPropertyCreate(**data_dict)
             except (PydanticValidationError, Exception) as validation_error:
                 logger.warning(
@@ -330,13 +311,13 @@ async def save_property(
                 # Fall back to original data without deal_maker_record
                 # Don't modify the original data object, just continue without deal_maker_record
                 # The service will handle None deal_maker_record
-        
+
         saved = await saved_property_service.save_property(
             db=db,
             user_id=str(current_user.id),
             data=data,
         )
-        
+
         # Reconstruct DealMakerRecord from stored dict for response
         # Note: We return the DealMakerRecord object, but if reconstruction fails,
         # we can still return the response without it
@@ -346,28 +327,30 @@ async def save_property(
                 # saved.deal_maker_record is already a dict, convert to DealMakerRecord object
                 if isinstance(saved.deal_maker_record, dict):
                     deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
-                elif hasattr(saved.deal_maker_record, 'model_dump'):
+                elif hasattr(saved.deal_maker_record, "model_dump"):
                     # Already a DealMakerRecord object
                     deal_maker = saved.deal_maker_record
                 else:
                     logger.warning(f"Unexpected deal_maker_record type: {type(saved.deal_maker_record)}")
             except Exception as e:
-                logger.warning(f"Failed to reconstruct DealMakerRecord: {str(e)}")
+                logger.warning(f"Failed to reconstruct DealMakerRecord: {e!s}")
                 logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
-        
+
         # Send push notification in background (non-blocking).
         # IMPORTANT: Background tasks run AFTER the response is sent, so the
         # request-scoped ``db`` session is already closed.  We must create a
         # fresh session inside the task.
         try:
             from app.services.push_notification_service import push_service
+
             address_display = saved.full_address or saved.address_street or "Property"
             _user_id = current_user.id
             _full_address = saved.full_address or saved.address_street
 
             async def _send_save_notification():
                 from app.db.session import get_session_factory
+
                 factory = get_session_factory()
                 async with factory() as task_db:
                     try:
@@ -397,46 +380,43 @@ async def save_property(
             logger.error(f"Saved property ID: {saved.id}, User ID: {saved.user_id}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
+                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}",
             )
         except Exception as response_error:
             logger.error(f"Unexpected error constructing SavedPropertyResponse: {response_error}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
+                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}",
             )
-        
+
     except ValueError as e:
         # Check if it's a duplicate property error
         error_msg = str(e)
         if "already in your saved list" in error_msg:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=error_msg
-            )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error_msg
-        )
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=error_msg)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
     except IntegrityError as e:
         # Database constraint violation (e.g., duplicate key)
-        logger.error(f"Database integrity error saving property: {str(e)}", exc_info=True)
-        error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+        logger.error(f"Database integrity error saving property: {e!s}", exc_info=True)
+        error_msg = str(e.orig) if hasattr(e, "orig") else str(e)
         if "duplicate" in error_msg.lower() or "unique" in error_msg.lower():
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="This property is already in your saved list"
+                status_code=status.HTTP_409_CONFLICT, detail="This property is already in your saved list"
             )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Database constraint violation. Please check your input." if settings.DEBUG else "Failed to save property. Please try again."
+            detail="Database constraint violation. Please check your input."
+            if settings.DEBUG
+            else "Failed to save property. Please try again.",
         )
     except DatabaseError as e:
         # Other database errors
-        logger.error(f"Database error saving property: {str(e)}", exc_info=True)
+        logger.error(f"Database error saving property: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(e)}" if settings.DEBUG else "Failed to save property. Please try again or contact support."
+            detail=f"Database error: {e!s}"
+            if settings.DEBUG
+            else "Failed to save property. Please try again or contact support.",
         )
     except HTTPException:
         # Re-raise HTTPExceptions as-is (they already have proper format)
@@ -446,28 +426,20 @@ async def save_property(
         logger.error(f"ExceptionGroup error saving property: {eg}", exc_info=True)
         # Extract the first exception from the group for error message
         first_exception = eg.exceptions[0] if eg.exceptions else eg
-        error_message = str(first_exception) if settings.DEBUG else "Failed to save property. Please try again or contact support."
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_message
+        error_message = (
+            str(first_exception) if settings.DEBUG else "Failed to save property. Please try again or contact support."
         )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_message)
     except Exception as e:
         # Catch all other exceptions and log them properly
-        logger.error(f"Unexpected error saving property: {str(e)}", exc_info=True)
+        logger.error(f"Unexpected error saving property: {e!s}", exc_info=True)
         logger.error(f"Exception type: {type(e).__name__}", exc_info=True)
         # In production, don't expose internal error details
         error_message = str(e) if settings.DEBUG else "Failed to save property. Please try again or contact support."
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_message
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_message)
 
 
-@router.get(
-    "/{property_id}",
-    response_model=SavedPropertyResponse,
-    summary="Get a saved property"
-)
+@router.get("/{property_id}", response_model=SavedPropertyResponse, summary="Get a saved property")
 async def get_saved_property(
     property_id: str,
     current_user: CurrentUser,
@@ -479,25 +451,23 @@ async def get_saved_property(
         property_id=property_id,
         user_id=str(current_user.id),
     )
-    
+
     if not saved:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
     # Update last viewed timestamp
-    from datetime import datetime, timezone
-    saved.last_viewed_at = datetime.now(timezone.utc)
+    from datetime import datetime
+
+    saved.last_viewed_at = datetime.now(UTC)
     await db.commit()
-    
+
     doc_count = len(saved.documents) if saved.documents else 0
-    
+
     # Reconstruct DealMakerRecord from stored dict
     deal_maker = None
     if saved.deal_maker_record:
         deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
-    
+
     return _build_saved_property_response(
         saved,
         deal_maker=deal_maker,
@@ -508,11 +478,7 @@ async def get_saved_property(
     )
 
 
-@router.patch(
-    "/{property_id}",
-    response_model=SavedPropertyResponse,
-    summary="Update a saved property"
-)
+@router.patch("/{property_id}", response_model=SavedPropertyResponse, summary="Update a saved property")
 async def update_saved_property(
     property_id: str,
     data: SavedPropertyUpdate,
@@ -526,26 +492,19 @@ async def update_saved_property(
         user_id=str(current_user.id),
         data=data,
     )
-    
+
     if not saved:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
     # Reconstruct DealMakerRecord from stored dict
     deal_maker = None
     if saved.deal_maker_record:
         deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
-    
+
     return _build_saved_property_response(saved, deal_maker=deal_maker)
 
 
-@router.patch(
-    "/{property_id}/deal-maker",
-    response_model=DealMakerResponse,
-    summary="Update Deal Maker values"
-)
+@router.patch("/{property_id}/deal-maker", response_model=DealMakerResponse, summary="Update Deal Maker values")
 async def update_deal_maker(
     property_id: str,
     updates: DealMakerRecordUpdate,
@@ -554,10 +513,10 @@ async def update_deal_maker(
 ):
     """
     Update Deal Maker values for a saved property.
-    
+
     This is the primary endpoint for Deal Maker UI changes.
     Updates are persisted immediately and metrics are recalculated.
-    
+
     Note: initial_assumptions cannot be changed - they are locked at save time.
     """
     # Get the saved property
@@ -566,13 +525,10 @@ async def update_deal_maker(
         property_id=property_id,
         user_id=str(current_user.id),
     )
-    
+
     if not saved:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
     # Get or create DealMakerRecord
     if saved.deal_maker_record:
         record = DealMakerService.from_dict(saved.deal_maker_record)
@@ -585,18 +541,18 @@ async def update_deal_maker(
             property_data=saved.property_data_snapshot or {},
             zip_code=zip_code,
         )
-    
+
     # Apply updates and recalculate metrics
     updated_record = DealMakerService.update_record(record, updates)
-    
+
     # Save to database
     saved.deal_maker_record = DealMakerService.to_dict(updated_record)
     await db.commit()
     await db.refresh(saved)
-    
+
     # Return response with convenience fields
     metrics = updated_record.cached_metrics
-    
+
     return DealMakerResponse(
         record=updated_record,
         cash_needed=metrics.total_cash_needed if metrics else None,
@@ -608,11 +564,7 @@ async def update_deal_maker(
     )
 
 
-@router.get(
-    "/{property_id}/deal-maker",
-    response_model=DealMakerResponse,
-    summary="Get Deal Maker record"
-)
+@router.get("/{property_id}/deal-maker", response_model=DealMakerResponse, summary="Get Deal Maker record")
 async def get_deal_maker(
     property_id: str,
     current_user: CurrentUser,
@@ -620,7 +572,7 @@ async def get_deal_maker(
 ):
     """
     Get the Deal Maker record for a saved property.
-    
+
     Returns the full DealMakerRecord with cached metrics.
     If no record exists, one will be created from property data.
     """
@@ -629,13 +581,10 @@ async def get_deal_maker(
         property_id=property_id,
         user_id=str(current_user.id),
     )
-    
+
     if not saved:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
     # Get or create DealMakerRecord
     if saved.deal_maker_record:
         record = DealMakerService.from_dict(saved.deal_maker_record)
@@ -648,14 +597,14 @@ async def get_deal_maker(
             property_data=saved.property_data_snapshot or {},
             zip_code=zip_code,
         )
-        
+
         # Save the newly created record
         saved.deal_maker_record = DealMakerService.to_dict(record)
         await db.commit()
         await db.refresh(saved)
-    
+
     metrics = record.cached_metrics
-    
+
     return DealMakerResponse(
         record=record,
         cash_needed=metrics.total_cash_needed if metrics else None,
@@ -667,11 +616,7 @@ async def get_deal_maker(
     )
 
 
-@router.delete(
-    "/{property_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a saved property"
-)
+@router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a saved property")
 async def delete_saved_property(
     property_id: str,
     current_user: CurrentUser,
@@ -683,22 +628,20 @@ async def delete_saved_property(
         property_id=property_id,
         user_id=str(current_user.id),
     )
-    
+
     if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
 
 
 # ===========================================
 # Adjustment History
 # ===========================================
 
+
 @router.get(
     "/{property_id}/adjustments",
-    response_model=List[PropertyAdjustmentResponse],
-    summary="Get property adjustment history"
+    response_model=list[PropertyAdjustmentResponse],
+    summary="Get property adjustment history",
 )
 async def get_adjustment_history(
     property_id: str,
@@ -713,7 +656,7 @@ async def get_adjustment_history(
         user_id=str(current_user.id),
         limit=limit,
     )
-    
+
     return [
         PropertyAdjustmentResponse(
             id=str(a.id),
@@ -733,7 +676,7 @@ async def get_adjustment_history(
     "/{property_id}/adjustments",
     response_model=PropertyAdjustmentResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Add an adjustment record"
+    summary="Add an adjustment record",
 )
 async def add_adjustment(
     property_id: str,
@@ -748,13 +691,10 @@ async def add_adjustment(
         user_id=str(current_user.id),
         data=data,
     )
-    
+
     if not adjustment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
     return PropertyAdjustmentResponse(
         id=str(adjustment.id),
         property_id=str(adjustment.property_id),

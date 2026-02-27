@@ -3,9 +3,10 @@
 Pure calculation module — accepts only explicit, fully-resolved parameters.
 No imports from app.core.defaults allowed.
 """
-from typing import Dict, Any, Optional
 
-from .common import validate_financial_inputs, calculate_monthly_mortgage
+from typing import Any
+
+from .common import calculate_monthly_mortgage, validate_financial_inputs
 
 
 def calculate_house_hack(
@@ -22,9 +23,9 @@ def calculate_house_hack(
     owner_unit_market_rent: float = 1500,
     utilities_shared_monthly: float = 150,
     maintenance_monthly: float = 200,
-    conversion_cost: Optional[float] = None,
-    unit2_rent: Optional[float] = None,
-) -> Dict[str, Any]:
+    conversion_cost: float | None = None,
+    unit2_rent: float | None = None,
+) -> dict[str, Any]:
     """Calculate House Hacking metrics.
 
     Every financial assumption is a required parameter — the caller
@@ -69,10 +70,7 @@ def calculate_house_hack(
         heloc_term = 10
         heloc_payment = calculate_monthly_mortgage(conversion_cost, heloc_rate, heloc_term)
 
-        scenario_b_expenses = (
-            monthly_piti + heloc_payment + utilities_shared_monthly
-            + (maintenance_monthly * 1.25)
-        )
+        scenario_b_expenses = monthly_piti + heloc_payment + utilities_shared_monthly + (maintenance_monthly * 1.25)
         net_housing_cost_b = scenario_b_expenses - unit2_rent
         savings_vs_renting_b = owner_unit_market_rent - net_housing_cost_b
 

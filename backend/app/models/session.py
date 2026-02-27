@@ -7,12 +7,13 @@ SecureStore (mobile).  A short-lived JWT is derived from the session
 for stateless API authorization with a 5-minute window.
 """
 
-from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text, Index
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional, TYPE_CHECKING
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -21,11 +22,12 @@ if TYPE_CHECKING:
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class UserSession(Base):
     """A single login session for a user."""
+
     __tablename__ = "user_sessions"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -55,9 +57,9 @@ class UserSession(Base):
     )
 
     # Device / client metadata
-    ip_address: Mapped[Optional[str]] = mapped_column(String(45))   # IPv6 max
-    user_agent: Mapped[Optional[str]] = mapped_column(Text)
-    device_name: Mapped[Optional[str]] = mapped_column(String(255))
+    ip_address: Mapped[str | None] = mapped_column(String(45))  # IPv6 max
+    user_agent: Mapped[str | None] = mapped_column(Text)
+    device_name: Mapped[str | None] = mapped_column(String(255))
 
     # Lifecycle
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -77,6 +79,4 @@ class UserSession(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="sessions")
 
-    __table_args__ = (
-        Index("ix_user_sessions_user_active", "user_id", "is_revoked"),
-    )
+    __table_args__ = (Index("ix_user_sessions_user_active", "user_id", "is_revoked"),)

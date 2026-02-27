@@ -10,7 +10,6 @@ ad-hoc router list that previously lived in main.py.
 
 import importlib
 import logging
-from typing import Optional
 
 from fastapi import APIRouter
 
@@ -22,28 +21,28 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────
 
 _ROUTER_MANIFEST: list[tuple[str, str]] = [
-    ("Auth",             "app.routers.auth"),
-    ("Users",            "app.routers.users"),
+    ("Auth", "app.routers.auth"),
+    ("Users", "app.routers.users"),
     ("Saved Properties", "app.routers.saved_properties"),
-    ("Admin",            "app.routers.admin"),
-    ("Property",         "app.routers.property"),
-    ("Health",           "app.routers.health"),
-    ("Analytics",        "app.routers.analytics"),
-    ("Worksheet",        "app.routers.worksheet"),
-    ("Comparison",       "app.routers.comparison"),
-    ("LOI",              "app.routers.loi"),
-    ("Search History",   "app.routers.search_history"),
-    ("Reports",          "app.routers.reports"),
-    ("Proforma",         "app.routers.proforma"),
-    ("Documents",        "app.routers.documents"),
-    ("Billing",          "app.routers.billing"),
-    ("Sync",             "app.routers.sync"),
-    ("Defaults",         "app.routers.defaults"),
-    ("Devices",          "app.routers.devices"),
+    ("Admin", "app.routers.admin"),
+    ("Property", "app.routers.property"),
+    ("Health", "app.routers.health"),
+    ("Analytics", "app.routers.analytics"),
+    ("Worksheet", "app.routers.worksheet"),
+    ("Comparison", "app.routers.comparison"),
+    ("LOI", "app.routers.loi"),
+    ("Search History", "app.routers.search_history"),
+    ("Reports", "app.routers.reports"),
+    ("Proforma", "app.routers.proforma"),
+    ("Documents", "app.routers.documents"),
+    ("Billing", "app.routers.billing"),
+    ("Sync", "app.routers.sync"),
+    ("Defaults", "app.routers.defaults"),
+    ("Devices", "app.routers.devices"),
 ]
 
 
-def _try_load_router(name: str, import_path: str) -> Optional[APIRouter]:
+def _try_load_router(name: str, import_path: str) -> APIRouter | None:
     """Import a router module, returning ``None`` on failure."""
     try:
         mod = importlib.import_module(import_path)

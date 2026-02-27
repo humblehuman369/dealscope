@@ -11,7 +11,7 @@ runtime values.  This module is the ONLY bridge.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 async def resolve_assumptions(
     db: AsyncSession,
-    user_overrides: Optional[Dict[str, Any]] = None,
+    user_overrides: dict[str, Any] | None = None,
 ) -> AllAssumptions:
     """Return a fully-populated AllAssumptions with DB defaults + user overrides.
 
@@ -63,13 +63,14 @@ def _deep_merge(base: dict, overrides: dict) -> None:
 # calculator function requires.  Property-specific data (purchase_price,
 # rent, taxes) is passed in; assumptions come from the resolved object.
 
+
 def build_ltr_params(
     assumptions: AllAssumptions,
     purchase_price: float,
     monthly_rent: float,
     property_taxes_annual: float,
     hoa_monthly: float = 0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
     insurance_annual = o.insurance_annual if o.insurance_annual else purchase_price * o.insurance_pct
@@ -102,7 +103,7 @@ def build_str_params(
     occupancy_rate: float,
     property_taxes_annual: float,
     hoa_monthly: float = 0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
     s = assumptions.str_assumptions
@@ -139,7 +140,7 @@ def build_brrrr_params(
     arv: float,
     monthly_rent_post_rehab: float,
     property_taxes_annual: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
     r = assumptions.rehab
@@ -177,7 +178,7 @@ def build_flip_params(
     market_value: float,
     arv: float,
     property_taxes_annual: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
     r = assumptions.rehab
@@ -208,7 +209,7 @@ def build_house_hack_params(
     monthly_rent_per_room: float,
     rooms_rented: int,
     property_taxes_annual: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
     h = assumptions.house_hack
@@ -231,7 +232,7 @@ def build_wholesale_params(
     assumptions: AllAssumptions,
     arv: float,
     estimated_rehab_costs: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     w = assumptions.wholesale
     return dict(
         arv=arv,
@@ -246,7 +247,7 @@ def build_wholesale_params(
 
 def build_valuation_params(
     assumptions: AllAssumptions,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Extract the financing/operating params needed by
     estimate_income_value and calculate_buy_price."""
     f = assumptions.financing

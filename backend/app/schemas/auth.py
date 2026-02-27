@@ -2,16 +2,16 @@
 Authentication schemas for registration, login, MFA, sessions, and tokens.
 """
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List
-from datetime import datetime
 import re
-import uuid
+from datetime import datetime
+from typing import Optional
 
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 # -----------------------------------------------------------------------
 # Password validator mixin
 # -----------------------------------------------------------------------
+
 
 def _validate_password_strength(v: str) -> str:
     if not re.search(r"[A-Z]", v):
@@ -28,6 +28,7 @@ def _validate_password_strength(v: str) -> str:
 # -----------------------------------------------------------------------
 # Registration
 # -----------------------------------------------------------------------
+
 
 class UserRegister(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
@@ -49,6 +50,7 @@ class UserRegister(BaseModel):
 # Login
 # -----------------------------------------------------------------------
 
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -57,6 +59,7 @@ class UserLogin(BaseModel):
 
 class LoginResponse(BaseModel):
     """Returned after a successful login (or after MFA if enabled)."""
+
     user: "UserResponse"
     access_token: str
     refresh_token: str
@@ -66,6 +69,7 @@ class LoginResponse(BaseModel):
 
 class MFAChallengeResponse(BaseModel):
     """Returned when MFA is required before completing login."""
+
     mfa_required: bool = True
     challenge_token: str
 
@@ -79,6 +83,7 @@ class MFAVerifyRequest(BaseModel):
 # -----------------------------------------------------------------------
 # Token / Session
 # -----------------------------------------------------------------------
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -99,10 +104,10 @@ class TokenResponse(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: str
-    sid: Optional[str] = None
+    sid: str | None = None
     exp: datetime
     type: str
-    iat: Optional[datetime] = None
+    iat: datetime | None = None
 
 
 class RefreshTokenRequest(BaseModel):
@@ -112,6 +117,7 @@ class RefreshTokenRequest(BaseModel):
 # -----------------------------------------------------------------------
 # Password management
 # -----------------------------------------------------------------------
+
 
 class PasswordReset(BaseModel):
     email: EmailStr
@@ -141,6 +147,7 @@ class PasswordChange(BaseModel):
 # Email verification
 # -----------------------------------------------------------------------
 
+
 class EmailVerification(BaseModel):
     token: str
 
@@ -148,6 +155,7 @@ class EmailVerification(BaseModel):
 # -----------------------------------------------------------------------
 # MFA setup
 # -----------------------------------------------------------------------
+
 
 class MFASetupResponse(BaseModel):
     secret: str
@@ -162,11 +170,12 @@ class MFAConfirmRequest(BaseModel):
 # Sessions
 # -----------------------------------------------------------------------
 
+
 class SessionInfo(BaseModel):
     id: str
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
-    device_name: Optional[str] = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    device_name: str | None = None
     last_active_at: datetime
     created_at: datetime
     is_current: bool = False
@@ -179,21 +188,22 @@ class SessionInfo(BaseModel):
 # User response (shared)
 # -----------------------------------------------------------------------
 
+
 class UserResponse(BaseModel):
     id: str
     email: str
-    full_name: Optional[str] = None
-    avatar_url: Optional[str] = None
+    full_name: str | None = None
+    avatar_url: str | None = None
     is_active: bool
     is_verified: bool
     is_superuser: bool = False
     mfa_enabled: bool = False
     created_at: datetime
-    last_login: Optional[datetime] = None
+    last_login: datetime | None = None
     has_profile: bool = False
     onboarding_completed: bool = False
-    roles: List[str] = []
-    permissions: List[str] = []
+    roles: list[str] = []
+    permissions: list[str] = []
     # Subscription tier (free or pro) — used for frontend feature gating
     subscription_tier: str = "free"
     subscription_status: str = "active"
@@ -206,6 +216,7 @@ class UserResponse(BaseModel):
 # Generic message
 # -----------------------------------------------------------------------
 
+
 class AuthMessage(BaseModel):
     message: str
     success: bool = True
@@ -214,12 +225,13 @@ class AuthMessage(BaseModel):
 
 class RegisterResponse(BaseModel):
     """Returned after registration. When verification is disabled, includes user + tokens for auto-login."""
+
     message: str
     requires_verification: bool
     user: Optional["UserResponse"] = None
-    access_token: Optional[str] = None
-    refresh_token: Optional[str] = None
-    expires_in: Optional[int] = None
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_in: int | None = None
 
 
 # Resolve forward reference

@@ -1,5 +1,7 @@
 """Seller motivation analysis and condition keyword extraction."""
-from typing import Dict, Any, Optional, List
+
+from datetime import UTC
+from typing import Any
 
 """
 Seller Motivation Score - Investment Negotiation Leverage
@@ -36,13 +38,13 @@ NOT AVAILABLE (require external data sources):
 
 def calculate_seller_motivation(
     # Days on Market
-    days_on_market: Optional[int] = None,
-    market_median_dom: Optional[int] = None,
+    days_on_market: int | None = None,
+    market_median_dom: int | None = None,
     # Price History
     price_reduction_count: int = 0,
-    total_price_reduction_pct: Optional[float] = None,
+    total_price_reduction_pct: float | None = None,
     # Listing Status
-    listing_status: Optional[str] = None,
+    listing_status: str | None = None,
     is_withdrawn: bool = False,
     # Distress Indicators
     is_foreclosure: bool = False,
@@ -50,35 +52,35 @@ def calculate_seller_motivation(
     is_bank_owned: bool = False,
     is_auction: bool = False,
     # Ownership
-    is_owner_occupied: Optional[bool] = None,
-    is_absentee_owner: Optional[bool] = None,
-    owner_state: Optional[str] = None,
-    property_state: Optional[str] = None,
+    is_owner_occupied: bool | None = None,
+    is_absentee_owner: bool | None = None,
+    owner_state: str | None = None,
+    property_state: str | None = None,
     # Vacancy (inferred)
-    is_likely_vacant: Optional[bool] = None,
+    is_likely_vacant: bool | None = None,
     # Condition (text-inferred)
-    condition_keywords_found: Optional[List[str]] = None,
+    condition_keywords_found: list[str] | None = None,
     # Inheritance indicator
-    last_sale_price: Optional[float] = None,
+    last_sale_price: float | None = None,
     # Engagement metrics (from AXESSO)
-    favorite_count: Optional[int] = None,
-    page_view_count: Optional[int] = None,
-    selling_soon_percentile: Optional[float] = None,
+    favorite_count: int | None = None,
+    page_view_count: int | None = None,
+    selling_soon_percentile: float | None = None,
     # FSBO
     is_fsbo: bool = False,
     # Market context
-    market_temperature: Optional[str] = None,
-) -> Dict[str, Any]:
+    market_temperature: str | None = None,
+) -> dict[str, Any]:
     """
     Calculate comprehensive Seller Motivation Score.
-    
+
     Returns a score from 0-100 with individual indicator breakdown.
     Higher score = more motivated seller = better negotiation leverage.
     """
-    from datetime import datetime, timezone
-    
+    from datetime import datetime
+
     indicators = []
-    
+
     # ========================================
     # 1. DAYS ON MARKET (HIGH - weight 3.0)
     # ========================================
@@ -90,17 +92,17 @@ def calculate_seller_motivation(
         "weight": 3.0,
         "description": "",
         "raw_value": days_on_market,
-        "source": "AXESSO"
+        "source": "AXESSO",
     }
-    
+
     if days_on_market is not None:
         dom_indicator["detected"] = True
-        
+
         # Calculate DOM vs market average multiplier
         dom_multiplier = 1.0
         if market_median_dom and market_median_dom > 0:
             dom_multiplier = days_on_market / market_median_dom
-        
+
         # Score based on absolute DOM and relative to market
         if days_on_market >= 180:
             dom_indicator["score"] = 100
@@ -126,14 +128,14 @@ def calculate_seller_motivation(
             dom_indicator["score"] = 15
             dom_indicator["signal_strength"] = "low"
             dom_indicator["description"] = f"{days_on_market} days - Fresh listing"
-        
+
         # Boost score if significantly above market average
         if dom_multiplier >= 2.0:
             dom_indicator["score"] = min(100, dom_indicator["score"] + 15)
             dom_indicator["description"] += f" ({dom_multiplier:.1f}x market avg)"
-    
+
     indicators.append(dom_indicator)
-    
+
     # ========================================
     # 2. MULTIPLE PRICE REDUCTIONS (HIGH - weight 3.0)
     # ========================================
@@ -145,13 +147,13 @@ def calculate_seller_motivation(
         "weight": 3.0,
         "description": "",
         "raw_value": price_reduction_count,
-        "source": "AXESSO"
+        "source": "AXESSO",
     }
-    
-    if price_reductions and price_reductions > 0:
+
+    if price_reduction_count and price_reduction_count > 0:
         price_red_indicator["detected"] = True
-        
-        if price_reductions >= 3:
+
+        if price_reduction_count >= 3:
             price_red_indicator["score"] = 100
             price_red_indicator["signal_strength"] = "high"
             price_red_indicator["description"] = f"{price_reduction_count} price cuts - Very motivated"
@@ -163,14 +165,14 @@ def calculate_seller_motivation(
             price_red_indicator["score"] = 50
             price_red_indicator["signal_strength"] = "medium"
             price_red_indicator["description"] = "1 price cut - Initial adjustment"
-        
+
         # Boost if total reduction is significant
         if total_price_reduction_pct and total_price_reduction_pct > 10:
             price_red_indicator["score"] = min(100, price_red_indicator["score"] + 10)
             price_red_indicator["description"] += f" (total {total_price_reduction_pct:.1f}% off)"
-    
+
     indicators.append(price_red_indicator)
-    
+
     # ========================================
     # 3. EXPIRED/WITHDRAWN LISTING (HIGH - weight 3.0)
     # ========================================
@@ -182,18 +184,18 @@ def calculate_seller_motivation(
         "weight": 3.0,
         "description": "",
         "raw_value": is_withdrawn,
-        "source": "AXESSO"
+        "source": "AXESSO",
     }
-    
+
     status_upper = (listing_status or "").upper()
     if is_withdrawn or "WITHDRAWN" in status_upper or "EXPIRED" in status_upper:
         withdrawn_indicator["detected"] = True
         withdrawn_indicator["score"] = 95
         withdrawn_indicator["signal_strength"] = "high"
         withdrawn_indicator["description"] = "Previously listed but didn't sell - High motivation likely"
-    
+
     indicators.append(withdrawn_indicator)
-    
+
     # ========================================
     # 4. FORECLOSURE/DISTRESS (HIGH - weight 3.0)
     # ========================================
@@ -205,9 +207,9 @@ def calculate_seller_motivation(
         "weight": 3.0,
         "description": "",
         "raw_value": None,
-        "source": "AXESSO"
+        "source": "AXESSO",
     }
-    
+
     if is_pre_foreclosure:
         foreclosure_indicator["detected"] = True
         foreclosure_indicator["score"] = 100
@@ -232,9 +234,9 @@ def calculate_seller_motivation(
         foreclosure_indicator["signal_strength"] = "high"
         foreclosure_indicator["description"] = "Auction listing - Seller seeking quick sale"
         foreclosure_indicator["raw_value"] = "auction"
-    
+
     indicators.append(foreclosure_indicator)
-    
+
     # ========================================
     # 5. ABSENTEE OWNERSHIP (MEDIUM-HIGH - weight 2.5)
     # ========================================
@@ -246,17 +248,17 @@ def calculate_seller_motivation(
         "weight": 2.5,
         "description": "",
         "raw_value": is_absentee_owner,
-        "source": "AXESSO/RentCast"
+        "source": "AXESSO/RentCast",
     }
-    
+
     if is_absentee_owner is True or is_owner_occupied is False:
         absentee_indicator["detected"] = True
         absentee_indicator["score"] = 70
         absentee_indicator["signal_strength"] = "medium-high"
         absentee_indicator["description"] = "Non-owner occupied - Treated as investment, less emotional"
-    
+
     indicators.append(absentee_indicator)
-    
+
     # ========================================
     # 6. OUT-OF-STATE OWNER (MEDIUM - weight 2.0)
     # ========================================
@@ -268,9 +270,9 @@ def calculate_seller_motivation(
         "weight": 2.0,
         "description": "",
         "raw_value": None,
-        "source": "RentCast"
+        "source": "RentCast",
     }
-    
+
     if owner_state and property_state:
         if owner_state.upper() != property_state.upper():
             out_of_state_indicator["detected"] = True
@@ -278,9 +280,9 @@ def calculate_seller_motivation(
             out_of_state_indicator["signal_strength"] = "medium"
             out_of_state_indicator["description"] = f"Owner in {owner_state} - Distance reduces attachment"
             out_of_state_indicator["raw_value"] = owner_state
-    
+
     indicators.append(out_of_state_indicator)
-    
+
     # ========================================
     # 7. VACANT PROPERTY (MEDIUM - weight 2.0) - Inferred
     # ========================================
@@ -292,17 +294,17 @@ def calculate_seller_motivation(
         "weight": 2.0,
         "description": "",
         "raw_value": is_likely_vacant,
-        "source": "Inferred"
+        "source": "Inferred",
     }
-    
+
     if is_likely_vacant:
         vacant_indicator["detected"] = True
         vacant_indicator["score"] = 60
         vacant_indicator["signal_strength"] = "medium"
         vacant_indicator["description"] = "Likely vacant - Carrying costs without income"
-    
+
     indicators.append(vacant_indicator)
-    
+
     # ========================================
     # 8. POOR CONDITION (HIGH - weight 3.0) - Text inferred
     # ========================================
@@ -314,9 +316,9 @@ def calculate_seller_motivation(
         "weight": 3.0,
         "description": "",
         "raw_value": condition_keywords_found,
-        "source": "AXESSO (text analysis)"
+        "source": "AXESSO (text analysis)",
     }
-    
+
     if condition_keywords_found and len(condition_keywords_found) > 0:
         condition_indicator["detected"] = True
         keyword_count = len(condition_keywords_found)
@@ -324,9 +326,9 @@ def calculate_seller_motivation(
         condition_indicator["signal_strength"] = "high" if keyword_count >= 2 else "medium-high"
         keywords_str = ", ".join(condition_keywords_found[:3])
         condition_indicator["description"] = f"Condition keywords: {keywords_str}"
-    
+
     indicators.append(condition_indicator)
-    
+
     # ========================================
     # 9. RECENTLY INHERITED (MEDIUM - weight 2.0) - Partial
     # ========================================
@@ -338,18 +340,18 @@ def calculate_seller_motivation(
         "weight": 2.0,
         "description": "",
         "raw_value": last_sale_price,
-        "source": "RentCast"
+        "source": "RentCast",
     }
-    
+
     # $0 or $1 sale price often indicates gift/inheritance transfer
     if last_sale_price is not None and last_sale_price <= 100:
         inherited_indicator["detected"] = True
         inherited_indicator["score"] = 55
         inherited_indicator["signal_strength"] = "medium"
         inherited_indicator["description"] = f"Last sale at ${last_sale_price:.0f} - Possible inheritance/gift transfer"
-    
+
     indicators.append(inherited_indicator)
-    
+
     # ========================================
     # 10. FSBO (MEDIUM-HIGH - weight 2.5)
     # ========================================
@@ -361,17 +363,17 @@ def calculate_seller_motivation(
         "weight": 2.5,
         "description": "",
         "raw_value": is_fsbo,
-        "source": "AXESSO"
+        "source": "AXESSO",
     }
-    
+
     if is_fsbo:
         fsbo_indicator["detected"] = True
         fsbo_indicator["score"] = 65
         fsbo_indicator["signal_strength"] = "medium-high"
         fsbo_indicator["description"] = "FSBO - More direct negotiation, no agent buffer"
-    
+
     indicators.append(fsbo_indicator)
-    
+
     # ========================================
     # 11. OWNER-OCCUPIED (LOW - Counter indicator)
     # ========================================
@@ -383,17 +385,17 @@ def calculate_seller_motivation(
         "weight": 1.0,
         "description": "",
         "raw_value": is_owner_occupied,
-        "source": "AXESSO/RentCast"
+        "source": "AXESSO/RentCast",
     }
-    
+
     if is_owner_occupied is True:
         owner_occupied_indicator["detected"] = True
         owner_occupied_indicator["score"] = 20  # Low score = less motivated
         owner_occupied_indicator["signal_strength"] = "low"
         owner_occupied_indicator["description"] = "Owner-occupied - Emotional pricing likely, harder negotiation"
-    
+
     indicators.append(owner_occupied_indicator)
-    
+
     # ========================================
     # BONUS: Zillow Selling Soon Percentile
     # ========================================
@@ -402,28 +404,32 @@ def calculate_seller_motivation(
             "name": "Selling Soon Prediction",
             "detected": True,
             "score": int(selling_soon_percentile),
-            "signal_strength": "high" if selling_soon_percentile >= 70 else "medium" if selling_soon_percentile >= 40 else "low",
+            "signal_strength": "high"
+            if selling_soon_percentile >= 70
+            else "medium"
+            if selling_soon_percentile >= 40
+            else "low",
             "weight": 2.0,
             "description": f"Zillow predicts {selling_soon_percentile:.0f}% likelihood to sell soon",
             "raw_value": selling_soon_percentile,
-            "source": "AXESSO"
+            "source": "AXESSO",
         }
         indicators.append(selling_soon_indicator)
-    
+
     # ========================================
     # CALCULATE COMPOSITE SCORE
     # ========================================
-    
+
     # Only include detected indicators in weighted average
     detected_indicators = [i for i in indicators if i["detected"]]
-    
+
     if detected_indicators:
         total_weight = sum(i["weight"] for i in detected_indicators)
         weighted_sum = sum(i["score"] * i["weight"] for i in detected_indicators)
         base_score = round(weighted_sum / total_weight) if total_weight > 0 else 0
     else:
         base_score = 25  # Default low score if no indicators detected
-    
+
     # ========================================
     # APPLY MARKET TEMPERATURE MODIFIER
     # ========================================
@@ -438,12 +444,12 @@ def calculate_seller_motivation(
         elif temp_lower == "hot":
             market_modifier = -15
         # warm = 0 (no change)
-    
+
     composite_score = min(100, max(0, base_score + market_modifier))
-    
+
     # Count high-signal indicators
     high_signals = sum(1 for i in detected_indicators if i["signal_strength"] == "high")
-    
+
     # Determine grade
     if composite_score >= 80:
         grade = "A+"
@@ -469,7 +475,7 @@ def calculate_seller_motivation(
         grade = "F"
         label = "Minimal Motivation"
         color = "#ef4444"
-    
+
     # Determine negotiation leverage and max achievable discount
     # Based on motivation score, map to realistic discount ranges
     if composite_score >= 85:
@@ -492,16 +498,16 @@ def calculate_seller_motivation(
         leverage = "minimal"
         discount_range = "0-3%"
         max_achievable_discount = 0.04
-    
+
     # Extract key leverage points (top 3 detected indicators by score)
     sorted_detected = sorted(detected_indicators, key=lambda x: x["score"], reverse=True)
     key_leverage_points = [i["description"] for i in sorted_detected[:3] if i["score"] >= 50]
-    
+
     # Calculate data completeness
     total_indicator_count = len(indicators)
     indicators_with_data = sum(1 for i in indicators if i["raw_value"] is not None or i["detected"])
     data_completeness = (indicators_with_data / total_indicator_count) * 100 if total_indicator_count > 0 else 0
-    
+
     return {
         "score": composite_score,
         "base_score": base_score,
@@ -519,41 +525,66 @@ def calculate_seller_motivation(
         "dom_vs_market_avg": (days_on_market / market_median_dom) if days_on_market and market_median_dom else None,
         "market_temperature": market_temperature,
         "data_completeness": round(data_completeness, 1),
-        "calculated_at": datetime.now(timezone.utc).isoformat()
+        "calculated_at": datetime.now(UTC).isoformat(),
     }
 
 
-def extract_condition_keywords(description: Optional[str]) -> List[str]:
+def extract_condition_keywords(description: str | None) -> list[str]:
     """
     Extract keywords from property description that indicate poor condition.
-    
+
     These keywords suggest the property needs work and may have a limited
     buyer pool, giving investors negotiation leverage.
     """
     if not description:
         return []
-    
+
     # Normalize text
     text = description.lower()
-    
+
     # Keywords indicating property needs work (investor opportunities)
     condition_keywords = [
-        "as-is", "as is", "sold as-is", "sold as is",
-        "fixer", "fixer-upper", "fixer upper", "handyman",
-        "tlc", "needs tlc", "needs work", "needs updating",
-        "investor special", "investor opportunity", "investor",
-        "cash only", "cash buyers", "cash buyer",
-        "estate sale", "estate", "probate",
-        "motivated seller", "motivated", "must sell",
-        "bring your contractor", "bring contractor",
-        "cosmetic", "needs cosmetic",
-        "deferred maintenance", "maintenance needed",
-        "priced to sell", "price to sell",
-        "diamond in the rough", "potential",
-        "foreclosure", "bank owned", "reo",
-        "vacant", "unoccupied",
+        "as-is",
+        "as is",
+        "sold as-is",
+        "sold as is",
+        "fixer",
+        "fixer-upper",
+        "fixer upper",
+        "handyman",
+        "tlc",
+        "needs tlc",
+        "needs work",
+        "needs updating",
+        "investor special",
+        "investor opportunity",
+        "investor",
+        "cash only",
+        "cash buyers",
+        "cash buyer",
+        "estate sale",
+        "estate",
+        "probate",
+        "motivated seller",
+        "motivated",
+        "must sell",
+        "bring your contractor",
+        "bring contractor",
+        "cosmetic",
+        "needs cosmetic",
+        "deferred maintenance",
+        "maintenance needed",
+        "priced to sell",
+        "price to sell",
+        "diamond in the rough",
+        "potential",
+        "foreclosure",
+        "bank owned",
+        "reo",
+        "vacant",
+        "unoccupied",
     ]
-    
+
     found_keywords = []
     for keyword in condition_keywords:
         if keyword in text:
@@ -561,5 +592,5 @@ def extract_condition_keywords(description: Optional[str]) -> List[str]:
             normalized = keyword.replace("-", " ").strip()
             if normalized not in [k.replace("-", " ") for k in found_keywords]:
                 found_keywords.append(keyword)
-    
+
     return found_keywords

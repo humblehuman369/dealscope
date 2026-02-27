@@ -3,18 +3,17 @@ Search History router for viewing and managing property search history.
 """
 
 import logging
-from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.services.search_history_service import search_history_service
+from app.core.deps import CurrentUser, DbSession
 from app.schemas.search_history import (
-    SearchHistoryResponse,
     SearchHistoryList,
+    SearchHistoryResponse,
     SearchHistoryStats,
 )
-from app.core.deps import CurrentUser, DbSession
+from app.services.search_history_service import search_history_service
 
 logger = logging.getLogger(__name__)
 
@@ -25,22 +24,19 @@ router = APIRouter(prefix="/api/v1/search-history", tags=["Search History"])
 # List & Stats
 # ===========================================
 
-@router.get(
-    "",
-    response_model=SearchHistoryList,
-    summary="Get search history"
-)
+
+@router.get("", response_model=SearchHistoryList, summary="Get search history")
 async def get_search_history(
     current_user: CurrentUser,
     db: DbSession,
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
     successful_only: bool = Query(False, description="Only show successful searches"),
-    source: Optional[str] = Query(None, description="Filter by source (web, mobile, scanner)"),
+    source: str | None = Query(None, description="Filter by source (web, mobile, scanner)"),
 ):
     """
     Get paginated search history for the current user.
-    
+
     Returns a list of past property searches with summaries.
     """
     searches = await search_history_service.get_user_history(
@@ -51,13 +47,13 @@ async def get_search_history(
         successful_only=successful_only,
         search_source=source,
     )
-    
+
     total = await search_history_service.get_history_count(
         db=db,
         user_id=str(current_user.id),
         successful_only=successful_only,
     )
-    
+
     items = [
         SearchHistoryResponse(
             id=str(s.id),
@@ -77,7 +73,7 @@ async def get_search_history(
         )
         for s in searches
     ]
-    
+
     return SearchHistoryList(
         items=items,
         total=total,
@@ -86,11 +82,7 @@ async def get_search_history(
     )
 
 
-@router.get(
-    "/recent",
-    response_model=list[SearchHistoryResponse],
-    summary="Get recent searches"
-)
+@router.get("/recent", response_model=list[SearchHistoryResponse], summary="Get recent searches")
 async def get_recent_searches(
     current_user: CurrentUser,
     db: DbSession,
@@ -98,7 +90,7 @@ async def get_recent_searches(
 ):
     """
     Get the most recent successful searches for quick access.
-    
+
     Useful for search autocomplete and "recent searches" dropdown.
     """
     searches = await search_history_service.get_recent_searches(
@@ -106,7 +98,7 @@ async def get_recent_searches(
         user_id=str(current_user.id),
         limit=limit,
     )
-    
+
     return [
         SearchHistoryResponse(
             id=str(s.id),
@@ -128,25 +120,21 @@ async def get_recent_searches(
     ]
 
 
-@router.get(
-    "/stats",
-    response_model=SearchHistoryStats,
-    summary="Get search statistics"
-)
+@router.get("/stats", response_model=SearchHistoryStats, summary="Get search statistics")
 async def get_search_stats(
     current_user: CurrentUser,
     db: DbSession,
 ):
     """
     Get search statistics for the current user.
-    
+
     Includes total searches, top markets, and activity trends.
     """
     stats = await search_history_service.get_stats(
         db=db,
         user_id=str(current_user.id),
     )
-    
+
     # Convert recent searches to response objects
     recent = [
         SearchHistoryResponse(
@@ -167,7 +155,7 @@ async def get_search_stats(
         )
         for s in stats["recent_searches"]
     ]
-    
+
     return SearchHistoryStats(
         total_searches=stats["total_searches"],
         successful_searches=stats["successful_searches"],
@@ -183,11 +171,8 @@ async def get_search_stats(
 # Individual Entry Operations
 # ===========================================
 
-@router.delete(
-    "/{entry_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a search history entry"
-)
+
+@router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a search history entry")
 async def delete_search_entry(
     entry_id: str,
     current_user: CurrentUser,
@@ -199,26 +184,20 @@ async def delete_search_entry(
         user_id=str(current_user.id),
         entry_id=entry_id,
     )
-    
+
     if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Search entry not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Search entry not found")
 
 
-@router.delete(
-    "",
-    summary="Clear search history"
-)
+@router.delete("", summary="Clear search history")
 async def clear_search_history(
     current_user: CurrentUser,
     db: DbSession,
-    before: Optional[datetime] = Query(None, description="Clear entries before this date"),
+    before: datetime | None = Query(None, description="Clear entries before this date"),
 ):
     """
     Clear all search history for the current user.
-    
+
     Optionally specify a date to only clear entries before that date.
     """
     count = await search_history_service.clear_history(
@@ -226,6 +205,5 @@ async def clear_search_history(
         user_id=str(current_user.id),
         before_date=before,
     )
-    
-    return {"deleted": count, "message": f"Cleared {count} search history entries"}
 
+    return {"deleted": count, "message": f"Cleared {count} search history entries"}

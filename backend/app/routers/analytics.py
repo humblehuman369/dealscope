@@ -6,20 +6,21 @@ Schemas live in ``app.schemas.analytics``.
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from app.core.deps import DbSession
 from app.schemas.analytics import (
-    IQVerdictInput, IQVerdictResponse,
-    DealScoreInput, DealScoreResponse,
+    DealScoreInput,
+    DealScoreResponse,
+    IQVerdictInput,
+    IQVerdictResponse,
 )
 from app.schemas.property import AnalyticsRequest, AnalyticsResponse
-from app.services.iq_verdict_service import compute_iq_verdict, compute_deal_score
-from app.services.property_service import property_service
 from app.services.assumptions_service import get_default_assumptions as get_db_default_assumptions
+from app.services.iq_verdict_service import compute_deal_score, compute_iq_verdict
+from app.services.property_service import property_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +31,17 @@ router = APIRouter(tags=["Analytics"])
 # IQ Verdict
 # ===========================================
 
+
 @router.post("/api/v1/analysis/verdict", response_model=IQVerdictResponse)
 async def calculate_iq_verdict(input_data: IQVerdictInput, db: DbSession):
     """Calculate IQ Verdict multi-strategy analysis."""
     try:
         from app.services.assumption_resolver import resolve_assumptions
+
         assumptions = await resolve_assumptions(db)
         result = compute_iq_verdict(input_data, assumptions=assumptions)
 
-        response_dict = result.model_dump(mode='json', by_alias=True)
+        response_dict = result.model_dump(mode="json", by_alias=True)
         logger.info(
             "IQ Verdict response — dealScore=%s, dealGapScore=%s, returnQualityScore=%s, "
             "marketAlignmentScore=%s, dealProbabilityScore=%s",
@@ -58,11 +61,13 @@ async def calculate_iq_verdict(input_data: IQVerdictInput, db: DbSession):
 # Deal Score
 # ===========================================
 
+
 @router.post("/api/v1/worksheet/deal-score", response_model=DealScoreResponse)
 async def calculate_deal_score(input_data: DealScoreInput, db: DbSession):
     """Calculate IQ Verdict Score (Deal Opportunity Score)."""
     try:
         from app.services.assumption_resolver import resolve_assumptions
+
         assumptions = await resolve_assumptions(db)
         return compute_deal_score(input_data, assumptions=assumptions)
     except Exception as e:
@@ -73,6 +78,7 @@ async def calculate_deal_score(input_data: DealScoreInput, db: DbSession):
 # ===========================================
 # Analytics Calculate & Quick
 # ===========================================
+
 
 @router.post("/api/v1/analytics/calculate", response_model=AnalyticsResponse)
 async def calculate_analytics(request: AnalyticsRequest):
@@ -95,7 +101,7 @@ async def calculate_analytics(request: AnalyticsRequest):
 async def quick_analytics(
     property_id: str,
     db: DbSession,
-    purchase_price: Optional[float] = None,
+    purchase_price: float | None = None,
     down_payment_pct: float = Query(0.20, ge=0, le=1),
     interest_rate: float = Query(0.075, ge=0, le=0.3),
 ):
@@ -108,18 +114,46 @@ async def quick_analytics(
         assumptions.financing.interest_rate = interest_rate
 
         result = await property_service.calculate_analytics(
-            property_id=property_id, assumptions=assumptions,
+            property_id=property_id,
+            assumptions=assumptions,
         )
 
         return {
             "property_id": property_id,
             "summary": {
-                "ltr": {"monthly_cash_flow": result.ltr.monthly_cash_flow if result.ltr else None, "cash_on_cash_return": result.ltr.cash_on_cash_return if result.ltr else None, "cap_rate": result.ltr.cap_rate if result.ltr else None},
-                "str": {"monthly_cash_flow": result.str_assumptions.monthly_cash_flow if result.str_assumptions else None, "cash_on_cash_return": result.str_assumptions.cash_on_cash_return if result.str_assumptions else None, "break_even_occupancy": result.str_assumptions.break_even_occupancy if result.str_assumptions else None},
-                "brrrr": {"cash_left_in_deal": result.brrrr.cash_left_in_deal if result.brrrr else None, "infinite_roi_achieved": result.brrrr.infinite_roi_achieved if result.brrrr else None, "equity_position": result.brrrr.equity_position if result.brrrr else None},
-                "flip": {"net_profit": result.flip.net_profit_before_tax if result.flip else None, "roi": result.flip.roi if result.flip else None, "meets_70_rule": result.flip.meets_70_rule if result.flip else None},
-                "house_hack": {"net_housing_cost": result.house_hack.net_housing_cost_scenario_a if result.house_hack else None, "savings_vs_renting": result.house_hack.savings_vs_renting_a if result.house_hack else None},
-                "wholesale": {"net_profit": result.wholesale.net_profit if result.wholesale else None, "roi": result.wholesale.roi if result.wholesale else None, "deal_viability": result.wholesale.deal_viability if result.wholesale else None},
+                "ltr": {
+                    "monthly_cash_flow": result.ltr.monthly_cash_flow if result.ltr else None,
+                    "cash_on_cash_return": result.ltr.cash_on_cash_return if result.ltr else None,
+                    "cap_rate": result.ltr.cap_rate if result.ltr else None,
+                },
+                "str": {
+                    "monthly_cash_flow": result.str_assumptions.monthly_cash_flow if result.str_assumptions else None,
+                    "cash_on_cash_return": result.str_assumptions.cash_on_cash_return
+                    if result.str_assumptions
+                    else None,
+                    "break_even_occupancy": result.str_assumptions.break_even_occupancy
+                    if result.str_assumptions
+                    else None,
+                },
+                "brrrr": {
+                    "cash_left_in_deal": result.brrrr.cash_left_in_deal if result.brrrr else None,
+                    "infinite_roi_achieved": result.brrrr.infinite_roi_achieved if result.brrrr else None,
+                    "equity_position": result.brrrr.equity_position if result.brrrr else None,
+                },
+                "flip": {
+                    "net_profit": result.flip.net_profit_before_tax if result.flip else None,
+                    "roi": result.flip.roi if result.flip else None,
+                    "meets_70_rule": result.flip.meets_70_rule if result.flip else None,
+                },
+                "house_hack": {
+                    "net_housing_cost": result.house_hack.net_housing_cost_scenario_a if result.house_hack else None,
+                    "savings_vs_renting": result.house_hack.savings_vs_renting_a if result.house_hack else None,
+                },
+                "wholesale": {
+                    "net_profit": result.wholesale.net_profit if result.wholesale else None,
+                    "roi": result.wholesale.roi if result.wholesale else None,
+                    "deal_viability": result.wholesale.deal_viability if result.wholesale else None,
+                },
             },
         }
     except ValueError as e:
@@ -136,12 +170,37 @@ async def get_assumptions_defaults(db: DbSession):
     return {
         "assumptions": defaults.model_dump(),
         "descriptions": {
-            "financing": {"down_payment_pct": "Down payment as percentage of purchase price", "interest_rate": "Annual mortgage interest rate", "loan_term_years": "Loan term in years", "closing_costs_pct": "Buyer closing costs as percentage"},
-            "operating": {"vacancy_rate": "Expected vacancy as percentage", "property_management_pct": "Property management fee as % of rent", "maintenance_pct": "Maintenance reserve as % of rent"},
-            "str": {"platform_fees_pct": "Airbnb/VRBO platform fees", "str_management_pct": "STR property management fee", "cleaning_cost_per_turnover": "Cost per guest turnover"},
-            "brrrr": {"refinance_ltv": "Loan-to-value ratio for cash-out refinance", "purchase_discount_pct": "Target discount below market"},
-            "flip": {"hard_money_rate": "Annual interest rate for hard money loan", "selling_costs_pct": "Total selling costs including commission"},
-            "house_hack": {"fha_down_payment_pct": "FHA minimum down payment", "fha_mip_rate": "FHA mortgage insurance premium rate"},
-            "wholesale": {"assignment_fee": "Target wholesale assignment fee", "target_purchase_discount_pct": "70% rule discount from ARV"},
+            "financing": {
+                "down_payment_pct": "Down payment as percentage of purchase price",
+                "interest_rate": "Annual mortgage interest rate",
+                "loan_term_years": "Loan term in years",
+                "closing_costs_pct": "Buyer closing costs as percentage",
+            },
+            "operating": {
+                "vacancy_rate": "Expected vacancy as percentage",
+                "property_management_pct": "Property management fee as % of rent",
+                "maintenance_pct": "Maintenance reserve as % of rent",
+            },
+            "str": {
+                "platform_fees_pct": "Airbnb/VRBO platform fees",
+                "str_management_pct": "STR property management fee",
+                "cleaning_cost_per_turnover": "Cost per guest turnover",
+            },
+            "brrrr": {
+                "refinance_ltv": "Loan-to-value ratio for cash-out refinance",
+                "purchase_discount_pct": "Target discount below market",
+            },
+            "flip": {
+                "hard_money_rate": "Annual interest rate for hard money loan",
+                "selling_costs_pct": "Total selling costs including commission",
+            },
+            "house_hack": {
+                "fha_down_payment_pct": "FHA minimum down payment",
+                "fha_mip_rate": "FHA mortgage insurance premium rate",
+            },
+            "wholesale": {
+                "assignment_fee": "Target wholesale assignment fee",
+                "target_purchase_discount_pct": "70% rule discount from ARV",
+            },
         },
     }

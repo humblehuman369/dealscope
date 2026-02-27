@@ -3,28 +3,30 @@
 Pure calculation module — accepts only explicit, fully-resolved parameters.
 No imports from app.core.defaults allowed.
 """
+
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from .common import (
-    validate_financial_inputs,
-    calculate_monthly_mortgage,
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
+    calculate_monthly_mortgage,
+    validate_financial_inputs,
 )
 
 
 @dataclass(frozen=True)
 class SeasonConfig:
     """One season entry for STR seasonality analysis."""
+
     name: str
     months: int
     occupancy_multiplier: float
     adr_multiplier: float
 
 
-DEFAULT_SEASONALITY: List[SeasonConfig] = [
+DEFAULT_SEASONALITY: list[SeasonConfig] = [
     SeasonConfig(name="Peak (Winter)", months=5, occupancy_multiplier=0.90, adr_multiplier=1.2),
     SeasonConfig(name="Shoulder (Spring/Fall)", months=2, occupancy_multiplier=0.80, adr_multiplier=1.0),
     SeasonConfig(name="Off (Summer)", months=5, occupancy_multiplier=0.70, adr_multiplier=0.8),
@@ -53,8 +55,8 @@ def calculate_str(
     landscaping_annual: float,
     pest_control_annual: float,
     hoa_monthly: float = 0,
-    seasonality: Optional[List[Dict[str, Any]]] = None,
-) -> Dict[str, Any]:
+    seasonality: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Calculate Short-Term Rental metrics.
 
     Every financial assumption is a required parameter — the caller
@@ -119,23 +121,27 @@ def calculate_str(
 
     # Break-even occupancy
     fixed_costs = (
-        property_taxes_annual + insurance_annual + maintenance_annual
-        + landscaping_annual + pest_control_annual + hoa_annual + annual_debt_service
+        property_taxes_annual
+        + insurance_annual
+        + maintenance_annual
+        + landscaping_annual
+        + pest_control_annual
+        + hoa_annual
+        + annual_debt_service
     )
-    variable_cost_per_night = (
-        (average_daily_rate * (platform_fees_pct + str_management_pct))
-        + (cleaning_cost_per_turnover / avg_length_of_stay_days)
+    variable_cost_per_night = (average_daily_rate * (platform_fees_pct + str_management_pct)) + (
+        cleaning_cost_per_turnover / avg_length_of_stay_days
     )
     revenue_per_night_net = average_daily_rate - variable_cost_per_night
     break_even_nights = fixed_costs / revenue_per_night_net if revenue_per_night_net > 0 else 365
     break_even_occupancy = break_even_nights / 365
 
     # Seasonality Analysis
-    seasons: List[SeasonConfig] = []
+    seasons: list[SeasonConfig] = []
     if seasonality:
         seasons = [
             SeasonConfig(
-                name=s.get("name", s.get("season", f"Season {i+1}")),
+                name=s.get("name", s.get("season", f"Season {i + 1}")),
                 months=s["months"],
                 occupancy_multiplier=s.get("occupancy_multiplier", s.get("occupancy", 0.75)),
                 adr_multiplier=s.get("adr_multiplier", 1.0),
