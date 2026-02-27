@@ -899,8 +899,6 @@ function VerdictContent() {
             <VerdictScoreCard
               score={score}
               verdictLabel={verdictLabel}
-              description={shortVerdictDescription}
-              onHowItWorks={handleShowMethodology}
             />
             {/* How the Verdict Score Works — unified explainer with Key Deal Factors */}
             <VerdictScoreExplainer

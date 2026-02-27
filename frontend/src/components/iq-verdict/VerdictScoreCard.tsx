@@ -267,12 +267,6 @@ export function VerdictScoreExplainer({
 
   return (
     <section className="px-5 pt-4 pb-5 border-t" style={{ borderColor: colors.ui.border }}>
-      <h2
-        className="text-sm font-bold mb-1"
-        style={{ color: colors.text.primary }}
-      >
-        How the Verdict Score Works
-      </h2>
       <p
         className="text-[10px] font-bold uppercase tracking-wider mb-3"
         style={{ color: colors.text.secondary }}
@@ -318,12 +312,7 @@ export function VerdictScoreExplainer({
 export function VerdictScoreCard({
   score,
   verdictLabel,
-  description,
-  dealGapPercent,
-  discountBracketLabel,
-  dealFactors,
-  onHowItWorks,
-}: VerdictScoreCardProps) {
+}: Pick<VerdictScoreCardProps, 'score' | 'verdictLabel'>) {
   const color = scoreColor(score)
 
   return (
@@ -339,25 +328,6 @@ export function VerdictScoreCard({
         <ScoreGauge score={score} color={color} />
         <VerdictBadge label={verdictLabel} color={color} />
       </div>
-
-      <p
-        className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4"
-        style={{ color: colors.text.body }}
-      >
-        {description || 'Calculating deal metrics...'}
-      </p>
-
-      {onHowItWorks && (
-        <div className="flex justify-center mt-2">
-          <button
-            onClick={onHowItWorks}
-            className="text-[0.82rem] font-medium"
-            style={{ color: colors.brand.teal }}
-          >
-            How Verdict Score Works
-          </button>
-        </div>
-      )}
     </section>
   )
 }
