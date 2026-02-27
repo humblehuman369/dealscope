@@ -4,11 +4,13 @@ import {
   Text,
   Pressable,
   FlatList,
+  RefreshControl,
   ActivityIndicator,
   Alert,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -22,10 +24,12 @@ import { useSession } from '@/hooks/useSession';
 import {
   useSavedProperties,
   useDeleteSavedProperty,
+  SAVED_PROPS_KEYS,
   type SavedPropertySummary,
 } from '@/hooks/useSavedProperties';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
+import { DealVaultListSkeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
 import { colors, fontFamily, fontSize, spacing, radius } from '@/constants/tokens';
 
@@ -52,6 +56,14 @@ export default function DealVaultScreen() {
     sort: sort === 'date' ? '-created_at' : sort === 'score' ? '-verdict_score' : '-deal_gap_pct',
   });
   const deleteMutation = useDeleteSavedProperty();
+  const qc = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await qc.invalidateQueries({ queryKey: SAVED_PROPS_KEYS.all });
+    setRefreshing(false);
+  }
 
   function cycleSort() {
     const order: SortOption[] = ['date', 'score', 'gap'];
@@ -176,14 +188,20 @@ export default function DealVaultScreen() {
 
       {/* List */}
       {isLoading && !items ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
+        <DealVaultListSkeleton />
       ) : (
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.accent}
+              colors={[colors.accent]}
+            />
+          }
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
