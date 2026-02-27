@@ -11,12 +11,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { api } from '@/services/api';
 import { PhotoCarousel } from '@/components/property/PhotoCarousel';
 import { PropertyInfoCard } from '@/components/property/PropertyInfoCard';
 import { MultiStrategyComparison } from '@/components/strategy/MultiStrategyComparison';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { useVerdictData } from '@/hooks/useVerdictData';
+import { useSaveProperty } from '@/hooks/useSavedProperties';
 import { formatCurrency } from '@/utils/formatters';
 import type { PropertyResponse } from '@dealscope/shared';
 import type { StrategyId } from '@dealscope/shared';
@@ -72,6 +74,9 @@ export default function PropertyDetailsScreen() {
   const verdictQuery = useVerdictData(fullAddress || undefined);
   const verdict = verdictQuery.data;
 
+  // Save / unsave
+  const { isSaved, isSaving, toggle: toggleSave } = useSaveProperty(fullAddress);
+
   const details = property?.details;
   const listing = property?.listing;
   const market = property?.market;
@@ -120,9 +125,31 @@ export default function PropertyDetailsScreen() {
         <Pressable style={styles.headerBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={22} color={colors.white} />
         </Pressable>
-        <Pressable style={styles.headerBtn} onPress={() => {}}>
-          <Ionicons name="share-outline" size={22} color={colors.white} />
-        </Pressable>
+        <View style={styles.headerBtnGroup}>
+          <Pressable
+            style={styles.headerBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              toggleSave({
+                list_price: listPrice ?? undefined,
+                bedrooms: details?.bedrooms ?? undefined,
+                bathrooms: details?.bathrooms ?? undefined,
+                sqft: details?.square_footage ?? undefined,
+                zpid: zpid ?? undefined,
+              });
+            }}
+            disabled={isSaving}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={22}
+              color={isSaved ? colors.accent : colors.white}
+            />
+          </Pressable>
+          <Pressable style={styles.headerBtn} onPress={() => {}}>
+            <Ionicons name="share-outline" size={22} color={colors.white} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -382,6 +409,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerBtnGroup: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   scroll: { flex: 1 },
   content: {

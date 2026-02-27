@@ -11,9 +11,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { api } from '@/services/api';
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { useVerdictData } from '@/hooks/useVerdictData';
+import { useSaveProperty } from '@/hooks/useSavedProperties';
 import { VerdictScoreRing } from '@/components/verdict/VerdictScoreRing';
 import { ScoreComponentBars } from '@/components/verdict/ScoreComponentBars';
 import { PriceCards } from '@/components/verdict/PriceCards';
@@ -39,6 +41,9 @@ export default function VerdictScreen() {
   const insets = useSafeAreaInsets();
 
   const [activeStrategy, setActiveStrategy] = useState<string | null>(null);
+
+  // Save / unsave property
+  const { isSaved, isSaving, toggle: toggleSave } = useSaveProperty(address ?? '');
 
   // Property data from cache (populated by analyzing screen)
   const { fetchProperty } = usePropertyData();
@@ -124,9 +129,31 @@ export default function VerdictScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.heading} />
         </Pressable>
         <Text style={styles.headerTitle}>IQ Verdict</Text>
-        <Pressable onPress={() => {}} hitSlop={12}>
-          <Ionicons name="share-outline" size={22} color={colors.heading} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              toggleSave({
+                list_price: listPrice ?? undefined,
+                bedrooms: details?.bedrooms ?? undefined,
+                bathrooms: details?.bathrooms ?? undefined,
+                sqft: details?.square_footage ?? undefined,
+              });
+            }}
+            hitSlop={12}
+            disabled={isSaving}
+            style={{ opacity: isSaving ? 0.5 : 1 }}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={22}
+              color={isSaved ? colors.accent : colors.heading}
+            />
+          </Pressable>
+          <Pressable onPress={() => {}} hitSlop={12}>
+            <Ionicons name="share-outline" size={22} color={colors.heading} />
+          </Pressable>
+        </View>
       </View>
 
       {/* ── Property summary ────────────────────────────── */}
@@ -217,6 +244,40 @@ export default function VerdictScreen() {
           navigateToStrategy();
         }}
       />
+
+      {/* ── Save to DealVault CTA ─────────────────────── */}
+      <GlowCard style={styles.saveCta}>
+        <Text style={styles.saveCtaTitle}>
+          {isSaved ? 'Saved to DealVaultIQ' : 'Save This Deal'}
+        </Text>
+        <Text style={styles.saveCtaText}>
+          {isSaved
+            ? "We'll keep the numbers fresh and alert you if anything changes."
+            : 'Save to your DealVaultIQ to track and compare this property.'}
+        </Text>
+        <Pressable
+          style={[styles.saveCtaBtn, isSaved && styles.saveCtaBtnSaved]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            toggleSave({
+              list_price: listPrice ?? undefined,
+              bedrooms: details?.bedrooms ?? undefined,
+              bathrooms: details?.bathrooms ?? undefined,
+              sqft: details?.square_footage ?? undefined,
+            });
+          }}
+          disabled={isSaving}
+        >
+          <Ionicons
+            name={isSaved ? 'checkmark-circle' : 'bookmark-outline'}
+            size={18}
+            color={isSaved ? colors.accent : colors.black}
+          />
+          <Text style={[styles.saveCtaBtnText, isSaved && { color: colors.accent }]}>
+            {isSaving ? 'Saving...' : isSaved ? 'Saved to DealVault ✓' : 'Save to DealVaultIQ'}
+          </Text>
+        </Pressable>
+      </GlowCard>
 
       {/* ── Action Buttons ──────────────────────────────── */}
       <View style={styles.actions}>
@@ -340,6 +401,11 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     color: colors.heading,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
 
   // Property card
   propertyCard: {
@@ -400,6 +466,46 @@ const styles = StyleSheet.create({
   metricsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+
+  // Save CTA
+  saveCta: {
+    padding: spacing.md,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  saveCtaTitle: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.md,
+    color: colors.heading,
+  },
+  saveCtaText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    color: colors.secondary,
+    textAlign: 'center',
+    maxWidth: 300,
+    lineHeight: fontSize.sm * 1.5,
+  },
+  saveCtaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    marginTop: spacing.xs,
+  },
+  saveCtaBtnSaved: {
+    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+    borderWidth: 1,
+    borderColor: colors.accent,
+  },
+  saveCtaBtnText: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.base,
+    color: colors.black,
   },
 
   // Actions
