@@ -24,7 +24,8 @@ import {
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { VerdictScoreCard, DealGapCallout, DealFactorsList } from '@/components/iq-verdict/VerdictScoreCard'
+import { VerdictScoreCard, VerdictScoreExplainer } from '@/components/iq-verdict/VerdictScoreCard'
+import { getDealVerdict } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
@@ -822,7 +823,7 @@ function VerdictContent() {
 
   // Derived values for display
   const score = analysis.dealScore
-  const verdictLabel = score >= 85 ? 'Achievable' : score >= 70 ? 'Negotiable' : score >= 55 ? 'Challenging' : score >= 40 ? 'More Challenging' : score >= 25 ? 'Very Challenging' : 'Extremely Challenging'
+  const verdictLabel = getDealVerdict(score)
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
@@ -835,33 +836,28 @@ function VerdictContent() {
     return lp != null && lp > 0 && incomeValue != null ? Math.round(((lp - incomeValue) / lp) * 1000) / 10 : undefined
   })()
 
-  // Deal gap needed for both description and signal indicators
+  // Deal gap (list vs target buy) — drives score; used in explainer
   const of = analysis.opportunityFactors
   const dealGap = property.price > 0
     ? Math.max(0, ((property.price - purchasePrice) / property.price) * 100)
     : 0
 
-  // Short verdict description (override backend long copy for this page)
-  const shortVerdictDescription = incomeGapPct != null
-    ? (incomeGapPct > 0
-      ? (
-        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-          <span>• PRICE GAP is <strong style={{ color: '#f87171' }}>-{incomeGapPct}%</strong> below {priceLabel} Price</span>
-          <span>• DEAL GAP is <strong style={{ color: '#f87171' }}>-{dealGap.toFixed(1)}%</strong> below {priceLabel} Price</span>
-          <span style={{ opacity: 0.7, fontSize: '0.8rem', marginTop: '2px', alignSelf: 'center' }}>Negotiation is needed to reach your target return.</span>
-        </span>
-      )
-      : `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`)
-    : (analysis.verdictDescription || 'Calculating deal metrics...')
-
-  const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
-  const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
-  const verdictDealFactors = analysis.dealFactors ?? []
-  const verdictBracketLabel = analysis.discountBracketLabel ?? ''
   const dealGapPct = analysis.dealGapPercent ?? (() => {
     const lp = analysis.listPrice ?? property?.price
     return lp != null && lp > 0 && purchasePrice != null ? Math.round(((lp - purchasePrice) / lp) * 1000) / 10 : undefined
   })()
+  const verdictDealFactors = analysis.dealFactors ?? []
+  const verdictBracketLabel = analysis.discountBracketLabel ?? ''
+
+  // Short line under the score; detail is in VerdictScoreExplainer below
+  const shortVerdictDescription = incomeGapPct != null && incomeGapPct > 0
+    ? 'Negotiation is needed to reach your target return.'
+    : incomeGapPct != null
+      ? `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`
+      : (analysis.verdictDescription || 'Calculating deal metrics...')
+
+  const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -904,16 +900,18 @@ function VerdictContent() {
               score={score}
               verdictLabel={verdictLabel}
               description={shortVerdictDescription}
-              dealGapPercent={dealGapPct != null ? Math.max(0, dealGapPct) : undefined}
-              discountBracketLabel={verdictBracketLabel}
+              onHowItWorks={handleShowMethodology}
+            />
+            {/* How the Verdict Score Works — unified explainer with Key Deal Factors */}
+            <VerdictScoreExplainer
+              priceGapPercent={incomeGapPct ?? undefined}
+              dealGapPercent={dealGapPct != null ? dealGapPct : undefined}
+              priceLabel={priceLabel}
+              verdictLabel={verdictLabel}
+              bracketLabel={verdictBracketLabel || undefined}
               dealFactors={verdictDealFactors}
               onHowItWorks={handleShowMethodology}
             />
-            {/* Deal Gap (same % the score is based on) + Key Deal Factors */}
-            <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
-              <DealGapCallout gapPercent={dealGapPct != null ? Math.max(0, dealGapPct) : undefined} bracketLabel={verdictBracketLabel} />
-              <DealFactorsList factors={verdictDealFactors} />
-            </section>
 
             {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
             {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
