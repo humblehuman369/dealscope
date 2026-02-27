@@ -1,14 +1,21 @@
-const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
 const projectRoot = __dirname;
 const sharedRoot = path.resolve(projectRoot, '../shared');
 
-/** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(projectRoot);
 
-// Allow Metro to watch and transpile the local @dealscope/shared package
-// (linked via "file:../shared" in package.json).
+// Watch the shared package for changes during development
 config.watchFolders = [sharedRoot];
+
+// Resolve @dealscope/shared from the monorepo root
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(projectRoot, '..', 'node_modules'),
+];
+
+// Ensure .ts files in the shared package are resolved
+config.resolver.sourceExts = [...(config.resolver.sourceExts || []), 'mjs'];
 
 module.exports = config;
