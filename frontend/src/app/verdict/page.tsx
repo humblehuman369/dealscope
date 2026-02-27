@@ -912,30 +912,6 @@ function VerdictContent() {
               dealFactors={verdictDealFactors}
               onHowItWorks={handleShowMethodology}
             />
-
-            {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
-            {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
-              iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
-              <section className="px-5 pb-5">
-                <IQEstimateSelector
-                  sources={iqSources}
-                  onSourceChange={(type, _sourceId, _value) => {
-                    if (_value == null) return
-                    setProperty((prev) => {
-                      if (!prev) return prev
-                      if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
-                      if (type === 'value') return { ...prev, price: _value } as IQProperty
-                      return prev
-                    })
-                    recalculateVerdict(
-                      type === 'value'
-                        ? { list_price: _value }
-                        : { monthly_rent: _value },
-                    )
-                  }}
-                />
-              </section>
-            )}
           </div>
 
           {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
@@ -1086,6 +1062,30 @@ function VerdictContent() {
               </div>
             </div>
           </section>
+
+          {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
+          {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
+            iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
+            <section className="px-5 pb-5">
+              <IQEstimateSelector
+                sources={iqSources}
+                onSourceChange={(type, _sourceId, _value) => {
+                  if (_value == null) return
+                  setProperty((prev) => {
+                    if (!prev) return prev
+                    if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                    if (type === 'value') return { ...prev, price: _value } as IQProperty
+                    return prev
+                  })
+                  recalculateVerdict(
+                    type === 'value'
+                      ? { list_price: _value }
+                      : { monthly_rent: _value },
+                  )
+                }}
+              />
+            </section>
+          )}
 
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 
