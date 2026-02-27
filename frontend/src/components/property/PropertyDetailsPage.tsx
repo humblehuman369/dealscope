@@ -16,6 +16,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { formatPrice, formatNumber } from '@/utils/formatters';
+import { LocationMap } from '@/components/property-details/LocationMap';
 
 // Types
 export interface PropertyDetailsData {
@@ -42,6 +43,8 @@ export interface PropertyDetailsData {
   heating?: string;
   cooling?: string;
   mlsNumber?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface PropertyDetailsPageProps {
@@ -563,13 +566,11 @@ export function PropertyDetailsPage({
           </div>
           {expandedSections.location && (
             <div className="px-4 pb-4">
-              <div className="h-36 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex flex-col items-center justify-center gap-2">
-                <svg className="w-8 h-8 text-[#0EA5E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-                </svg>
-                <div className="text-xs text-slate-500 text-center">{fullAddress}</div>
-              </div>
+              <LocationMap
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={fullAddress}
+              />
             </div>
           )}
         </div>
