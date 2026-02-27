@@ -902,17 +902,6 @@ function VerdictContent() {
               description={shortVerdictDescription}
               onHowItWorks={handleShowMethodology}
             />
-            {/* How the Verdict Score Works — unified explainer with Key Deal Factors */}
-            <VerdictScoreExplainer
-              priceGapPercent={incomeGapPct ?? undefined}
-              dealGapPercent={dealGapPct != null ? dealGapPct : undefined}
-              priceLabel={priceLabel}
-              verdictLabel={verdictLabel}
-              bracketLabel={verdictBracketLabel || undefined}
-              dealFactors={verdictDealFactors}
-              onHowItWorks={handleShowMethodology}
-            />
-
             {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
             {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
               iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
@@ -936,6 +925,17 @@ function VerdictContent() {
                 />
               </section>
             )}
+
+            {/* How the Verdict Score Works — unified explainer with Key Deal Factors */}
+            <VerdictScoreExplainer
+              priceGapPercent={incomeGapPct ?? undefined}
+              dealGapPercent={dealGapPct != null ? dealGapPct : undefined}
+              priceLabel={priceLabel}
+              verdictLabel={verdictLabel}
+              bracketLabel={verdictBracketLabel || undefined}
+              dealFactors={verdictDealFactors}
+              onHowItWorks={handleShowMethodology}
+            />
           </div>
 
           {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
