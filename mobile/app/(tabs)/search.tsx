@@ -1,17 +1,16 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   ScrollView,
   StyleSheet,
-  Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSession } from '@/hooks/useSession';
+import { useRecentSearches } from '@/hooks/useSearchHistory';
 import {
   colors,
   fontFamily,
@@ -22,36 +21,40 @@ import {
   shadows,
 } from '@/constants/tokens';
 
-const RECENT_PLACEHOLDER = [
-  { address: '1451 SW 10th St, Boca Raton, FL 33486', time: '2 hours ago' },
-  { address: '742 Evergreen Terrace, Springfield, IL 62704', time: 'Yesterday' },
-  { address: '221 Baker Street, New York, NY 10001', time: '3 days ago' },
-];
-
-const QUICK_ACTIONS = [
-  { icon: 'camera-outline' as const, label: 'Scan Address', route: '/scanner' },
-  { icon: 'map-outline' as const, label: 'Nearby', route: '/nearby' },
-  { icon: 'trending-up-outline' as const, label: 'Market Data', route: '/market' },
-];
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
 
 export default function SearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useSession();
-  const inputRef = useRef<TextInput>(null);
 
-  const [address, setAddress] = useState('');
-
-  function handleAnalyze() {
-    const trimmed = address.trim();
-    if (!trimmed) return;
-    Keyboard.dismiss();
-    router.push(`/analyzing?address=${encodeURIComponent(trimmed)}`);
-  }
+  const { data: recentSearches, isLoading: loadingRecent } = useRecentSearches(5);
 
   const greeting = user?.full_name
     ? `Hey, ${user.full_name.split(' ')[0]}`
     : 'Find your next deal';
+
+  function openSearch() {
+    router.push('/search-modal');
+  }
+
+  function openScanner() {
+    router.push('/scanner');
+  }
+
+  function analyzeRecent(address: string) {
+    router.push(`/analyzing?address=${encodeURIComponent(address)}`);
+  }
 
   return (
     <ScrollView
@@ -66,7 +69,9 @@ export default function SearchScreen() {
       {/* ── Header ────────────────────────────────────────── */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.logo}>DealGap<Text style={styles.logoAccent}>IQ</Text></Text>
+          <Text style={styles.logo}>
+            DealGap<Text style={styles.logoAccent}>IQ</Text>
+          </Text>
           <Text style={styles.greeting}>{greeting}</Text>
         </View>
         <Pressable
@@ -81,90 +86,102 @@ export default function SearchScreen() {
       {/* ── Hero ──────────────────────────────────────────── */}
       <View style={styles.hero}>
         <Text style={styles.heroTitle}>
-          Is That Property{'\n'}a <Text style={styles.heroAccent}>Good Deal</Text>?
+          Is That Property{'\n'}a{' '}
+          <Text style={styles.heroAccent}>Good Deal</Text>?
         </Text>
         <Text style={styles.heroSubtitle}>
           Paste any address. Get a score and buy price in 60 seconds.
         </Text>
       </View>
 
-      {/* ── Search Bar ────────────────────────────────────── */}
-      <Pressable
-        style={styles.searchBar}
-        onPress={() => inputRef.current?.focus()}
-      >
-        <Ionicons name="search" size={20} color={colors.secondary} style={styles.searchIcon} />
-        <TextInput
-          ref={inputRef}
-          style={styles.searchInput}
-          value={address}
-          onChangeText={setAddress}
-          placeholder="Enter any property address..."
-          placeholderTextColor={colors.muted}
-          returnKeyType="search"
-          onSubmitEditing={handleAnalyze}
-          autoCorrect={false}
-          selectionColor={colors.accent}
+      {/* ── Search Bar (tap to open full-screen search) ──── */}
+      <Pressable style={styles.searchBar} onPress={openSearch}>
+        <Ionicons
+          name="search"
+          size={20}
+          color={colors.secondary}
+          style={styles.searchIcon}
         />
-        {address.length > 0 && (
-          <Pressable onPress={() => setAddress('')} hitSlop={8}>
-            <Ionicons name="close-circle" size={20} color={colors.muted} />
-          </Pressable>
-        )}
+        <Text style={styles.searchPlaceholder}>
+          Enter any property address...
+        </Text>
       </Pressable>
 
-      <Pressable
-        style={[styles.analyzeBtn, !address.trim() && styles.analyzeBtnDisabled]}
-        onPress={handleAnalyze}
-        disabled={!address.trim()}
-      >
+      <Pressable style={styles.analyzeBtn} onPress={openSearch}>
         <Text style={styles.analyzeBtnText}>Analyze Property</Text>
         <Ionicons name="arrow-forward" size={18} color={colors.black} />
       </Pressable>
 
       {/* ── Quick Actions ─────────────────────────────────── */}
       <View style={styles.quickActions}>
-        {QUICK_ACTIONS.map((action) => (
-          <Pressable
-            key={action.label}
-            style={styles.quickAction}
-            onPress={() => {
-              // Placeholder — these screens will be built in Phase 2
-            }}
-          >
-            <View style={styles.quickActionIcon}>
-              <Ionicons name={action.icon} size={22} color={colors.accent} />
-            </View>
-            <Text style={styles.quickActionLabel}>{action.label}</Text>
-          </Pressable>
-        ))}
+        <Pressable style={styles.quickAction} onPress={openScanner}>
+          <View style={styles.quickActionIcon}>
+            <Ionicons name="camera-outline" size={22} color={colors.accent} />
+          </View>
+          <Text style={styles.quickActionLabel}>Scan Address</Text>
+        </Pressable>
+
+        <Pressable style={styles.quickAction} onPress={openSearch}>
+          <View style={styles.quickActionIcon}>
+            <Ionicons name="search-outline" size={22} color={colors.accent} />
+          </View>
+          <Text style={styles.quickActionLabel}>Search</Text>
+        </Pressable>
+
+        <Pressable style={styles.quickAction} onPress={() => {}}>
+          <View style={styles.quickActionIcon}>
+            <Ionicons
+              name="trending-up-outline"
+              size={22}
+              color={colors.accent}
+            />
+          </View>
+          <Text style={styles.quickActionLabel}>Market Data</Text>
+        </Pressable>
       </View>
 
       {/* ── Recent Searches ───────────────────────────────── */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Searches</Text>
-        {RECENT_PLACEHOLDER.map((item) => (
-          <Pressable
-            key={item.address}
-            style={styles.recentItem}
-            onPress={() => {
-              setAddress(item.address);
-              inputRef.current?.focus();
-            }}
-          >
-            <View style={styles.recentIcon}>
-              <Ionicons name="time-outline" size={18} color={colors.secondary} />
-            </View>
-            <View style={styles.recentContent}>
-              <Text style={styles.recentAddress} numberOfLines={1}>
-                {item.address}
-              </Text>
-              <Text style={styles.recentTime}>{item.time}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.muted} />
-          </Pressable>
-        ))}
-      </View>
+      {recentSearches && recentSearches.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Searches</Text>
+          {recentSearches.map((item) => (
+            <Pressable
+              key={item.id}
+              style={styles.recentItem}
+              onPress={() => analyzeRecent(item.search_query)}
+            >
+              <View style={styles.recentIcon}>
+                <Ionicons
+                  name="time-outline"
+                  size={18}
+                  color={colors.secondary}
+                />
+              </View>
+              <View style={styles.recentContent}>
+                <Text style={styles.recentAddress} numberOfLines={1}>
+                  {item.search_query}
+                </Text>
+                <Text style={styles.recentMeta}>
+                  {[
+                    item.result_summary?.bedrooms &&
+                      `${item.result_summary.bedrooms}bd`,
+                    item.result_summary?.bathrooms &&
+                      `${item.result_summary.bathrooms}ba`,
+                    timeAgo(item.searched_at),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={colors.muted}
+              />
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       {/* ── Bottom spacer ─────────────────────────────────── */}
       <View style={{ height: spacing.xl }} />
@@ -181,8 +198,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing['2xl'],
   },
-
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,8 +228,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Hero
   hero: {
     alignItems: 'center',
     marginBottom: spacing.xl,
@@ -237,8 +250,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 300,
   },
-
-  // Search bar
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -253,15 +264,13 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: spacing.sm,
   },
-  searchInput: {
+  searchPlaceholder: {
     flex: 1,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.base,
-    color: colors.heading,
+    color: colors.muted,
     paddingVertical: 14,
   },
-
-  // Analyze button
   analyzeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -272,16 +281,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginTop: spacing.md,
   },
-  analyzeBtnDisabled: {
-    opacity: 0.4,
-  },
   analyzeBtnText: {
     fontFamily: fontFamily.bold,
     fontSize: fontSize.base,
     color: colors.black,
   },
-
-  // Quick actions
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -312,8 +316,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.body,
   },
-
-  // Recent searches
   section: {
     gap: spacing.sm,
   },
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.heading,
   },
-  recentTime: {
+  recentMeta: {
     fontFamily: fontFamily.regular,
     fontSize: fontSize.xs,
     color: colors.muted,
