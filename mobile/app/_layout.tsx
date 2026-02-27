@@ -12,7 +12,9 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PostHogProvider } from 'posthog-react-native';
 import { hydrateTokens } from '@/services/token-manager';
+import { initPayments, identifyUser, resetUser } from '@/services/payments';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
+import { useSession } from '@/hooks/useSession';
 import { BiometricLockScreen } from '@/components/auth/BiometricLockScreen';
 import { colors } from '@/constants/tokens';
 
@@ -33,6 +35,24 @@ const queryClient = new QueryClient({
 const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? '';
 const POSTHOG_HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com';
 
+/**
+ * Syncs RevenueCat identity with the current session.
+ * Identify on login, reset on logout.
+ */
+function PaymentIdentitySync() {
+  const { user, isAuthenticated } = useSession();
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      identifyUser(user.id);
+    } else {
+      resetUser();
+    }
+  }, [isAuthenticated, user?.id]);
+
+  return null;
+}
+
 function AppContent() {
   const { isLocked, unlock } = useBiometricLock();
 
@@ -42,6 +62,7 @@ function AppContent() {
 
   return (
     <>
+      <PaymentIdentitySync />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -84,6 +105,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       await hydrateTokens();
+      await initPayments();
       setAppReady(true);
     }
     prepare();
