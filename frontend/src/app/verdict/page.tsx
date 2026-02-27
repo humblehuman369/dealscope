@@ -894,7 +894,7 @@ function VerdictContent() {
         )}
 
         {/* Responsive container: mobile-first single column, desktop 2-column. Wide: left = Verdict + Score Components, right = Price Targets + Snapshot + CTA. */}
-        <div className="max-w-[520px] lg:max-w-6xl xl:max-w-7xl mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-0">
+        <div className="max-w-[520px] lg:max-w-6xl xl:max-w-7xl mx-auto lg:grid lg:grid-cols-2 lg:gap-0">
           {/* LEFT COLUMN (wide): Verdict + Score Components */}
           <div className="min-w-0 flex flex-col lg:pr-0">
             <VerdictScoreCard
