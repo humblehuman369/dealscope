@@ -203,7 +203,6 @@ function AppContent() {
   return (
     <>
       <PaymentIdentitySync />
-      <AnalyticsIdentitySync />
       <ScreenTracker />
       <CachePersistenceManager />
       <OfflineBanner />
@@ -230,6 +229,7 @@ function AppWithAnalytics() {
       apiKey={POSTHOG_API_KEY}
       options={{ host: POSTHOG_HOST }}
     >
+      <AnalyticsIdentitySync />
       <AppContent />
     </PostHogProvider>
   );
