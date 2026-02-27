@@ -27,8 +27,14 @@ import {
 import { initNetworkListener } from '@/hooks/useNetworkStatus';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { useSession } from '@/hooks/useSession';
+import { useNotificationSetup } from '@/hooks/useNotifications';
+import {
+  configureNotificationHandler,
+  configureNotificationChannels,
+} from '@/services/notifications';
 import { BiometricLockScreen } from '@/components/auth/BiometricLockScreen';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { InAppNotificationManager } from '@/components/ui/InAppNotification';
 import { colors } from '@/constants/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -108,6 +114,7 @@ function CachePersistenceManager() {
 
 function AppContent() {
   const { isLocked, unlock } = useBiometricLock();
+  useNotificationSetup();
 
   if (isLocked) {
     return <BiometricLockScreen onRetry={unlock} />;
@@ -118,6 +125,7 @@ function AppContent() {
       <PaymentIdentitySync />
       <CachePersistenceManager />
       <OfflineBanner />
+      <InAppNotificationManager />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -160,6 +168,8 @@ export default function RootLayout() {
       await hydrateTokens();
       await restoreQueryCache(queryClient);
       await initPayments();
+      configureNotificationHandler();
+      await configureNotificationChannels();
       initNetworkListener();
       setAppReady(true);
     }
