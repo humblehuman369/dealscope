@@ -2,19 +2,11 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@dealscope/shared": ["../shared/src/index.ts"],
       "@dealscope/shared/*": ["../shared/src/*"]
-    },
-    "jsx": "react-native",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "bundler"
+    }
   },
   "include": [
     "**/*.ts",
@@ -22,8 +14,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": [
-    "node_modules"
+  "references": [
+    { "path": "../shared" }
   ]
 }
-
