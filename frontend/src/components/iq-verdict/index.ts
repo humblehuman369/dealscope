@@ -43,7 +43,7 @@ export { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMe
 // Active: Decision-Grade UI Components (used by verdict/page.tsx)
 export { PropertyContextBar } from './PropertyContextBar'
 export { PropertyAddressBar } from './PropertyAddressBar'
-export { VerdictScoreCard, ComponentScoreBars } from './VerdictScoreCard'
+export { VerdictScoreCard, DealGapCallout, DealFactorsList } from './VerdictScoreCard'
 export { NavTabs } from './NavTabs'
 
 // @deprecated — Legacy VerdictIQ v2 components (not imported by any page route)

@@ -17,6 +17,7 @@
 
 import React from 'react'
 import { colors } from './verdict-design-tokens'
+import type { DealFactor } from './types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,19 +28,14 @@ export interface VerdictScoreCardProps {
   verdictLabel: string
   /** Verdict explanation — plain string or structured JSX */
   description: React.ReactNode
-  /** Four component scores, each 0–90 */
-  componentScores: {
-    dealGap: number
-    returnQuality: number
-    marketAlignment: number
-    dealProbability: number
-  }
-  /** Actual deal gap percentage (0–100) for label thresholds. Falls back to score-based if omitted. */
+  /** Deal Gap as a percentage of list price (0 = no gap, 15 = needs 15% discount) */
   dealGapPercent?: number
+  /** Investor discount bracket context from backend */
+  discountBracketLabel?: string
+  /** Plain-language deal factor narratives from backend */
+  dealFactors?: DealFactor[]
   /** Callback when "How Verdict Score Works" is clicked */
   onHowItWorks?: () => void
-  /** When true, do not render Score Components (e.g. when shown later on page) */
-  hideScoreComponents?: boolean
 }
 
 // ─── Helpers (pure, no side-effects) ──────────────────────────────────────────
@@ -53,17 +49,9 @@ function scoreColor(score: number): string {
   return colors.status.negative                     // red
 }
 
-/** Deal Gap label uses the actual gap percentage, not the component score. */
-function dealGapLabel(gapPct: number): string {
-  if (gapPct <= 5)  return 'Minimal'
-  if (gapPct <= 15) return 'Mild'
-  if (gapPct <= 25) return 'Moderate'
-  if (gapPct <= 35) return 'Large'
-  return 'Excessive'
-}
-
 /** Deal Gap color based on gap severity — small gap = good (teal), large gap = bad (red). */
 function dealGapColor(gapPct: number): string {
+  if (gapPct <= 0)  return colors.status.positive
   if (gapPct <= 5)  return colors.brand.teal
   if (gapPct <= 15) return '#38bdf8'
   if (gapPct <= 25) return colors.brand.gold
@@ -71,25 +59,20 @@ function dealGapColor(gapPct: number): string {
   return colors.status.negative
 }
 
-/** Per-component label functions — each uses language appropriate to its domain. */
-const COMPONENT_LABELS: Record<string, (v: number) => string> = {
-  'Return Quality':   v => v >= 75 ? 'Excellent' : v >= 55 ? 'Strong' : v >= 40 ? 'Good' : v >= 20 ? 'Fair' : 'Weak',
-  'Market Alignment': v => v >= 75 ? 'Strong' : v >= 55 ? 'Favorable' : v >= 40 ? 'Neutral' : v >= 20 ? 'Weak' : 'Misaligned',
-  'Deal Probability': v => v >= 75 ? 'Highly Probable' : v >= 55 ? 'Probable' : v >= 40 ? 'Possible' : v >= 20 ? 'Unlikely' : 'Improbable',
-}
-
-function componentLabel(value: number, componentName?: string): string {
-  const labelFn = componentName ? COMPONENT_LABELS[componentName] : undefined
-  return labelFn ? labelFn(value) : COMPONENT_LABELS['Return Quality'](value)
-}
-
-/** Map a component score (0–90) to a colour. */
-function componentColor(value: number): string {
-  if (value >= 75) return colors.brand.teal
-  if (value >= 55) return '#38bdf8'
-  if (value >= 40) return colors.brand.gold
-  if (value >= 20) return '#f97316'
-  return colors.status.negative
+/** Factor icon + color based on type. */
+function factorStyle(type: DealFactor['type']): { color: string; icon: React.ReactNode } {
+  if (type === 'positive') return {
+    color: colors.brand.teal,
+    icon: <svg width="14" height="14" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>,
+  }
+  if (type === 'warning') return {
+    color: '#f97316',
+    icon: <svg width="14" height="14" fill="none" stroke="#f97316" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>,
+  }
+  return {
+    color: '#38bdf8',
+    icon: <svg width="14" height="14" fill="none" stroke="#38bdf8" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>,
+  }
 }
 
 // ─── SVG Arc Gauge ────────────────────────────────────────────────────────────
@@ -170,61 +153,69 @@ function VerdictBadge({ label, color }: { label: string; color: string }) {
   )
 }
 
-// ─── Component Score Bars ─────────────────────────────────────────────────────
+// ─── Deal Gap Callout ─────────────────────────────────────────────────────────
 
-const COMPONENTS: { key: keyof VerdictScoreCardProps['componentScores']; label: string }[] = [
-  { key: 'dealGap', label: 'Deal Gap' },
-  { key: 'returnQuality', label: 'Return Quality' },
-  { key: 'marketAlignment', label: 'Market Alignment' },
-  { key: 'dealProbability', label: 'Deal Probability' },
-]
+export function DealGapCallout({ gapPercent, bracketLabel }: { gapPercent?: number; bracketLabel?: string }) {
+  const gap = gapPercent ?? 0
+  const clr = dealGapColor(gap)
+  const sign = gap <= 0 ? '+' : '-'
+  const display = `${sign}${Math.abs(gap).toFixed(1)}%`
 
-export function ComponentScoreBars({ scores, dealGapPercent }: { scores: VerdictScoreCardProps['componentScores']; dealGapPercent?: number }) {
   return (
     <div className="mt-3 text-left">
+      <p
+        className="text-[10px] font-bold uppercase tracking-wider mb-2"
+        style={{ color: colors.text.secondary }}
+      >
+        Deal Gap
+      </p>
+      <div className="flex items-baseline gap-3">
+        <span
+          className="text-[2rem] font-bold tabular-nums"
+          style={{ color: clr, lineHeight: 1 }}
+        >
+          {display}
+        </span>
+        <span
+          className="text-xs font-medium"
+          style={{ color: gap <= 0 ? colors.brand.teal : colors.text.secondary }}
+        >
+          {gap <= 0 ? 'Profitable at asking price' : 'discount needed'}
+        </span>
+      </div>
+      {bracketLabel && (
+        <p className="text-xs mt-2 leading-relaxed" style={{ color: colors.text.body }}>
+          {bracketLabel}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Deal Factors List ────────────────────────────────────────────────────────
+
+export function DealFactorsList({ factors }: { factors?: DealFactor[] }) {
+  if (!factors || factors.length === 0) return null
+
+  return (
+    <div className="mt-5 text-left">
       <p
         className="text-[10px] font-bold uppercase tracking-wider mb-3"
         style={{ color: colors.text.secondary }}
       >
-        Score Components
+        Deal Factors
       </p>
-
-      {COMPONENTS.map(({ key, label }) => {
-        const value = scores[key]
-        const isDealGap = key === 'dealGap'
-        const gapPct = isDealGap ? (dealGapPercent ?? Math.max(0, (90 - value) / 2)) : 0
-        const clr = isDealGap ? dealGapColor(gapPct) : componentColor(value)
-        const lbl = isDealGap ? dealGapLabel(gapPct) : componentLabel(value, label)
-        const barPct = isDealGap && dealGapPercent != null
-          ? Math.max(0, Math.min(100, 100 - dealGapPercent))
-          : Math.min(100, (value / 90) * 100)
-
-        return (
-          <div key={key} className="flex items-center gap-2.5 mb-2.5">
-            <span
-              className="text-xs font-medium w-28 shrink-0"
-              style={{ color: colors.text.body }}
-            >
-              {label}
-            </span>
-            <div
-              className="flex-1 h-1.5 rounded"
-              style={{ background: 'rgba(255,255,255,0.05)' }}
-            >
-              <div
-                className="h-full rounded transition-all"
-                style={{ width: `${barPct}%`, background: clr }}
-              />
+      <div className="space-y-2.5">
+        {factors.map((f, i) => {
+          const { color, icon } = factorStyle(f.type)
+          return (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="mt-0.5 shrink-0">{icon}</span>
+              <span className="text-[0.82rem] leading-relaxed" style={{ color }}>{f.text}</span>
             </div>
-            <span
-              className="text-xs font-bold w-16 text-right"
-              style={{ color: clr }}
-            >
-              {lbl}
-            </span>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -235,18 +226,15 @@ export function VerdictScoreCard({
   score,
   verdictLabel,
   description,
-  componentScores,
   dealGapPercent,
+  discountBracketLabel,
+  dealFactors,
   onHowItWorks,
-  hideScoreComponents = false,
 }: VerdictScoreCardProps) {
   const color = scoreColor(score)
 
   return (
-    <section
-      className="px-5 pt-10 pb-3"
-    >
-      {/* Section label */}
+    <section className="px-5 pt-10 pb-3">
       <p
         className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6"
         style={{ color: colors.text.secondary }}
@@ -254,13 +242,11 @@ export function VerdictScoreCard({
         The Verdict
       </p>
 
-      {/* Score gauge + verdict badge row */}
       <div className="flex items-center justify-center gap-5 mb-5">
         <ScoreGauge score={score} color={color} />
         <VerdictBadge label={verdictLabel} color={color} />
       </div>
 
-      {/* Verdict description */}
       <p
         className="text-sm leading-relaxed text-center max-w-xs mx-auto mb-4"
         style={{ color: colors.text.body }}
@@ -268,7 +254,6 @@ export function VerdictScoreCard({
         {description || 'Calculating deal metrics...'}
       </p>
 
-      {/* How it works link */}
       {onHowItWorks && (
         <div className="flex justify-center mt-2">
           <button
@@ -280,9 +265,6 @@ export function VerdictScoreCard({
           </button>
         </div>
       )}
-
-      {/* Component score bars — optional for page flow reorder */}
-      {!hideScoreComponents && <ComponentScoreBars scores={componentScores} dealGapPercent={dealGapPercent} />}
     </section>
   )
 }

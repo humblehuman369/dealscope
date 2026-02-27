@@ -15,7 +15,8 @@ from app.services.iq_verdict_service import (
     _score_to_grade_label,
     _performance_score,
     _format_compact_currency,
-    _calculate_composite_verdict_score,
+    _calculate_verdict_score,
+    _interpolate_bracket_score,
     _calculate_wholesale_strategy,
 )
 
@@ -81,33 +82,49 @@ class TestMonthlyMortgage:
         assert 1100 < payment < 1300
 
 
-class TestCompositeVerdictScore:
-    """Tests for _calculate_composite_verdict_score (35% deal_gap + 30% return_quality + 20% market_alignment + 15% deal_probability)."""
+class TestVerdictScore:
+    """Tests for bracket-based _calculate_verdict_score."""
 
-    def test_returns_five_components(self):
-        composite, dg, rq, ma, dp = _calculate_composite_verdict_score(
-            target_price=270_000,
-            list_price=300_000,
-            top_strategy_score=60,
-            motivation_score=50,
-        )
-        assert 5 <= composite <= 95
-        assert 0 <= dg <= 90
-        assert 0 <= rq <= 90
-        assert 0 <= ma <= 90
-        assert 0 <= dp <= 90
+    def test_no_gap_scores_high(self):
+        score = _calculate_verdict_score(deal_gap_pct=0, motivation_score=50, market_temperature=None)
+        assert score >= 85
 
-    def test_better_deal_gap_increases_score(self):
-        # List at target → good deal gap component
-        c1, _, _, _, _ = _calculate_composite_verdict_score(300_000, 300_000, 50, 50)
-        # List well above target → worse deal gap
-        c2, _, _, _, _ = _calculate_composite_verdict_score(200_000, 400_000, 50, 50)
-        assert c1 > c2
+    def test_small_gap_scores_well(self):
+        score = _calculate_verdict_score(deal_gap_pct=3, motivation_score=50, market_temperature=None)
+        assert 75 <= score <= 90
 
-    def test_higher_strategy_score_increases_composite(self):
-        c_low, _, _, _, _ = _calculate_composite_verdict_score(270_000, 300_000, 30, 50)
-        c_high, _, _, _, _ = _calculate_composite_verdict_score(270_000, 300_000, 80, 50)
-        assert c_high > c_low
+    def test_large_gap_scores_low(self):
+        score = _calculate_verdict_score(deal_gap_pct=35, motivation_score=50, market_temperature=None)
+        assert score <= 30
+
+    def test_higher_motivation_increases_score(self):
+        low = _calculate_verdict_score(deal_gap_pct=15, motivation_score=30, market_temperature=None)
+        high = _calculate_verdict_score(deal_gap_pct=15, motivation_score=90, market_temperature=None)
+        assert high > low
+
+    def test_cold_market_increases_score(self):
+        warm = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="warm")
+        cold = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="cold")
+        assert cold > warm
+
+    def test_hot_market_decreases_score(self):
+        warm = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="warm")
+        hot = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="hot")
+        assert hot < warm
+
+    def test_score_clamped(self):
+        score = _calculate_verdict_score(deal_gap_pct=-50, motivation_score=100, market_temperature="cold")
+        assert score <= 95
+        score = _calculate_verdict_score(deal_gap_pct=80, motivation_score=10, market_temperature="hot")
+        assert score >= 5
+
+    def test_interpolation_monotonic(self):
+        """Increasing gap should produce decreasing scores."""
+        prev_score = 100
+        for gap in range(0, 50, 5):
+            score = _interpolate_bracket_score(float(gap))
+            assert score <= prev_score
+            prev_score = score
 
 
 class TestWholesaleStrategy:
@@ -170,27 +187,36 @@ class TestComputeIQVerdict:
         ranks = [s.rank for s in resp.strategies]
         assert sorted(ranks) == list(range(1, 7))
 
-    def test_composite_score_in_range(self, typical_input):
+    def test_deal_score_in_range(self, typical_input):
         resp = compute_iq_verdict(typical_input)
-        assert 0 <= resp.composite_score <= 100
+        assert 5 <= resp.deal_score <= 95
 
     def test_grade_present(self, typical_input):
         resp = compute_iq_verdict(typical_input)
-        assert resp.grade in ("A+", "A", "B", "C", "D", "F")
+        assert resp.opportunity.grade in ("A+", "A", "B", "C", "D", "F")
 
-    def test_buy_price_positive(self, typical_input):
+    def test_purchase_price_positive(self, typical_input):
         resp = compute_iq_verdict(typical_input)
-        assert resp.buy_price > 0
+        assert resp.purchase_price > 0
 
-    def test_breakeven_positive(self, typical_input):
+    def test_income_value_positive(self, typical_input):
         resp = compute_iq_verdict(typical_input)
         assert resp.income_value > 0
+
+    def test_deal_factors_present(self, typical_input):
+        resp = compute_iq_verdict(typical_input)
+        assert len(resp.deal_factors) >= 1
+        assert resp.deal_factors[0].type in ("positive", "warning", "info")
+
+    def test_discount_bracket_label_present(self, typical_input):
+        resp = compute_iq_verdict(typical_input)
+        assert len(resp.discount_bracket_label) > 0
 
     def test_minimal_input(self):
         """Only required field is list_price — everything else is derived."""
         resp = compute_iq_verdict(IQVerdictInput(list_price=250_000))
         assert len(resp.strategies) == 6
-        assert resp.composite_score >= 0
+        assert resp.deal_score >= 5
 
     def test_with_arv_and_adr(self):
         """Providing ARV and ADR should change STR and BRRRR results."""
@@ -203,10 +229,7 @@ class TestComputeIQVerdict:
                 occupancy_rate=0.70,
             )
         )
-        # Scores should differ
-        assert without_extras.composite_score != with_extras.composite_score or True
-        # Both should be valid
-        assert 0 <= with_extras.composite_score <= 100
+        assert 5 <= with_extras.deal_score <= 95
 
     def test_distressed_property_flags(self):
         """Foreclosure flags should influence opportunity factors."""
@@ -249,7 +272,7 @@ class TestComputeDealScore:
 
     def test_score_in_range(self, typical_input):
         resp = compute_deal_score(typical_input)
-        assert 0 <= resp.score <= 100
+        assert 0 <= resp.deal_score <= 100
 
     def test_grade_present(self, typical_input):
         resp = compute_deal_score(typical_input)
@@ -258,9 +281,7 @@ class TestComputeDealScore:
     def test_factors_present(self, typical_input):
         resp = compute_deal_score(typical_input)
         assert resp.factors is not None
-        # Should have standard factor fields
-        assert resp.factors.cap_rate >= 0
-        assert resp.factors.cash_on_cash is not None
+        assert resp.factors.deal_gap_percent is not None
 
     def test_high_rent_produces_higher_score(self):
         low_rent = compute_deal_score(
@@ -281,7 +302,7 @@ class TestComputeDealScore:
                 insurance=1200,
             )
         )
-        assert high_rent.score >= low_rent.score
+        assert high_rent.deal_score >= low_rent.deal_score
 
 
 # =====================================================================

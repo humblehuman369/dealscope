@@ -1,42 +1,32 @@
 {
-  "version": "1.9",
-  "updatedAt": "2026-02-21",
+  "version": "2.0",
+  "updatedAt": "2026-02-27",
   "source": "backend/app/core/formulas.py, backend/app/services/calculators/, backend/app/services/iq_verdict_service.py, backend/app/services/assumption_resolver.py, backend/app/services/property_service.py",
   "iq_verdict_score": {
-    "description": "IQ Verdict Score - The main score (e.g. 74/100) shown on the VerdictIQ page. Composite of four weighted components. Used only on the Verdict page; worksheets use Deal Opportunity Score instead.",
-    "source": "backend/app/services/iq_verdict_service._calculate_composite_verdict_score",
+    "description": "IQ Verdict Score - The main score (e.g. 74/100) shown on the VerdictIQ page. Based on Deal Gap bracket scoring with seller motivation and market temperature modifiers. Used only on the Verdict page; worksheets use Deal Opportunity Score instead.",
+    "source": "backend/app/services/iq_verdict_service._calculate_verdict_score",
     "usage": "VerdictIQ page (POST /api/v1/analysis/verdict)",
     "metrics": {
-      "iq_verdict_composite": {
-        "formula": "composite = deal_gap×0.35 + return_quality×0.30 + market_alignment×0.20 + deal_probability×0.15; result clamped to 5-95",
-        "inputs": ["deal_gap_component", "return_quality_component", "market_alignment_component", "deal_probability_component"],
-        "description": "Weighted composite score displayed as the Verdict score (e.g. 74/100).",
-        "weights": {
-          "deal_gap": 0.35,
-          "return_quality": 0.30,
-          "market_alignment": 0.20,
-          "deal_probability": 0.15
+      "iq_verdict_score": {
+        "formula": "base_score = interpolate_from_investor_discount_brackets(deal_gap_pct); motivation_mod = (motivation_score - 50) / 50 × 10; market_mod = cold:+5 / warm:0 / hot:-5; score = clamp(base + motivation_mod + market_mod, 5, 95)",
+        "inputs": ["deal_gap_pct", "motivation_score", "market_temperature"],
+        "description": "Deal Gap-centric score grounded in U.S. 2025 investor discount statistics. The primary factor is the Deal Gap %; seller motivation and market conditions apply modifiers of -15 to +15."
+      },
+      "investor_discount_brackets": {
+        "description": "Base score ranges mapped from real U.S. investor transaction data (2025).",
+        "brackets": {
+          "at_or_above_list": { "gap": "≤0%", "investor_pct": "10-15%", "score_range": "88-95" },
+          "0_to_5_pct": { "gap": "0-5%", "investor_pct": "30-38%", "score_range": "75-88" },
+          "6_to_10_pct": { "gap": "6-10%", "investor_pct": "30-37%", "score_range": "60-75" },
+          "11_to_20_pct": { "gap": "11-20%", "investor_pct": "12-18%", "score_range": "40-60" },
+          "21_to_30_pct": { "gap": "21-30%", "investor_pct": "6-10%", "score_range": "22-40" },
+          "31_to_40_pct": { "gap": "31-40%", "investor_pct": "2-4%", "score_range": "12-22" },
+          "41_plus_pct": { "gap": "41%+", "investor_pct": "1-2.5%", "score_range": "5-12" }
         }
       },
-      "deal_gap_component": {
-        "formula": "deal_gap_pct = (list_price - target_price) / list_price × 100; score 0-90 from bands (gap ≤-10%, ≤0%, ≤10%, ≤25%, ≤40%, else). Target_price = income_value × (1 - buy_discount_pct)",
-        "inputs": ["target_price", "list_price"],
-        "description": "Measures how favorably the property is priced relative to Target Buy price."
-      },
-      "return_quality_component": {
-        "formula": "return_quality = min(90, round(top_strategy_score × 0.9))",
-        "inputs": ["top_strategy_score"],
-        "description": "Derived from the best-performing strategy score (LTR, STR, BRRRR, Flip, House Hack, Wholesale)."
-      },
-      "market_alignment_component": {
-        "formula": "market_alignment = min(90, motivation_score)",
-        "inputs": ["motivation_score"],
-        "description": "Seller motivation score, capped at 90."
-      },
-      "deal_probability_component": {
-        "formula": "max_discount = (motivation_score/100)×0.25; ratio = deal_gap_pct/100 / max_discount; score 5-90 from ratio bands (≤0.6, ≤1.0, ≤1.5, else)",
-        "inputs": ["deal_gap_pct", "motivation_score"],
-        "description": "Likelihood of achieving the required discount given seller motivation."
+      "deal_factors": {
+        "description": "Plain-language narratives explaining deal achievability. Generated from deal gap, listing status, seller type, market temperature, and days on market. Each factor has a type: positive, warning, or info.",
+        "source": "backend/app/services/iq_verdict_service._generate_deal_factors"
       }
     }
   },
