@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 // Note: CompactHeader removed - now using global AppHeader from layout
 import { PropertyData } from './types'
+import { LocationMap } from './LocationMap'
 import { formatPrice, formatNumber } from '@/utils/formatters'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
@@ -362,16 +363,11 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
           
           {expandedSections.location && (
             <div className="px-4 pb-4">
-              <div
-                className="h-36 rounded-xl flex flex-col items-center justify-center gap-2"
-                style={{ backgroundColor: colors.background.cardUp, border: `1px solid ${colors.ui.border}` }}
-              >
-                <svg className="w-8 h-8" style={{ color: colors.brand.blue }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-                </svg>
-                <div className="text-xs text-center px-4" style={{ color: colors.text.secondary }}>{fullAddress}</div>
-              </div>
+              <LocationMap
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={fullAddress}
+              />
             </div>
           )}
         </div>
