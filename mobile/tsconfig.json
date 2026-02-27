@@ -12,9 +12,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ],
-  "references": [
-    { "path": "../shared" }
+    "expo-env.d.ts",
+    "../shared/src/**/*.ts"
   ]
 }
