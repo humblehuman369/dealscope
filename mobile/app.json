@@ -13,6 +13,7 @@
         "projectId": "413e1c97-3bfc-44ef-9437-e8a89b79cde8"
       }
     },
+    "owner": "dealgapiq",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dealgapiq.mobile",
@@ -21,9 +22,26 @@
         "applinks:dealgapiq.com",
         "applinks:www.dealgapiq.com"
       ],
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
-        "NSCameraUsageDescription": "DealGapIQ uses your camera to scan property addresses for instant analysis.",
-        "NSLocationWhenInUseUsageDescription": "DealGapIQ uses your location to find nearby properties for analysis."
+        "NSCameraUsageDescription": "DealGapIQ uses your camera to scan property addresses from for-sale signs and listings for instant investment analysis.",
+        "NSLocationWhenInUseUsageDescription": "DealGapIQ uses your location to find nearby properties for investment analysis.",
+        "NSFaceIDUsageDescription": "Use Face ID to quickly unlock DealGapIQ and protect your investment data.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          }
+        ]
       }
     },
     "android": {
@@ -36,6 +54,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -62,10 +86,7 @@
               "pathPrefix": "/reset-password"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -76,6 +97,20 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "DealGapIQ uses your camera to scan property addresses from for-sale signs and listings."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#0EA5E9"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -88,8 +123,13 @@
           }
         }
       ],
-      "expo-localization",
-      "@sentry/react-native"
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "dealgapiq",
+          "project": "mobile"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
