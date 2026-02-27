@@ -1,0 +1,13 @@
+# Maestro E2E test configuration for DealGapIQ mobile
+# Run: maestro test .maestro/
+
+appId: com.dealgapiq.mobile
+name: DealGapIQ E2E Tests
+
+# Environment variables for test accounts
+env:
+  TEST_EMAIL: "e2e-test@dealgapiq.com"
+  TEST_PASSWORD: "TestP@ss2024!"
+  TEST_ADDRESS: "1451 SW 10th St, Boca Raton, FL 33486"
+  PRO_EMAIL: "e2e-pro@dealgapiq.com"
+  PRO_PASSWORD: "ProP@ss2024!"

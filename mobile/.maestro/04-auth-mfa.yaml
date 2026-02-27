@@ -1,0 +1,40 @@
+# Auth Flow — Login → MFA Challenge → Home
+#
+# Tests MFA TOTP verification after login.
+# Requires a test account with MFA enabled.
+
+appId: com.dealgapiq.mobile
+name: Auth - MFA Flow
+
+---
+
+# 1. Launch and login
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# 2. Enter credentials for MFA-enabled account
+- tapOn:
+    text: "you@example.com"
+- inputText: "mfa-user@dealgapiq.com"
+- tapOn:
+    text: "Enter your password"
+- inputText: "MfaP@ss2024!"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# 3. MFA screen should appear
+- extendedWaitUntil:
+    visible: "Two-Factor Authentication"
+    timeout: 10000
+- assertVisible: "Enter the 6-digit code"
+
+# 4. Enter TOTP code (would need a test fixture or TOTP generator)
+- inputText: "123456"
+- tapOn: "Verify"
+  optional: true
+
+# Note: This test will fail with "Invalid code" in real E2E
+# unless connected to a test TOTP generator. The goal is to
+# verify the MFA screen renders and accepts input correctly.

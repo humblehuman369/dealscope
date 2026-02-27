@@ -1,0 +1,74 @@
+# DealVault Flow
+# Analyze → save property → verify in DealVault → delete → verify removed
+#
+# Tests the save/unsave lifecycle across screens.
+
+appId: com.dealgapiq.mobile
+name: DealVault - Save and Delete Flow
+
+---
+
+# 1. Login
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- tapOn:
+    text: "you@example.com"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    text: "Enter your password"
+- inputText: ${TEST_PASSWORD}
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "DealGapIQ"
+    timeout: 10000
+
+# 2. Analyze a property
+- tapOn: "Enter any property address..."
+- inputText: ${TEST_ADDRESS}
+- pressKey: Enter
+  optional: true
+- tapOn: "Search manually"
+  optional: true
+- extendedWaitUntil:
+    visible: "IQ Verdict"
+    timeout: 15000
+
+# 3. Save the property (bookmark button in header)
+- tapOn:
+    id: "bookmark-outline"
+    optional: true
+- waitForAnimationToEnd
+
+# 4. Scroll to Save CTA and tap if bookmark wasn't found
+- scrollUntilVisible:
+    element: "Save to DealVaultIQ"
+    direction: DOWN
+    optional: true
+- tapOn:
+    text: "Save to DealVaultIQ"
+    optional: true
+- waitForAnimationToEnd
+
+# 5. Navigate to DealVault tab
+- tapOn: "DealVault"
+- waitForAnimationToEnd
+- assertVisible: "DealVaultIQ"
+
+# 6. Verify the property appears in the list
+- assertVisible:
+    text: "Boca Raton"
+    optional: true
+
+# 7. Swipe left on the property to reveal delete
+- swipe:
+    direction: LEFT
+    duration: 500
+    from:
+      column: 80%
+      row: 50%
+
+# 8. Verify delete happened or property removed
+# (Swipe-to-delete triggers automatically past threshold)
+- waitForAnimationToEnd

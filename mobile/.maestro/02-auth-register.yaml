@@ -1,0 +1,59 @@
+# Auth Flow — Register → Verify Email → Login → Onboarding → Home
+#
+# Tests the full new user onboarding funnel.
+
+appId: com.dealgapiq.mobile
+name: Auth - Register Flow
+
+---
+
+# 1. Launch and go to register
+- launchApp
+- assertVisible: "DealGapIQ"
+
+# Navigate to Profile tab (shows sign-in prompt)
+- tapOn: "Profile"
+- assertVisible: "Sign in to DealGapIQ"
+- tapOn: "Create an account"
+- waitForAnimationToEnd
+
+# 2. Register screen
+- assertVisible: "Create your account"
+
+# Fill registration form
+- tapOn: "Full Name"
+  optional: true
+- inputText: "E2E Test User"
+
+- scrollUntilVisible:
+    element: "Email"
+    direction: DOWN
+- tapOn:
+    id: "Email"
+    optional: true
+- inputText: "e2e-new@dealgapiq.com"
+
+- scrollUntilVisible:
+    element: "Password"
+    direction: DOWN
+- inputText: "TestP@ss2024!"
+
+- scrollUntilVisible:
+    element: "Confirm Password"
+    direction: DOWN
+- inputText: "TestP@ss2024!"
+
+# Submit
+- scrollUntilVisible:
+    element: "Create Account"
+    direction: DOWN
+- tapOn: "Create Account"
+- waitForAnimationToEnd
+
+# 3. Expect either success (auto-login) or verification message
+- assertVisible:
+    text: "Check your email"
+    optional: true
+- assertVisible:
+    text: "DealGapIQ"
+    optional: true

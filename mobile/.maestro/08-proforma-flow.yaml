@@ -1,0 +1,57 @@
+# Proforma Download Flow
+# Pro user → Verdict → tap Proforma → download options → share sheet
+#
+# Tests the proforma export for Pro subscribers.
+
+appId: com.dealgapiq.mobile
+name: Proforma - Download and Share Flow
+
+---
+
+# 1. Login as Pro user
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- tapOn:
+    text: "you@example.com"
+- inputText: ${PRO_EMAIL}
+- tapOn:
+    text: "Enter your password"
+- inputText: ${PRO_PASSWORD}
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "DealGapIQ"
+    timeout: 10000
+
+# 2. Analyze a property
+- tapOn: "Enter any property address..."
+- inputText: ${TEST_ADDRESS}
+- pressKey: Enter
+  optional: true
+- tapOn: "Search manually"
+  optional: true
+- extendedWaitUntil:
+    visible: "IQ Verdict"
+    timeout: 15000
+
+# 3. Navigate to proforma
+- scrollUntilVisible:
+    element: "Proforma"
+    direction: DOWN
+- tapOn: "Proforma"
+- waitForAnimationToEnd
+
+# 4. Proforma screen (Pro user should see download options, not ProGate)
+- assertVisible: "Proforma"
+- assertVisible: "Excel Proforma"
+- assertVisible: "PDF Report"
+
+# 5. Tap Excel download
+- tapOn:
+    text: "Download & Share"
+- waitForAnimationToEnd
+
+# Note: On a real device, the native share sheet will appear.
+# Maestro cannot interact with the system share sheet,
+# so this test validates up to the download trigger.

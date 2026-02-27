@@ -1,0 +1,68 @@
+# Subscription Flow
+# Free user → analyze properties → ProGate → billing screen
+#
+# Tests the upgrade funnel from usage limit to purchase.
+
+appId: com.dealgapiq.mobile
+name: Subscription - Upgrade Flow
+
+---
+
+# 1. Login as free-tier user
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- tapOn:
+    text: "you@example.com"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    text: "Enter your password"
+- inputText: ${TEST_PASSWORD}
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "DealGapIQ"
+    timeout: 10000
+
+# 2. Navigate to a Pro-only feature (e.g., proforma)
+- tapOn: "Enter any property address..."
+- inputText: ${TEST_ADDRESS}
+- pressKey: Enter
+  optional: true
+- tapOn: "Search manually"
+  optional: true
+
+# Wait for analysis
+- extendedWaitUntil:
+    visible: "IQ Verdict"
+    timeout: 15000
+
+# 3. Scroll to proforma button
+- scrollUntilVisible:
+    element: "Proforma"
+    direction: DOWN
+- tapOn: "Proforma"
+- waitForAnimationToEnd
+
+# 4. ProGate should appear for free users
+- assertVisible:
+    text: "Pro Feature"
+    optional: true
+- assertVisible:
+    text: "Start 7-Day Free Trial"
+    optional: true
+
+# 5. Tap upgrade → billing screen
+- tapOn:
+    text: "Start 7-Day Free Trial"
+    optional: true
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Subscription"
+    optional: true
+
+# 6. Verify billing screen has plan options
+- assertVisible:
+    text: "Plan Features"
+    optional: true

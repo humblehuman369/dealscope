@@ -1,0 +1,76 @@
+# Offline Flow
+# Load Verdict → disable network → cached data displays → banner → re-enable
+#
+# Tests the read-only offline cache behavior.
+# Note: Network toggling requires Maestro Cloud or manual setup.
+
+appId: com.dealgapiq.mobile
+name: Offline - Cached Data Flow
+
+---
+
+# 1. Login and analyze a property (populate cache)
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- tapOn:
+    text: "you@example.com"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    text: "Enter your password"
+- inputText: ${TEST_PASSWORD}
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "DealGapIQ"
+    timeout: 10000
+
+# 2. Analyze a property to populate the cache
+- tapOn: "Enter any property address..."
+- inputText: ${TEST_ADDRESS}
+- pressKey: Enter
+  optional: true
+- tapOn: "Search manually"
+  optional: true
+- extendedWaitUntil:
+    visible: "IQ Verdict"
+    timeout: 15000
+
+# 3. Verify verdict data is loaded
+- assertVisible: "The Verdict"
+- scrollUntilVisible:
+    element: "Deal Gap"
+    direction: DOWN
+
+# 4. Toggle airplane mode (requires Maestro Cloud or adb/xcrun)
+# On Android: adb shell cmd connectivity airplane-mode enable
+# On iOS: xcrun simctl status_bar ... (limited)
+#
+# For local testing, this step is manual:
+- evalScript: |
+    // Toggle airplane mode if running on Maestro Cloud
+    // output.networkDisabled = true
+    console.log("MANUAL STEP: Enable airplane mode now")
+
+# 5. Navigate away and back to trigger cache read
+- tapOn: "Search"
+  optional: true
+- tapOn: "DealVault"
+  optional: true
+- waitForAnimationToEnd
+
+# 6. Offline banner should be visible (if network was actually disabled)
+- assertVisible:
+    text: "No internet connection"
+    optional: true
+
+# 7. Navigate back to verdict — should load from cache
+# (This works because React Query's offlineFirst mode returns cached data)
+
+# 8. Re-enable network
+- evalScript: |
+    console.log("MANUAL STEP: Disable airplane mode now")
+
+# Note: Full offline E2E requires Maestro Cloud's network controls
+# or a device lab. This flow documents the expected behavior for
+# manual QA verification.

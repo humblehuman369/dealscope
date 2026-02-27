@@ -1,0 +1,35 @@
+# Auth Flow — Login → Home
+#
+# Tests standard email/password login.
+
+appId: com.dealgapiq.mobile
+name: Auth - Login Flow
+
+---
+
+# 1. Launch app
+- launchApp
+
+# 2. Navigate to login
+- tapOn: "Profile"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Welcome back"
+
+# 3. Enter credentials
+- tapOn:
+    text: "you@example.com"
+- inputText: ${TEST_EMAIL}
+
+- tapOn:
+    text: "Enter your password"
+- inputText: ${TEST_PASSWORD}
+
+# 4. Submit
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# 5. Should be on home/search screen or profile
+- extendedWaitUntil:
+    visible: "DealGapIQ"
+    timeout: 10000
