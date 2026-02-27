@@ -1,6 +1,6 @@
 'use client'
 
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps'
 import { MapPin } from 'lucide-react'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
@@ -10,14 +10,9 @@ interface LocationMapProps {
   address: string
 }
 
-/**
- * LocationMap Component
- * 
- * Interactive Google Map centered on the property. Falls back to
- * a dark placeholder when coordinates or API key are unavailable.
- */
 export function LocationMap({ latitude, longitude, address }: LocationMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  const hasCoordinates = latitude != null && longitude != null
 
   const cardStyle = {
     backgroundColor: colors.background.card,
@@ -25,8 +20,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
     boxShadow: colors.shadow.card,
   }
 
-  // Fallback placeholder if no coordinates or API key
-  if (!latitude || !longitude || !apiKey) {
+  if (!hasCoordinates || !apiKey) {
     return (
       <div className="rounded-[14px] p-5" style={cardStyle}>
         <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
@@ -39,7 +33,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
           <div className="text-center">
             <MapPin size={24} className="mx-auto mb-2" style={{ color: colors.text.tertiary }} />
             <p className="text-sm" style={{ color: colors.text.secondary }}>{address}</p>
-            {latitude && longitude && (
+            {hasCoordinates && (
               <p className="text-xs mt-1" style={{ color: colors.text.tertiary, fontVariantNumeric: 'tabular-nums' }}>
                 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
@@ -60,12 +54,11 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
           <Map
             defaultCenter={{ lat: latitude, lng: longitude }}
             defaultZoom={15}
-            mapId="property-location-map"
             gestureHandling="cooperative"
             disableDefaultUI={false}
             style={{ width: '100%', height: '100%' }}
           >
-            <AdvancedMarker position={{ lat: latitude, lng: longitude }} />
+            <Marker position={{ lat: latitude, lng: longitude }} />
           </Map>
         </APIProvider>
       </div>
