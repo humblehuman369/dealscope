@@ -44,37 +44,44 @@ const T = {
 // IQ VERDICT METHODOLOGY
 // =============================================================================
 
-const METHODOLOGY_SECTIONS = [
+const DISCOUNT_BRACKETS = [
+  { bracket: 'At or above list', investorPct: '10–15%', scoreRange: '88–95', color: T.teal },
+  { bracket: '0–5% below list', investorPct: '30–38%', scoreRange: '75–88', color: T.teal },
+  { bracket: '6–10% below list', investorPct: '30–37%', scoreRange: '60–75', color: T.blue },
+  { bracket: '11–20% below list', investorPct: '12–18%', scoreRange: '40–60', color: T.amber },
+  { bracket: '21–30% below list', investorPct: '6–10%', scoreRange: '22–40', color: T.amber },
+  { bracket: '31–40% below list', investorPct: '2–4%', scoreRange: '12–22', color: T.red },
+  { bracket: '41%+ below list', investorPct: '1–2.5%', scoreRange: '5–12', color: T.red },
+] as const
+
+const MODIFIER_SECTIONS = [
   {
-    name: 'Deal Gap %',
-    icon: TrendingUp,
-    description: 'The discount needed from asking price to reach your breakeven price.',
-    formula: 'Deal Gap = (List Price − Breakeven) ÷ List Price × 100',
-    explanation: 'Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).',
-    priceNote: 'For listed properties, List Price is used. For off-market properties, Zestimate is used.',
-    note: 'Based on LTR (rental) revenue model.',
+    title: 'Seller Motivation',
+    items: [
+      { label: 'Foreclosure / Bank-Owned / Auction', impact: '+8 to +10' },
+      { label: 'Price Reduced 2+ Times', impact: '+5 to +8' },
+      { label: 'For Sale By Owner', impact: '+3 to +5' },
+      { label: 'Agent-Listed (standard)', impact: '0' },
+      { label: 'Off-Market (unknown intent)', impact: '−5 to −10' },
+    ],
   },
   {
-    name: 'Motivation',
-    icon: Target,
-    description: 'Seller willingness to negotiate, based on signals and market conditions.',
-    components: [
-      { label: 'Foreclosure / Bank-Owned', impact: 'Very High (+90–100)' },
-      { label: 'FSBO + Price Reductions', impact: 'High (+70–85)' },
-      { label: 'High Days on Market (90+)', impact: 'Medium (+50–70)' },
-      { label: 'Standard Listing', impact: 'Low (+40–50)' },
-      { label: 'Off-Market', impact: 'Minimal (+25–35)' },
+    title: 'Market Temperature',
+    items: [
+      { label: 'Cold Market', impact: '+5' },
+      { label: 'Warm / Balanced Market', impact: '0' },
+      { label: 'Hot Market', impact: '−5' },
     ],
   },
 ] as const
 
 const SCORE_FORMULA = {
   steps: [
-    'Motivation Score determines Max Achievable Discount (0–25%)',
-    'Compare your Deal Gap to the Max Achievable Discount',
-    'Score = Probability of successfully negotiating the gap',
+    'Measure the Deal Gap — how far below asking price you need to buy',
+    'Map the gap to a base score using real U.S. investor discount data',
+    'Adjust for seller motivation and market conditions (−15 to +15)',
   ],
-  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that\'s easily achievable = High Score (A+)',
+  example: 'If your Deal Gap is 8% → base score 65. Seller reduced price 2x (+6) and market is cold (+5) → final score 76 (Good Opportunity)',
 }
 
 // =============================================================================
@@ -138,7 +145,7 @@ export function ScoreMethodologySheet({
   const getSubtitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'Understanding how we evaluate every deal'
+        return 'Scored against real U.S. investor transaction data'
       case 'strategy':
         return 'How each strategy is ranked and scored'
       default:
@@ -203,10 +210,10 @@ export function ScoreMethodologySheet({
               }}
             >
               <p className="text-sm font-normal text-center" style={{ color: T.body }}>
-                The VerdictIQ Score answers one question:
+                The Verdict Score answers one question:
               </p>
               <p className="text-base font-bold text-center mt-2" style={{ color: T.teal }}>
-                &ldquo;How likely can you negotiate the required discount?&rdquo;
+                &ldquo;How achievable is this Deal Gap?&rdquo;
               </p>
             </div>
 
@@ -252,10 +259,10 @@ export function ScoreMethodologySheet({
               </div>
             </section>
 
-            {/* Deal Gap */}
+            {/* Discount Brackets */}
             <section>
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                1. Deal Gap %
+                1. Investor Discount Brackets
               </h3>
               <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
                 <div className="flex items-start gap-3 mb-4">
@@ -263,36 +270,35 @@ export function ScoreMethodologySheet({
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: 'rgba(56,189,248,0.1)' }}
                   >
-                    <TrendingUp className="w-4 h-4" style={{ color: T.blue }} />
+                    <BarChart3 className="w-4 h-4" style={{ color: T.blue }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    {METHODOLOGY_SECTIONS[0].description}
+                    Your Deal Gap is scored against real U.S. investor transaction data.
                   </p>
                 </div>
 
-                {/* Formula — weight + color, not monospace */}
-                <div className="p-3.5 rounded-lg mb-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
-                  <p className="text-xs font-semibold text-center leading-relaxed" style={{ color: T.heading }}>
-                    {METHODOLOGY_SECTIONS[0].formula}
-                  </p>
+                <div className="space-y-2">
+                  {DISCOUNT_BRACKETS.map((b, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: T.secondary }}>{b.bracket}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] tabular-nums" style={{ color: T.label }}>{b.investorPct} of deals</span>
+                        <span className="text-xs font-semibold tabular-nums w-12 text-right" style={{ color: b.color }}>{b.scoreRange}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <p className="text-xs leading-relaxed" style={{ color: T.body }}>
-                  {METHODOLOGY_SECTIONS[0].explanation}
-                </p>
-                <p className="text-xs leading-relaxed mt-2" style={{ color: T.secondary }}>
-                  {METHODOLOGY_SECTIONS[0].priceNote}
-                </p>
-                <p className="text-[11px] mt-2" style={{ color: T.label }}>
-                  {METHODOLOGY_SECTIONS[0].note}
+                <p className="text-[11px] mt-4 leading-relaxed" style={{ color: T.label }}>
+                  Source: U.S. residential sales data (2025). Investor-initiated transactions across single-family homes, townhomes, and condos.
                 </p>
               </div>
             </section>
 
-            {/* Motivation */}
+            {/* Score Modifiers */}
             <section>
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                2. Motivation Score
+                2. Score Modifiers
               </h3>
               <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
                 <div className="flex items-start gap-3 mb-4">
@@ -303,46 +309,32 @@ export function ScoreMethodologySheet({
                     <Target className="w-4 h-4" style={{ color: T.blue }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    {METHODOLOGY_SECTIONS[1].description}
+                    The base score is adjusted by seller motivation and market conditions.
                   </p>
                 </div>
 
-                <p className="text-xs font-semibold mb-3" style={{ color: T.body }}>
-                  Seller Signals
-                </p>
-                <div className="space-y-2 mb-5">
-                  {METHODOLOGY_SECTIONS[1].components.map((comp, idx) => (
-                    <div key={idx} className="flex items-center justify-between">
-                      <span className="text-xs" style={{ color: T.secondary }}>{comp.label}</span>
-                      <span className="text-xs font-semibold" style={{ color: T.heading, fontVariantNumeric: 'tabular-nums' }}>{comp.impact}</span>
+                {MODIFIER_SECTIONS.map((section, si) => (
+                  <div key={si} className={si > 0 ? 'mt-4' : ''}>
+                    <p className="text-xs font-semibold mb-2.5" style={{ color: T.body }}>
+                      {section.title}
+                    </p>
+                    <div className="space-y-2">
+                      {section.items.map((item, ii) => (
+                        <div key={ii} className="flex items-center justify-between">
+                          <span className="text-xs" style={{ color: T.secondary }}>{item.label}</span>
+                          <span className="text-xs font-semibold tabular-nums" style={{ color: item.impact.startsWith('+') ? T.teal : item.impact.startsWith('−') ? T.red : T.label }}>{item.impact}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-
-                <p className="text-xs font-semibold mb-3" style={{ color: T.body }}>
-                  Market Condition Modifier
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: T.secondary }}>Cold Market</span>
-                    <span className="text-xs font-semibold" style={{ color: T.green }}>+15</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: T.secondary }}>Warm Market</span>
-                    <span className="text-xs font-semibold" style={{ color: T.label }}>+0</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: T.secondary }}>Hot Market</span>
-                    <span className="text-xs font-semibold" style={{ color: T.red }}>−15</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
 
             {/* Score Calculation */}
             <section>
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                3. Score Calculation
+                3. How It All Works
               </h3>
               <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
                 <div className="space-y-3 mb-4">

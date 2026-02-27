@@ -11,6 +11,7 @@ import logging
 
 from app.core.formulas import calculate_buy_price, compute_market_price, estimate_income_value
 from app.schemas.analytics import (
+    DealFactor,
     DealScoreFactors,
     DealScoreInput,
     DealScoreMotivation,
@@ -468,28 +469,166 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 
 
 # ===========================================
-# Score component calculators
+# Bracket-based verdict scoring (U.S. 2025 investor discount data)
 # ===========================================
 
+INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
+    # (max_gap_pct, score_at_bracket_start, score_at_bracket_end, investor_pct_label)
+    (5, 88, 75, "30-38% of investor deals achieve a 0-5% discount"),
+    (10, 75, 60, "30-37% of investor deals achieve a 6-10% discount"),
+    (20, 60, 40, "12-18% of investor deals achieve an 11-20% discount"),
+    (30, 40, 22, "6-10% of investor deals achieve a 21-30% discount"),
+    (40, 22, 12, "2-4% of investor deals achieve a 31-40% discount"),
+    (100, 12, 5, "Less than 2.5% of investor deals achieve this discount"),
+]
 
-def _calculate_deal_gap_component(target_price: float, list_price: float) -> int:
-    if list_price <= 0:
+AT_OR_ABOVE_LABEL = "10-15% of investor deals close at or above asking price"
+
+
+def _interpolate_bracket_score(deal_gap_pct: float) -> int:
+    """Compute base verdict score from deal gap using investor discount brackets."""
+    if deal_gap_pct <= 0:
+        return min(95, round(88 + min(abs(deal_gap_pct), 7)))
+
+    prev_max = 0.0
+    for max_gap, score_start, score_end, _ in INVESTOR_DISCOUNT_BRACKETS:
+        if deal_gap_pct <= max_gap:
+            bracket_width = max_gap - prev_max
+            position = (deal_gap_pct - prev_max) / bracket_width if bracket_width > 0 else 0
+            return round(score_start - position * (score_start - score_end))
+        prev_max = max_gap
+    return 5
+
+
+def _get_bracket_label(deal_gap_pct: float) -> str:
+    """Return the investor-stats label for the deal gap's bracket."""
+    if deal_gap_pct <= 0:
+        return AT_OR_ABOVE_LABEL
+    for max_gap, _, _, label in INVESTOR_DISCOUNT_BRACKETS:
+        if deal_gap_pct <= max_gap:
+            return label
+    return INVESTOR_DISCOUNT_BRACKETS[-1][3]
+
+
+def _motivation_modifier(motivation_score: int) -> int:
+    """Seller motivation modifier: -10 to +10 based on availability ranking score (0-100)."""
+    return round((motivation_score - 50) / 50 * 10)
+
+
+def _market_modifier(market_temperature: str | None) -> int:
+    """Market temperature modifier. Cold = buyer advantage (+5), hot = seller advantage (-5)."""
+    if not market_temperature:
         return 0
-    gap_pct = ((list_price - target_price) / list_price) * 100
-
-    if gap_pct <= -10:
-        excess = min(abs(gap_pct) - 10, 20)
-        return min(90, round(80 + excess * 0.5))
-    elif gap_pct <= 0:
-        return round(70 + abs(gap_pct))
-    elif gap_pct <= 10:
-        return round(70 - gap_pct * 2.5)
-    elif gap_pct <= 25:
-        return round(45 - (gap_pct - 10) * 2)
-    elif gap_pct <= 40:
-        return round(15 - (gap_pct - 25) * 0.67)
-    else:
+    temp = market_temperature.lower()
+    if temp == "cold":
         return 5
+    elif temp == "hot":
+        return -5
+    return 0
+
+
+def _calculate_verdict_score(
+    deal_gap_pct: float,
+    motivation_score: int,
+    market_temperature: str | None,
+) -> int:
+    """Calculate verdict score using deal gap brackets + motivation/market modifiers."""
+    base = _interpolate_bracket_score(deal_gap_pct)
+    mot_mod = _motivation_modifier(motivation_score)
+    mkt_mod = _market_modifier(market_temperature)
+    return max(5, min(95, base + mot_mod + mkt_mod))
+
+
+def _generate_deal_factors(
+    deal_gap_pct: float,
+    bracket_label: str,
+    listing_status: str | None,
+    market_temperature: str | None,
+    days_on_market: int | None,
+    is_foreclosure: bool,
+    is_bank_owned: bool,
+    is_fsbo: bool,
+    is_listed: bool | None,
+) -> list[dict[str, str]]:
+    """Generate 2-4 plain-language deal factor narratives."""
+    factors: list[dict[str, str]] = []
+
+    if deal_gap_pct <= 0:
+        factors.append({
+            "type": "positive",
+            "text": "This property is profitable at asking price — no discount needed",
+        })
+    elif deal_gap_pct <= 5:
+        factors.append({
+            "type": "positive",
+            "text": f"Only a {deal_gap_pct:.0f}% discount is needed — {bracket_label.lower()}",
+        })
+    else:
+        severity = "info" if deal_gap_pct <= 20 else "warning"
+        factors.append({
+            "type": severity,
+            "text": f"A {deal_gap_pct:.0f}% discount is needed — {bracket_label.lower()}",
+        })
+
+    status = (listing_status or "").upper()
+
+    if is_foreclosure or is_bank_owned:
+        factors.append({
+            "type": "positive",
+            "text": "Distressed sale — lender is typically motivated to liquidate",
+        })
+    elif "OFF_MARKET" in status or is_listed is False:
+        factors.append({
+            "type": "warning",
+            "text": "Off-market property — seller has not indicated intent to sell",
+        })
+    elif "PENDING" in status:
+        factors.append({
+            "type": "warning",
+            "text": "Property is under contract — unlikely to be available",
+        })
+    elif "SOLD" in status:
+        factors.append({
+            "type": "warning",
+            "text": "Recently sold — not currently available for purchase",
+        })
+    elif is_fsbo:
+        factors.append({
+            "type": "positive",
+            "text": "For sale by owner — more room for direct negotiation",
+        })
+    elif "FOR_SALE" in status:
+        factors.append({
+            "type": "info",
+            "text": "Agent-listed property with standard seller motivation",
+        })
+
+    if days_on_market is not None and days_on_market > 0 and "FOR_SALE" in status:
+        if days_on_market >= 120:
+            factors.append({
+                "type": "positive",
+                "text": f"Listed {days_on_market} days — extended time on market increases negotiation leverage",
+            })
+        elif days_on_market >= 60:
+            factors.append({
+                "type": "info",
+                "text": f"Listed {days_on_market} days — seller may be open to negotiation",
+            })
+
+    if market_temperature:
+        temp = market_temperature.lower()
+        if temp == "hot":
+            factors.append({
+                "type": "warning",
+                "text": "Hot market — competing offers reduce negotiation leverage",
+            })
+        elif temp == "cold":
+            factors.append({
+                "type": "positive",
+                "text": "Cold market — fewer buyers gives stronger negotiation position",
+            })
+
+    return factors
 
 
 def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str, str]:
@@ -508,45 +647,6 @@ def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str
         return ("overpriced", "significantly above its Income Value")
     else:
         return ("substantially_overpriced", "substantially overpriced relative to income potential")
-
-
-def _calculate_return_quality_component(top_strategy_score: int) -> int:
-    return min(90, round(top_strategy_score * 0.9))
-
-
-def _calculate_deal_probability_component(deal_gap_pct: float, motivation_score: int) -> int:
-    if deal_gap_pct <= 0:
-        return min(90, round(80 + motivation_score * 0.1))
-    max_discount = (motivation_score / 100) * 0.25
-    gap_decimal = deal_gap_pct / 100
-    if max_discount <= 0:
-        return max(5, round(25 - deal_gap_pct * 1.5))
-    ratio = gap_decimal / max_discount
-    if ratio <= 0.6:
-        return min(90, round(75 + (1 - ratio / 0.6) * 15))
-    elif ratio <= 1.0:
-        return round(55 + (1 - (ratio - 0.6) / 0.4) * 20)
-    elif ratio <= 1.5:
-        return round(25 + (1 - (ratio - 1.0) / 0.5) * 30)
-    else:
-        excess = ratio - 1.5
-        return max(5, round(25 - excess * 40))
-
-
-def _calculate_composite_verdict_score(
-    target_price: float,
-    list_price: float,
-    top_strategy_score: int,
-    motivation_score: int,
-) -> tuple[int, int, int, int, int]:
-    deal_gap_pct = ((list_price - target_price) / list_price) * 100 if list_price > 0 else 100
-    deal_gap = _calculate_deal_gap_component(target_price, list_price)
-    return_quality = _calculate_return_quality_component(top_strategy_score)
-    market_alignment = min(90, motivation_score)
-    deal_probability = _calculate_deal_probability_component(deal_gap_pct, motivation_score)
-    composite = round(deal_gap * 0.35 + return_quality * 0.30 + market_alignment * 0.20 + deal_probability * 0.15)
-    composite = max(5, min(95, composite))
-    return composite, deal_gap, return_quality, market_alignment, deal_probability
 
 
 def _calculate_opportunity_score(income_value: float, list_price: float) -> tuple[int, float, str]:
@@ -756,24 +856,37 @@ def compute_iq_verdict(
 
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
-    deal_score, comp_gap, comp_return, comp_market, comp_prob = _calculate_composite_verdict_score(
-        target_price=buy_price,
-        list_price=list_price,
-        top_strategy_score=top_strategy["score"],
+    deal_score = _calculate_verdict_score(
+        deal_gap_pct=deal_gap_pct,
         motivation_score=motivation_score,
+        market_temperature=input_data.market_temperature,
+    )
+
+    bracket_label = _get_bracket_label(deal_gap_pct)
+
+    deal_factors_raw = _generate_deal_factors(
+        deal_gap_pct=deal_gap_pct,
+        bracket_label=bracket_label,
+        listing_status=input_data.listing_status,
+        market_temperature=input_data.market_temperature,
+        days_on_market=input_data.days_on_market,
+        is_foreclosure=input_data.is_foreclosure or False,
+        is_bank_owned=input_data.is_bank_owned or False,
+        is_fsbo=input_data.is_fsbo or False,
+        is_listed=input_data.is_listed,
     )
 
     deal_verdict = (
         "Strong Opportunity"
-        if income_gap_pct <= 5
+        if deal_score >= 85
         else "Good Opportunity"
-        if income_gap_pct <= 10
+        if deal_score >= 70
         else "Moderate Opportunity"
-        if income_gap_pct <= 15
+        if deal_score >= 55
         else "Marginal Opportunity"
-        if income_gap_pct <= 25
+        if deal_score >= 40
         else "Unlikely Opportunity"
-        if income_gap_pct <= 35
+        if deal_score >= 25
         else "Pass"
     )
 
@@ -837,11 +950,9 @@ def compute_iq_verdict(
             annual_profit=top_strategy.get("annual_cash_flow"),
             strategy_name=top_strategy["name"],
         ),
-        deal_gap_score=comp_gap,
-        return_quality_score=comp_return,
-        market_alignment_score=comp_market,
-        deal_probability_score=comp_prob,
         wholesale_mao=round((arv * 0.70) - rehab_cost - (buy_price * 0.007), 0),
+        deal_factors=[DealFactor(**f) for f in deal_factors_raw],
+        discount_bracket_label=bracket_label,
     )
 
 

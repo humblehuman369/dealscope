@@ -24,7 +24,7 @@ import {
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { VerdictScoreCard, ComponentScoreBars } from '@/components/iq-verdict/VerdictScoreCard'
+import { VerdictScoreCard, DealGapCallout, DealFactorsList } from '@/components/iq-verdict/VerdictScoreCard'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
@@ -56,11 +56,15 @@ interface BackendAnalysisResponse {
   purchase_price?: number; purchasePrice?: number
   income_value?: number; incomeValue?: number
   list_price?: number; listPrice?: number
-  // Component scores — flat top-level fields (both key formats for safety)
+  // Component scores — deprecated, kept for backward compat
   deal_gap_score?: number; dealGapScore?: number
   return_quality_score?: number; returnQualityScore?: number
   market_alignment_score?: number; marketAlignmentScore?: number
   deal_probability_score?: number; dealProbabilityScore?: number
+  // New: deal factors + discount bracket
+  deal_factors?: Array<{ type: string; text: string }>
+  dealFactors?: Array<{ type: string; text: string }>
+  discount_bracket_label?: string; discountBracketLabel?: string
   // Allow additional camelCase fields from alias generator
   [key: string]: unknown
 }
@@ -635,6 +639,11 @@ function VerdictContent() {
           dealProbabilityScore: cs.dealProbability,
         }
       })(),
+      dealFactors: (analysisData.deal_factors ?? analysisData.dealFactors ?? []).map((f: any) => ({
+        type: f.type as 'positive' | 'warning' | 'info',
+        text: f.text as string,
+      })),
+      discountBracketLabel: (analysisData.discount_bracket_label ?? analysisData.discountBracketLabel ?? '') as string,
     }),
     [property?.id],
   )
@@ -841,24 +850,8 @@ function VerdictContent() {
 
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
-  // Component scores for VerdictScoreCard (0-90 scale)
-  const cs = analysis.componentScores
-  const verdictComponentScores = {
-    dealGap: cs?.dealGapScore ?? 0,
-    returnQuality: cs?.returnQualityScore ?? 0,
-    marketAlignment: cs?.marketAlignmentScore ?? 0,
-    dealProbability: cs?.dealProbabilityScore ?? 0,
-  }
-
-  const market = of?.buyerMarket || 'Warm'
-  const maScore = verdictComponentScores.marketAlignment
-  const maLabel = maScore >= 75 ? 'Strong' : maScore >= 55 ? 'Favorable' : maScore >= 40 ? 'Neutral' : maScore >= 20 ? 'Weak' : 'Misaligned'
-  const maColor = maScore >= 75 ? colors.brand.teal : maScore >= 55 ? '#38bdf8' : maScore >= 40 ? colors.brand.gold : maScore >= 20 ? '#f97316' : colors.status.negative
-  const signals = [
-    { label: 'Deal Gap', value: `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`, sub: dealGap >= 0 ? 'Favorable' : 'Difficult', color: dealGap >= 0 ? colors.brand.teal : colors.status.negative },
-    { label: 'Alignment', value: maLabel, sub: `${Math.round(maScore)}/90`, color: maColor },
-    { label: 'Market', value: market, sub: of?.motivationLabel || 'Active', color: colors.brand.teal },
-  ]
+  const verdictDealFactors = analysis.dealFactors ?? []
+  const verdictBracketLabel = analysis.discountBracketLabel ?? ''
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -901,14 +894,15 @@ function VerdictContent() {
               score={score}
               verdictLabel={verdictLabel}
               description={shortVerdictDescription}
-              componentScores={verdictComponentScores}
               dealGapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined}
+              discountBracketLabel={verdictBracketLabel}
+              dealFactors={verdictDealFactors}
               onHowItWorks={handleShowMethodology}
-              hideScoreComponents
             />
-            {/* Score Components — why did it score this way */}
+            {/* Deal Gap + Deal Factors — why did it score this way */}
             <section className="px-5 pt-0 pb-5 border-t lg:border-t" style={{ borderColor: colors.ui.border }}>
-              <ComponentScoreBars scores={verdictComponentScores} dealGapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined} />
+              <DealGapCallout gapPercent={incomeGapPct != null ? Math.max(0, incomeGapPct) : undefined} bracketLabel={verdictBracketLabel} />
+              <DealFactorsList factors={verdictDealFactors} />
             </section>
 
             {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
@@ -1085,22 +1079,7 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* Market Snapshot */}
-          <section className="px-5 pb-6 border-t lg:border-t-0 lg:pt-10" style={{ borderColor: colors.ui.border }}>
-            <div className="py-4">
-              <span className="text-[0.68rem] font-bold uppercase tracking-wider block" style={{ color: colors.text.primary }}>Market Snapshot</span>
-              <p className="text-[0.82rem] mt-1" style={{ color: colors.text.muted }}>Key signals from your 60-second screen</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {signals.map((s, i) => (
-                <div key={i} className="flex flex-col rounded-xl py-3 px-3" style={{ background: cardGlow.sm.background, border: cardGlow.sm.border, boxShadow: cardGlow.sm.boxShadow, transition: cardGlow.sm.transition }}>
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-wide" style={{ color: colors.text.body }}>{s.label}</p>
-                  <p className="text-[0.65rem] font-medium mt-0.5" style={{ color: s.color }}>{s.sub}</p>
-                  <span className="text-base font-bold tabular-nums mt-1.5" style={{ color: s.color }}>{s.value}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          {/* Market Snapshot removed — deal factors now displayed in left column */}
 
           {/* 60-second screen callout */}
           <section className="px-5 pb-6">

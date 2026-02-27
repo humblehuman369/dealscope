@@ -4,6 +4,8 @@ Schemas for analytics endpoints: IQ Verdict, Deal Score, and defaults.
 Moved from app/routers/analytics.py as part of Phase 2 Architecture Cleanup.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 # ===========================================
@@ -94,6 +96,15 @@ class StrategyResult(BaseModel):
     monthly_cash_flow: float | None = None
 
 
+class DealFactor(BaseModel):
+    """A plain-language factor explaining deal achievability."""
+
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    type: Literal["positive", "warning", "info"]
+    text: str
+
+
 class OpportunityFactorsResponse(BaseModel):
     """Opportunity factors breakdown for IQ Verdict."""
 
@@ -158,14 +169,16 @@ class IQVerdictResponse(BaseModel):
     # Deal Gap - public hero metric (List Price - Target Price)
     deal_gap_amount: float = Field(0, description="List Price minus Target Price (dollars)")
     deal_gap_percent: float = Field(0, description="Deal Gap as percentage of List Price")
-    # Component scores - flat top-level fields (no nested model)
-    # to eliminate Pydantic v2 nested-model serialization ambiguity
+    # Component scores — deprecated, kept at 0 for mobile backward compatibility
     deal_gap_score: int = 0
     return_quality_score: int = 0
     market_alignment_score: int = 0
     deal_probability_score: int = 0
     # Wholesale MAO - so clients do not compute it (MAO = ARV x 0.70 - rehab - fee)
     wholesale_mao: float | None = Field(None, description="Wholesale max allowable offer for price ladder")
+    # Deal factors: plain-language narratives explaining deal achievability
+    deal_factors: list[DealFactor] = Field(default_factory=list, description="Plain-language deal factor narratives")
+    discount_bracket_label: str = Field("", description="Investor discount bracket context")
 
 
 # ===========================================
