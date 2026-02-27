@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Sentry from '@sentry/react-native';
 import {
   useFonts,
   Inter_400Regular,
@@ -13,11 +14,10 @@ import {
 import {
   QueryClient,
   QueryClientProvider,
-  focusManager,
   onlineManager,
 } from '@tanstack/react-query';
 import NetInfo from '@react-native-community/netinfo';
-import { PostHogProvider } from 'posthog-react-native';
+import PostHog, { PostHogProvider, usePostHog } from 'posthog-react-native';
 import { hydrateTokens } from '@/services/token-manager';
 import { initPayments, identifyUser, resetUser } from '@/services/payments';
 import {
@@ -32,14 +32,43 @@ import {
   configureNotificationHandler,
   configureNotificationChannels,
 } from '@/services/notifications';
+import {
+  setAnalyticsClient,
+  identifyAnalyticsUser,
+  resetAnalyticsUser,
+  trackAppOpened,
+  trackScreenView,
+} from '@/services/analytics';
 import { BiometricLockScreen } from '@/components/auth/BiometricLockScreen';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { InAppNotificationManager } from '@/components/ui/InAppNotification';
+import {
+  ErrorBoundary,
+  GlobalCrashScreen,
+} from '@/components/ui/ErrorBoundary';
 import { colors } from '@/constants/tokens';
+
+// ---------------------------------------------------------------------------
+// Sentry initialization
+// ---------------------------------------------------------------------------
+
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN ?? '';
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    tracesSampleRate: 0.2,
+    sendDefaultPii: false,
+    enableAutoSessionTracking: true,
+  });
+}
 
 SplashScreen.preventAutoHideAsync();
 
-// React Query online manager — auto-pause/resume queries based on connectivity
+// ---------------------------------------------------------------------------
+// React Query — offline-first
+// ---------------------------------------------------------------------------
+
 onlineManager.setEventListener((setOnline) => {
   return NetInfo.addEventListener((state) => {
     setOnline(state.isConnected === true && state.isInternetReachable !== false);
@@ -62,8 +91,17 @@ const queryClient = new QueryClient({
   },
 });
 
+// ---------------------------------------------------------------------------
+// PostHog config
+// ---------------------------------------------------------------------------
+
 const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? '';
-const POSTHOG_HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com';
+const POSTHOG_HOST =
+  process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com';
+
+// ---------------------------------------------------------------------------
+// Identity sync components
+// ---------------------------------------------------------------------------
 
 function PaymentIdentitySync() {
   const { user, isAuthenticated } = useSession();
@@ -77,9 +115,45 @@ function PaymentIdentitySync() {
   return null;
 }
 
-/**
- * Persist query cache when the app goes to background.
- */
+function AnalyticsIdentitySync() {
+  const { user, isAuthenticated } = useSession();
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    if (posthog) setAnalyticsClient(posthog);
+  }, [posthog]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      identifyAnalyticsUser(user.id, {
+        subscription_tier: user.subscription_tier,
+      });
+    } else {
+      resetAnalyticsUser();
+    }
+  }, [isAuthenticated, user?.id, user?.subscription_tier]);
+
+  return null;
+}
+
+function ScreenTracker() {
+  const pathname = usePathname();
+  const prevPath = useRef('');
+
+  useEffect(() => {
+    if (pathname && pathname !== prevPath.current) {
+      prevPath.current = pathname;
+      trackScreenView(pathname);
+    }
+  }, [pathname]);
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Cache persistence
+// ---------------------------------------------------------------------------
+
 function CachePersistenceManager() {
   const appState = useRef(AppState.currentState);
 
@@ -95,8 +169,6 @@ function CachePersistenceManager() {
     }
 
     const sub = AppState.addEventListener('change', handleAppState);
-
-    // Also persist every 5 minutes while active
     const interval = setInterval(() => {
       if (appState.current === 'active') {
         persistQueryCache(queryClient);
@@ -112,9 +184,17 @@ function CachePersistenceManager() {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// App shell
+// ---------------------------------------------------------------------------
+
 function AppContent() {
   const { isLocked, unlock } = useBiometricLock();
   useNotificationSetup();
+
+  useEffect(() => {
+    trackAppOpened('organic');
+  }, []);
 
   if (isLocked) {
     return <BiometricLockScreen onRetry={unlock} />;
@@ -123,6 +203,8 @@ function AppContent() {
   return (
     <>
       <PaymentIdentitySync />
+      <AnalyticsIdentitySync />
+      <ScreenTracker />
       <CachePersistenceManager />
       <OfflineBanner />
       <InAppNotificationManager />
@@ -152,6 +234,10 @@ function AppWithAnalytics() {
     </PostHogProvider>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Root layout
+// ---------------------------------------------------------------------------
 
 export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
@@ -187,8 +273,15 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppWithAnalytics />
-    </QueryClientProvider>
+    <ErrorBoundary
+      name="RootLayout"
+      fallback={({ error, reset }) => (
+        <GlobalCrashScreen error={error} onRetry={reset} />
+      )}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AppWithAnalytics />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
