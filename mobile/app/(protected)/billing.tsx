@@ -1,18 +1,69 @@
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useUsage } from '@/hooks/useUsage';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { UsageBar } from '@/components/billing/UsageBar';
 import { colors, fontFamily, fontSize, spacing, radius } from '@/constants/tokens';
+import type { PurchasesPackage } from 'react-native-purchases';
 
 export default function BillingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { subscriptionTier, subscriptionStatus } = useAuth();
+  const {
+    isPro,
+    offerings,
+    expiresDate,
+    willRenew,
+    purchase,
+    restore,
+    manageSubscription,
+    isPurchasing,
+    isRestoring,
+    purchaseError,
+  } = useSubscription();
+  const { searches, saved } = useUsage();
 
-  const isPro = subscriptionTier === 'pro';
+  const [error, setError] = useState('');
+
+  const currentOffering = offerings?.current;
+  const monthlyPkg = currentOffering?.monthly;
+  const annualPkg = currentOffering?.annual;
+
+  async function handlePurchase(pkg: PurchasesPackage | undefined | null) {
+    if (!pkg) {
+      Alert.alert('Not Available', 'This plan is not currently available. Please try again later.');
+      return;
+    }
+    setError('');
+    try {
+      await purchase(pkg);
+    } catch (err: any) {
+      setError(err.message ?? 'Purchase failed. Please try again.');
+    }
+  }
+
+  async function handleRestore() {
+    setError('');
+    try {
+      await restore();
+    } catch (err: any) {
+      setError(err.message ?? 'Restore failed.');
+    }
+  }
 
   return (
     <ScrollView
@@ -32,16 +83,18 @@ export default function BillingScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Current plan card */}
+      {error ? <ErrorBanner message={error} /> : null}
+
+      {/* Current status */}
       <GlowCard
-        style={styles.planCard}
+        style={styles.statusCard}
         glowColor={isPro ? colors.accent : colors.muted}
         active={isPro}
       >
-        <View style={styles.planHeader}>
+        <View style={styles.statusRow}>
           <View
             style={[
-              styles.planBadge,
+              styles.statusIcon,
               { backgroundColor: isPro ? colors.accent : colors.panel },
             ]}
           >
@@ -51,91 +104,190 @@ export default function BillingScreen() {
               color={isPro ? colors.black : colors.secondary}
             />
           </View>
-          <View style={styles.planInfo}>
-            <Text style={styles.planName}>
+          <View style={styles.statusInfo}>
+            <Text style={styles.statusPlan}>
               {isPro ? 'Pro' : 'Free'} Plan
             </Text>
-            <Text style={styles.planStatus}>
-              Status:{' '}
-              <Text style={{ color: subscriptionStatus === 'active' ? colors.green : colors.gold }}>
-                {subscriptionStatus === 'active' ? 'Active' : subscriptionStatus}
-              </Text>
+            <Text style={styles.statusDetail}>
+              {isPro
+                ? willRenew
+                  ? `Renews ${expiresDate ? new Date(expiresDate).toLocaleDateString() : 'soon'}`
+                  : `Expires ${expiresDate ? new Date(expiresDate).toLocaleDateString() : 'soon'}`
+                : `${searches.remaining} of ${searches.limit} analyses remaining`}
             </Text>
           </View>
         </View>
-
-        {!isPro && (
-          <View style={styles.upgradeSection}>
-            <Text style={styles.upgradeTitle}>Upgrade to Pro</Text>
-            <Text style={styles.upgradePrice}>$29/month</Text>
-            <Text style={styles.upgradeDesc}>
-              Unlimited analyses, DealVault, proforma exports, and priority support.
-            </Text>
-          </View>
-        )}
       </GlowCard>
 
-      {/* Features comparison */}
-      <Text style={styles.sectionTitle}>Plan Features</Text>
-      <View style={styles.featuresCard}>
-        <FeatureRow feature="Property Analyses" free="3 / month" pro="Unlimited" />
-        <FeatureRow feature="DealVaultIQ" free="5 saved" pro="Unlimited" />
-        <FeatureRow feature="Strategy Deep Dive" free="LTR only" pro="All 6" />
-        <FeatureRow feature="Deal Maker" free="—" pro="✓" isPro />
-        <FeatureRow feature="Proforma Export" free="—" pro="✓" isPro />
-        <FeatureRow feature="LOI Generator" free="—" pro="✓" isPro />
-        <FeatureRow feature="Priority Support" free="—" pro="✓" isPro />
-      </View>
+      {/* Usage bar (free users) */}
+      {!isPro && <UsageBar />}
 
-      {/* CTA */}
+      {/* Plans */}
       {!isPro && (
-        <View style={styles.ctaSection}>
-          <Button
-            title="Start 7-Day Free Trial"
-            onPress={() => {
-              // RevenueCat IAP flow will be integrated in Phase 3 payments
-            }}
+        <>
+          <Text style={styles.sectionTitle}>Choose Your Plan</Text>
+
+          {/* Monthly */}
+          <PlanCard
+            title="Pro Monthly"
+            price={monthlyPkg?.product?.priceString ?? '$29'}
+            period="/month"
+            features={[
+              'Unlimited property analyses',
+              'All 6 investment strategies',
+              'Deal Maker + proforma exports',
+              'Unlimited DealVault saves',
+              'Priority support',
+            ]}
+            trial="7-day free trial"
+            onPurchase={() => handlePurchase(monthlyPkg)}
+            isPurchasing={isPurchasing}
+            highlighted
           />
-          <Text style={styles.trialNote}>
-            No charge for 7 days. Cancel anytime.
-          </Text>
-        </View>
+
+          {/* Annual */}
+          <PlanCard
+            title="Pro Annual"
+            price={annualPkg?.product?.priceString ?? '$290'}
+            period="/year"
+            features={[
+              'Everything in Pro Monthly',
+              'Save ~17% vs monthly',
+            ]}
+            badge="Best Value"
+            trial="7-day free trial"
+            onPurchase={() => handlePurchase(annualPkg)}
+            isPurchasing={isPurchasing}
+          />
+        </>
       )}
 
-      {isPro && (
-        <View style={styles.ctaSection}>
+      {/* Feature comparison */}
+      <Text style={styles.sectionTitle}>Plan Features</Text>
+      <View style={styles.featuresCard}>
+        <FeatureRow header label="Feature" free="Free" pro="Pro" />
+        <FeatureRow label="Analyses" free={`${searches.limit}/mo`} pro="Unlimited" />
+        <FeatureRow label="DealVault" free={`${saved.limit} saved`} pro="Unlimited" />
+        <FeatureRow label="Strategies" free="LTR only" pro="All 6" />
+        <FeatureRow label="Deal Maker" free="—" pro="✓" isPro />
+        <FeatureRow label="Proforma" free="—" pro="✓" isPro />
+        <FeatureRow label="LOI Generator" free="—" pro="✓" isPro />
+        <FeatureRow label="Priority Support" free="—" pro="✓" isPro />
+      </View>
+
+      {/* Actions */}
+      <View style={styles.actionsSection}>
+        {isPro && (
           <Button
             title="Manage Subscription"
             variant="secondary"
-            onPress={() => {
-              // Opens native subscription management
-            }}
+            onPress={manageSubscription}
           />
-        </View>
-      )}
+        )}
+        <Pressable onPress={handleRestore} disabled={isRestoring}>
+          <Text style={styles.restoreText}>
+            {isRestoring ? 'Restoring...' : 'Restore Purchases'}
+          </Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Plan card
+// ---------------------------------------------------------------------------
+
+function PlanCard({
+  title,
+  price,
+  period,
+  features,
+  trial,
+  badge,
+  onPurchase,
+  isPurchasing,
+  highlighted,
+}: {
+  title: string;
+  price: string;
+  period: string;
+  features: string[];
+  trial?: string;
+  badge?: string;
+  onPurchase: () => void;
+  isPurchasing: boolean;
+  highlighted?: boolean;
+}) {
+  return (
+    <GlowCard
+      style={styles.planCard}
+      active={highlighted}
+    >
+      {badge && (
+        <View style={styles.planBadge}>
+          <Text style={styles.planBadgeText}>{badge}</Text>
+        </View>
+      )}
+      <Text style={styles.planTitle}>{title}</Text>
+      <View style={styles.priceRow}>
+        <Text style={styles.planPrice}>{price}</Text>
+        <Text style={styles.planPeriod}>{period}</Text>
+      </View>
+      {trial && (
+        <View style={styles.trialBadge}>
+          <Ionicons name="gift-outline" size={14} color={colors.green} />
+          <Text style={styles.trialText}>{trial}</Text>
+        </View>
+      )}
+      <View style={styles.featureList}>
+        {features.map((f) => (
+          <View key={f} style={styles.featureRow}>
+            <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+            <Text style={styles.featureText}>{f}</Text>
+          </View>
+        ))}
+      </View>
+      <Button
+        title={isPurchasing ? 'Processing...' : 'Start Free Trial'}
+        onPress={onPurchase}
+        loading={isPurchasing}
+        disabled={isPurchasing}
+      />
+    </GlowCard>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Feature row
+// ---------------------------------------------------------------------------
+
 function FeatureRow({
-  feature,
+  label,
   free,
   pro,
-  isPro,
+  isPro: isProFeature,
+  header,
 }: {
-  feature: string;
+  label: string;
   free: string;
   pro: string;
   isPro?: boolean;
+  header?: boolean;
 }) {
   return (
-    <View style={featureStyles.row}>
-      <Text style={featureStyles.feature}>{feature}</Text>
-      <Text style={featureStyles.free}>{free}</Text>
+    <View style={[featureStyles.row, header && featureStyles.headerRow]}>
+      <Text style={[featureStyles.label, header && featureStyles.headerText]}>
+        {label}
+      </Text>
+      <Text style={[featureStyles.free, header && featureStyles.headerText]}>
+        {free}
+      </Text>
       <Text
         style={[
           featureStyles.pro,
-          isPro && { color: colors.green },
+          header && featureStyles.headerText,
+          isProFeature && { color: colors.green },
         ]}
       >
         {pro}
@@ -153,7 +305,17 @@ const featureStyles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  feature: {
+  headerRow: {
+    backgroundColor: colors.panel,
+  },
+  headerText: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.xs,
+    color: colors.label,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  label: {
     flex: 2,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
@@ -175,6 +337,10 @@ const featureStyles = StyleSheet.create({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.base },
   content: { paddingHorizontal: spacing.md, gap: spacing.md },
@@ -190,65 +356,114 @@ const styles = StyleSheet.create({
     color: colors.heading,
   },
 
-  // Plan card
-  planCard: { padding: spacing.lg },
-  planHeader: {
+  // Status card
+  statusCard: { padding: spacing.md },
+  statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  planBadge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  statusIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  planInfo: { flex: 1 },
-  planName: {
+  statusInfo: { flex: 1 },
+  statusPlan: {
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     color: colors.heading,
   },
-  planStatus: {
+  statusDetail: {
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
     color: colors.secondary,
     marginTop: 2,
   },
-  upgradeSection: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  upgradeTitle: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.lg,
-    color: colors.heading,
-  },
-  upgradePrice: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize['2xl'],
-    color: colors.accent,
-    marginTop: spacing.xs,
-  },
-  upgradeDesc: {
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-    color: colors.secondary,
-    marginTop: spacing.xs,
-    lineHeight: fontSize.sm * 1.5,
-  },
 
-  // Features
+  // Section
   sectionTitle: {
     fontFamily: fontFamily.bold,
     fontSize: fontSize.sm,
     color: colors.label,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    marginTop: spacing.sm,
   },
+
+  // Plan card
+  planCard: {
+    padding: spacing.md,
+    gap: spacing.sm,
+    position: 'relative',
+  },
+  planBadge: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.md,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+  },
+  planBadgeText: {
+    fontFamily: fontFamily.bold,
+    fontSize: 10,
+    color: colors.green,
+  },
+  planTitle: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.lg,
+    color: colors.heading,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  planPrice: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize['3xl'],
+    color: colors.accent,
+  },
+  planPeriod: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.md,
+    color: colors.secondary,
+    marginLeft: 4,
+  },
+  trialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(52, 211, 153, 0.1)',
+    borderRadius: radius.full,
+  },
+  trialText: {
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.xs,
+    color: colors.green,
+  },
+  featureList: {
+    gap: spacing.sm,
+    marginVertical: spacing.xs,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  featureText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    color: colors.body,
+  },
+
+  // Features table
   featuresCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
@@ -257,15 +472,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  // CTA
-  ctaSection: {
+  // Actions
+  actionsSection: {
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
     marginTop: spacing.sm,
   },
-  trialNote: {
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.xs,
-    color: colors.muted,
+  restoreText: {
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.sm,
+    color: colors.secondary,
   },
 });
