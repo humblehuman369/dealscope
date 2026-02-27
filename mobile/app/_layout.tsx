@@ -11,6 +11,8 @@ import {
 } from '@expo-google-fonts/inter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { hydrateTokens } from '@/services/token-manager';
+import { useBiometricLock } from '@/hooks/useBiometricLock';
+import { BiometricLockScreen } from '@/components/auth/BiometricLockScreen';
 import { colors } from '@/constants/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -26,6 +28,27 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function AppContent() {
+  const { isLocked, unlock } = useBiometricLock();
+
+  if (isLocked) {
+    return <BiometricLockScreen onRetry={unlock} />;
+  }
+
+  return (
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.base },
+          animation: 'slide_from_right',
+        }}
+      />
+      <StatusBar style="light" />
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
@@ -57,14 +80,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.base },
-          animation: 'slide_from_right',
-        }}
-      />
-      <StatusBar style="light" />
+      <AppContent />
     </QueryClientProvider>
   );
 }
