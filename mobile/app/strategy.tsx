@@ -23,6 +23,7 @@ import {
 } from '@/components/strategy/CollapsibleSection';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters';
+import { StrategySkeleton } from '@/components/ui/Skeleton';
 import type { PropertyResponse } from '@dealscope/shared';
 import type { StrategyId } from '@dealscope/shared';
 import {
@@ -110,12 +111,11 @@ export default function StrategyScreen() {
   const isLoading =
     propertyQuery.isLoading || (worksheetQuery.isLoading && !worksheetData);
 
-  // ── Loading ────────────────────────────────────────────
+  // ── Loading (skeleton) ─────────────────────────────────
   if (isLoading && !property) {
     return (
       <View style={[styles.center, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={styles.loadingText}>Loading strategy analysis...</Text>
+        <StrategySkeleton />
       </View>
     );
   }

@@ -23,6 +23,7 @@ import { DealGapBar } from '@/components/verdict/DealGapBar';
 import { StrategyGrid } from '@/components/verdict/StrategyGrid';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { formatCurrency, formatPercent, formatNumber } from '@/utils/formatters';
+import { VerdictSkeleton } from '@/components/ui/Skeleton';
 import type { PropertyResponse } from '@dealscope/shared';
 import {
   colors,
@@ -88,12 +89,11 @@ export default function VerdictScreen() {
     router.push(`/deal-maker/${encodeURIComponent(address ?? '')}`);
   }
 
-  // ── Loading state ──────────────────────────────────────
+  // ── Loading state (skeleton) ────────────────────────────
   if (isLoading && !property) {
     return (
       <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={styles.loadingText}>Loading analysis...</Text>
+        <VerdictSkeleton />
       </View>
     );
   }

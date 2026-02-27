@@ -4,11 +4,13 @@ import {
   Text,
   Pressable,
   FlatList,
+  RefreshControl,
   Alert,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -23,6 +25,7 @@ import {
   useSearchHistoryStats,
   useDeleteSearchHistoryEntry,
   useClearSearchHistory,
+  SEARCH_HISTORY_KEYS,
   type SearchHistoryItem,
 } from '@/hooks/useSearchHistory';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
@@ -45,6 +48,14 @@ export default function SearchHistoryScreen() {
   const { data: stats } = useSearchHistoryStats();
   const deleteMutation = useDeleteSearchHistoryEntry();
   const clearMutation = useClearSearchHistory();
+  const qc = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await qc.invalidateQueries({ queryKey: SEARCH_HISTORY_KEYS.all });
+    setRefreshing(false);
+  }
 
   function handleClearAll() {
     Alert.alert(
@@ -171,6 +182,14 @@ export default function SearchHistoryScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.accent}
+              colors={[colors.accent]}
+            />
+          }
           ListEmptyComponent={
             <View style={styles.empty}>
               <Ionicons name="time-outline" size={48} color={colors.muted} />
