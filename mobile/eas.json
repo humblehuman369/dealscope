@@ -1,0 +1,88 @@
+{
+  "cli": {
+    "version": ">= 14.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:8000",
+        "EXPO_PUBLIC_POSTHOG_API_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "",
+        "EXPO_PUBLIC_SENTRY_DSN": "",
+        "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": ""
+      }
+    },
+    "development-device": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:8000"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com"
+      }
+    },
+    "beta": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com",
+        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "",
+        "EXPO_PUBLIC_SENTRY_DSN": "",
+        "EXPO_PUBLIC_POSTHOG_API_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": ""
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.dealgapiq.com",
+        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "",
+        "EXPO_PUBLIC_SENTRY_DSN": "",
+        "EXPO_PUBLIC_POSTHOG_API_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": ""
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "",
+        "ascAppId": "",
+        "appleTeamId": ""
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-services.json",
+        "track": "internal"
+      }
+    }
+  }
+}
