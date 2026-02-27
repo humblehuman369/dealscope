@@ -3,14 +3,14 @@ Defaults router for public access to system defaults and market assumptions.
 """
 
 import logging
-from typing import Optional, Dict, Any
+from typing import Any
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from app.core.defaults import get_all_defaults
+from app.core.deps import DbSession, OptionalUser
 from app.services.assumptions_service import get_market_adjustments
-from app.core.deps import OptionalUser, DbSession
 from app.services.user_service import user_service
 
 logger = logging.getLogger(__name__)
@@ -22,17 +22,19 @@ router = APIRouter(prefix="/api/v1/defaults", tags=["Defaults"])
 # Response Schemas
 # ===========================================
 
+
 class ResolvedDefaultsResponse(BaseModel):
     """Fully resolved defaults including market adjustments and user preferences."""
-    system_defaults: Dict[str, Any]
-    market_adjustments: Optional[Dict[str, Any]] = None
-    user_overrides: Optional[Dict[str, Any]] = None
-    resolved: Dict[str, Any]
-    zip_code: Optional[str] = None
-    region: Optional[str] = None
+
+    system_defaults: dict[str, Any]
+    market_adjustments: dict[str, Any] | None = None
+    user_overrides: dict[str, Any] | None = None
+    resolved: dict[str, Any]
+    zip_code: str | None = None
+    region: str | None = None
 
 
-def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     """Deep merge two dictionaries."""
     result = {**base}
     for key, value in override.items():
@@ -47,18 +49,15 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
 # Public Endpoints
 # ===========================================
 
-@router.get(
-    "",
-    response_model=Dict[str, Any],
-    summary="Get system defaults"
-)
+
+@router.get("", response_model=dict[str, Any], summary="Get system defaults")
 async def get_system_defaults():
     """
     Get the system default assumptions.
-    
+
     These are the base default values used across all calculations.
     No authentication required.
-    
+
     Returns defaults for:
     - **financing**: Down payment, interest rate, loan terms
     - **operating**: Vacancy, management, maintenance, insurance
@@ -73,26 +72,22 @@ async def get_system_defaults():
     return get_all_defaults()
 
 
-@router.get(
-    "/resolved",
-    response_model=ResolvedDefaultsResponse,
-    summary="Get resolved defaults for location"
-)
+@router.get("/resolved", response_model=ResolvedDefaultsResponse, summary="Get resolved defaults for location")
 async def get_resolved_defaults(
-    zip_code: Optional[str] = Query(None, description="ZIP code for market adjustments"),
+    zip_code: str | None = Query(None, description="ZIP code for market adjustments"),
     current_user: OptionalUser = None,
-    db: DbSession = None
+    db: DbSession = None,
 ):
     """
     Get fully resolved defaults for a specific location.
-    
+
     Resolution order (later overrides earlier):
     1. **System defaults** - Base values from the platform
     2. **Market adjustments** - ZIP-code based adjustments (insurance, vacancy, appreciation)
     3. **User profile overrides** - User's saved preferences (if authenticated)
-    
+
     Returns the merged defaults ready for use in calculations.
-    
+
     **Example response:**
     ```json
     {
@@ -114,7 +109,7 @@ async def get_resolved_defaults(
     # Start with system defaults
     system_defaults = get_all_defaults()
     resolved = {**system_defaults}
-    
+
     # Apply market adjustments if ZIP code provided
     market_adjustments = None
     region = None
@@ -127,14 +122,14 @@ async def get_resolved_defaults(
                 resolved["operating"] = {}
             if "growth" not in resolved:
                 resolved["growth"] = {}
-            
+
             if "insurance_rate" in market_adjustments:
                 resolved["operating"]["insurance_pct"] = market_adjustments["insurance_rate"]
             if "vacancy_rate" in market_adjustments:
                 resolved["operating"]["vacancy_rate"] = market_adjustments["vacancy_rate"]
             if "appreciation_rate" in market_adjustments:
                 resolved["growth"]["appreciation_rate"] = market_adjustments["appreciation_rate"]
-    
+
     # Apply user overrides if authenticated
     user_overrides = None
     if current_user and db:
@@ -146,33 +141,29 @@ async def get_resolved_defaults(
                 resolved = _deep_merge(resolved, user_overrides)
         except Exception as e:
             logger.warning(f"Failed to load user assumptions: {e}")
-    
+
     return ResolvedDefaultsResponse(
         system_defaults=system_defaults,
         market_adjustments=market_adjustments,
         user_overrides=user_overrides,
         resolved=resolved,
         zip_code=zip_code,
-        region=region
+        region=region,
     )
 
 
-@router.get(
-    "/market/{zip_code}",
-    response_model=Dict[str, Any],
-    summary="Get market-specific adjustments"
-)
+@router.get("/market/{zip_code}", response_model=dict[str, Any], summary="Get market-specific adjustments")
 async def get_market_defaults(zip_code: str):
     """
     Get market-specific adjustments for a ZIP code.
-    
+
     Returns location-based adjustments for:
     - **insurance_rate**: Insurance as % of property value
     - **property_tax_rate**: Effective property tax rate
     - **vacancy_rate**: Expected vacancy rate for the market
     - **rent_to_price_ratio**: Expected rent/price ratio
     - **appreciation_rate**: Expected annual appreciation
-    
+
     These values are based on regional market analysis and
     override system defaults for more accurate calculations.
     """

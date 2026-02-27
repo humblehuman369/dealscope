@@ -32,9 +32,9 @@ def start_scheduler() -> None:
     global _scheduler
 
     from app.tasks.cleanup import (
+        archive_old_audit_logs,
         cleanup_expired_sessions,
         cleanup_expired_tokens,
-        archive_old_audit_logs,
         encrypt_plaintext_mfa_secrets,
     )
 

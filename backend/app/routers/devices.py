@@ -3,7 +3,6 @@ Device token router — register / unregister push notification tokens.
 """
 
 import logging
-from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic import BaseModel, Field
@@ -20,34 +19,39 @@ router = APIRouter(prefix="/api/v1/devices", tags=["Devices"])
 
 # ── Schemas ──────────────────────────────────────────────────────────
 
+
 class DeviceRegisterRequest(BaseModel):
     """Request body for registering a push token."""
+
     token: str = Field(..., min_length=1, max_length=255, description="Expo push token")
     device_platform: DevicePlatform = Field(..., description="ios or android")
-    device_name: Optional[str] = Field(None, max_length=255, description="Human-readable device name")
+    device_name: str | None = Field(None, max_length=255, description="Human-readable device name")
 
 
 class DeviceRegisterResponse(BaseModel):
     """Response after successful registration."""
+
     id: str
     token: str
     device_platform: str
-    device_name: Optional[str]
+    device_name: str | None
     is_active: bool
 
 
 class DeviceListResponse(BaseModel):
     """A device in the list response."""
+
     id: str
     token: str
     device_platform: str
-    device_name: Optional[str]
+    device_name: str | None
     is_active: bool
-    last_used_at: Optional[str]
+    last_used_at: str | None
     created_at: str
 
 
 # ── Endpoints ────────────────────────────────────────────────────────
+
 
 @router.post(
     "/register",
@@ -130,7 +134,7 @@ async def unregister_device(
 
 @router.get(
     "",
-    response_model=List[DeviceListResponse],
+    response_model=list[DeviceListResponse],
     summary="List registered devices",
 )
 async def list_devices(

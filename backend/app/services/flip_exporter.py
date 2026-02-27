@@ -4,44 +4,45 @@ Fix & Flip Deal Proforma — Excel Exporter  (v1.0)
 Generates a professional, single-transaction financial proforma tailored
 for fix-and-flip real-estate deals.  Focuses on:
 
-  1. Deal Summary        – property + strategy overview + key numbers
-  2. Acquisition         – 70% Rule, hard money financing, cash needed
-  3. Renovation & Holding– rehab budget, holding costs by month
-  4. Sale & Profit       – ARV, selling costs, gross/net profit, tax
-  5. Deal Metrics        – ROI, annualized ROI, breakeven, 70% rule
-  6. Assumptions         – all inputs + data sources
+  1. Deal Summary        - property + strategy overview + key numbers
+  2. Acquisition         - 70% Rule, hard money financing, cash needed
+  3. Renovation & Holding- rehab budget, holding costs by month
+  4. Sale & Profit       - ARV, selling costs, gross/net profit, tax
+  5. Deal Metrics        - ROI, annualized ROI, breakeven, 70% rule
+  6. Assumptions         - all inputs + data sources
 """
 
-from io import BytesIO
 from datetime import datetime
-from typing import Any, Dict, Optional
+from io import BytesIO
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Alignment, Border, Font, PatternFill, Side,
+    Alignment,
+    Font,
+    PatternFill,
 )
 from openpyxl.utils import get_column_letter
 
 from app.schemas.proforma import FinancialProforma
 
-
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"
+_BRAND = "0A84FF"
 _HEADER_BG = "1F4E79"
-_GREEN     = "22C55E"
-_RED       = "EF4444"
-_WHITE     = "FFFFFF"
+_GREEN = "22C55E"
+_RED = "EF4444"
+_WHITE = "FFFFFF"
 
-_HDR_FILL  = PatternFill("solid", fgColor=_HEADER_BG)
-_HDR_FONT  = Font(bold=True, color=_WHITE, size=11, name="Calibri")
-_SUB_FILL  = PatternFill("solid", fgColor="D6DCE4")
-_SUB_FONT  = Font(bold=True, size=10, name="Calibri")
+_HDR_FILL = PatternFill("solid", fgColor=_HEADER_BG)
+_HDR_FONT = Font(bold=True, color=_WHITE, size=11, name="Calibri")
+_SUB_FILL = PatternFill("solid", fgColor="D6DCE4")
+_SUB_FONT = Font(bold=True, size=10, name="Calibri")
 _TOTAL_FNT = Font(bold=True, size=10, name="Calibri")
 _BODY_FONT = Font(size=10, name="Calibri")
 _GOOD_FILL = PatternFill("solid", fgColor="E2EFDA")
 _WARN_FILL = PatternFill("solid", fgColor="FFF2CC")
-_BAD_FILL  = PatternFill("solid", fgColor="FCE4EC")
+_BAD_FILL = PatternFill("solid", fgColor="FCE4EC")
 
 _CUR = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
 _PCT = "0.00%"
@@ -55,7 +56,7 @@ class FlipExcelExporter:
     def __init__(self, proforma: FinancialProforma):
         self.d = proforma
         self.wb = Workbook()
-        self.bd: Dict[str, Any] = proforma.strategy_breakdown or {}
+        self.bd: dict[str, Any] = proforma.strategy_breakdown or {}
 
     # ── public ────────────────────────────────────────────────────────────
 
@@ -138,8 +139,8 @@ class FlipExcelExporter:
         r = self._section_header(ws, r, "70% RULE — MAXIMUM ALLOWABLE OFFER")
         rows = [
             ("After-Repair Value (ARV)", arv, _CUR),
-            ("× 70%", arv * 0.70, _CUR),
-            ("− Renovation Budget", renovation_budget, _CUR),
+            ("x 70%", arv * 0.70, _CUR),
+            ("- Renovation Budget", renovation_budget, _CUR),
         ]
         for label, val, fmt in rows:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -267,8 +268,8 @@ class FlipExcelExporter:
         r = self._section_header(ws, r, "SALE PROCEEDS")
         rows = [
             ("After-Repair Value (Sale Price)", arv, _CUR),
-            ("− Realtor Commission (6%)", commission, _CUR),
-            ("− Seller Closing Costs (2%)", seller_closing, _CUR),
+            ("- Realtor Commission (6%)", commission, _CUR),
+            ("- Seller Closing Costs (2%)", seller_closing, _CUR),
             ("= Total Selling Costs", total_sell, _CUR),
         ]
         for label, val, fmt in rows:
@@ -284,14 +285,14 @@ class FlipExcelExporter:
         total_project = self.bd.get("total_project_cost", 0)
         gross = self.bd.get("gross_profit", 0)
         hm_loan = self.bd.get("hard_money_loan", 0)
-        total_cash = self.bd.get("total_cash_required", 0)
+        self.bd.get("total_cash_required", 0)
         net_before = self.bd.get("net_profit_before_tax", 0)
         cap_gains = self.bd.get("capital_gains_tax", 0)
         net_after = self.bd.get("net_profit_after_tax", 0)
 
         rows2 = [
             ("Total Project Cost", total_project, _CUR),
-            ("Gross Profit (ARV − Project Cost)", gross, _CUR),
+            ("Gross Profit (ARV - Project Cost)", gross, _CUR),
             ("Hard Money Loan Payoff", hm_loan, _CUR),
         ]
         for label, val, fmt in rows2:
@@ -407,8 +408,14 @@ class FlipExcelExporter:
         return row + 1
 
     def _label_value(
-        self, ws, row: int, label: str, value: Any,
-        *, fmt: str | None = None, highlight: bool = False,
+        self,
+        ws,
+        row: int,
+        label: str,
+        value: Any,
+        *,
+        fmt: str | None = None,
+        highlight: bool = False,
     ) -> int:
         lc = ws.cell(row, 1, label)
         lc.font = _BODY_FONT

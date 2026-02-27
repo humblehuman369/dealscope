@@ -87,6 +87,7 @@ describe('API Client', () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 400,
+        text: async () => JSON.stringify({ detail: 'Bad request data' }),
         json: async () => ({ detail: 'Bad request data' }),
       })
 
@@ -104,12 +105,12 @@ describe('API Client', () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        json: async () => { throw new Error('not json') },
+        text: async () => 'not json body',
       })
 
       const { apiRequest } = await import('@/lib/api-client')
 
-      await expect(apiRequest('/api/v1/test')).rejects.toThrow('Unknown error')
+      await expect(apiRequest('/api/v1/test')).rejects.toThrow('Server error')
     })
   })
 
@@ -203,6 +204,7 @@ describe('API Client', () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 401,
+        text: async () => JSON.stringify({ detail: 'Unauthorized' }),
         json: async () => ({ detail: 'Unauthorized' }),
       })
       // Refresh call succeeds
@@ -230,12 +232,14 @@ describe('API Client', () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 401,
+        text: async () => JSON.stringify({ detail: 'Unauthorized' }),
         json: async () => ({ detail: 'Unauthorized' }),
       })
       // Refresh fails
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 401,
+        text: async () => JSON.stringify({ detail: 'Unauthorized' }),
       })
 
       const { apiRequest } = await import('@/lib/api-client')
@@ -247,6 +251,7 @@ describe('API Client', () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 401,
+        text: async () => JSON.stringify({ detail: 'Unauthorized' }),
         json: async () => ({ detail: 'Unauthorized' }),
       })
 

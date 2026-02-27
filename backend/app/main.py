@@ -2,18 +2,21 @@
 DealGapIQ - Real Estate Investment Analytics API
 Main FastAPI application entry point.
 """
+
 # Bare print BEFORE any imports — visible even if imports crash
-import sys, os, traceback as _tb  # noqa: E401
+import os
+import sys
+import traceback as _tb
+
 print(">>> MAIN.PY LOADING — Python", sys.version_info[:2], "PORT", os.environ.get("PORT"), flush=True)
 
 try:
+    import logging
     from contextlib import asynccontextmanager
+
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import JSONResponse
-    from typing import Optional, List
-    from datetime import datetime, timezone
-    import logging
 except Exception as _e:
     print(f">>> FATAL IMPORT ERROR: {_e}", flush=True)
     _tb.print_exc()
@@ -45,7 +48,8 @@ except ImportError:
     )
 
 # Attach correlation-ID filter to root logger so every module gets it
-from app.core.middleware import RequestIDLogFilter  # noqa: E402
+from app.core.middleware import RequestIDLogFilter
+
 logging.root.addFilter(RequestIDLogFilter())
 
 logger = logging.getLogger(__name__)
@@ -59,7 +63,7 @@ logger.info("=" * 50)
 
 try:
     from app.core.config import settings
-    from app.core.deps import DbSession
+
     logger.info("Config loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load config: {e}")
@@ -73,7 +77,7 @@ if settings.SENTRY_DSN:
         import sentry_sdk
         from sentry_sdk.integrations.fastapi import FastApiIntegration
         from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-        
+
         sentry_sdk.init(
             dsn=settings.SENTRY_DSN,
             environment=settings.ENVIRONMENT,
@@ -96,6 +100,7 @@ else:
 # Import database session for cleanup
 try:
     from app.db.session import close_db
+
     logger.info("Database session module loaded")
 except Exception as e:
     logger.warning(f"Database session not available (OK for initial setup): {e}")
@@ -112,7 +117,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
     logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")
-    
+
     # Log DATABASE_URL format (masked for security) to debug Railway connection
     if settings.DATABASE_URL:
         db_url = settings.DATABASE_URL
@@ -121,34 +126,40 @@ async def lifespan(app: FastAPI):
             logger.info(f"Database host: {host_part}")
             logger.info(f"Is Railway URL: {'railway' in db_url.lower()}")
             logger.info(f"Is production: {settings.is_production}")
-    
+
     # Create database tables if they don't exist.
     # Wrapped in asyncio.wait_for so a slow/unreachable DB doesn't block
     # the entire lifespan — uvicorn can't accept connections until yield.
     import asyncio
+
     if settings.DATABASE_URL:
         try:
+
             async def _init_db():
                 from app.db.base import Base
                 from app.db.session import get_engine
+
                 engine = get_engine()
                 async with engine.begin() as conn:
                     import app.models  # noqa: F401 — register ALL models
+
                     await conn.run_sync(Base.metadata.create_all)
                 logger.info("Database tables created/verified successfully")
+
             await asyncio.wait_for(_init_db(), timeout=15)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.error("Database table init timed out after 15s — continuing without DB verification")
         except Exception as e:
             logger.error(f"Failed to create database tables: {e}")
-    
+
     # Run cleanup tasks (expired sessions, tokens, old audit logs) once at startup.
     # In production, wire these into a cron schedule (e.g. Railway cron, APScheduler).
     try:
         from app.tasks.cleanup import run_all_cleanup
+
         cleanup_result = await asyncio.wait_for(run_all_cleanup(), timeout=15)
         logger.info(f"Startup cleanup completed: {cleanup_result}")
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.warning("Startup cleanup timed out after 15s (non-fatal)")
     except Exception as e:
         logger.warning(f"Startup cleanup failed (non-fatal): {e}")
@@ -156,6 +167,7 @@ async def lifespan(app: FastAPI):
     # Check WeasyPrint availability for PDF exports
     try:
         from app.services.property_report_pdf import _ensure_weasyprint
+
         _ensure_weasyprint()
         logger.info("WeasyPrint: AVAILABLE — PDF report generation enabled")
     except Exception as exc:
@@ -164,6 +176,7 @@ async def lifespan(app: FastAPI):
     # Start periodic cleanup scheduler (APScheduler)
     try:
         from app.tasks.scheduler import start_scheduler
+
         start_scheduler()
     except Exception as e:
         logger.warning(f"Scheduler failed to start (non-fatal): {e}")
@@ -171,6 +184,7 @@ async def lifespan(app: FastAPI):
     # Flush stale property caches on deploy so updated extraction logic takes effect
     try:
         from app.services.cache_service import get_cache_service
+
         cache = get_cache_service()
         if cache.use_redis and cache.redis_client:
             keys = []
@@ -191,11 +205,12 @@ async def lifespan(app: FastAPI):
     logger.info("Lifespan startup complete - yielding to app")
 
     yield  # Application runs here
-    
+
     # Shutdown
     logger.info("Shutting down DealGapIQ API...")
     try:
         from app.tasks.scheduler import stop_scheduler
+
         stop_scheduler()
     except Exception:
         pass
@@ -209,7 +224,7 @@ app = FastAPI(
     title="DealGapIQ API",
     description="""
     Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies.
-    
+
     ## Features
     - **Property Search**: Fetch property data from RentCast & AXESSO APIs
     - **6 Strategy Analysis**: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
@@ -217,14 +232,14 @@ app = FastAPI(
     - **Saved Properties**: Save and track properties with custom adjustments
     - **Document Storage**: Upload documents for each property
     - **Sharing**: Generate shareable links for property analysis
-    
+
     ## Authentication
     Protected endpoints require a Bearer token. Get a token via `/api/v1/auth/login`.
     """,
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -258,13 +273,14 @@ except Exception as e:
 # Security and performance middleware
 try:
     from app.core.middleware import (
-        RateLimitMiddleware,
-        SecurityHeadersMiddleware,
-        RequestTimingMiddleware,
-        CSRFMiddleware,
-        RequestIDMiddleware,
         AuditLoggingMiddleware,
+        CSRFMiddleware,
+        RateLimitMiddleware,
+        RequestIDMiddleware,
+        RequestTimingMiddleware,
+        SecurityHeadersMiddleware,
     )
+
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(CSRFMiddleware)
     app.add_middleware(AuditLoggingMiddleware)
@@ -275,7 +291,9 @@ try:
         default_limit=settings.RATE_LIMIT_REQUESTS,
         default_period=settings.RATE_LIMIT_PERIOD,
     )
-    logger.info("Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID, audit logging")
+    logger.info(
+        "Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID, audit logging"
+    )
 except Exception as e:
     logger.warning(f"Could not load security middleware: {e}")
 
@@ -284,25 +302,26 @@ except Exception as e:
 # GLOBAL EXCEPTION HANDLERS
 # ============================================
 
-from app.core.exceptions import (
-    DealGapIQError,
-    NotFoundError,
-    ValidationError,
-    AuthenticationError,
-    AuthorizationError,
-    ExternalAPIError,
-    RateLimitError,
-    SubscriptionError,
-)
 from fastapi import Request
 from fastapi import status as http_status
+
+from app.core.exceptions import (
+    AuthenticationError,
+    AuthorizationError,
+    DealGapIQError,
+    ExternalAPIError,
+    NotFoundError,
+    RateLimitError,
+    SubscriptionError,
+    ValidationError,
+)
 
 
 @app.exception_handler(DealGapIQError)
 async def dealgapiq_error_handler(request: Request, exc: DealGapIQError):
     """Handle all DealGapIQ custom exceptions with canonical error shape."""
     status_code = http_status.HTTP_500_INTERNAL_SERVER_ERROR
-    
+
     if isinstance(exc, NotFoundError):
         status_code = http_status.HTTP_404_NOT_FOUND
     elif isinstance(exc, ValidationError):
@@ -317,7 +336,7 @@ async def dealgapiq_error_handler(request: Request, exc: DealGapIQError):
         status_code = http_status.HTTP_503_SERVICE_UNAVAILABLE
     elif isinstance(exc, SubscriptionError):
         status_code = http_status.HTTP_402_PAYMENT_REQUIRED
-    
+
     return JSONResponse(
         status_code=status_code,
         content={
@@ -372,9 +391,9 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def generic_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions with consistent format."""
     logger.exception(f"Unhandled exception: {exc}")
-    
+
     detail = str(exc) if settings.DEBUG else "An unexpected error occurred"
-    
+
     return JSONResponse(
         status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -412,10 +431,12 @@ except Exception:
     _has_health = False
 
 if not _has_health:
+
     @app.get("/health")
     async def health_fallback():
         """Minimal fallback healthcheck (health router failed to load)."""
         return {"status": "healthy", "fallback": True}
+
     logger.warning("Health router did not load — registered fallback /health endpoint")
 
 
@@ -427,9 +448,14 @@ async def root():
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "strategies": ["Long-Term Rental", "Short-Term Rental", "BRRRR", "Fix & Flip", "House Hacking", "Wholesale"],
-        "endpoints": {"auth": "/api/v1/auth", "users": "/api/v1/users", "properties": "/api/v1/properties", "analytics": "/api/v1/analytics", "loi": "/api/v1/loi"},
+        "endpoints": {
+            "auth": "/api/v1/auth",
+            "users": "/api/v1/users",
+            "properties": "/api/v1/properties",
+            "analytics": "/api/v1/analytics",
+            "loi": "/api/v1/loi",
+        },
     }
-
 
 
 # ============================================
@@ -438,5 +464,6 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)

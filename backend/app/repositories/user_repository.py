@@ -1,5 +1,5 @@
 """
-User repository – all database operations for User and UserProfile.
+User repository - all database operations for User and UserProfile.
 
 Every public method accepts an ``AsyncSession`` so the caller controls
 transaction boundaries (typically the service layer wraps the call in
@@ -9,10 +9,9 @@ transaction boundaries (typically the service layer wraps the call in
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -33,12 +32,13 @@ class UserRepository:
         *,
         load_profile: bool = False,
         load_roles: bool = False,
-    ) -> Optional[User]:
+    ) -> User | None:
         stmt = select(User).where(User.id == user_id)
         if load_profile:
             stmt = stmt.options(selectinload(User.profile))
         if load_roles:
-            from app.models.role import UserRole, Role, RolePermission, Permission
+            from app.models.role import Role, RolePermission, UserRole
+
             stmt = stmt.options(
                 selectinload(User.user_roles)
                 .selectinload(UserRole.role)
@@ -55,12 +55,13 @@ class UserRepository:
         *,
         load_profile: bool = False,
         load_roles: bool = False,
-    ) -> Optional[User]:
+    ) -> User | None:
         stmt = select(User).where(User.email == email)
         if load_profile:
             stmt = stmt.options(selectinload(User.profile))
         if load_roles:
-            from app.models.role import UserRole, Role, RolePermission, Permission
+            from app.models.role import Role, RolePermission, UserRole
+
             stmt = stmt.options(
                 selectinload(User.user_roles)
                 .selectinload(UserRole.role)
@@ -77,14 +78,15 @@ class UserRepository:
         oauth_id: str,
         *,
         load_roles: bool = False,
-    ) -> Optional[User]:
+    ) -> User | None:
         """Find user by OAuth provider and provider user id."""
         stmt = select(User).where(
             User.oauth_provider == provider,
             User.oauth_id == oauth_id,
         )
         if load_roles:
-            from app.models.role import UserRole, Role, RolePermission, Permission
+            from app.models.role import Role, RolePermission, UserRole
+
             stmt = stmt.options(
                 selectinload(User.user_roles)
                 .selectinload(UserRole.role)
@@ -110,10 +112,8 @@ class UserRepository:
         user_id: uuid.UUID,
         **kwargs,
     ) -> None:
-        kwargs["updated_at"] = datetime.now(timezone.utc)
-        await db.execute(
-            update(User).where(User.id == user_id).values(**kwargs)
-        )
+        kwargs["updated_at"] = datetime.now(UTC)
+        await db.execute(update(User).where(User.id == user_id).values(**kwargs))
 
     async def update_oauth(
         self,
@@ -122,13 +122,13 @@ class UserRepository:
         *,
         oauth_provider: str,
         oauth_id: str,
-        avatar_url: Optional[str] = None,
+        avatar_url: str | None = None,
     ) -> None:
         """Link OAuth provider to existing user; optionally set avatar_url."""
         values = {
             "oauth_provider": oauth_provider,
             "oauth_id": oauth_id,
-            "updated_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(UTC),
         }
         if avatar_url is not None:
             values["avatar_url"] = avatar_url
@@ -148,14 +148,13 @@ class UserRepository:
         concurrent requests could both read the same count and write
         the same incremented value, potentially bypassing lockout.
         """
-        from sqlalchemy import text
 
         result = await db.execute(
             update(User)
             .where(User.id == user_id)
             .values(
                 failed_login_attempts=User.failed_login_attempts + 1,
-                updated_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(UTC),
             )
             .returning(User.failed_login_attempts)
         )
@@ -177,10 +176,8 @@ class UserRepository:
     # Profile
     # ------------------------------------------------------------------
 
-    async def get_profile(self, db: AsyncSession, user_id: uuid.UUID) -> Optional[UserProfile]:
-        result = await db.execute(
-            select(UserProfile).where(UserProfile.user_id == user_id)
-        )
+    async def get_profile(self, db: AsyncSession, user_id: uuid.UUID) -> UserProfile | None:
+        result = await db.execute(select(UserProfile).where(UserProfile.user_id == user_id))
         return result.scalar_one_or_none()
 
     async def create_profile(self, db: AsyncSession, user_id: uuid.UUID, **kwargs) -> UserProfile:
@@ -190,10 +187,8 @@ class UserRepository:
         return profile
 
     async def update_profile(self, db: AsyncSession, user_id: uuid.UUID, **kwargs) -> None:
-        kwargs["updated_at"] = datetime.now(timezone.utc)
-        await db.execute(
-            update(UserProfile).where(UserProfile.user_id == user_id).values(**kwargs)
-        )
+        kwargs["updated_at"] = datetime.now(UTC)
+        await db.execute(update(UserProfile).where(UserProfile.user_id == user_id).values(**kwargs))
 
     async def get_or_create_profile(self, db: AsyncSession, user_id: uuid.UUID) -> UserProfile:
         profile = await self.get_profile(db, user_id)

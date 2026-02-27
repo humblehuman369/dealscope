@@ -11,8 +11,6 @@ All charts are theme-aware and accept a color palette dict.
 """
 
 import math
-from typing import List, Tuple, Dict, Optional
-
 
 # ---------------------------------------------------------------------------
 # Theme color palettes
@@ -73,7 +71,7 @@ DARK_PALETTE = {
 }
 
 
-def get_palette(theme: str = "light") -> Dict[str, any]:
+def get_palette(theme: str = "light") -> dict[str, any]:
     return DARK_PALETTE if theme == "dark" else LIGHT_PALETTE
 
 
@@ -81,14 +79,15 @@ def get_palette(theme: str = "light") -> Dict[str, any]:
 # Donut Chart
 # ---------------------------------------------------------------------------
 
-def _polar_to_cart(cx: float, cy: float, r: float, angle_deg: float) -> Tuple[float, float]:
+
+def _polar_to_cart(cx: float, cy: float, r: float, angle_deg: float) -> tuple[float, float]:
     """Convert polar coordinates to cartesian."""
     rad = math.radians(angle_deg - 90)  # SVG starts at top (12 o'clock)
     return cx + r * math.cos(rad), cy + r * math.sin(rad)
 
 
 def generate_donut_chart(
-    segments: List[Tuple[str, float]],
+    segments: list[tuple[str, float]],
     theme: str = "light",
     width: int = 220,
     height: int = 220,
@@ -124,7 +123,7 @@ def generate_donut_chart(
     paths = []
     current_angle = 0
 
-    for i, (label, value) in enumerate(segments):
+    for i, (_label, value) in enumerate(segments):
         if value <= 0:
             continue
         pct = value / total
@@ -156,7 +155,7 @@ def generate_donut_chart(
         center_text += (
             f'<text x="{cx}" y="{cy - 6}" text-anchor="middle" '
             f'font-size="10" font-weight="600" fill="{palette["text_tertiary"]}">'
-            f'{inner_label}</text>'
+            f"{inner_label}</text>"
         )
         center_text += (
             f'<text x="{cx}" y="{cy + 14}" text-anchor="middle" '
@@ -167,15 +166,15 @@ def generate_donut_chart(
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" style="display:block;">'
-        f'{"".join(paths)}'
-        f'{center_text}'
-        f'</svg>'
+        f"{''.join(paths)}"
+        f"{center_text}"
+        f"</svg>"
     )
     return svg
 
 
 def generate_donut_legend(
-    segments: List[Tuple[str, float, str]],
+    segments: list[tuple[str, float, str]],
     theme: str = "light",
 ) -> str:
     """
@@ -206,8 +205,8 @@ def generate_donut_legend(
             f'<span style="font-size:11px;font-weight:600;color:{palette["text_primary"]};'
             f'font-variant-numeric:tabular-nums;min-width:70px;text-align:right;">{formatted}</span>'
             f'<span style="font-size:10px;color:{palette["text_tertiary"]};min-width:40px;text-align:right;">'
-            f'{pct:.1f}%</span>'
-            f'</div>'
+            f"{pct:.1f}%</span>"
+            f"</div>"
         )
     return "".join(rows)
 
@@ -216,10 +215,11 @@ def generate_donut_legend(
 # Dual-Area Chart (Projections)
 # ---------------------------------------------------------------------------
 
+
 def generate_area_chart(
-    labels: List[str],
-    series1: List[float],
-    series2: List[float],
+    labels: list[str],
+    series1: list[float],
+    series2: list[float],
     series1_name: str = "Property Value",
     series2_name: str = "Equity Position",
     theme: str = "light",
@@ -287,7 +287,7 @@ def generate_area_chart(
         grid_lines.append(
             f'<text x="{margin_left - 8}" y="{y:.1f}" text-anchor="end" '
             f'dominant-baseline="central" font-size="9" fill="{palette["text_tertiary"]}">'
-            f'{label}</text>'
+            f"{label}</text>"
         )
 
     # X-axis labels
@@ -300,7 +300,7 @@ def generate_area_chart(
         )
 
     # Build area paths
-    def build_area(series: List[float], fill_color: str, stroke_color: str) -> str:
+    def build_area(series: list[float], fill_color: str, stroke_color: str) -> str:
         if not series:
             return ""
         points = [(x_pos(i), y_pos(v)) for i, v in enumerate(series)]
@@ -339,13 +339,13 @@ def generate_area_chart(
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" style="display:block;">'
-        f'{"".join(grid_lines)}'
-        f'{build_area(series2, palette["area_secondary_fill"], palette["area_secondary"])}'
-        f'{build_area(series1, palette["area_primary_fill"], palette["area_primary"])}'
-        f'{dots2}{dots1}'
-        f'{"".join(x_labels)}'
-        f'{legend}'
-        f'</svg>'
+        f"{''.join(grid_lines)}"
+        f"{build_area(series2, palette['area_secondary_fill'], palette['area_secondary'])}"
+        f"{build_area(series1, palette['area_primary_fill'], palette['area_primary'])}"
+        f"{dots2}{dots1}"
+        f"{''.join(x_labels)}"
+        f"{legend}"
+        f"</svg>"
     )
     return svg
 
@@ -354,6 +354,7 @@ def generate_area_chart(
 # Horizontal Gauge Bar
 # ---------------------------------------------------------------------------
 
+
 def generate_gauge_bar(
     value: float,
     max_value: float,
@@ -361,7 +362,7 @@ def generate_gauge_bar(
     theme: str = "light",
     width: int = 200,
     height: int = 18,
-    color_override: Optional[str] = None,
+    color_override: str | None = None,
 ) -> str:
     """
     Generate an SVG horizontal gauge bar with a benchmark marker.
@@ -413,7 +414,7 @@ def generate_gauge_bar(
         # Benchmark marker
         f'<line x1="{bench_x:.1f}" y1="{bar_y - 2}" x2="{bench_x:.1f}" y2="{bar_y + bar_h + 2}" '
         f'stroke="{palette["text_tertiary"]}" stroke-width="1.5" stroke-dasharray="3,2" />'
-        f'</svg>'
+        f"</svg>"
     )
     return svg
 
@@ -421,6 +422,7 @@ def generate_gauge_bar(
 # ---------------------------------------------------------------------------
 # Score Ring
 # ---------------------------------------------------------------------------
+
 
 def generate_score_ring(
     score: int,
@@ -485,16 +487,17 @@ def generate_score_ring(
         svg += (
             f'<text x="{cx}" y="{cy + 22}" text-anchor="middle" '
             f'font-size="11" font-weight="700" fill="{palette["text_tertiary"]}">'
-            f'{grade}</text>'
+            f"{grade}</text>"
         )
 
-    svg += '</svg>'
+    svg += "</svg>"
     return svg
 
 
 # ---------------------------------------------------------------------------
 # Stat Badge (small metric indicator)
 # ---------------------------------------------------------------------------
+
 
 def generate_stat_badge(
     label: str,
@@ -511,19 +514,20 @@ def generate_stat_badge(
     palette = get_palette(theme)
     return (
         f'<div style="text-align:center;padding:12px 16px;'
-        f'background:{palette["card_bg"]};border:1px solid {palette["border"]};'
+        f"background:{palette['card_bg']};border:1px solid {palette['border']};"
         f'border-radius:10px;flex:1;">'
         f'<div style="font-size:22px;font-weight:700;color:{color};'
         f'font-variant-numeric:tabular-nums;margin-bottom:4px;">{value}</div>'
         f'<div style="font-size:10px;font-weight:600;color:{palette["text_tertiary"]};'
         f'text-transform:uppercase;letter-spacing:0.06em;">{label}</div>'
-        f'</div>'
+        f"</div>"
     )
 
 
 # ---------------------------------------------------------------------------
 # Waterfall Step Item
 # ---------------------------------------------------------------------------
+
 
 def generate_step_item(
     number: int,
@@ -540,33 +544,38 @@ def generate_step_item(
         HTML string
     """
     palette = get_palette(theme)
-    connector = "" if is_last else (
-        f'<div style="position:absolute;left:15px;top:32px;bottom:-8px;'
-        f'width:2px;background:{palette["brand"]};opacity:0.3;"></div>'
+    connector = (
+        ""
+        if is_last
+        else (
+            f'<div style="position:absolute;left:15px;top:32px;bottom:-8px;'
+            f'width:2px;background:{palette["brand"]};opacity:0.3;"></div>'
+        )
     )
     return (
         f'<div style="display:flex;gap:16px;align-items:flex-start;'
         f'position:relative;padding-bottom:{"0" if is_last else "20px"};">'
-        f'{connector}'
+        f"{connector}"
         f'<div style="width:32px;height:32px;border-radius:50%;'
-        f'background:{palette["brand"]};color:white;font-size:14px;font-weight:700;'
-        f'display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+        f"background:{palette['brand']};color:white;font-size:14px;font-weight:700;"
+        f"display:flex;align-items:center;justify-content:center;flex-shrink:0;"
         f'position:relative;z-index:1;">{number}</div>'
         f'<div style="flex:1;padding-top:4px;">'
         f'<div style="display:flex;justify-content:space-between;align-items:baseline;">'
         f'<span style="font-size:13px;font-weight:600;color:{palette["text_primary"]};">{label}</span>'
         f'<span style="font-size:14px;font-weight:700;color:{palette["text_primary"]};'
         f'font-variant-numeric:tabular-nums;">{value}</span>'
-        f'</div>'
+        f"</div>"
         f'<p style="font-size:11px;color:{palette["text_tertiary"]};margin-top:2px;">{description}</p>'
-        f'</div>'
-        f'</div>'
+        f"</div>"
+        f"</div>"
     )
 
 
 # ---------------------------------------------------------------------------
 # Metric Card
 # ---------------------------------------------------------------------------
+
 
 def generate_metric_card(
     name: str,
@@ -585,15 +594,13 @@ def generate_metric_card(
 
     # Assessment badge colors
     badge_colors = {
-        "STRONG": (palette["positive"], f'{palette["positive"]}18'),
-        "GOOD": (palette["positive"], f'{palette["positive"]}18'),
-        "FAIR": (palette["warning"], f'{palette["warning"]}18'),
-        "BELOW": (palette["negative"], f'{palette["negative"]}18'),
-        "POOR": (palette["negative"], f'{palette["negative"]}18'),
+        "STRONG": (palette["positive"], f"{palette['positive']}18"),
+        "GOOD": (palette["positive"], f"{palette['positive']}18"),
+        "FAIR": (palette["warning"], f"{palette['warning']}18"),
+        "BELOW": (palette["negative"], f"{palette['negative']}18"),
+        "POOR": (palette["negative"], f"{palette['negative']}18"),
     }
-    badge_text, badge_bg = badge_colors.get(
-        assessment.upper(), (palette["text_tertiary"], palette["card_bg"])
-    )
+    badge_text, badge_bg = badge_colors.get(assessment.upper(), (palette["text_tertiary"], palette["card_bg"]))
 
     return (
         f'<div style="background:{palette["card_bg"]};border:1px solid {palette["border"]};'
@@ -603,9 +610,9 @@ def generate_metric_card(
         f'<div style="font-size:28px;font-weight:700;color:{palette["text_primary"]};'
         f'font-variant-numeric:tabular-nums;margin-bottom:8px;">{value}</div>'
         f'<span style="display:inline-block;padding:3px 10px;border-radius:100px;'
-        f'font-size:10px;font-weight:700;color:{badge_text};'
-        f'background:{badge_bg};text-transform:uppercase;letter-spacing:0.04em;'
+        f"font-size:10px;font-weight:700;color:{badge_text};"
+        f"background:{badge_bg};text-transform:uppercase;letter-spacing:0.04em;"
         f'margin-bottom:8px;">{assessment}</span>'
         f'<p style="font-size:10px;color:{palette["text_tertiary"]};line-height:1.4;">{description}</p>'
-        f'</div>'
+        f"</div>"
     )

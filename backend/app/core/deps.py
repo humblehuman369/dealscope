@@ -13,14 +13,13 @@ The new auth model:
 from __future__ import annotations
 
 import logging
-import uuid
-from typing import Annotated, Callable, Optional, Set
+from collections.abc import Callable
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.db.session import get_db
 from app.models.session import UserSession
 from app.models.user import User
@@ -41,7 +40,8 @@ oauth2_scheme = OAuth2PasswordBearer(
 # Token extraction
 # ------------------------------------------------------------------
 
-def _extract_token(request: Request, header_token: Optional[str] = None) -> Optional[str]:
+
+def _extract_token(request: Request, header_token: str | None = None) -> str | None:
     """Extract JWT from cookie (preferred) or Authorization header (mobile)."""
     cookie = request.cookies.get("access_token")
     if cookie:
@@ -53,10 +53,11 @@ def _extract_token(request: Request, header_token: Optional[str] = None) -> Opti
 # Session resolution
 # ------------------------------------------------------------------
 
+
 async def get_current_session(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    header_token: Optional[str] = Depends(oauth2_scheme),
+    header_token: str | None = Depends(oauth2_scheme),
 ) -> UserSession:
     """Resolve the current session from the JWT.
 
@@ -83,8 +84,8 @@ async def get_current_session(
 async def get_current_session_optional(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    header_token: Optional[str] = Depends(oauth2_scheme),
-) -> Optional[UserSession]:
+    header_token: str | None = Depends(oauth2_scheme),
+) -> UserSession | None:
     """Like ``get_current_session`` but returns None instead of raising."""
     token = _extract_token(request, header_token)
     if not token:
@@ -102,6 +103,7 @@ async def get_current_session_optional(
 # ------------------------------------------------------------------
 # User resolution
 # ------------------------------------------------------------------
+
 
 async def get_current_user(
     session: UserSession = Depends(get_current_session),
@@ -122,8 +124,8 @@ async def get_current_user(
 async def get_current_user_optional(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    header_token: Optional[str] = Depends(oauth2_scheme),
-) -> Optional[User]:
+    header_token: str | None = Depends(oauth2_scheme),
+) -> User | None:
     """Return the authenticated user or None (for public endpoints)."""
     token = _extract_token(request, header_token)
     if not token:
@@ -150,6 +152,7 @@ async def get_current_user_optional(
 # Authorization helpers
 # ------------------------------------------------------------------
 
+
 async def get_current_verified_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
@@ -171,9 +174,9 @@ async def get_current_superuser(
     Existing callers should migrate to explicit RBAC permissions.
     """
     import warnings
+
     warnings.warn(
-        "get_current_superuser is deprecated — use require_permission() with "
-        "an explicit RBAC codename instead.",
+        "get_current_superuser is deprecated — use require_permission() with an explicit RBAC codename instead.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -226,12 +229,14 @@ def require_permission(codename: str) -> Callable:
 # Subscription tier checks
 # ------------------------------------------------------------------
 
+
 async def get_current_pro_user(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """Require the user to have an active Pro subscription."""
     from app.services.billing_service import billing_service
+
     subscription = await billing_service.get_subscription(db, current_user.id)
     if subscription and subscription.is_premium() and subscription.is_active():
         return current_user
@@ -246,7 +251,7 @@ async def get_current_pro_user(
 # ------------------------------------------------------------------
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
-OptionalUser = Annotated[Optional[User], Depends(get_current_user_optional)]
+OptionalUser = Annotated[User | None, Depends(get_current_user_optional)]
 VerifiedUser = Annotated[User, Depends(get_current_verified_user)]
 SuperUser = Annotated[User, Depends(get_current_superuser)]
 CurrentSession = Annotated[UserSession, Depends(get_current_session)]

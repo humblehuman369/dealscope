@@ -1,10 +1,11 @@
 """
 Property data export service — Excel report with combined property data (RentCast + AXESSO) and Calculated sheets.
 """
+
 import json
 import logging
 from io import BytesIO
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -15,16 +16,20 @@ SOURCE_RENTCAST = "RentCast"
 SOURCE_AXESSO = "AXESSO"
 
 
-def _flatten_to_rows(obj: Any, prefix: str = "") -> List[Tuple[str, Any]]:
+def _flatten_to_rows(obj: Any, prefix: str = "") -> list[tuple[str, Any]]:
     """Convert nested dict/list to (key_path, value) rows. Keys are dot-separated."""
-    rows: List[Tuple[str, Any]] = []
+    rows: list[tuple[str, Any]] = []
     if obj is None:
         rows.append((prefix or "value", None))
         return rows
     if isinstance(obj, dict):
         for k, v in obj.items():
             key = f"{prefix}.{k}" if prefix else k
-            if isinstance(v, (dict, list)) and not (isinstance(v, dict) and v and all(isinstance(x, (str, int, float, bool, type(None))) for x in v.values())):
+            if isinstance(v, (dict, list)) and not (
+                isinstance(v, dict)
+                and v
+                and all(isinstance(x, (str, int, float, bool, type(None))) for x in v.values())
+            ):
                 rows.extend(_flatten_to_rows(v, key))
             else:
                 if isinstance(v, (dict, list)):
@@ -43,9 +48,9 @@ def _flatten_to_rows(obj: Any, prefix: str = "") -> List[Tuple[str, Any]]:
     return rows
 
 
-def _build_rentcast_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_RENTCAST) -> List[Tuple[str, Any]]:
+def _build_rentcast_rows(raw: dict[str, Any], key_prefix: str = SOURCE_RENTCAST) -> list[tuple[str, Any]]:
     """Build flat key/value rows for RentCast (skip internal keys). Keys prefixed with key_prefix when set."""
-    out: List[Tuple[str, Any]] = []
+    out: list[tuple[str, Any]] = []
     for k, v in raw.items():
         if k.startswith("_"):
             continue
@@ -54,9 +59,9 @@ def _build_rentcast_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_RENTCAST)
     return out
 
 
-def _build_axesso_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_AXESSO) -> List[Tuple[str, Any]]:
+def _build_axesso_rows(raw: dict[str, Any], key_prefix: str = SOURCE_AXESSO) -> list[tuple[str, Any]]:
     """Build flat key/value rows for AXESSO. Keys prefixed with key_prefix when set."""
-    out: List[Tuple[str, Any]] = []
+    out: list[tuple[str, Any]] = []
     for k, v in raw.items():
         base = f"{key_prefix}.{k}" if key_prefix else k
         if isinstance(v, (dict, list)):
@@ -66,7 +71,7 @@ def _build_axesso_rows(raw: Dict[str, Any], key_prefix: str = SOURCE_AXESSO) -> 
     return out
 
 
-def _write_key_value_sheet(ws: Any, rows: List[Tuple[str, Any]]) -> None:
+def _write_key_value_sheet(ws: Any, rows: list[tuple[str, Any]]) -> None:
     """Write a single sheet with Key, Value columns."""
     ws.append(["Key", "Value"])
     ws.cell(row=1, column=1).font = Font(bold=True)
@@ -77,7 +82,7 @@ def _write_key_value_sheet(ws: Any, rows: List[Tuple[str, Any]]) -> None:
     ws.column_dimensions["B"].width = 45
 
 
-def generate_rentcast_only_excel(export_data: Dict[str, Any]) -> bytes:
+def generate_rentcast_only_excel(export_data: dict[str, Any]) -> bytes:
     """
     Generate a single Excel workbook with RentCast data only (for auditing).
     One sheet: Key, Value with all RentCast API data (property, value_estimate, rent_estimate, market_statistics).
@@ -94,7 +99,7 @@ def generate_rentcast_only_excel(export_data: Dict[str, Any]) -> bytes:
     return buf.getvalue()
 
 
-def generate_axesso_only_excel(export_data: Dict[str, Any]) -> bytes:
+def generate_axesso_only_excel(export_data: dict[str, Any]) -> bytes:
     """
     Generate a single Excel workbook with AXESSO data only (for auditing).
     One sheet: Key, Value with all AXESSO/Zillow API data (search_by_address, property_details).
@@ -111,7 +116,7 @@ def generate_axesso_only_excel(export_data: Dict[str, Any]) -> bytes:
     return buf.getvalue()
 
 
-def generate_property_data_report_excel(export_data: Dict[str, Any]) -> bytes:
+def generate_property_data_report_excel(export_data: dict[str, Any]) -> bytes:
     """
     Generate one report file with two sheets: data received from RentCast and data received from AXESSO.
     Sheet 1 "RentCast" — all data we receive from RentCast for this property.
@@ -136,7 +141,9 @@ def generate_property_data_report_excel(export_data: Dict[str, Any]) -> bytes:
     return buf.getvalue()
 
 
-def _write_property_data_sheet(ws: Any, rentcast_rows: List[Tuple[str, Any]], axesso_rows: List[Tuple[str, Any]]) -> None:
+def _write_property_data_sheet(
+    ws: Any, rentcast_rows: list[tuple[str, Any]], axesso_rows: list[tuple[str, Any]]
+) -> None:
     """Write one sheet with all RentCast then all AXESSO data (Key, Value)."""
     ws.append(["Key", "Value"])
     ws.cell(row=1, column=1).font = Font(bold=True)
@@ -163,9 +170,9 @@ def _write_property_data_sheet(ws: Any, rentcast_rows: List[Tuple[str, Any]], ax
     ws.column_dimensions["B"].width = 45
 
 
-def _build_calculated_rows(verdict: Dict[str, Any], property_data: Dict[str, Any]) -> List[Tuple[str, str]]:
+def _build_calculated_rows(verdict: dict[str, Any], property_data: dict[str, Any]) -> list[tuple[str, str]]:
     """Build Calculated sheet: Verdict and Strategy metrics as Label, Value rows."""
-    rows: List[Tuple[str, str]] = []
+    rows: list[tuple[str, str]] = []
     v = verdict
 
     def fmt(x: Any) -> str:
@@ -183,7 +190,14 @@ def _build_calculated_rows(verdict: Dict[str, Any], property_data: Dict[str, Any
     rows.append(("Income Value", fmt(v.get("incomeValue") or v.get("income_value"))))
     rows.append(("Purchase Price (Target Buy)", fmt(v.get("purchasePrice") or v.get("purchase_price"))))
     rows.append(("Discount %", fmt(v.get("discountPercent") or v.get("discount_percent"))))
-    rows.append(("Deal Gap %", fmt(v.get("dealGapPercent") or v.get("deal_gap_percent") or v.get("opportunity_factors", {}).get("deal_gap"))))
+    rows.append(
+        (
+            "Deal Gap %",
+            fmt(
+                v.get("dealGapPercent") or v.get("deal_gap_percent") or v.get("opportunity_factors", {}).get("deal_gap")
+            ),
+        )
+    )
     rows.append(("Wholesale MAO", fmt(v.get("wholesaleMao") or v.get("wholesale_mao"))))
 
     # Opportunity factors
@@ -217,7 +231,7 @@ def _build_calculated_rows(verdict: Dict[str, Any], property_data: Dict[str, Any
     return rows
 
 
-def generate_property_data_excel(export_data: Dict[str, Any]) -> bytes:
+def generate_property_data_excel(export_data: dict[str, Any]) -> bytes:
     """
     Generate a 2-sheet Excel workbook from get_property_export_data() result.
 

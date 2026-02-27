@@ -10,19 +10,20 @@ Connection Pooling Strategy:
 - Railway/serverless: Use NullPool to avoid connection pool issues
 """
 
-from typing import AsyncGenerator, Optional
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
-from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import logging
 import os
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 # Lazy engine initialization
-_engine: Optional[AsyncEngine] = None
-_session_factory: Optional[async_sessionmaker] = None
+_engine: AsyncEngine | None = None
+_session_factory: async_sessionmaker | None = None
 
 
 def _is_serverless_environment() -> bool:
@@ -47,15 +48,17 @@ def get_engine() -> AsyncEngine:
     global _engine
     if _engine is None:
         logger.info("Creating database engine...")
-        
+
         db_url = settings.async_database_url
-        
+
         # Detect connection type
         # Private Railway network (railway.internal) does NOT use SSL
         # Public endpoints require SSL
         is_private_railway = "railway.internal" in (settings.DATABASE_URL or "")
-        is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (settings.DATABASE_URL or "")
-        
+        is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (
+            settings.DATABASE_URL or ""
+        )
+
         if is_private_railway:
             # Private Railway network - NO SSL needed
             logger.info("SSL mode: disabled (Railway private network)")
@@ -68,16 +71,16 @@ def get_engine() -> AsyncEngine:
         else:
             # Local development or other
             logger.info("SSL mode: disabled (local/other)")
-        
+
         # Log URL pattern for debugging (mask credentials)
         if "@" in db_url:
             url_start = db_url.split("://")[0]
             url_end = db_url.split("@")[-1]
             logger.info(f"Database URL: {url_start}://***@{url_end}")
-        
+
         # Determine pool strategy based on environment
         is_serverless = _is_serverless_environment()
-        
+
         if is_serverless:
             # Serverless: Use NullPool to avoid connection pool issues
             logger.info("Connection pooling: NullPool (serverless environment)")
@@ -103,7 +106,7 @@ def get_engine() -> AsyncEngine:
                 pool_timeout=settings.DB_POOL_TIMEOUT,
                 pool_recycle=1800,  # Recycle connections after 30 minutes
             )
-        
+
         logger.info("Database engine created successfully")
     return _engine
 

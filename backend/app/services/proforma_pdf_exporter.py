@@ -2,10 +2,10 @@
 Financial Proforma PDF Exporter
 Generates professional PDF reports using HTML/CSS templates
 """
-from typing import Optional
+
+import logging
 from datetime import datetime
 from io import BytesIO
-import logging
 
 from app.schemas.proforma import FinancialProforma
 
@@ -34,7 +34,8 @@ def _ensure_weasyprint():
 
     _weasyprint_checked = True
     try:
-        from weasyprint import HTML, CSS
+        from weasyprint import CSS, HTML
+
         _weasyprint_html = HTML
         _weasyprint_css = CSS
         WEASYPRINT_AVAILABLE = True
@@ -42,42 +43,39 @@ def _ensure_weasyprint():
         return HTML, CSS
     except Exception as exc:
         WEASYPRINT_AVAILABLE = False
-        logger.error(
-            "WeasyPrint import FAILED (ProformaPDFExporter) — "
-            f"Error: {type(exc).__name__}: {exc}"
-        )
+        logger.error(f"WeasyPrint import FAILED (ProformaPDFExporter) — Error: {type(exc).__name__}: {exc}")
         raise
 
 
 class ProformaPDFExporter:
     """Generate professional PDF proforma reports."""
-    
+
     # DealGapIQ brand colors
     BRAND_PRIMARY = "#0ea5e9"  # Sky blue
-    BRAND_DARK = "#1e3a5f"     # Navy
+    BRAND_DARK = "#1e3a5f"  # Navy
     HIGHLIGHT_GREEN = "#22c55e"
     HIGHLIGHT_RED = "#ef4444"
-    
+
     def __init__(self, proforma: FinancialProforma):
         self.data = proforma
-        
+
     def generate(self) -> BytesIO:
         """Generate PDF report."""
         HTML, CSS = _ensure_weasyprint()
-        
+
         html_content = self._generate_html()
         css_content = self._generate_css()
-        
+
         # Generate PDF
         html = HTML(string=html_content)
         css = CSS(string=css_content)
-        
+
         buffer = BytesIO()
         html.write_pdf(buffer, stylesheets=[css])
         buffer.seek(0)
-        
+
         return buffer
-    
+
     def _generate_html(self) -> str:
         """Generate HTML content for the PDF."""
         return f"""
@@ -101,7 +99,7 @@ class ProformaPDFExporter:
 </body>
 </html>
 """
-    
+
     def _header_section(self) -> str:
         """Generate header with logo and property info."""
         return f"""
@@ -114,12 +112,12 @@ class ProformaPDFExporter:
         <p class="subtitle">{self.data.property_address}</p>
     </div>
     <div class="header-meta">
-        <p>Generated: {datetime.now().strftime('%B %d, %Y')}</p>
+        <p>Generated: {datetime.now().strftime("%B %d, %Y")}</p>
         <p>Strategy: {self.data.strategy_type.upper()}</p>
     </div>
 </div>
 """
-    
+
     def _property_summary_section(self) -> str:
         """Generate property summary section."""
         prop = self.data.property
@@ -144,7 +142,7 @@ class ProformaPDFExporter:
     </div>
 </div>
 """
-    
+
     def _acquisition_financing_section(self) -> str:
         """Generate acquisition and financing section."""
         acq = self.data.acquisition
@@ -175,7 +173,7 @@ class ProformaPDFExporter:
     </div>
 </div>
 """
-    
+
     def _income_expense_section(self) -> str:
         """Generate income and expense section."""
         inc = self.data.income
@@ -214,17 +212,17 @@ class ProformaPDFExporter:
             </div>
             <div class="metric">
                 <span class="metric-label">Annual Cash Flow</span>
-                <span class="metric-value {'positive' if metrics.annual_cash_flow >= 0 else 'negative'}">${metrics.annual_cash_flow:,.0f}</span>
+                <span class="metric-value {"positive" if metrics.annual_cash_flow >= 0 else "negative"}">${metrics.annual_cash_flow:,.0f}</span>
             </div>
             <div class="metric">
                 <span class="metric-label">Monthly Cash Flow</span>
-                <span class="metric-value {'positive' if metrics.monthly_cash_flow >= 0 else 'negative'}">${metrics.monthly_cash_flow:,.0f}</span>
+                <span class="metric-value {"positive" if metrics.monthly_cash_flow >= 0 else "negative"}">${metrics.monthly_cash_flow:,.0f}</span>
             </div>
         </div>
     </div>
 </div>
 """
-    
+
     def _key_metrics_section(self) -> str:
         """Generate key metrics section."""
         m = self.data.metrics
@@ -238,7 +236,7 @@ class ProformaPDFExporter:
         </div>
         <div class="metric-card">
             <span class="metric-name">Cash-on-Cash</span>
-            <span class="metric-big-value {'positive' if m.cash_on_cash_return >= 0 else 'negative'}">{m.cash_on_cash_return:.2f}%</span>
+            <span class="metric-big-value {"positive" if m.cash_on_cash_return >= 0 else "negative"}">{m.cash_on_cash_return:.2f}%</span>
         </div>
         <div class="metric-card">
             <span class="metric-name">DSCR</span>
@@ -259,12 +257,12 @@ class ProformaPDFExporter:
     </div>
 </div>
 """
-    
+
     def _projections_section(self) -> str:
         """Generate multi-year projections table."""
         proj = self.data.projections
         years = min(5, len(proj.annual_projections))  # Show first 5 years
-        
+
         rows = ""
         for i in range(years):
             p = proj.annual_projections[i]
@@ -275,12 +273,12 @@ class ProformaPDFExporter:
                 <td class="money">${p.operating_expenses:,.0f}</td>
                 <td class="money">${p.net_operating_income:,.0f}</td>
                 <td class="money">${p.total_debt_service:,.0f}</td>
-                <td class="money {'positive' if p.after_tax_cash_flow >= 0 else 'negative'}">${p.after_tax_cash_flow:,.0f}</td>
+                <td class="money {"positive" if p.after_tax_cash_flow >= 0 else "negative"}">${p.after_tax_cash_flow:,.0f}</td>
                 <td class="money">${proj.property_values[i]:,.0f}</td>
                 <td class="money">${proj.equity_positions[i]:,.0f}</td>
             </tr>
             """
-        
+
         return f"""
 <div class="section page-break">
     <h2>{proj.hold_period_years}-Year Cash Flow Projection</h2>
@@ -304,7 +302,7 @@ class ProformaPDFExporter:
     <p class="table-note">Growth assumptions: Rent {proj.rent_growth_rate:.1f}%/yr, Expenses {proj.expense_growth_rate:.1f}%/yr, Appreciation {proj.appreciation_rate:.1f}%/yr</p>
 </div>
 """
-    
+
     def _exit_analysis_section(self) -> str:
         """Generate exit analysis section."""
         e = self.data.exit
@@ -335,7 +333,7 @@ class ProformaPDFExporter:
     </div>
 </div>
 """
-    
+
     def _returns_summary_section(self) -> str:
         """Generate investment returns summary."""
         r = self.data.returns
@@ -365,19 +363,19 @@ class ProformaPDFExporter:
         </div>
         <div class="return-card">
             <span class="return-label">Payback Period</span>
-            <span class="return-value">{r.payback_period_months or 'N/A'} mo</span>
+            <span class="return-value">{r.payback_period_months or "N/A"} mo</span>
         </div>
     </div>
 </div>
 """
-    
+
     def _sensitivity_section(self) -> str:
         """Generate sensitivity analysis section."""
         s = self.data.sensitivity
-        
+
         if not s.purchase_price:
             return ""
-        
+
         # Build purchase price sensitivity table
         pp_rows = ""
         for scenario in s.purchase_price:
@@ -389,7 +387,7 @@ class ProformaPDFExporter:
                 <td>{scenario.cash_on_cash:.1f}%</td>
             </tr>
             """
-        
+
         # Build rent sensitivity table
         rent_rows = ""
         for scenario in s.rent:
@@ -401,7 +399,7 @@ class ProformaPDFExporter:
                 <td>{scenario.cash_on_cash:.1f}%</td>
             </tr>
             """
-        
+
         return f"""
 <div class="section page-break">
     <h2>Sensitivity Analysis</h2>
@@ -431,7 +429,7 @@ class ProformaPDFExporter:
     </div>
 </div>
 """
-    
+
     def _footer_section(self) -> str:
         """Generate footer with disclaimers."""
         return f"""
@@ -441,11 +439,11 @@ class ProformaPDFExporter:
         Actual results may vary. Consult with qualified professionals before making investment decisions.
     </p>
     <p class="branding">
-        Generated by DealGapIQ | {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+        Generated by DealGapIQ | {datetime.now().strftime("%B %d, %Y at %I:%M %p")}
     </p>
 </div>
 """
-    
+
     def _generate_css(self) -> str:
         """Generate CSS for the PDF."""
         return f"""

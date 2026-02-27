@@ -13,7 +13,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
-from typing import Optional
 
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -52,6 +51,7 @@ def _get_fernet() -> Fernet:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def encrypt_value(plaintext: str) -> str:
     """Encrypt a plaintext string and return a prefixed ciphertext string.
 
@@ -80,6 +80,6 @@ def decrypt_value(ciphertext: str) -> str:
         raise ValueError("Decryption failed; the encryption key may have changed")
 
 
-def is_encrypted(value: Optional[str]) -> bool:
+def is_encrypted(value: str | None) -> bool:
     """Check whether a value carries the encryption prefix."""
     return value is not None and value.startswith(_PREFIX)

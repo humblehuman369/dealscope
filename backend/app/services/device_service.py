@@ -4,15 +4,14 @@ Device token service — CRUD operations for push notification tokens.
 
 import logging
 import uuid as _uuid
-from typing import Optional, List
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.device_token import DeviceToken, DevicePlatform
+from app.models.device_token import DevicePlatform, DeviceToken
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class DeviceService:
         user_id: UUID,
         token: str,
         device_platform: DevicePlatform,
-        device_name: Optional[str] = None,
+        device_name: str | None = None,
     ) -> DeviceToken:
         """
         Register or re-activate a device token.
@@ -40,7 +39,7 @@ class DeviceService:
         reassign it (token is globally unique — a device can only have
         one owner).
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         stmt = (
             pg_insert(DeviceToken)
@@ -61,9 +60,7 @@ class DeviceService:
                     "user_id": user_id,
                     "device_platform": device_platform,
                     "device_name": (
-                        device_name
-                        if device_name
-                        else DeviceToken.device_name  # keep existing if not provided
+                        device_name if device_name else DeviceToken.device_name  # keep existing if not provided
                     ),
                     "is_active": True,
                     "last_used_at": now,
@@ -97,7 +94,7 @@ class DeviceService:
         result = await db.execute(
             update(DeviceToken)
             .where(DeviceToken.token == token, DeviceToken.user_id == user_id)
-            .values(is_active=False, updated_at=datetime.now(timezone.utc))
+            .values(is_active=False, updated_at=datetime.now(UTC))
         )
         await db.commit()
         deactivated = result.rowcount > 0  # type: ignore[union-attr]
@@ -115,9 +112,7 @@ class DeviceService:
         Does not require user context.
         """
         await db.execute(
-            update(DeviceToken)
-            .where(DeviceToken.token == token)
-            .values(is_active=False, updated_at=datetime.now(timezone.utc))
+            update(DeviceToken).where(DeviceToken.token == token).values(is_active=False, updated_at=datetime.now(UTC))
         )
         await db.commit()
         logger.info("Device token deactivated (DeviceNotRegistered): %s…", token[:20])
@@ -126,7 +121,7 @@ class DeviceService:
         self,
         db: AsyncSession,
         user_id: UUID,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return all active push tokens for a user."""
         result = await db.execute(
             select(DeviceToken.token).where(
@@ -139,23 +134,19 @@ class DeviceService:
     async def get_all_active_tokens(
         self,
         db: AsyncSession,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return all active push tokens across all users (for broadcast)."""
-        result = await db.execute(
-            select(DeviceToken.token).where(DeviceToken.is_active.is_(True))
-        )
+        result = await db.execute(select(DeviceToken.token).where(DeviceToken.is_active.is_(True)))
         return list(result.scalars().all())
 
     async def list_user_devices(
         self,
         db: AsyncSession,
         user_id: UUID,
-    ) -> List[DeviceToken]:
+    ) -> list[DeviceToken]:
         """Return all device tokens (active and inactive) for a user."""
         result = await db.execute(
-            select(DeviceToken)
-            .where(DeviceToken.user_id == user_id)
-            .order_by(DeviceToken.last_used_at.desc())
+            select(DeviceToken).where(DeviceToken.user_id == user_id).order_by(DeviceToken.last_used_at.desc())
         )
         return list(result.scalars().all())
 
@@ -165,11 +156,7 @@ class DeviceService:
         token: str,
     ) -> None:
         """Update last_used_at for a token (called on successful push)."""
-        await db.execute(
-            update(DeviceToken)
-            .where(DeviceToken.token == token)
-            .values(last_used_at=datetime.now(timezone.utc))
-        )
+        await db.execute(update(DeviceToken).where(DeviceToken.token == token).values(last_used_at=datetime.now(UTC)))
         await db.commit()
 
 

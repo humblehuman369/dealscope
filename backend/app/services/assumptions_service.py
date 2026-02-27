@@ -4,8 +4,8 @@ Includes market-specific adjustments based on zip code.
 """
 
 import logging
-from typing import Optional, Dict, Any
 import uuid
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Market-specific adjustment factors by state/region
 # These override default assumptions based on location
-MARKET_ADJUSTMENTS: Dict[str, Dict[str, Any]] = {
+MARKET_ADJUSTMENTS: dict[str, dict[str, Any]] = {
     # Florida - higher insurance, lower property taxes in some areas
     "FL": {
         "insurance_rate": 0.015,  # 1.5% of value (higher due to hurricanes)
@@ -79,10 +79,10 @@ def get_state_from_zip(zip_code: str) -> str:
     """
     if not zip_code or len(zip_code) < 3:
         return "DEFAULT"
-    
+
     prefix = zip_code[:3]
     prefix_int = int(prefix) if prefix.isdigit() else 0
-    
+
     # Simplified zip to state mapping (major ranges)
     if 100 <= prefix_int <= 149:  # NY/NJ area
         return "NY"
@@ -121,20 +121,20 @@ def get_state_from_zip(zip_code: str) -> str:
         return "OR"
     elif 980 <= prefix_int <= 994:  # WA
         return "WA"
-    
+
     return "DEFAULT"
 
 
-def get_market_adjustments(zip_code: str) -> Dict[str, Any]:
+def get_market_adjustments(zip_code: str) -> dict[str, Any]:
     """
     Get market-specific adjustment factors for a zip code.
     Returns factors like insurance_rate, property_tax_rate, etc.
     """
     state = get_state_from_zip(zip_code)
-    
+
     # Get state-specific adjustments or fall back to default
     adjustments = MARKET_ADJUSTMENTS.get(state, MARKET_ADJUSTMENTS["DEFAULT"])
-    
+
     # Add metadata
     return {
         "zip_code": zip_code,
@@ -181,7 +181,7 @@ async def get_default_assumptions(db: AsyncSession) -> AllAssumptions:
     return defaults
 
 
-async def get_assumptions_record(db: AsyncSession) -> Optional[AdminAssumptionDefaults]:
+async def get_assumptions_record(db: AsyncSession) -> AdminAssumptionDefaults | None:
     """Return the latest assumptions record if it exists."""
     result = await db.execute(
         select(AdminAssumptionDefaults).order_by(AdminAssumptionDefaults.updated_at.desc()).limit(1)
@@ -192,7 +192,7 @@ async def get_assumptions_record(db: AsyncSession) -> Optional[AdminAssumptionDe
 async def upsert_default_assumptions(
     db: AsyncSession,
     assumptions: AllAssumptions,
-    updated_by: Optional[uuid.UUID] = None,
+    updated_by: uuid.UUID | None = None,
 ) -> AdminAssumptionDefaults:
     """Create or update the stored default assumptions.
 
@@ -216,6 +216,7 @@ async def upsert_default_assumptions(
 
     # Invalidate cache so subsequent reads see the new values
     from app.services.cache_service import get_cache_service
+
     await get_cache_service().delete(_ASSUMPTIONS_CACHE_KEY)
 
     return record

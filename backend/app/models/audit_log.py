@@ -6,13 +6,14 @@ enable/disable, session revoke, etc.) is recorded here with the
 acting user, IP, user-agent, and an arbitrary metadata payload.
 """
 
-from sqlalchemy import String, DateTime, ForeignKey, Text, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional, TYPE_CHECKING
-import uuid
-from datetime import datetime, timezone
 import enum
+import uuid
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -21,11 +22,12 @@ if TYPE_CHECKING:
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
-class AuditAction(str, enum.Enum):
+class AuditAction(enum.StrEnum):
     """Enumeration of auditable actions."""
+
     REGISTER = "register"
     LOGIN = "login"
     LOGIN_FAILED = "login_failed"
@@ -52,6 +54,7 @@ class AuditAction(str, enum.Enum):
 
 class AuditLog(Base):
     """Immutable record of a security-relevant event."""
+
     __tablename__ = "audit_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -59,15 +62,15 @@ class AuditLog(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         index=True,
     )
     action: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
-    user_agent: Mapped[Optional[str]] = mapped_column(Text)
-    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, default=dict)
+    ip_address: Mapped[str | None] = mapped_column(String(45))
+    user_agent: Mapped[str | None] = mapped_column(Text)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=_utcnow,
@@ -77,6 +80,4 @@ class AuditLog(Base):
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="audit_logs")
 
-    __table_args__ = (
-        Index("ix_audit_logs_user_action", "user_id", "action"),
-    )
+    __table_args__ = (Index("ix_audit_logs_user_action", "user_id", "action"),)

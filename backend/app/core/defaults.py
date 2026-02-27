@@ -5,35 +5,39 @@ All investment calculation defaults are defined here and used across the applica
 These values align with the frontend stores/index.ts DEFAULT_ASSUMPTIONS.
 Updated: January 2025 to reflect current market conditions and user preferences.
 """
+
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
 class FinancingDefaults:
     """Default financing assumptions."""
-    down_payment_pct: float = 0.20          # 20%
-    interest_rate: float = 0.06             # 6% (was 7.5%)
+
+    down_payment_pct: float = 0.20  # 20%
+    interest_rate: float = 0.06  # 6% (was 7.5%)
     loan_term_years: int = 30
-    closing_costs_pct: float = 0.03         # 3%
+    closing_costs_pct: float = 0.03  # 3%
 
 
 @dataclass(frozen=True)
 class OperatingDefaults:
     """Default operating expense assumptions."""
-    vacancy_rate: float = 0.01              # 1% (was 5%)
-    property_management_pct: float = 0.00   # 0% (was 10%)
-    maintenance_pct: float = 0.05           # 5% (was 10%)
-    capex_pct: float = 0.05                 # 5% reserves / capital expenditures
-    insurance_pct: float = 0.01             # 1% of purchase price (was $500 fixed)
-    utilities_monthly: float = 100          # $100/mo (was $75)
-    landscaping_annual: float = 0           # $0 (was $500)
-    pest_control_annual: float = 200        # $200
+
+    vacancy_rate: float = 0.01  # 1% (was 5%)
+    property_management_pct: float = 0.00  # 0% (was 10%)
+    maintenance_pct: float = 0.05  # 5% (was 10%)
+    capex_pct: float = 0.05  # 5% reserves / capital expenditures
+    insurance_pct: float = 0.01  # 1% of purchase price (was $500 fixed)
+    utilities_monthly: float = 100  # $100/mo (was $75)
+    landscaping_annual: float = 0  # $0 (was $500)
+    pest_control_annual: float = 200  # $200
 
 
 @dataclass(frozen=True)
 class SeasonConfig:
     """One season entry for STR seasonality analysis."""
+
     name: str
     months: int
     occupancy_multiplier: float
@@ -41,7 +45,7 @@ class SeasonConfig:
 
 
 # Temperate-climate defaults (e.g. Florida/Southeast US winter peak)
-DEFAULT_SEASONALITY: List[SeasonConfig] = [
+DEFAULT_SEASONALITY: list[SeasonConfig] = [
     SeasonConfig(name="Peak (Winter)", months=5, occupancy_multiplier=0.90, adr_multiplier=1.2),
     SeasonConfig(name="Shoulder (Spring/Fall)", months=2, occupancy_multiplier=0.80, adr_multiplier=1.0),
     SeasonConfig(name="Off (Summer)", months=5, occupancy_multiplier=0.70, adr_multiplier=0.8),
@@ -51,74 +55,81 @@ DEFAULT_SEASONALITY: List[SeasonConfig] = [
 @dataclass(frozen=True)
 class STRDefaults:
     """Default short-term rental assumptions."""
-    platform_fees_pct: float = 0.15         # 15%
-    str_management_pct: float = 0.10        # 10% (was 20%)
-    cleaning_cost_per_turnover: float = 150 # $150 (was $200)
-    cleaning_fee_revenue: float = 75        # $75
-    avg_length_of_stay_days: int = 6        # 6 days
-    supplies_monthly: float = 100           # $100
-    additional_utilities_monthly: float = 0 # $0 (was $125)
-    furniture_setup_cost: float = 6000      # $6,000
-    str_insurance_pct: float = 0.01         # 1% of purchase price (was $1,500 fixed)
-    seasonality: List[SeasonConfig] = field(default_factory=lambda: list(DEFAULT_SEASONALITY))
+
+    platform_fees_pct: float = 0.15  # 15%
+    str_management_pct: float = 0.10  # 10% (was 20%)
+    cleaning_cost_per_turnover: float = 150  # $150 (was $200)
+    cleaning_fee_revenue: float = 75  # $75
+    avg_length_of_stay_days: int = 6  # 6 days
+    supplies_monthly: float = 100  # $100
+    additional_utilities_monthly: float = 0  # $0 (was $125)
+    furniture_setup_cost: float = 6000  # $6,000
+    str_insurance_pct: float = 0.01  # 1% of purchase price (was $1,500 fixed)
+    seasonality: list[SeasonConfig] = field(default_factory=lambda: list(DEFAULT_SEASONALITY))
 
 
 @dataclass(frozen=True)
 class RehabDefaults:
     """Default rehab/renovation assumptions."""
-    renovation_budget_pct: float = 0.05     # 5% of ARV (was $40,000 fixed)
-    contingency_pct: float = 0.05           # 5% (was 10%)
-    holding_period_months: int = 4          # 4 months
-    holding_costs_pct: float = 0.01         # 1% of purchase price annually (was $2,000/mo fixed)
+
+    renovation_budget_pct: float = 0.05  # 5% of ARV (was $40,000 fixed)
+    contingency_pct: float = 0.05  # 5% (was 10%)
+    holding_period_months: int = 4  # 4 months
+    holding_costs_pct: float = 0.01  # 1% of purchase price annually (was $2,000/mo fixed)
 
 
 @dataclass(frozen=True)
 class BRRRRDefaults:
     """Default BRRRR strategy assumptions."""
-    buy_discount_pct: float = 0.05          # 5% below Income Value
-    refinance_ltv: float = 0.75             # 75%
-    refinance_interest_rate: float = 0.06   # 6% (was 7%)
-    refinance_term_years: int = 30          # 30 years
+
+    buy_discount_pct: float = 0.05  # 5% below Income Value
+    refinance_ltv: float = 0.75  # 75%
+    refinance_interest_rate: float = 0.06  # 6% (was 7%)
+    refinance_term_years: int = 30  # 30 years
     refinance_closing_costs_pct: float = 0.03  # 3% of refinance amount (was $3,500 fixed)
-    post_rehab_rent_increase_pct: float = 0.10 # 10%
+    post_rehab_rent_increase_pct: float = 0.10  # 10%
 
 
 @dataclass(frozen=True)
 class FlipDefaults:
     """Default fix & flip assumptions."""
-    hard_money_ltv: float = 0.90            # 90%
-    hard_money_rate: float = 0.12           # 12%
-    selling_costs_pct: float = 0.08         # 8% (6% commission + 2% seller closing)
-    holding_period_months: int = 6          # 6 months
-    purchase_discount_pct: float = 0.20     # 20% below ARV for purchase
+
+    hard_money_ltv: float = 0.90  # 90%
+    hard_money_rate: float = 0.12  # 12%
+    selling_costs_pct: float = 0.08  # 8% (6% commission + 2% seller closing)
+    holding_period_months: int = 6  # 6 months
+    purchase_discount_pct: float = 0.20  # 20% below ARV for purchase
 
 
 @dataclass(frozen=True)
 class HouseHackDefaults:
     """Default house hack assumptions."""
-    fha_down_payment_pct: float = 0.035     # 3.5%
-    fha_interest_rate: float = 0.065        # 6.5% (FHA rates typically lower than conventional)
-    fha_mip_rate: float = 0.0085            # 0.85%
-    units_rented_out: int = 2               # 2 units
-    buy_discount_pct: float = 0.05          # 5% below Income Value
+
+    fha_down_payment_pct: float = 0.035  # 3.5%
+    fha_interest_rate: float = 0.065  # 6.5% (FHA rates typically lower than conventional)
+    fha_mip_rate: float = 0.0085  # 0.85%
+    units_rented_out: int = 2  # 2 units
+    buy_discount_pct: float = 0.05  # 5% below Income Value
 
 
 @dataclass(frozen=True)
 class WholesaleDefaults:
     """Default wholesale assumptions."""
-    assignment_fee: float = 15000           # $15,000
-    marketing_costs: float = 500            # $500
-    earnest_money_deposit: float = 1000     # $1,000
-    days_to_close: int = 45                 # 45 days
+
+    assignment_fee: float = 15000  # $15,000
+    marketing_costs: float = 500  # $500
+    earnest_money_deposit: float = 1000  # $1,000
+    days_to_close: int = 45  # 45 days
     target_purchase_discount_pct: float = 0.30  # 30%
 
 
 @dataclass(frozen=True)
 class GrowthDefaults:
     """Default growth rate assumptions."""
-    appreciation_rate: float = 0.05         # 5%
-    rent_growth_rate: float = 0.05          # 5% (was 3%)
-    expense_growth_rate: float = 0.03       # 3%
+
+    appreciation_rate: float = 0.05  # 5%
+    rent_growth_rate: float = 0.05  # 5% (was 3%)
+    expense_growth_rate: float = 0.03  # 3%
 
 
 # Create singleton instances
@@ -136,7 +147,7 @@ GROWTH = GrowthDefaults()
 DEFAULT_BUY_DISCOUNT_PCT = 0.05
 
 
-def get_all_defaults() -> Dict[str, Any]:
+def get_all_defaults() -> dict[str, Any]:
     """
     Get all default assumptions as a dictionary.
     Useful for API responses.

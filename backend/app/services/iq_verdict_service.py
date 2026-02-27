@@ -8,16 +8,22 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 """
 
 import logging
-from typing import Optional
 
-from app.schemas.property import AllAssumptions
-from app.core.formulas import estimate_income_value, calculate_buy_price, compute_market_price
-from app.services.calculators import calculate_monthly_mortgage
+from app.core.formulas import calculate_buy_price, compute_market_price, estimate_income_value
 from app.schemas.analytics import (
-    IQVerdictInput, IQVerdictResponse, StrategyResult,
-    ScoreDisplayResponse, OpportunityFactorsResponse, ReturnFactorsResponse,
-    DealScoreInput, DealScoreResponse, DealScoreFactors, DealScoreMotivation,
+    DealScoreFactors,
+    DealScoreInput,
+    DealScoreMotivation,
+    DealScoreResponse,
+    IQVerdictInput,
+    IQVerdictResponse,
+    OpportunityFactorsResponse,
+    ReturnFactorsResponse,
+    ScoreDisplayResponse,
+    StrategyResult,
 )
+from app.schemas.property import AllAssumptions
+from app.services.calculators import calculate_monthly_mortgage
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +31,7 @@ logger = logging.getLogger(__name__)
 # ===========================================
 # Internal calculation helpers
 # ===========================================
+
 
 def _score_to_grade_label(score: int) -> tuple[str, str, str]:
     if score >= 85:
@@ -58,8 +65,12 @@ def _format_compact_currency(value: float) -> str:
 # Strategy calculators (use assumptions param)
 # ===========================================
 
+
 def _calculate_ltr_strategy(
-    price: float, monthly_rent: float, property_taxes: float, insurance: float,
+    price: float,
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -88,14 +99,23 @@ def _calculate_ltr_strategy(
     dscr = noi / annual_debt if annual_debt > 0 else 0
     score = _performance_score(coc_pct, 5)
     return {
-        "id": "long-term-rental", "name": "Long-Term Rental",
-        "metric": f"{coc_pct:.1f}%", "metric_label": "CoC Return", "metric_value": coc_pct, "score": score,
-        "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc_pct, 2), "dscr": round(dscr, 2),
-        "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(monthly_cash_flow, 0),
+        "id": "long-term-rental",
+        "name": "Long-Term Rental",
+        "metric": f"{coc_pct:.1f}%",
+        "metric_label": "CoC Return",
+        "metric_value": coc_pct,
+        "score": score,
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc_pct, 2),
+        "dscr": round(dscr, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(monthly_cash_flow, 0),
         "breakdown": {
             "purchase_price": round(price),
-            "down_payment": round(down_payment), "down_payment_pct": round(f.down_payment_pct * 100, 1),
-            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "down_payment": round(down_payment),
+            "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs),
+            "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "total_cash_needed": round(total_cash),
             "loan_amount": round(loan_amount),
             "interest_rate": round(f.interest_rate * 100, 1),
@@ -108,9 +128,12 @@ def _calculate_ltr_strategy(
             "effective_income": round(effective_income),
             "property_taxes": round(property_taxes),
             "insurance": round(insurance),
-            "management": round(mgmt), "management_pct": round(o.property_management_pct * 100, 1),
-            "maintenance": round(maint), "maintenance_pct": round(o.maintenance_pct * 100, 1),
-            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "management": round(mgmt),
+            "management_pct": round(o.property_management_pct * 100, 1),
+            "maintenance": round(maint),
+            "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex),
+            "reserves_pct": round(o.capex_pct * 100, 1),
             "total_operating_expenses": round(op_ex),
             "noi": round(noi),
             "annual_debt_service": round(annual_debt),
@@ -119,7 +142,11 @@ def _calculate_ltr_strategy(
 
 
 def _calculate_str_strategy(
-    price: float, adr: float, occupancy: float, property_taxes: float, insurance: float,
+    price: float,
+    adr: float,
+    occupancy: float,
+    property_taxes: float,
+    insurance: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -148,14 +175,23 @@ def _calculate_str_strategy(
     dscr = noi / annual_debt if annual_debt > 0 else 0
     score = _performance_score(coc_pct, 3.33)
     return {
-        "id": "short-term-rental", "name": "Short-Term Rental",
-        "metric": f"{coc_pct:.1f}%", "metric_label": "CoC Return", "metric_value": coc_pct, "score": score,
-        "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc_pct, 2), "dscr": round(dscr, 2),
-        "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(monthly_cash_flow, 0),
+        "id": "short-term-rental",
+        "name": "Short-Term Rental",
+        "metric": f"{coc_pct:.1f}%",
+        "metric_label": "CoC Return",
+        "metric_value": coc_pct,
+        "score": score,
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc_pct, 2),
+        "dscr": round(dscr, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(monthly_cash_flow, 0),
         "breakdown": {
             "purchase_price": round(price),
-            "down_payment": round(down_payment), "down_payment_pct": round(f.down_payment_pct * 100, 1),
-            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "down_payment": round(down_payment),
+            "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs),
+            "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "furniture_setup": round(s.furniture_setup_cost),
             "total_cash_needed": round(total_cash),
             "loan_amount": round(loan_amount),
@@ -168,10 +204,14 @@ def _calculate_str_strategy(
             "effective_income": round(annual_revenue),
             "property_taxes": round(property_taxes),
             "insurance": round(insurance),
-            "management": round(mgmt_fee), "management_pct": round(s.str_management_pct * 100, 1),
-            "platform_fees": round(platform_fees), "platform_fees_pct": round(s.platform_fees_pct * 100, 1),
-            "maintenance": round(maintenance), "maintenance_pct": round(o.maintenance_pct * 100, 1),
-            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "management": round(mgmt_fee),
+            "management_pct": round(s.str_management_pct * 100, 1),
+            "platform_fees": round(platform_fees),
+            "platform_fees_pct": round(s.platform_fees_pct * 100, 1),
+            "maintenance": round(maintenance),
+            "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex),
+            "reserves_pct": round(o.capex_pct * 100, 1),
             "supplies": round(supplies),
             "utilities": round(utilities),
             "total_operating_expenses": round(op_ex),
@@ -182,8 +222,12 @@ def _calculate_str_strategy(
 
 
 def _calculate_brrrr_strategy(
-    price: float, monthly_rent: float, property_taxes: float, insurance: float,
-    arv: float, rehab_cost: float,
+    price: float,
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
+    arv: float,
+    rehab_cost: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -222,10 +266,17 @@ def _calculate_brrrr_strategy(
     dscr_val = noi / annual_debt if annual_debt > 0 else 0
     score = _performance_score(recovery_pct, 1)
     return {
-        "id": "brrrr", "name": "BRRRR",
-        "metric": display_coc, "metric_label": "CoC Return", "metric_value": recovery_pct, "score": score,
-        "cap_rate": round(cap_rate, 2), "cash_on_cash": round(coc * 100, 2) if coc < 100 else 999,
-        "dscr": round(dscr_val, 2), "annual_cash_flow": round(annual_cash_flow, 0), "monthly_cash_flow": round(annual_cash_flow / 12, 0),
+        "id": "brrrr",
+        "name": "BRRRR",
+        "metric": display_coc,
+        "metric_label": "CoC Return",
+        "metric_value": recovery_pct,
+        "score": score,
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc * 100, 2) if coc < 100 else 999,
+        "dscr": round(dscr_val, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(annual_cash_flow / 12, 0),
         "breakdown": {
             "purchase_price": round(price),
             "initial_cash_in": round(initial_cash),
@@ -247,9 +298,12 @@ def _calculate_brrrr_strategy(
             "effective_income": round(effective_income),
             "property_taxes": round(property_taxes),
             "insurance": round(insurance),
-            "management": round(mgmt), "management_pct": round(o.property_management_pct * 100, 1),
-            "maintenance": round(maint), "maintenance_pct": round(o.maintenance_pct * 100, 1),
-            "reserves": round(capex), "reserves_pct": round(o.capex_pct * 100, 1),
+            "management": round(mgmt),
+            "management_pct": round(o.property_management_pct * 100, 1),
+            "maintenance": round(maint),
+            "maintenance_pct": round(o.maintenance_pct * 100, 1),
+            "reserves": round(capex),
+            "reserves_pct": round(o.capex_pct * 100, 1),
             "total_operating_expenses": round(op_ex),
             "noi": round(noi),
             "annual_debt_service": round(annual_debt),
@@ -258,7 +312,11 @@ def _calculate_brrrr_strategy(
 
 
 def _calculate_flip_strategy(
-    price: float, arv: float, rehab_cost: float, property_taxes: float, insurance: float,
+    price: float,
+    arv: float,
+    rehab_cost: float,
+    property_taxes: float,
+    insurance: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -277,10 +335,17 @@ def _calculate_flip_strategy(
     roi_pct = roi * 100
     score = _performance_score(roi_pct, 2.5)
     return {
-        "id": "fix-and-flip", "name": "Fix & Flip",
-        "metric": _format_compact_currency(net_profit), "metric_label": "Profit", "metric_value": net_profit, "score": score,
-        "cap_rate": None, "cash_on_cash": round(roi_pct, 2), "dscr": None,
-        "annual_cash_flow": round(net_profit, 0), "monthly_cash_flow": None,
+        "id": "fix-and-flip",
+        "name": "Fix & Flip",
+        "metric": _format_compact_currency(net_profit),
+        "metric_label": "Profit",
+        "metric_value": net_profit,
+        "score": score,
+        "cap_rate": None,
+        "cash_on_cash": round(roi_pct, 2),
+        "dscr": None,
+        "annual_cash_flow": round(net_profit, 0),
+        "monthly_cash_flow": None,
         "breakdown": {
             "purchase_price": round(price),
             "purchase_costs": round(purchase_costs),
@@ -289,7 +354,8 @@ def _calculate_flip_strategy(
             "holding_costs": round(holding_costs),
             "total_investment": round(total_investment),
             "arv": round(arv),
-            "selling_costs": round(selling_costs), "selling_costs_pct": round(fl.selling_costs_pct * 100, 1),
+            "selling_costs": round(selling_costs),
+            "selling_costs_pct": round(fl.selling_costs_pct * 100, 1),
             "net_profit": round(net_profit),
             "roi_pct": round(roi_pct, 1),
             "total_cash_needed": round(total_investment),
@@ -300,7 +366,11 @@ def _calculate_flip_strategy(
 
 
 def _calculate_house_hack_strategy(
-    price: float, monthly_rent: float, bedrooms: int, property_taxes: float, insurance: float,
+    price: float,
+    monthly_rent: float,
+    bedrooms: int,
+    property_taxes: float,
+    insurance: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -326,14 +396,23 @@ def _calculate_house_hack_strategy(
     score = _performance_score(housing_offset, 1)
     total_cash = down_payment + closing_costs
     return {
-        "id": "house-hack", "name": "House Hack",
-        "metric": f"{round(housing_offset)}%", "metric_label": "Savings", "metric_value": housing_offset, "score": score,
-        "cap_rate": None, "cash_on_cash": round(housing_offset, 2), "dscr": None,
-        "annual_cash_flow": round(annual_savings, 0), "monthly_cash_flow": round(rental_income, 0),
+        "id": "house-hack",
+        "name": "House Hack",
+        "metric": f"{round(housing_offset)}%",
+        "metric_label": "Savings",
+        "metric_value": housing_offset,
+        "score": score,
+        "cap_rate": None,
+        "cash_on_cash": round(housing_offset, 2),
+        "dscr": None,
+        "annual_cash_flow": round(annual_savings, 0),
+        "monthly_cash_flow": round(rental_income, 0),
         "breakdown": {
             "purchase_price": round(price),
-            "down_payment": round(down_payment), "down_payment_pct": round(h.fha_down_payment_pct * 100, 1),
-            "closing_costs": round(closing_costs), "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "down_payment": round(down_payment),
+            "down_payment_pct": round(h.fha_down_payment_pct * 100, 1),
+            "closing_costs": round(closing_costs),
+            "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "total_cash_needed": round(total_cash),
             "loan_amount": round(loan_amount),
             "interest_rate": round(h.fha_interest_rate * 100, 1),
@@ -363,11 +442,17 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
     roi_pct = (assignment_fee / emd * 100) if emd > 0 else 0
     score = _performance_score(roi_pct, 0.5)
     return {
-        "id": "wholesale", "name": "Wholesale",
-        "metric": _format_compact_currency(max(0, assignment_fee)), "metric_label": "Assignment",
-        "metric_value": assignment_fee, "score": score,
-        "cap_rate": None, "cash_on_cash": round(roi_pct, 2), "dscr": None,
-        "annual_cash_flow": round(assignment_fee, 0), "monthly_cash_flow": None,
+        "id": "wholesale",
+        "name": "Wholesale",
+        "metric": _format_compact_currency(max(0, assignment_fee)),
+        "metric_label": "Assignment",
+        "metric_value": assignment_fee,
+        "score": score,
+        "cap_rate": None,
+        "cash_on_cash": round(roi_pct, 2),
+        "dscr": None,
+        "annual_cash_flow": round(assignment_fee, 0),
+        "monthly_cash_flow": None,
         "breakdown": {
             "purchase_price": round(price),
             "arv": round(arv),
@@ -385,6 +470,7 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 # ===========================================
 # Score component calculators
 # ===========================================
+
 
 def _calculate_deal_gap_component(target_price: float, list_price: float) -> int:
     if list_price <= 0:
@@ -448,18 +534,17 @@ def _calculate_deal_probability_component(deal_gap_pct: float, motivation_score:
 
 
 def _calculate_composite_verdict_score(
-    target_price: float, list_price: float,
-    top_strategy_score: int, motivation_score: int,
+    target_price: float,
+    list_price: float,
+    top_strategy_score: int,
+    motivation_score: int,
 ) -> tuple[int, int, int, int, int]:
     deal_gap_pct = ((list_price - target_price) / list_price) * 100 if list_price > 0 else 100
     deal_gap = _calculate_deal_gap_component(target_price, list_price)
     return_quality = _calculate_return_quality_component(top_strategy_score)
     market_alignment = min(90, motivation_score)
     deal_probability = _calculate_deal_probability_component(deal_gap_pct, motivation_score)
-    composite = round(
-        deal_gap * 0.35 + return_quality * 0.30
-        + market_alignment * 0.20 + deal_probability * 0.15
-    )
+    composite = round(deal_gap * 0.35 + return_quality * 0.30 + market_alignment * 0.20 + deal_probability * 0.15)
     composite = max(5, min(95, composite))
     return composite, deal_gap, return_quality, market_alignment, deal_probability
 
@@ -489,9 +574,13 @@ def _calculate_opportunity_score(income_value: float, list_price: float) -> tupl
 
 
 def _get_verdict_description(
-    score: int, top_strategy: dict,
-    income_value: float, list_price: float, target_price: float,
-    income_gap_pct: float, deal_gap_pct: float,
+    score: int,
+    top_strategy: dict,
+    income_value: float,
+    list_price: float,
+    target_price: float,
+    income_gap_pct: float,
+    deal_gap_pct: float,
     motivation_label: str,
 ) -> str:
     name = top_strategy["name"]
@@ -537,9 +626,10 @@ def _get_verdict_description(
 # Public API — called by the analytics router
 # ===========================================
 
+
 def compute_iq_verdict(
     input_data: IQVerdictInput,
-    assumptions: Optional[AllAssumptions] = None,
+    assumptions: AllAssumptions | None = None,
 ) -> IQVerdictResponse:
     """Run the full IQ Verdict multi-strategy analysis.
 
@@ -567,7 +657,9 @@ def compute_iq_verdict(
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
     vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
     maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
-    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    mgmt_pct = (
+        input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    )
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
     capex_pct = a.operating.capex_pct
@@ -575,10 +667,17 @@ def compute_iq_verdict(
     other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
 
     income_value = estimate_income_value(
-        monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
-        down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
-        vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
-        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        monthly_rent=monthly_rent,
+        property_taxes=property_taxes,
+        insurance=insurance,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
     )
 
@@ -600,12 +699,19 @@ def compute_iq_verdict(
             rehab_cost = arv * a.rehab.renovation_budget_pct
 
     buy_price = input_data.purchase_price or calculate_buy_price(
-        market_price=list_price, monthly_rent=monthly_rent,
-        property_taxes=property_taxes, insurance=insurance,
+        market_price=list_price,
+        monthly_rent=monthly_rent,
+        property_taxes=property_taxes,
+        insurance=insurance,
         buy_discount_pct=buy_discount,
-        down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
-        vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
-        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
     )
 
@@ -631,6 +737,7 @@ def compute_iq_verdict(
 
     if input_data.listing_status or input_data.seller_type:
         from app.services.calculators import get_availability_ranking
+
         avail = get_availability_ranking(
             listing_status=input_data.listing_status,
             seller_type=input_data.seller_type,
@@ -650,16 +757,23 @@ def compute_iq_verdict(
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
     deal_score, comp_gap, comp_return, comp_market, comp_prob = _calculate_composite_verdict_score(
-        target_price=buy_price, list_price=list_price,
-        top_strategy_score=top_strategy["score"], motivation_score=motivation_score,
+        target_price=buy_price,
+        list_price=list_price,
+        top_strategy_score=top_strategy["score"],
+        motivation_score=motivation_score,
     )
 
     deal_verdict = (
-        "Strong Opportunity" if income_gap_pct <= 5
-        else "Good Opportunity" if income_gap_pct <= 10
-        else "Moderate Opportunity" if income_gap_pct <= 15
-        else "Marginal Opportunity" if income_gap_pct <= 25
-        else "Unlikely Opportunity" if income_gap_pct <= 35
+        "Strong Opportunity"
+        if income_gap_pct <= 5
+        else "Good Opportunity"
+        if income_gap_pct <= 10
+        else "Moderate Opportunity"
+        if income_gap_pct <= 15
+        else "Marginal Opportunity"
+        if income_gap_pct <= 25
+        else "Unlikely Opportunity"
+        if income_gap_pct <= 35
         else "Pass"
     )
 
@@ -669,20 +783,32 @@ def compute_iq_verdict(
     defaults_dict = a.model_dump(by_alias=True)
 
     return IQVerdictResponse(
-        deal_score=deal_score, deal_verdict=deal_verdict,
+        deal_score=deal_score,
+        deal_verdict=deal_verdict,
         verdict_description=_get_verdict_description(
-            deal_score, top_strategy,
-            income_value=income_value, list_price=list_price, target_price=buy_price,
-            income_gap_pct=income_gap_pct, deal_gap_pct=deal_gap_pct,
+            deal_score,
+            top_strategy,
+            income_value=income_value,
+            list_price=list_price,
+            target_price=buy_price,
+            income_gap_pct=income_gap_pct,
+            deal_gap_pct=deal_gap_pct,
             motivation_label=motivation_label,
         ),
         discount_percent=round(income_gap_pct, 1),
         strategies=[StrategyResult(**s) for s in strategies],
-        purchase_price=buy_price, income_value=income_value, list_price=list_price,
+        purchase_price=buy_price,
+        income_value=income_value,
+        list_price=list_price,
         inputs_used={
-            "monthly_rent": monthly_rent, "property_taxes": property_taxes,
-            "insurance": insurance, "arv": arv, "rehab_cost": rehab_cost, "bedrooms": bedrooms,
-            "provided_rent": input_data.monthly_rent, "provided_taxes": input_data.property_taxes,
+            "monthly_rent": monthly_rent,
+            "property_taxes": property_taxes,
+            "insurance": insurance,
+            "arv": arv,
+            "rehab_cost": rehab_cost,
+            "bedrooms": bedrooms,
+            "provided_rent": input_data.monthly_rent,
+            "provided_taxes": input_data.property_taxes,
             "provided_insurance": input_data.insurance,
         },
         defaults_used=defaults_dict,
@@ -693,15 +819,23 @@ def compute_iq_verdict(
         deal_gap_percent=round(deal_gap_pct, 1),
         opportunity=ScoreDisplayResponse(score=deal_score, grade=opp_grade, label=opp_label, color=opp_color),
         opportunity_factors=OpportunityFactorsResponse(
-            deal_gap=round(deal_gap_pct, 1), motivation=motivation_score, motivation_label=motivation_label,
-            days_on_market=input_data.days_on_market, buyer_market=input_data.market_temperature,
+            deal_gap=round(deal_gap_pct, 1),
+            motivation=motivation_score,
+            motivation_label=motivation_label,
+            days_on_market=input_data.days_on_market,
+            buyer_market=input_data.market_temperature,
             distressed_sale=is_distressed,
         ),
-        return_rating=ScoreDisplayResponse(score=top_strategy["score"], grade=ret_grade, label=ret_label, color=ret_color),
+        return_rating=ScoreDisplayResponse(
+            score=top_strategy["score"], grade=ret_grade, label=ret_label, color=ret_color
+        ),
         return_factors=ReturnFactorsResponse(
-            cap_rate=top_strategy.get("cap_rate"), cash_on_cash=top_strategy.get("cash_on_cash"),
-            dscr=top_strategy.get("dscr"), annual_roi=top_strategy.get("annual_cash_flow"),
-            annual_profit=top_strategy.get("annual_cash_flow"), strategy_name=top_strategy["name"],
+            cap_rate=top_strategy.get("cap_rate"),
+            cash_on_cash=top_strategy.get("cash_on_cash"),
+            dscr=top_strategy.get("dscr"),
+            annual_roi=top_strategy.get("annual_cash_flow"),
+            annual_profit=top_strategy.get("annual_cash_flow"),
+            strategy_name=top_strategy["name"],
         ),
         deal_gap_score=comp_gap,
         return_quality_score=comp_return,
@@ -713,7 +847,7 @@ def compute_iq_verdict(
 
 def compute_deal_score(
     input_data: DealScoreInput,
-    assumptions: Optional[AllAssumptions] = None,
+    assumptions: AllAssumptions | None = None,
 ) -> DealScoreResponse:
     """Run the Deal Opportunity Score calculation.
 
@@ -731,7 +865,9 @@ def compute_deal_score(
 
     vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
     maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
-    mgmt_pct = input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    mgmt_pct = (
+        input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    )
     down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
     rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
@@ -741,27 +877,43 @@ def compute_deal_score(
     other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
 
     income_value = estimate_income_value(
-        monthly_rent=monthly_rent, property_taxes=property_taxes, insurance=insurance,
-        down_payment_pct=down_pct, interest_rate=rate, loan_term_years=term,
-        vacancy_rate=vacancy, maintenance_pct=maint_pct, management_pct=mgmt_pct,
-        capex_pct=capex_pct, utilities_annual=utilities_annual,
+        monthly_rent=monthly_rent,
+        property_taxes=property_taxes,
+        insurance=insurance,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
     )
 
     has_listing_context = (
-        input_data.listing_status is not None or input_data.seller_type is not None
-        or input_data.is_foreclosure or input_data.is_bank_owned or input_data.is_fsbo
-        or input_data.days_on_market is not None or input_data.price_reductions > 0
+        input_data.listing_status is not None
+        or input_data.seller_type is not None
+        or input_data.is_foreclosure
+        or input_data.is_bank_owned
+        or input_data.is_fsbo
+        or input_data.days_on_market is not None
+        or input_data.price_reductions > 0
         or input_data.market_temperature is not None
     )
 
     if has_listing_context:
         enhanced_result = calculate_deal_opportunity_score(
-            income_value=income_value, list_price=list_price,
-            listing_status=input_data.listing_status, seller_type=input_data.seller_type,
-            is_foreclosure=input_data.is_foreclosure or False, is_bank_owned=input_data.is_bank_owned or False,
-            is_fsbo=input_data.is_fsbo or False, is_auction=input_data.is_auction or False,
-            price_reductions=input_data.price_reductions or 0, days_on_market=input_data.days_on_market,
+            income_value=income_value,
+            list_price=list_price,
+            listing_status=input_data.listing_status,
+            seller_type=input_data.seller_type,
+            is_foreclosure=input_data.is_foreclosure or False,
+            is_bank_owned=input_data.is_bank_owned or False,
+            is_fsbo=input_data.is_fsbo or False,
+            is_auction=input_data.is_auction or False,
+            price_reductions=input_data.price_reductions or 0,
+            days_on_market=input_data.days_on_market,
             market_temperature=input_data.market_temperature,
         )
         deal_score = enhanced_result["score"]
@@ -772,8 +924,10 @@ def compute_deal_score(
 
         motivation_data = enhanced_result["motivation"]
         motivation = DealScoreMotivation(
-            score=motivation_data["score"], label=motivation_data["label"],
-            base_score=motivation_data["base_score"], dom_bonus=motivation_data["dom_bonus"],
+            score=motivation_data["score"],
+            label=motivation_data["label"],
+            base_score=motivation_data["base_score"],
+            dom_bonus=motivation_data["dom_bonus"],
             market_modifier=motivation_data["market_modifier"],
             market_temperature=motivation_data["market_temperature"],
             availability_status=motivation_data["availability_status"],
@@ -810,12 +964,24 @@ def compute_deal_score(
         factors = None
 
     return DealScoreResponse(
-        deal_score=deal_score, deal_verdict=deal_verdict, discount_percent=round(discount_pct, 1),
-        income_value=income_value, purchase_price=purchase_price, list_price=list_price,
-        factors=factors, grade=grade, color=color,
+        deal_score=deal_score,
+        deal_verdict=deal_verdict,
+        discount_percent=round(discount_pct, 1),
+        income_value=income_value,
+        purchase_price=purchase_price,
+        list_price=list_price,
+        factors=factors,
+        grade=grade,
+        color=color,
         calculation_details={
-            "monthly_rent": monthly_rent, "property_taxes": property_taxes, "insurance": insurance,
-            "vacancy_rate": vacancy, "maintenance_pct": maint_pct, "management_pct": mgmt_pct,
-            "down_payment_pct": down_pct, "interest_rate": rate, "loan_term_years": term,
+            "monthly_rent": monthly_rent,
+            "property_taxes": property_taxes,
+            "insurance": insurance,
+            "vacancy_rate": vacancy,
+            "maintenance_pct": maint_pct,
+            "management_pct": mgmt_pct,
+            "down_payment_pct": down_pct,
+            "interest_rate": rate,
+            "loan_term_years": term,
         },
     )

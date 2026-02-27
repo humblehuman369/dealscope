@@ -1,5 +1,6 @@
 """Deal scoring — IQ Verdict, Deal Gap, and availability ranking."""
-from typing import Dict, Any, Optional
+
+from typing import Any
 
 """
 Deal Opportunity Score - Investment Price Indicator
@@ -7,19 +8,19 @@ Deal Opportunity Score - Investment Price Indicator
 The Deal Opportunity Score considers multiple factors to determine
 how attractive a property is as an investment opportunity:
 
-1. Deal Gap (50% weight) - ((List Price - Breakeven Price) / List Price) × 100
+1. Deal Gap (50% weight) - ((List Price - Breakeven Price) / List Price) x 100
    - Breakeven is calculated from LTR strategy (market rent less property costs)
    - This is the primary factor as it indicates how much discount is needed
 
 2. Availability Ranking (30% weight) - Based on listing status and motivation:
    - Withdrawn (best) - Seller motivation may be high
-   - For Sale – Price Reduced 2+ Times - Seller showing flexibility
+   - For Sale - Price Reduced 2+ Times - Seller showing flexibility
    - For Sale - Bank Owned/REO - Banks want to move properties
-   - For Sale – FSBO/Individual - More negotiation room
+   - For Sale - FSBO/Individual - More negotiation room
    - For Sale - Agent Listed - Standard listing
    - Off-Market - May find motivated sellers
    - For Rent - Landlord may consider selling
-   - Pending – Under Contract - Unlikely to get
+   - Pending - Under Contract - Unlikely to get
    - Sold (Recently) - Not available
 
 3. Days on Market (20% weight) - Combined with Deal Gap:
@@ -54,14 +55,14 @@ AVAILABILITY_RANKINGS = {
 
 
 def get_availability_ranking(
-    listing_status: Optional[str] = None,
-    seller_type: Optional[str] = None,
+    listing_status: str | None = None,
+    seller_type: str | None = None,
     is_foreclosure: bool = False,
     is_bank_owned: bool = False,
     is_fsbo: bool = False,
     is_auction: bool = False,
     price_reductions: int = 0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get availability ranking based on listing status and seller type.
 
@@ -69,15 +70,12 @@ def get_availability_ranking(
     """
     status = (listing_status or "").upper()
     seller = (seller_type or "").upper()
-    
+
     # Check for withdrawn
     if "WITHDRAWN" in status:
         ranking = AVAILABILITY_RANKINGS["WITHDRAWN"]
-        return {
-            "status": "WITHDRAWN",
-            **ranking
-        }
-    
+        return {"status": "WITHDRAWN", **ranking}
+
     # Check for price reductions (2+ times = motivated)
     if ("FOR_SALE" in status or "SALE" in status) and price_reductions and price_reductions >= 2:
         ranking = AVAILABILITY_RANKINGS["PRICE_REDUCED"]
@@ -86,65 +84,65 @@ def get_availability_ranking(
             "rank": ranking["rank"],
             "score": ranking["score"],
             "label": f"Price Reduced {price_reductions}x",
-            "motivation": ranking["motivation"]
+            "motivation": ranking["motivation"],
         }
-    
+
     # Check for auction (highly motivated - must sell)
     if is_auction or "AUCTION" in status or "AUCTION" in seller:
         ranking = AVAILABILITY_RANKINGS["AUCTION"]
         return {"status": "AUCTION", **ranking}
-    
+
     # Check for bank owned / foreclosure
     if is_bank_owned or "BANK" in seller:
         ranking = AVAILABILITY_RANKINGS["BANK_OWNED"]
         return {"status": "BANK_OWNED", **ranking}
-    
+
     if is_foreclosure or "FORECLOSURE" in seller:
         ranking = AVAILABILITY_RANKINGS["FORECLOSURE"]
         return {"status": "FORECLOSURE", **ranking}
-    
+
     # Check for FSBO
     if is_fsbo or "FSBO" in seller or "OWNER" in seller:
         ranking = AVAILABILITY_RANKINGS["FSBO"]
         return {"status": "FSBO", **ranking}
-    
+
     # Check for standard for sale
     if "FOR_SALE" in status or "SALE" in status:
         ranking = AVAILABILITY_RANKINGS["FOR_SALE"]
         return {"status": "FOR_SALE", **ranking}
-    
+
     # Check for off-market
     if "OFF_MARKET" in status or "OFF" in status:
         ranking = AVAILABILITY_RANKINGS["OFF_MARKET"]
         return {"status": "OFF_MARKET", **ranking}
-    
+
     # Check for rent
     if "FOR_RENT" in status or "RENT" in status:
         ranking = AVAILABILITY_RANKINGS["FOR_RENT"]
         return {"status": "FOR_RENT", **ranking}
-    
+
     # Check for pending
     if "PENDING" in status or "CONTRACT" in status:
         ranking = AVAILABILITY_RANKINGS["PENDING"]
         return {"status": "PENDING", **ranking}
-    
+
     # Check for sold
     if "SOLD" in status:
         ranking = AVAILABILITY_RANKINGS["SOLD"]
         return {"status": "SOLD", **ranking}
-    
+
     # Unknown
     ranking = AVAILABILITY_RANKINGS["UNKNOWN"]
     return {"status": "UNKNOWN", **ranking}
 
 
 def calculate_dom_score(
-    days_on_market: Optional[int],
+    days_on_market: int | None,
     deal_gap_percent: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Calculate Days on Market score with Deal Gap context.
-    
+
     The relationship between DOM and Deal Gap:
     - High Deal Gap + High DOM = Strong negotiation leverage
     - High Deal Gap + Low DOM = Opportunity not yet recognized
@@ -153,18 +151,18 @@ def calculate_dom_score(
     """
     if days_on_market is None:
         return {"days": None, "score": 50, "leverage": "unknown"}
-    
+
     days = days_on_market
-    
+
     # DOM thresholds (in days)
     LOW_DOM = 30
     MEDIUM_DOM = 60
     HIGH_DOM = 120
-    
+
     # Deal Gap thresholds (in %)
     LOW_GAP = 10
     HIGH_GAP = 25
-    
+
     if deal_gap_percent >= HIGH_GAP:
         # High Deal Gap - DOM increases leverage
         if days >= HIGH_DOM:
@@ -198,60 +196,54 @@ def calculate_dom_score(
 def calculate_deal_gap_score(
     income_value: float,
     list_price: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Calculate the Deal Gap score from income value and list price.
-    
-    Deal Gap = ((List Price - Income Value) / List Price) × 100
+
+    Deal Gap = ((List Price - Income Value) / List Price) x 100
     """
     if list_price <= 0:
-        return {
-            "income_value": income_value,
-            "list_price": list_price,
-            "gap_amount": 0,
-            "gap_percent": 0,
-            "score": 0
-        }
-    
+        return {"income_value": income_value, "list_price": list_price, "gap_amount": 0, "gap_percent": 0, "score": 0}
+
     gap_amount = list_price - income_value
     gap_percent = max(0, (gap_amount / list_price) * 100)
-    
+
     # Score is inverse of gap (lower gap = higher score)
     # 0% gap = 100 score, 45%+ gap = 0 score
     score = max(0, min(100, round(100 - (gap_percent * 100 / 45))))
-    
+
     return {
         "income_value": income_value,
         "list_price": list_price,
         "gap_amount": gap_amount,
         "gap_percent": gap_percent,
-        "score": score
+        "score": score,
     }
 
 
 def calculate_deal_opportunity_score(
     income_value: float,
     list_price: float,
-    listing_status: Optional[str] = None,
-    seller_type: Optional[str] = None,
+    listing_status: str | None = None,
+    seller_type: str | None = None,
     is_foreclosure: bool = False,
     is_bank_owned: bool = False,
     is_fsbo: bool = False,
     is_auction: bool = False,
     price_reductions: int = 0,
-    days_on_market: Optional[int] = None,
-    market_temperature: Optional[str] = None,
-) -> Dict[str, Any]:
+    days_on_market: int | None = None,
+    market_temperature: str | None = None,
+) -> dict[str, Any]:
     """
     Calculate IQ Verdict Score (Deal Opportunity Score).
-    
+
     The score answers: "How likely can you negotiate the required discount?"
-    
+
     Formula:
     1. Deal Gap % = (List Price - Income Value) / List Price (required discount)
     2. Motivation = Seller signals + Market condition modifier
     3. IQ Score = Probability of achieving Deal Gap given Motivation
-    
+
     Args:
         income_value: LTR income value (from market rent less costs)
         list_price: Current list price (or estimated value if off-market)
@@ -264,7 +256,7 @@ def calculate_deal_opportunity_score(
         price_reductions: Number of price reductions
         days_on_market: Days the property has been listed
         market_temperature: Market condition (hot, warm, cold) from AXESSO
-    
+
     Returns:
         Dict with score, grade, label, color, deal_gap, motivation details
     """
@@ -273,7 +265,7 @@ def calculate_deal_opportunity_score(
     # ========================================
     deal_gap_info = calculate_deal_gap_score(income_value, list_price)
     deal_gap_pct = deal_gap_info["gap_percent"]  # This is the required discount %
-    
+
     # ========================================
     # STEP 2: Calculate Motivation Score
     # ========================================
@@ -288,7 +280,7 @@ def calculate_deal_opportunity_score(
         price_reductions=price_reductions,
     )
     base_motivation = availability["score"]
-    
+
     # Add DOM bonus (longer = more motivated)
     dom_bonus = 0
     if days_on_market is not None:
@@ -300,7 +292,7 @@ def calculate_deal_opportunity_score(
             dom_bonus = 10
         elif days_on_market >= 60:
             dom_bonus = 5
-    
+
     # Apply market temperature modifier
     # Cold (buyer's market) = sellers more motivated = +15
     # Hot (seller's market) = sellers less motivated = -15
@@ -311,22 +303,22 @@ def calculate_deal_opportunity_score(
             market_modifier = 15
         elif temp_lower == "hot":
             market_modifier = -15
-    
+
     motivation_score = min(100, max(0, base_motivation + dom_bonus + market_modifier))
-    
+
     # ========================================
     # STEP 3: Map Motivation to Max Achievable Discount
     # ========================================
     # Higher motivation = larger discount possible
     # Formula: max_achievable = (motivation / 100) * 0.25 (0-25% range)
     max_achievable_discount = (motivation_score / 100) * 0.25
-    
+
     # ========================================
     # STEP 4: Calculate IQ Verdict Score (Probability)
     # ========================================
     # Score reflects how achievable the required Deal Gap is
     deal_gap_decimal = deal_gap_pct / 100  # Convert to decimal
-    
+
     if deal_gap_decimal <= 0:
         # No discount needed - good deal at asking price, but never 100 (no guarantees)
         iq_score = 90
@@ -349,10 +341,10 @@ def calculate_deal_opportunity_score(
         # Deal gap is unlikely (0-40)
         excess = deal_gap_decimal - max_achievable_discount * 1.5
         iq_score = max(0, round(40 - excess * 200))  # Steep drop-off
-    
+
     # Ensure score is in valid range (capped at 90 — no deal is guaranteed)
     iq_score = min(90, max(0, iq_score))
-    
+
     # ========================================
     # STEP 5: Determine Grade and Label
     # ========================================
@@ -380,7 +372,7 @@ def calculate_deal_opportunity_score(
         grade = "F"
         label = "Pass"
         color = "#ef4444"  # red-500
-    
+
     # Motivation label
     if motivation_score >= 80:
         motivation_label = "Very High"
@@ -392,7 +384,7 @@ def calculate_deal_opportunity_score(
         motivation_label = "Low"
     else:
         motivation_label = "Very Low"
-    
+
     return {
         "score": iq_score,
         "grade": grade,
@@ -421,10 +413,7 @@ def calculate_deal_opportunity_score(
         "factors": {
             "deal_gap": deal_gap_info,
             "availability": availability,
-            "days_on_market": {
-                "days": days_on_market,
-                "bonus": dom_bonus
-            },
+            "days_on_market": {"days": days_on_market, "bonus": dom_bonus},
         },
         "discount_percent": deal_gap_pct,
     }

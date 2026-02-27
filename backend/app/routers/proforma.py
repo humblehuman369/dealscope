@@ -4,29 +4,26 @@ Endpoints for generating accounting-standard financial proformas
 """
 
 import logging
-from typing import Optional
 from datetime import datetime
-import uuid
 
-from fastapi import APIRouter, HTTPException, status, Query
-from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse
+from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
+from app.core.deps import OptionalUser, ProUser
 from app.schemas.proforma import (
-    ProformaRequest,
-    ProformaExportResponse,
     FinancialProforma,
+    ProformaExportResponse,
+    ProformaRequest,
 )
-from app.services.proforma_generator import generate_proforma_data
-from app.services.proforma_exporter import ProformaExcelExporter
-from app.services.proforma_pdf_exporter import ProformaPDFExporter, WEASYPRINT_AVAILABLE
-from app.services.property_report_pdf import PropertyReportPDFExporter
-from app.services.wholesale_exporter import WholesaleExcelExporter
-from app.services.flip_exporter import FlipExcelExporter
 from app.services.brrrr_exporter import BRRRRExcelExporter
-from app.services.str_exporter import STRExcelExporter
+from app.services.flip_exporter import FlipExcelExporter
 from app.services.house_hack_exporter import HouseHackExcelExporter
+from app.services.proforma_exporter import ProformaExcelExporter
+from app.services.proforma_generator import generate_proforma_data
+from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
-from app.core.deps import CurrentUser, OptionalUser, ProUser
+from app.services.str_exporter import STRExcelExporter
+from app.services.wholesale_exporter import WholesaleExcelExporter
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +41,7 @@ async def generate_proforma(
 ):
     """
     Generate a comprehensive financial proforma for a property.
-    
+
     The proforma includes:
     - Property summary and acquisition details
     - Income and expense breakdown (Year 1)
@@ -54,7 +51,7 @@ async def generate_proforma(
     - Exit/disposition analysis with capital gains
     - Investment return metrics (IRR, equity multiple, etc.)
     - All assumptions and data sources
-    
+
     Supports export formats:
     - **xlsx**: Excel workbook with multiple tabs
     - **json**: Raw proforma data structure
@@ -63,13 +60,10 @@ async def generate_proforma(
     try:
         # Fetch property data using address
         property_data = await property_service.search_property(request.address)
-        
+
         if not property_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {request.address}"
-            )
-        
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {request.address}")
+
         # Generate proforma data
         proforma = await generate_proforma_data(
             property_data=property_data,
@@ -81,29 +75,24 @@ async def generate_proforma(
             purchase_price_override=request.purchase_price,
             monthly_rent_override=request.monthly_rent,
         )
-        
+
         if request.format == "json":
             # Return raw JSON data
-            return JSONResponse(
-                content=proforma.model_dump(),
-                media_type="application/json"
-            )
-        
+            return JSONResponse(content=proforma.model_dump(), media_type="application/json")
+
         elif request.format == "xlsx":
             # Generate Excel file
             exporter = ProformaExcelExporter(proforma)
             buffer = exporter.generate()
-            
+
             filename = f"proforma_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.xlsx"
-            
+
             return StreamingResponse(
                 buffer,
                 media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                headers={
-                    "Content-Disposition": f"attachment; filename={filename}"
-                }
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
             )
-        
+
         elif request.format == "pdf":
             # Generate PDF report using new DealGapIQ report exporter
             # WeasyPrint is lazy-loaded on first call to generate()
@@ -116,30 +105,26 @@ async def generate_proforma(
                     status_code=status.HTTP_501_NOT_IMPLEMENTED,
                     detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
                 )
-            
-            filename = f"DealGapIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
-            
+
+            filename = (
+                f"DealGapIQ_Report_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            )
+
             return StreamingResponse(
                 buffer,
                 media_type="application/pdf",
-                headers={
-                    "Content-Disposition": f"attachment; filename={filename}"
-                }
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
             )
-        
+
         else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported format: {request.format}"
-            )
-            
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unsupported format: {request.format}")
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error generating proforma: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating proforma: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error generating proforma: {e!s}"
         )
 
 
@@ -157,29 +142,26 @@ async def get_proforma(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50, description="Marginal income tax rate"),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30, description="Long-term capital gains tax rate"),
     hold_period_years: int = Query(10, ge=1, le=30, description="Investment hold period in years"),
-    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
-    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
-    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
-    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
-    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
-    insurance: Optional[float] = Query(None, description="Override annual insurance"),
+    purchase_price: float | None = Query(None, description="Override purchase price"),
+    monthly_rent: float | None = Query(None, description="Override monthly rent"),
+    interest_rate: float | None = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: float | None = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: float | None = Query(None, description="Override annual property taxes"),
+    insurance: float | None = Query(None, description="Override annual insurance"),
 ):
     """
     Get financial proforma data for a property as JSON.
-    
+
     Use this endpoint to fetch proforma data for display in the UI.
     For downloadable Excel exports, use POST /generate with format=xlsx.
     """
     try:
         # Fetch property data using address
         property_data = await property_service.search_property(address)
-        
+
         if not property_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {address}"
-            )
-        
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
+
         # Generate proforma data
         proforma = await generate_proforma_data(
             property_data=property_data,
@@ -195,16 +177,15 @@ async def get_proforma(
             property_taxes_override=property_taxes,
             insurance_override=insurance,
         )
-        
+
         return proforma
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error generating proforma: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating proforma: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error generating proforma: {e!s}"
         )
 
 
@@ -222,19 +203,19 @@ async def download_proforma_excel(
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
     # User override params (from DealMaker adjustments)
-    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
-    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
-    interest_rate: Optional[float] = Query(None, description="Override interest rate (%)"),
-    down_payment_pct: Optional[float] = Query(None, description="Override down payment (%)"),
-    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
-    insurance: Optional[float] = Query(None, description="Override annual insurance"),
+    purchase_price: float | None = Query(None, description="Override purchase price"),
+    monthly_rent: float | None = Query(None, description="Override monthly rent"),
+    interest_rate: float | None = Query(None, description="Override interest rate (%)"),
+    down_payment_pct: float | None = Query(None, description="Override down payment (%)"),
+    property_taxes: float | None = Query(None, description="Override annual property taxes"),
+    insurance: float | None = Query(None, description="Override annual insurance"),
     # Wholesale-specific params
-    wholesale_fee: Optional[float] = Query(None, description="Wholesale assignment fee override"),
-    amv: Optional[float] = Query(None, description="After-market value override"),
+    wholesale_fee: float | None = Query(None, description="Wholesale assignment fee override"),
+    amv: float | None = Query(None, description="After-market value override"),
 ):
     """
     Download a comprehensive Excel financial proforma.
-    
+
     For **wholesale** strategy, generates a deal-specific proforma with:
     1. Deal Summary — property + strategy overview
     2. Deal Structure — MAO, contract price, assignment fee
@@ -242,7 +223,7 @@ async def download_proforma_excel(
     4. Buyer Analysis — rent estimate, AMV, buyer's numbers
     5. Deal Viability — spread, viability grade, income targets
     6. Assumptions — all inputs + data sources
-    
+
     For all other strategies, generates a standard 8-tab proforma:
     1. Property Summary  2. Income & Expenses  3. Cash Flow Projection
     4. Loan Amortization 5. Depreciation  6. Exit Analysis
@@ -251,13 +232,10 @@ async def download_proforma_excel(
     try:
         # Fetch property data using address
         property_data = await property_service.search_property(address)
-        
+
         if not property_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {address}"
-            )
-        
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
+
         # Generate proforma data
         proforma = await generate_proforma_data(
             property_data=property_data,
@@ -273,7 +251,7 @@ async def download_proforma_excel(
             property_taxes_override=property_taxes,
             insurance_override=insurance,
         )
-        
+
         # Dispatch to strategy-specific exporter
         logger.info(f"[PROFORMA EXPORT] strategy={strategy!r}")
         if strategy == "wholesale":
@@ -295,26 +273,23 @@ async def download_proforma_excel(
             exporter = ProformaExcelExporter(proforma)
 
         buffer = exporter.generate()
-        
+
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
         filename = f"DealGapIQ_{strategy.upper()}_Proforma_{address_slug}_{datetime.now().strftime('%Y%m%d')}.xlsx"
-        
+
         return StreamingResponse(
             buffer,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={
-                "Content-Disposition": f"attachment; filename=\"{filename}\""
-            }
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error generating Excel proforma: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating Excel proforma: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error generating Excel proforma: {e!s}"
         )
 
 
@@ -333,16 +308,16 @@ async def download_proforma_pdf(
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
     # User override params (from DealMaker adjustments)
-    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
-    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
-    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
-    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
-    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
-    insurance: Optional[float] = Query(None, description="Override annual insurance"),
+    purchase_price: float | None = Query(None, description="Override purchase price"),
+    monthly_rent: float | None = Query(None, description="Override monthly rent"),
+    interest_rate: float | None = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: float | None = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: float | None = Query(None, description="Override annual property taxes"),
+    insurance: float | None = Query(None, description="Override annual insurance"),
 ):
     """
     Download an DealGapIQ Property Investment Report as PDF.
-    
+
     The 11-page report includes:
     - Cover page with property summary
     - Property overview and annual obligations
@@ -355,24 +330,21 @@ async def download_proforma_pdf(
     - 10-year financial projections with charts
     - Exit strategy and tax implications
     - Sensitivity analysis and data sources
-    
+
     Supports light theme (print-optimized) and dark theme (digital).
     Requires WeasyPrint to be installed on the server.
     """
     # Validate theme
     if theme not in ("light", "dark"):
         theme = "light"
-    
+
     try:
         # Fetch property data using address
         property_data = await property_service.search_property(address)
-        
+
         if not property_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {address}"
-            )
-        
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
+
         # Generate proforma data
         proforma = await generate_proforma_data(
             property_data=property_data,
@@ -388,7 +360,7 @@ async def download_proforma_pdf(
             property_taxes_override=property_taxes,
             insurance_override=insurance,
         )
-        
+
         # Generate PDF using new DealGapIQ report exporter
         try:
             exporter = PropertyReportPDFExporter(proforma, theme=theme)
@@ -399,27 +371,24 @@ async def download_proforma_pdf(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
                 detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
             )
-        
+
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
         theme_suffix = f"_{theme}" if theme == "dark" else ""
-        filename = f"DealGapIQ_Report_{address_slug}_{strategy.upper()}{theme_suffix}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        
-        return StreamingResponse(
-            buffer,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename=\"{filename}\""
-            }
+        filename = (
+            f"DealGapIQ_Report_{address_slug}_{strategy.upper()}{theme_suffix}_{datetime.now().strftime('%Y%m%d')}.pdf"
         )
-        
+
+        return StreamingResponse(
+            buffer, media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error generating PDF report: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating PDF report: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error generating PDF report: {e!s}"
         )
 
 
@@ -439,12 +408,12 @@ async def view_proforma_report(
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
     capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
     hold_period_years: int = Query(10, ge=1, le=30),
-    purchase_price: Optional[float] = Query(None, description="Override purchase price"),
-    monthly_rent: Optional[float] = Query(None, description="Override monthly rent"),
-    interest_rate: Optional[float] = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
-    down_payment_pct: Optional[float] = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
-    property_taxes: Optional[float] = Query(None, description="Override annual property taxes"),
-    insurance: Optional[float] = Query(None, description="Override annual insurance"),
+    purchase_price: float | None = Query(None, description="Override purchase price"),
+    monthly_rent: float | None = Query(None, description="Override monthly rent"),
+    interest_rate: float | None = Query(None, description="Override interest rate (decimal, e.g. 0.065)"),
+    down_payment_pct: float | None = Query(None, description="Override down payment (decimal, e.g. 0.20)"),
+    property_taxes: float | None = Query(None, description="Override annual property taxes"),
+    insurance: float | None = Query(None, description="Override annual insurance"),
 ):
     """
     Render the DealGapIQ Property Investment Report as a browser-viewable HTML page.
@@ -493,5 +462,5 @@ async def view_proforma_report(
         logger.error(f"Error generating HTML report: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating report: {str(e)}",
+            detail=f"Error generating report: {e!s}",
         )

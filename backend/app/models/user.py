@@ -6,30 +6,30 @@ UserProfile stores investment preferences and UI settings.
 Business profile fields are kept on User for simplicity.
 """
 
-from decimal import Decimal
-
-from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Float, Text, Integer, Numeric
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional, List, TYPE_CHECKING
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.saved_property import SavedProperty
-    from app.models.document import Document
-    from app.models.subscription import Subscription, PaymentHistory
-    from app.models.session import UserSession
-    from app.models.role import UserRole
     from app.models.audit_log import AuditLog
+    from app.models.document import Document
+    from app.models.role import UserRole
+    from app.models.saved_property import SavedProperty
+    from app.models.session import UserSession
+    from app.models.subscription import PaymentHistory, Subscription
     from app.models.verification_token import VerificationToken
 
 
 def _utcnow() -> datetime:
     """Return timezone-aware UTC now."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class User(Base):
@@ -37,6 +37,7 @@ class User(Base):
     User account model.
     Stores authentication credentials, account status, and business profile.
     """
+
     __tablename__ = "users"
 
     # Primary key
@@ -56,29 +57,29 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     # OAuth (e.g. Google); hashed_password unused for oauth-only users
-    oauth_provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
-    oauth_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    oauth_provider: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
+    oauth_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
 
     # Profile info
-    full_name: Mapped[Optional[str]] = mapped_column(String(255))
-    avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
+    full_name: Mapped[str | None] = mapped_column(String(255))
+    avatar_url: Mapped[str | None] = mapped_column(String(500))
 
     # ==========================================
     # Business Profile Fields
     # ==========================================
-    business_name: Mapped[Optional[str]] = mapped_column(String(255))
-    business_type: Mapped[Optional[str]] = mapped_column(String(100))
-    business_address_street: Mapped[Optional[str]] = mapped_column(String(255))
-    business_address_city: Mapped[Optional[str]] = mapped_column(String(100))
-    business_address_state: Mapped[Optional[str]] = mapped_column(String(10))
-    business_address_zip: Mapped[Optional[str]] = mapped_column(String(20))
-    business_address_country: Mapped[Optional[str]] = mapped_column(String(100), default="USA")
-    phone_numbers: Mapped[Optional[list]] = mapped_column(JSON, default=list)
-    additional_emails: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
-    social_links: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
-    license_number: Mapped[Optional[str]] = mapped_column(String(100))
-    license_state: Mapped[Optional[str]] = mapped_column(String(10))
-    bio: Mapped[Optional[str]] = mapped_column(Text)
+    business_name: Mapped[str | None] = mapped_column(String(255))
+    business_type: Mapped[str | None] = mapped_column(String(100))
+    business_address_street: Mapped[str | None] = mapped_column(String(255))
+    business_address_city: Mapped[str | None] = mapped_column(String(100))
+    business_address_state: Mapped[str | None] = mapped_column(String(10))
+    business_address_zip: Mapped[str | None] = mapped_column(String(20))
+    business_address_country: Mapped[str | None] = mapped_column(String(100), default="USA")
+    phone_numbers: Mapped[list | None] = mapped_column(JSON, default=list)
+    additional_emails: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
+    social_links: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    license_number: Mapped[str | None] = mapped_column(String(100))
+    license_state: Mapped[str | None] = mapped_column(String(10))
+    bio: Mapped[str | None] = mapped_column(Text)
 
     # ==========================================
     # Account status
@@ -92,13 +93,13 @@ class User(Base):
     # Security — account lockout
     # ==========================================
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
-    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    password_changed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # ==========================================
     # MFA
     # ==========================================
-    mfa_secret: Mapped[Optional[str]] = mapped_column(String(255))  # encrypted TOTP secret
+    mfa_secret: Mapped[str | None] = mapped_column(String(255))  # encrypted TOTP secret
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # ==========================================
@@ -113,7 +114,7 @@ class User(Base):
         default=_utcnow,
         onupdate=_utcnow,
     )
-    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # ==========================================
     # Relationships
@@ -124,12 +125,12 @@ class User(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    saved_properties: Mapped[List["SavedProperty"]] = relationship(
+    saved_properties: Mapped[list["SavedProperty"]] = relationship(
         "SavedProperty",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: Mapped[list["Document"]] = relationship(
         "Document",
         back_populates="user",
         cascade="all, delete-orphan",
@@ -140,27 +141,27 @@ class User(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    payment_history: Mapped[List["PaymentHistory"]] = relationship(
+    payment_history: Mapped[list["PaymentHistory"]] = relationship(
         "PaymentHistory",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    sessions: Mapped[List["UserSession"]] = relationship(
+    sessions: Mapped[list["UserSession"]] = relationship(
         "UserSession",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    user_roles: Mapped[List["UserRole"]] = relationship(
+    user_roles: Mapped[list["UserRole"]] = relationship(
         "UserRole",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    audit_logs: Mapped[List["AuditLog"]] = relationship(
+    audit_logs: Mapped[list["AuditLog"]] = relationship(
         "AuditLog",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    verification_tokens: Mapped[List["VerificationToken"]] = relationship(
+    verification_tokens: Mapped[list["VerificationToken"]] = relationship(
         "VerificationToken",
         back_populates="user",
         cascade="all, delete-orphan",
@@ -172,6 +173,7 @@ class UserProfile(Base):
     User investment profile.
     Stores investment preferences, goals, and default assumptions.
     """
+
     __tablename__ = "user_profiles"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -187,32 +189,32 @@ class UserProfile(Base):
     )
 
     # Investment Experience
-    investment_experience: Mapped[Optional[str]] = mapped_column(String(50))
-    preferred_strategies: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
-    target_markets: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
+    investment_experience: Mapped[str | None] = mapped_column(String(50))
+    preferred_strategies: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
+    target_markets: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
 
     # Budget
-    investment_budget_min: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
-    investment_budget_max: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2))
+    investment_budget_min: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    investment_budget_max: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
 
     # Target Returns
-    target_cash_on_cash: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))
-    target_cap_rate: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))
+    target_cash_on_cash: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
+    target_cap_rate: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
 
     # Risk Tolerance
-    risk_tolerance: Mapped[Optional[str]] = mapped_column(String(20))
+    risk_tolerance: Mapped[str | None] = mapped_column(String(20))
 
     # Default Assumptions (JSON blob that overrides global defaults)
-    default_assumptions: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
+    default_assumptions: Mapped[dict | None] = mapped_column(JSON, default=dict)
 
     # UI Preferences
-    notification_preferences: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
-    dashboard_layout: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
-    preferred_theme: Mapped[Optional[str]] = mapped_column(String(20), default="system")
+    notification_preferences: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    dashboard_layout: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    preferred_theme: Mapped[str | None] = mapped_column(String(20), default="system")
 
     # Onboarding
     onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    onboarding_step: Mapped[Optional[int]] = mapped_column(default=0)
+    onboarding_step: Mapped[int | None] = mapped_column(default=0)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

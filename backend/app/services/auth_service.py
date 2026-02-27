@@ -1,5 +1,5 @@
 """
-Authentication service – orchestrates registration, login, MFA, password
+Authentication service - orchestrates registration, login, MFA, password
 management, and email-verification flows.
 
 This service delegates data access to repositories and token/session
@@ -14,18 +14,17 @@ from __future__ import annotations
 import logging
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Tuple
+from datetime import UTC, datetime, timedelta
 
 import pyotp
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.encryption import encrypt_value, decrypt_value
+from app.core.encryption import decrypt_value, encrypt_value
 from app.models.audit_log import AuditAction
 from app.models.session import UserSession
-from app.models.user import User, UserProfile
+from app.models.user import User
 from app.models.verification_token import TokenType
 from app.repositories.audit_repository import audit_repo
 from app.repositories.role_repository import role_repo
@@ -91,9 +90,9 @@ class AuthService:
         email: str,
         password: str,
         full_name: str,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-    ) -> Tuple[User, Optional[str]]:
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> tuple[User, str | None]:
         """Register a new user.
 
         Returns ``(user, raw_verification_token_or_None)``.
@@ -131,11 +130,9 @@ class AuthService:
                 await role_repo.assign_role(db, user.id, member_role.id)
 
             # Verification token
-            raw_token: Optional[str] = None
+            raw_token: str | None = None
             if requires_verification:
-                raw_token = await token_service.create_verification_token(
-                    db, user.id, TokenType.EMAIL_VERIFICATION
-                )
+                raw_token = await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
 
             # Audit
             await audit_repo.log(
@@ -157,8 +154,8 @@ class AuthService:
         google_id: str,
         email: str,
         name: str,
-        picture: Optional[str] = None,
-    ) -> Tuple[User, bool]:
+        picture: str | None = None,
+    ) -> tuple[User, bool]:
         """Find user by Google OAuth id, or by email (link account), or create new user.
 
         Returns (user, created) where created is True only when a new user was created.
@@ -223,11 +220,11 @@ class AuthService:
         *,
         email: str,
         password: str,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        device_name: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        device_name: str | None = None,
         remember_me: bool = False,
-    ) -> Tuple[User, UserSession, str]:
+    ) -> tuple[User, UserSession, str]:
         """Authenticate a user and create a session.
 
         Returns ``(user, session, jwt)``.
@@ -240,8 +237,8 @@ class AuthService:
             raise AuthError("Invalid email or password", status_code=401)
 
         # Account lockout check
-        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
-            remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds())
+        if user.locked_until and user.locked_until > datetime.now(UTC):
+            remaining = int((user.locked_until - datetime.now(UTC)).total_seconds())
             raise AuthError(
                 f"Account is temporarily locked. Try again in {remaining // 60 + 1} minutes.",
                 status_code=423,
@@ -265,7 +262,7 @@ class AuthService:
                 lockout_mins = LOCKOUT_DURATION_MINUTES * (
                     LOCKOUT_PROGRESSIVE_MULTIPLIER ** ((new_count - MAX_FAILED_ATTEMPTS) // MAX_FAILED_ATTEMPTS)
                 )
-                lock_until = datetime.now(timezone.utc) + timedelta(minutes=lockout_mins)
+                lock_until = datetime.now(UTC) + timedelta(minutes=lockout_mins)
                 await user_repo.lock_account(db, user.id, lock_until)
                 await audit_repo.log(
                     db,
@@ -294,7 +291,7 @@ class AuthService:
 
         # Success — reset lockout and create session
         await user_repo.reset_failed_logins(db, user.id)
-        await user_repo.update(db, user.id, last_login=datetime.now(timezone.utc))
+        await user_repo.update(db, user.id, last_login=datetime.now(UTC))
 
         session_obj, jwt_token = await session_service.create_session(
             db,
@@ -327,15 +324,13 @@ class AuthService:
         *,
         challenge_token: str,
         totp_code: str,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        device_name: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        device_name: str | None = None,
         remember_me: bool = False,
-    ) -> Tuple[User, UserSession, str]:
+    ) -> tuple[User, UserSession, str]:
         """Complete MFA login after a successful password check."""
-        user_id = await token_service.validate_verification_token(
-            db, challenge_token, TokenType.MFA_CHALLENGE
-        )
+        user_id = await token_service.validate_verification_token(db, challenge_token, TokenType.MFA_CHALLENGE)
         if user_id is None:
             raise AuthError("Invalid or expired MFA challenge", status_code=401)
 
@@ -358,7 +353,7 @@ class AuthService:
 
         # MFA passed — create session
         await user_repo.reset_failed_logins(db, user.id)
-        await user_repo.update(db, user.id, last_login=datetime.now(timezone.utc))
+        await user_repo.update(db, user.id, last_login=datetime.now(UTC))
 
         session_obj, jwt_token = await session_service.create_session(
             db,
@@ -384,7 +379,7 @@ class AuthService:
         self,
         db: AsyncSession,
         user_id: uuid.UUID,
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """Begin MFA setup.  Returns ``(secret, provisioning_uri)``."""
         user = await user_repo.get_by_id(db, user_id)
         if user is None:
@@ -405,7 +400,7 @@ class AuthService:
         user_id: uuid.UUID,
         totp_code: str,
         *,
-        ip_address: Optional[str] = None,
+        ip_address: str | None = None,
     ) -> bool:
         """Confirm MFA setup by verifying a code from the authenticator app."""
         user = await user_repo.get_by_id(db, user_id)
@@ -432,7 +427,7 @@ class AuthService:
         db: AsyncSession,
         user_id: uuid.UUID,
         *,
-        ip_address: Optional[str] = None,
+        ip_address: str | None = None,
     ) -> None:
         await user_repo.update(db, user_id, mfa_secret=None, mfa_enabled=False)
         await audit_repo.log(
@@ -451,11 +446,9 @@ class AuthService:
         db: AsyncSession,
         raw_token: str,
         *,
-        ip_address: Optional[str] = None,
+        ip_address: str | None = None,
     ) -> User:
-        user_id = await token_service.validate_verification_token(
-            db, raw_token, TokenType.EMAIL_VERIFICATION
-        )
+        user_id = await token_service.validate_verification_token(db, raw_token, TokenType.EMAIL_VERIFICATION)
         if user_id is None:
             raise AuthError("Invalid or expired verification token", status_code=400)
 
@@ -476,13 +469,11 @@ class AuthService:
         self,
         db: AsyncSession,
         user_id: uuid.UUID,
-    ) -> Optional[str]:
+    ) -> str | None:
         user = await user_repo.get_by_id(db, user_id)
         if user is None or user.is_verified:
             return None
-        return await token_service.create_verification_token(
-            db, user.id, TokenType.EMAIL_VERIFICATION
-        )
+        return await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
 
     # ------------------------------------------------------------------
     # Password reset
@@ -493,16 +484,14 @@ class AuthService:
         db: AsyncSession,
         email: str,
         *,
-        ip_address: Optional[str] = None,
-    ) -> Optional[Tuple[str, User]]:
+        ip_address: str | None = None,
+    ) -> tuple[str, User] | None:
         """Request a password reset.  Returns None if user not found (no leak)."""
         user = await user_repo.get_by_email(db, email.lower().strip())
         if user is None:
             return None
 
-        raw_token = await token_service.create_verification_token(
-            db, user.id, TokenType.PASSWORD_RESET
-        )
+        raw_token = await token_service.create_verification_token(db, user.id, TokenType.PASSWORD_RESET)
         await audit_repo.log(
             db,
             action=AuditAction.PASSWORD_RESET_REQUEST,
@@ -517,11 +506,9 @@ class AuthService:
         raw_token: str,
         new_password: str,
         *,
-        ip_address: Optional[str] = None,
+        ip_address: str | None = None,
     ) -> User:
-        user_id = await token_service.validate_verification_token(
-            db, raw_token, TokenType.PASSWORD_RESET
-        )
+        user_id = await token_service.validate_verification_token(db, raw_token, TokenType.PASSWORD_RESET)
         if user_id is None:
             raise AuthError("Invalid or expired reset token", status_code=400)
 
@@ -531,7 +518,7 @@ class AuthService:
                 db,
                 user_id,
                 hashed_password=hashed,
-                password_changed_at=datetime.now(timezone.utc),
+                password_changed_at=datetime.now(UTC),
             )
 
             # Revoke all existing sessions
@@ -561,8 +548,8 @@ class AuthService:
         current_password: str,
         new_password: str,
         *,
-        current_session_id: Optional[uuid.UUID] = None,
-        ip_address: Optional[str] = None,
+        current_session_id: uuid.UUID | None = None,
+        ip_address: str | None = None,
     ) -> bool:
         user = await user_repo.get_by_id(db, user_id)
         if user is None:
@@ -577,13 +564,11 @@ class AuthService:
                 db,
                 user_id,
                 hashed_password=hashed,
-                password_changed_at=datetime.now(timezone.utc),
+                password_changed_at=datetime.now(UTC),
             )
 
             # Revoke all sessions except the current one
-            await session_service.revoke_all_sessions(
-                db, user_id, except_session_id=current_session_id
-            )
+            await session_service.revoke_all_sessions(db, user_id, except_session_id=current_session_id)
 
             await audit_repo.log(
                 db,
@@ -602,8 +587,8 @@ class AuthService:
         db: AsyncSession,
         session_id: uuid.UUID,
         *,
-        user_id: Optional[uuid.UUID] = None,
-        ip_address: Optional[str] = None,
+        user_id: uuid.UUID | None = None,
+        ip_address: str | None = None,
     ) -> None:
         await session_service.revoke_session(db, session_id)
         await audit_repo.log(

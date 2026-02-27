@@ -4,44 +4,45 @@ Short-Term Rental (STR) Proforma — Excel Exporter  (v1.0)
 Generates a professional proforma tailored for Airbnb / VRBO style
 short-term rental investments:
 
-  1. Property Summary     – property details, ADR, occupancy, overview
-  2. Revenue Analysis     – gross revenue, platform fees, net revenue
-  3. Operating Expenses   – full expense breakdown
-  4. Cash Flow & Returns  – NOI, debt service, cash flow, key metrics
-  5. Seasonality Analysis – peak / shoulder / off-season breakdown
-  6. Assumptions          – STR-specific inputs + data sources
+  1. Property Summary     - property details, ADR, occupancy, overview
+  2. Revenue Analysis     - gross revenue, platform fees, net revenue
+  3. Operating Expenses   - full expense breakdown
+  4. Cash Flow & Returns  - NOI, debt service, cash flow, key metrics
+  5. Seasonality Analysis - peak / shoulder / off-season breakdown
+  6. Assumptions          - STR-specific inputs + data sources
 """
 
-from io import BytesIO
 from datetime import datetime
-from typing import Any, Dict
+from io import BytesIO
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Alignment, Font, PatternFill,
+    Alignment,
+    Font,
+    PatternFill,
 )
 from openpyxl.utils import get_column_letter
 
 from app.schemas.proforma import FinancialProforma
 
-
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"
+_BRAND = "0A84FF"
 _HEADER_BG = "1F4E79"
-_GREEN     = "22C55E"
-_RED       = "EF4444"
-_WHITE     = "FFFFFF"
+_GREEN = "22C55E"
+_RED = "EF4444"
+_WHITE = "FFFFFF"
 
-_HDR_FILL  = PatternFill("solid", fgColor=_HEADER_BG)
-_HDR_FONT  = Font(bold=True, color=_WHITE, size=11, name="Calibri")
-_SUB_FILL  = PatternFill("solid", fgColor="D6DCE4")
-_SUB_FONT  = Font(bold=True, size=10, name="Calibri")
+_HDR_FILL = PatternFill("solid", fgColor=_HEADER_BG)
+_HDR_FONT = Font(bold=True, color=_WHITE, size=11, name="Calibri")
+_SUB_FILL = PatternFill("solid", fgColor="D6DCE4")
+_SUB_FONT = Font(bold=True, size=10, name="Calibri")
 _TOTAL_FNT = Font(bold=True, size=10, name="Calibri")
 _BODY_FONT = Font(size=10, name="Calibri")
 _GOOD_FILL = PatternFill("solid", fgColor="E2EFDA")
 _WARN_FILL = PatternFill("solid", fgColor="FFF2CC")
-_BAD_FILL  = PatternFill("solid", fgColor="FCE4EC")
+_BAD_FILL = PatternFill("solid", fgColor="FCE4EC")
 
 _CUR = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
 _PCT = "0.00%"
@@ -54,7 +55,7 @@ class STRExcelExporter:
     def __init__(self, proforma: FinancialProforma):
         self.d = proforma
         self.wb = Workbook()
-        self.bd: Dict[str, Any] = proforma.strategy_breakdown or {}
+        self.bd: dict[str, Any] = proforma.strategy_breakdown or {}
 
     # ── public ────────────────────────────────────────────────────────────
 
@@ -99,7 +100,7 @@ class STRExcelExporter:
         rows2 = [
             ("Strategy", "Short-Term Rental (Airbnb / VRBO)"),
             ("Objective", "Maximize revenue through nightly rentals"),
-            ("Revenue Model", "ADR × Occupancy × 365 nights"),
+            ("Revenue Model", "ADR x Occupancy x 365 nights"),
             ("Financing", "Conventional or DSCR loan"),
             ("Risk Profile", "Higher revenue potential, higher operating costs"),
         ]
@@ -405,8 +406,14 @@ class STRExcelExporter:
         return row + 1
 
     def _label_value(
-        self, ws, row: int, label: str, value: Any,
-        *, fmt: str | None = None, highlight: bool = False,
+        self,
+        ws,
+        row: int,
+        label: str,
+        value: Any,
+        *,
+        fmt: str | None = None,
+        highlight: bool = False,
     ) -> int:
         lc = ws.cell(row, 1, label)
         lc.font = _BODY_FONT

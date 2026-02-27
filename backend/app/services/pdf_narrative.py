@@ -47,6 +47,7 @@ def _property_type_label(ptype: str) -> str:
 # Cover page narrative
 # ---------------------------------------------------------------------------
 
+
 def cover_narrative(data: FinancialProforma) -> str:
     prop = data.property
     strategy = data.strategy_type.upper().replace("_", " ")
@@ -81,15 +82,14 @@ def cover_narrative(data: FinancialProforma) -> str:
 # Property overview narrative
 # ---------------------------------------------------------------------------
 
+
 def property_overview_narrative(data: FinancialProforma) -> str:
     prop = data.property
     acq = data.acquisition
     inc = data.income
     ptype = _property_type_label(prop.property_type)
 
-    parts = [
-        f"This {ptype} represents "
-    ]
+    parts = [f"This {ptype} represents "]
 
     # Characterize the deal
     coc = data.metrics.cash_on_cash_return
@@ -113,8 +113,7 @@ def property_overview_narrative(data: FinancialProforma) -> str:
     rent_per_sqft = data.metrics.rent_per_sqft
     if rent_per_sqft > 0:
         parts.append(
-            f"The rent-to-price ratio and location fundamentals position this property "
-            f"for sustained investor interest."
+            "The rent-to-price ratio and location fundamentals position this property for sustained investor interest."
         )
 
     return "".join(parts)
@@ -123,6 +122,7 @@ def property_overview_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Market position narrative
 # ---------------------------------------------------------------------------
+
 
 def market_narrative(data: FinancialProforma) -> str:
     prop = data.property
@@ -143,6 +143,7 @@ def market_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Financing narrative
 # ---------------------------------------------------------------------------
+
 
 def financing_narrative(data: FinancialProforma) -> str:
     fin = data.financing
@@ -175,6 +176,7 @@ def financing_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Income statement narrative
 # ---------------------------------------------------------------------------
+
 
 def income_narrative(data: FinancialProforma) -> str:
     inc = data.income
@@ -211,9 +213,9 @@ def income_narrative(data: FinancialProforma) -> str:
 # Expense breakdown narrative
 # ---------------------------------------------------------------------------
 
+
 def expense_narrative(data: FinancialProforma) -> str:
     exp = data.expenses
-    inc = data.income
     proj = data.projections
 
     ratio = exp.expense_ratio * 100 if exp.expense_ratio < 1 else exp.expense_ratio
@@ -231,17 +233,13 @@ def expense_narrative(data: FinancialProforma) -> str:
         parts.append(", which is elevated relative to typical single-family benchmarks. ")
 
     if exp.insurance > exp.property_taxes:
-        parts.append(
-            f"Insurance costs are the largest expense category at {_fmt_money(exp.insurance)}, "
-        )
+        parts.append(f"Insurance costs are the largest expense category at {_fmt_money(exp.insurance)}, ")
     else:
-        parts.append(
-            f"Property taxes are the largest expense category at {_fmt_money(exp.property_taxes)}, "
-        )
+        parts.append(f"Property taxes are the largest expense category at {_fmt_money(exp.property_taxes)}, ")
 
     parts.append(
-        f"while conservative reserves for maintenance and capital expenditures "
-        f"ensure adequate funds for property upkeep. "
+        "while conservative reserves for maintenance and capital expenditures "
+        "ensure adequate funds for property upkeep. "
     )
 
     if exp.hoa_fees == 0:
@@ -259,6 +257,7 @@ def expense_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Key metrics narrative
 # ---------------------------------------------------------------------------
+
 
 def metrics_narrative(data: FinancialProforma) -> str:
     m = data.metrics
@@ -278,9 +277,7 @@ def metrics_narrative(data: FinancialProforma) -> str:
             "reflect current market conditions, the property is positioned for improving returns. "
         )
     else:
-        parts.append(
-            "First-year operational metrics reflect the challenges of current market conditions. "
-        )
+        parts.append("First-year operational metrics reflect the challenges of current market conditions. ")
 
     # DSCR context
     if m.dscr >= 1.25:
@@ -300,19 +297,15 @@ def metrics_narrative(data: FinancialProforma) -> str:
         )
 
     # IRR context
-    if hasattr(r, 'irr') and r.irr > 0:
-        parts.append(
-            f"The {_fmt_pct(r.irr)} projected IRR demonstrates "
-        )
+    if hasattr(r, "irr") and r.irr > 0:
+        parts.append(f"The {_fmt_pct(r.irr)} projected IRR demonstrates ")
         if r.irr >= 15:
             parts.append("excellent total returns when held through the full investment cycle, ")
         elif r.irr >= 10:
             parts.append("solid total returns when held through the full investment cycle, ")
         else:
             parts.append("moderate total returns over the projected hold period, ")
-        parts.append(
-            "accounting for rental income, appreciation, loan amortization, and eventual sale proceeds."
-        )
+        parts.append("accounting for rental income, appreciation, loan amortization, and eventual sale proceeds.")
 
     return "".join(parts)
 
@@ -320,6 +313,7 @@ def metrics_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Deal score narrative
 # ---------------------------------------------------------------------------
+
 
 def deal_score_narrative(data: FinancialProforma) -> str:
     ds = data.deal_score
@@ -337,10 +331,7 @@ def deal_score_narrative(data: FinancialProforma) -> str:
         assessment = "a challenging investment at current pricing"
         action = "The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies."
 
-    parts = [
-        f"The DealGapIQ Deal Score of {ds.score} ({ds.grade}) indicates this is {assessment}. "
-        f'{ds.verdict}. '
-    ]
+    parts = [f"The DealGapIQ Deal Score of {ds.score} ({ds.grade}) indicates this is {assessment}. {ds.verdict}. "]
 
     if ds.income_value > 0 and ds.discount_required != 0:
         parts.append(
@@ -358,9 +349,9 @@ def deal_score_narrative(data: FinancialProforma) -> str:
 # Projections narrative
 # ---------------------------------------------------------------------------
 
+
 def projections_narrative(data: FinancialProforma) -> str:
     proj = data.projections
-    m = data.metrics
     years = len(proj.annual_projections)
 
     # Find when cash flow turns positive
@@ -378,7 +369,7 @@ def projections_narrative(data: FinancialProforma) -> str:
     # Property appreciation
     initial_value = data.acquisition.purchase_price
     final_value = proj.property_values[-1] if proj.property_values else initial_value
-    appreciation_pct = ((final_value - initial_value) / initial_value * 100) if initial_value > 0 else 0
+    ((final_value - initial_value) / initial_value * 100) if initial_value > 0 else 0
 
     parts = []
 
@@ -413,6 +404,7 @@ def projections_narrative(data: FinancialProforma) -> str:
 # ---------------------------------------------------------------------------
 # Exit strategy narrative
 # ---------------------------------------------------------------------------
+
 
 def exit_narrative(data: FinancialProforma) -> str:
     e = data.exit
@@ -454,12 +446,11 @@ def exit_narrative(data: FinancialProforma) -> str:
 # Sensitivity narrative
 # ---------------------------------------------------------------------------
 
+
 def sensitivity_narrative(data: FinancialProforma) -> str:
     s = data.sensitivity
 
-    parts = [
-        "Sensitivity analysis examines how changes in key variables affect investment returns. "
-    ]
+    parts = ["Sensitivity analysis examines how changes in key variables affect investment returns. "]
 
     if s.purchase_price:
         best = max(s.purchase_price, key=lambda x: x.irr)

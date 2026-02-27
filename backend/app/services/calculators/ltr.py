@@ -4,15 +4,16 @@ Pure calculation module — accepts only explicit, fully-resolved parameters.
 All default values are resolved by the assumption_resolver BEFORE calling
 these functions. No imports from app.core.defaults allowed.
 """
-from typing import Dict, Any
+
+from typing import Any
 
 from .common import (
-    validate_financial_inputs,
-    calculate_monthly_mortgage,
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
     calculate_grm,
+    calculate_monthly_mortgage,
+    validate_financial_inputs,
 )
 
 
@@ -35,7 +36,7 @@ def calculate_ltr(
     rent_growth_rate: float,
     expense_growth_rate: float,
     hoa_monthly: float = 0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate Long-Term Rental metrics.
 
     Every financial assumption is a required parameter — the caller
@@ -115,16 +116,18 @@ def calculate_ltr(
             )
         equity = property_value - remaining_balance
 
-        ten_year_projection.append({
-            "year": year,
-            "gross_rent": year_gross_rent,
-            "operating_expenses": year_expenses,
-            "noi": year_noi,
-            "debt_service": annual_debt_service,
-            "cash_flow": year_cash_flow,
-            "property_value": property_value,
-            "equity": equity,
-        })
+        ten_year_projection.append(
+            {
+                "year": year,
+                "gross_rent": year_gross_rent,
+                "operating_expenses": year_expenses,
+                "noi": year_noi,
+                "debt_service": annual_debt_service,
+                "cash_flow": year_cash_flow,
+                "property_value": property_value,
+                "equity": equity,
+            }
+        )
 
     return {
         "monthly_rent": monthly_rent,
@@ -186,9 +189,13 @@ def calculate_ltr_breakeven(
     annual_management = annual_gross_rent * management_pct
     annual_capex = annual_gross_rent * capex_pct
     operating_expenses = (
-        property_taxes + insurance
-        + annual_maintenance + annual_management + annual_capex
-        + utilities_annual + other_annual_expenses
+        property_taxes
+        + insurance
+        + annual_maintenance
+        + annual_management
+        + annual_capex
+        + utilities_annual
+        + other_annual_expenses
     )
 
     noi = effective_gross_income - operating_expenses

@@ -5,55 +5,58 @@ Generates a professional, single-transaction financial proforma tailored
 for wholesale real-estate deals.  No multi-year projections, no loan
 amortization, no depreciation — just the numbers a wholesaler cares about:
 
-  1. Deal Summary        – property + strategy overview
-  2. Deal Structure      – MAO, contract price, assignment fee, end-buyer price
-  3. Costs & Profit      – earnest money, marketing, net profit, ROI
-  4. Buyer Analysis      – rent estimate, AMV, rehab cost → buyer's numbers
-  5. Deal Viability       – spread, viability grade, deals-to-income targets
-  6. Assumptions          – all inputs + data sources
+  1. Deal Summary        - property + strategy overview
+  2. Deal Structure      - MAO, contract price, assignment fee, end-buyer price
+  3. Costs & Profit      - earnest money, marketing, net profit, ROI
+  4. Buyer Analysis      - rent estimate, AMV, rehab cost → buyer's numbers
+  5. Deal Viability       - spread, viability grade, deals-to-income targets
+  6. Assumptions          - all inputs + data sources
 """
 
-from io import BytesIO
 from datetime import datetime
-from typing import Any, Dict, Optional
+from io import BytesIO
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Alignment, Border, Font, NamedStyle, PatternFill, Side,
+    Alignment,
+    Border,
+    Font,
+    PatternFill,
+    Side,
 )
 from openpyxl.utils import get_column_letter
 
 from app.schemas.proforma import FinancialProforma
 
-
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"   # DealGapIQ blue
-_DARK_BG   = "111827"   # near-black
-_CARD_BG   = "1A2332"   # dark card
+_BRAND = "0A84FF"  # DealGapIQ blue
+_DARK_BG = "111827"  # near-black
+_CARD_BG = "1A2332"  # dark card
 _HEADER_BG = "1F4E79"
-_GREEN     = "22C55E"
-_RED       = "EF4444"
-_AMBER     = "F59E0B"
-_GRAY      = "9CA3AF"
-_WHITE     = "FFFFFF"
+_GREEN = "22C55E"
+_RED = "EF4444"
+_AMBER = "F59E0B"
+_GRAY = "9CA3AF"
+_WHITE = "FFFFFF"
 _LIGHT_ROW = "F8FAFC"
 
-_HDR_FILL  = PatternFill("solid", fgColor=_HEADER_BG)
-_HDR_FONT  = Font(bold=True, color=_WHITE, size=11, name="Calibri")
-_SUB_FILL  = PatternFill("solid", fgColor="D6DCE4")
-_SUB_FONT  = Font(bold=True, size=10, name="Calibri")
+_HDR_FILL = PatternFill("solid", fgColor=_HEADER_BG)
+_HDR_FONT = Font(bold=True, color=_WHITE, size=11, name="Calibri")
+_SUB_FILL = PatternFill("solid", fgColor="D6DCE4")
+_SUB_FONT = Font(bold=True, size=10, name="Calibri")
 _TOTAL_FNT = Font(bold=True, size=10, name="Calibri")
 _BODY_FONT = Font(size=10, name="Calibri")
 _GOOD_FILL = PatternFill("solid", fgColor="E2EFDA")
 _WARN_FILL = PatternFill("solid", fgColor="FFF2CC")
-_BAD_FILL  = PatternFill("solid", fgColor="FCE4EC")
-_THIN      = Border(*(Side(style="thin"),) * 4)
+_BAD_FILL = PatternFill("solid", fgColor="FCE4EC")
+_THIN = Border(*(Side(style="thin"),) * 4)
 
-_CUR   = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
-_PCT   = "0.00%"
-_NUM   = "#,##0.00"
-_INT   = "#,##0"
+_CUR = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
+_PCT = "0.00%"
+_NUM = "#,##0.00"
+_INT = "#,##0"
 
 
 class WholesaleExcelExporter:
@@ -63,14 +66,14 @@ class WholesaleExcelExporter:
         self,
         proforma: FinancialProforma,
         *,
-        rent_estimate: Optional[float] = None,
-        amv: Optional[float] = None,
-        wholesale_fee: Optional[float] = None,
+        rent_estimate: float | None = None,
+        amv: float | None = None,
+        wholesale_fee: float | None = None,
     ):
         self.d = proforma
         self.wb = Workbook()
         # Wholesale breakdown dict (from strategy calculator)
-        self.ws_data: Dict[str, Any] = proforma.strategy_breakdown or {}
+        self.ws_data: dict[str, Any] = proforma.strategy_breakdown or {}
 
         # User-supplied overrides take priority over calculated values
         self._rent = rent_estimate or proforma.income.monthly_rent
@@ -158,8 +161,8 @@ class WholesaleExcelExporter:
 
         rows = [
             ("After-Repair Value (ARV)", arv, _CUR),
-            ("× 70%", arv * 0.70, _CUR),
-            ("− Estimated Rehab Costs", rehab, _CUR),
+            ("x 70%", arv * 0.70, _CUR),
+            ("- Estimated Rehab Costs", rehab, _CUR),
         ]
         for label, val, fmt in rows:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -238,7 +241,7 @@ class WholesaleExcelExporter:
 
         rows2 = [
             ("Gross Profit (Assignment Fee)", gross, _CUR),
-            ("− Marketing Costs", marketing, _CUR),
+            ("- Marketing Costs", marketing, _CUR),
         ]
         for label, val, fmt in rows2:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -287,7 +290,7 @@ class WholesaleExcelExporter:
         buyer_roi = (buyer_equity / (end_buyer + rehab) * 100) if (end_buyer + rehab) else 0
         rows2 = [
             ("After-Repair Value (ARV)", arv, _CUR),
-            ("− Buyer's Total Investment", end_buyer + rehab, _CUR),
+            ("- Buyer's Total Investment", end_buyer + rehab, _CUR),
         ]
         for label, val, fmt in rows2:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -339,7 +342,7 @@ class WholesaleExcelExporter:
         r = self._section_header(ws, r, "SPREAD & VIABILITY ANALYSIS")
         rows = [
             ("Total Spread Available", spread, _CUR),
-            ("− Your Assignment Fee", self._fee, _CUR),
+            ("- Your Assignment Fee", self._fee, _CUR),
             ("= Buyer's Remaining Spread", spread - self._fee, _CUR),
         ]
         for label, val, fmt in rows:
@@ -365,8 +368,16 @@ class WholesaleExcelExporter:
 
         targets = [
             ("Net Profit per Deal", net, _CUR),
-            ("Deals for $50,000 / year", round(d50) if d50 != float('inf') else "N/A", _INT if d50 != float('inf') else None),
-            ("Deals for $100,000 / year", round(d100) if d100 != float('inf') else "N/A", _INT if d100 != float('inf') else None),
+            (
+                "Deals for $50,000 / year",
+                round(d50) if d50 != float("inf") else "N/A",
+                _INT if d50 != float("inf") else None,
+            ),
+            (
+                "Deals for $100,000 / year",
+                round(d100) if d100 != float("inf") else "N/A",
+                _INT if d100 != float("inf") else None,
+            ),
         ]
         for label, val, fmt in targets:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -448,10 +459,16 @@ class WholesaleExcelExporter:
         return row + 1
 
     def _label_value(
-        self, ws, row: int, label: str, value: Any,
-        *, fmt: str | None = None, highlight: bool = False,
+        self,
+        ws,
+        row: int,
+        label: str,
+        value: Any,
+        *,
+        fmt: str | None = None,
+        highlight: bool = False,
     ) -> int:
-        """Write a label–value pair and return next row."""
+        """Write a label-value pair and return next row."""
         lc = ws.cell(row, 1, label)
         lc.font = _BODY_FONT
         lc.alignment = Alignment(horizontal="left")

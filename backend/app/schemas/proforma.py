@@ -2,20 +2,24 @@
 Financial Proforma Schemas - Accounting-Standard Export
 Pydantic models for proforma generation and export
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any, Literal
+
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 
-class DepreciationMethod(str, Enum):
+class DepreciationMethod(StrEnum):
     """Depreciation calculation methods."""
+
     STRAIGHT_LINE = "straight-line"
     MACRS = "macrs"  # Future: Modified Accelerated Cost Recovery
 
 
 class DepreciationConfig(BaseModel):
     """Tax depreciation configuration."""
+
     purchase_price: float
     land_value_percent: float = Field(default=0.20, ge=0, le=1)
     land_value: float
@@ -31,14 +35,15 @@ class DepreciationConfig(BaseModel):
 
 class AnnualTaxProjection(BaseModel):
     """Year-by-year tax and cash flow projection."""
+
     year: int
-    
+
     # Income
     gross_rental_income: float
     effective_gross_income: float
     other_income: float = 0
     total_income: float
-    
+
     # Expenses
     operating_expenses: float
     property_taxes: float
@@ -48,22 +53,22 @@ class AnnualTaxProjection(BaseModel):
     utilities: float
     hoa_fees: float = 0
     other_expenses: float = 0
-    
+
     # Financing
     mortgage_interest: float
     mortgage_principal: float
     total_debt_service: float
-    
+
     # Depreciation
     depreciation: float
-    
+
     # Tax calculation
     net_operating_income: float
     taxable_income: float
     marginal_tax_rate: float = 0.24
     estimated_tax_liability: float
     tax_benefit: float = 0
-    
+
     # Cash flows
     pre_tax_cash_flow: float
     after_tax_cash_flow: float
@@ -71,6 +76,7 @@ class AnnualTaxProjection(BaseModel):
 
 class AmortizationRow(BaseModel):
     """Single row in amortization schedule."""
+
     month: int
     year: int
     payment_number: int
@@ -85,6 +91,7 @@ class AmortizationRow(BaseModel):
 
 class AmortizationSummary(BaseModel):
     """Summary of loan amortization."""
+
     monthly_payment: float
     total_payments: float
     total_principal: float
@@ -96,26 +103,27 @@ class AmortizationSummary(BaseModel):
 
 class ExitAnalysis(BaseModel):
     """Property disposition analysis."""
+
     hold_period_years: int
     initial_value: float
     appreciation_rate: float
     projected_sale_price: float
-    
+
     # Sale costs
     broker_commission_percent: float = 0.06
     broker_commission: float
     closing_costs_percent: float = 0.015
     closing_costs: float
     total_sale_costs: float
-    
+
     # Payoff
     remaining_loan_balance: float
     prepayment_penalty: float = 0
-    
+
     # Proceeds
     gross_sale_proceeds: float
     net_sale_proceeds: float
-    
+
     # Capital gains
     adjusted_cost_basis: float
     accumulated_depreciation: float
@@ -131,18 +139,20 @@ class ExitAnalysis(BaseModel):
 
 class InvestmentReturns(BaseModel):
     """Complete return metrics."""
+
     irr: float
-    mirr: Optional[float] = None
+    mirr: float | None = None
     total_cash_flows: float
     total_distributions: float
     equity_multiple: float
-    payback_period_months: Optional[int] = None
+    payback_period_months: int | None = None
     average_annual_return: float
     cagr: float
 
 
 class SensitivityScenario(BaseModel):
     """Single sensitivity analysis scenario."""
+
     variable: str
     change_percent: float
     absolute_value: float
@@ -153,6 +163,7 @@ class SensitivityScenario(BaseModel):
 
 class PropertySummary(BaseModel):
     """Property information for proforma."""
+
     address: str
     city: str
     state: str
@@ -167,6 +178,7 @@ class PropertySummary(BaseModel):
 
 class AcquisitionDetails(BaseModel):
     """Acquisition cost breakdown."""
+
     purchase_price: float
     list_price: float
     discount_from_list: float
@@ -179,6 +191,7 @@ class AcquisitionDetails(BaseModel):
 
 class FinancingDetails(BaseModel):
     """Loan and financing information."""
+
     down_payment: float
     down_payment_percent: float
     loan_amount: float
@@ -193,6 +206,7 @@ class FinancingDetails(BaseModel):
 
 class IncomeDetails(BaseModel):
     """Year 1 income breakdown."""
+
     monthly_rent: float
     annual_gross_rent: float
     other_income: float = 0
@@ -203,6 +217,7 @@ class IncomeDetails(BaseModel):
 
 class ExpenseDetails(BaseModel):
     """Year 1 operating expenses."""
+
     property_taxes: float
     insurance: float
     hoa_fees: float = 0
@@ -222,6 +237,7 @@ class ExpenseDetails(BaseModel):
 
 class KeyMetrics(BaseModel):
     """Core investment metrics."""
+
     net_operating_income: float
     annual_debt_service: float
     annual_cash_flow: float
@@ -239,19 +255,21 @@ class KeyMetrics(BaseModel):
 
 class Projections(BaseModel):
     """Multi-year projection data."""
+
     hold_period_years: int
     appreciation_rate: float
     rent_growth_rate: float
     expense_growth_rate: float
-    annual_projections: List[AnnualTaxProjection]
-    cumulative_cash_flow: List[float]
-    property_values: List[float]
-    equity_positions: List[float]
-    loan_balances: List[float]
+    annual_projections: list[AnnualTaxProjection]
+    cumulative_cash_flow: list[float]
+    property_values: list[float]
+    equity_positions: list[float]
+    loan_balances: list[float]
 
 
 class DealScoreSummary(BaseModel):
     """Deal score for proforma."""
+
     score: int
     grade: str
     verdict: str
@@ -261,6 +279,7 @@ class DealScoreSummary(BaseModel):
 
 class DataSources(BaseModel):
     """Data provenance information."""
+
     rent_estimate_source: str
     property_value_source: str
     tax_data_source: str
@@ -270,101 +289,105 @@ class DataSources(BaseModel):
 
 class SensitivityAnalysis(BaseModel):
     """Complete sensitivity analysis."""
-    purchase_price: List[SensitivityScenario] = []
-    interest_rate: List[SensitivityScenario] = []
-    rent: List[SensitivityScenario] = []
-    vacancy: List[SensitivityScenario] = []
-    appreciation: List[SensitivityScenario] = []
+
+    purchase_price: list[SensitivityScenario] = []
+    interest_rate: list[SensitivityScenario] = []
+    rent: list[SensitivityScenario] = []
+    vacancy: list[SensitivityScenario] = []
+    appreciation: list[SensitivityScenario] = []
 
 
 class FinancialProforma(BaseModel):
     """Complete financial proforma data structure."""
+
     # Metadata
     generated_at: str
     property_id: str
     property_address: str
     strategy_type: str
-    
+
     # Property Summary
     property: PropertySummary
-    
+
     # Acquisition
     acquisition: AcquisitionDetails
-    
+
     # Financing
     financing: FinancingDetails
-    
+
     # Income (Year 1)
     income: IncomeDetails
-    
+
     # Operating Expenses (Year 1)
     expenses: ExpenseDetails
-    
+
     # Key Metrics
     metrics: KeyMetrics
-    
+
     # Depreciation & Tax
     depreciation: DepreciationConfig
-    
+
     # Multi-Year Projections
     projections: Projections
-    
+
     # Amortization
-    amortization_schedule: List[AmortizationRow]
+    amortization_schedule: list[AmortizationRow]
     amortization_summary: AmortizationSummary
-    
+
     # Exit Analysis
     exit: ExitAnalysis
-    
+
     # Investment Returns
     returns: InvestmentReturns
-    
+
     # Sensitivity Analysis
     sensitivity: SensitivityAnalysis
-    
+
     # Deal Score
     deal_score: DealScoreSummary
-    
+
     # Data Sources
     sources: DataSources
-    
+
     # Strategy-specific detailed breakdown (populated by the appropriate calculator)
     # Keys vary by strategy: ltr, str, brrrr, flip, house_hack, wholesale
-    strategy_breakdown: Optional[Dict[str, Any]] = None
-    
+    strategy_breakdown: dict[str, Any] | None = None
+
     # Strategy methodology text for reports
-    strategy_methodology: Optional[str] = None
+    strategy_methodology: str | None = None
 
 
 class ProformaRequest(BaseModel):
     """Request to generate financial proforma."""
+
     property_id: str
     address: str  # Required for property lookup
     strategy: Literal["ltr", "str", "brrrr", "flip", "house_hack", "wholesale"] = "ltr"
-    
+
     # Optional overrides
-    purchase_price: Optional[float] = None
-    monthly_rent: Optional[float] = None
-    
+    purchase_price: float | None = None
+    monthly_rent: float | None = None
+
     # Tax configuration
     land_value_percent: float = Field(default=0.20, ge=0, le=0.50)
     marginal_tax_rate: float = Field(default=0.24, ge=0, le=0.50)
     capital_gains_tax_rate: float = Field(default=0.15, ge=0, le=0.30)
-    
+
     # Projection settings
     hold_period_years: int = Field(default=10, ge=1, le=30)
-    
+
     # Export format
     format: Literal["json", "xlsx", "pdf"] = "xlsx"
 
 
 class ProformaExportResponse(BaseModel):
     """Proforma export result."""
+
     proforma_id: str
     property_id: str
     strategy: str
     generated_at: datetime
-    download_url: Optional[str] = None
-    expires_at: Optional[datetime] = None
+    download_url: str | None = None
+    expires_at: datetime | None = None
     format: str
-    file_size_bytes: Optional[int] = None
+    file_size_bytes: int | None = None

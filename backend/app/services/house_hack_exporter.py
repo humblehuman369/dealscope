@@ -4,44 +4,45 @@ House Hack Proforma — Excel Exporter  (v1.0)
 Generates a professional proforma for owner-occupied house hacking
 strategies (FHA financing, room rentals, duplex conversion):
 
-  1. Property Summary     – property details, FHA terms, overview
-  2. Monthly Budget       – PITI + MIP breakdown
-  3. Scenario A           – rent rooms, net housing cost, savings
-  4. Scenario B           – duplex conversion (if applicable)
-  5. Savings Analysis     – side-by-side comparison, live-free analysis
-  6. Assumptions          – FHA terms, rental assumptions, data sources
+  1. Property Summary     - property details, FHA terms, overview
+  2. Monthly Budget       - PITI + MIP breakdown
+  3. Scenario A           - rent rooms, net housing cost, savings
+  4. Scenario B           - duplex conversion (if applicable)
+  5. Savings Analysis     - side-by-side comparison, live-free analysis
+  6. Assumptions          - FHA terms, rental assumptions, data sources
 """
 
-from io import BytesIO
 from datetime import datetime
-from typing import Any, Dict
+from io import BytesIO
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Alignment, Font, PatternFill,
+    Alignment,
+    Font,
+    PatternFill,
 )
 from openpyxl.utils import get_column_letter
 
 from app.schemas.proforma import FinancialProforma
 
-
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"
+_BRAND = "0A84FF"
 _HEADER_BG = "1F4E79"
-_GREEN     = "22C55E"
-_RED       = "EF4444"
-_WHITE     = "FFFFFF"
+_GREEN = "22C55E"
+_RED = "EF4444"
+_WHITE = "FFFFFF"
 
-_HDR_FILL  = PatternFill("solid", fgColor=_HEADER_BG)
-_HDR_FONT  = Font(bold=True, color=_WHITE, size=11, name="Calibri")
-_SUB_FILL  = PatternFill("solid", fgColor="D6DCE4")
-_SUB_FONT  = Font(bold=True, size=10, name="Calibri")
+_HDR_FILL = PatternFill("solid", fgColor=_HEADER_BG)
+_HDR_FONT = Font(bold=True, color=_WHITE, size=11, name="Calibri")
+_SUB_FILL = PatternFill("solid", fgColor="D6DCE4")
+_SUB_FONT = Font(bold=True, size=10, name="Calibri")
 _TOTAL_FNT = Font(bold=True, size=10, name="Calibri")
 _BODY_FONT = Font(size=10, name="Calibri")
 _GOOD_FILL = PatternFill("solid", fgColor="E2EFDA")
 _WARN_FILL = PatternFill("solid", fgColor="FFF2CC")
-_BAD_FILL  = PatternFill("solid", fgColor="FCE4EC")
+_BAD_FILL = PatternFill("solid", fgColor="FCE4EC")
 
 _CUR = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
 _PCT = "0.00%"
@@ -54,7 +55,7 @@ class HouseHackExcelExporter:
     def __init__(self, proforma: FinancialProforma):
         self.d = proforma
         self.wb = Workbook()
-        self.bd: Dict[str, Any] = proforma.strategy_breakdown or {}
+        self.bd: dict[str, Any] = proforma.strategy_breakdown or {}
 
     # ── public ────────────────────────────────────────────────────────────
 
@@ -142,8 +143,8 @@ class HouseHackExcelExporter:
         loan = self.bd.get("loan_amount", 0)
 
         # Derive taxes & insurance from PITI
-        taxes_monthly = piti - pi - mip - (self.d.expenses.insurance / 12 if self.d.expenses else 0)
-        insurance_monthly = self.d.expenses.insurance / 12 if self.d.expenses else 0
+        piti - pi - mip - (self.d.expenses.insurance / 12 if self.d.expenses else 0)
+        self.d.expenses.insurance / 12 if self.d.expenses else 0
         # Simpler: calculate from known values
         taxes_annual = self.d.expenses.property_taxes if self.d.expenses else purchase * 0.012
         insurance_annual = self.d.expenses.insurance if self.d.expenses else purchase * 0.005
@@ -218,7 +219,7 @@ class HouseHackExcelExporter:
         r = self._section_header(ws, r, "NET HOUSING COST")
         rows2 = [
             ("Total Monthly Expenses", expenses, _CUR),
-            ("− Rental Income", income, _CUR),
+            ("- Rental Income", income, _CUR),
         ]
         for label, val, fmt in rows2:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -439,8 +440,14 @@ class HouseHackExcelExporter:
         return row + 1
 
     def _label_value(
-        self, ws, row: int, label: str, value: Any,
-        *, fmt: str | None = None, highlight: bool = False,
+        self,
+        ws,
+        row: int,
+        label: str,
+        value: Any,
+        *,
+        fmt: str | None = None,
+        highlight: bool = False,
     ) -> int:
         lc = ws.cell(row, 1, label)
         lc.font = _BODY_FONT

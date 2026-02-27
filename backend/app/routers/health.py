@@ -6,16 +6,17 @@ Provides:
 - Deep health check (for monitoring systems)
 - Readiness check (for Kubernetes-style deployments)
 """
+
 import logging
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import get_db, get_engine
 from app.core.config import settings
+from app.db.session import get_db, get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +27,14 @@ router = APIRouter(tags=["Health"])
 async def health_check():
     """
     Basic health check endpoint.
-    
+
     Returns simple status for load balancer health checks.
     This endpoint should always respond quickly.
     """
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -41,45 +42,42 @@ async def health_check():
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     """
     Readiness check endpoint.
-    
+
     Verifies that the application is ready to serve traffic.
     Checks database and Redis connectivity.
     """
     checks = {}
     overall_ready = True
-    
+
     # Database check
     try:
         await db.execute(text("SELECT 1"))
         checks["database"] = "connected"
     except Exception as e:
         logger.error(f"Database check failed: {e}")
-        checks["database"] = f"error: {str(e)}"
+        checks["database"] = f"error: {e!s}"
         overall_ready = False
-    
+
     # Redis check (if configured)
     if settings.REDIS_URL:
         try:
             import redis.asyncio as redis
-            redis_client = redis.from_url(
-                settings.REDIS_URL,
-                socket_connect_timeout=2,
-                socket_timeout=2
-            )
+
+            redis_client = redis.from_url(settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
             await redis_client.ping()
             await redis_client.close()
             checks["redis"] = "connected"
         except Exception as e:
             logger.warning(f"Redis check failed: {e}")
-            checks["redis"] = f"error: {str(e)}"
+            checks["redis"] = f"error: {e!s}"
             # Redis failure is not critical for readiness
     else:
         checks["redis"] = "not_configured"
-    
+
     return {
         "status": "ready" if overall_ready else "not_ready",
         "checks": checks,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -87,30 +85,26 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
 async def deep_health_check(db: AsyncSession = Depends(get_db)):
     """
     Deep health check endpoint.
-    
+
     Performs comprehensive checks on all dependencies:
     - Database connectivity and query execution
     - External API availability (optional)
     - Configuration status
-    
+
     Use this endpoint for detailed monitoring and alerting.
     """
-    checks: Dict[str, Any] = {}
+    checks: dict[str, Any] = {}
     overall_status = "healthy"
-    
+
     # 1. Database check
     try:
         result = await db.execute(text("SELECT version()"))
         version_row = result.fetchone()
-        
+
         # Get table counts for basic data check
-        from sqlalchemy import func
-        from app.models.user import User
-        user_count_result = await db.execute(
-            text("SELECT COUNT(*) FROM users")
-        )
+        user_count_result = await db.execute(text("SELECT COUNT(*) FROM users"))
         user_count = user_count_result.scalar()
-        
+
         checks["database"] = {
             "status": "healthy",
             "version": version_row[0] if version_row else "unknown",
@@ -123,11 +117,11 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
             "error": str(e),
         }
         overall_status = "degraded"
-    
+
     # 2. External APIs — reachability probes (non-blocking, short timeout)
     import httpx
 
-    async def _probe(name: str, url: str, timeout: float = 3.0) -> Dict[str, Any]:
+    async def _probe(name: str, url: str, timeout: float = 3.0) -> dict[str, Any]:
         """HEAD/GET probe with timeout. Returns status dict."""
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
@@ -140,7 +134,7 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         except Exception as e:
             return {"status": "unknown", "error": str(e)}
 
-    external_checks: Dict[str, Any] = {}
+    external_checks: dict[str, Any] = {}
 
     # RentCast
     if settings.RENTCAST_API_KEY:
@@ -164,6 +158,7 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
     if settings.REDIS_URL:
         try:
             import redis.asyncio as aioredis
+
             rc = aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
             await rc.ping()
             await rc.close()
@@ -180,35 +175,35 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         info = external_checks.get(svc, {})
         if info.get("status") == "unreachable":
             overall_status = "degraded"
-    
+
     # 3. Configuration check
     config_issues = []
-    
+
     if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
         config_issues.append("SECRET_KEY not set or too short")
-    
+
     if settings.is_production:
         if "localhost" in settings.DATABASE_URL:
             config_issues.append("Using localhost database URL in production")
         if not settings.STRIPE_WEBHOOK_SECRET:
             config_issues.append("STRIPE_WEBHOOK_SECRET not set in production")
-    
+
     checks["configuration"] = {
         "status": "healthy" if not config_issues else "warning",
         "environment": settings.ENVIRONMENT,
         "debug_mode": settings.DEBUG,
         "issues": config_issues if config_issues else None,
     }
-    
+
     if config_issues and settings.is_production:
         overall_status = "degraded"
-    
+
     # 4. Connection pool stats
     try:
         engine = get_engine()
         pool = engine.pool
         pool_status = pool.status()
-        pool_info: Dict[str, Any] = {"raw_status": pool_status}
+        pool_info: dict[str, Any] = {"raw_status": pool_status}
         if hasattr(pool, "size"):
             pool_info["pool_size"] = pool.size()
             pool_info["checked_in"] = pool.checkedin()
@@ -230,11 +225,11 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         "sharing_enabled": settings.FEATURE_SHARING_ENABLED,
         "email_verification_required": settings.FEATURE_EMAIL_VERIFICATION_REQUIRED,
     }
-    
+
     return {
         "status": overall_status,
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
         "checks": checks,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }

@@ -1,1 +1,1 @@
-"""Repository layer – data-access objects for each aggregate root."""
+"""Repository layer - data-access objects for each aggregate root."""

@@ -1,39 +1,55 @@
 """
 Property service - orchestrates data fetching, normalization, and calculations.
 """
+
 from __future__ import annotations
 
-from typing import Dict, Any, Optional, List, Tuple, Union
-from datetime import datetime, timezone
 import hashlib
 import json
-import time
-import uuid
 import logging
 import re
+import time
+from datetime import UTC, datetime
+from typing import Any
 
-from app.services.api_clients import (
-    RentCastClient, AXESSOClient, RedfinClient, DataNormalizer, create_api_clients
-)
-from app.services.zillow_client import ZillowClient, ZillowDataExtractor, create_zillow_client
-from app.services.calculators import (
-    calculate_ltr, calculate_str, calculate_brrrr,
-    calculate_flip, calculate_house_hack, calculate_wholesale
-)
-from app.services.cache_service import get_cache_service, CacheService
+from app.core.config import settings
 from app.core.formulas import compute_market_price
 from app.schemas.analytics import IQVerdictInput
-from app.services.iq_verdict_service import compute_iq_verdict
 from app.schemas.property import (
-    PropertyResponse, AnalyticsResponse, AllAssumptions,
-    StrategyType, Address, PropertyDetails, ValuationData,
-    RentalData, RentalMarketStatistics, MarketData, MarketStatistics,
-    ProvenanceMap, DataQuality,
-    LTRResults, STRResults, BRRRRResults, FlipResults,
-    HouseHackResults, WholesaleResults, FieldProvenance,
-    ListingInfo
+    Address,
+    AllAssumptions,
+    AnalyticsResponse,
+    BRRRRResults,
+    DataQuality,
+    FieldProvenance,
+    FlipResults,
+    HouseHackResults,
+    ListingInfo,
+    LTRResults,
+    MarketData,
+    MarketStatistics,
+    PropertyDetails,
+    PropertyResponse,
+    ProvenanceMap,
+    RentalData,
+    RentalMarketStatistics,
+    StrategyType,
+    STRResults,
+    ValuationData,
+    WholesaleResults,
 )
-from app.core.config import settings
+from app.services.api_clients import create_api_clients
+from app.services.cache_service import CacheService, get_cache_service
+from app.services.calculators import (
+    calculate_brrrr,
+    calculate_flip,
+    calculate_house_hack,
+    calculate_ltr,
+    calculate_str,
+    calculate_wholesale,
+)
+from app.services.iq_verdict_service import compute_iq_verdict
+from app.services.zillow_client import create_zillow_client
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +59,7 @@ class PropertyService:
     Main service for property data operations.
     Handles API calls, data normalization, caching, and calculations.
     """
-    
+
     def __init__(self):
         self.rentcast, self.axesso, self.normalizer, self.redfin = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
@@ -53,16 +69,13 @@ class PropertyService:
             redfin_api_key=settings.REDFIN_API_KEY,
             redfin_url=settings.REDFIN_URL,
         )
-        
+
         # Use the comprehensive ZillowClient for Zillow data
-        self.zillow = create_zillow_client(
-            api_key=settings.AXESSO_API_KEY,
-            base_url=settings.AXESSO_URL
-        )
-        
+        self.zillow = create_zillow_client(api_key=settings.AXESSO_API_KEY, base_url=settings.AXESSO_URL)
+
         # Redis cache with in-memory fallback (24h TTL)
         self._cache: CacheService = get_cache_service()
-    
+
     def _generate_property_id(self, address: str) -> str:
         """Generate consistent property ID from address."""
         normalized = address.lower().strip()
@@ -72,8 +85,8 @@ class PropertyService:
         """Generate hash of assumptions for cache key."""
         assumptions_json = json.dumps(assumptions.model_dump(), sort_keys=True)
         return hashlib.sha256(assumptions_json.encode()).hexdigest()[:12]
-    
-    async def get_cached_property(self, property_id: str) -> Optional[PropertyResponse]:
+
+    async def get_cached_property(self, property_id: str) -> PropertyResponse | None:
         """Retrieve a property from cache by its property_id.
 
         Uses the ``prop_id:<id>`` key set during ``search_property``.
@@ -87,12 +100,12 @@ class PropertyService:
                 logger.warning("Failed to deserialize cached property %s: %s", property_id, e)
         return None
 
-    async def _fetch_raw_rentcast(self, address: str) -> Dict[str, Any]:
+    async def _fetch_raw_rentcast(self, address: str) -> dict[str, Any]:
         """Fetch raw RentCast data (property, value, rent, optional market_stats). Used for export.
         Always records each endpoint response so the export shows either data or error (for auditing).
         """
-        rentcast_data: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
-        merged: Dict[str, Any] = {}
+        rentcast_data: dict[str, Any] = {"address": address, "fetched_at": datetime.now(UTC).isoformat()}
+        merged: dict[str, Any] = {}
 
         rc_property = await self.rentcast.get_property(address)
         if rc_property.success and rc_property.data:
@@ -152,13 +165,13 @@ class PropertyService:
         rentcast_data["_merged"] = merged
         return rentcast_data
 
-    async def _fetch_raw_axesso(self, address: str) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+    async def _fetch_raw_axesso(self, address: str) -> tuple[dict[str, Any], dict[str, Any] | None]:
         """
         Fetch raw AXESSO/Zillow data. Returns (raw_export_dict, unwrapped_property_dict).
         raw_export_dict is for Excel; always records each response (data or error) for auditing.
         """
-        raw_export: Dict[str, Any] = {"address": address, "fetched_at": datetime.now(timezone.utc).isoformat()}
-        unwrapped: Optional[Dict[str, Any]] = None
+        raw_export: dict[str, Any] = {"address": address, "fetched_at": datetime.now(UTC).isoformat()}
+        unwrapped: dict[str, Any] | None = None
         try:
             zillow_response = await self.zillow.search_by_address(address)
             if zillow_response.success and zillow_response.data:
@@ -196,8 +209,8 @@ class PropertyService:
     async def search_property(
         self,
         address: str,
-        pre_fetched: Optional[Tuple[Dict[str, Any], Tuple[Optional[Dict[str, Any]], Dict[str, Any]]]] = None,
-    ) -> Union[PropertyResponse, Tuple[PropertyResponse, Dict[str, Any], Dict[str, Any]]]:
+        pre_fetched: tuple[dict[str, Any], tuple[dict[str, Any] | None, dict[str, Any]]] | None = None,
+    ) -> PropertyResponse | tuple[PropertyResponse, dict[str, Any], dict[str, Any]]:
         """
         Search for property by address.
         Fetches from both APIs, normalizes, and returns unified response.
@@ -207,15 +220,15 @@ class PropertyService:
         uses that data (no cache, no fetch) and returns (response, rentcast_merged, axesso_export).
         """
         t0 = time.perf_counter()
-        timings: Dict[str, float] = {}
+        timings: dict[str, float] = {}
         property_id = self._generate_property_id(address)
-        timestamp = datetime.now(timezone.utc)
-        rentcast_data: Dict[str, Any] = {}
-        axesso_data: Optional[Dict[str, Any]] = None
-        axesso_export_for_return: Optional[Dict[str, Any]] = None
+        timestamp = datetime.now(UTC)
+        rentcast_data: dict[str, Any] = {}
+        axesso_data: dict[str, Any] | None = None
+        axesso_export_for_return: dict[str, Any] | None = None
 
         zillow_zpid = None
-        redfin_data: Optional[Dict[str, Any]] = None
+        redfin_data: dict[str, Any] | None = None
         if pre_fetched is not None:
             rentcast_merged, (axesso_unwrapped, axesso_export) = pre_fetched
             rentcast_data = rentcast_merged
@@ -232,7 +245,11 @@ class PropertyService:
                 valuations = cached_data.get("valuations") or {}
                 listing = cached_data.get("listing") or {}
                 is_off_market_cached = listing.get("listing_status") in (
-                    None, "OFF_MARKET", "SOLD", "FOR_RENT", "OTHER",
+                    None,
+                    "OFF_MARKET",
+                    "SOLD",
+                    "FOR_RENT",
+                    "OTHER",
                 )
                 rentals_cached = cached_data.get("rentals") or {}
                 rental_stats_cached = rentals_cached.get("rental_stats") or {}
@@ -242,8 +259,7 @@ class PropertyService:
                     or rentals_cached.get("monthly_rent_ltr") is not None
                 )
                 missing_iq_fields = has_source_value and (
-                    valuations.get("value_iq_estimate") is None
-                    and not rental_stats_cached
+                    valuations.get("value_iq_estimate") is None and not rental_stats_cached
                 )
                 stale = (
                     is_off_market_cached
@@ -251,9 +267,7 @@ class PropertyService:
                     and valuations.get("market_price") in (None, 1)
                 ) or missing_iq_fields
                 if stale:
-                    logger.info(
-                        "Cache hit for %s but IQ estimate data missing — forcing re-fetch", address
-                    )
+                    logger.info("Cache hit for %s but IQ estimate data missing — forcing re-fetch", address)
                     await self._cache.clear_property_cache(address)
                 else:
                     logger.info(f"Cache hit for property: {address}")
@@ -334,10 +348,10 @@ class PropertyService:
             timestamp,
             redfin_data=redfin_data,
         )
-        
+
         # Calculate data quality
         data_quality = self.normalizer.calculate_data_quality(normalized, provenance)
-        
+
         timings["normalize_ms"] = (time.perf_counter() - t_norm) * 1000
 
         # Build address object
@@ -347,7 +361,7 @@ class PropertyService:
             address_obj.latitude = normalized.get("latitude")
         if address_obj.longitude is None:
             address_obj.longitude = normalized.get("longitude")
-        
+
         # Build response
         response = PropertyResponse(
             property_id=property_id,
@@ -408,17 +422,21 @@ class PropertyService:
                     rental_new_listings=normalized.get("rental_new_listings"),
                     rent_trend=normalized.get("rent_trend"),
                     trend_pct_change=normalized.get("rent_trend_pct"),
-                ) if any([
-                    normalized.get("rental_rentcast_estimate") is not None,
-                    normalized.get("rental_zillow_estimate") is not None,
-                    normalized.get("redfin_rental_estimate") is not None,
-                    normalized.get("rental_iq_estimate") is not None,
-                    normalized.get("rental_market_avg") is not None,
-                    normalized.get("rental_market_median") is not None,
-                    normalized.get("rental_market_min") is not None,
-                    normalized.get("rental_market_max") is not None,
-                    normalized.get("rent_trend") is not None,
-                ]) else None
+                )
+                if any(
+                    [
+                        normalized.get("rental_rentcast_estimate") is not None,
+                        normalized.get("rental_zillow_estimate") is not None,
+                        normalized.get("redfin_rental_estimate") is not None,
+                        normalized.get("rental_iq_estimate") is not None,
+                        normalized.get("rental_market_avg") is not None,
+                        normalized.get("rental_market_median") is not None,
+                        normalized.get("rental_market_min") is not None,
+                        normalized.get("rental_market_max") is not None,
+                        normalized.get("rent_trend") is not None,
+                    ]
+                )
+                else None,
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),
@@ -438,15 +456,19 @@ class PropertyService:
                     market_temperature=normalized.get("market_temperature"),
                     median_price=normalized.get("market_median_price"),
                     avg_price_per_sqft=normalized.get("market_avg_price_sqft"),
-                ) if any([
-                    # Check all market stats fields to avoid losing extracted data
-                    normalized.get("market_days_on_market") is not None,
-                    normalized.get("market_avg_days_on_market") is not None,
-                    normalized.get("market_total_listings") is not None,
-                    normalized.get("market_new_listings") is not None,
-                    normalized.get("market_median_price") is not None,
-                    normalized.get("market_avg_price_sqft") is not None,
-                ]) else None,
+                )
+                if any(
+                    [
+                        # Check all market stats fields to avoid losing extracted data
+                        normalized.get("market_days_on_market") is not None,
+                        normalized.get("market_avg_days_on_market") is not None,
+                        normalized.get("market_total_listings") is not None,
+                        normalized.get("market_new_listings") is not None,
+                        normalized.get("market_median_price") is not None,
+                        normalized.get("market_avg_price_sqft") is not None,
+                    ]
+                )
+                else None,
             ),
             listing=ListingInfo(
                 listing_status=normalized.get("listing_status"),
@@ -466,14 +488,13 @@ class PropertyService:
                 listing_agent_name=normalized.get("listing_agent_name"),
                 mls_id=normalized.get("mls_id"),
             ),
-            provenance=ProvenanceMap(fields={
-                k: FieldProvenance(**v) if isinstance(v, dict) else v 
-                for k, v in provenance.items()
-            }),
+            provenance=ProvenanceMap(
+                fields={k: FieldProvenance(**v) if isinstance(v, dict) else v for k, v in provenance.items()}
+            ),
             data_quality=DataQuality(**data_quality),
-            fetched_at=timestamp
+            fetched_at=timestamp,
         )
-        
+
         # Cache result (skip when pre_fetched; return raw sources with response)
         if pre_fetched is None:
             try:
@@ -489,7 +510,7 @@ class PropertyService:
         timings["total_ms"] = (time.perf_counter() - t0) * 1000
         return (response, rentcast_data, axesso_export_for_return or {})
 
-    async def get_property_export_data(self, address: str) -> Dict[str, Any]:
+    async def get_property_export_data(self, address: str) -> dict[str, Any]:
         """
         Fetch raw RentCast, raw AXESSO, normalized property, and verdict/strategy
         calculated values for export (e.g. Excel). Does one coordinated fetch and
@@ -559,7 +580,7 @@ class PropertyService:
             "verdict": verdict_result.model_dump(mode="json"),
         }
 
-    def _parse_address(self, address: str, data: Dict = None) -> Address:
+    def _parse_address(self, address: str, data: dict | None = None) -> Address:
         """Parse address into components."""
         # Try to get structured address from API data
         if data:
@@ -571,9 +592,9 @@ class PropertyService:
                 county=data.get("county"),
                 latitude=data.get("latitude"),
                 longitude=data.get("longitude"),
-                full_address=data.get("formattedAddress", address)
+                full_address=data.get("formattedAddress", address),
             )
-        
+
         # Fallback parsing
         parts = address.split(",")
         return Address(
@@ -584,10 +605,10 @@ class PropertyService:
             county=None,
             latitude=None,
             longitude=None,
-            full_address=address
+            full_address=address,
         )
-    
-    def _unwrap_axesso_property(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _unwrap_axesso_property(self, raw: dict[str, Any]) -> dict[str, Any]:
         """
         Return the dict that contains zestimate so normalizer and market_price get it.
         AXESSO may return the property at top level or wrapped (e.g. data, searchResult, body).
@@ -598,12 +619,13 @@ class PropertyService:
         explicit ``zestimate`` key is found, this method extracts it from
         ``adTargets`` or promotes ``price`` for off-market properties.
         """
-        def _has_zestimate(d: Dict[str, Any]) -> bool:
+
+        def _has_zestimate(d: dict[str, Any]) -> bool:
             if not d or not isinstance(d, dict):
                 return False
             return d.get("zestimate") is not None or d.get("Zestimate") is not None
 
-        def _normalize_zestimate_keys(d: Dict[str, Any]) -> Dict[str, Any]:
+        def _normalize_zestimate_keys(d: dict[str, Any]) -> dict[str, Any]:
             out = dict(d)
             if out.get("zestimate") is None and out.get("Zestimate") is not None:
                 out["zestimate"] = out["Zestimate"]
@@ -611,7 +633,7 @@ class PropertyService:
                 out["rentZestimate"] = out["RentZestimate"]
             return out
 
-        def _extract_zestimate_from_ad_targets(d: Dict[str, Any]) -> Optional[float]:
+        def _extract_zestimate_from_ad_targets(d: dict[str, Any]) -> float | None:
             """Parse adTargets (JSON string or dict) and extract the zestimate value."""
             ad_targets = d.get("adTargets")
             if ad_targets is None:
@@ -619,6 +641,7 @@ class PropertyService:
             if isinstance(ad_targets, str):
                 try:
                     import json
+
                     ad_targets = json.loads(ad_targets)
                 except (json.JSONDecodeError, TypeError):
                     return None
@@ -658,7 +681,8 @@ class PropertyService:
                         out["zestimate"] = float(out["price"])
                         logger.info(
                             "Zestimate promoted from price field: $%s (homeStatus=%s)",
-                            out["price"], home_status,
+                            out["price"],
+                            home_status,
                         )
                     except (ValueError, TypeError):
                         pass
@@ -673,7 +697,7 @@ class PropertyService:
 
         return out
 
-    def _apply_market_price_to_cached(self, cached_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _apply_market_price_to_cached(self, cached_data: dict[str, Any]) -> dict[str, Any]:
         """Recompute market_price on cached response — Zestimate is single source for off-market."""
         valuations = (cached_data.get("valuations") or {}).copy()
         listing = cached_data.get("listing") or {}
@@ -696,7 +720,7 @@ class PropertyService:
         valuations["market_price"] = market_price_val
         return {**cached_data, "valuations": valuations}
 
-    def _build_valuations(self, normalized: Dict) -> ValuationData:
+    def _build_valuations(self, normalized: dict) -> ValuationData:
         """Build ValuationData — Zestimate is single source for off-market market_price."""
         listing_status = normalized.get("listing_status")
         list_price = normalized.get("list_price")
@@ -734,23 +758,23 @@ class PropertyService:
             market_price=market_price_val,
         )
 
-    def _estimate_arv(self, data: Dict) -> Optional[float]:
+    def _estimate_arv(self, data: dict) -> float | None:
         """Estimate ARV for BRRRR strategy."""
         avm = data.get("current_value_avm")
         if avm:
             # ARV typically 10-15% above current market for distressed properties
             return avm * 1.10
         return None
-    
-    def _estimate_arv_flip(self, data: Dict) -> Optional[float]:
+
+    def _estimate_arv_flip(self, data: dict) -> float | None:
         """Estimate ARV for Fix & Flip."""
         avm = data.get("current_value_avm")
         if avm:
             # Conservative flip ARV
             return avm * 1.06
         return None
-    
-    def _estimate_adr(self, data: Dict) -> Optional[float]:
+
+    def _estimate_adr(self, data: dict) -> float | None:
         """Estimate ADR from LTR rent if STR data unavailable."""
         monthly_rent = data.get("monthly_rent_ltr")
         if monthly_rent:
@@ -758,8 +782,8 @@ class PropertyService:
             daily_equivalent = monthly_rent / 30
             return daily_equivalent * 2.5
         return 200  # Default fallback
-    
-    def _estimate_taxes(self, data: Dict) -> float:
+
+    def _estimate_taxes(self, data: dict) -> float:
         """Estimate annual property taxes."""
         avm = data.get("current_value_avm")
         if avm:
@@ -767,7 +791,7 @@ class PropertyService:
             return avm * 0.012
         return 4500  # Default fallback
 
-    async def _resolve_zpid_from_address(self, address: str) -> Optional[str]:
+    async def _resolve_zpid_from_address(self, address: str) -> str | None:
         """Resolve a Zillow zpid from a full address."""
         if not address:
             return None
@@ -782,7 +806,11 @@ class PropertyService:
             return response.zpid
 
         if isinstance(response.data, dict):
-            return str(response.data.get("zpid") or response.data.get("zillow_id") or response.zpid) if (response.data.get("zpid") or response.data.get("zillow_id") or response.zpid) else None
+            return (
+                str(response.data.get("zpid") or response.data.get("zillow_id") or response.zpid)
+                if (response.data.get("zpid") or response.data.get("zillow_id") or response.zpid)
+                else None
+            )
 
         if isinstance(response.data, list) and response.data:
             zpid = response.data[0].get("zpid")
@@ -790,7 +818,7 @@ class PropertyService:
 
         return response.zpid
 
-    async def _resolve_address_from_zpid(self, zpid: str) -> Optional[str]:
+    async def _resolve_address_from_zpid(self, zpid: str) -> str | None:
         """Resolve a formatted address from a Zillow zpid."""
         if not zpid:
             return None
@@ -832,12 +860,12 @@ class PropertyService:
 
     async def get_rentcast_rental_comps(
         self,
-        zpid: Optional[str] = None,
-        address: Optional[str] = None,
+        zpid: str | None = None,
+        address: str | None = None,
         limit: int = 10,
         offset: int = 0,
-        exclude_zpids: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        exclude_zpids: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Fetch rental comps from RentCast.
 
@@ -860,7 +888,7 @@ class PropertyService:
                     "limit": limit,
                     "has_more": False,
                     "provider": "rentcast",
-                    "fetched_at": datetime.now(timezone.utc).isoformat(),
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
 
             result = await self.rentcast.get_rent_estimate(address=resolved_address)
@@ -884,11 +912,11 @@ class PropertyService:
                     "limit": limit,
                     "has_more": False,
                     "provider": "rentcast",
-                    "fetched_at": datetime.now(timezone.utc).isoformat(),
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
 
             payload = result.data
-            comps_raw: List[Dict[str, Any]] = []
+            comps_raw: list[dict[str, Any]] = []
 
             if isinstance(payload, dict):
                 for key in ("comparables", "comps", "rentalComps", "rentComps", "listings", "results", "data"):
@@ -909,7 +937,7 @@ class PropertyService:
                 },
             )
 
-            normalized_comps: List[Dict[str, Any]] = []
+            normalized_comps: list[dict[str, Any]] = []
             for comp in comps_raw:
                 comp_id = str(comp.get("id") or comp.get("zpid") or comp.get("propertyId") or "")
                 formatted_address = str(comp.get("formattedAddress") or "").strip()
@@ -963,7 +991,7 @@ class PropertyService:
 
             if exclude_zpids:
                 exclude_set = set(str(z) for z in exclude_zpids)
-                filtered: List[Dict[str, Any]] = []
+                filtered: list[dict[str, Any]] = []
                 for comp in normalized_comps:
                     comp_id = str(comp.get("zpid") or comp.get("id") or comp.get("propertyId") or "")
                     if comp_id and comp_id in exclude_set:
@@ -972,7 +1000,7 @@ class PropertyService:
                 normalized_comps = filtered
 
             total_available = len(normalized_comps)
-            paginated_results = normalized_comps[offset:offset + limit]
+            paginated_results = normalized_comps[offset : offset + limit]
 
             logger.info(
                 "RentCast rental comps ready",
@@ -996,7 +1024,7 @@ class PropertyService:
                 "has_more": (offset + limit) < total_available,
                 "provider": "rentcast",
                 "source_address": resolved_address,
-                "fetched_at": datetime.now(timezone.utc).isoformat(),
+                "fetched_at": datetime.now(UTC).isoformat(),
             }
         except Exception as exc:
             logger.error(f"Error fetching RentCast rental comps: {exc}")
@@ -1010,13 +1038,13 @@ class PropertyService:
                 "limit": limit,
                 "has_more": False,
                 "provider": "rentcast",
-                "fetched_at": datetime.now(timezone.utc).isoformat(),
+                "fetched_at": datetime.now(UTC).isoformat(),
             }
 
-    def _build_market_location_candidates(self, location: str) -> List[str]:
+    def _build_market_location_candidates(self, location: str) -> list[str]:
         """Generate fallback location formats for market data queries."""
         normalized = " ".join(location.split()).strip()
-        candidates: List[str] = [normalized] if normalized else []
+        candidates: list[str] = [normalized] if normalized else []
 
         zip_match = re.search(r"\b\d{5}\b", normalized)
         if zip_match:
@@ -1036,18 +1064,15 @@ class PropertyService:
                 seen.add(candidate)
 
         return unique_candidates
-    
+
     async def calculate_analytics(
-        self,
-        property_id: str,
-        assumptions: AllAssumptions,
-        strategies: Optional[List[StrategyType]] = None
+        self, property_id: str, assumptions: AllAssumptions, strategies: list[StrategyType] | None = None
     ) -> AnalyticsResponse:
         """
         Calculate investment analytics for all or specified strategies.
         """
         assumptions_hash = self._generate_assumptions_hash(assumptions)
-        
+
         # Check calculation cache (Redis-backed)
         cached_calc = await self._cache.get_calculation(property_id, assumptions_hash)
         if cached_calc:
@@ -1060,7 +1085,7 @@ class PropertyService:
         property_data = await self.get_cached_property(property_id)
         if not property_data:
             raise ValueError(f"Property {property_id} not found. Search first.")
-        
+
         # Determine which strategies to calculate
         all_strategies = [
             StrategyType.LONG_TERM_RENTAL,
@@ -1068,13 +1093,18 @@ class PropertyService:
             StrategyType.BRRRR,
             StrategyType.FIX_AND_FLIP,
             StrategyType.HOUSE_HACK,
-            StrategyType.WHOLESALE
+            StrategyType.WHOLESALE,
         ]
         strategies_to_calc = strategies or all_strategies
-        
+
         # Extract values — Zestimate is single source of truth for market value,
         # RentCast rent is single source of truth for rent estimate
-        purchase_price = assumptions.financing.purchase_price or property_data.valuations.zestimate or property_data.valuations.current_value_avm or 0
+        purchase_price = (
+            assumptions.financing.purchase_price
+            or property_data.valuations.zestimate
+            or property_data.valuations.current_value_avm
+            or 0
+        )
         monthly_rent = property_data.rentals.monthly_rent_ltr or 0
         property_taxes = property_data.market.property_taxes_annual or 4500
         hoa = property_data.market.hoa_fees_monthly or 0
@@ -1082,13 +1112,11 @@ class PropertyService:
         occupancy = property_data.rentals.occupancy_rate or 0.75
         arv = property_data.valuations.arv or purchase_price * 1.10
         arv_flip = property_data.valuations.arv_flip or purchase_price * 1.06
-        
+
         results = AnalyticsResponse(
-            property_id=property_id,
-            assumptions_hash=assumptions_hash,
-            calculated_at=datetime.now(timezone.utc)
+            property_id=property_id, assumptions_hash=assumptions_hash, calculated_at=datetime.now(UTC)
         )
-        
+
         # Calculate each strategy
         if StrategyType.LONG_TERM_RENTAL in strategies_to_calc:
             ltr_result = calculate_ltr(
@@ -1108,10 +1136,10 @@ class PropertyService:
                 landscaping_annual=assumptions.operating.landscaping_annual,
                 pest_control_annual=assumptions.operating.pest_control_annual,
                 appreciation_rate=assumptions.appreciation_rate,
-                rent_growth_rate=assumptions.rent_growth_rate
+                rent_growth_rate=assumptions.rent_growth_rate,
             )
             results.ltr = LTRResults(**ltr_result)
-        
+
         if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc:
             str_result = calculate_str(
                 purchase_price=purchase_price,
@@ -1131,10 +1159,10 @@ class PropertyService:
                 avg_length_of_stay_days=assumptions.str_assumptions.avg_length_of_stay_days,
                 supplies_monthly=assumptions.str_assumptions.supplies_monthly,
                 additional_utilities_monthly=assumptions.str_assumptions.additional_utilities_monthly,
-                insurance_annual=assumptions.str_assumptions.str_insurance_annual
+                insurance_annual=assumptions.str_assumptions.str_insurance_annual,
             )
             results.str_results = STRResults(**str_result)
-        
+
         if StrategyType.BRRRR in strategies_to_calc:
             brrrr_result = calculate_brrrr(
                 market_value=purchase_price,
@@ -1153,16 +1181,16 @@ class PropertyService:
                 refinance_ltv=assumptions.brrrr.refinance_ltv,
                 refinance_interest_rate=assumptions.brrrr.refinance_interest_rate,
                 refinance_term_years=assumptions.brrrr.refinance_term_years,
-                refinance_closing_costs=assumptions.brrrr.refinance_closing_costs
+                refinance_closing_costs=assumptions.brrrr.refinance_closing_costs,
             )
             results.brrrr = BRRRRResults(**brrrr_result)
-        
+
         if StrategyType.FIX_AND_FLIP in strategies_to_calc:
             # Calculate renovation budget from ARV if not explicitly set
             flip_renovation_budget = assumptions.rehab.renovation_budget
             if flip_renovation_budget is None:
                 flip_renovation_budget = arv_flip * assumptions.rehab.renovation_budget_pct
-            
+
             flip_result = calculate_flip(
                 market_value=purchase_price,
                 arv=arv_flip,
@@ -1174,17 +1202,17 @@ class PropertyService:
                 contingency_pct=assumptions.rehab.contingency_pct,
                 holding_period_months=assumptions.flip.holding_period_months,
                 property_taxes_annual=property_taxes,
-                selling_costs_pct=assumptions.flip.selling_costs_pct
+                selling_costs_pct=assumptions.flip.selling_costs_pct,
             )
             results.flip = FlipResults(**flip_result)
-        
+
         if StrategyType.HOUSE_HACK in strategies_to_calc:
             # Calculate defaults if not provided
             room_rent = assumptions.house_hack.room_rent_monthly
             if room_rent is None:
                 # Estimate room rent as 35% of total rent (approx for 3-4 bed house)
                 room_rent = monthly_rent * 0.35
-            
+
             owner_market_rent = assumptions.house_hack.owner_unit_market_rent
             if owner_market_rent is None:
                 # Default to total rent (conservative comparison)
@@ -1201,45 +1229,43 @@ class PropertyService:
                 loan_term_years=assumptions.financing.loan_term_years,
                 closing_costs_pct=assumptions.financing.closing_costs_pct,
                 fha_mip_rate=assumptions.house_hack.fha_mip_rate,
-                insurance_annual=assumptions.operating.insurance_annual
+                insurance_annual=assumptions.operating.insurance_annual,
             )
             results.house_hack = HouseHackResults(**house_hack_result)
-        
+
         if StrategyType.WHOLESALE in strategies_to_calc:
             # Calculate rehab costs from ARV if not explicitly set
             wholesale_rehab_costs = assumptions.rehab.renovation_budget
             if wholesale_rehab_costs is None:
                 wholesale_rehab_costs = arv_flip * assumptions.rehab.renovation_budget_pct
-            
+
             wholesale_result = calculate_wholesale(
                 arv=arv_flip,
                 estimated_rehab_costs=wholesale_rehab_costs,
                 assignment_fee=assumptions.wholesale.assignment_fee,
                 marketing_costs=assumptions.wholesale.marketing_costs,
                 earnest_money_deposit=assumptions.wholesale.earnest_money_deposit,
-                days_to_close=assumptions.wholesale.days_to_close
+                days_to_close=assumptions.wholesale.days_to_close,
             )
             results.wholesale = WholesaleResults(**wholesale_result)
-        
+
         # Cache results in Redis (1 hour TTL — assumptions may change)
         try:
-            await self._cache.set_calculation(
-                property_id, assumptions_hash, results.model_dump(), ttl_seconds=3600
-            )
+            await self._cache.set_calculation(property_id, assumptions_hash, results.model_dump(), ttl_seconds=3600)
         except Exception as e:
             logger.warning(f"Failed to cache calculation: {e}")
-        
+
         return results
-    
-    def _normalize_photo(self, photo: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+
+    def _normalize_photo(self, photo: dict[str, Any]) -> dict[str, Any] | None:
         """
         Normalize a photo object from AXESSO format to frontend expected format.
-        
+
         AXESSO property-v2 can return photos in various formats:
         - mixedSources.jpeg[]/webp[] structure
         - Direct url field
         - sources array with width/url
-        
+
         Frontend expects { url: string, caption?: string, width?: number, height?: number }.
         """
         if not isinstance(photo, dict):
@@ -1247,56 +1273,56 @@ class PropertyService:
             if isinstance(photo, str) and photo.startswith("http"):
                 return {"url": photo, "caption": ""}
             return None
-        
+
         # If already in simple format with direct url
         if "url" in photo and isinstance(photo["url"], str):
             return {
                 "url": photo["url"],
                 "caption": photo.get("caption", ""),
                 "width": photo.get("width"),
-                "height": photo.get("height")
+                "height": photo.get("height"),
             }
-        
+
         # Handle AXESSO mixedSources format
         if "mixedSources" in photo:
             mixed = photo["mixedSources"]
             caption = photo.get("caption", "")
-            
+
             # Prefer JPEG, fall back to WebP
             sources = mixed.get("jpeg", []) or mixed.get("webp", [])
-            
+
             if sources:
                 # Get the highest resolution image
                 # Sort by width to get the best quality
                 sorted_sources = sorted(sources, key=lambda x: x.get("width", 0), reverse=True)
                 best_source = sorted_sources[0] if sorted_sources else None
-                
+
                 if best_source and "url" in best_source:
                     return {
                         "url": best_source["url"],
                         "caption": caption,
                         "width": best_source.get("width"),
-                        "height": best_source.get("height")
+                        "height": best_source.get("height"),
                     }
-        
+
         # Handle sources array format (alternative AXESSO format)
         if "sources" in photo:
             sources = photo["sources"]
             caption = photo.get("caption", "")
-            
+
             if isinstance(sources, list) and sources:
                 # Sort by width to get the best quality
                 sorted_sources = sorted(sources, key=lambda x: x.get("width", 0), reverse=True)
                 best_source = sorted_sources[0] if sorted_sources else None
-                
+
                 if best_source and "url" in best_source:
                     return {
                         "url": best_source["url"],
                         "caption": caption,
                         "width": best_source.get("width"),
-                        "height": best_source.get("height")
+                        "height": best_source.get("height"),
                     }
-        
+
         # Handle responsivePhotos format with subPhotos
         if "subPhotos" in photo:
             sub_photos = photo["subPhotos"]
@@ -1309,35 +1335,31 @@ class PropertyService:
                         "url": best["url"],
                         "caption": photo.get("caption", ""),
                         "width": best.get("width"),
-                        "height": best.get("height")
+                        "height": best.get("height"),
                     }
-        
+
         return None
-    
-    async def get_property_photos(
-        self, 
-        zpid: Optional[str] = None, 
-        url: Optional[str] = None
-    ) -> Dict[str, Any]:
+
+    async def get_property_photos(self, zpid: str | None = None, url: str | None = None) -> dict[str, Any]:
         """
         Fetch property photos from Zillow via AXESSO API.
-        
+
         Note: AXESSO doesn't have a dedicated photos endpoint.
         Photos are fetched from the property-v2 endpoint response.
-        
+
         Args:
             zpid: Zillow Property ID
             url: Property URL on Zillow
-            
+
         Returns:
             Dict with photos data, normalized to frontend expected format
         """
         logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
-        
+
         try:
             # Use the dedicated /photos endpoint via ZillowClient
             result = await self.zillow.get_photos(zpid=zpid, url=url)
-            
+
             if result.success and result.data:
                 # Handle different response structures from AXESSO
                 raw_photos = []
@@ -1355,23 +1377,23 @@ class PropertyService:
                         raw_photos = result.data.get("hugePhotos", [])
                 elif isinstance(result.data, list):
                     raw_photos = result.data
-                
+
                 # Normalize each photo to frontend expected format
                 normalized_photos = []
                 for photo in raw_photos:
                     normalized = self._normalize_photo(photo)
                     if normalized:
                         normalized_photos.append(normalized)
-                
+
                 logger.info(f"Normalized {len(normalized_photos)} photos from {len(raw_photos)} raw photos")
-                
+
                 return {
                     "success": True,
                     "zpid": zpid,
                     "url": url,
                     "photos": normalized_photos,
                     "total_count": len(normalized_photos),
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
             else:
                 logger.warning(f"Photo fetch failed: {result.error}")
@@ -1382,7 +1404,7 @@ class PropertyService:
                     "error": result.error or "Failed to fetch photos from AXESSO API",
                     "photos": [],
                     "total_count": 0,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
         except Exception as e:
             logger.error(f"Error fetching photos: {e}")
@@ -1393,16 +1415,16 @@ class PropertyService:
                 "error": str(e),
                 "photos": [],
                 "total_count": 0,
-                "fetched_at": datetime.now(timezone.utc).isoformat()
+                "fetched_at": datetime.now(UTC).isoformat(),
             }
-    
-    async def get_market_data(self, location: str) -> Dict[str, Any]:
+
+    async def get_market_data(self, location: str) -> dict[str, Any]:
         """
         Fetch rental market data from Zillow via AXESSO API.
-        
+
         Args:
             location: City, State format (e.g., "Delray Beach, FL")
-            
+
         Returns:
             Dict with market data including median rent, trends, etc.
         """
@@ -1425,7 +1447,7 @@ class PropertyService:
                     "success": True,
                     "location": candidate,
                     "data": result.data,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
 
             last_error = result.error or "Failed to fetch market data from AXESSO API"
@@ -1438,21 +1460,21 @@ class PropertyService:
             "location": location,
             "error": last_error,
             "data": None,
-            "fetched_at": datetime.now(timezone.utc).isoformat()
+            "fetched_at": datetime.now(UTC).isoformat(),
         }
-    
+
     async def get_similar_rent(
         self,
-        zpid: Optional[str] = None,
-        url: Optional[str] = None,
-        address: Optional[str] = None,
+        zpid: str | None = None,
+        url: str | None = None,
+        address: str | None = None,
         limit: int = 10,
         offset: int = 0,
-        exclude_zpids: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        exclude_zpids: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Fetch similar rental properties from Zillow via AXESSO API.
-        
+
         Args:
             zpid: Zillow Property ID
             url: Property URL on Zillow
@@ -1460,12 +1482,12 @@ class PropertyService:
             limit: Number of results to return
             offset: Number of results to skip
             exclude_zpids: List of zpids to exclude from results
-            
+
         Returns:
             Dict with similar rental properties and pagination metadata
         """
         logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}")
-        
+
         try:
             resolved_zpid = zpid
             if not resolved_zpid and address and not url:
@@ -1474,36 +1496,28 @@ class PropertyService:
             query_zpid = resolved_zpid
             query_address = address if not query_zpid and not url else None
 
-            result = await self.zillow.get_similar_rentals(
-                zpid=query_zpid,
-                url=url,
-                address=query_address
-            )
-            
+            result = await self.zillow.get_similar_rentals(zpid=query_zpid, url=url, address=query_address)
+
             if result.success and result.data:
-                logger.info(f"Similar rent fetch successful")
+                logger.info("Similar rent fetch successful")
                 if isinstance(result.data, list):
                     results = result.data
                 else:
                     results = result.data.get(
-                        "similarProperties",
-                        result.data.get("properties", result.data.get("results", []))
+                        "similarProperties", result.data.get("properties", result.data.get("results", []))
                     )
-                
+
                 # Filter out excluded zpids
                 if exclude_zpids:
                     exclude_set = set(str(z) for z in exclude_zpids)
-                    results = [
-                        r for r in results 
-                        if str(r.get("zpid", r.get("id", ""))) not in exclude_set
-                    ]
-                
+                    results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
+
                 # Store total before pagination for metadata
                 total_available = len(results)
-                
+
                 # Apply pagination
-                paginated_results = results[offset:offset + limit]
-                
+                paginated_results = results[offset : offset + limit]
+
                 return {
                     "success": True,
                     "results": paginated_results,
@@ -1512,7 +1526,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": (offset + limit) < total_available,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
             else:
                 logger.warning(f"Similar rent fetch failed: {result.error}")
@@ -1525,7 +1539,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": False,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
         except Exception as e:
             logger.error(f"Error fetching similar rentals: {e}")
@@ -1538,21 +1552,21 @@ class PropertyService:
                 "offset": offset,
                 "limit": limit,
                 "has_more": False,
-                "fetched_at": datetime.now(timezone.utc).isoformat()
+                "fetched_at": datetime.now(UTC).isoformat(),
             }
-    
+
     async def get_similar_sold(
         self,
-        zpid: Optional[str] = None,
-        url: Optional[str] = None,
-        address: Optional[str] = None,
+        zpid: str | None = None,
+        url: str | None = None,
+        address: str | None = None,
         limit: int = 10,
         offset: int = 0,
-        exclude_zpids: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        exclude_zpids: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Fetch similar sold properties from Zillow via AXESSO API.
-        
+
         Args:
             zpid: Zillow Property ID
             url: Property URL on Zillow
@@ -1560,12 +1574,12 @@ class PropertyService:
             limit: Number of results to return
             offset: Number of results to skip
             exclude_zpids: List of zpids to exclude from results
-            
+
         Returns:
             Dict with similar sold properties and pagination metadata
         """
         logger.info(f"Fetching similar sold - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}")
-        
+
         try:
             resolved_zpid = zpid
             if not resolved_zpid and address and not url:
@@ -1574,36 +1588,28 @@ class PropertyService:
             query_zpid = resolved_zpid
             query_address = address if not query_zpid and not url else None
 
-            result = await self.zillow.get_similar_sold(
-                zpid=query_zpid,
-                url=url,
-                address=query_address
-            )
-            
+            result = await self.zillow.get_similar_sold(zpid=query_zpid, url=url, address=query_address)
+
             if result.success and result.data:
-                logger.info(f"Similar sold fetch successful")
+                logger.info("Similar sold fetch successful")
                 if isinstance(result.data, list):
                     results = result.data
                 else:
                     results = result.data.get(
-                        "similarProperties",
-                        result.data.get("properties", result.data.get("results", []))
+                        "similarProperties", result.data.get("properties", result.data.get("results", []))
                     )
-                
+
                 # Filter out excluded zpids
                 if exclude_zpids:
                     exclude_set = set(str(z) for z in exclude_zpids)
-                    results = [
-                        r for r in results 
-                        if str(r.get("zpid", r.get("id", ""))) not in exclude_set
-                    ]
-                
+                    results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
+
                 # Store total before pagination for metadata
                 total_available = len(results)
-                
+
                 # Apply pagination
-                paginated_results = results[offset:offset + limit]
-                
+                paginated_results = results[offset : offset + limit]
+
                 return {
                     "success": True,
                     "results": paginated_results,
@@ -1612,7 +1618,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": (offset + limit) < total_available,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
             else:
                 logger.warning(f"Similar sold fetch failed: {result.error}")
@@ -1625,7 +1631,7 @@ class PropertyService:
                     "offset": offset,
                     "limit": limit,
                     "has_more": False,
-                    "fetched_at": datetime.now(timezone.utc).isoformat()
+                    "fetched_at": datetime.now(UTC).isoformat(),
                 }
         except Exception as e:
             logger.error(f"Error fetching similar sold: {e}")
@@ -1638,17 +1644,17 @@ class PropertyService:
                 "offset": offset,
                 "limit": limit,
                 "has_more": False,
-                "fetched_at": datetime.now(timezone.utc).isoformat()
+                "fetched_at": datetime.now(UTC).isoformat(),
             }
-    
+
     def get_mock_property(self) -> PropertyResponse:
         """
         Return mock property data for testing/demo.
         Based on the Excel sample property.
         """
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
         property_id = "demo-fl-12345"
-        
+
         response = PropertyResponse(
             property_id=property_id,
             address=Address(
@@ -1657,7 +1663,7 @@ class PropertyService:
                 state="FL",
                 zip_code="33486",
                 county="Palm Beach County",
-                full_address="123 Palm Beach Way, West Palm Beach, FL 33486"
+                full_address="123 Palm Beach Way, West Palm Beach, FL 33486",
             ),
             details=PropertyDetails(
                 property_type="Single Family",
@@ -1666,7 +1672,7 @@ class PropertyService:
                 square_footage=2450,
                 lot_size=8000,
                 year_built=1998,
-                num_units=1
+                num_units=1,
             ),
             valuations=ValuationData(
                 current_value_avm=425000,
@@ -1677,7 +1683,7 @@ class PropertyService:
                 tax_assessed_value=380000,
                 tax_assessment_year=2024,
                 arv=465000,
-                arv_flip=450000
+                arv_flip=450000,
             ),
             rentals=RentalData(
                 monthly_rent_ltr=2100,
@@ -1685,46 +1691,42 @@ class PropertyService:
                 rent_range_high=2250,
                 average_daily_rate=250,
                 occupancy_rate=0.82,
-                rent_per_sqft=0.86
+                rent_per_sqft=0.86,
             ),
             market=MarketData(
-                market_health_score=72,
-                market_strength="Strong",
-                property_taxes_annual=4500,
-                hoa_fees_monthly=0
+                market_health_score=72, market_strength="Strong", property_taxes_annual=4500, hoa_fees_monthly=0
             ),
-            provenance=ProvenanceMap(fields={
-                "current_value_avm": FieldProvenance(
-                    source="rentcast",
-                    fetched_at=timestamp.isoformat(),
-                    confidence="high",
-                    raw_values={"rentcast": 425000},
-                    conflict_flag=False
-                ),
-                "monthly_rent_ltr": FieldProvenance(
-                    source="rentcast",
-                    fetched_at=timestamp.isoformat(),
-                    confidence="high",
-                    raw_values={"rentcast": 2100},
-                    conflict_flag=False
-                ),
-                "average_daily_rate": FieldProvenance(
-                    source="axesso",
-                    fetched_at=timestamp.isoformat(),
-                    confidence="medium",
-                    raw_values={"axesso": 250},
-                    conflict_flag=False
-                )
-            }),
+            provenance=ProvenanceMap(
+                fields={
+                    "current_value_avm": FieldProvenance(
+                        source="rentcast",
+                        fetched_at=timestamp.isoformat(),
+                        confidence="high",
+                        raw_values={"rentcast": 425000},
+                        conflict_flag=False,
+                    ),
+                    "monthly_rent_ltr": FieldProvenance(
+                        source="rentcast",
+                        fetched_at=timestamp.isoformat(),
+                        confidence="high",
+                        raw_values={"rentcast": 2100},
+                        conflict_flag=False,
+                    ),
+                    "average_daily_rate": FieldProvenance(
+                        source="axesso",
+                        fetched_at=timestamp.isoformat(),
+                        confidence="medium",
+                        raw_values={"axesso": 250},
+                        conflict_flag=False,
+                    ),
+                }
+            ),
             data_quality=DataQuality(
-                completeness_score=85.0,
-                missing_fields=["hoa_fees_monthly"],
-                stale_fields=[],
-                conflict_fields=[]
+                completeness_score=85.0, missing_fields=["hoa_fees_monthly"], stale_fields=[], conflict_fields=[]
             ),
-            fetched_at=timestamp
+            fetched_at=timestamp,
         )
-        
+
         return response
 
 

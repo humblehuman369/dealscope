@@ -3,45 +3,46 @@ BRRRR Deal Proforma — Excel Exporter  (v1.0)
 
 Generates a professional proforma structured around the five BRRRR phases:
 
-  1. Deal Summary        – property + strategy overview + key numbers
-  2. Phase 1: Buy        – purchase, discount, financing, cash needed
-  3. Phase 2: Rehab      – renovation budget, contingency, holding costs
-  4. Phase 3: Rent       – post-rehab rental income, NOI, cap rate
-  5. Phase 4: Refinance  – refi terms, cash-out, new payment
-  6. Phase 5: Repeat     – capital recycled, equity, infinite ROI check
-  7. Assumptions         – all inputs + data sources
+  1. Deal Summary        - property + strategy overview + key numbers
+  2. Phase 1: Buy        - purchase, discount, financing, cash needed
+  3. Phase 2: Rehab      - renovation budget, contingency, holding costs
+  4. Phase 3: Rent       - post-rehab rental income, NOI, cap rate
+  5. Phase 4: Refinance  - refi terms, cash-out, new payment
+  6. Phase 5: Repeat     - capital recycled, equity, infinite ROI check
+  7. Assumptions         - all inputs + data sources
 """
 
-from io import BytesIO
 from datetime import datetime
-from typing import Any, Dict
+from io import BytesIO
+from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import (
-    Alignment, Font, PatternFill,
+    Alignment,
+    Font,
+    PatternFill,
 )
 from openpyxl.utils import get_column_letter
 
 from app.schemas.proforma import FinancialProforma
 
-
 # ── Style tokens ─────────────────────────────────────────────────────────────
 
-_BRAND     = "0A84FF"
+_BRAND = "0A84FF"
 _HEADER_BG = "1F4E79"
-_GREEN     = "22C55E"
-_RED       = "EF4444"
-_WHITE     = "FFFFFF"
+_GREEN = "22C55E"
+_RED = "EF4444"
+_WHITE = "FFFFFF"
 
-_HDR_FILL  = PatternFill("solid", fgColor=_HEADER_BG)
-_HDR_FONT  = Font(bold=True, color=_WHITE, size=11, name="Calibri")
-_SUB_FILL  = PatternFill("solid", fgColor="D6DCE4")
-_SUB_FONT  = Font(bold=True, size=10, name="Calibri")
+_HDR_FILL = PatternFill("solid", fgColor=_HEADER_BG)
+_HDR_FONT = Font(bold=True, color=_WHITE, size=11, name="Calibri")
+_SUB_FILL = PatternFill("solid", fgColor="D6DCE4")
+_SUB_FONT = Font(bold=True, size=10, name="Calibri")
 _TOTAL_FNT = Font(bold=True, size=10, name="Calibri")
 _BODY_FONT = Font(size=10, name="Calibri")
 _GOOD_FILL = PatternFill("solid", fgColor="E2EFDA")
 _WARN_FILL = PatternFill("solid", fgColor="FFF2CC")
-_BAD_FILL  = PatternFill("solid", fgColor="FCE4EC")
+_BAD_FILL = PatternFill("solid", fgColor="FCE4EC")
 
 _CUR = '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'
 _PCT = "0.00%"
@@ -54,7 +55,7 @@ class BRRRRExcelExporter:
     def __init__(self, proforma: FinancialProforma):
         self.d = proforma
         self.wb = Workbook()
-        self.bd: Dict[str, Any] = proforma.strategy_breakdown or {}
+        self.bd: dict[str, Any] = proforma.strategy_breakdown or {}
 
     # ── public ────────────────────────────────────────────────────────────
 
@@ -262,8 +263,8 @@ class BRRRRExcelExporter:
         rows = [
             ("Appraised Value (ARV)", arv, _CUR),
             ("New Loan (75% LTV)", refi_loan, _CUR),
-            ("− Refinance Closing Costs", refi_costs, _CUR),
-            ("− Original Loan Payoff", payoff, _CUR),
+            ("- Refinance Closing Costs", refi_costs, _CUR),
+            ("- Original Loan Payoff", payoff, _CUR),
         ]
         for label, val, fmt in rows:
             r = self._label_value(ws, r, label, val, fmt=fmt)
@@ -326,7 +327,7 @@ class BRRRRExcelExporter:
         r = self._section_header(ws, r, "EQUITY POSITION")
         rows2 = [
             ("Property Value (ARV)", self.bd.get("arv", 0), _CUR),
-            ("− Refinance Loan", self.bd.get("refinance_loan_amount", 0), _CUR),
+            ("- Refinance Loan", self.bd.get("refinance_loan_amount", 0), _CUR),
             ("= Equity Position", equity, _CUR),
             ("Equity %", equity_pct, _PCT),
         ]
@@ -402,8 +403,14 @@ class BRRRRExcelExporter:
         return row + 1
 
     def _label_value(
-        self, ws, row: int, label: str, value: Any,
-        *, fmt: str | None = None, highlight: bool = False,
+        self,
+        ws,
+        row: int,
+        label: str,
+        value: Any,
+        *,
+        fmt: str | None = None,
+        highlight: bool = False,
     ) -> int:
         lc = ws.cell(row, 1, label)
         lc.font = _BODY_FONT

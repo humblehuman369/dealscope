@@ -1,5 +1,5 @@
 """
-Token service – JWT creation/verification and verification-token lifecycle.
+Token service - JWT creation/verification and verification-token lifecycle.
 
 JWTs are short-lived (5 min) and contain a ``session_id`` claim so the
 server can revoke them instantly by invalidating the session row.
@@ -15,8 +15,7 @@ import hashlib
 import logging
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,10 +50,10 @@ class TokenService:
         user_id: uuid.UUID,
         session_id: uuid.UUID,
         *,
-        expires_delta: Optional[timedelta] = None,
+        expires_delta: timedelta | None = None,
     ) -> str:
         """Create a short-lived JWT access token bound to a session."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expire = now + (expires_delta or timedelta(minutes=JWT_ACCESS_LIFETIME_MINUTES))
         payload = {
             "sub": str(user_id),
@@ -67,7 +66,7 @@ class TokenService:
         }
         return jwt.encode(payload, self._jwt_key(), algorithm=JWT_ALGORITHM)
 
-    def verify_jwt(self, token: str) -> Optional[dict]:
+    def verify_jwt(self, token: str) -> dict | None:
         """Decode and verify a JWT.  Returns the payload dict or None."""
         try:
             payload = jwt.decode(
@@ -135,7 +134,7 @@ class TokenService:
             user_id=user_id,
             token_hash=token_hash,
             token_type=token_type,
-            expires_at=datetime.now(timezone.utc) + expires_delta,
+            expires_at=datetime.now(UTC) + expires_delta,
         )
         return raw_token
 
@@ -144,7 +143,7 @@ class TokenService:
         db: AsyncSession,
         raw_token: str,
         token_type: str | TokenType,
-    ) -> Optional[uuid.UUID]:
+    ) -> uuid.UUID | None:
         """Validate a raw token.  Returns the ``user_id`` if valid, else None."""
         if isinstance(token_type, TokenType):
             token_type = token_type.value
