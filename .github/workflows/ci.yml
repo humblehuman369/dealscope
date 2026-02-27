@@ -19,15 +19,11 @@ jobs:
   # ════════════════════════════════════════════
 
   # ────────────────────────────────────────────
-  # Frontend: type-check & build
+  # Frontend: type-check & build (install from root so @dealscope/shared works)
   # ────────────────────────────────────────────
   frontend-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     env:
-      # Dummy values so the build doesn't fail on env validation
       NEXT_PUBLIC_API_URL: https://placeholder.example.com
       BACKEND_URL: https://placeholder.example.com
     steps:
@@ -37,25 +33,24 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: TypeScript type check
         run: npx tsc --noEmit
+        working-directory: frontend
 
       - name: Build
         run: npm run build
+        working-directory: frontend
 
   # ────────────────────────────────────────────
-  # Frontend: tests
+  # Frontend: tests (install from root so @dealscope/shared works)
   # ────────────────────────────────────────────
   frontend-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     env:
       NEXT_PUBLIC_API_URL: https://placeholder.example.com
       BACKEND_URL: https://placeholder.example.com
@@ -66,13 +61,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
         run: npm run test:run
+        working-directory: frontend
 
   # ════════════════════════════════════════════
   # MOBILE (Expo / React Native)
