@@ -289,6 +289,30 @@ export default function VerdictScreen() {
           <Ionicons name="options-outline" size={18} color={colors.accent} />
           <Text style={styles.secondaryBtnText}>Deal Maker</Text>
         </Pressable>
+        <View style={styles.docActions}>
+          <Pressable
+            style={styles.docBtn}
+            onPress={() =>
+              router.push(
+                `/(protected)/proforma/${property?.property_id ?? 'unknown'}?address=${encodeURIComponent(fullAddress)}`,
+              )
+            }
+          >
+            <Ionicons name="document-outline" size={16} color={colors.green} />
+            <Text style={styles.docBtnText}>Proforma</Text>
+          </Pressable>
+          <Pressable
+            style={styles.docBtn}
+            onPress={() =>
+              router.push(
+                `/(protected)/loi/generate?address=${encodeURIComponent(fullAddress)}&offer_price=${targetBuy ?? ''}`,
+              )
+            }
+          >
+            <Ionicons name="create-outline" size={16} color={colors.accent} />
+            <Text style={styles.docBtnText}>Generate LOI</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -541,5 +565,26 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
     color: colors.accent,
+  },
+  docActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  docBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  docBtnText: {
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.sm,
+    color: colors.heading,
   },
 });
