@@ -39,6 +39,7 @@ const eslintConfig = [
       'react-hooks/unsupported-syntax': 'warn',
       'react-hooks/immutability': 'warn',
       'react-hooks/refs': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
 
       // ── React JSX ───────────────────────────────────────────
       // Unescaped entities — warn only (apostrophes in JSX text)
