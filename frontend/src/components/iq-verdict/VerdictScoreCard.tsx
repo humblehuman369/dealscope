@@ -200,10 +200,13 @@ export function DealFactorsList({ factors }: { factors?: DealFactor[] }) {
   return (
     <div className="mt-5 text-left">
       <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-3"
+        className="text-[10px] font-bold uppercase tracking-wider mb-1"
         style={{ color: colors.text.secondary }}
       >
-        Key Deal Factors
+        Key Deal Factors to Close the Gap
+      </p>
+      <p className="text-[0.8rem] mb-3" style={{ color: colors.text.secondary }}>
+        Address these when planning your offer or outreach.
       </p>
       <div className="space-y-2.5">
         {factors.map((f, i) => {
