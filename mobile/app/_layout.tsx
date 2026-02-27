@@ -10,6 +10,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PostHogProvider } from 'posthog-react-native';
 import { hydrateTokens } from '@/services/token-manager';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { BiometricLockScreen } from '@/components/auth/BiometricLockScreen';
@@ -29,6 +30,9 @@ const queryClient = new QueryClient({
   },
 });
 
+const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? '';
+const POSTHOG_HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com';
+
 function AppContent() {
   const { isLocked, unlock } = useBiometricLock();
 
@@ -47,6 +51,23 @@ function AppContent() {
       />
       <StatusBar style="light" />
     </>
+  );
+}
+
+function AppWithAnalytics() {
+  if (!POSTHOG_API_KEY) {
+    return <AppContent />;
+  }
+
+  return (
+    <PostHogProvider
+      apiKey={POSTHOG_API_KEY}
+      options={{
+        host: POSTHOG_HOST,
+      }}
+    >
+      <AppContent />
+    </PostHogProvider>
   );
 }
 
@@ -80,7 +101,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <AppWithAnalytics />
     </QueryClientProvider>
   );
 }
