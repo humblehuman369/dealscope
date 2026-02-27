@@ -83,39 +83,30 @@ class TestMonthlyMortgage:
 
 
 class TestVerdictScore:
-    """Tests for bracket-based _calculate_verdict_score."""
+    """Tests for pure Deal Gap bracket-based _calculate_verdict_score."""
 
     def test_no_gap_scores_high(self):
-        score = _calculate_verdict_score(deal_gap_pct=0, motivation_score=50, market_temperature=None)
+        score = _calculate_verdict_score(0)
         assert score >= 85
 
     def test_small_gap_scores_well(self):
-        score = _calculate_verdict_score(deal_gap_pct=3, motivation_score=50, market_temperature=None)
+        score = _calculate_verdict_score(3)
         assert 75 <= score <= 90
 
     def test_large_gap_scores_low(self):
-        score = _calculate_verdict_score(deal_gap_pct=35, motivation_score=50, market_temperature=None)
+        score = _calculate_verdict_score(35)
         assert score <= 30
 
-    def test_higher_motivation_increases_score(self):
-        low = _calculate_verdict_score(deal_gap_pct=15, motivation_score=30, market_temperature=None)
-        high = _calculate_verdict_score(deal_gap_pct=15, motivation_score=90, market_temperature=None)
-        assert high > low
-
-    def test_cold_market_increases_score(self):
-        warm = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="warm")
-        cold = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="cold")
-        assert cold > warm
-
-    def test_hot_market_decreases_score(self):
-        warm = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="warm")
-        hot = _calculate_verdict_score(deal_gap_pct=15, motivation_score=50, market_temperature="hot")
-        assert hot < warm
+    def test_same_gap_always_same_score(self):
+        """Score is purely Deal Gap — no modifiers means deterministic."""
+        s1 = _calculate_verdict_score(15)
+        s2 = _calculate_verdict_score(15)
+        assert s1 == s2
 
     def test_score_clamped(self):
-        score = _calculate_verdict_score(deal_gap_pct=-50, motivation_score=100, market_temperature="cold")
+        score = _calculate_verdict_score(-50)
         assert score <= 95
-        score = _calculate_verdict_score(deal_gap_pct=80, motivation_score=10, market_temperature="hot")
+        score = _calculate_verdict_score(80)
         assert score >= 5
 
     def test_interpolation_monotonic(self):
