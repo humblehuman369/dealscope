@@ -816,7 +816,7 @@ function VerdictContent() {
 
   // Derived values for display
   const score = analysis.dealScore
-  const verdictLabel = score >= 90 ? 'Strong Opportunity' : score >= 80 ? 'Good Opportunity' : score >= 65 ? 'Moderate Opportunity' : score >= 50 ? 'Marginal Opportunity' : score >= 30 ? 'Unlikely Opportunity' : 'Pass'
+  const verdictLabel = score >= 85 ? 'Achievable' : score >= 70 ? 'Negotiable' : score >= 55 ? 'Challenging' : score >= 40 ? 'More Challenging' : score >= 25 ? 'Very Challenging' : 'Extremely Challenging'
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)

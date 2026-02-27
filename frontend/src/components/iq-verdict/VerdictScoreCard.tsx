@@ -132,7 +132,7 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
 // ─── Verdict Badge ────────────────────────────────────────────────────────────
 
 function VerdictBadge({ label, color }: { label: string; color: string }) {
-  const isPositive = label.includes('Strong') || label.includes('Good') || label.includes('Moderate')
+  const isPositive = label.includes('Achievable') || label.includes('Negotiable')
 
   return (
     <div
@@ -203,7 +203,7 @@ export function DealFactorsList({ factors }: { factors?: DealFactor[] }) {
         className="text-[10px] font-bold uppercase tracking-wider mb-3"
         style={{ color: colors.text.secondary }}
       >
-        Deal Factors
+        Key Deal Factors
       </p>
       <div className="space-y-2.5">
         {factors.map((f, i) => {

@@ -54,46 +54,24 @@ const DISCOUNT_BRACKETS = [
   { bracket: '41%+ below list', investorPct: '1–2.5%', scoreRange: '5–12', color: T.red },
 ] as const
 
-const MODIFIER_SECTIONS = [
-  {
-    title: 'Seller Motivation',
-    items: [
-      { label: 'Foreclosure / Bank-Owned / Auction', impact: '+8 to +10' },
-      { label: 'Price Reduced 2+ Times', impact: '+5 to +8' },
-      { label: 'For Sale By Owner', impact: '+3 to +5' },
-      { label: 'Agent-Listed (standard)', impact: '0' },
-      { label: 'Off-Market (unknown intent)', impact: '−5 to −10' },
-    ],
-  },
-  {
-    title: 'Market Temperature',
-    items: [
-      { label: 'Cold Market', impact: '+5' },
-      { label: 'Warm / Balanced Market', impact: '0' },
-      { label: 'Hot Market', impact: '−5' },
-    ],
-  },
-] as const
-
 const SCORE_FORMULA = {
   steps: [
     'Measure the Deal Gap — how far below asking price you need to buy',
-    'Map the gap to a base score using real U.S. investor discount data',
-    'Adjust for seller motivation and market conditions (−15 to +15)',
+    'Map the gap directly to a score using real U.S. investor discount data',
   ],
-  example: 'If your Deal Gap is 8% → base score 65. Seller reduced price 2x (+6) and market is cold (+5) → final score 76 (Good Opportunity)',
+  example: 'If your Deal Gap is 8% → score 67 (Challenging). A 3% gap → score 82 (Negotiable). At or above asking → 88+ (Achievable).',
 }
 
 // =============================================================================
 // GRADE TIERS
 // =============================================================================
 const GRADE_TIERS = [
-  { grade: 'A+', range: '90–100', label: 'Strong Opportunity', color: T.teal, meaning: 'Numbers work at or near asking price' },
-  { grade: 'A',  range: '80–89',  label: 'Good Opportunity',   color: T.teal, meaning: 'Minimal negotiation needed' },
-  { grade: 'B',  range: '65–79',  label: 'Moderate Opportunity', color: T.amber, meaning: 'Negotiation required' },
-  { grade: 'C',  range: '50–64',  label: 'Marginal Opportunity', color: T.amber, meaning: 'Significant discount needed' },
-  { grade: 'D',  range: '30–49',  label: 'Unlikely Opportunity', color: T.red, meaning: 'Gap too large to bridge' },
-  { grade: 'F',  range: '0–29',   label: 'Pass',                 color: T.red, meaning: 'Not a viable investment' },
+  { grade: 'A+', range: '85–95',  label: 'Achievable',             color: T.teal,  meaning: 'Numbers work at or near asking price' },
+  { grade: 'A',  range: '70–84',  label: 'Negotiable',             color: T.teal,  meaning: 'Small discount — common in investor deals' },
+  { grade: 'B',  range: '55–69',  label: 'Challenging',            color: T.amber, meaning: 'Meaningful negotiation required' },
+  { grade: 'C',  range: '40–54',  label: 'More Challenging',       color: T.amber, meaning: 'Significant discount needed' },
+  { grade: 'D',  range: '25–39',  label: 'Very Challenging',       color: T.red,   meaning: 'Few investor deals achieve this discount' },
+  { grade: 'F',  range: '5–24',   label: 'Extremely Challenging',  color: T.red,   meaning: 'Rare — less than 4% of investor deals' },
 ]
 
 // =============================================================================
@@ -295,46 +273,10 @@ export function ScoreMethodologySheet({
               </div>
             </section>
 
-            {/* Score Modifiers */}
-            <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                2. Score Modifiers
-              </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
-                <div className="flex items-start gap-3 mb-4">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'rgba(56,189,248,0.1)' }}
-                  >
-                    <Target className="w-4 h-4" style={{ color: T.blue }} />
-                  </div>
-                  <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    The base score is adjusted by seller motivation and market conditions.
-                  </p>
-                </div>
-
-                {MODIFIER_SECTIONS.map((section, si) => (
-                  <div key={si} className={si > 0 ? 'mt-4' : ''}>
-                    <p className="text-xs font-semibold mb-2.5" style={{ color: T.body }}>
-                      {section.title}
-                    </p>
-                    <div className="space-y-2">
-                      {section.items.map((item, ii) => (
-                        <div key={ii} className="flex items-center justify-between">
-                          <span className="text-xs" style={{ color: T.secondary }}>{item.label}</span>
-                          <span className="text-xs font-semibold tabular-nums" style={{ color: item.impact.startsWith('+') ? T.teal : item.impact.startsWith('−') ? T.red : T.label }}>{item.impact}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* Score Calculation */}
             <section>
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                3. How It All Works
+                2. How It All Works
               </h3>
               <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
                 <div className="space-y-3 mb-4">

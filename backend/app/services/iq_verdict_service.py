@@ -36,17 +36,17 @@ logger = logging.getLogger(__name__)
 
 def _score_to_grade_label(score: int) -> tuple[str, str, str]:
     if score >= 85:
-        return ("A+", "STRONG OPPORTUNITY", "#22c55e")
+        return ("A+", "ACHIEVABLE", "#22c55e")
     elif score >= 70:
-        return ("A", "GOOD OPPORTUNITY", "#22c55e")
+        return ("A", "NEGOTIABLE", "#22c55e")
     elif score >= 55:
-        return ("B", "MODERATE OPPORTUNITY", "#84cc16")
+        return ("B", "CHALLENGING", "#84cc16")
     elif score >= 40:
-        return ("C", "MARGINAL OPPORTUNITY", "#f97316")
+        return ("C", "MORE CHALLENGING", "#f97316")
     elif score >= 25:
-        return ("D", "UNLIKELY OPPORTUNITY", "#f97316")
+        return ("D", "VERY CHALLENGING", "#f97316")
     else:
-        return ("F", "PASS", "#ef4444")
+        return ("F", "EXTREMELY CHALLENGING", "#ef4444")
 
 
 def _performance_score(metric_value: float, multiplier: float) -> int:
@@ -527,16 +527,9 @@ def _market_modifier(market_temperature: str | None) -> int:
     return 0
 
 
-def _calculate_verdict_score(
-    deal_gap_pct: float,
-    motivation_score: int,
-    market_temperature: str | None,
-) -> int:
-    """Calculate verdict score using deal gap brackets + motivation/market modifiers."""
-    base = _interpolate_bracket_score(deal_gap_pct)
-    mot_mod = _motivation_modifier(motivation_score)
-    mkt_mod = _market_modifier(market_temperature)
-    return max(5, min(95, base + mot_mod + mkt_mod))
+def _calculate_verdict_score(deal_gap_pct: float) -> int:
+    """Calculate verdict score purely from Deal Gap bracket interpolation."""
+    return max(5, min(95, _interpolate_bracket_score(deal_gap_pct)))
 
 
 def _generate_deal_factors(
@@ -550,25 +543,8 @@ def _generate_deal_factors(
     is_fsbo: bool,
     is_listed: bool | None,
 ) -> list[dict[str, str]]:
-    """Generate 2-4 plain-language deal factor narratives."""
+    """Generate actionable guidance factors for closing the Deal Gap."""
     factors: list[dict[str, str]] = []
-
-    if deal_gap_pct <= 0:
-        factors.append({
-            "type": "positive",
-            "text": "This property is profitable at asking price — no discount needed",
-        })
-    elif deal_gap_pct <= 5:
-        factors.append({
-            "type": "positive",
-            "text": f"Only a {deal_gap_pct:.0f}% discount is needed — {bracket_label.lower()}",
-        })
-    else:
-        severity = "info" if deal_gap_pct <= 20 else "warning"
-        factors.append({
-            "type": severity,
-            "text": f"A {deal_gap_pct:.0f}% discount is needed — {bracket_label.lower()}",
-        })
 
     status = (listing_status or "").upper()
 
@@ -856,11 +832,7 @@ def compute_iq_verdict(
 
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
-    deal_score = _calculate_verdict_score(
-        deal_gap_pct=deal_gap_pct,
-        motivation_score=motivation_score,
-        market_temperature=input_data.market_temperature,
-    )
+    deal_score = _calculate_verdict_score(deal_gap_pct)
 
     bracket_label = _get_bracket_label(deal_gap_pct)
 
@@ -877,17 +849,17 @@ def compute_iq_verdict(
     )
 
     deal_verdict = (
-        "Strong Opportunity"
+        "Achievable"
         if deal_score >= 85
-        else "Good Opportunity"
+        else "Negotiable"
         if deal_score >= 70
-        else "Moderate Opportunity"
+        else "Challenging"
         if deal_score >= 55
-        else "Marginal Opportunity"
+        else "More Challenging"
         if deal_score >= 40
-        else "Unlikely Opportunity"
+        else "Very Challenging"
         if deal_score >= 25
-        else "Pass"
+        else "Extremely Challenging"
     )
 
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
