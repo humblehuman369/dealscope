@@ -44,14 +44,15 @@ const T = {
 // IQ VERDICT METHODOLOGY
 // =============================================================================
 
+// DealGapIQ Score Chart — matches backend INVESTOR_DISCOUNT_BRACKETS
 const DISCOUNT_BRACKETS = [
-  { bracket: 'At or above list', investorPct: '10–15%', scoreRange: '88–95', color: T.teal },
-  { bracket: '0–5% below list', investorPct: '30–38%', scoreRange: '75–88', color: T.teal },
-  { bracket: '6–10% below list', investorPct: '30–37%', scoreRange: '60–75', color: T.blue },
-  { bracket: '11–20% below list', investorPct: '12–18%', scoreRange: '40–60', color: T.amber },
-  { bracket: '21–30% below list', investorPct: '6–10%', scoreRange: '22–40', color: T.amber },
-  { bracket: '31–40% below list', investorPct: '2–4%', scoreRange: '12–22', color: T.red },
-  { bracket: '41%+ below list', investorPct: '1–2.5%', scoreRange: '5–12', color: T.red },
+  { bracket: 'At or above list', investorPct: '10–15%', scoreRange: '88–95', color: '#22c55e' },
+  { bracket: '0–5% below list', investorPct: '30–38%', scoreRange: '88–95', color: '#22c55e' },
+  { bracket: '6–10% below list', investorPct: '30–37%', scoreRange: '75–88', color: '#84cc16' },
+  { bracket: '11–20% below list', investorPct: '12–18%', scoreRange: '60–75', color: '#84cc16' },
+  { bracket: '21–30% below list', investorPct: '6–10%', scoreRange: '40–60', color: '#f97316' },
+  { bracket: '31–40% below list', investorPct: '2–4%', scoreRange: '22–40', color: '#f97316' },
+  { bracket: '41%+ below list', investorPct: '1–2.5%', scoreRange: '5–22', color: '#ef4444' },
 ] as const
 
 const SCORE_FORMULA = {
@@ -59,19 +60,20 @@ const SCORE_FORMULA = {
     'Measure the Deal Gap — how far below asking price you need to buy',
     'Map the gap directly to a score using real U.S. investor discount data',
   ],
-  example: 'If your Deal Gap is 8% → score 67 (Challenging). A 3% gap → score 82 (Negotiable). At or above asking → 88+ (Achievable).',
+  example: 'If your Deal Gap is 8% → score ~77 (Negotiable). A 3% gap → score ~90 (Achievable). At or above asking → 95.',
 }
 
 // =============================================================================
 // GRADE TIERS
 // =============================================================================
+// Score Interpretation — aligned with DealGapIQ Score Chart CSV
 const GRADE_TIERS = [
-  { grade: 'A+', range: '85–95',  label: 'Achievable',             color: T.teal,  meaning: 'Numbers work at or near asking price' },
-  { grade: 'A',  range: '70–84',  label: 'Negotiable',             color: T.teal,  meaning: 'Small discount — common in investor deals' },
-  { grade: 'B',  range: '55–69',  label: 'Challenging',            color: T.amber, meaning: 'Meaningful negotiation required' },
-  { grade: 'C',  range: '40–54',  label: 'More Challenging',       color: T.amber, meaning: 'Significant discount needed' },
-  { grade: 'D',  range: '25–39',  label: 'Very Challenging',       color: T.red,   meaning: 'Few investor deals achieve this discount' },
-  { grade: 'F',  range: '5–24',   label: 'Extremely Challenging',  color: T.red,   meaning: 'Rare — less than 4% of investor deals' },
+  { grade: 'A+', range: '88–95',  label: 'Achievable',             color: '#22c55e', meaning: 'Numbers work at or near asking price' },
+  { grade: 'A',  range: '75–87',  label: 'Negotiable',             color: '#84cc16', meaning: 'Small discount — common in investor deals' },
+  { grade: 'B',  range: '60–74',  label: 'Challenging',            color: '#84cc16', meaning: 'Meaningful negotiation required' },
+  { grade: 'C',  range: '40–59',  label: 'More Challenging',       color: '#f97316', meaning: 'Significant discount needed' },
+  { grade: 'D',  range: '22–39',  label: 'Very Challenging',      color: '#f97316', meaning: 'Few investor deals achieve this discount' },
+  { grade: 'F',  range: '5–21',   label: 'Extremely Challenging',  color: '#ef4444', meaning: 'Rare — less than 2.5% of investor deals' },
 ]
 
 // =============================================================================

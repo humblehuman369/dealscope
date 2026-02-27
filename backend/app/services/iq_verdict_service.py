@@ -34,16 +34,17 @@ logger = logging.getLogger(__name__)
 # ===========================================
 
 
+# DealGapIQ Score Chart — same thresholds as frontend VERDICT_SCORE_THRESHOLDS
 def _score_to_grade_label(score: int) -> tuple[str, str, str]:
-    if score >= 85:
+    if score >= 88:
         return ("A+", "ACHIEVABLE", "#22c55e")
-    elif score >= 70:
-        return ("A", "NEGOTIABLE", "#22c55e")
-    elif score >= 55:
+    elif score >= 75:
+        return ("A", "NEGOTIABLE", "#84cc16")
+    elif score >= 60:
         return ("B", "CHALLENGING", "#84cc16")
     elif score >= 40:
         return ("C", "MORE CHALLENGING", "#f97316")
-    elif score >= 25:
+    elif score >= 22:
         return ("D", "VERY CHALLENGING", "#f97316")
     else:
         return ("F", "EXTREMELY CHALLENGING", "#ef4444")
@@ -469,17 +470,17 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 
 
 # ===========================================
-# Bracket-based verdict scoring (U.S. 2025 investor discount data)
+# Bracket-based verdict scoring (DealGapIQ Score Chart — U.S. investor discount data)
 # ===========================================
 
 INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
     # (max_gap_pct, score_at_bracket_start, score_at_bracket_end, investor_pct_label)
-    (5, 88, 75, "30-38% of investor deals achieve a 0-5% discount"),
-    (10, 75, 60, "30-37% of investor deals achieve a 6-10% discount"),
-    (20, 60, 40, "12-18% of investor deals achieve an 11-20% discount"),
-    (30, 40, 22, "6-10% of investor deals achieve a 21-30% discount"),
-    (40, 22, 12, "2-4% of investor deals achieve a 31-40% discount"),
-    (100, 12, 5, "Less than 2.5% of investor deals achieve this discount"),
+    (5, 95, 88, "30-38% of investor deals achieve a 0-5% discount"),
+    (10, 88, 75, "30-37% of investor deals achieve a 6-10% discount"),
+    (20, 75, 60, "12-18% of investor deals achieve an 11-20% discount"),
+    (30, 60, 40, "6-10% of investor deals achieve a 21-30% discount"),
+    (40, 40, 22, "2-4% of investor deals achieve a 31-40% discount"),
+    (100, 22, 5, "Less than 2.5% of investor deals achieve this discount"),
 ]
 
 AT_OR_ABOVE_LABEL = "10-15% of investor deals close at or above asking price"
@@ -488,7 +489,7 @@ AT_OR_ABOVE_LABEL = "10-15% of investor deals close at or above asking price"
 def _interpolate_bracket_score(deal_gap_pct: float) -> int:
     """Compute base verdict score from deal gap using investor discount brackets."""
     if deal_gap_pct <= 0:
-        return min(95, round(88 + min(abs(deal_gap_pct), 7)))
+        return 95
 
     prev_max = 0.0
     for max_gap, score_start, score_end, _ in INVESTOR_DISCOUNT_BRACKETS:
@@ -850,15 +851,15 @@ def compute_iq_verdict(
 
     deal_verdict = (
         "Achievable"
-        if deal_score >= 85
+        if deal_score >= 88
         else "Negotiable"
-        if deal_score >= 70
+        if deal_score >= 75
         else "Challenging"
-        if deal_score >= 55
+        if deal_score >= 60
         else "More Challenging"
         if deal_score >= 40
         else "Very Challenging"
-        if deal_score >= 25
+        if deal_score >= 22
         else "Extremely Challenging"
     )
 

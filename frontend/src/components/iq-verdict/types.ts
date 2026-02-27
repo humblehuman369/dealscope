@@ -253,15 +253,18 @@ export const getStrategyBadge = (rank: number, score: number): IQStrategyBadge |
   return null;
 };
 
+/** DealGapIQ Score Chart thresholds — aligned with backend INVESTOR_DISCOUNT_BRACKETS */
+const VERDICT_SCORE_THRESHOLDS = { achievable: 88, negotiable: 75, challenging: 60, moreChallenging: 40, veryChallenging: 22 } as const;
+
 /**
  * Get deal verdict based on overall score
  */
 export const getDealVerdict = (score: number): IQDealVerdict => {
-  if (score >= 85) return 'Achievable';
-  if (score >= 70) return 'Negotiable';
-  if (score >= 55) return 'Challenging';
-  if (score >= 40) return 'More Challenging';
-  if (score >= 25) return 'Very Challenging';
+  if (score >= VERDICT_SCORE_THRESHOLDS.achievable) return 'Achievable';
+  if (score >= VERDICT_SCORE_THRESHOLDS.negotiable) return 'Negotiable';
+  if (score >= VERDICT_SCORE_THRESHOLDS.challenging) return 'Challenging';
+  if (score >= VERDICT_SCORE_THRESHOLDS.moreChallenging) return 'More Challenging';
+  if (score >= VERDICT_SCORE_THRESHOLDS.veryChallenging) return 'Very Challenging';
   return 'Extremely Challenging';
 };
 
@@ -300,19 +303,19 @@ export const getVerdictDescription = (
       pricingQuality = `Priced significantly above its Income Value — steep discount needed.`;
     }
 
-    if (score >= 85) {
+    if (score >= VERDICT_SCORE_THRESHOLDS.achievable) {
       return `Achievable — ${pricingQuality}`;
     }
-    if (score >= 70) {
+    if (score >= VERDICT_SCORE_THRESHOLDS.negotiable) {
       return `Negotiable — ${pricingQuality}`;
     }
-    if (score >= 55) {
+    if (score >= VERDICT_SCORE_THRESHOLDS.challenging) {
       return `Challenging — ${pricingQuality}`;
     }
-    if (score >= 40) {
+    if (score >= VERDICT_SCORE_THRESHOLDS.moreChallenging) {
       return `More Challenging — ${pricingQuality}`;
     }
-    if (score >= 25) {
+    if (score >= VERDICT_SCORE_THRESHOLDS.veryChallenging) {
       return `Very Challenging — ${pricingQuality}`;
     }
     return `Extremely Challenging — ${pricingQuality}`;
@@ -322,19 +325,19 @@ export const getVerdictDescription = (
     ? `${dealGapPercent > 0 ? dealGapPercent.toFixed(1) : '0'}% discount needed`
     : '';
   
-  if (score >= 85) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.achievable) {
     return `Achievable — ${dealGapText}.`;
   }
-  if (score >= 70) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.negotiable) {
     return `Negotiable — ${dealGapText}.`;
   }
-  if (score >= 55) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.challenging) {
     return `Challenging — ${dealGapText}.`;
   }
-  if (score >= 40) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.moreChallenging) {
     return `More Challenging — ${dealGapText}.`;
   }
-  if (score >= 25) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.veryChallenging) {
     return `Very Challenging — ${dealGapText}.`;
   }
   return `Extremely Challenging — ${dealGapText}.`;
@@ -373,15 +376,15 @@ export const getDealScoreColor = (score: number) => {
  * 
  */
 export const scoreToGradeLabel = (score: number): ScoreDisplay => {
-  if (score >= 85) {
+  if (score >= VERDICT_SCORE_THRESHOLDS.achievable) {
     return { score, grade: 'A+', label: 'ACHIEVABLE', color: '#22c55e' };
-  } else if (score >= 70) {
-    return { score, grade: 'A', label: 'NEGOTIABLE', color: '#22c55e' };
-  } else if (score >= 55) {
+  } else if (score >= VERDICT_SCORE_THRESHOLDS.negotiable) {
+    return { score, grade: 'A', label: 'NEGOTIABLE', color: '#84cc16' };
+  } else if (score >= VERDICT_SCORE_THRESHOLDS.challenging) {
     return { score, grade: 'B', label: 'CHALLENGING', color: '#84cc16' };
-  } else if (score >= 40) {
+  } else if (score >= VERDICT_SCORE_THRESHOLDS.moreChallenging) {
     return { score, grade: 'C', label: 'MORE CHALLENGING', color: '#f97316' };
-  } else if (score >= 25) {
+  } else if (score >= VERDICT_SCORE_THRESHOLDS.veryChallenging) {
     return { score, grade: 'D', label: 'VERY CHALLENGING', color: '#f97316' };
   } else {
     return { score, grade: 'F', label: 'EXTREMELY CHALLENGING', color: '#ef4444' };
