@@ -83,12 +83,17 @@ const FULL_C = 2 * Math.PI * R
 const ARC_LEN = FULL_C * (ARC_DEG / 360)
 const GAP_LEN = FULL_C * ((360 - ARC_DEG) / 360)
 
+const GAUGE_SIZE = 96 // px — slightly reduced for a more balanced hero
+
 function ScoreGauge({ score, color }: { score: number; color: string }) {
   const filled = ARC_LEN * (score / 100)
   const empty = FULL_C - filled
 
   return (
-    <div className="relative flex-shrink-0 w-32 h-32">
+    <div
+      className="relative flex-shrink-0"
+      style={{ width: GAUGE_SIZE, height: GAUGE_SIZE }}
+    >
       <svg viewBox="0 0 120 120" className="w-full h-full -rotate-[150deg]">
         {/* Background track */}
         <circle
@@ -113,13 +118,13 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
       {/* Centered number */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className="text-[2.8rem] font-bold tabular-nums"
-          style={{ color, lineHeight: 1 }}
+          className="font-bold tabular-nums"
+          style={{ color, lineHeight: 1, fontSize: '2rem' }}
         >
           {score}
         </span>
         <span
-          className="text-xs font-medium mt-0.5"
+          className="text-[10px] font-medium mt-0.5"
           style={{ color: colors.text.secondary }}
         >
           /100
@@ -306,7 +311,7 @@ export function VerdictScoreCard({
 
   return (
     <section
-      className="mx-5 mt-6 rounded-[14px] pt-8 pb-6 px-5"
+      className="mx-5 mt-6 rounded-[14px] pt-6 pb-5 px-5"
       style={{
         background: cardGlow.lg.background,
         border: cardGlow.lg.border,
@@ -314,30 +319,30 @@ export function VerdictScoreCard({
       }}
     >
       <p
-        className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6"
+        className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-5"
         style={{ color: colors.text.secondary }}
       >
         The Verdict
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 mb-5">
+      <div className="flex flex-row flex-wrap items-center justify-center gap-5 sm:gap-6 max-w-md mx-auto">
         <ScoreGauge score={score} color={color} />
         {showMetrics && (
-          <div className="flex flex-col gap-4 min-w-[140px]">
+          <div className="flex flex-col gap-3">
             {gapDisplay != null && (
-              <div className="text-center sm:text-left">
+              <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
                   Deal Gap
                 </p>
-                <p className="text-2xl font-bold tabular-nums" style={{ color: gapColor }}>{gapDisplay}</p>
+                <p className="text-xl font-bold tabular-nums leading-none" style={{ color: gapColor }}>{gapDisplay}</p>
               </div>
             )}
             {targetBuyPrice != null && targetBuyPrice > 0 && (
-              <div className="text-center sm:text-left">
+              <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
                   Target Buy
                 </p>
-                <p className="text-xl font-bold tabular-nums" style={{ color: colors.brand.teal }}>{formatTargetBuy(targetBuyPrice)}</p>
+                <p className="text-lg font-bold tabular-nums leading-none" style={{ color: colors.brand.teal }}>{formatTargetBuy(targetBuyPrice)}</p>
               </div>
             )}
           </div>
