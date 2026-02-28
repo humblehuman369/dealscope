@@ -1340,12 +1340,50 @@ class PropertyService:
 
         return None
 
+    async def _get_photos_from_property_v2(
+        self, zpid: str | None = None, url: str | None = None
+    ) -> dict[str, Any] | None:
+        """
+        Fallback: fetch photos from property-v2 response when dedicated /photos endpoint fails.
+        Property-v2 often includes the same photo data and may succeed when /photos returns 502.
+        """
+        if not zpid and not url:
+            return None
+        result = await self.zillow.get_property_details(zpid=zpid, url=url)
+        if not result.success or not isinstance(result.data, dict):
+            return None
+        raw_photos = (
+            result.data.get("photos")
+            or result.data.get("responsivePhotos")
+            or result.data.get("images")
+            or result.data.get("hugePhotos")
+            or []
+        )
+        if not raw_photos:
+            return None
+        normalized_photos = []
+        for photo in raw_photos:
+            normalized = self._normalize_photo(photo)
+            if normalized:
+                normalized_photos.append(normalized)
+        if not normalized_photos:
+            return None
+        logger.info(f"Photos fallback: got {len(normalized_photos)} photos from property-v2")
+        return {
+            "success": True,
+            "zpid": zpid,
+            "url": url,
+            "photos": normalized_photos,
+            "total_count": len(normalized_photos),
+            "fetched_at": datetime.now(UTC).isoformat(),
+        }
+
     async def get_property_photos(self, zpid: str | None = None, url: str | None = None) -> dict[str, Any]:
         """
         Fetch property photos from Zillow via AXESSO API.
 
-        Note: AXESSO doesn't have a dedicated photos endpoint.
-        Photos are fetched from the property-v2 endpoint response.
+        Uses dedicated /photos endpoint first; on failure (e.g. 502), falls back to
+        property-v2 response which often includes photos.
 
         Args:
             zpid: Zillow Property ID
@@ -1396,7 +1434,12 @@ class PropertyService:
                     "fetched_at": datetime.now(UTC).isoformat(),
                 }
             else:
-                logger.warning(f"Photo fetch failed: {result.error}")
+                # Dedicated /photos endpoint failed (e.g. 502). Fallback: try property-v2,
+                # which often includes photos and uses a different AXESSO path.
+                logger.warning(f"Photo fetch failed: {result.error}; trying property-v2 fallback")
+                fallback = await self._get_photos_from_property_v2(zpid=zpid, url=url)
+                if fallback:
+                    return fallback
                 return {
                     "success": False,
                     "zpid": zpid,
@@ -1408,6 +1451,14 @@ class PropertyService:
                 }
         except Exception as e:
             logger.error(f"Error fetching photos: {e}")
+            # Try property-v2 fallback on any error when we have zpid
+            if zpid or url:
+                try:
+                    fallback = await self._get_photos_from_property_v2(zpid=zpid, url=url)
+                    if fallback:
+                        return fallback
+                except Exception as fallback_e:
+                    logger.warning(f"Property-v2 photo fallback failed: {fallback_e}")
             return {
                 "success": False,
                 "zpid": zpid,
