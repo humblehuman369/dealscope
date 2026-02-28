@@ -502,6 +502,7 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
 export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCheckerIQScreenProps) {
   const router = useRouter()
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+  const hasValidSubject = Boolean(property.zpid || (property.address?.trim() && fullAddress.replace(/,|\s/g, '').length > 2))
 
   // View state
   const [activeView, setActiveView] = useState<'sale' | 'rent'>(initialView)
@@ -579,7 +580,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
       offset,
     }
     if (property.zpid) params.zpid = property.zpid
-    else params.address = fullAddress
+    else if (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2) params.address = fullAddress
     if (excludeZpids.length > 0) params.exclude_zpids = excludeZpids.join(',')
     return params
   }, [property.zpid, fullAddress])
@@ -618,14 +619,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     return []
   }, [buildParams])
 
-  // Initial fetch on mount -- store originals for reset (requires zpid or address)
+  // Initial fetch when we have a valid subject (zpid or address); re-run if property changes (e.g. URL params)
   useEffect(() => {
-    if (!property.zpid && !property.address) return
+    if (!hasValidSubject) return
     const init = async () => {
       const [sold, rented] = await Promise.all([fetchSaleComps(), fetchRentComps()])
       setSaleComps(sold)
       setRentComps(rented)
-      // Store originals for reset
       setOriginalSaleComps(sold)
       setOriginalRentComps(rented)
       const saleIds = sold.length > 0 ? new Set(sold.slice(0, 3).map(c => c.id)) : new Set<string | number>()
@@ -636,7 +636,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
       setOriginalRentSelected(rentIds)
     }
     init()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasValidSubject]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh all -- fetches brand new comps from the API
   const handleRefreshAll = async () => {
@@ -975,8 +975,26 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         </div>
 
+        {/* No property (landed without address or zpid) */}
+        {!hasValidSubject && (
+          <div className="mx-4 mt-3 rounded-xl border border-white/[0.07] p-6 text-center bg-[#0C1220]">
+            <MapPin className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
+            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">Enter a property to view comps</h3>
+            <p className="text-xs text-[#F1F5F9] mb-4 max-w-sm mx-auto">
+              Open a property from Verdict or search, then use the Comps tab to see comparable sales and rentals.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push('/search')}
+              className="px-4 py-2 text-sm font-medium text-[#CBD5E1] bg-white/[0.07] border border-white/[0.12] rounded-lg hover:bg-white/[0.1]"
+            >
+              Search for a property
+            </button>
+          </div>
+        )}
+
         {/* Loading */}
-        {loading && comps.length === 0 && !loadFailed && (
+        {hasValidSubject && loading && comps.length === 0 && !loadFailed && (
           <div className="px-4 mt-3 space-y-3">
             {[1, 2, 3].map(i => <CompCardSkeleton key={i} />)}
             <p className="text-xs text-[#F1F5F9] text-center">
@@ -986,7 +1004,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Unavailable (friendly fallback — no raw errors) */}
-        {loadFailed && !loading && (
+        {hasValidSubject && loadFailed && !loading && (
           <div className="mx-4 mt-3 rounded-xl border border-white/[0.07] p-6 text-center bg-[#0C1220]">
             <Info className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">
@@ -1006,7 +1024,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Empty (success but no comps found) */}
-        {!loading && !loadFailed && comps.length === 0 && (
+        {hasValidSubject && !loading && !loadFailed && comps.length === 0 && (
           <div className="mx-4 mt-3 bg-[#0C1220] border border-white/[0.07] rounded-xl p-6 text-center">
             {isSale ? <Building2 className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" />}
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
@@ -1015,7 +1033,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Comp Cards */}
-        {!loading && !loadFailed && comps.length > 0 && (
+        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
           <div className="px-4 mt-3 space-y-3">
             {filteredComps.map(comp => (
               <CompCard
