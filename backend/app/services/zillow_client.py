@@ -83,7 +83,12 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
     - search: Search properties by location with filters
     """
 
-    def __init__(self, api_key: str, base_url: str = "https://api.axesso.de/zil"):
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.axesso.de/zil",
+        fallback_api_key: str | None = None,
+    ):
         super().__init__(
             api_key=api_key,
             base_url=base_url,
@@ -92,6 +97,7 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
             max_retries=3,
             enable_circuit_breaker=True,
         )
+        self.fallback_api_key = (fallback_api_key or "").strip() or None
 
     def _get_headers(self) -> dict[str, str]:
         """Get authenticated headers for AXESSO API."""
@@ -127,13 +133,54 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
         """Return provider name for logging."""
         return "AXESSO/Zillow"
 
+    async def _make_request(
+        self,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        method: str = "GET",
+        json_data: dict[str, Any] | None = None,
+        **response_kwargs,
+    ) -> ZillowAPIResponse:
+        """Make request; on 502/503/401/403 retry once with secondary key if configured."""
+        result = await super()._make_request(
+            endpoint=endpoint,
+            params=params,
+            method=method,
+            json_data=json_data,
+            **response_kwargs,
+        )
+        if (
+            result.success
+            or not self.fallback_api_key
+            or result.status_code not in (502, 503, 401, 403)
+        ):
+            return result
+        logger.info(
+            "ext_api provider=AXESSO endpoint=%s status=%s retrying with secondary key",
+            endpoint,
+            result.status_code,
+        )
+        old_key = self.api_key
+        self.api_key = self.fallback_api_key
+        try:
+            result2 = await super()._make_request(
+                endpoint=endpoint,
+                params=params,
+                method=method,
+                json_data=json_data,
+                **response_kwargs,
+            )
+            if result2.success:
+                return result2
+        finally:
+            self.api_key = old_key
+        return result
+
     async def _make_zillow_request(
         self, endpoint: ZillowEndpoint, params: dict[str, Any] | None = None
     ) -> ZillowAPIResponse:
         """Make authenticated request to AXESSO Zillow API."""
-        # Use base class _make_request with endpoint value as URL path.
-        # Pass the ZillowEndpoint enum via response_kwargs so _create_response receives it.
-        return await super()._make_request(
+        return await self._make_request(
             endpoint=endpoint.value,
             params=params,
             zillow_endpoint=endpoint,
@@ -733,8 +780,12 @@ class ZillowDataExtractor:
 
 
 # Factory function
-def create_zillow_client(api_key: str, base_url: str | None = None) -> ZillowClient:
-    """Create configured Zillow client."""
+def create_zillow_client(
+    api_key: str,
+    base_url: str | None = None,
+    fallback_api_key: str | None = None,
+) -> ZillowClient:
+    """Create configured Zillow client. Optional fallback key is tried on 502/503/401/403."""
     if base_url:
-        return ZillowClient(api_key, base_url)
-    return ZillowClient(api_key)
+        return ZillowClient(api_key, base_url, fallback_api_key=fallback_api_key)
+    return ZillowClient(api_key, fallback_api_key=fallback_api_key)
