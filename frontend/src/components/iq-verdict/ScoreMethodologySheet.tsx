@@ -114,7 +114,7 @@ export function ScoreMethodologySheet({
   const getTitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'How VerdictIQ Works'
+        return 'How The Verdict Works'
       case 'strategy':
         return 'Strategy Score Breakdown'
       default:
