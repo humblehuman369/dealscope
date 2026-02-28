@@ -77,6 +77,8 @@ class Settings(BaseSettings):
     REDFIN_API_KEY: str = ""
     REDFIN_URL: str = "https://redfin-base.p.rapidapi.com"
 
+    ANTHROPIC_API_KEY: str = ""
+
     # ===========================================
     # JWT Authentication
     # ===========================================

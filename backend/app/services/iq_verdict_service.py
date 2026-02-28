@@ -475,15 +475,15 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 
 INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
     # (max_gap_pct, score_at_bracket_start, score_at_bracket_end, investor_pct_label)
-    (5, 95, 88, "30-38% of investor deals achieve a 0-5% discount"),
-    (10, 88, 75, "30-37% of investor deals achieve a 6-10% discount"),
-    (20, 75, 60, "12-18% of investor deals achieve an 11-20% discount"),
-    (30, 60, 40, "6-10% of investor deals achieve a 21-30% discount"),
-    (40, 40, 22, "2-4% of investor deals achieve a 31-40% discount"),
-    (100, 22, 5, "Less than 2.5% of investor deals achieve this discount"),
+    (5, 95, 88, "about 38% of investors achieve these discounts"),
+    (10, 88, 75, "about 37% of investors achieve these discounts"),
+    (20, 75, 60, "about 18% of investors achieve these discounts"),
+    (30, 60, 40, "about 10% of investors achieve these discounts"),
+    (40, 40, 22, "about 4% of investors achieve these discounts"),
+    (100, 22, 5, "Less than 2.5% of investors achieve these discounts"),
 ]
 
-AT_OR_ABOVE_LABEL = "10-15% of investor deals close at or above asking price"
+AT_OR_ABOVE_LABEL = "about 15% of investors close at or above asking price"
 
 
 def _interpolate_bracket_score(deal_gap_pct: float) -> int:
@@ -606,6 +606,122 @@ def _generate_deal_factors(
             })
 
     return factors
+
+
+# ===========================================
+# AI narrative generation (Anthropic Claude)
+# ===========================================
+
+_NARRATIVE_SYSTEM_PROMPT = """You are a deal advisor — concise, motivating, and instructional.
+
+RULES:
+- Write exactly 2–3 sentences. Never more.
+- Tone: encouraging and educational. You are coaching an investor to succeed, not warning them. Inspire action through preparation, not caution.
+- Always frame around "is this worth your time" — help them decide whether to pursue or move on.
+- Reference the Deal Gap percentage and what it means (the negotiation needed).
+- When referencing the investor stat, frame it as achievable and instructional. Say things like "about 18% of investor deals achieve discounts in this range — preparation is key" or "investors who do their homework close gaps like this." NEVER frame the stat as a warning or low odds. NEVER use phrases like "but it's not impossible" or "only X% achieve this" — these are discouraging.
+- Weave in relevant sub-factors (Price Gap, off-market status, market temperature, price reductions, foreclosure, expired listing) as practical context the investor can act on.
+- End with an actionable insight — what the investor should focus on to close this deal (e.g., know the comps, negotiate with data, come prepared with your numbers).
+- Never use bullet points, labels, or headers. Pure narrative prose.
+- Never say "DealGapIQ" or reference yourself. You are the voice of the data."""
+
+
+def _build_narrative_sub_factors(
+    price_gap_pct: float,
+    listing_status: str | None,
+    market_temperature: str | None,
+    is_foreclosure: bool,
+    is_bank_owned: bool,
+    is_listed: bool | None,
+    days_on_market: int | None,
+) -> list[str]:
+    factors: list[str] = []
+    if price_gap_pct > 0:
+        factors.append(f"Price Gap is -{price_gap_pct:.1f}% — market value is above what rental income supports.")
+    status = (listing_status or "").upper()
+    if "OFF_MARKET" in status or is_listed is False:
+        factors.append("Property is off-market — the seller has not indicated intent to sell.")
+    else:
+        factors.append("Property is listed on-market.")
+    if market_temperature:
+        temp = market_temperature.lower()
+        if temp == "hot":
+            factors.append("Market temperature is hot — sellers have less motivation to discount.")
+        elif temp == "cold":
+            factors.append("Market temperature is cold — sellers are more likely to entertain lower offers.")
+        else:
+            factors.append("Market temperature is neutral.")
+    if is_foreclosure or is_bank_owned:
+        factors.append("This is a foreclosure/bank-owned property — typically more negotiable.")
+    if days_on_market is not None and days_on_market >= 90:
+        factors.append(f"Listed {days_on_market} days — seller may be more motivated.")
+    return factors
+
+
+def _generate_deal_narrative(
+    score: int,
+    score_label: str,
+    deal_gap_pct: float,
+    price_gap_pct: float,
+    bracket_label: str,
+    target_price: float,
+    income_value: float,
+    list_price: float,
+    listing_status: str | None,
+    market_temperature: str | None,
+    is_foreclosure: bool,
+    is_bank_owned: bool,
+    is_listed: bool | None,
+    days_on_market: int | None,
+) -> str | None:
+    """Generate an AI deal narrative via Anthropic Claude. Returns None on any failure."""
+    try:
+        from app.core.config import get_settings
+        settings = get_settings()
+        api_key = settings.ANTHROPIC_API_KEY
+        if not api_key:
+            return None
+
+        import anthropic
+
+        sub_factors = _build_narrative_sub_factors(
+            price_gap_pct=price_gap_pct,
+            listing_status=listing_status,
+            market_temperature=market_temperature,
+            is_foreclosure=is_foreclosure,
+            is_bank_owned=is_bank_owned,
+            is_listed=is_listed,
+            days_on_market=days_on_market,
+        )
+
+        user_message = (
+            f"Write the deal narrative for this property:\n\n"
+            f"Score: {score}/100 ({score_label})\n"
+            f"Deal Gap: -{deal_gap_pct:.1f}% (the discount needed to reach Target Buy)\n"
+            f"Investor stat: {bracket_label}\n"
+            f"Target Buy: ${target_price:,.0f}\n"
+            f"Income Value: ${income_value:,.0f}\n"
+            f"List Price: ${list_price:,.0f}\n\n"
+            f"Sub-factors:\n"
+            + "\n".join(f"- {f}" for f in sub_factors)
+        )
+
+        client = anthropic.Anthropic(api_key=api_key, timeout=8.0)
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=300,
+            system=_NARRATIVE_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_message}],
+        )
+
+        text = "".join(
+            block.text for block in response.content if block.type == "text"
+        ).strip()
+        return text or None
+
+    except Exception:
+        logger.warning("AI narrative generation failed", exc_info=True)
+        return None
 
 
 def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str, str]:
@@ -863,6 +979,23 @@ def compute_iq_verdict(
         else "Extremely Challenging"
     )
 
+    deal_narrative = _generate_deal_narrative(
+        score=deal_score,
+        score_label=deal_verdict,
+        deal_gap_pct=deal_gap_pct,
+        price_gap_pct=income_gap_pct,
+        bracket_label=bracket_label,
+        target_price=buy_price,
+        income_value=income_value,
+        list_price=list_price,
+        listing_status=input_data.listing_status,
+        market_temperature=input_data.market_temperature,
+        is_foreclosure=input_data.is_foreclosure or False,
+        is_bank_owned=input_data.is_bank_owned or False,
+        is_listed=input_data.is_listed,
+        days_on_market=input_data.days_on_market,
+    )
+
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
     ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
 
@@ -926,6 +1059,7 @@ def compute_iq_verdict(
         wholesale_mao=round((arv * 0.70) - rehab_cost - (buy_price * 0.007), 0),
         deal_factors=[DealFactor(**f) for f in deal_factors_raw],
         discount_bracket_label=bracket_label,
+        deal_narrative=deal_narrative,
     )
 
 

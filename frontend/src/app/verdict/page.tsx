@@ -24,7 +24,7 @@ import {
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { VerdictScoreCard, VerdictScoreExplainer } from '@/components/iq-verdict/VerdictScoreCard'
+import { VerdictScoreCard, VerdictNarrative } from '@/components/iq-verdict/VerdictScoreCard'
 import { getDealVerdict } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
@@ -651,6 +651,7 @@ function VerdictContent() {
         text: f.text as string,
       })),
       discountBracketLabel: (analysisData.discount_bracket_label ?? analysisData.discountBracketLabel ?? '') as string,
+      dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as string | null,
     }),
     [property?.id],
   )
@@ -831,30 +832,10 @@ function VerdictContent() {
   const discountPct = analysis.discountPercent || 0
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
-  const incomeGapPct = analysis.incomeGapPercent ?? (() => {
-    const lp = analysis.listPrice ?? property.price
-    return lp != null && lp > 0 && incomeValue != null ? Math.round(((lp - incomeValue) / lp) * 1000) / 10 : undefined
-  })()
-
-  // Deal gap (list vs target buy) — drives score; used in explainer
   const of = analysis.opportunityFactors
   const dealGap = property.price > 0
     ? Math.max(0, ((property.price - purchasePrice) / property.price) * 100)
     : 0
-
-  const dealGapPct = analysis.dealGapPercent ?? (() => {
-    const lp = analysis.listPrice ?? property?.price
-    return lp != null && lp > 0 && purchasePrice != null ? Math.round(((lp - purchasePrice) / lp) * 1000) / 10 : undefined
-  })()
-  const verdictDealFactors = analysis.dealFactors ?? []
-  const verdictBracketLabel = analysis.discountBracketLabel ?? ''
-
-  // Short line under the score; detail is in VerdictScoreExplainer below
-  const shortVerdictDescription = incomeGapPct != null && incomeGapPct > 0
-    ? 'Negotiation is needed to reach your target return.'
-    : incomeGapPct != null
-      ? `At or below Income Value — the numbers can work at current ${priceLabel.toLowerCase()} price.`
-      : (analysis.verdictDescription || 'Calculating deal metrics...')
 
   const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
@@ -900,14 +881,9 @@ function VerdictContent() {
               score={score}
               verdictLabel={verdictLabel}
             />
-            {/* How the Verdict Score Works — unified explainer with Key Deal Factors */}
-            <VerdictScoreExplainer
-              priceGapPercent={incomeGapPct ?? undefined}
-              dealGapPercent={dealGapPct != null ? dealGapPct : undefined}
-              priceLabel={priceLabel}
-              verdictLabel={verdictLabel}
-              bracketLabel={verdictBracketLabel || undefined}
-              dealFactors={verdictDealFactors}
+            {/* AI-generated deal narrative */}
+            <VerdictNarrative
+              narrative={analysis.dealNarrative}
               onHowItWorks={handleShowMethodology}
             />
           </div>

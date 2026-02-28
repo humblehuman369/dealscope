@@ -46,13 +46,13 @@ const T = {
 
 // DealGapIQ Score Chart — matches backend INVESTOR_DISCOUNT_BRACKETS
 const DISCOUNT_BRACKETS = [
-  { bracket: 'At or above list', investorPct: '10–15%', scoreRange: '88–95', color: '#22c55e' },
-  { bracket: '0–5% below list', investorPct: '30–38%', scoreRange: '88–95', color: '#22c55e' },
-  { bracket: '6–10% below list', investorPct: '30–37%', scoreRange: '75–88', color: '#84cc16' },
-  { bracket: '11–20% below list', investorPct: '12–18%', scoreRange: '60–75', color: '#84cc16' },
-  { bracket: '21–30% below list', investorPct: '6–10%', scoreRange: '40–60', color: '#f97316' },
-  { bracket: '31–40% below list', investorPct: '2–4%', scoreRange: '22–40', color: '#f97316' },
-  { bracket: '41%+ below list', investorPct: '1–2.5%', scoreRange: '5–22', color: '#ef4444' },
+  { bracket: 'At or above list', investorPct: '~15%', scoreRange: '88–95', color: '#22c55e' },
+  { bracket: '0–5% below list', investorPct: '~38%', scoreRange: '88–95', color: '#22c55e' },
+  { bracket: '6–10% below list', investorPct: '~37%', scoreRange: '75–88', color: '#84cc16' },
+  { bracket: '11–20% below list', investorPct: '~18%', scoreRange: '60–75', color: '#84cc16' },
+  { bracket: '21–30% below list', investorPct: '~10%', scoreRange: '40–60', color: '#f97316' },
+  { bracket: '31–40% below list', investorPct: '~4%', scoreRange: '22–40', color: '#f97316' },
+  { bracket: '41%+ below list', investorPct: '<2.5%', scoreRange: '5–22', color: '#ef4444' },
 ] as const
 
 const SCORE_FORMULA = {
