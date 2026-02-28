@@ -757,8 +757,10 @@ function VerdictContent() {
         }
         break
       case 'price-checker':
-        // Navigate to PriceCheckerIQ page
-        router.push(`/price-intel?address=${encodedAddress}`)
+        // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
+        const compsQuery = new URLSearchParams({ address: fullAddress })
+        if (propertyId) compsQuery.set('zpid', String(propertyId))
+        router.push(`/price-intel?${compsQuery.toString()}`)
         break
       case 'dashboard':
         router.push('/search')

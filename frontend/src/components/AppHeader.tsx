@@ -425,7 +425,9 @@ export function AppHeader({
         break
       case 'price-checker':
         if (displayAddress) {
-          router.push(`/price-intel?address=${encodedAddress}`)
+          const compsQuery = new URLSearchParams({ address: displayAddress })
+          if (zpid) compsQuery.set('zpid', String(zpid))
+          router.push(`/price-intel?${compsQuery.toString()}`)
         } else {
           router.push('/search')
         }
