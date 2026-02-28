@@ -447,13 +447,17 @@ export function AppHeader({
     return null
   }
 
+  // Analyzing page: pure black background per CURSOR-UNIFY-COLOR-SYSTEM
+  const isAnalyzingPage = pathname?.startsWith('/analyzing')
+  const headerBg = isAnalyzingPage ? '#000000' : colors.background.deepNavy
+
   return (
     <>
       <header className="sticky top-0 z-50">
-        {/* Brand Bar - Dark Navy */}
+        {/* Brand Bar - Dark Navy (pure black on /analyzing) */}
         <div 
           className="flex items-center justify-between px-4 py-3"
-          style={{ backgroundColor: colors.background.deepNavy }}
+          style={{ backgroundColor: headerBg }}
         >
           {/* Logo - Dynamic per page, clickable to go home */}
           <button 
@@ -566,12 +570,12 @@ export function AppHeader({
           </div>
         </div>
 
-        {/* Tab Bar - Dark surface, rectangular tabs touching side by side */}
+        {/* Tab Bar - Dark surface (pure black on /analyzing) */}
         {showTabs && (
           <div 
             className="flex items-stretch overflow-x-auto scrollbar-hide"
             style={{ 
-              backgroundColor: colors.background.surface,
+              backgroundColor: isAnalyzingPage ? '#000000' : colors.background.surface,
               borderBottom: `1px solid ${colors.ui.border}`,
             }}
           >
@@ -586,7 +590,7 @@ export function AppHeader({
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
                   style={{
-                    backgroundColor: isActive ? colors.background.deepNavy : 'transparent',
+                    backgroundColor: isActive ? headerBg : 'transparent',
                     color: isActive ? colors.text.white : colors.text.secondary,
                     borderColor: colors.ui.border,
                   }}
@@ -598,11 +602,11 @@ export function AppHeader({
           </div>
         )}
 
-        {/* Property Address Bar - Optional */}
+        {/* Property Address Bar - Optional (pure black on /analyzing) */}
         {shouldShowPropertyBar && displayAddress && (
           <div 
             className="border-b"
-            style={{ backgroundColor: colors.background.surface, borderColor: colors.ui.border }}
+            style={{ backgroundColor: isAnalyzingPage ? '#000000' : colors.background.surface, borderColor: colors.ui.border }}
             onMouseEnter={() => setIsPropertyExpanded(true)}
             onMouseLeave={() => setIsPropertyExpanded(false)}
           >
