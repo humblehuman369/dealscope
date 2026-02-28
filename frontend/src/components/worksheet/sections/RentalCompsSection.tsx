@@ -54,7 +54,13 @@ async function fetchRentalComps(params: FetchParams) {
 
   if (!response.ok) {
     console.error('[RentalComps] API Error:', data)
-    throw new Error(data.error || `API Error ${response.status}`)
+    throw new Error(data.error || data.detail || `API Error ${response.status}`)
+  }
+
+  // Backend returns 200 with success: false when AXESSO fails (e.g. 502)
+  if (data.success === false && data.error) {
+    console.error('[RentalComps] API returned success: false:', data.error)
+    throw new Error(data.error)
   }
 
   console.log('[RentalComps] Success, results:', data.results?.length || 0)
