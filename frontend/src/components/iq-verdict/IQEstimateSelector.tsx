@@ -199,7 +199,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
       className="rounded-xl p-4"
       style={{ background: cardGlow.lg.background, border: cardGlow.lg.border, boxShadow: cardGlow.lg.boxShadow, transition: cardGlow.lg.transition }}
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-1.5">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={colors.brand.teal} strokeWidth="2" strokeLinecap="round">
           <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
         </svg>
@@ -207,6 +207,9 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           Data Sources
         </span>
       </div>
+      <p className="text-[11px] mb-3 pl-0" style={{ color: colors.text.tertiary }}>
+        Select any source—the verdict and price targets recalculate instantly.
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (4 sources: IQ, Zillow, RentCast, Redfin) */}
