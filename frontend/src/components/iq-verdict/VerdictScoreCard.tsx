@@ -16,7 +16,7 @@
  */
 
 import React from 'react'
-import { colors } from './verdict-design-tokens'
+import { colors, cardGlow } from './verdict-design-tokens'
 import type { DealFactor } from './types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
           strokeWidth="10"
           strokeDasharray={`${filled} ${empty}`}
           strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 8px ${color}40)` }}
+          style={{ filter: `drop-shadow(0 0 12px ${color}60) drop-shadow(0 0 24px ${color}25)` }}
         />
       </svg>
       {/* Centered number */}
@@ -137,7 +137,11 @@ function VerdictBadge({ label, color }: { label: string; color: string }) {
   return (
     <div
       className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-      style={{ border: `1px solid ${color}40`, background: `${color}15` }}
+      style={{
+        border: `1px solid ${color}`,
+        background: 'transparent',
+        boxShadow: `0 0 20px ${color}30`,
+      }}
     >
       {isPositive ? (
         <svg width="14" height="14" fill="none" stroke={color} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -238,7 +242,7 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
   return (
     <section className="px-5 pt-4 pb-5 border-t" style={{ borderColor: colors.ui.border }}>
       <h2
-        className="text-center text-[1.1rem] font-bold leading-snug mb-4"
+        className="text-left text-[1.1rem] font-bold leading-snug mb-4"
         style={{ color: colors.text.primary }}
       >
         Worth Your Time? Here&apos;s What It Takes.
@@ -247,9 +251,9 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
       <div
         className="rounded-[10px] px-5 py-4"
         style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(14,165,233,0.15)',
-          boxShadow: '0 0 30px rgba(14,165,233,0.04)',
+          background: cardGlow.sm.background,
+          border: cardGlow.sm.border,
+          boxShadow: cardGlow.sm.boxShadow,
         }}
       >
         <p
@@ -261,7 +265,7 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
       </div>
 
       {onHowItWorks && (
-        <div className="text-center mt-3">
+        <div className="text-left mt-3">
           <button
             type="button"
             onClick={onHowItWorks}
@@ -278,14 +282,37 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+function formatTargetBuy(value: number): string {
+  return value >= 1_000_000
+    ? `$${(value / 1_000_000).toFixed(1)}M`
+    : `$${Math.round(value).toLocaleString()}`
+}
+
 export function VerdictScoreCard({
   score,
   verdictLabel,
-}: Pick<VerdictScoreCardProps, 'score' | 'verdictLabel'>) {
+  dealGapPercent,
+  targetBuyPrice,
+}: Pick<VerdictScoreCardProps, 'score' | 'verdictLabel'> & {
+  dealGapPercent?: number
+  targetBuyPrice?: number
+}) {
   const color = scoreColor(score)
+  const showMetrics = dealGapPercent != null || (targetBuyPrice != null && targetBuyPrice > 0)
+  const gapColor = dealGapPercent != null ? dealGapColor(dealGapPercent) : color
+  const gapDisplay = dealGapPercent != null
+    ? `${dealGapPercent <= 0 ? '+' : '-'}${Math.abs(dealGapPercent).toFixed(1)}%`
+    : null
 
   return (
-    <section className="px-5 pt-10 pb-3">
+    <section
+      className="mx-5 mt-6 rounded-[14px] pt-8 pb-6 px-5"
+      style={{
+        background: cardGlow.lg.background,
+        border: cardGlow.lg.border,
+        boxShadow: cardGlow.lg.boxShadow,
+      }}
+    >
       <p
         className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-6"
         style={{ color: colors.text.secondary }}
@@ -293,8 +320,28 @@ export function VerdictScoreCard({
         The Verdict
       </p>
 
-      <div className="flex items-center justify-center gap-5 mb-5">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 mb-5">
         <ScoreGauge score={score} color={color} />
+        {showMetrics && (
+          <div className="flex flex-col gap-4 min-w-[140px]">
+            {gapDisplay != null && (
+              <div className="text-center sm:text-left">
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
+                  Deal Gap
+                </p>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: gapColor }}>{gapDisplay}</p>
+              </div>
+            )}
+            {targetBuyPrice != null && targetBuyPrice > 0 && (
+              <div className="text-center sm:text-left">
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
+                  Target Buy
+                </p>
+                <p className="text-xl font-bold tabular-nums" style={{ color: colors.brand.teal }}>{formatTargetBuy(targetBuyPrice)}</p>
+              </div>
+            )}
+          </div>
+        )}
         <VerdictBadge label={verdictLabel} color={color} />
       </div>
     </section>

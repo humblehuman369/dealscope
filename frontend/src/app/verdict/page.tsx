@@ -880,6 +880,8 @@ function VerdictContent() {
             <VerdictScoreCard
               score={score}
               verdictLabel={verdictLabel}
+              dealGapPercent={dealGap}
+              targetBuyPrice={purchasePrice}
             />
             {/* AI-generated deal narrative */}
             <VerdictNarrative
