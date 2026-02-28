@@ -266,8 +266,8 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
   const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value))
   return (
     <div className="flex items-center gap-2">
-      <Icon className="w-3 h-3 text-[#64748B] flex-shrink-0" />
-      <span className="text-xs text-[#94A3B8] w-14">{label}</span>
+      <Icon className="w-3 h-3 text-[#F1F5F9] flex-shrink-0" />
+      <span className="text-xs text-[#F1F5F9] w-14">{label}</span>
       <div className="flex-1 h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
           style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#38bdf8' : safeValue >= 75 ? '#0EA5E9' : '#fbbf24' }} />
@@ -296,7 +296,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       {/* Selection checkbox */}
       <button onClick={onToggle}
         className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected ? 'bg-[#38bdf8] border-[#38bdf8]' : 'bg-[#0C1220] border-[#64748B] hover:border-[#38bdf8]'
+          isSelected ? 'bg-[#38bdf8] border-[#38bdf8]' : 'bg-[#0C1220] border-[#F1F5F9] hover:border-[#38bdf8]'
         }`}>
         {isSelected && <Check className="w-3 h-3 text-black" />}
       </button>
@@ -304,7 +304,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       {/* Refresh button on unselected */}
       {!isSelected && (
         <button onClick={onRefreshComp} disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#0C1220] border border-white/[0.07] text-[#64748B] hover:text-[#38bdf8] hover:border-[#38bdf8]/30 transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[#0C1220] border border-white/[0.07] text-[#F1F5F9] hover:text-[#38bdf8] hover:border-[#38bdf8]/30 transition-colors disabled:opacity-50"
           title="Replace this comp">
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -317,7 +317,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
             <img src={comp.image} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-white/[0.05]">
-              {isSale ? <Building2 className="w-5 h-5 text-[#64748B]" /> : <Home className="w-5 h-5 text-[#64748B]" />}
+              {isSale ? <Building2 className="w-5 h-5 text-[#F1F5F9]" /> : <Home className="w-5 h-5 text-[#F1F5F9]" />}
             </div>
           )}
           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
@@ -330,12 +330,12 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0 pl-4">
               <h4 className="text-sm font-semibold text-[#F1F5F9] truncate">{comp.address}</h4>
-              <p className="text-xs text-[#64748B] truncate">{comp.city}, {comp.state}</p>
+              <p className="text-xs text-[#F1F5F9] truncate">{comp.city}, {comp.state}</p>
             </div>
             <div className="text-right flex-shrink-0">
               <p className="text-sm font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {formatCurrency(comp.price)}
-                {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
+                {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
               </p>
               <p className="text-[11px] font-semibold text-[#38bdf8] tabular-nums">
                 ${Number(comp.pricePerSqft).toFixed(2)}/sf{!isSale && '/mo'}
@@ -343,7 +343,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-[#94A3B8] mb-1.5 pl-4">
+          <div className="flex items-center gap-2 text-xs text-[#F1F5F9] mb-1.5 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
             <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()}</span>
@@ -351,8 +351,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           </div>
 
           <div className="flex items-center gap-1.5 pl-4">
-            <span className="text-[10px] text-[#64748B]">{isSale ? 'Sold' : 'Listed'} {formatDate(comp.date)}</span>
-            <span className="text-[10px] px-1 py-0.5 rounded bg-white/[0.07] text-[#94A3B8]">{getDaysAgo(comp.date)}</span>
+            <span className="text-[10px] text-[#F1F5F9]">{isSale ? 'Sold' : 'Listed'} {formatDate(comp.date)}</span>
+            <span className="text-[10px] px-1 py-0.5 rounded bg-white/[0.07] text-[#F1F5F9]">{getDaysAgo(comp.date)}</span>
             {freshness && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                 style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
@@ -371,7 +371,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
         <div className="border-t border-white/[0.07] p-3 bg-white/[0.03]">
           {/* Match Score header */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-[#94A3B8] uppercase">Match Score:</span>
+            <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
             <span className="text-lg font-bold tabular-nums" style={{
               color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
             }}>{similarity.overall}%</span>
@@ -397,7 +397,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Lot', value: saleAdj.lot },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-[#94A3B8]">{adj.label}</span>
+                    <span className="text-[#F1F5F9]">{adj.label}</span>
                     <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}
                     </span>
@@ -409,7 +409,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Bathroom', value: rentAdj.bathroom },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-[#94A3B8]">{adj.label}</span>
+                    <span className="text-[#F1F5F9]">{adj.label}</span>
                     <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}/mo
                     </span>
@@ -442,24 +442,24 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[#38bdf8]" />
           <span className="text-sm font-semibold text-[#F1F5F9]">Adjustment Breakdown</span>
-          <span className="text-xs text-[#64748B]">({compAdjustments.length} comps)</span>
+          <span className="text-xs text-[#F1F5F9]">({compAdjustments.length} comps)</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-[#64748B]" /> : <ChevronDown className="w-4 h-4 text-[#64748B]" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
       </button>
       {isExpanded && (
         <div className="border-t border-white/[0.07] overflow-x-auto">
           <table className="w-full text-xs">
             <thead className="bg-white/[0.05]">
               <tr>
-                <th className="px-3 py-2 text-left font-semibold text-[#94A3B8]">Address</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">{isSale ? 'Base' : 'Rent'}</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Size</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Bed</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Bath</th>
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Age</th>}
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Lot</th>}
+                <th className="px-3 py-2 text-left font-semibold text-[#F1F5F9]">Address</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">{isSale ? 'Base' : 'Rent'}</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Size</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Bed</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Bath</th>
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Age</th>}
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Lot</th>}
                 <th className="px-3 py-2 text-right font-semibold text-[#38bdf8]">Adjusted</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#94A3B8]">Weight</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Weight</th>
               </tr>
             </thead>
             <tbody>
@@ -485,7 +485,7 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
                   <td className="px-3 py-2 text-right tabular-nums font-semibold text-[#38bdf8]">
                     {isSale ? formatCompactCurrency(ca.adjustedPrice) : `$${ca.adjustedPrice}/mo`}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-[#94A3B8]">{(ca.weight * 100).toFixed(1)}%</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-[#F1F5F9]">{(ca.weight * 100).toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -791,7 +791,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           <div className="flex items-center justify-between mb-3">
             <div>
               <h1 className="text-lg font-bold text-[#F1F5F9]">DealGap<span className="text-[#38bdf8]">IQ</span></h1>
-              <p className="text-xs text-[#64748B]">Comparable analysis for {property.address || 'property'}</p>
+              <p className="text-xs text-[#F1F5F9]">Comparable analysis for {property.address || 'property'}</p>
             </div>
             <div className="flex gap-1.5">
               {hasChangedFromOriginal && (
@@ -818,13 +818,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           <div className="flex rounded-xl bg-white/[0.05] p-1">
             <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#94A3B8] hover:text-[#CBD5E1]'
+                isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
               }`}>
               Sale Comps
             </button>
             <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                !isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#94A3B8] hover:text-[#CBD5E1]'
+                !isSale ? 'bg-[#0C1220] text-[#F1F5F9] shadow-sm shadow-black/20' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
               }`}>
               Rent Comps
             </button>
@@ -843,7 +843,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#F1F5F9]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
-                  <p className="text-xs text-[#94A3B8]">From {selectedIds.size} selected comps</p>
+                  <p className="text-xs text-[#F1F5F9]">From {selectedIds.size} selected comps</p>
                 </div>
               </div>
               <div className="text-center px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.07]">
@@ -853,7 +853,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 }}>
                   {loading ? '...' : `${isSale ? saleAppraisal.confidence : rentAppraisal.confidence}%`}
                 </div>
-                <div className="text-[9px] text-[#64748B] uppercase">Confidence</div>
+                <div className="text-[9px] text-[#F1F5F9] uppercase">Confidence</div>
               </div>
             </div>
 
@@ -862,13 +862,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-white/[0.05] rounded-lg p-3 border border-white/[0.07]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)
                     else setRentOverrideMarket(rentOverrideMarket !== null ? null : rentAppraisal.marketRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-[#fbbf24]' : 'text-[#64748B]'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
@@ -879,11 +879,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 ) : (
                   <div className="text-lg font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
-                    {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-[#64748B] mt-0.5">As-Is Condition</div>
-                <div className="text-[10px] text-[#94A3B8] mt-0.5">
+                <div className="text-[10px] text-[#F1F5F9] mt-0.5">As-Is Condition</div>
+                <div className="text-[10px] text-[#F1F5F9] mt-0.5">
                   Range: {isSale 
                     ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
@@ -900,7 +900,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <button onClick={() => {
                     if (isSale) setSaleOverrideArv(saleOverrideArv !== null ? null : saleAppraisal.arv)
                     else setRentOverrideImproved(rentOverrideImproved !== null ? null : rentAppraisal.improvedRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-[#fbbf24]' : 'text-[#64748B]'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
@@ -911,10 +911,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 ) : (
                   <div className="text-lg font-bold text-[#38bdf8] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
-                    {!isSale && <span className="text-xs font-normal text-[#64748B]">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-[#64748B] mt-0.5">Post-Rehab</div>
+                <div className="text-[10px] text-[#F1F5F9] mt-0.5">Post-Rehab</div>
                 <div className="flex items-center gap-1 mt-0.5">
                   <TrendingUp className="w-3 h-3 text-[#34d399]" />
                   <span className="text-[10px] font-medium text-[#34d399]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
@@ -923,12 +923,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
 
             {/* Methodology + $/sqft */}
-            <div className="flex items-center justify-between text-[10px] text-[#64748B] mb-3 px-0.5">
+            <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-3 px-0.5">
               <div className="flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>Weighted hybrid methodology</span>
               </div>
-              <span className="tabular-nums font-medium text-[#94A3B8]">
+              <span className="tabular-nums font-medium text-[#F1F5F9]">
                 ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
               </span>
             </div>
@@ -954,18 +954,18 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Filters + Controls */}
         <div className="px-4 mt-3 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#64748B]">Filter:</span>
+            <span className="text-xs text-[#F1F5F9]">Filter:</span>
             <div className="flex rounded-lg bg-white/[0.05] p-0.5">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    recencyFilter === val ? 'bg-[#0C1220] text-[#38bdf8] shadow-sm shadow-black/20' : 'text-[#64748B] hover:text-[#94A3B8]'
+                    recencyFilter === val ? 'bg-[#0C1220] text-[#38bdf8] shadow-sm shadow-black/20' : 'text-[#F1F5F9] hover:text-[#F1F5F9]'
                   }`}>{label}</button>
               ))}
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#94A3B8]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
+            <span className="text-sm text-[#F1F5F9]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
             <div className="flex gap-2">
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
                 className="px-3 py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Select All</button>
@@ -979,7 +979,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {loading && comps.length === 0 && !loadFailed && (
           <div className="px-4 mt-3 space-y-3">
             {[1, 2, 3].map(i => <CompCardSkeleton key={i} />)}
-            <p className="text-xs text-[#94A3B8] text-center">
+            <p className="text-xs text-[#F1F5F9] text-center">
               Loading comparable {isSale ? 'sales' : 'rentals'}...
             </p>
           </div>
@@ -988,11 +988,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Unavailable (friendly fallback — no raw errors) */}
         {loadFailed && !loading && (
           <div className="mx-4 mt-3 rounded-xl border border-white/[0.07] p-6 text-center bg-[#0C1220]">
-            <Info className="mx-auto mb-3 text-[#64748B] w-10 h-10" aria-hidden />
+            <Info className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">
               Comparable {isSale ? 'sales' : 'rentals'} temporarily unavailable
             </h3>
-            <p className="text-xs text-[#94A3B8] mb-4 max-w-sm mx-auto">
+            <p className="text-xs text-[#F1F5F9] mb-4 max-w-sm mx-auto">
               Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
             </p>
             <button
@@ -1008,9 +1008,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Empty (success but no comps found) */}
         {!loading && !loadFailed && comps.length === 0 && (
           <div className="mx-4 mt-3 bg-[#0C1220] border border-white/[0.07] rounded-xl p-6 text-center">
-            {isSale ? <Building2 className="mx-auto mb-2 text-[#64748B] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#64748B] w-8 h-8" />}
+            {isSale ? <Building2 className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" />}
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
-            <p className="text-xs text-[#94A3B8]">Try refreshing or check the property address</p>
+            <p className="text-xs text-[#F1F5F9]">Try refreshing or check the property address</p>
           </div>
         )}
 
@@ -1038,9 +1038,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {!loading && !loadFailed && comps.length > 0 && (
           <div className="mx-4 mt-4 p-3 rounded-lg bg-[#0C1220] border border-white/[0.07]">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#94A3B8]">{comps.filter(c => c.distance <= 0.5).length} of {comps.length} within 0.5 mi</span>
+              <span className="text-xs text-[#F1F5F9]">{comps.filter(c => c.distance <= 0.5).length} of {comps.length} within 0.5 mi</span>
               <span className={`text-xs font-semibold ${
-                comps.filter(c => c.distance <= 0.5).length >= 3 ? 'text-[#34d399]' : comps.filter(c => c.distance <= 1).length >= 3 ? 'text-[#fbbf24]' : 'text-[#94A3B8]'
+                comps.filter(c => c.distance <= 0.5).length >= 3 ? 'text-[#34d399]' : comps.filter(c => c.distance <= 1).length >= 3 ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'
               }`}>
                 Location: {comps.filter(c => c.distance <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distance <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
               </span>
