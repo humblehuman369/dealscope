@@ -21,9 +21,7 @@ import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
-import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
-import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 import { AuthGate } from '@/components/auth/AuthGate'
 
 // Types from existing verdict system
@@ -492,23 +490,7 @@ function StrategyContent() {
 
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-      <AnalysisNav />
-
-      {/* Property address bar */}
-      {propertyInfo && (
-        <PropertyAddressBar
-          address={propertyInfo.address?.street || parsed.street || addressParam}
-          city={propertyInfo.address?.city || parsed.city}
-          state={propertyInfo.address?.state || parsed.state}
-          zip={propertyInfo.address?.zip_code || parsed.zip}
-          beds={propertyInfo.details?.bedrooms || 3}
-          baths={propertyInfo.details?.bathrooms || 2}
-          sqft={propertyInfo.details?.square_footage || 1500}
-          price={listPrice}
-          listingStatus={propertyInfo.listing?.listing_status}
-          zpid={propertyInfo.zpid}
-        />
-      )}
+      {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className="max-w-[640px] lg:max-w-5xl mx-auto">
         {/* Page Header + Actions */}

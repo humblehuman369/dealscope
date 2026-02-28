@@ -23,7 +23,6 @@ import {
   IQStrategy,
   IQAnalysisResult,
 } from '@/components/iq-verdict'
-import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { VerdictScoreCard, VerdictNarrative } from '@/components/iq-verdict/VerdictScoreCard'
 import { getDealVerdict } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
@@ -38,7 +37,6 @@ import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
-import { AnalysisNav } from '@/components/navigation/AnalysisNav'
 import { ProGate } from '@/components/ProGate'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
@@ -855,23 +853,7 @@ function VerdictContent() {
   return (
     <>
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-        <AnalysisNav />
-
-        {/* Property address bar — link to profile + expandable details */}
-        {property && (
-          <PropertyAddressBar
-            address={property.address}
-            city={property.city}
-            state={property.state}
-            zip={property.zip}
-            beds={property.beds}
-            baths={property.baths}
-            sqft={property.sqft}
-            price={property.price}
-            listingStatus={property.listingStatus}
-            zpid={property.zpid || propertyIdParam || undefined}
-          />
-        )}
+        {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Responsive container: mobile-first single column, desktop 2-column. Wide: left = Verdict + Score Components, right = Price Targets + Snapshot + CTA. */}
         <div className="max-w-[520px] lg:max-w-6xl xl:max-w-7xl mx-auto lg:grid lg:grid-cols-2 lg:gap-0">
