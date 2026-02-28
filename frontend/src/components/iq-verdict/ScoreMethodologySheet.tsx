@@ -32,9 +32,9 @@ const T = {
   secondary: '#94A3B8',   // Mid-slate — secondary
   label: '#64748B',       // Slate — smallest labels
 
-  // Semantic accent colors
-  blue: '#38bdf8',        // Primary actions, key data
-  teal: '#0EA5E9',        // Positive signals, educational
+  // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0EA5E9
+  blue: '#0EA5E9',       // Primary accent (unified)
+  teal: '#0EA5E9',       // Alias for primary
   amber: '#fbbf24',       // Caution, scores
   red: '#f87171',         // Negatives, losses
   green: '#34d399',       // Income, success
@@ -286,7 +286,7 @@ export function ScoreMethodologySheet({
                     <div key={idx} className="flex items-start gap-3">
                       <span
                         className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
-                        style={{ backgroundColor: 'rgba(56,189,248,0.1)', color: T.blue }}
+                        style={{ backgroundColor: 'rgba(14,165,233,0.1)', color: T.blue }}
                       >
                         {idx + 1}
                       </span>
