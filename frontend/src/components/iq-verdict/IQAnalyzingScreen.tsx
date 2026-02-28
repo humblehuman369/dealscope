@@ -12,6 +12,7 @@
 import React, { useEffect, useState } from 'react'
 import { colors } from './verdict-design-tokens'
 import { IQProperty } from './types'
+import { IQBrainIcon } from '@/components/icons'
 
 // Use design system primary blue (#0EA5E9) per CURSOR-UNIFY-COLOR-SYSTEM
 const ACCENT = colors.brand.teal
@@ -89,7 +90,7 @@ export function IQAnalyzingScreen({
   const dashOffset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background.base }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
       <div className="flex flex-col items-center px-8 max-w-md">
         {/* Animated progress ring with IQ logo */}
         <div className="relative mb-8" style={{ width: size, height: size }}>
@@ -119,17 +120,13 @@ export function IQAnalyzingScreen({
               style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
             />
           </svg>
-          {/* Center logo */}
+          {/* Center logo — design system blue #0EA5E9 via IQBrainIcon */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center"
               style={{ backgroundColor: ACCENT_BG }}
             >
-              <img
-                src="/images/IQ-Logo.svg"
-                alt="IQ"
-                className="w-12 h-12 object-contain"
-              />
+              <IQBrainIcon size={48} mode="dark" usePng={false} />
             </div>
           </div>
         </div>
