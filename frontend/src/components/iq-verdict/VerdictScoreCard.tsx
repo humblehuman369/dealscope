@@ -310,21 +310,22 @@ export function VerdictScoreCard({
     : null
 
   return (
-    <section
-      className="mx-5 mt-6 rounded-[14px] pt-6 pb-5 px-5"
-      style={{
-        background: cardGlow.lg.background,
-        border: cardGlow.lg.border,
-        boxShadow: cardGlow.lg.boxShadow,
-      }}
-    >
+    <div className="mx-5 mt-6">
       <p
-        className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-5"
+        className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-4"
         style={{ color: colors.text.secondary }}
       >
         The Verdict
       </p>
 
+      <section
+        className="rounded-[14px] pt-6 pb-5 px-5"
+        style={{
+          background: cardGlow.lg.background,
+          border: cardGlow.lg.border,
+          boxShadow: cardGlow.lg.boxShadow,
+        }}
+      >
       <div className="flex flex-row flex-wrap items-center justify-center gap-5 sm:gap-6 max-w-md mx-auto">
         <ScoreGauge score={score} color={color} />
         {showMetrics && (
@@ -349,7 +350,8 @@ export function VerdictScoreCard({
         )}
         <VerdictBadge label={verdictLabel} color={color} />
       </div>
-    </section>
+      </section>
+    </div>
   )
 }
 
