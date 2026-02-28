@@ -530,7 +530,7 @@ function VerdictContent() {
 
           // Phase 2: non-blocking photo fetch — do not await; update property when done
           if (propertyData.zpid) {
-            fetchPropertyPhotos(propertyData.zpid).then((result) => {
+            fetchPropertyPhotos(String(propertyData.zpid)).then((result) => {
               if (result.status === 'success' && result.photos[0]) {
                 setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
               }
