@@ -54,7 +54,8 @@ function logCompsFetch(
   if (result.status === 'success') {
     console.log('[comps_fetch]', payload)
   } else {
-    console.warn('[comps_fetch]', payload)
+    const msg = `[comps_fetch] ${type} failed | status=${result.status} | http=${result.httpStatus ?? '—'} | attempts=${attempts} | error=${result.error ?? 'unknown'}`
+    console.warn(msg, payload)
   }
 }
 
