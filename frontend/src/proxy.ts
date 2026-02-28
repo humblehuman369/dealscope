@@ -2,20 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
- * Next.js Edge Middleware
+ * Next.js Proxy (formerly Edge Middleware)
  *
  * Auth-related route protection is handled CLIENT-SIDE in the dashboard
  * layout (`app/dashboard/layout.tsx`) because auth cookies are set by
- * the backend on a different domain (Railway). Edge middleware can't
+ * the backend on a different domain (Railway). The proxy can't
  * read cross-domain httpOnly cookies, so checking `access_token` here
  * would always fail and redirect authenticated users back to login.
  *
  * This file intentionally passes all requests through.
- * Removing it entirely may leave a stale middleware in Vercel's
- * build cache from a previous deployment — keeping a no-op version
- * ensures the old one is overwritten.
+ * Keeping a no-op version ensures predictable behavior and overwrites
+ * any stale middleware from previous deployments.
  */
-export function middleware(_request: NextRequest) {
+export function proxy(_request: NextRequest) {
   return NextResponse.next()
 }
 

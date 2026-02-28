@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Optional: set turbopack.root to silence "multiple lockfiles" warning in monorepos.
+  // Use an absolute path to the frontend directory (e.g. path.resolve(__dirname)).
+  // Left unset here because setting it can cause "project directory: .../frontend/src/app" resolution issues in some Next 16 builds.
   // output: 'standalone', // Removed - not needed for Vercel deployment
   
   async headers() {
