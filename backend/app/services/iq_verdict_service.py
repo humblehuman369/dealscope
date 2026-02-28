@@ -609,124 +609,58 @@ def _generate_deal_factors(
 
 
 # ===========================================
-# AI narrative generation (Anthropic Claude)
+# Deal narrative (pre-generated 2-sentence template)
 # ===========================================
 
-_NARRATIVE_SYSTEM_PROMPT = """You are a deal advisor. Output exactly 2 sentences. No more.
 
-STRUCTURE:
-- Sentence 1: One key practical fact and what the investor should treat as priority. If the property is off-market (not listed for sale), you MUST say the property is not currently listed for sale and that confirming the owner's interest in selling is key.
-- Sentence 2: State the required discount (Deal Gap %) and the achievability stat in one line (e.g. "about 1 in 5 informed investors achieve discounts in this range through effective negotiation"). If the property is off-market, you MUST clarify that without a listed price, the values are based on current market value, then give the discount and stat.
-
-RULES:
-- Direct and concise. No filler, no long coaching prose, no third sentence.
-- Never use bullet points, labels, or headers. Pure narrative prose only.
-- Never say "DealGapIQ" or reference yourself.
-- Frame the investor stat as achievable (e.g. "about 1 in 5" or "about 18% achieve this"); never as a warning or "only X%".
-
-EXAMPLE (off-market): "The property is not currently listed for sale; confirming the owner's interest in selling is key. Without a listed price, the figures are based on current market value—at that value, this deal requires a 14.5% discount to meet a target entry point, an outcome achieved by about 1 in 5 informed investors through effective negotiation."
-
-EXAMPLE (on-market): "This property is listed and has been on market long enough to suggest seller motivation. Based on current value, this deal requires a 12% discount to hit your target—about 18% of prepared investors achieve discounts in this range with strong comps and rental data." """
-
-
-def _build_narrative_sub_factors(
-    price_gap_pct: float,
-    listing_status: str | None,
-    market_temperature: str | None,
-    is_foreclosure: bool,
-    is_bank_owned: bool,
-    is_listed: bool | None,
-    days_on_market: int | None,
-) -> list[str]:
-    factors: list[str] = []
-    if price_gap_pct > 0:
-        factors.append(f"Price Gap is -{price_gap_pct:.1f}% — market value is above what rental income supports.")
-    status = (listing_status or "").upper()
-    if "OFF_MARKET" in status or is_listed is False:
-        factors.append("Property is off-market — the seller has not indicated intent to sell.")
-    else:
-        factors.append("Property is listed on-market.")
-    if market_temperature:
-        temp = market_temperature.lower()
-        if temp == "hot":
-            factors.append("Market temperature is hot — sellers have less motivation to discount.")
-        elif temp == "cold":
-            factors.append("Market temperature is cold — sellers are more likely to entertain lower offers.")
-        else:
-            factors.append("Market temperature is neutral.")
-    if is_foreclosure or is_bank_owned:
-        factors.append("This is a foreclosure/bank-owned property — typically more negotiable.")
-    if days_on_market is not None and days_on_market >= 90:
-        factors.append(f"Listed {days_on_market} days — seller may be more motivated.")
-    return factors
-
-
-def _generate_deal_narrative(
-    score: int,
-    score_label: str,
+def _build_deal_narrative(
     deal_gap_pct: float,
-    price_gap_pct: float,
     bracket_label: str,
-    target_price: float,
-    income_value: float,
-    list_price: float,
     listing_status: str | None,
+    is_listed: bool | None,
+    days_on_market: int | None,
     market_temperature: str | None,
     is_foreclosure: bool,
     is_bank_owned: bool,
-    is_listed: bool | None,
-    days_on_market: int | None,
-) -> str | None:
-    """Generate an AI deal narrative via Anthropic Claude. Returns None on any failure."""
-    try:
-        from app.core.config import get_settings
-        settings = get_settings()
-        api_key = settings.ANTHROPIC_API_KEY
-        if not api_key:
-            return None
+    is_fsbo: bool,
+) -> str:
+    """Build a 2-sentence deal narrative from templates. No AI call."""
+    status = (listing_status or "").upper()
+    is_off_market = "OFF_MARKET" in status or is_listed is False
+    is_on_market_listed = "FOR_SALE" in status and is_listed is not False
+    dom = days_on_market if days_on_market is not None else 0
+    temp = (market_temperature or "").lower()
 
-        import anthropic
+    # Sentence 1: one template by priority (first match wins)
+    if is_off_market:
+        s1 = "The property is not currently listed for sale; confirming the owner's interest in selling is key."
+    elif is_foreclosure or is_bank_owned:
+        s1 = "This is a distressed sale—lenders are often motivated to liquidate."
+    elif is_fsbo:
+        s1 = "For sale by owner—direct negotiation is possible."
+    elif is_on_market_listed and dom >= 120:
+        s1 = f"This property has been listed for {dom} days, which often signals seller motivation."
+    elif is_on_market_listed and dom >= 60:
+        s1 = f"The property has been on market for {dom} days; the seller may be open to negotiation."
+    elif temp == "cold":
+        s1 = "Cold market—fewer buyers can strengthen your negotiation position."
+    elif temp == "hot":
+        s1 = "Hot market—expect more competition; preparation and speed matter."
+    else:
+        s1 = "This property is listed on-market with typical seller motivation."
 
-        sub_factors = _build_narrative_sub_factors(
-            price_gap_pct=price_gap_pct,
-            listing_status=listing_status,
-            market_temperature=market_temperature,
-            is_foreclosure=is_foreclosure,
-            is_bank_owned=is_bank_owned,
-            is_listed=is_listed,
-            days_on_market=days_on_market,
+    # Sentence 2: discount + achievability (or at/above asking)
+    if deal_gap_pct <= 0:
+        s2 = f"At or above asking price you can still meet your target—{bracket_label}."
+    elif is_off_market:
+        s2 = (
+            f"Without a listed price, the figures are based on current market value—at that value, "
+            f"this deal requires a {deal_gap_pct:.1f}% discount to meet a target entry point, {bracket_label}."
         )
-        is_off_market = (listing_status or "").upper().find("OFF_MARKET") >= 0 or is_listed is False
-        off_market_note = "\nProperty is off-market: say it is not currently listed, that confirming the owner's interest in selling is key, and that the values are based on current market value.\n" if is_off_market else ""
+    else:
+        s2 = f"Based on current value, this deal requires a {deal_gap_pct:.1f}% discount to hit your target—{bracket_label}."
 
-        user_message = (
-            f"Write exactly 2 sentences for this property.{off_market_note}\n\n"
-            f"Score: {score}/100 ({score_label})\n"
-            f"Deal Gap: -{deal_gap_pct:.1f}% (discount needed to reach Target Buy)\n"
-            f"Investor stat: {bracket_label}\n"
-            f"Target Buy: ${target_price:,.0f}\n"
-            f"Income Value: ${income_value:,.0f}\n"
-            f"List Price: ${list_price:,.0f}\n\n"
-            f"Sub-factors:\n"
-            + "\n".join(f"- {f}" for f in sub_factors)
-        )
-
-        client = anthropic.Anthropic(api_key=api_key, timeout=8.0)
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=150,
-            system=_NARRATIVE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_message}],
-        )
-
-        text = "".join(
-            block.text for block in response.content if block.type == "text"
-        ).strip()
-        return text or None
-
-    except Exception:
-        logger.warning("AI narrative generation failed", exc_info=True)
-        return None
+    return f"{s1} {s2}"
 
 
 def _assess_pricing_quality(income_value: float, list_price: float) -> tuple[str, str]:
@@ -984,21 +918,16 @@ def compute_iq_verdict(
         else "Extremely Challenging"
     )
 
-    deal_narrative = _generate_deal_narrative(
-        score=deal_score,
-        score_label=deal_verdict,
+    deal_narrative = _build_deal_narrative(
         deal_gap_pct=deal_gap_pct,
-        price_gap_pct=income_gap_pct,
         bracket_label=bracket_label,
-        target_price=buy_price,
-        income_value=income_value,
-        list_price=list_price,
         listing_status=input_data.listing_status,
+        is_listed=input_data.is_listed,
+        days_on_market=input_data.days_on_market,
         market_temperature=input_data.market_temperature,
         is_foreclosure=input_data.is_foreclosure or False,
         is_bank_owned=input_data.is_bank_owned or False,
-        is_listed=input_data.is_listed,
-        days_on_market=input_data.days_on_market,
+        is_fsbo=input_data.is_fsbo or False,
     )
 
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
