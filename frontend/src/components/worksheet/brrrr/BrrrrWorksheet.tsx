@@ -343,8 +343,12 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               <button onClick={() => router.back()} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors flex-shrink-0">
                 <ArrowLeft className="w-5 h-5 text-slate-500" />
               </button>
-              <div className="hidden sm:block flex-shrink-0">
-                <img src={property.property_data_snapshot?.photos?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=200&h=150&fit=crop'} alt="Property" className="w-16 h-12 object-cover rounded-lg border border-slate-200" />
+              <div className="hidden sm:block flex-shrink-0 w-16 h-12 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden">
+                {property.property_data_snapshot?.photos?.[0] ? (
+                  <img src={property.property_data_snapshot.photos[0]} alt="Property" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400" aria-hidden>—</div>
+                )}
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-semibold text-slate-900 truncate">{thisStrategy.label} Analysis</h1>

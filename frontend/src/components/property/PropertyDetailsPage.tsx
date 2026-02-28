@@ -72,7 +72,7 @@ const DEFAULT_PROPERTY: PropertyDetailsData = {
   price: 821000,
   rent: 5555,
   status: 'FOR SALE',
-  images: Array(12).fill('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&q=80'),
+  images: [],
 };
 
 // Strategies
@@ -395,48 +395,58 @@ export function PropertyDetailsPage({
       <main className="flex-1 overflow-y-auto pb-24">
         {/* Image Gallery */}
         <section className="bg-white mb-2.5">
-          <div className="relative w-full h-60 overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={property.images?.[currentImageIndex] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600'}
-              alt={`Property view ${currentImageIndex + 1}`}
-            />
-            <button
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
-              onClick={() => setCurrentImageIndex(i => Math.max(0, i - 1))}
-            >
-              <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
-              </svg>
-            </button>
-            <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
-              onClick={() => setCurrentImageIndex(i => Math.min((property.images?.length || 1) - 1, i + 1))}
-            >
-              <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <div className="absolute top-3 right-3 bg-[#0A1628]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-              </svg>
-              {currentImageIndex + 1}/{property.images?.length || 0}
+          <div className="relative w-full h-60 overflow-hidden bg-slate-100">
+            {property.images?.length ? (
+              <>
+                <img
+                  className="w-full h-full object-cover"
+                  src={property.images[currentImageIndex]}
+                  alt={`Property view ${currentImageIndex + 1}`}
+                />
+                <button
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+                  onClick={() => setCurrentImageIndex(i => Math.max(0, i - 1))}
+                >
+                  <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+                  onClick={() => setCurrentImageIndex(i => Math.min(property.images!.length - 1, i + 1))}
+                >
+                  <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+                <div className="absolute top-3 right-3 bg-[#0A1628]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                  </svg>
+                  {currentImageIndex + 1}/{property.images.length}
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                No photos available
+              </div>
+            )}
+          </div>
+          {property.images && property.images.length > 0 && (
+            <div className="flex gap-1.5 p-3 overflow-x-auto">
+              {property.images.slice(0, 12).map((img, idx) => (
+                <img
+                  key={idx}
+                  className={`w-12 h-9 rounded-md object-cover cursor-pointer flex-shrink-0 border-2 transition-all ${
+                    idx === currentImageIndex ? 'opacity-100 border-[#0EA5E9]' : 'opacity-60 border-transparent hover:opacity-90'
+                  }`}
+                  src={img}
+                  alt={`Thumbnail ${idx + 1}`}
+                  onClick={() => setCurrentImageIndex(idx)}
+                />
+              ))}
             </div>
-          </div>
-          <div className="flex gap-1.5 p-3 overflow-x-auto">
-            {property.images?.slice(0, 12).map((img, idx) => (
-              <img
-                key={idx}
-                className={`w-12 h-9 rounded-md object-cover cursor-pointer flex-shrink-0 border-2 transition-all ${
-                  idx === currentImageIndex ? 'opacity-100 border-[#0EA5E9]' : 'opacity-60 border-transparent hover:opacity-90'
-                }`}
-                src={img}
-                alt={`Thumbnail ${idx + 1}`}
-                onClick={() => setCurrentImageIndex(idx)}
-              />
-            ))}
-          </div>
+          )}
         </section>
 
         {/* Property Facts Accordion */}

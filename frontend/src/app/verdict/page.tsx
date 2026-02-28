@@ -121,12 +121,6 @@ function getStrategyIcon(strategyId: string): string {
   return icons[strategyId] || '📊'
 }
 
-// Sample photos for fallback
-const SAMPLE_PHOTOS = [
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
-]
-
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -336,7 +330,7 @@ function VerdictContent() {
           sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
           price: Math.round(price),
           zestimate: zestimate != null && zestimate > 0 ? Math.round(zestimate) : undefined,
-          imageUrl: SAMPLE_PHOTOS[0], // Placeholder until photo promise resolves
+          imageUrl: undefined, // Set when photo API returns real photos
           yearBuilt: data.details?.year_built ?? undefined,
           lotSize: data.details?.lot_size ?? undefined,
           propertyType: (data.details?.property_type ?? undefined) as IQProperty['propertyType'],
@@ -571,7 +565,7 @@ function VerdictContent() {
           baths: FALLBACK_PROPERTY.baths,
           sqft: FALLBACK_PROPERTY.sqft,
           price: FALLBACK_PROPERTY.price,
-          imageUrl: SAMPLE_PHOTOS[0],
+          imageUrl: undefined,
         }
         setProperty(fallbackProperty)
       } finally {
