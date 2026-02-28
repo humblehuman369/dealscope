@@ -110,6 +110,7 @@ export interface IQAnalysisResult {
   // Deal factors: plain-language narratives explaining deal achievability
   dealFactors?: DealFactor[];
   discountBracketLabel?: string;
+  dealNarrative?: string | null;
   // Assumptions used for this analysis (from backend resolver)
   defaults_used?: Record<string, Record<string, number>>;
 }

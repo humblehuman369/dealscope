@@ -223,85 +223,54 @@ export function DealFactorsList({ factors }: { factors?: DealFactor[] }) {
   )
 }
 
-// ─── How the Verdict Score Works (unified explainer) ───────────────────────────
+// ─── AI Deal Narrative ────────────────────────────────────────────────────────
 
-export interface VerdictScoreExplainerProps {
-  /** Price gap (list vs income value) as percentage */
-  priceGapPercent?: number
-  /** Deal gap (list vs target buy) as percentage — drives the score */
-  dealGapPercent?: number
-  /** "Asking" or "Market" for price context */
-  priceLabel?: string
-  /** Verdict label, e.g. Challenging, Negotiable */
-  verdictLabel: string
-  /** Investor-context sentence, e.g. "12-18% of investor deals achieve an 11-20% discount" */
-  bracketLabel?: string
-  /** Key deal factors from backend */
-  dealFactors?: DealFactor[]
-  /** Optional: open methodology sheet */
+export interface VerdictNarrativeProps {
+  /** AI-generated deal narrative from the backend */
+  narrative?: string | null
+  /** Callback to open methodology sheet */
   onHowItWorks?: () => void
 }
 
-/** Format factor text as "TITLE means explanation" when it contains " — " or " – ". */
-function formatFactorBullet(text: string): string {
-  const sep = text.includes(' — ') ? ' — ' : text.includes(' – ') ? ' – ' : null
-  if (sep) {
-    const [title, explanation] = text.split(sep).map((s) => s.trim())
-    if (title && explanation) return `${title.toUpperCase()} means ${explanation}`
-  }
-  return text
-}
-
-export function VerdictScoreExplainer({
-  priceGapPercent,
-  dealGapPercent,
-  priceLabel = 'Market',
-  verdictLabel,
-  bracketLabel,
-  dealFactors = [],
-  onHowItWorks,
-}: VerdictScoreExplainerProps) {
-  const priceGap = priceGapPercent ?? 0
-  const dealGap = dealGapPercent ?? 0
-  const gapColor = '#f87171'
+export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativeProps) {
+  if (!narrative) return null
 
   return (
     <section className="px-5 pt-4 pb-5 border-t" style={{ borderColor: colors.ui.border }}>
-      <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-3"
-        style={{ color: colors.text.secondary }}
+      <h2
+        className="text-center text-[1.1rem] font-bold leading-snug mb-4"
+        style={{ color: colors.text.primary }}
       >
-        Key Deal Factors to Close the Gap
-      </p>
-      <ul className="space-y-2 text-left list-none">
-        <li className="text-[0.875rem] leading-relaxed" style={{ color: colors.text.body }}>
-          • PRICE GAP is <strong style={{ color: gapColor }}>-{priceGap.toFixed(1)}%</strong>
-          {' — '}{priceGap > 0 ? 'Market value is higher than what a rental will support.' : 'Market value is at or below what a rental will support.'}
-        </li>
-        <li className="text-[0.875rem] leading-relaxed" style={{ color: colors.text.body }}>
-          • DEAL GAP is <strong style={{ color: gapColor }}>-{dealGap.toFixed(1)}%</strong>
-          {' — '}This is the discount needed through negotiation to reach your target return.
-        </li>
-        {bracketLabel && (
-          <li className="text-[0.875rem] leading-relaxed" style={{ color: colors.text.body }}>
-            • <strong>{verdictLabel.toUpperCase()}</strong> but achievable. {bracketLabel}
-          </li>
-        )}
-        {dealFactors.map((f, i) => (
-          <li key={i} className="text-[0.875rem] leading-relaxed" style={{ color: colors.text.body }}>
-            • {formatFactorBullet(f.text)}
-          </li>
-        ))}
-      </ul>
-      {onHowItWorks && (
-        <button
-          type="button"
-          onClick={onHowItWorks}
-          className="text-[0.82rem] font-medium mt-3"
-          style={{ color: colors.brand.teal }}
+        Worth Your Time? Here&apos;s What It Takes.
+      </h2>
+
+      <div
+        className="rounded-[10px] px-5 py-4"
+        style={{
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(14,165,233,0.15)',
+          boxShadow: '0 0 30px rgba(14,165,233,0.04)',
+        }}
+      >
+        <p
+          className="text-[0.9rem] leading-[1.65] text-center"
+          style={{ color: 'rgba(255,255,255,0.75)' }}
         >
-          See score methodology
-        </button>
+          {narrative}
+        </p>
+      </div>
+
+      {onHowItWorks && (
+        <div className="text-center mt-3">
+          <button
+            type="button"
+            onClick={onHowItWorks}
+            className="text-xs font-medium"
+            style={{ color: colors.brand.teal }}
+          >
+            See score methodology
+          </button>
+        </div>
       )}
     </section>
   )

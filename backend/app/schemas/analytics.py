@@ -179,6 +179,8 @@ class IQVerdictResponse(BaseModel):
     # Deal factors: plain-language narratives explaining deal achievability
     deal_factors: list[DealFactor] = Field(default_factory=list, description="Plain-language deal factor narratives")
     discount_bracket_label: str = Field("", description="Investor discount bracket context")
+    # AI-generated deal narrative (motivational coaching paragraph)
+    deal_narrative: str | None = Field(None, description="AI-generated deal narrative for investor coaching")
 
 
 # ===========================================
