@@ -87,7 +87,7 @@ export function useSaveProperty({
         status: 'watching',
       })
       setIsSaved(true)
-      setSavedPropertyId(result.id)
+      setSavedPropertyId(result?.id ?? null)
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
       if (status === 409) setIsSaved(true)
