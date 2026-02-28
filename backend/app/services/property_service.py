@@ -1558,9 +1558,23 @@ class PropertyService:
                 if isinstance(result.data, list):
                     results = result.data
                 else:
-                    results = result.data.get(
-                        "similarProperties", result.data.get("properties", result.data.get("results", []))
+                    # AXESSO similar-rent may use different keys than similar-sold
+                    results = (
+                        result.data.get("similarProperties")
+                        or result.data.get("properties")
+                        or result.data.get("results")
+                        or result.data.get("rentals")
+                        or result.data.get("rentalComps")
+                        or result.data.get("similarRentals")
+                        or []
                     )
+                    if not results and isinstance(result.data, dict):
+                        logger.debug(
+                            "Similar rent: no list found in response; top-level keys: %s",
+                            list(result.data.keys()),
+                        )
+                if not isinstance(results, list):
+                    results = []
 
                 # Filter out excluded zpids
                 if exclude_zpids:
