@@ -26,7 +26,7 @@ async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: 
     result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
     sub = result.scalar_one_or_none()
     if sub is not None:
-        sub.properties_count = Subscription.properties_count + delta  # type: ignore[assignment]
+        sub.properties_count = sub.properties_count + delta
 
 
 class SavedPropertyService:
