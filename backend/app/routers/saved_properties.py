@@ -27,7 +27,7 @@ from app.schemas.saved_property import (
 )
 from app.services.billing_service import billing_service
 from app.services.deal_maker_service import DealMakerService
-from app.services.saved_property_service import saved_property_service
+from app.services.saved_property_service import saved_property_service, sanitize_for_json_storage
 
 logger = logging.getLogger(__name__)
 
@@ -545,8 +545,8 @@ async def update_deal_maker(
     # Apply updates and recalculate metrics
     updated_record = DealMakerService.update_record(record, updates)
 
-    # Save to database
-    saved.deal_maker_record = DealMakerService.to_dict(updated_record)
+    # Save to database (sanitize so JSONB never gets inf/nan)
+    saved.deal_maker_record = sanitize_for_json_storage(DealMakerService.to_dict(updated_record))
     await db.commit()
     await db.refresh(saved)
 
@@ -598,8 +598,8 @@ async def get_deal_maker(
             zip_code=zip_code,
         )
 
-        # Save the newly created record
-        saved.deal_maker_record = DealMakerService.to_dict(record)
+        # Save the newly created record (sanitize so JSONB never gets inf/nan)
+        saved.deal_maker_record = sanitize_for_json_storage(DealMakerService.to_dict(record))
         await db.commit()
         await db.refresh(saved)
 

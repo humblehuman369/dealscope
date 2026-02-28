@@ -3,6 +3,7 @@ SavedProperty service for CRUD operations on user's saved properties.
 """
 
 import logging
+import math
 import uuid
 from datetime import UTC, datetime
 
@@ -19,6 +20,24 @@ from app.schemas.saved_property import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_json_finite(obj):
+    """Recursively replace non-finite floats (inf, -inf, nan) with None so JSON/JSONB accepts the value."""
+    if obj is None:
+        return None
+    if isinstance(obj, dict):
+        return {k: _sanitize_json_finite(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_json_finite(v) for v in obj]
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    return obj
+
+
+def sanitize_for_json_storage(obj):
+    """Public helper: make a dict/list safe for JSON/JSONB (no inf/nan). Returns a new structure."""
+    return _sanitize_json_finite(obj)
 
 
 async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: int) -> None:
@@ -52,7 +71,7 @@ class SavedPropertyService:
         """
         from sqlalchemy.exc import IntegrityError
 
-        # Convert DealMakerRecord to dict if provided
+        # Convert DealMakerRecord to dict if provided; sanitize non-finite numbers for JSON/JSONB
         deal_maker_dict = None
         if data.deal_maker_record:
             try:
@@ -63,9 +82,14 @@ class SavedPropertyService:
                     deal_maker_dict = data.deal_maker_record
                 else:
                     logger.warning(f"Unexpected deal_maker_record type: {type(data.deal_maker_record)}")
+                if deal_maker_dict is not None:
+                    deal_maker_dict = _sanitize_json_finite(deal_maker_dict)
             except Exception as e:
                 logger.error(f"Failed to convert deal_maker_record to dict: {e}", exc_info=True)
                 # Continue without deal_maker_record rather than failing the save
+
+        # Sanitize property_data_snapshot so JSON/JSONB never gets inf/nan
+        property_snapshot = _sanitize_json_finite(data.property_data_snapshot) if data.property_data_snapshot else None
 
         # Create the saved property
         saved_property = SavedProperty(
@@ -78,7 +102,7 @@ class SavedPropertyService:
             address_zip=data.address_zip,
             full_address=data.full_address
             or f"{data.address_street}, {data.address_city}, {data.address_state} {data.address_zip}",
-            property_data_snapshot=data.property_data_snapshot,
+            property_data_snapshot=property_snapshot,
             deal_maker_record=deal_maker_dict,
             status=data.status,
             nickname=data.nickname,
