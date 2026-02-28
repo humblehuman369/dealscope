@@ -12,7 +12,6 @@
 import React, { useEffect, useState } from 'react'
 import { colors } from './verdict-design-tokens'
 import { IQProperty } from './types'
-import { IQBrainIcon } from '@/components/icons'
 
 // Use design system primary blue (#0EA5E9) per CURSOR-UNIFY-COLOR-SYSTEM
 const ACCENT = colors.brand.teal
@@ -120,13 +119,17 @@ export function IQAnalyzingScreen({
               style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
             />
           </svg>
-          {/* Center logo — design system blue #0EA5E9 via IQBrainIcon */}
+          {/* Center logo — actual DealGapIQ icon (head + house) */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center"
               style={{ backgroundColor: ACCENT_BG }}
             >
-              <IQBrainIcon size={48} mode="dark" usePng={false} />
+              <img
+                src="/images/iq-logo-icon.png"
+                alt="IQ"
+                className="w-12 h-12 object-contain"
+              />
             </div>
           </div>
         </div>
