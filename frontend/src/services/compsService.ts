@@ -33,7 +33,7 @@ function isRetryable(status: number | undefined, errorMessage?: string): boolean
 function logCompsFetch(
   type: CompType,
   params: { zpid?: string; address?: string },
-  result: CompResult,
+  result: CompResult<unknown>,
   durationMs: number,
   attempts: number
 ) {
