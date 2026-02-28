@@ -612,18 +612,21 @@ def _generate_deal_factors(
 # AI narrative generation (Anthropic Claude)
 # ===========================================
 
-_NARRATIVE_SYSTEM_PROMPT = """You are a deal advisor — concise, motivating, and instructional.
+_NARRATIVE_SYSTEM_PROMPT = """You are a deal advisor. Output exactly 2 sentences. No more.
+
+STRUCTURE:
+- Sentence 1: One key practical fact and what the investor should treat as priority. If the property is off-market (not listed for sale), you MUST say the property is not currently listed for sale and that confirming the owner's interest in selling is key.
+- Sentence 2: State the required discount (Deal Gap %) and the achievability stat in one line (e.g. "about 1 in 5 informed investors achieve discounts in this range through effective negotiation"). If the property is off-market, you MUST clarify that without a listed price, the values are based on current market value, then give the discount and stat.
 
 RULES:
-- Write exactly 2–3 sentences. Never more.
-- Tone: encouraging and educational. You are coaching an investor to succeed, not warning them. Inspire action through preparation, not caution.
-- Always frame around "is this worth your time" — help them decide whether to pursue or move on.
-- Reference the Deal Gap percentage and what it means (the negotiation needed).
-- When referencing the investor stat, frame it as achievable and instructional. Say things like "about 18% of investor deals achieve discounts in this range — preparation is key" or "investors who do their homework close gaps like this." NEVER frame the stat as a warning or low odds. NEVER use phrases like "but it's not impossible" or "only X% achieve this" — these are discouraging.
-- Weave in relevant sub-factors (Price Gap, off-market status, market temperature, price reductions, foreclosure, expired listing) as practical context the investor can act on.
-- End with an actionable insight — what the investor should focus on to close this deal (e.g., know the comps, negotiate with data, come prepared with your numbers).
-- Never use bullet points, labels, or headers. Pure narrative prose.
-- Never say "DealGapIQ" or reference yourself. You are the voice of the data."""
+- Direct and concise. No filler, no long coaching prose, no third sentence.
+- Never use bullet points, labels, or headers. Pure narrative prose only.
+- Never say "DealGapIQ" or reference yourself.
+- Frame the investor stat as achievable (e.g. "about 1 in 5" or "about 18% achieve this"); never as a warning or "only X%".
+
+EXAMPLE (off-market): "The property is not currently listed for sale; confirming the owner's interest in selling is key. Without a listed price, the figures are based on current market value—at that value, this deal requires a 14.5% discount to meet a target entry point, an outcome achieved by about 1 in 5 informed investors through effective negotiation."
+
+EXAMPLE (on-market): "This property is listed and has been on market long enough to suggest seller motivation. Based on current value, this deal requires a 12% discount to hit your target—about 18% of prepared investors achieve discounts in this range with strong comps and rental data." """
 
 
 def _build_narrative_sub_factors(
@@ -693,11 +696,13 @@ def _generate_deal_narrative(
             is_listed=is_listed,
             days_on_market=days_on_market,
         )
+        is_off_market = (listing_status or "").upper().find("OFF_MARKET") >= 0 or is_listed is False
+        off_market_note = "\nProperty is off-market: say it is not currently listed, that confirming the owner's interest in selling is key, and that the values are based on current market value.\n" if is_off_market else ""
 
         user_message = (
-            f"Write the deal narrative for this property:\n\n"
+            f"Write exactly 2 sentences for this property.{off_market_note}\n\n"
             f"Score: {score}/100 ({score_label})\n"
-            f"Deal Gap: -{deal_gap_pct:.1f}% (the discount needed to reach Target Buy)\n"
+            f"Deal Gap: -{deal_gap_pct:.1f}% (discount needed to reach Target Buy)\n"
             f"Investor stat: {bracket_label}\n"
             f"Target Buy: ${target_price:,.0f}\n"
             f"Income Value: ${income_value:,.0f}\n"
@@ -709,7 +714,7 @@ def _generate_deal_narrative(
         client = anthropic.Anthropic(api_key=api_key, timeout=8.0)
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=300,
+            max_tokens=150,
             system=_NARRATIVE_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_message}],
         )
