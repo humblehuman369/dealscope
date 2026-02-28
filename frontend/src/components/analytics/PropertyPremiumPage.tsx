@@ -103,15 +103,6 @@ const STRATEGIES: Strategy[] = [
   },
 ]
 
-// Sample photos for fallback
-const SAMPLE_PHOTOS = [
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop'
-]
-
 interface PropertyPremiumPageProps {
   property: PropertyData
   onBack?: () => void
@@ -151,11 +142,14 @@ export function PropertyPremiumPage({
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [showSearchModal, setShowSearchModal] = useState(false)
 
-  // Build photo list
-  const photos = property.photos && property.photos.length > 0 
-    ? property.photos 
-    : (property.thumbnailUrl ? [property.thumbnailUrl, ...SAMPLE_PHOTOS.slice(1)] : SAMPLE_PHOTOS)
-  const totalPhotos = property.photoCount || photos.length
+  // Build photo list — no demo/placeholder URLs; use thumbnail as single photo if no photos array
+  const photos =
+    property.photos && property.photos.length > 0
+      ? property.photos
+      : property.thumbnailUrl
+        ? [property.thumbnailUrl]
+        : []
+  const totalPhotos = property.photoCount ?? photos.length
 
   const handleBack = () => {
     if (onBack) {
@@ -225,14 +219,17 @@ export function PropertyPremiumPage({
             </div>
           )}
           
-          {/* Photo Counter Badge */}
-          <div className="premium-photo-counter">
-            <Camera className="w-4 h-4" />
-            <span>{activePhotoIndex + 1}/{totalPhotos}</span>
-          </div>
+          {/* Photo Counter Badge — only when we have photos */}
+          {totalPhotos > 0 && (
+            <div className="premium-photo-counter">
+              <Camera className="w-4 h-4" />
+              <span>{activePhotoIndex + 1}/{totalPhotos}</span>
+            </div>
+          )}
         </div>
 
         {/* Thumbnail Strip */}
+        {photos.length > 0 && (
         <div className="premium-thumb-strip">
           {photos.slice(0, 6).map((photo, idx) => (
             <button
@@ -249,6 +246,7 @@ export function PropertyPremiumPage({
             <div className="premium-thumb-more">+{totalPhotos - 6}</div>
           )}
         </div>
+        )}
       </div>
 
       {/* Property Info Card - Below photo */}
