@@ -606,12 +606,18 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     setRentLoading(true)
     setRentLoadFailed(false)
     const params = buildParams(offset, excludeZpids)
+    console.info('[comps] Rent comps fetch started', { zpid: params.zpid ?? null, hasAddress: Boolean(params.address) })
     const result = await fetchRentCompsApi(params)
     setRentLoading(false)
+    const apiResults = (result.data as { results?: unknown[] })?.results
+    const count = Array.isArray(apiResults) ? apiResults.length : 0
     if (result.status === 'success' && result.data) {
       const transformed = transformRentResponse(result.data as Record<string, unknown>, 0, 0)
       setRentComps(transformed)
       setRentLoadFailed(false)
+      if (transformed.length === 0 && count === 0) {
+        console.info('[comps] Rent comps request succeeded but returned 0 results (backend may have empty list from API)')
+      }
       return transformed
     }
     setRentLoadFailed(true)

@@ -1559,20 +1559,28 @@ class PropertyService:
                     results = result.data
                 else:
                     # AXESSO similar-rent may use different keys than similar-sold
+                    raw = result.data
                     results = (
-                        result.data.get("similarProperties")
-                        or result.data.get("properties")
-                        or result.data.get("results")
-                        or result.data.get("rentals")
-                        or result.data.get("rentalComps")
-                        or result.data.get("similarRentals")
+                        raw.get("similarProperties")
+                        or raw.get("properties")
+                        or raw.get("results")
+                        or raw.get("rentals")
+                        or raw.get("rentalComps")
+                        or raw.get("similarRentals")
                         or []
                     )
-                    if not results and isinstance(result.data, dict):
-                        logger.debug(
-                            "Similar rent: no list found in response; top-level keys: %s",
-                            list(result.data.keys()),
-                        )
+                    if not results and isinstance(raw, dict):
+                        for key in ("data", "items", "rentalList", "rental_list", "forRent", "listings"):
+                            val = raw.get(key)
+                            if isinstance(val, list):
+                                results = val
+                                logger.info("Similar rent: using list from key %s (%d items)", key, len(results))
+                                break
+                        if not results:
+                            logger.info(
+                                "Similar rent: response success but no list found; top-level keys: %s",
+                                list(raw.keys()),
+                            )
                 if not isinstance(results, list):
                     results = []
 
