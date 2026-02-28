@@ -65,7 +65,13 @@ export function AnalysisNav() {
   const propertyHref = zpid
     ? `/property/${zpid}?address=${encodedAddress}`
     : address ? `/search?q=${encodedAddress}` : '/search'
-  const priceHref = address ? `/price-intel?address=${encodedAddress}` : '/search'
+  const priceHref = address
+    ? (() => {
+        const q = new URLSearchParams({ address })
+        if (zpid) q.set('zpid', String(zpid))
+        return `/price-intel?${q.toString()}`
+      })()
+    : '/search'
 
   return (
     <nav
