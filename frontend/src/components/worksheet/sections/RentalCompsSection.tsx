@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { 
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
-  Target, DollarSign, RefreshCw, AlertCircle, Home,
+  Target, DollarSign, RefreshCw, Home,
   TrendingUp, Lock, Unlock, RotateCcw, Info
 } from 'lucide-react'
 import {
@@ -18,74 +18,11 @@ import {
 } from '@/utils/appraisalCalculations'
 import { formatCurrency } from '@/utils/formatters'
 
-// ============================================
-// API SERVICE - Uses Next.js proxy to avoid CORS
-// ============================================
-interface FetchParams {
-  zpid?: string
-  url?: string
-  address?: string
-  limit?: number
-  offset?: number
-  exclude_zpids?: string
-}
-
-async function fetchRentalComps(params: FetchParams) {
-  const url = new URL('/api/v1/similar-rent', window.location.origin)
-  
-  if (params.zpid) url.searchParams.append('zpid', params.zpid)
-  if (params.url) url.searchParams.append('url', params.url)
-  if (params.address) url.searchParams.append('address', params.address)
-  if (params.limit) url.searchParams.append('limit', params.limit.toString())
-  if (params.offset) url.searchParams.append('offset', params.offset.toString())
-  if (params.exclude_zpids) url.searchParams.append('exclude_zpids', params.exclude_zpids)
-
-  console.log('[RentalComps] Fetching from proxy:', url.toString())
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    console.error('[RentalComps] API Error:', data)
-    throw new Error(data.error || data.detail || `API Error ${response.status}`)
-  }
-
-  // Backend returns 200 with success: false when AXESSO fails (e.g. 502)
-  if (data.success === false && data.error) {
-    console.error('[RentalComps] API returned success: false:', data.error)
-    throw new Error(data.error)
-  }
-
-  console.log('[RentalComps] Success, results:', data.results?.length || 0)
-  return data
-}
+import { fetchRentComps } from '@/services/compsService'
 
 // ============================================
 // UTILITIES
 // ============================================
-/** User-friendly message when comps provider is unreachable (e.g. 502). */
-function formatCompsErrorMessage(raw: string): { short: string; detail: string } {
-  const isUpstreamDown =
-    raw.includes('502') ||
-    raw.includes('unreachable') ||
-    raw.includes('API (not working)') ||
-    raw.toLowerCase().includes('bad gateway')
-  if (isUpstreamDown) {
-    return {
-      short: 'Comps provider is temporarily unreachable. Please try again in a few minutes.',
-      detail: raw,
-    }
-  }
-  return { short: raw, detail: raw }
-}
-
 const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   const date = new Date(dateString)
@@ -737,7 +674,7 @@ export function RentalCompsSection() {
   
   const [comps, setComps] = useState<LocalRentalComp[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [selectedCompIds, setSelectedCompIds] = useState<Set<string | number>>(new Set())
   const [expandedComp, setExpandedComp] = useState<number | string | null>(null)
   const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
@@ -787,49 +724,42 @@ export function RentalCompsSection() {
     return calculateRentAppraisalValues(subjectForCalc, selectedComps)
   }, [selectedCompIds, comps, subject])
 
-  // Fetch comps
+  // Fetch comps (non-blocking; never blocks core analysis)
   const fetchComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
-    if (!subject.address && !zpid) {
-      setError('No property address or ID available')
-      return []
-    }
-    
     setLoading(true)
-    setError(null)
-    
-    try {
-      const params: FetchParams = { limit: 10, offset }
-      if (zpid) {
-        params.zpid = zpid
-      } else {
-        params.address = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
-      }
-      if (excludeZpids.length > 0) {
-        params.exclude_zpids = excludeZpids.join(',')
-      }
-      
-      const response = await fetchRentalComps(params)
-      const transformed = transformRentalResponse(response, subject)
-      return transformed
-    } catch (err) {
-      console.error('[RentalComps] Fetch error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
-      return []
-    } finally {
-      setLoading(false)
+    setLoadFailed(false)
+
+    const params: { zpid?: string; address?: string; limit: number; offset: number; exclude_zpids?: string } = {
+      limit: 10,
+      offset,
     }
+    if (zpid) params.zpid = zpid
+    else if (subject.address) params.address = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
+    if (excludeZpids.length > 0) params.exclude_zpids = excludeZpids.join(',')
+
+    const result = await fetchRentComps(params)
+
+    setLoading(false)
+    if (result.status === 'success' && result.data) {
+      const transformed = transformRentalResponse(result.data as Record<string, unknown>, subject)
+      setComps(transformed)
+      setLoadFailed(false)
+      return transformed
+    }
+    setLoadFailed(true)
+    setComps([])
+    return []
   }, [subject, zpid])
 
-  // Initial fetch
+  // Initial fetch (non-blocking; after section mounts)
   useEffect(() => {
     const doFetch = async () => {
       const fetched = await fetchComps()
-      setComps(fetched)
       if (fetched.length > 0) {
         setSelectedCompIds(new Set(fetched.slice(0, 3).map(c => c.id)))
       }
     }
-    if (subject.address) {
+    if (subject.address || zpid) {
       doFetch()
     }
   }, []) // Only fetch on mount
@@ -1072,34 +1002,33 @@ export function RentalCompsSection() {
       </div>
 
       {/* Loading */}
-      {loading && comps.length === 0 && (
+      {loading && comps.length === 0 && !loadFailed && (
         <div className="space-y-3">
           {[1, 2, 3].map(i => <RentalCardSkeleton key={i} />)}
+          <p className="text-xs text-slate-500 text-center">Loading comparable rentals...</p>
         </div>
       )}
 
-      {/* Error */}
-      {error && !loading && (() => {
-        const { short, detail } = formatCompsErrorMessage(error)
-        return (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-            <AlertCircle className="mx-auto mb-2 text-red-500 w-8 h-8" />
-            <h3 className="text-sm font-semibold text-red-800 mb-1">Failed to Load Rental Comps</h3>
-            <p className={`text-xs text-red-600 ${detail !== short ? 'mb-2' : 'mb-3'}`}>{short}</p>
-            {detail !== short && (
-              <p className="text-xs text-red-500/80 mb-3 font-mono truncate max-w-full px-2" title={detail}>
-                {detail.length > 80 ? `${detail.slice(0, 80)}…` : detail}
-              </p>
-            )}
-            <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg">
-              Try Again
-            </button>
-          </div>
-        )
-      })()}
+      {/* Unavailable (friendly fallback — no raw errors) */}
+      {loadFailed && !loading && (
+        <div className="rounded-xl border border-slate-200 p-6 text-center bg-slate-50/80">
+          <Info className="mx-auto mb-3 text-slate-400 w-10 h-10" aria-hidden />
+          <h3 className="text-sm font-semibold text-slate-700 mb-1">Comparable rentals temporarily unavailable</h3>
+          <p className="text-xs text-slate-600 mb-4 max-w-sm mx-auto">
+            Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
+          </p>
+          <button
+            type="button"
+            onClick={() => handleRefreshAll()}
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
-      {/* Empty */}
-      {!loading && !error && comps.length === 0 && (
+      {/* Empty (success but no comps found) */}
+      {!loading && !loadFailed && comps.length === 0 && (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
           <Home className="mx-auto mb-2 text-slate-400 w-8 h-8" />
           <h3 className="text-sm font-semibold text-slate-700 mb-1">No Rental Comps Found</h3>
@@ -1108,7 +1037,7 @@ export function RentalCompsSection() {
       )}
 
       {/* Rental Comps List */}
-      {!loading && !error && comps.length > 0 && (
+      {!loading && !loadFailed && comps.length > 0 && (
         <div className="space-y-3">
           {filteredComps.map(comp => {
             const freshnessBadge = getFreshnessBadge(comp.listingDate)
@@ -1131,7 +1060,7 @@ export function RentalCompsSection() {
       )}
 
       {/* Distance-based confidence indicator */}
-      {!loading && !error && comps.length > 0 && (
+      {!loading && !loadFailed && comps.length > 0 && (
         <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">
