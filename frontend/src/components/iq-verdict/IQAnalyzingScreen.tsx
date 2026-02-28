@@ -10,7 +10,13 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { IQ_COLORS, IQProperty } from './types'
+import { colors } from './verdict-design-tokens'
+import { IQProperty } from './types'
+
+// Use design system primary blue (#0EA5E9) per CURSOR-UNIFY-COLOR-SYSTEM
+const ACCENT = colors.brand.teal
+const ACCENT_BG = 'rgba(14,165,233,0.08)'
+const ACCENT_BORDER = 'rgba(14,165,233,0.2)'
 
 // Rotating micro-tips — real, credibility-building content
 const MICRO_TIPS = [
@@ -83,7 +89,7 @@ export function IQAnalyzingScreen({
   const dashOffset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background.base }}>
       <div className="flex flex-col items-center px-8 max-w-md">
         {/* Animated progress ring with IQ logo */}
         <div className="relative mb-8" style={{ width: size, height: size }}>
@@ -98,14 +104,14 @@ export function IQAnalyzingScreen({
               strokeWidth={strokeWidth}
             />
           </svg>
-          {/* Progress ring */}
+          {/* Progress ring — design system blue #0EA5E9 */}
           <svg width={size} height={size} className="absolute inset-0 -rotate-90">
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="none"
-              stroke={IQ_COLORS.electricCyan}
+              stroke={ACCENT}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               strokeDasharray={circumference}
@@ -117,7 +123,7 @@ export function IQAnalyzingScreen({
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${IQ_COLORS.electricCyan}15` }}
+              style={{ backgroundColor: ACCENT_BG }}
             >
               <img
                 src="/images/IQ-Logo.svg"
@@ -129,21 +135,21 @@ export function IQAnalyzingScreen({
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-white mb-2">
+        <h1 className="text-2xl font-bold mb-2" style={{ color: colors.text.white }}>
           Analyzing Property
         </h1>
-        <p className="text-sm mb-8 text-center" style={{ color: IQ_COLORS.slateLight }}>
+        <p className="text-sm mb-8 text-center" style={{ color: colors.text.secondary }}>
           Just a moment while IQ evaluates this deal...
         </p>
 
         {/* Rotating Micro-tip */}
         <div
           className="mb-6 px-5 py-3 rounded-xl text-center max-w-xs"
-          style={{ backgroundColor: `${IQ_COLORS.electricCyan}10`, border: `1px solid ${IQ_COLORS.electricCyan}20` }}
+          style={{ backgroundColor: ACCENT_BG, border: `1px solid ${ACCENT_BORDER}` }}
         >
           <p
             className="text-xs font-medium transition-opacity duration-300"
-            style={{ color: IQ_COLORS.electricCyan }}
+            style={{ color: ACCENT }}
           >
             {MICRO_TIPS[currentTipIndex]}
           </p>
@@ -151,7 +157,7 @@ export function IQAnalyzingScreen({
 
         {/* Property Reference */}
         <div className="absolute bottom-10 left-0 right-0 text-center">
-          <p className="text-sm" style={{ color: IQ_COLORS.slate }}>
+          <p className="text-sm" style={{ color: colors.text.tertiary }}>
             {fullAddress}
           </p>
         </div>
