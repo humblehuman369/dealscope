@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
-  ImageGallery,
+  PropertyPhotoGallery,
   PropertyHeader,
   KeyFactsGrid,
   PropertyDescription,
@@ -68,10 +68,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           </span>
         </nav>
 
-        {/* Full Width Image Gallery */}
-        <ImageGallery 
-          images={property.images} 
-          totalPhotos={property.totalPhotos || property.images.length} 
+        {/* Full Width Image Gallery — photos loaded client-side (non-blocking) */}
+        <PropertyPhotoGallery
+          zpid={String(property.zpid)}
+          initialImages={property.images}
           views={property.views}
         />
 

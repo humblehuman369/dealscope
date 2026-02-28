@@ -41,7 +41,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
       {/* Main Image Container */}
       <div
         className="relative rounded-[14px] overflow-hidden"
-        style={{ height: '400px', backgroundColor: colors.background.cardUp }}
+        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
       >
         {currentVisible ? (
           <img
@@ -156,15 +156,18 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
  * ImageGallerySkeleton
  * Loading state for the image gallery
  */
+const GALLERY_HEIGHT_PX = 400
+
 export function ImageGallerySkeleton() {
   return (
     <div className="space-y-3">
       <div
         className="relative rounded-[14px] overflow-hidden animate-pulse"
-        style={{ height: '400px', backgroundColor: colors.background.cardUp }}
+        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
       >
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-3">
           <ImageOff size={48} style={{ color: colors.text.tertiary }} />
+          <span className="text-sm" style={{ color: colors.text.tertiary }}>Loading property photos...</span>
         </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">

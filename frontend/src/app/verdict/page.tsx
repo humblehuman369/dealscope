@@ -33,6 +33,7 @@ import { useSession } from '@/hooks/useSession'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
+import { fetchPropertyPhotos } from '@/services/photoService'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
@@ -260,16 +261,6 @@ function VerdictContent() {
         // Fetch property data (React Query cache — shared with Strategy page)
         const data = await fetchProperty(addressParam)
 
-        // Start photo fetch in parallel (resolved later after property data is built)
-        const photoPromise = data.zpid
-          ? api.get<{ success: boolean; photos: Array<{ url: string }> }>(
-              `/api/v1/photos?zpid=${data.zpid}`,
-            ).catch((err: unknown) => {
-              console.warn('Failed to fetch photos, using fallback:', err)
-              return null
-            })
-          : Promise.resolve(null)
-
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
         const monthlyRent = data.rentals?.monthly_rent_ltr || 0
 
@@ -491,17 +482,8 @@ function VerdictContent() {
           analysisBody,
         )
 
-        const [analysisData, photosResult] = await Promise.all([
-          analysisPromise,
-          photoPromise,
-        ])
+        const analysisData = await analysisPromise
 
-        // Update property photo if we got a real one
-        if (photosResult?.success && photosResult.photos?.length > 0 && photosResult.photos[0]?.url) {
-          propertyData.imageUrl = photosResult.photos[0].url
-          setProperty({ ...propertyData })
-        }
-          
         // Diagnostic logging — traces exact key formats from backend
         console.log('[IQ Verdict] Raw backend response:', JSON.stringify(analysisData).slice(0, 500))
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
@@ -543,6 +525,15 @@ function VerdictContent() {
             setProperty((prev) => {
               if (!prev) return null
               return { ...prev, price: Math.round(backendListPrice) } as IQProperty
+            })
+          }
+
+          // Phase 2: non-blocking photo fetch — do not await; update property when done
+          if (propertyData.zpid) {
+            fetchPropertyPhotos(propertyData.zpid).then((result) => {
+              if (result.status === 'success' && result.photos[0]) {
+                setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
+              }
             })
           }
         } catch (analysisErr) {
