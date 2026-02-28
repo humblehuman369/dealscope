@@ -34,7 +34,7 @@ export function OfflineGuard({
       <View style={styles.iconCircle}>
         <Ionicons name="cloud-offline-outline" size={40} color={colors.muted} />
       </View>
-      <Text style={styles.title}>You're Offline</Text>
+      <Text style={styles.title}>You&apos;re Offline</Text>
       <Text style={styles.message}>{offlineMessage}</Text>
       <Text style={styles.hint}>
         Connect to the internet and try again.

@@ -132,7 +132,7 @@ export default function ProformaScreen() {
         <View style={styles.infoSection}>
           <Ionicons name="information-circle-outline" size={18} color={colors.secondary} />
           <Text style={styles.infoText}>
-            Files are generated on-demand and shared via your device's native
+            Files are generated on-demand and shared via your device&apos;s native
             share sheet (AirDrop, email, save to Files, etc.).
           </Text>
         </View>

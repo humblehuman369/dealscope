@@ -106,7 +106,7 @@ export function GlobalCrashScreen({
       </View>
       <Text style={styles.globalTitle}>DealGapIQ Crashed</Text>
       <Text style={styles.message}>
-        We're sorry — something unexpected happened. The error has been reported
+        We&apos;re sorry — something unexpected happened. The error has been reported
         automatically.
       </Text>
       <Text style={styles.errorDetail} numberOfLines={4}>

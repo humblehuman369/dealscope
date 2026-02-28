@@ -80,32 +80,6 @@ export default function DealVaultScreen() {
     deleteMutation.mutate(id);
   }
 
-  // ── Unauthenticated ─────────────────────────────────
-  if (!isAuthenticated) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
-        <Text style={styles.screenTitle}>
-          DealVault<Text style={styles.accent}>IQ</Text>
-        </Text>
-        <View style={styles.emptyState}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="bookmark-outline" size={40} color={colors.accent} />
-          </View>
-          <Text style={styles.emptyTitle}>Sign In to Save Deals</Text>
-          <Text style={styles.emptyText}>
-            Create an account to save properties, track deals, and build your
-            investment pipeline.
-          </Text>
-          <Button
-            title="Sign In"
-            onPress={() => router.push('/(auth)/login')}
-            style={{ minWidth: 200, marginTop: spacing.md }}
-          />
-        </View>
-      </View>
-    );
-  }
-
   const renderItem = useCallback(
     ({ item }: { item: SavedPropertySummary }) => (
       <SwipeActionRow
@@ -172,6 +146,31 @@ export default function DealVaultScreen() {
     ),
     [deleteMutation],
   );
+
+  if (!isAuthenticated) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
+        <Text style={styles.screenTitle}>
+          DealVault<Text style={styles.accent}>IQ</Text>
+        </Text>
+        <View style={styles.emptyState}>
+          <View style={styles.iconCircle}>
+            <Ionicons name="bookmark-outline" size={40} color={colors.accent} />
+          </View>
+          <Text style={styles.emptyTitle}>Sign In to Save Deals</Text>
+          <Text style={styles.emptyText}>
+            Create an account to save properties, track deals, and build your
+            investment pipeline.
+          </Text>
+          <Button
+            title="Sign In"
+            onPress={() => router.push('/(auth)/login')}
+            style={{ minWidth: 200, marginTop: spacing.md }}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
