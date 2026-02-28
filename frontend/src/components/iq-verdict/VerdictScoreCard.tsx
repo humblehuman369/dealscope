@@ -16,7 +16,7 @@
  */
 
 import React from 'react'
-import { colors, cardGlow } from './verdict-design-tokens'
+import { colors, cardGlow, tw } from './verdict-design-tokens'
 import type { DealFactor } from './types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -247,7 +247,7 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
   return (
     <section className="px-5 pt-4 pb-5 border-t" style={{ borderColor: colors.ui.border }}>
       <h2
-        className="text-left text-[1.1rem] font-bold leading-snug mb-4"
+        className={`text-left ${tw.textHeading} mb-4`}
         style={{ color: colors.text.primary }}
       >
         Worth Your Time? Here&apos;s What It Takes.
