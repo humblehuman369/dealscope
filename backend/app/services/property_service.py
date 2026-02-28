@@ -71,7 +71,11 @@ class PropertyService:
         )
 
         # Use the comprehensive ZillowClient for Zillow data
-        self.zillow = create_zillow_client(api_key=settings.AXESSO_API_KEY, base_url=settings.AXESSO_URL)
+        self.zillow = create_zillow_client(
+            api_key=settings.AXESSO_API_KEY,
+            base_url=settings.AXESSO_URL,
+            fallback_api_key=settings.AXESSO_API_KEY_SECONDARY or None,
+        )
 
         # Redis cache with in-memory fallback (24h TTL)
         self._cache: CacheService = get_cache_service()

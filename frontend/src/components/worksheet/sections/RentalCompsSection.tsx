@@ -70,6 +70,22 @@ async function fetchRentalComps(params: FetchParams) {
 // ============================================
 // UTILITIES
 // ============================================
+/** User-friendly message when comps provider is unreachable (e.g. 502). */
+function formatCompsErrorMessage(raw: string): { short: string; detail: string } {
+  const isUpstreamDown =
+    raw.includes('502') ||
+    raw.includes('unreachable') ||
+    raw.includes('API (not working)') ||
+    raw.toLowerCase().includes('bad gateway')
+  if (isUpstreamDown) {
+    return {
+      short: 'Comps provider is temporarily unreachable. Please try again in a few minutes.',
+      detail: raw,
+    }
+  }
+  return { short: raw, detail: raw }
+}
+
 const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   const date = new Date(dateString)
@@ -1063,16 +1079,24 @@ export function RentalCompsSection() {
       )}
 
       {/* Error */}
-      {error && !loading && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-          <AlertCircle className="mx-auto mb-2 text-red-500 w-8 h-8" />
-          <h3 className="text-sm font-semibold text-red-800 mb-1">Failed to Load Rental Comps</h3>
-          <p className="text-xs text-red-600 mb-3">{error}</p>
-          <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg">
-            Try Again
-          </button>
-        </div>
-      )}
+      {error && !loading && (() => {
+        const { short, detail } = formatCompsErrorMessage(error)
+        return (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <AlertCircle className="mx-auto mb-2 text-red-500 w-8 h-8" />
+            <h3 className="text-sm font-semibold text-red-800 mb-1">Failed to Load Rental Comps</h3>
+            <p className={`text-xs text-red-600 ${detail !== short ? 'mb-2' : 'mb-3'}`}>{short}</p>
+            {detail !== short && (
+              <p className="text-xs text-red-500/80 mb-3 font-mono truncate max-w-full px-2" title={detail}>
+                {detail.length > 80 ? `${detail.slice(0, 80)}…` : detail}
+              </p>
+            )}
+            <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg">
+              Try Again
+            </button>
+          </div>
+        )
+      })()}
 
       {/* Empty */}
       {!loading && !error && comps.length === 0 && (

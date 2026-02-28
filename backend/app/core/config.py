@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     RENTCAST_URL: str = "https://api.rentcast.io/v1"
 
     AXESSO_API_KEY: str = ""
+    AXESSO_API_KEY_SECONDARY: str = ""  # Optional fallback when primary returns 502/503 or auth errors
     AXESSO_URL: str = "https://api.axesso.de/zil"
 
     REDFIN_API_KEY: str = ""
