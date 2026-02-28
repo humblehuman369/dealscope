@@ -45,53 +45,26 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
   }
   
   try {
-    // Fetch property data and photos directly from backend in parallel
-    console.log('[Property Details Page] Fetching from backend...')
-    
-    const [propertyRes, photosRes] = await Promise.allSettled([
-      fetch(`${BACKEND_URL}/api/v1/properties/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address }),
-        cache: 'no-store'
-      }),
-      fetch(`${BACKEND_URL}/api/v1/photos?zpid=${zpid}`, {
-        cache: 'no-store'
-      })
-    ])
+    // 1. Fetch property first so we can use the backend's canonical zpid for photos
+    console.log('[Property Details Page] Fetching property from backend...')
+    const propertyRes = await fetch(`${BACKEND_URL}/api/v1/properties/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address }),
+      cache: 'no-store',
+    })
 
-    // Process property response
     let propertyData: Record<string, unknown> | null = null
-    
-    if (propertyRes.status === 'fulfilled') {
-      const response = propertyRes.value
-      console.log('[Property Details Page] Property fetch status:', response.status)
-      
-      if (response.ok) {
-        try {
-          propertyData = await response.json()
-          console.log('[Property Details Page] Property data received')
-        } catch (parseError) {
-          console.error('[Property Details Page] Failed to parse property response:', parseError)
-        }
-      } else {
-        const errorText = await response.text().catch(() => 'Unknown error')
-        console.error('[Property Details Page] Backend error:', response.status, errorText)
+    if (propertyRes.ok) {
+      try {
+        propertyData = await propertyRes.json()
+        console.log('[Property Details Page] Property data received')
+      } catch (parseError) {
+        console.error('[Property Details Page] Failed to parse property response:', parseError)
       }
     } else {
-      console.error('[Property Details Page] Property fetch failed:', propertyRes.reason)
-    }
-
-    // Process photos response
-    let photosData: { photos?: { url?: string }[] } | null = null
-    
-    if (photosRes.status === 'fulfilled' && photosRes.value.ok) {
-      try {
-        photosData = await photosRes.value.json()
-        console.log('[Property Details Page] Photos received:', photosData?.photos?.length || 0)
-      } catch {
-        console.log('[Property Details Page] Failed to parse photos')
-      }
+      const errorText = await propertyRes.text().catch(() => 'Unknown error')
+      console.error('[Property Details Page] Property fetch error:', propertyRes.status, errorText)
     }
 
     if (!propertyData) {
@@ -99,10 +72,55 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
       return null
     }
 
+    // 2. Use zpid from property response when available (canonical Zillow id); fallback to URL param
+    const zpidForPhotos =
+      (propertyData as { zpid?: string | number }).zpid != null
+        ? String((propertyData as { zpid?: string | number }).zpid)
+        : zpid
+
+    if (!zpidForPhotos) {
+      console.warn('[Property Details Page] No zpid available for photos request')
+    }
+
+    // 3. Fetch photos using canonical zpid and explicit Accept header
+    let photosData: { success?: boolean; photos?: { url?: string }[]; error?: string } | null = null
+    try {
+      const photosRes = await fetch(
+        `${BACKEND_URL}/api/v1/photos?zpid=${encodeURIComponent(zpidForPhotos)}`,
+        {
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        }
+      )
+      const photosText = await photosRes.text()
+      if (!photosRes.ok) {
+        console.error(
+          '[Property Details Page] Photos API error:',
+          photosRes.status,
+          photosRes.statusText,
+          photosText.slice(0, 300)
+        )
+      } else {
+        try {
+          photosData = photosText ? JSON.parse(photosText) : null
+          const count = photosData?.photos?.length ?? 0
+          if (count > 0) {
+            console.log('[Property Details Page] Photos received:', count)
+          } else if (photosData?.success === false && photosData?.error) {
+            console.warn('[Property Details Page] Photos API returned no photos:', photosData.error)
+          }
+        } catch {
+          console.error('[Property Details Page] Failed to parse photos response JSON')
+        }
+      }
+    } catch (photosErr) {
+      console.error('[Property Details Page] Photos fetch failed:', photosErr)
+    }
+
     // Normalize the data
     const normalized = normalizePropertyData(propertyData, photosData, zpid)
     console.log('[Property Details Page] Normalized successfully')
-    
+
     return normalized
   } catch (error) {
     console.error('[Property Details Page] Unexpected error:', error)
