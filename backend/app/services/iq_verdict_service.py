@@ -550,60 +550,80 @@ def _generate_deal_factors(
     status = (listing_status or "").upper()
 
     if is_foreclosure or is_bank_owned:
-        factors.append({
-            "type": "positive",
-            "text": "Distressed sale — lender is typically motivated to liquidate",
-        })
+        factors.append(
+            {
+                "type": "positive",
+                "text": "Distressed sale — lender is typically motivated to liquidate",
+            }
+        )
     elif "OFF_MARKET" in status or is_listed is False:
-        factors.append({
-            "type": "warning",
-            "text": "Off-market property — seller has not indicated intent to sell",
-        })
+        factors.append(
+            {
+                "type": "warning",
+                "text": "Off-market property — seller has not indicated intent to sell",
+            }
+        )
     elif "PENDING" in status:
-        factors.append({
-            "type": "warning",
-            "text": "Property is under contract — unlikely to be available",
-        })
+        factors.append(
+            {
+                "type": "warning",
+                "text": "Property is under contract — unlikely to be available",
+            }
+        )
     elif "SOLD" in status:
-        factors.append({
-            "type": "warning",
-            "text": "Recently sold — not currently available for purchase",
-        })
+        factors.append(
+            {
+                "type": "warning",
+                "text": "Recently sold — not currently available for purchase",
+            }
+        )
     elif is_fsbo:
-        factors.append({
-            "type": "positive",
-            "text": "For sale by owner — more room for direct negotiation",
-        })
+        factors.append(
+            {
+                "type": "positive",
+                "text": "For sale by owner — more room for direct negotiation",
+            }
+        )
     elif "FOR_SALE" in status:
-        factors.append({
-            "type": "info",
-            "text": "Agent-listed property with standard seller motivation",
-        })
+        factors.append(
+            {
+                "type": "info",
+                "text": "Agent-listed property with standard seller motivation",
+            }
+        )
 
     if days_on_market is not None and days_on_market > 0 and "FOR_SALE" in status:
         if days_on_market >= 120:
-            factors.append({
-                "type": "positive",
-                "text": f"Listed {days_on_market} days — extended time on market increases negotiation leverage",
-            })
+            factors.append(
+                {
+                    "type": "positive",
+                    "text": f"Listed {days_on_market} days — extended time on market increases negotiation leverage",
+                }
+            )
         elif days_on_market >= 60:
-            factors.append({
-                "type": "info",
-                "text": f"Listed {days_on_market} days — seller may be open to negotiation",
-            })
+            factors.append(
+                {
+                    "type": "info",
+                    "text": f"Listed {days_on_market} days — seller may be open to negotiation",
+                }
+            )
 
     if market_temperature:
         temp = market_temperature.lower()
         if temp == "hot":
-            factors.append({
-                "type": "warning",
-                "text": "Hot market — competing offers reduce negotiation leverage",
-            })
+            factors.append(
+                {
+                    "type": "warning",
+                    "text": "Hot market — competing offers reduce negotiation leverage",
+                }
+            )
         elif temp == "cold":
-            factors.append({
-                "type": "positive",
-                "text": "Cold market — fewer buyers gives stronger negotiation position",
-            })
+            factors.append(
+                {
+                    "type": "positive",
+                    "text": "Cold market — fewer buyers gives stronger negotiation position",
+                }
+            )
 
     return factors
 

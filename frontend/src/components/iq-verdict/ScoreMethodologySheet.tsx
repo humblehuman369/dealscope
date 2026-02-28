@@ -114,7 +114,7 @@ export function ScoreMethodologySheet({
   const getTitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'How VerdictIQ Works'
+        return 'How The Verdict Works'
       case 'strategy':
         return 'Strategy Score Breakdown'
       default:
@@ -197,10 +197,10 @@ export function ScoreMethodologySheet({
               </p>
             </div>
 
-            {/* Breakeven Price */}
+            {/* Income Value (breakeven) */}
             <section>
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
-                Understanding Breakeven Price
+                Income Value
               </h3>
               <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
                 <div className="flex items-start gap-3 mb-4">
@@ -211,7 +211,7 @@ export function ScoreMethodologySheet({
                     <DollarSign className="w-4 h-4" style={{ color: T.green }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    The maximum price you can pay and still break even on monthly cash flow.
+                    The highest price the rental income can support. The maximum price you can pay and still break even on monthly cash flow.
                   </p>
                 </div>
 
@@ -219,7 +219,7 @@ export function ScoreMethodologySheet({
                   Breakeven is calculated using YOUR assumptions:
                 </p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
-                  {['Down payment %', 'Interest rate', 'Loan term', 'Vacancy rate', 'Management fees', 'Maintenance %'].map((item) => (
+                  {['Down payment %', 'Interest rate', 'Loan term', 'Income value', 'Management fees', 'Maintenance %'].map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-[11px]">
                       <span style={{ color: T.teal }}>•</span>
                       <span style={{ color: T.secondary }}>{item}</span>
