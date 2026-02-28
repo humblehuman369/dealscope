@@ -188,19 +188,12 @@ function normalizePropertyData(
     description?: string
   }
 
-  // Extract photos
+  // Extract photos — no demo/placeholder URLs; leave empty when API returns none
   let images: string[] = []
   if (photos?.photos && Array.isArray(photos.photos)) {
     images = photos.photos
       .map(photo => photo.url)
       .filter((url): url is string => !!url)
-  }
-  if (images.length === 0) {
-    images = [
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&fit=crop',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
-    ]
   }
 
   const streetAddress = p.address?.street || ''
