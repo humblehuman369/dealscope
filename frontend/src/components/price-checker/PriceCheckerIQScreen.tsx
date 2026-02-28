@@ -18,9 +18,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
-  Target, DollarSign, RefreshCw, AlertCircle, Building2, Home,
+  Target, DollarSign, RefreshCw, Building2, Home,
   Pencil, TrendingUp, RotateCcw, Info
 } from 'lucide-react'
+import { fetchSaleComps as fetchSaleCompsApi, fetchRentComps as fetchRentCompsApi } from '@/services/compsService'
 import {
   calculateAppraisalValues,
   calculateRentAppraisalValues,
@@ -76,45 +77,6 @@ interface LocalComp {
   image: string
   latitude: number
   longitude: number
-}
-
-interface FetchParams {
-  zpid?: string
-  address?: string
-  limit?: number
-  offset?: number
-  exclude_zpids?: string
-}
-
-// ============================================
-// API SERVICES
-// ============================================
-async function fetchSimilarSold(params: FetchParams) {
-  const url = new URL('/api/v1/similar-sold', window.location.origin)
-  if (params.zpid) url.searchParams.append('zpid', params.zpid)
-  if (params.address) url.searchParams.append('address', params.address)
-  if (params.limit) url.searchParams.append('limit', params.limit.toString())
-  if (params.offset) url.searchParams.append('offset', params.offset.toString())
-  if (params.exclude_zpids) url.searchParams.append('exclude_zpids', params.exclude_zpids)
-  const response = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error || `API Error ${response.status}`)
-  if (data.success === false) throw new Error(data.error || 'Sale comps unavailable — upstream provider error')
-  return data
-}
-
-async function fetchSimilarRent(params: FetchParams) {
-  const url = new URL('/api/v1/rentcast/rental-comps', window.location.origin)
-  if (params.zpid) url.searchParams.append('zpid', params.zpid)
-  if (params.address) url.searchParams.append('address', params.address)
-  if (params.limit) url.searchParams.append('limit', params.limit.toString())
-  if (params.offset) url.searchParams.append('offset', params.offset.toString())
-  if (params.exclude_zpids) url.searchParams.append('exclude_zpids', params.exclude_zpids)
-  const response = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error || `API Error ${response.status}`)
-  if (data.success === false) throw new Error(data.error || 'Rental comps unavailable — upstream provider error')
-  return data
 }
 
 // ============================================
@@ -549,7 +511,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [saleComps, setSaleComps] = useState<LocalComp[]>([])
   const [saleSelected, setSaleSelected] = useState<Set<string | number>>(new Set())
   const [saleLoading, setSaleLoading] = useState(false)
-  const [saleError, setSaleError] = useState<string | null>(null)
+  const [saleLoadFailed, setSaleLoadFailed] = useState(false)
   const [saleOffset, setSaleOffset] = useState(0)
   const [saleOverrideMarket, setSaleOverrideMarket] = useState<number | null>(null)
   const [saleOverrideArv, setSaleOverrideArv] = useState<number | null>(null)
@@ -558,7 +520,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [rentComps, setRentComps] = useState<LocalComp[]>([])
   const [rentSelected, setRentSelected] = useState<Set<string | number>>(new Set())
   const [rentLoading, setRentLoading] = useState(false)
-  const [rentError, setRentError] = useState<string | null>(null)
+  const [rentLoadFailed, setRentLoadFailed] = useState(false)
   const [rentOffset, setRentOffset] = useState(0)
   const [rentOverrideMarket, setRentOverrideMarket] = useState<number | null>(null)
   const [rentOverrideImproved, setRentOverrideImproved] = useState<number | null>(null)
@@ -580,7 +542,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const comps = isSale ? saleComps : rentComps
   const selectedIds = isSale ? saleSelected : rentSelected
   const loading = isSale ? saleLoading : rentLoading
-  const error = isSale ? saleError : rentError
+  const loadFailed = isSale ? saleLoadFailed : rentLoadFailed
 
   // Subject property for calculations -- infer from comps average if not provided
   const subject: SubjectProperty = useMemo(() => {
@@ -610,9 +572,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     return calculateRentAppraisalValues(subject, selected)
   }, [rentSelected, rentComps, subject])
 
-  // Fetch helpers
-  const buildParams = useCallback((offset = 0, excludeZpids: string[] = []): FetchParams => {
-    const params: FetchParams = { limit: 10, offset }
+  // Fetch helpers (non-blocking; use compsService with retries and timeout)
+  const buildParams = useCallback((offset = 0, excludeZpids: string[] = []) => {
+    const params: { zpid?: string; address?: string; limit: number; offset: number; exclude_zpids?: string } = {
+      limit: 10,
+      offset,
+    }
     if (property.zpid) params.zpid = property.zpid
     else params.address = fullAddress
     if (excludeZpids.length > 0) params.exclude_zpids = excludeZpids.join(',')
@@ -620,27 +585,37 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   }, [property.zpid, fullAddress])
 
   const fetchSaleComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
-    setSaleLoading(true); setSaleError(null)
-    try {
-      const data = await fetchSimilarSold(buildParams(offset, excludeZpids))
-      return transformSoldResponse(data, 0, 0) // lat/lon resolved by API
-    } catch (err) {
-      setSaleError(err instanceof Error ? err.message : 'Failed to fetch sale comps')
-      return []
-    } finally { setSaleLoading(false) }
+    setSaleLoading(true)
+    setSaleLoadFailed(false)
+    const params = buildParams(offset, excludeZpids)
+    const result = await fetchSaleCompsApi(params)
+    setSaleLoading(false)
+    if (result.status === 'success' && result.data) {
+      const transformed = transformSoldResponse(result.data as Record<string, unknown>, 0, 0)
+      setSaleComps(transformed)
+      setSaleLoadFailed(false)
+      return transformed
+    }
+    setSaleLoadFailed(true)
+    setSaleComps([])
+    return []
   }, [buildParams])
 
   const fetchRentComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
-    setRentLoading(true); setRentError(null)
-    try {
-      const params = buildParams(offset, excludeZpids)
-      const data = await fetchSimilarRent(params)
-      const transformed = transformRentResponse(data, 0, 0)
+    setRentLoading(true)
+    setRentLoadFailed(false)
+    const params = buildParams(offset, excludeZpids)
+    const result = await fetchRentCompsApi(params)
+    setRentLoading(false)
+    if (result.status === 'success' && result.data) {
+      const transformed = transformRentResponse(result.data as Record<string, unknown>, 0, 0)
+      setRentComps(transformed)
+      setRentLoadFailed(false)
       return transformed
-    } catch (err) {
-      setRentError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
-      return []
-    } finally { setRentLoading(false) }
+    }
+    setRentLoadFailed(true)
+    setRentComps([])
+    return []
   }, [buildParams])
 
   // Initial fetch on mount -- store originals for reset (requires zpid or address)
@@ -1001,32 +976,37 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         </div>
 
         {/* Loading */}
-        {loading && comps.length === 0 && (
+        {loading && comps.length === 0 && !loadFailed && (
           <div className="px-4 mt-3 space-y-3">
             {[1, 2, 3].map(i => <CompCardSkeleton key={i} />)}
-          </div>
-        )}
-
-        {/* Error */}
-        {error && !loading && (
-          <div className="mx-4 mt-3 bg-[#f87171]/10 border border-[#f87171]/20 rounded-xl p-4 text-center">
-            <AlertCircle className="mx-auto mb-2 text-[#f87171] w-8 h-8" />
-            <h3 className="text-sm font-semibold text-[#f87171] mb-1">Failed to Load {isSale ? 'Sale' : 'Rental'} Comps</h3>
-            <p className="text-xs text-[#f87171]/80 mb-3">
-              {error.includes('500') || error.includes('Internal Server')
-                ? 'The data provider is temporarily unavailable. Please try again in a moment.'
-                : error.includes('429') || error.includes('rate')
-                ? 'Too many requests — please wait a moment and try again.'
-                : error.includes('timeout') || error.includes('Timeout')
-                ? 'The request timed out. Please try again.'
-                : error}
+            <p className="text-xs text-[#94A3B8] text-center">
+              Loading comparable {isSale ? 'sales' : 'rentals'}...
             </p>
-            <button onClick={handleRefreshAll} className="px-3 py-1.5 bg-[#f87171]/15 hover:bg-[#f87171]/25 text-[#f87171] text-sm font-medium rounded-lg border border-[#f87171]/20">Try Again</button>
           </div>
         )}
 
-        {/* Empty */}
-        {!loading && !error && comps.length === 0 && (
+        {/* Unavailable (friendly fallback — no raw errors) */}
+        {loadFailed && !loading && (
+          <div className="mx-4 mt-3 rounded-xl border border-white/[0.07] p-6 text-center bg-[#0C1220]">
+            <Info className="mx-auto mb-3 text-[#64748B] w-10 h-10" aria-hidden />
+            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">
+              Comparable {isSale ? 'sales' : 'rentals'} temporarily unavailable
+            </h3>
+            <p className="text-xs text-[#94A3B8] mb-4 max-w-sm mx-auto">
+              Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
+            </p>
+            <button
+              type="button"
+              onClick={handleRefreshAll}
+              className="px-4 py-2 text-sm font-medium text-[#CBD5E1] bg-white/[0.07] border border-white/[0.12] rounded-lg hover:bg-white/[0.1]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Empty (success but no comps found) */}
+        {!loading && !loadFailed && comps.length === 0 && (
           <div className="mx-4 mt-3 bg-[#0C1220] border border-white/[0.07] rounded-xl p-6 text-center">
             {isSale ? <Building2 className="mx-auto mb-2 text-[#64748B] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#64748B] w-8 h-8" />}
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
@@ -1035,7 +1015,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Comp Cards */}
-        {!loading && !error && comps.length > 0 && (
+        {!loading && !loadFailed && comps.length > 0 && (
           <div className="px-4 mt-3 space-y-3">
             {filteredComps.map(comp => (
               <CompCard
@@ -1055,7 +1035,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Location Quality */}
-        {!loading && !error && comps.length > 0 && (
+        {!loading && !loadFailed && comps.length > 0 && (
           <div className="mx-4 mt-4 p-3 rounded-lg bg-[#0C1220] border border-white/[0.07]">
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#94A3B8]">{comps.filter(c => c.distance <= 0.5).length} of {comps.length} within 0.5 mi</span>
