@@ -253,8 +253,8 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
         }}
       >
         <p
-          className="text-[0.9rem] leading-[1.65] text-center"
-          style={{ color: 'rgba(255,255,255,0.75)' }}
+          className="text-[0.9rem] leading-[1.65] text-left"
+          style={{ color: '#ffffff' }}
         >
           {narrative}
         </p>
