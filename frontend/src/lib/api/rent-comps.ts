@@ -32,6 +32,13 @@ function toStr(v: unknown): string {
 }
 
 function extractRentCompsArray(raw: BackendCompsResponse): unknown[] {
+  const extended = raw as unknown as {
+    items?: unknown[]
+    rentalList?: unknown[]
+    rental_list?: unknown[]
+    forRent?: unknown[]
+    listings?: unknown[]
+  }
   const list =
     raw.results ??
     raw.rentalComps ??
@@ -40,6 +47,11 @@ function extractRentCompsArray(raw: BackendCompsResponse): unknown[] {
     raw.rentals ??
     raw.properties ??
     (raw as unknown as { data?: unknown[] }).data ??
+    extended.items ??
+    extended.rentalList ??
+    extended.rental_list ??
+    extended.forRent ??
+    extended.listings ??
     []
   return Array.isArray(list) ? list : []
 }
@@ -64,9 +76,31 @@ export function transformRentComps(
     const city = toStr(addr.city ?? comp?.city ?? '')
     const state = toStr(addr.state ?? comp?.state ?? '')
     const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zip ?? comp?.zipcode ?? '')
-    const monthlyRent = toNum(comp?.price ?? comp?.rent ?? comp?.monthlyRent ?? comp?.listingPrice ?? 0)
+    const units = comp?.units as unknown[] | undefined
+    const unitPrice =
+      Array.isArray(units) && units.length > 0
+        ? (units[0] as Record<string, unknown>)?.price
+        : undefined
+    const monthlyRent = toNum(
+      comp?.price ??
+        comp?.rent ??
+        comp?.monthlyRent ??
+        comp?.listingPrice ??
+        comp?.unformattedPrice ??
+        comp?.listPrice ??
+        unitPrice ??
+        0
+    )
     const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
-    const listingDateRaw = comp?.datePosted ?? comp?.listingDate ?? comp?.listedDate ?? comp?.dateSold ?? ''
+    const listingDateRaw =
+      comp?.datePosted ??
+      comp?.listingDate ??
+      comp?.listedDate ??
+      comp?.dateSold ??
+      comp?.seenDate ??
+      comp?.lastSeenDate ??
+      comp?.dateSeen ??
+      ''
     const listingDate = listingDateRaw ? new Date(listingDateRaw as string).toISOString().split('T')[0] : ''
     const daysAgo = listingDate
       ? Math.floor((Date.now() - new Date(listingDate).getTime()) / 86400000)
@@ -192,7 +226,20 @@ export async function fetchRentComps(
   const transformed = transformRentComps(res.data, subject)
   if (process.env.NODE_ENV !== 'production') {
     const body = res.data as BackendCompsResponse
-    console.log('[comps_api] similar-rent transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+    const rawList = extractRentCompsArray(body)
+    const rawResultsLength = rawList.length
+    console.log('[comps_api] similar-rent transformed', {
+      count: transformed.length,
+      rawResultsLength,
+    })
+    if (rawResultsLength > 0 && transformed.length === 0) {
+      const first = rawList[0]
+      const keys =
+        first && typeof first === 'object' && !Array.isArray(first)
+          ? Object.keys(first as object)
+          : []
+      console.log('[comps_api] similar-rent raw item keys (count=0)', keys)
+    }
   }
   return {
     ...res,
