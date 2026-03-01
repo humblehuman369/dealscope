@@ -117,9 +117,16 @@ export function transformRentComps(
         if (first?.url) imageUrl = first.url
       }
     }
+    if (!imageUrl && comp?.imageUrl) imageUrl = toStr(comp.imageUrl)
     if (!imageUrl && comp?.imgSrc) imageUrl = toStr(comp.imgSrc)
     if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
     if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
+    if (!imageUrl && address) {
+      const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+      if (key) {
+        imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : ''))}&key=${key}&source=outdoor`
+      }
+    }
 
     const hdpUrl = comp?.hdpUrl ? toStr(comp.hdpUrl) : ''
     const zillowUrl = comp?.url ? toStr(comp.url) : (hdpUrl ? `https://www.zillow.com${hdpUrl.startsWith('/') ? '' : '/'}${hdpUrl}` : null)

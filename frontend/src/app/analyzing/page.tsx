@@ -5,16 +5,23 @@
  * Route: /analyzing?address=...
  *
  * Loading screen shown while IQ analyzes all 6 strategies.
- * Navigates to the verdict page once the minimum display time has elapsed.
+ * Records one analysis for Starter usage limits, then navigates to the verdict page.
  */
 
 import { useCallback, useMemo, useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { IQAnalyzingScreen, IQProperty } from '@/components/iq-verdict'
+import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
+import { api } from '@/lib/api-client'
 
 function AnalyzingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+  const { isAuthenticated } = useSession()
+  const { isPro } = useSubscription()
 
   const address = searchParams.get('address') || ''
   const price = searchParams.get('price')
@@ -49,12 +56,24 @@ function AnalyzingContent() {
     return `/verdict?${queryParams.toString()}`
   }, [property, condition, location])
 
-  // Navigate to verdict when animation is complete
+  // When animation complete: record one analysis for Starter users, refresh usage bar, then navigate
   useEffect(() => {
-    if (animationDone) {
+    if (!animationDone) return
+
+    const go = async () => {
+      if (isAuthenticated && !isPro) {
+        try {
+          await api.post('/api/v1/billing/usage/record-analysis')
+          queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] })
+        } catch {
+          // Don't block navigation if recording fails (e.g. network)
+        }
+      }
       router.replace(verdictUrl)
     }
-  }, [animationDone, verdictUrl, router])
+
+    go()
+  }, [animationDone, verdictUrl, router, isAuthenticated, isPro, queryClient])
 
   const handleAnalysisComplete = useCallback(() => {
     setAnimationDone(true)
