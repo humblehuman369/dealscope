@@ -224,10 +224,10 @@ export async function fetchRentComps(
   }
 
   const transformed = transformRentComps(res.data, subject)
+  const body = res.data as BackendCompsResponse
+  const rawList = extractRentCompsArray(body)
+  const rawResultsLength = rawList.length
   if (process.env.NODE_ENV !== 'production') {
-    const body = res.data as BackendCompsResponse
-    const rawList = extractRentCompsArray(body)
-    const rawResultsLength = rawList.length
     console.log('[comps_api] similar-rent transformed', {
       count: transformed.length,
       rawResultsLength,
@@ -240,6 +240,18 @@ export async function fetchRentComps(
           : []
       console.log('[comps_api] similar-rent raw item keys (count=0)', keys)
     }
+  }
+  // Always warn when we got 0 comps so we can debug in production (backend sent empty vs transform dropped items)
+  if (transformed.length === 0) {
+    const first = rawList[0]
+    const keys =
+      first && typeof first === 'object' && !Array.isArray(first)
+        ? Object.keys(first as object)
+        : []
+    console.warn('[comps_api] similar-rent 0 comps', {
+      rawResultsLength,
+      firstItemKeys: rawResultsLength > 0 ? keys : undefined,
+    })
   }
   return {
     ...res,
