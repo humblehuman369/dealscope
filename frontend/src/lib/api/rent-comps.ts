@@ -224,7 +224,6 @@ export async function fetchRentComps(
   }
 
   const transformed = transformRentComps(res.data, subject)
-  const body = res.data as BackendCompsResponse
   const rawList = extractRentCompsArray(body)
   const rawResultsLength = rawList.length
   if (process.env.NODE_ENV !== 'production') {
