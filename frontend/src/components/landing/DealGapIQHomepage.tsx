@@ -196,7 +196,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <h1 style={{
           fontFamily: s.fontBody, fontSize: "clamp(30px, 4.8vw, 48px)", lineHeight: 1.15,
-          fontWeight: 700, letterSpacing: -1.5, marginBottom: 12,
+          fontWeight: 700, letterSpacing: -1.5, marginBottom: 24,
           opacity: 0, animation: "fadeUp 0.6s 0.2s forwards",
         }}>
           Is That Property a <span style={{ whiteSpace: 'nowrap' }}>Good Deal?</span>
@@ -204,7 +204,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <p style={{
           fontFamily: s.fontBody, fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.25,
-          fontWeight: 700, letterSpacing: -0.8, marginBottom: 20,
+          fontWeight: 700, letterSpacing: -0.8, marginBottom: 40,
           opacity: 0, animation: "fadeUp 0.6s 0.25s forwards",
         }}>
           <span style={{ color: s.teal }}>Know if it Is Worth</span> Your Time<br />
