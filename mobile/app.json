@@ -10,8 +10,9 @@
     "newArchEnabled": true,
     "extra": {
       "eas": {
-        "projectId": "PASTE_DEALGAPIQ_PROJECT_ID_HERE"
-      }
+        "projectId": "a75cf449-712d-4ac2-9463-30fca751c69c"
+      },
+      "router": {}
     },
     "owner": "dealgapiq",
     "ios": {
@@ -35,11 +36,15 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
-            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
           }
         ]
       }
@@ -58,7 +63,9 @@
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "intentFilters": [
         {
@@ -86,7 +93,10 @@
               "pathPrefix": "/reset-password"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
