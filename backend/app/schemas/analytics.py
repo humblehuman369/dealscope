@@ -6,7 +6,7 @@ Moved from app/routers/analytics.py as part of Phase 2 Architecture Cleanup.
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # ===========================================
 # Helper: camelCase alias generator
@@ -51,6 +51,22 @@ class IQVerdictInput(BaseModel):
     is_fsbo: bool | None = Field(False, description="For Sale By Owner")
     days_on_market: int | None = Field(None, ge=0, le=10_000, description="Days on market")
     market_temperature: str | None = Field(None, max_length=20, description="Market temperature: cold, warm, hot")
+
+    @field_validator("days_on_market", mode="before")
+    @classmethod
+    def clamp_days_on_market(cls, v: object) -> int | None:
+        """Clamp to 10_000 so API/frontend values above limit don't fail validation."""
+        if v is None:
+            return None
+        try:
+            n = int(v)
+        except (TypeError, ValueError):
+            return None
+        if n < 0:
+            return 0
+        if n > 10_000:
+            return 10_000
+        return n
     # Off-market market price: when is_listed is False, backend computes Market Price from valuations
     is_listed: bool | None = Field(None, description="True if property has active listing; False for off-market")
     zestimate: float | None = Field(
@@ -211,6 +227,21 @@ class DealScoreInput(BaseModel):
     price_reductions: int | None = Field(0, ge=0)
     days_on_market: int | None = Field(None, ge=0, le=10_000)
     market_temperature: str | None = None
+
+    @field_validator("days_on_market", mode="before")
+    @classmethod
+    def clamp_days_on_market(cls, v: object) -> int | None:
+        if v is None:
+            return None
+        try:
+            n = int(v)
+        except (TypeError, ValueError):
+            return None
+        if n < 0:
+            return 0
+        if n > 10_000:
+            return 10_000
+        return n
 
 
 class DealScoreMotivation(BaseModel):
