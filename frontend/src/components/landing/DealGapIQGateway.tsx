@@ -59,7 +59,7 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
       condition: String(condition),
       location: String(locationPremium),
     });
-    router.push(`/analyzing?${params.toString()}`);
+    router.push(`/verdict?${params.toString()}`);
   };
 
   const handleScanNow = () => {

@@ -27,7 +27,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
     if (address.trim()) {
       onClose();
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/analyzing?address=${encodeURIComponent(address.trim())}`);
+      router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);
     }
   };
 

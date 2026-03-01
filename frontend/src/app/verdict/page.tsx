@@ -30,7 +30,9 @@ import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdic
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
@@ -125,8 +127,9 @@ function getStrategyIcon(strategyId: string): string {
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  // Auth context available for future use
-  useSession()
+  const queryClient = useQueryClient()
+  const { isAuthenticated } = useSession()
+  const { isPro } = useSubscription()
 
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')
@@ -218,6 +221,27 @@ function VerdictContent() {
   // Stores the static analysis inputs so the verdict can be re-calculated
   // when the user switches data source without re-fetching property data
   const analysisInputsRef = useRef<Record<string, any> | null>(null)
+  const hasRecordedAnalysisRef = useRef(false)
+
+  // Record one analysis for Starter usage when verdict loads from address (not from Deal Maker)
+  useEffect(() => {
+    if (
+      !isLoading &&
+      property &&
+      analysis &&
+      addressParam &&
+      !propertyIdParam &&
+      isAuthenticated &&
+      !isPro &&
+      !hasRecordedAnalysisRef.current
+    ) {
+      hasRecordedAnalysisRef.current = true
+      api
+        .post('/api/v1/billing/usage/record-analysis')
+        .then(() => queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] }))
+        .catch(() => {})
+    }
+  }, [isLoading, property, analysis, addressParam, propertyIdParam, isAuthenticated, isPro, queryClient])
 
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property

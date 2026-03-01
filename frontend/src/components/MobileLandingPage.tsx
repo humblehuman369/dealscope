@@ -44,7 +44,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
     setIsSearching(true);
     try {
       // Use new IQ Verdict flow
-      await router.push(`/analyzing?address=${encodeURIComponent(searchAddress.trim())}`);
+      await router.push(`/verdict?address=${encodeURIComponent(searchAddress.trim())}`);
     } catch {
       // Navigation failed - user can retry
     } finally {

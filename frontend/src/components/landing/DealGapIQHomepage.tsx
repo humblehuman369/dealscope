@@ -154,12 +154,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim()) return;
-    router.push(`/analyzing?address=${encodeURIComponent(address.trim())}`);
+    router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);
   };
 
   const handlePlaceSelect = (selectedAddress: string) => {
     setAddress(selectedAddress);
-    router.push(`/analyzing?address=${encodeURIComponent(selectedAddress)}`);
+    router.push(`/verdict?address=${encodeURIComponent(selectedAddress)}`);
   };
 
   return (
