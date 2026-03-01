@@ -31,6 +31,7 @@ function toStr(v: unknown): string {
   return String(v).trim() || ''
 }
 
+// Extraction order matches legacy compsService / RentalCompsSection / PriceCheckerIQScreen (rentalComps first, then results)
 function extractRentCompsArray(raw: BackendCompsResponse): unknown[] {
   const extended = raw as unknown as {
     items?: unknown[]
@@ -40,13 +41,13 @@ function extractRentCompsArray(raw: BackendCompsResponse): unknown[] {
     listings?: unknown[]
   }
   const list =
-    raw.results ??
     raw.rentalComps ??
+    raw.results ??
+    (raw as unknown as { data?: unknown[] }).data ??
+    raw.rentals ??
     raw.similarRentals ??
     raw.similarProperties ??
-    raw.rentals ??
     raw.properties ??
-    (raw as unknown as { data?: unknown[] }).data ??
     extended.items ??
     extended.rentalList ??
     extended.rental_list ??
