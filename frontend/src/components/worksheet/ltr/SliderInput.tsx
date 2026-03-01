@@ -123,7 +123,7 @@ export function SliderInput({
           step={step} 
           value={value} 
           onChange={(e) => onChange(Number(e.target.value))} 
-          className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer" 
+          className="absolute inset-0 w-full h-10 -top-[17px] opacity-0 cursor-pointer" 
         />
       </div>
       {quickAdjust && (

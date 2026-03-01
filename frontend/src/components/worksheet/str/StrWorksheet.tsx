@@ -368,7 +368,7 @@ export function StrWorksheet({
             step={step} 
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer"
+            className="absolute inset-0 w-full h-10 -top-[17px] opacity-0 cursor-pointer"
           />
         </div>
       </div>
@@ -463,11 +463,11 @@ export function StrWorksheet({
     return (
       <div 
         id={`section-${section.id}`}
-        className={`bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden transition-shadow hover:shadow-md ${isOpen ? 'ring-2 ring-teal/20' : ''}`}
+        className={`bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden transition-shadow hover:shadow-md scroll-mt-[72px] ${isOpen ? 'ring-2 ring-teal/20' : ''}`}
       >
         <button 
           onClick={() => toggleSection(index)}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-slate-50"
+          className="w-full flex items-center justify-between px-4 py-3.5 min-h-[44px] text-left transition-colors hover:bg-slate-50"
         >
           <div className="flex items-center gap-3">
             <span className="text-teal">{Icons[iconKey]}</span>

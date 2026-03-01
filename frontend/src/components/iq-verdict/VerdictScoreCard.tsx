@@ -124,7 +124,7 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
           {score}
         </span>
         <span
-          className="text-[10px] font-medium mt-0.5"
+          className="text-xs font-medium mt-0.5"
           style={{ color: colors.text.secondary }}
         >
           /100
@@ -173,7 +173,7 @@ export function DealGapCallout({ gapPercent, bracketLabel }: { gapPercent?: numb
   return (
     <div className="mt-3 text-left">
       <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-2"
+        className="text-xs font-bold uppercase tracking-wider mb-2"
         style={{ color: colors.text.secondary }}
       >
         Deal Gap
@@ -209,7 +209,7 @@ export function DealFactorsList({ factors }: { factors?: DealFactor[] }) {
   return (
     <div className="mt-5 text-left">
       <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-1"
+        className="text-xs font-bold uppercase tracking-wider mb-1"
         style={{ color: colors.text.secondary }}
       >
         Key Deal Factors to Close the Gap
@@ -312,7 +312,7 @@ export function VerdictScoreCard({
   return (
     <div className="mx-5 mt-6">
       <p
-        className="text-center text-[11px] font-bold uppercase tracking-[2.5px] mb-4"
+        className="text-center text-xs font-bold uppercase tracking-[2.5px] mb-4"
         style={{ color: colors.text.secondary }}
       >
         The Verdict
@@ -332,7 +332,7 @@ export function VerdictScoreCard({
           <div className="flex flex-col gap-3">
             {gapDisplay != null && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
                   Deal Gap
                 </p>
                 <p className="text-xl font-bold tabular-nums leading-none" style={{ color: gapColor }}>{gapDisplay}</p>
@@ -340,7 +340,7 @@ export function VerdictScoreCard({
             )}
             {targetBuyPrice != null && targetBuyPrice > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.text.secondary }}>
                   Target Buy
                 </p>
                 <p className="text-lg font-bold tabular-nums leading-none" style={{ color: colors.brand.teal }}>{formatTargetBuy(targetBuyPrice)}</p>

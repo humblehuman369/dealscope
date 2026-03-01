@@ -75,7 +75,7 @@ const stripeElementStyle = {
   base: {
     color: "#E2E8F0",
     fontSize: "14px",
-    fontFamily: "Inter, -apple-system, sans-serif",
+    fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
     "::placeholder": { color: "#475569" },
   },
   invalid: { color: "#F87171" },
@@ -119,6 +119,7 @@ const InputField: React.FC<{
           autoFocus={autoFocus}
           style={{
             width: "100%",
+            minHeight: "48px",
             padding: "12px 14px",
             paddingRight: rightElement ? "42px" : "14px",
             background: "#0B1120",
@@ -503,6 +504,7 @@ const PaymentForm: React.FC<{
         disabled={processing || !stripe}
         style={{
           width: "100%",
+          minHeight: "48px",
           padding: "13px",
           border: "none",
           borderRadius: "8px",
@@ -693,6 +695,7 @@ function RegistrationInner() {
         }}
         style={{
           width: "100%",
+          minHeight: "48px",
           padding: "11px",
           background: "rgba(148,163,184,0.06)",
           border: "1px solid rgba(148,163,184,0.1)",
@@ -786,6 +789,7 @@ function RegistrationInner() {
         disabled={!isFormValid || loading}
         style={{
           width: "100%",
+          minHeight: "48px",
           padding: "13px",
           border: "none",
           borderRadius: "8px",
@@ -976,6 +980,7 @@ function RegistrationInner() {
         onClick={handleStartTrial}
         style={{
           width: "100%",
+          minHeight: "48px",
           padding: "13px",
           border: "none",
           borderRadius: "8px",
@@ -1131,6 +1136,7 @@ function RegistrationInner() {
       <button
         onClick={() => router.replace(getPostRegisterPath())}
         style={{
+          minHeight: "48px",
           padding: "14px 32px",
           border: "none",
           borderRadius: "8px",
@@ -1167,7 +1173,7 @@ function RegistrationInner() {
         minHeight: "100vh",
         background: "#0B1120",
         color: "#E2E8F0",
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
         overflowX: "hidden",
       }}
     >
@@ -1189,11 +1195,11 @@ function RegistrationInner() {
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* ─── NAV ─── */}
         <nav
+          className="px-4 sm:px-10 py-4"
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "16px 40px",
             maxWidth: "1200px",
             margin: "0 auto",
             borderBottom: "1px solid rgba(148,163,184,0.06)",
@@ -1340,9 +1346,9 @@ function RegistrationInner() {
 
         {/* ─── FOOTER ─── */}
         <footer
+          className="px-4 sm:px-10 py-6"
           style={{
             borderTop: "1px solid rgba(148,163,184,0.06)",
-            padding: "24px 40px",
             maxWidth: "1200px",
             margin: "0 auto",
             display: "flex",

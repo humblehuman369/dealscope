@@ -129,6 +129,7 @@ const ctaDisabledStyle = {
   width: '100%',
   textAlign: 'center' as const,
   padding: '0.85rem',
+  minHeight: '48px',
   borderRadius: 10,
   fontWeight: 700,
   fontSize: '0.95rem',
@@ -435,7 +436,7 @@ function BillingContent() {
                       <button
                         onClick={handleManageBilling}
                         disabled={portalLoading}
-                        className="flex items-center justify-center gap-2 w-full transition-opacity hover:opacity-80"
+                        className="flex items-center justify-center gap-2 w-full min-h-[48px] transition-opacity hover:opacity-80"
                         style={{
                           padding: '0.65rem',
                           borderRadius: 10,
