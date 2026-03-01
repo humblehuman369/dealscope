@@ -484,7 +484,7 @@ export function AppHeader({
           <div className="flex items-center gap-3">
             <button
               onClick={handleSearchClick}
-              className="p-2 rounded-full transition-colors hover:bg-white/10"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
               aria-label="Search properties"
             >
               <Search 
@@ -495,7 +495,7 @@ export function AppHeader({
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={handleProfileClick}
-                className="p-2 rounded-full transition-colors hover:bg-white/10"
+                className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
                 aria-label="Profile"
                 aria-expanded={showProfileMenu}
                 aria-haspopup="true"
@@ -575,10 +575,11 @@ export function AppHeader({
         {/* Tab Bar - Dark surface (pure black on /analyzing) */}
         {showTabs && (
           <div 
-            className="flex items-stretch overflow-x-auto scrollbar-hide"
-            style={{ 
+            className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
+            style={{
               backgroundColor: isAnalyzingPage ? '#000000' : colors.background.surface,
               borderBottom: `1px solid ${colors.ui.border}`,
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             {TABS.map((tab) => {
@@ -645,7 +646,7 @@ export function AppHeader({
                     onClick={() => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))}
                     disabled={isSaving}
                     aria-label={isSaved ? 'Unsave property' : 'Save property'}
-                    className={`p-1.5 rounded transition-all ${
+                    className={`min-w-[44px] min-h-[44px] p-1.5 rounded transition-all flex items-center justify-center ${
                       isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10'
                     }`}
                     title={isSaved ? 'Saved — click to remove' : 'Save property'}
@@ -668,7 +669,7 @@ export function AppHeader({
                 {/* Expand/Collapse Button */}
                 <button
                   onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
-                  className="p-1 hover:bg-white/5 rounded transition-colors"
+                  className="min-w-[44px] min-h-[44px] p-1 hover:bg-white/5 rounded transition-colors flex items-center justify-center"
                   aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
                 >
                   {isPropertyExpanded ? (
@@ -684,7 +685,7 @@ export function AppHeader({
             {isPropertyExpanded && (
               resolvedProperty ? (
                 <div 
-                  className="grid grid-cols-5 gap-2 px-4 pb-3 border-t"
+                  className="grid grid-cols-2 sm:grid-cols-5 gap-2 px-4 pb-3 border-t"
                   style={{ borderColor: colors.ui.border }}
                 >
                   {resolvedProperty.beds !== undefined && (

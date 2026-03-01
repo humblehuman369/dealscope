@@ -50,11 +50,11 @@ function LoginInner() {
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Nav */}
         <nav
+          className="px-4 sm:px-10 py-4"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '16px 40px',
             maxWidth: '1200px',
             margin: '0 auto',
             borderBottom: '1px solid rgba(148,163,184,0.06)',

@@ -8,6 +8,14 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Nav: desktop = links visible, hamburger hidden; mobile = hamburger visible, links in dropdown */
+.dgiq-nav-hamburger { display: none !important; }
+@media (max-width: 639px) {
+  .dgiq-nav-hamburger { display: flex !important; }
+  .dgiq-nav-desktop-links { display: none !important; }
+}
+
+/* Tablet and below: 2-col proof bar, stacked sections */
 @media (max-width: 768px) {
   .steps-grid { grid-template-columns: 1fr !important; }
   .verdict-inner { grid-template-columns: 1fr !important; }
@@ -18,4 +26,13 @@
   .hero-address-bar { flex-direction: column !important; padding: 10px !important; gap: 8px !important; }
   .hero-address-bar input { width: 100% !important; text-align: center !important; padding: 10px !important; }
   .hero-address-bar button { width: 100% !important; justify-content: center !important; }
+}
+
+/* Mobile (< 640px): full single-column stacking, 2x2 proof bar, CTA row stacks, hamburger nav */
+@media (max-width: 639px) {
+  .proof-bar-inner { grid-template-columns: repeat(2, 1fr) !important; }
+  .hero-address-bar { flex-direction: column !important; padding: 12px 16px !important; gap: 10px !important; }
+  .hero-address-bar input { width: 100% !important; text-align: center !important; padding: 12px !important; min-height: 48px !important; box-sizing: border-box !important; }
+  .hero-address-bar button { width: 100% !important; justify-content: center !important; min-height: 48px !important; }
+  .dgiq-nav { padding-left: 16px !important; padding-right: 16px !important; }
 }

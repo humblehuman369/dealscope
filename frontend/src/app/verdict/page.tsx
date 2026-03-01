@@ -870,21 +870,21 @@ function VerdictContent() {
               Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
             </p>
 
-            <div className="flex gap-2.5 items-stretch">
+            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
               {[
                 { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false, dominant: false },
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
                 { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-2 text-center ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`} style={{
+                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: card.active ? cardGlow.active.background : cardGlow.sm.background,
                   border: card.active ? cardGlow.active.border : cardGlow.sm.border,
                   boxShadow: card.active ? cardGlow.active.boxShadow : cardGlow.sm.boxShadow,
                   transition: cardGlow.sm.transition,
                 }}>
-                  <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : '#F1F5F9' }}>{card.label}</p>
+                  <p className="text-xs sm:text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : '#F1F5F9' }}>{card.label}</p>
                   <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : '#F1F5F9' }}>{fmtShort(card.value)}</p>
-                  <p className="text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
+                  <p className="text-xs sm:text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
                 </div>
               ))}
             </div>
@@ -932,7 +932,7 @@ function VerdictContent() {
                         <div style={{ width: 1, height: 12, background: colors.brand.blue, flexShrink: 0 }} />
                         <div style={{ height: 1, background: colors.brand.blue, flex: 1 }} />
                         <span
-                          className="text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          className="text-xs sm:text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
                           style={{ color: colors.brand.blue }}
                         >
                           DEAL GAP &nbsp;-{Math.abs(dealGap).toFixed(1)}%
@@ -968,7 +968,7 @@ function VerdictContent() {
                         <div style={{ width: 1, height: 12, background: colors.brand.gold, flexShrink: 0 }} />
                         <div style={{ height: 1, background: colors.brand.gold, flex: 1 }} />
                         <span
-                          className="text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          className="text-xs sm:text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
                           style={{ color: colors.brand.gold }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
@@ -978,22 +978,22 @@ function VerdictContent() {
                       </div>
                     )}
 
-                    {/* Legend — sorted by price (matches left-to-right dot order) */}
-                    <div className="flex justify-between mt-3">
+                    {/* Legend — sorted by price (matches left-to-right dot order); wrap on narrow screens */}
+                    <div className="flex flex-wrap justify-between gap-y-2 mt-3 gap-x-2">
                       {markers.map((m, i) => (
-                        <div key={i} className="flex flex-col items-center gap-0.5">
+                        <div key={i} className="flex flex-col items-center gap-0.5 min-w-0">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
-                            <span className="text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                            <span className="text-xs sm:text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
                           </div>
-                          <span className="text-[0.7rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
+                          <span className="text-xs sm:text-[0.7rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
                         </div>
                       ))}
                     </div>
                   </>
                 )
               })()}
-              <p className="text-center text-[0.82rem] mt-3.5" style={{ color: '#F1F5F9' }}>
+              <p className="text-center text-xs sm:text-[0.82rem] mt-3.5" style={{ color: '#F1F5F9' }}>
                 Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </p>
               <div className="flex justify-center mt-4">
