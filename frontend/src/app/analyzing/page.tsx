@@ -14,11 +14,11 @@ import { useSearchParams, useRouter } from 'next/navigation'
 function AnalyzingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryString = searchParams.toString()
 
   useEffect(() => {
-    const query = searchParams.toString()
-    router.replace(query ? `/verdict?${query}` : '/verdict')
-  }, [router, searchParams])
+    router.replace(queryString ? `/verdict?${queryString}` : '/verdict')
+  }, [router, queryString])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
