@@ -1,219 +1,166 @@
 /**
- * Rent comps — rebuilt from scratch to match legacy compsService + in-component transform.
- * Fetches from /api/v1/similar-rent and maps backend response to RentComp[].
+ * Rent comps — fetch from backend and transform to RentComp[].
+ * Same pattern as sale-comps: same client, same flow; only endpoint and field names differ.
  */
 
+import { axessoGet, type AxessoResponse } from './axesso-client'
 import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
 import type { CompsIdentifier, RentComp, SubjectProperty } from './types'
 
-const ENDPOINT = '/api/v1/similar-rent'
-const TIMEOUT_MS = 15_000
+const SIMILAR_RENT_ENDPOINT = '/api/v1/similar-rent'
 
-/** Response shape from our backend (and legacy compsService) */
-interface SimilarRentResponse {
+interface BackendCompsResponse {
   success?: boolean
   results?: unknown[]
-  rentalComps?: unknown[]
   data?: unknown[]
-  rentals?: unknown[]
   error?: string
 }
 
-/** Return type aligned with AxessoResponse so callers stay unchanged */
-export interface RentCompsResponse {
-  ok: boolean
-  data: RentComp[] | null
-  status: number
-  error: string | null
-  attempts: number
-  durationMs: number
-}
-
-function num(v: unknown): number {
+function toNum(v: unknown): number {
   if (v == null) return 0
   const n = Number(v)
   return Number.isFinite(n) ? n : 0
 }
 
-function str(v: unknown): string {
+function toStr(v: unknown): string {
   if (v == null) return ''
-  const s = String(v).trim()
-  return s
+  return String(v).trim() || ''
 }
 
-/** Get comp list in legacy order: rentalComps, results, data, rentals (no other keys) */
-function getRawList(body: SimilarRentResponse): unknown[] {
+/** Same extraction as sale-comps: results first, then same fallback keys. Backend normalizes both to results. */
+function extractCompsArray(raw: BackendCompsResponse): unknown[] {
   const list =
-    body.rentalComps ?? body.results ?? body.data ?? body.rentals ?? []
+    raw.results ??
+    (raw as unknown as { similarProperties?: unknown[] }).similarProperties ??
+    (raw as unknown as { rentalComps?: unknown[] }).rentalComps ??
+    (raw as unknown as { properties?: unknown[] }).properties ??
+    (raw as unknown as { rentals?: unknown[] }).rentals ??
+    (raw as unknown as { data?: unknown[] }).data ??
+    []
   return Array.isArray(list) ? list : []
 }
 
 /**
- * Map one raw item to RentComp. Uses item.property if present, else item.
- * Field order and fallbacks match legacy transformRentResponse / transformRentalResponse.
- */
-function mapItemToRentComp(
-  item: unknown,
-  index: number,
-  subjectLat: number,
-  subjectLon: number,
-  subject: SubjectProperty | undefined
-): RentComp {
-  const raw = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
-  const comp = raw.property != null && typeof raw.property === 'object'
-    ? (raw.property as Record<string, unknown>)
-    : raw
-
-  const addrRaw = comp.address
-  const addr =
-    typeof addrRaw === 'object' && addrRaw !== null
-      ? (addrRaw as Record<string, unknown>)
-      : {}
-  const street = str(addr.streetAddress ?? addr.street ?? comp.streetAddress ?? comp.address)
-  const city = str(addr.city ?? comp.city ?? '')
-  const state = str(addr.state ?? comp.state ?? '')
-  const zip = str(addr.zipcode ?? addr.zip ?? comp.zipcode ?? comp.zip ?? '')
-
-  const units = comp.units as unknown[] | undefined
-  const unitPrice =
-    Array.isArray(units) && units.length > 0
-      ? num((units[0] as Record<string, unknown>)?.price)
-      : 0
-  const monthlyRent = num(
-    comp.price ??
-      comp.rent ??
-      comp.monthlyRent ??
-      comp.listPrice ??
-      comp.unformattedPrice ??
-      unitPrice
-  )
-
-  const sqft = num(
-    comp.livingAreaValue ??
-      comp.livingArea ??
-      comp.sqft ??
-      comp.squareFeet ??
-      comp.squareFootage ??
-      comp.area
-  )
-  const lat = num(comp.latitude ?? (comp.latLong as Record<string, number>)?.latitude)
-  const lon = num(comp.longitude ?? (comp.latLong as Record<string, number>)?.longitude)
-  const distanceMiles =
-    subjectLat && subjectLon && lat && lon
-      ? haversineDistance(subjectLat, subjectLon, lat, lon)
-      : 0
-  const beds = Math.floor(num(comp.bedrooms ?? comp.beds ?? comp.bd))
-  const baths = num(comp.bathrooms ?? comp.baths ?? comp.ba)
-  const yearBuilt = Math.floor(num(comp.yearBuilt ?? comp.yearConstructed))
-
-  const listingDateRaw = str(
-    comp.listedDate ??
-      comp.lastSeenDate ??
-      comp.listingDate ??
-      comp.seenDate ??
-      comp.datePosted ??
-      comp.dateSeen
-  )
-  const listingDate = listingDateRaw
-    ? new Date(listingDateRaw).toISOString().split('T')[0]
-    : ''
-  const daysAgo = listingDate
-    ? Math.floor((Date.now() - new Date(listingDate).getTime()) / 86400000)
-    : 999
-
-  let imageUrl: string | null = null
-  const miniPhotos = comp.miniCardPhotos as Array<Record<string, string>> | undefined
-  if (miniPhotos?.length && miniPhotos[0]?.url) {
-    imageUrl = miniPhotos[0].url
-  }
-  if (!imageUrl) {
-    const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
-    if (photos?.length) {
-      const first = photos[0] as Record<string, unknown>
-      const jpeg = (first?.mixedSources as Record<string, unknown[]>)?.jpeg
-      if (Array.isArray(jpeg) && jpeg.length) {
-        const u = (jpeg[0] as Record<string, string>)?.url
-        if (u) imageUrl = u
-      }
-    }
-  }
-  if (!imageUrl) imageUrl = str(comp.imgSrc || comp.imageUrl || comp.image || comp.thumbnailUrl) || null
-
-  const zpidStr = str(comp.zpid ?? comp.id ?? comp.providerListingID).trim()
-  const zpid = zpidStr || `rent-${index + 1}`
-
-  const similarityScore = subject
-    ? calculateSimilarity(subject, {
-        beds,
-        baths,
-        sqft: sqft || 1,
-        yearBuilt,
-        distanceMiles,
-      })
-    : 0
-
-  const rentPerSqft = sqft > 0 ? Math.round((monthlyRent / sqft) * 100) / 100 : 0
-  const address = street || [city, state, zip].filter(Boolean).join(', ') || 'Unknown'
-
-  const hdpUrl = str(comp.hdpUrl)
-  const zillowUrl = comp.url
-    ? str(comp.url)
-    : hdpUrl
-      ? `https://www.zillow.com${hdpUrl.startsWith('/') ? '' : '/'}${hdpUrl}`
-      : null
-
-  return {
-    id: zpid,
-    zpid,
-    address,
-    city,
-    state,
-    zip,
-    monthlyRent,
-    rentPerSqft,
-    beds,
-    baths,
-    sqft,
-    yearBuilt,
-    listingDate,
-    daysAgo,
-    distanceMiles: Math.round(distanceMiles * 100) / 100,
-    similarityScore,
-    propertyType: str(comp.homeType ?? comp.propertyType),
-    latitude: lat,
-    longitude: lon,
-    imageUrl,
-    zillowUrl,
-  }
-}
-
-/**
- * Transform backend body into RentComp[] (legacy extraction + per-item mapping).
+ * Transform backend raw rent comp items into RentComp[]. Same structure as transformSaleComps.
  */
 export function transformRentComps(
-  body: SimilarRentResponse,
+  raw: BackendCompsResponse,
   subject?: SubjectProperty
 ): RentComp[] {
-  const list = getRawList(body)
+  const list = extractCompsArray(raw)
   const subjectLat = subject?.latitude ?? 0
   const subjectLon = subject?.longitude ?? 0
 
-  const comps = list.map((item, i) =>
-    mapItemToRentComp(item, i, subjectLat, subjectLon, subject)
-  )
+  const comps: RentComp[] = list.map((item: unknown, index: number) => {
+    const comp = (item && typeof item === 'object' && 'property' in item
+      ? (item as { property: unknown }).property
+      : item) as Record<string, unknown>
+    const addr = (comp?.address as Record<string, unknown>) ?? {}
+    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
+    const city = toStr(addr.city ?? comp?.city ?? '')
+    const state = toStr(addr.state ?? comp?.state ?? '')
+    const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zip ?? comp?.zipcode ?? '')
+    const units = comp?.units as unknown[] | undefined
+    const unitPrice = Array.isArray(units) && units.length > 0 ? (units[0] as Record<string, unknown>)?.price : undefined
+    const monthlyRent = toNum(
+      comp?.price ??
+        comp?.rent ??
+        comp?.monthlyRent ??
+        comp?.listingPrice ??
+        comp?.unformattedPrice ??
+        comp?.listPrice ??
+        unitPrice ??
+        0
+    )
+    const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
+    const listingDateRaw = comp?.datePosted ?? comp?.listingDate ?? comp?.listedDate ?? comp?.dateSold ?? comp?.seenDate ?? comp?.lastSeenDate ?? comp?.dateSeen ?? ''
+    const listingDate = listingDateRaw ? new Date(listingDateRaw as string).toISOString().split('T')[0] : ''
+    const daysAgo = listingDate
+      ? Math.floor((Date.now() - new Date(listingDate).getTime()) / 86400000)
+      : 999
+    const lat = toNum(comp?.latitude ?? comp?.lat ?? 0)
+    const lon = toNum(comp?.longitude ?? comp?.lng ?? comp?.lon ?? 0)
+    const distanceMiles =
+      subjectLat && subjectLon && lat && lon
+        ? haversineDistance(subjectLat, subjectLon, lat, lon)
+        : 0
+    const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
+    const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
+    const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
+    const similarityScore = subject
+      ? calculateSimilarity(subject, {
+          beds,
+          baths,
+          sqft: sqft || 1,
+          yearBuilt,
+          distanceMiles,
+        })
+      : 0
+    const rentPerSqft = sqft > 0 ? Math.round((monthlyRent / sqft) * 100) / 100 : 0
+    const zpid = toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `rent-${index + 1}`
+
+    let imageUrl: string | null = null
+    const photos = comp?.compsCarouselPropertyPhotos as unknown[] | undefined
+    if (Array.isArray(photos) && photos.length > 0) {
+      const first = photos[0] as Record<string, unknown>
+      const mixed = first?.mixedSources as Record<string, unknown[]> | undefined
+      const jpeg = mixed?.jpeg
+      if (Array.isArray(jpeg) && jpeg.length > 0) {
+        const img = jpeg[0] as Record<string, string>
+        if (img?.url) imageUrl = img.url
+      }
+    }
+    if (!imageUrl) {
+      const miniCard = comp?.miniCardPhotos as unknown[] | undefined
+      if (Array.isArray(miniCard) && miniCard.length > 0) {
+        const first = miniCard[0] as Record<string, string>
+        if (first?.url) imageUrl = first.url
+      }
+    }
+    if (!imageUrl && comp?.imgSrc) imageUrl = toStr(comp.imgSrc)
+    if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
+    if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
+
+    const hdpUrl = comp?.hdpUrl ? toStr(comp.hdpUrl) : ''
+    const zillowUrl = comp?.url ? toStr(comp.url) : (hdpUrl ? `https://www.zillow.com${hdpUrl.startsWith('/') ? '' : '/'}${hdpUrl}` : null)
+
+    return {
+      id: zpid,
+      zpid,
+      address: address || `${city} ${state} ${zip}`.trim() || 'Unknown',
+      city,
+      state,
+      zip,
+      monthlyRent,
+      rentPerSqft,
+      beds,
+      baths,
+      sqft,
+      yearBuilt,
+      listingDate,
+      daysAgo,
+      distanceMiles: Math.round(distanceMiles * 100) / 100,
+      similarityScore,
+      propertyType: toStr(comp?.propertyType ?? comp?.homeType ?? ''),
+      latitude: lat,
+      longitude: lon,
+      imageUrl,
+      zillowUrl,
+    }
+  })
+
   comps.sort((a, b) => b.similarityScore - a.similarityScore)
   return comps
 }
 
 /**
- * Fetch rent comps from backend. Single attempt, 15s timeout.
- * Returns { ok, data: RentComp[] | null, status, error, attempts, durationMs }.
+ * Fetch rent comps from backend and return transformed RentComp[]. Same flow as fetchSaleComps.
  */
 export async function fetchRentComps(
   identifier: CompsIdentifier,
   subject?: SubjectProperty,
   options?: { signal?: AbortSignal }
-): Promise<RentCompsResponse> {
+): Promise<AxessoResponse<RentComp[]>> {
   const params: Record<string, string> = {}
   if (identifier.zpid) params.zpid = identifier.zpid
   if (identifier.address) params.address = identifier.address
@@ -221,7 +168,6 @@ export async function fetchRentComps(
   if (identifier.limit != null) params.limit = String(identifier.limit)
   if (identifier.offset != null) params.offset = String(identifier.offset)
   if (identifier.exclude_zpids) params.exclude_zpids = identifier.exclude_zpids
-
   if (!params.zpid && !params.address && !params.url) {
     return {
       ok: false,
@@ -235,70 +181,38 @@ export async function fetchRentComps(
   if (params.limit === undefined) params.limit = '10'
   if (params.offset === undefined) params.offset = '0'
 
-  const qs = new URLSearchParams(params).toString()
-  const url = `${ENDPOINT}?${qs}`
-  const start = performance.now()
+  const res = await axessoGet<BackendCompsResponse>(
+    SIMILAR_RENT_ENDPOINT,
+    params,
+    undefined,
+    options?.signal
+  )
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
-  const signal = options?.signal ?? controller.signal
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      credentials: 'include',
-      signal,
-    })
-    clearTimeout(timeoutId)
-    const durationMs = Math.round(performance.now() - start)
-    const body = (await res.json().catch(() => null)) as SimilarRentResponse | null
-
-    if (!res.ok) {
-      const err = body?.error ?? res.statusText ?? `HTTP ${res.status}`
-      return {
-        ok: false,
-        data: null,
-        status: res.status,
-        error: err,
-        attempts: 1,
-        durationMs,
-      }
-    }
-
-    if (body?.success === false) {
-      return {
-        ok: false,
-        data: null,
-        status: res.status,
-        error: body.error ?? 'Failed to load comparable rentals',
-        attempts: 1,
-        durationMs,
-      }
-    }
-
-    const raw = body ?? {}
-    const transformed = transformRentComps(raw, subject)
-
+  if (!res.ok || !res.data) {
     return {
-      ok: true,
-      data: transformed,
-      status: res.status,
-      error: null,
-      attempts: 1,
-      durationMs,
+      ...res,
+      data: null,
     }
-  } catch (err) {
-    clearTimeout(timeoutId)
-    const durationMs = Math.round(performance.now() - start)
-    const isAbort = err instanceof Error && err.name === 'AbortError'
+  }
+
+  const body = res.data as BackendCompsResponse
+  if (body.success === false) {
     return {
       ok: false,
       data: null,
-      status: 0,
-      error: isAbort ? 'Request timed out' : (err instanceof Error ? err.message : String(err)),
-      attempts: 1,
-      durationMs,
+      status: res.status,
+      error: body.error ?? 'Failed to load comparable rentals',
+      attempts: res.attempts,
+      durationMs: res.durationMs,
     }
+  }
+
+  const transformed = transformRentComps(res.data, subject)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[comps_api] similar-rent transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+  }
+  return {
+    ...res,
+    data: transformed,
   }
 }
