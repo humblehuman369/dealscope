@@ -502,7 +502,10 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
 export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCheckerIQScreenProps) {
   const router = useRouter()
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
-  const hasValidSubject = Boolean(property.zpid || (property.address?.trim() && fullAddress.replace(/,|\s/g, '').length > 2))
+  // Align with buildParams: valid if zpid OR usable fullAddress (same length check buildParams uses)
+  const hasValidSubject = Boolean(property.zpid || (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2))
+  // Stable key for effect deps so changing property (e.g. navigate A → B) triggers re-fetch
+  const subjectKey = `${property.zpid ?? ''}|${fullAddress}`
 
   // View state
   const [activeView, setActiveView] = useState<'sale' | 'rent'>(initialView)
@@ -625,7 +628,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     return []
   }, [buildParams])
 
-  // Initial fetch when we have a valid subject (zpid or address); re-run if property changes (e.g. URL params)
+  // Initial fetch when we have a valid subject; re-run when property identity changes (e.g. navigate A → B)
   useEffect(() => {
     if (!hasValidSubject) return
     const init = async () => {
@@ -642,7 +645,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
       setOriginalRentSelected(rentIds)
     }
     init()
-  }, [hasValidSubject]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasValidSubject, subjectKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh all -- fetches brand new comps from the API
   const handleRefreshAll = async () => {
