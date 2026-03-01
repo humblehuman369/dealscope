@@ -103,7 +103,7 @@ const Eyebrow = ({ children, style }: { children: React.ReactNode; style?: React
   <div style={{
     fontFamily: s.fontBody, fontSize: "0.72rem", fontWeight: 600,
     letterSpacing: "0.10em", textTransform: "uppercase" as const,
-    color: s.teal, marginBottom: 28, ...style,
+    color: s.teal, marginBottom: 56, ...style,
   }}>
     {children}
   </div>
@@ -242,7 +242,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <h1 style={{
           fontFamily: s.fontBody, fontSize: "clamp(30px, 4.8vw, 48px)", lineHeight: 1.15,
-          fontWeight: 700, letterSpacing: -1.5, marginBottom: 36,
+          fontWeight: 700, letterSpacing: -1.5, marginBottom: 54,
           opacity: 0, animation: "fadeUp 0.6s 0.2s forwards",
         }}>
           Is That Property a <span style={{ whiteSpace: 'nowrap' }}>Good Deal?</span>
@@ -250,7 +250,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <p style={{
           fontFamily: s.fontBody, fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.25,
-          fontWeight: 700, letterSpacing: -0.8, marginBottom: 60,
+          fontWeight: 700, letterSpacing: -0.8, marginBottom: 90,
           opacity: 0, animation: "fadeUp 0.6s 0.25s forwards",
         }}>
           <span style={{ color: s.teal }}>Know if it Is Worth</span> Your Time<br />
