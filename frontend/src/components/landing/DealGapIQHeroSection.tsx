@@ -26,7 +26,7 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
       <div className="hero-prominent-inner">
         <div className="hero-tag">Real Analytics for Real Estate Investors</div>
         <h1>
-          Is That Property a Good Deal?
+          Is That Property a <span style={{ whiteSpace: 'nowrap' }}>Good Deal?</span>
           <br />
           <span className="accent">Find Out in 60 Seconds.</span>
         </h1>

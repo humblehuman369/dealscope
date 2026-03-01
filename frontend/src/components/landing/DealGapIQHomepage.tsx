@@ -199,7 +199,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           fontWeight: 700, letterSpacing: -1.5, marginBottom: 12,
           opacity: 0, animation: "fadeUp 0.6s 0.2s forwards",
         }}>
-          Is That Property a Good Deal?
+          Is That Property a <span style={{ whiteSpace: 'nowrap' }}>Good Deal?</span>
         </h1>
 
         <p style={{
