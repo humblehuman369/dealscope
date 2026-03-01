@@ -116,7 +116,10 @@ export function IQAnalyzingScreen({
           animation: analyzing-tip-pulse 2.2s ease-in-out infinite;
         }
       `}</style>
-      <div className="flex flex-col items-center px-8 max-w-md">
+      <div
+        className="flex flex-col items-center px-8 max-w-md"
+        style={{ marginTop: 'calc(-0.15 * (100vh - 320px))' }}
+      >
         {/* Animated progress ring with IQ logo — pulsating while waiting */}
         <div className="relative mb-8" style={{ width: size, height: size }}>
           {/* Background ring — subtle pulse */}

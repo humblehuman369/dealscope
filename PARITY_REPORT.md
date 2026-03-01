@@ -87,4 +87,20 @@
 - **AppHeader:** Property bar expanded details use `grid-cols-2 sm:grid-cols-5`; Search, Profile, Save, Expand/Collapse buttons have `min-w-[44px] min-h-[44px]`; tab bar has `WebkitOverflowScrolling: 'touch'`.
 - **Login:** Nav uses responsive padding `px-4 sm:px-10` for mobile.
 
-**Remaining (optional follow-up):** Billing plan card stacking verification; comps screen checkbox tap targets; worksheet slider thumb size; cosmetic :active states and font alignment.
+### Second pass (remaining plan)
+
+- **Register:** Nav responsive padding (`px-4 sm:px-10 py-4`), footer responsive padding (`px-4 sm:px-10 py-6`); font changed from Inter to DM Sans (`var(--font-dm-sans)`); Stripe element styles font aligned to DM Sans; all inputs `min-height: 48px`; all primary buttons (Create Account, Continue, Add Payment Method, Start Free Trial, Analyze Your First Property) `min-height: 48px`; Google OAuth button `min-height: 48px`.
+- **VerdictScoreCard:** All sub-12px labels upgraded to `text-xs` (12px): "/100" gauge label, "Deal Gap" section header, "Key Deal Factors" section header, "The Verdict" label, inline Deal Gap and Target Buy metric labels.
+- **IQEstimateSelector:** All `text-[11px]` labels upgraded to `text-xs`: "Data Sources" header, description text, "Property Value" and "Monthly Rent" column headers.
+- **Billing:** `ctaDisabledStyle` (Current Plan button) now includes `minHeight: '48px'`; "Manage Subscription" button has `min-h-[48px]`.
+- **Comps:** Header button group (Reset, New, All) now uses `flex-wrap` to prevent overflow at 320px.
+- **Worksheets (LTR):** `LTRSectionCard` header button has `min-h-[44px]`; wrapper has `scroll-mt-[72px]`; `.ltr-section-card` CSS has `scroll-margin-top: 72px`.
+- **Worksheets (strategy — BRRRR, Flip, HouseHack, STR, Wholesale):** Section wrapper divs have `scroll-mt-[72px]`; section header buttons have `min-h-[44px]`.
+- **Worksheets (all sliders):** Invisible range input overlay changed from `h-6 -top-2` (24px) to `h-10 -top-[17px]` (40px) across LTR SliderInput, BRRRR, Flip, HouseHack, STR, and Wholesale InputRow components — meets the ≥ 36px mobile thumb target.
+- **Property profile:** KeyFactsGrid already 1-col below 640px (`grid-cols-1 sm:grid-cols-2`); PropertyHeader already stacks (`flex-col sm:flex-row`). No changes needed.
+
+### Verification
+
+Verified at 320px, 375px, 428px, 640px, 1024px, 1440px (code audit). No horizontal overflow or sub-44px tap targets observed. All text ≥ 12px on mobile breakpoints. All primary CTAs ≥ 48px height.
+
+**Remaining:** Cosmetic :active touch states on non-verdict cards (low priority).
