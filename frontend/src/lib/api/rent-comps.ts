@@ -33,12 +33,12 @@ function toStr(v: unknown): string {
 
 function extractRentCompsArray(raw: BackendCompsResponse): unknown[] {
   const list =
+    raw.results ??
     raw.rentalComps ??
     raw.similarRentals ??
     raw.similarProperties ??
     raw.rentals ??
     raw.properties ??
-    raw.results ??
     (raw as unknown as { data?: unknown[] }).data ??
     []
   return Array.isArray(list) ? list : []
@@ -190,6 +190,10 @@ export async function fetchRentComps(
   }
 
   const transformed = transformRentComps(res.data, subject)
+  if (process.env.NODE_ENV !== 'production') {
+    const body = res.data as BackendCompsResponse
+    console.log('[comps_api] similar-rent transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+  }
   return {
     ...res,
     data: transformed,
