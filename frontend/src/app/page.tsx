@@ -62,7 +62,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     setIsSearching(true);
     try {
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/analyzing?address=${encodeURIComponent(addressInput.trim())}`);
+      router.push(`/verdict?address=${encodeURIComponent(addressInput.trim())}`);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
@@ -100,7 +100,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         const address = result.formatted_address;
         
         // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-        router.push(`/analyzing?address=${encodeURIComponent(address)}`);
+        router.push(`/verdict?address=${encodeURIComponent(address)}`);
       } else {
         throw new Error('Could not find an address at your location');
       }
@@ -182,7 +182,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       ].filter(Boolean).join(', ');
       
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/analyzing?address=${encodeURIComponent(address)}`);
+      router.push(`/verdict?address=${encodeURIComponent(address)}`);
     }
   };
 
