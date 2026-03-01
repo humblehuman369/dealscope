@@ -186,7 +186,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       </nav>
 
       {/* ═══════════ HERO ═══════════ */}
-      <section style={{ padding: "136px 24px 72px", maxWidth: 800, margin: "0 auto", textAlign: "center" as const, position: "relative" as const }}>
+      <section style={{ padding: "88px 24px 72px", maxWidth: 800, margin: "0 auto", textAlign: "center" as const, position: "relative" as const }}>
         <div style={{
           position: "absolute" as const, top: 40, left: "50%", transform: "translateX(-50%)",
           width: 500, height: 500, background: "radial-gradient(ellipse, rgba(14,165,233,0.08) 0%, transparent 70%)", pointerEvents: "none" as const,
