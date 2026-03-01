@@ -283,51 +283,92 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         ac = await self.search_address(address)
         # #region agent log
         _log_path = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor", "debug-3ea175.log")
-        _ac_keys = list(ac.data.keys()) if isinstance(ac.data, dict) else []
-        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_search_address", "data": {"ac_success": ac.success, "ac_has_data": ac.data is not None, "ac_data_keys": _ac_keys, "ac_error": (ac.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        try:
+            _ac_keys = list(ac.data.keys()) if isinstance(ac.data, dict) else []
+            open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_search_address", "data": {"ac_success": ac.success, "ac_has_data": ac.data is not None, "ac_data_keys": _ac_keys, "ac_error": (ac.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        except Exception:
+            pass
         # #endregion
         if not ac.success or not ac.data:
             return None
 
-        # Auto-complete wraps results under a nested "data" key
-        inner = ac.data.get("data") or ac.data
-        rows = inner.get("rows") or []
-        exact = inner.get("exactMatch")
-        match = exact or (rows[0] if rows else None)
+        # Auto-complete: accept nested "data", top-level dict, or top-level list
+        if isinstance(ac.data, list):
+            rows = ac.data
+            inner = {}
+            exact = None
+        elif isinstance(ac.data, dict):
+            inner = ac.data.get("data") if isinstance(ac.data.get("data"), dict) else ac.data
+            if not isinstance(inner, dict):
+                inner = {}
+            rows = inner.get("rows") if isinstance(inner.get("rows"), list) else []
+            exact = inner.get("exactMatch")
+        else:
+            inner = {}
+            rows = []
+
+        match = None
+        if isinstance(inner, dict):
+            exact = inner.get("exactMatch")
+            match = exact if isinstance(exact, dict) else None
+        if match is None and rows and isinstance(rows[0], dict):
+            match = rows[0]
         # #region agent log
-        _loc = (match.get("name") if isinstance(match, dict) else None) or ""
-        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_match", "data": {"has_match": match is not None, "location_name": _loc[:80], "inner_keys": list(inner.keys()) if isinstance(inner, dict) else []}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        try:
+            _loc = (match.get("name") if isinstance(match, dict) else None) or ""
+            open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_match", "data": {"has_match": match is not None, "location_name": (_loc[:80] if _loc else ""), "inner_keys": list(inner.keys()) if isinstance(inner, dict) else []}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        except Exception:
+            pass
         # #endregion
-        if not match:
+        if not match or not isinstance(match, dict):
             return None
 
         location_name = match.get("name")
-        if not location_name:
+        if not location_name or not isinstance(location_name, str):
             return None
 
         detail = await self.get_detail(location_name)
         # #region agent log
-        _det_keys = list(detail.data.keys()) if isinstance(detail.data, dict) else []
-        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_get_detail", "data": {"detail_success": detail.success, "detail_has_data": detail.data is not None, "detail_data_keys": _det_keys, "detail_error": (detail.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        try:
+            _det_keys = list(detail.data.keys()) if isinstance(detail.data, dict) else []
+            open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_get_detail", "data": {"detail_success": detail.success, "detail_has_data": detail.data is not None, "detail_data_keys": _det_keys, "detail_error": (detail.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        except Exception:
+            pass
         # #endregion
-        if not detail.success or not detail.data:
+        if not detail.success or not detail.data or not isinstance(detail.data, dict):
             return None
 
-        payload = detail.data.get("data") or detail.data
+        payload = detail.data.get("data") if isinstance(detail.data.get("data"), dict) else detail.data
+        if not isinstance(payload, dict):
+            payload = {}
         result: dict[str, Any] = {}
 
-        avm = payload.get("avm") or {}
+        avm = payload.get("avm") if isinstance(payload.get("avm"), dict) else {}
+        if not isinstance(avm, dict):
+            avm = {}
         result["redfin_estimate"] = avm.get("predictedValue")
         result["redfin_last_sold_price"] = avm.get("lastSoldPrice")
 
-        rental = payload.get("rental-estimate") or {}
-        rental_info = rental.get("rentalEstimateInfo") or {}
+        # Support both "rental-estimate" (kebab) and "rentalEstimate" (camel) and similar
+        rental = (
+            payload.get("rental-estimate")
+            or payload.get("rentalEstimate")
+            or {}
+        )
+        if not isinstance(rental, dict):
+            rental = {}
+        rental_info = rental.get("rentalEstimateInfo") or rental.get("rental_estimate_info") or {}
+        if not isinstance(rental_info, dict):
+            rental_info = {}
         result["redfin_rental_estimate"] = rental_info.get("predictedValue")
         result["redfin_rental_low"] = rental_info.get("predictedValueLow")
         result["redfin_rental_high"] = rental_info.get("predictedValueHigh")
 
         # #region agent log
-        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "result", "data": {"payload_keys": list(payload.keys()) if isinstance(payload, dict) else [], "redfin_estimate": result.get("redfin_estimate"), "redfin_rental_estimate": result.get("redfin_rental_estimate")}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        try:
+            open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "result", "data": {"payload_keys": list(payload.keys()) if isinstance(payload, dict) else [], "redfin_estimate": result.get("redfin_estimate"), "redfin_rental_estimate": result.get("redfin_rental_estimate")}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        except Exception:
+            pass
         # #endregion
         return result
 
