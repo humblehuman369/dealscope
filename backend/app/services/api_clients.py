@@ -281,6 +281,11 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         ``redfin_rental_estimate`` (monthly rent), or ``None`` on failure.
         """
         ac = await self.search_address(address)
+        # #region agent log
+        _log_path = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor", "debug-3ea175.log")
+        _ac_keys = list(ac.data.keys()) if isinstance(ac.data, dict) else []
+        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_search_address", "data": {"ac_success": ac.success, "ac_has_data": ac.data is not None, "ac_data_keys": _ac_keys, "ac_error": (ac.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        # #endregion
         if not ac.success or not ac.data:
             return None
 
@@ -289,6 +294,10 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         rows = inner.get("rows") or []
         exact = inner.get("exactMatch")
         match = exact or (rows[0] if rows else None)
+        # #region agent log
+        _loc = (match.get("name") if isinstance(match, dict) else None) or ""
+        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_match", "data": {"has_match": match is not None, "location_name": _loc[:80], "inner_keys": list(inner.keys()) if isinstance(inner, dict) else []}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H2"}) + "\n")
+        # #endregion
         if not match:
             return None
 
@@ -297,6 +306,10 @@ class RedfinClient(BaseAPIClient[APIResponse]):
             return None
 
         detail = await self.get_detail(location_name)
+        # #region agent log
+        _det_keys = list(detail.data.keys()) if isinstance(detail.data, dict) else []
+        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "after_get_detail", "data": {"detail_success": detail.success, "detail_has_data": detail.data is not None, "detail_data_keys": _det_keys, "detail_error": (detail.error or "")[:100]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        # #endregion
         if not detail.success or not detail.data:
             return None
 
@@ -313,6 +326,9 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         result["redfin_rental_low"] = rental_info.get("predictedValueLow")
         result["redfin_rental_high"] = rental_info.get("predictedValueHigh")
 
+        # #region agent log
+        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "api_clients.py:get_property_estimate", "message": "result", "data": {"payload_keys": list(payload.keys()) if isinstance(payload, dict) else [], "redfin_estimate": result.get("redfin_estimate"), "redfin_rental_estimate": result.get("redfin_rental_estimate")}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H3"}) + "\n")
+        # #endregion
         return result
 
 
