@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,8 +27,19 @@ export function ProGate({ children, feature = 'This feature' }: ProGateProps) {
     restore,
     isRestoring,
     expiresDate,
+    presentPaywall,
   } = useSubscription();
   const router = useRouter();
+  const [showingPaywall, setShowingPaywall] = useState(false);
+
+  const handleUpgrade = async () => {
+    setShowingPaywall(true);
+    try {
+      await presentPaywall();
+    } finally {
+      setShowingPaywall(false);
+    }
+  };
 
   // Pro users (trial, paid, or grace) see the content
   if (isPro) {
@@ -89,7 +101,8 @@ export function ProGate({ children, feature = 'This feature' }: ProGateProps) {
         </Text>
         <Pressable
           style={styles.upgradeBtn}
-          onPress={() => router.push('/(protected)/billing')}
+          onPress={handleUpgrade}
+          disabled={showingPaywall}
         >
           <Ionicons name="diamond" size={16} color={colors.black} />
           <Text style={styles.upgradeBtnText}>Re-subscribe</Text>
@@ -116,7 +129,8 @@ export function ProGate({ children, feature = 'This feature' }: ProGateProps) {
       </View>
       <Pressable
         style={styles.upgradeBtn}
-        onPress={() => router.push('/(protected)/billing')}
+        onPress={handleUpgrade}
+        disabled={showingPaywall}
       >
         <Ionicons name="diamond" size={16} color={colors.black} />
         <Text style={styles.upgradeBtnText}>Start 7-Day Free Trial</Text>

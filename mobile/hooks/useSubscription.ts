@@ -2,11 +2,13 @@
  * useSubscription — unified subscription state with full edge-case coverage.
  *
  * Combines RevenueCat entitlement checks with the backend user tier.
- * Handles: trial, paid, grace period, cancelled-but-active, refund,
- * trial-expiring-soon, and billing retry states.
+ * Handles: trial, paid, lifetime, grace period, cancelled-but-active,
+ * refund, trial-expiring-soon, and billing retry states.
+ *
+ * Provides actions: purchase, restore, presentPaywall, presentCustomerCenter.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Platform, Alert, Linking } from 'react-native';
 import {
@@ -15,6 +17,11 @@ import {
   restorePurchases,
   getDetailedSubscriptionStatus,
   isPaymentsInitialized,
+  addCustomerInfoListener,
+  presentPaywall as presentPaywallService,
+  presentPaywallIfNeeded as presentPaywallIfNeededService,
+  presentCustomerCenter as presentCustomerCenterService,
+  PAYWALL_RESULT,
   type DetailedSubscriptionStatus,
 } from '@/services/payments';
 import { useAuth } from './useAuth';
@@ -24,6 +31,15 @@ import type { PurchasesPackage, PurchasesOfferings } from 'react-native-purchase
 export function useSubscription() {
   const { subscriptionTier } = useAuth();
   const qc = useQueryClient();
+
+  // Real-time customer info updates from RevenueCat
+  useEffect(() => {
+    if (!isPaymentsInitialized()) return;
+    const unsubscribe = addCustomerInfoListener(() => {
+      qc.invalidateQueries({ queryKey: ['subscription'] });
+    });
+    return unsubscribe;
+  }, [qc]);
 
   // Detailed RevenueCat status
   const rcQuery = useQuery({
@@ -45,6 +61,7 @@ export function useSubscription() {
 
   // Canonical Pro: backend tier OR RevenueCat entitlement (either is sufficient)
   const isPro = subscriptionTier === 'pro' || rc?.isPro === true;
+  const isLifetime = rc?.productId?.includes('lifetime') ?? false;
 
   // Purchase
   const purchaseMutation = useMutation({
@@ -93,9 +110,39 @@ export function useSubscription() {
     }
   }, []);
 
+  const invalidateAll = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ['subscription'] });
+    qc.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+  }, [qc]);
+
+  // RevenueCat Paywall — presents the native paywall modal
+  const presentPaywall = useCallback(async () => {
+    const result = await presentPaywallService();
+    if (result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED) {
+      invalidateAll();
+    }
+    return result;
+  }, [invalidateAll]);
+
+  // RevenueCat Paywall — only shows if user lacks the "pro" entitlement
+  const presentPaywallIfNeeded = useCallback(async () => {
+    const result = await presentPaywallIfNeededService();
+    if (result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED) {
+      invalidateAll();
+    }
+    return result;
+  }, [invalidateAll]);
+
+  // RevenueCat Customer Center — subscription management
+  const presentCustomerCenter = useCallback(async () => {
+    await presentCustomerCenterService();
+    invalidateAll();
+  }, [invalidateAll]);
+
   return {
     // Core state
     isPro,
+    isLifetime,
     isLoading: rcQuery.isLoading,
     offerings: offeringsQuery.data ?? null,
 
@@ -116,6 +163,9 @@ export function useSubscription() {
     purchase,
     restore,
     manageSubscription,
+    presentPaywall,
+    presentPaywallIfNeeded,
+    presentCustomerCenter,
 
     // Loading states
     isPurchasing: purchaseMutation.isPending,
