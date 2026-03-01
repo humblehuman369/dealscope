@@ -170,12 +170,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
     <div className={`relative rounded-xl border transition-all overflow-hidden ${
       isSelected ? 'bg-[#0C1220] ring-2 ring-[#38bdf8]/20 border-[#38bdf8]/30' : 'bg-[#0C1220] border-white/[0.07] hover:border-white/[0.12]'
     }`}>
-      {/* Selection checkbox */}
+      {/* Selection checkbox — 44px tap target for mobile */}
       <button onClick={onToggle}
-        className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected ? 'bg-[#38bdf8] border-[#38bdf8]' : 'bg-[#0C1220] border-[#F1F5F9] hover:border-[#38bdf8]'
-        }`}>
-        {isSelected && <Check className="w-3 h-3 text-black" />}
+        className={`absolute top-2 left-2 z-10 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-all ${
+          isSelected ? 'bg-[#38bdf8]/20 border-2 border-[#38bdf8]' : 'bg-[#0C1220] border-2 border-[#F1F5F9] hover:border-[#38bdf8]'
+        }`}
+        aria-label={isSelected ? 'Deselect comp' : 'Select comp'}>
+        <span className={`rounded-full flex items-center justify-center w-5 h-5 ${isSelected ? 'bg-[#38bdf8]' : ''}`}>
+          {isSelected && <Check className="w-3 h-3 text-black" />}
+        </span>
       </button>
 
       {/* Refresh button on unselected */}

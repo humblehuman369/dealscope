@@ -316,7 +316,7 @@ function BillingContent() {
 
         {/* ── Plan Comparison Grid ── */}
         <div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
           style={{ marginBottom: '3rem' }}
         >
           {PLANS.map((plan) => {
@@ -456,7 +456,7 @@ function BillingContent() {
                     <button
                       onClick={handleUpgrade}
                       disabled={checkoutLoading}
-                      className="w-full transition-opacity hover:opacity-90 disabled:opacity-60"
+                      className="w-full min-h-[48px] transition-opacity hover:opacity-90 disabled:opacity-60"
                       style={{
                         display: 'block' as const,
                         textAlign: 'center' as const,
@@ -488,7 +488,7 @@ function BillingContent() {
 
         {/* ── Trust Row ── */}
         <div
-          className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-x-10"
+          className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-x-10"
           style={{ padding: '2rem 0' }}
         >
           {TRUST_ITEMS.map(({ Icon, text }) => (
