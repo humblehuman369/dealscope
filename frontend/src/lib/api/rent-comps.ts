@@ -136,6 +136,13 @@ export function transformRentComps(
         if (img?.url) imageUrl = img.url
       }
     }
+    if (!imageUrl) {
+      const miniCard = comp?.miniCardPhotos as unknown[] | undefined
+      if (Array.isArray(miniCard) && miniCard.length > 0) {
+        const first = miniCard[0] as Record<string, string>
+        if (first?.url) imageUrl = first.url
+      }
+    }
     if (!imageUrl && comp?.imgSrc) imageUrl = toStr(comp.imgSrc)
     if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
     if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
@@ -161,7 +168,7 @@ export function transformRentComps(
       latitude: lat,
       longitude: lon,
       imageUrl,
-      zillowUrl: comp?.url ? toStr(comp.url) : null,
+      zillowUrl: comp?.url ? toStr(comp.url) : (comp?.hdpUrl ? `https://www.zillow.com${toStr(comp.hdpUrl)}` : null),
     }
   })
 
