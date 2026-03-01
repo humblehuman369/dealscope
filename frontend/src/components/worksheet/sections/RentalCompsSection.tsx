@@ -11,14 +11,14 @@ import {
   calculateRentAppraisalValues,
   calculateSimilarityScore,
   calculateRentAdjustments,
-  type SubjectProperty,
+  type SubjectProperty as AppraisalSubjectProperty,
   type CompProperty,
   type RentAppraisalResult,
   type CompAdjustment
 } from '@/utils/appraisalCalculations'
 import { formatCurrency } from '@/utils/formatters'
-
-import { fetchRentComps } from '@/services/compsService'
+import { fetchRentComps } from '@/lib/api/rent-comps'
+import type { RentComp, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
 
 // ============================================
 // UTILITIES
@@ -61,143 +61,22 @@ const getFreshnessBadge = (dateString: string): { label: string; color: string; 
   return null
 }
 
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 3959
-  const dLat = (lat2 - lat1) * (Math.PI / 180)
-  const dLon = (lon2 - lon1) * (Math.PI / 180)
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-// ============================================
-// TYPES
-// ============================================
-interface LocalRentalComp {
-  id: number | string
-  zpid?: string
-  address: string
-  city: string
-  state: string
-  zip: string
-  monthlyRent: number
-  rentPerSqft: number
-  beds: number
-  baths: number
-  sqft: number
-  yearBuilt: number
-  listingDate: string
-  distance: number
-  image: string
-  latitude: number
-  longitude: number
-}
-
-interface LocalSubjectProperty {
-  address: string
-  city: string
-  state: string
-  zip: string
-  price: number
-  beds: number
-  baths: number
-  sqft: number
-  lotSize: number
-  yearBuilt: number
-  latitude: number
-  longitude: number
-}
-
-// ============================================
-// DATA TRANSFORMATION
-// ============================================
-/** Extract first photo URL from a comp from various API response shapes */
-function getCompImageUrl(comp: Record<string, unknown>): string {
-  // Direct image fields (common from various providers)
-  const direct = (comp.imgSrc || comp.imageUrl || comp.photo || comp.image || comp.thumbnail || comp.picture) as string | undefined
-  if (direct && typeof direct === 'string' && direct.startsWith('http')) return direct
-
-  // Zillow-style: compsCarouselPropertyPhotos[0].mixedSources.jpeg[0].url
-  const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
-  if (photos?.length) {
-    const photoData = photos[0] as Record<string, unknown>
-    const mixedSources = photoData.mixedSources as Record<string, unknown[]> | undefined
-    if (mixedSources?.jpeg?.length) {
-      const url = (mixedSources.jpeg[0] as Record<string, string>)?.url
-      if (url) return url
-    }
-    const url = photoData.url as string | undefined
-    if (url) return url
+// Convert RentComp to appraisal calculation format
+function toCompProperty(comp: RentComp): CompProperty {
+  return {
+    id: comp.id,
+    zpid: comp.zpid,
+    address: comp.address,
+    price: comp.monthlyRent,
+    sqft: comp.sqft,
+    beds: comp.beds,
+    baths: comp.baths,
+    yearBuilt: comp.yearBuilt,
+    lotSize: comp.lotSize ?? 0,
+    distance: comp.distanceMiles,
+    pricePerSqft: comp.rentPerSqft,
   }
-
-  // Array of photos: photos[0].url or photos[0]
-  const photosArr = (comp.photos || comp.images) as Array<Record<string, unknown> | string> | undefined
-  if (photosArr?.length) {
-    const first = photosArr[0]
-    if (typeof first === 'string' && first.startsWith('http')) return first
-    if (first && typeof first === 'object' && (first as Record<string, string>).url) return (first as Record<string, string>).url
-  }
-
-  return ''
 }
-
-const transformRentalResponse = (apiData: Record<string, unknown>, subject: LocalSubjectProperty): LocalRentalComp[] => {
-  const rawResults = (apiData.rentalComps || apiData.results || apiData.data || apiData.rentals || []) as Record<string, unknown>[]
-
-  return rawResults.map((item: Record<string, unknown>, index: number) => {
-    const comp = (item.property || item) as Record<string, unknown>
-    const address = (comp.address || {}) as Record<string, unknown>
-    
-    const imageUrl = getCompImageUrl(comp)
-    
-    let distance = 0
-    if (subject.latitude && subject.longitude && comp.latitude && comp.longitude) {
-      distance = calculateDistance(
-        subject.latitude, 
-        subject.longitude, 
-        comp.latitude as number, 
-        comp.longitude as number
-      )
-    }
-    
-    const monthlyRent = parseFloat(String(comp.rent || comp.monthlyRent || comp.price || 0))
-    const sqft = parseInt(String(comp.livingAreaValue || comp.livingArea || comp.sqft || 0))
-
-    return {
-      id: (comp.zpid as string) || index + 1,
-      zpid: comp.zpid as string,
-      address: (address.streetAddress as string) || (comp.streetAddress as string) || (comp.address as string) || '',
-      city: (address.city as string) || (comp.city as string) || '',
-      state: (address.state as string) || (comp.state as string) || '',
-      zip: (address.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || '',
-      monthlyRent,
-      rentPerSqft: sqft > 0 ? Math.round((monthlyRent / sqft) * 100) / 100 : 0,
-      beds: parseInt(String(comp.bedrooms || comp.beds || 0)),
-      baths: parseFloat(String(comp.bathrooms || comp.baths || 0)),
-      sqft,
-      yearBuilt: parseInt(String(comp.yearBuilt || 0)),
-      listingDate: (comp.listingDate as string) || (comp.seenDate as string) || (comp.datePosted as string) || '',
-      distance: Math.round(distance * 100) / 100,
-      image: imageUrl,
-      latitude: parseFloat(String(comp.latitude || 0)),
-      longitude: parseFloat(String(comp.longitude || 0)),
-    }
-  })
-}
-
-// Convert local comp to appraisal calculation format
-const toCompProperty = (comp: LocalRentalComp): CompProperty => ({
-  id: comp.id,
-  zpid: comp.zpid,
-  address: comp.address,
-  price: comp.monthlyRent,
-  sqft: comp.sqft,
-  beds: comp.beds,
-  baths: comp.baths,
-  yearBuilt: comp.yearBuilt,
-  lotSize: 0,
-  distance: comp.distance,
-  pricePerSqft: comp.rentPerSqft,
-})
 
 // ============================================
 // COMPONENTS
@@ -502,8 +381,8 @@ const RentalCompCard = ({
   refreshing,
   freshnessBadge
 }: { 
-  comp: LocalRentalComp
-  subject: LocalSubjectProperty
+  comp: RentComp
+  subject: { address: string; city: string; state: string; zip: string; sqft: number; beds: number; baths: number; yearBuilt: number; lotSize: number; price: number; latitude: number; longitude: number }
   isSelected: boolean
   onToggle: () => void
   isExpanded: boolean
@@ -513,7 +392,7 @@ const RentalCompCard = ({
   freshnessBadge?: { label: string; color: string; bgColor: string } | null
 }) => {
   // Calculate similarity and adjustments for this comp
-  const subjectForCalc: SubjectProperty = {
+  const subjectForCalc: AppraisalSubjectProperty = {
     sqft: subject.sqft,
     beds: subject.beds,
     baths: subject.baths,
@@ -555,9 +434,9 @@ const RentalCompCard = ({
       <div className="flex">
         {/* Image */}
         <div className="relative w-24 h-24 flex-shrink-0 bg-slate-100">
-          {comp.image ? (
+          {comp.imageUrl ? (
             <img 
-              src={comp.image} 
+              src={comp.imageUrl} 
               alt="" 
               className="w-full h-full object-cover" 
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
@@ -568,7 +447,7 @@ const RentalCompCard = ({
             </div>
           )}
           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm">
-            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distance?.toFixed(2)} mi</span>
+            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distanceMiles?.toFixed(2)} mi</span>
           </div>
         </div>
 
@@ -672,7 +551,7 @@ const RentalCompCard = ({
 export function RentalCompsSection() {
   const { propertyData, assumptions, updateAssumption } = useWorksheetStore()
   
-  const [comps, setComps] = useState<LocalRentalComp[]>([])
+  const [comps, setComps] = useState<RentComp[]>([])
   const [loading, setLoading] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
   const [selectedCompIds, setSelectedCompIds] = useState<Set<string | number>>(new Set())
@@ -690,7 +569,7 @@ export function RentalCompsSection() {
 
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
-  const subject: LocalSubjectProperty = useMemo(() => ({
+  const subject = useMemo(() => ({
     address: snapshot?.street || snapshot?.streetAddress || snapshot?.address || propertyData?.address_street || '',
     city: snapshot?.city || propertyData?.address_city || '',
     state: snapshot?.state || propertyData?.address_state || '',
@@ -705,6 +584,28 @@ export function RentalCompsSection() {
     longitude: snapshot?.longitude || 0,
   }), [snapshot, propertyData, assumptions.purchasePrice])
 
+  const subjectForComps: CompsSubjectProperty | undefined = useMemo(() => {
+    const hasId = Boolean(subject.address || propertyData?.zpid || snapshot?.zpid)
+    if (!hasId) return undefined
+    return {
+      zpid: propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || '',
+      address: subject.address,
+      city: subject.city,
+      state: subject.state,
+      zip: subject.zip,
+      beds: subject.beds,
+      baths: subject.baths,
+      sqft: subject.sqft,
+      yearBuilt: subject.yearBuilt,
+      propertyType: '',
+      listPrice: subject.price,
+      zestimate: null,
+      rentZestimate: null,
+      latitude: subject.latitude,
+      longitude: subject.longitude,
+    }
+  }, [subject, propertyData, snapshot])
+
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
   // Calculate rent appraisal values from selected comps
@@ -713,7 +614,7 @@ export function RentalCompsSection() {
       .filter(c => selectedCompIds.has(c.id))
       .map(toCompProperty)
     
-    const subjectForCalc: SubjectProperty = {
+    const subjectForCalc: AppraisalSubjectProperty = {
       sqft: subject.sqft,
       beds: subject.beds,
       baths: subject.baths,
@@ -729,27 +630,26 @@ export function RentalCompsSection() {
     setLoading(true)
     setLoadFailed(false)
 
-    const params: { zpid?: string; address?: string; limit: number; offset: number; exclude_zpids?: string } = {
+    const identifier = {
+      zpid: zpid || undefined,
+      address: subject.address ? `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim() : undefined,
       limit: 10,
       offset,
+      exclude_zpids: excludeZpids.length > 0 ? excludeZpids.join(',') : undefined,
     }
-    if (zpid) params.zpid = zpid
-    else if (subject.address) params.address = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
-    if (excludeZpids.length > 0) params.exclude_zpids = excludeZpids.join(',')
 
-    const result = await fetchRentComps(params)
+    const result = await fetchRentComps(identifier, subjectForComps ?? undefined)
 
     setLoading(false)
-    if (result.status === 'success' && result.data) {
-      const transformed = transformRentalResponse(result.data as Record<string, unknown>, subject)
-      setComps(transformed)
+    if (result.ok && result.data) {
+      setComps(result.data)
       setLoadFailed(false)
-      return transformed
+      return result.data
     }
     setLoadFailed(true)
     setComps([])
     return []
-  }, [subject, zpid])
+  }, [subject, zpid, subjectForComps])
 
   // Initial fetch (non-blocking; after section mounts)
   useEffect(() => {
@@ -765,7 +665,7 @@ export function RentalCompsSection() {
   }, []) // Only fetch on mount
 
   // When comps have zpid but no image, fetch photos from /api/v1/photos and set first photo as image
-  const compsNeedingPhotos = comps.filter((c) => c.zpid && !(c.image && c.image.startsWith('http')))
+  const compsNeedingPhotos = comps.filter((c) => c.zpid && !(c.imageUrl && c.imageUrl.startsWith('http')))
   useEffect(() => {
     if (compsNeedingPhotos.length === 0) return
 
@@ -787,7 +687,7 @@ export function RentalCompsSection() {
       setComps((prev) =>
         prev.map((c) => {
           const url = c.zpid ? photoByZpid[c.zpid] : null
-          return url ? { ...c, image: url } : c
+          return url ? { ...c, imageUrl: url } : c
         })
       )
     })
@@ -1064,19 +964,19 @@ export function RentalCompsSection() {
         <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">
-              {comps.filter(c => c.distance <= 0.5).length} of {comps.length} comps within 0.5 mi
+              {comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} comps within 0.5 mi
             </span>
             <span className={`text-xs font-semibold ${
-              comps.filter(c => c.distance <= 0.5).length >= 3 
+              comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
                 ? 'text-teal-600' 
-                : comps.filter(c => c.distance <= 1).length >= 3 
+                : comps.filter(c => c.distanceMiles <= 1).length >= 3 
                   ? 'text-amber-500' 
                   : 'text-slate-500'
             }`}>
               Location Quality: {
-                comps.filter(c => c.distance <= 0.5).length >= 3 
+                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
                   ? 'EXCELLENT' 
-                  : comps.filter(c => c.distance <= 1).length >= 3 
+                  : comps.filter(c => c.distanceMiles <= 1).length >= 3 
                     ? 'GOOD' 
                     : 'FAIR'
               }
