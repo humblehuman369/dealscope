@@ -223,6 +223,11 @@ function VerdictContent() {
   const analysisInputsRef = useRef<Record<string, any> | null>(null)
   const hasRecordedAnalysisRef = useRef(false)
 
+  // Reset recording flag when user navigates to a different property (new address or propertyId)
+  useEffect(() => {
+    hasRecordedAnalysisRef.current = false
+  }, [addressParam, propertyIdParam])
+
   // Record one analysis for Starter usage when verdict loads from address (not from Deal Maker)
   useEffect(() => {
     if (
