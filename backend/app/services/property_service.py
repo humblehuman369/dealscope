@@ -1577,9 +1577,11 @@ class PropertyService:
                                 logger.info("Similar rent: using list from key %s (%d items)", key, len(results))
                                 break
                         if not results:
+                            key_types = {k: type(v).__name__ for k, v in raw.items()}
                             logger.info(
-                                "Similar rent: response success but no list found; top-level keys: %s",
+                                "Similar rent: response success but no list found; top-level keys: %s; value types: %s",
                                 list(raw.keys()),
+                                key_types,
                             )
                 if not isinstance(results, list):
                     results = []
