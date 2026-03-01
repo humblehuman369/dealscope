@@ -21,8 +21,8 @@ const T = {
   border: 'rgba(255,255,255,0.07)',
   heading: '#F1F5F9',
   body: '#CBD5E1',
-  secondary: '#94A3B8',
-  label: '#64748B',
+  secondary: '#F1F5F9',
+  label: '#F1F5F9',
   blue: '#38bdf8',
   teal: '#0EA5E9',
 }

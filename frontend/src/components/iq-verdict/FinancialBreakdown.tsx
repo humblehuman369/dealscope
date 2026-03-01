@@ -129,7 +129,7 @@ function Row({
 }) {
   return (
     <div className="flex justify-between items-center px-8 py-2 border-b border-[#F1F5F9]">
-      <span className="text-sm text-[#64748B]">{label}</span>
+      <span className="text-sm text-[#F1F5F9]">{label}</span>
       <span className={`text-sm font-semibold ${isNegative ? 'text-[#EF4444]' : 'text-[#0A1628]'}`}>
         {value}
       </span>
@@ -349,7 +349,7 @@ export function FinancialBreakdown({
           Financial Breakdown
         </span>
         <ChevronDown 
-          className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+          className={`w-5 h-5 text-[#F1F5F9] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
         />
       </button>
 

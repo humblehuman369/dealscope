@@ -154,12 +154,12 @@ export const colors = {
     primary: '#F1F5F9',
     /** #CBD5E1 - Body text (solid readable grey) */
     body: '#CBD5E1',
-    /** #94A3B8 - Secondary (muted but legible) */
-    secondary: '#94A3B8',
-    /** #7C8CA0 - Labels (smallest, WCAG AA ≥ 4.5:1 on card bg) */
-    tertiary: '#7C8CA0',
-    /** #7C8CA0 - Alias for label tier */
-    muted: '#7C8CA0',
+    /** #F1F5F9 - Secondary (match primary text) */
+    secondary: '#F1F5F9',
+    /** #F1F5F9 - Labels (match primary text) */
+    tertiary: '#F1F5F9',
+    /** #F1F5F9 - Alias for label tier */
+    muted: '#F1F5F9',
     /** #FFFFFF */
     white: '#FFFFFF',
   },
@@ -211,13 +211,13 @@ export const colors = {
     borderActive: 'rgba(56,189,248,0.35)',
     /** Stronger border for cards */
     borderDark: 'rgba(255,255,255,0.12)',
-    /** #64748B - Icons */
-    iconMuted: '#64748B',
+    /** #F1F5F9 - Icons (match primary text) */
+    iconMuted: '#F1F5F9',
   },
 
   // Harmonized Metric Colors (kept for component compat)
   harmonized: {
-    slateBlue: '#94A3B8',
+    slateBlue: '#F1F5F9',
     softCoral: '#f87171',
     confidenceTrack: 'rgba(56,189,248,0.08)',
     verdictCardBorder: 'rgba(56,189,248,0.20)',
@@ -413,7 +413,7 @@ export const tw = {
   sectionHeader: 'text-xs font-bold text-sky-400 uppercase tracking-[0.12em]',
 
   // Labels
-  label: 'text-[11px] font-bold text-[#64748B] uppercase tracking-[0.04em]',
+  label: 'text-[11px] font-bold text-[#F1F5F9] uppercase tracking-[0.04em]',
 
   // Values
   valueLg: 'text-2xl font-bold text-[#F1F5F9] tabular-nums',
@@ -421,8 +421,8 @@ export const tw = {
 
   // Buttons
   buttonPrimary: 'h-12 px-6 bg-[#0EA5E9] hover:bg-sky-400 text-white font-bold rounded-full transition-all shadow-[0_4px_24px_rgba(14,165,233,0.3)]',
-  buttonSecondary: 'h-10 px-4 border border-[#64748B] hover:border-teal-400 hover:text-teal-400 text-[#CBD5E1] font-semibold rounded-full transition-all',
-  buttonGhost: 'text-[#94A3B8] hover:text-teal-400 font-medium transition-colors',
+  buttonSecondary: 'h-10 px-4 border border-[#F1F5F9] hover:border-teal-400 hover:text-teal-400 text-[#CBD5E1] font-semibold rounded-full transition-all',
+  buttonGhost: 'text-[#F1F5F9] hover:text-teal-400 font-medium transition-colors',
 
   // Dividers
   divider: 'border-t border-white/[0.07]',
@@ -463,9 +463,9 @@ export const priceCardStyles: Record<PriceCardVariant, {
   breakeven: {
     bgClass: 'bg-[#0C1220]',
     borderClass: 'border-white/[0.07]',
-    labelClass: 'text-[#94A3B8]',
+    labelClass: 'text-[#F1F5F9]',
     valueClass: 'text-[#F1F5F9]',
-    tagClass: 'bg-white/[0.06] text-[#94A3B8]',
+    tagClass: 'bg-white/[0.06] text-[#F1F5F9]',
     tagLabel: 'No profit',
   },
   target: {
@@ -479,7 +479,7 @@ export const priceCardStyles: Record<PriceCardVariant, {
   wholesale: {
     bgClass: 'bg-[#0C1220]',
     borderClass: 'border-white/[0.07]',
-    labelClass: 'text-[#94A3B8]',
+    labelClass: 'text-[#F1F5F9]',
     valueClass: 'text-[#F1F5F9]',
     tagClass: 'bg-teal-400/10 text-teal-400',
     tagLabel: 'Deep value',

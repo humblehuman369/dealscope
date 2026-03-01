@@ -863,7 +863,7 @@ export function VerdictIQCombined({
               How Likely Can You Get This Price?
             </span>
             <ChevronDown 
-              className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${showPriceLikelihood ? 'rotate-180' : ''}`} 
+              className={`w-5 h-5 text-[#F1F5F9] transition-transform duration-200 ${showPriceLikelihood ? 'rotate-180' : ''}`} 
             />
           </button>
 
@@ -873,7 +873,7 @@ export function VerdictIQCombined({
               {/* Deal Gap */}
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-                  <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
+                  <TrendingDown className="w-[18px] h-[18px] text-[#F1F5F9]" />
                   Deal Gap
                 </div>
                 <div className="text-lg font-bold text-[#0EA5E9]">
@@ -883,15 +883,15 @@ export function VerdictIQCombined({
 
               <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
                 <div className="flex justify-between items-center py-1.5">
-                  <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
+                  <span className="text-[13px] text-[#F1F5F9]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
                   <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1.5">
-                  <span className="text-[13px] text-[#64748B]">Your Target</span>
+                  <span className="text-[13px] text-[#F1F5F9]">Your Target</span>
                   <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(userTargetPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1.5">
-                  <span className="text-[13px] text-[#64748B]">Discount needed</span>
+                  <span className="text-[13px] text-[#F1F5F9]">Discount needed</span>
                   <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(Math.abs(discountNeeded))}</span>
                 </div>
               </div>
@@ -899,19 +899,19 @@ export function VerdictIQCombined({
               {/* Seller Motivation */}
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-                  <Target className="w-[18px] h-[18px] text-[#64748B]" />
+                  <Target className="w-[18px] h-[18px] text-[#F1F5F9]" />
                   Seller Motivation
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
                     {sellerMotivation.level}
                   </span>
-                  <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
+                  <span className="text-xs text-[#F1F5F9]">{sellerMotivation.score}</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
+                <span className="text-[13px] text-[#F1F5F9]">Max achievable discount</span>
                 <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
               </div>
 
@@ -924,13 +924,13 @@ export function VerdictIQCombined({
                   <div key={index} className="flex justify-between items-center py-2">
                     <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
                       {factor.icon === 'clock' ? (
-                        <Clock className="w-4 h-4 text-[#94A3B8]" />
+                        <Clock className="w-4 h-4 text-[#F1F5F9]" />
                       ) : (
-                        <AlertTriangle className="w-4 h-4 text-[#94A3B8]" />
+                        <AlertTriangle className="w-4 h-4 text-[#F1F5F9]" />
                       )}
                       {factor.label}
                     </div>
-                    <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0EA5E9]' : 'text-[#94A3B8]'}`}>
+                    <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'}`}>
                       {factor.value}
                     </span>
                   </div>
