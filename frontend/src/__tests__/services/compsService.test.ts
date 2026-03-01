@@ -79,10 +79,9 @@ describe('comps API (sale-comps)', () => {
 
       const result = await fetchSaleComps({ zpid: '123' })
 
-      expect(result.ok).toBe(true)
-      expect(result.data).not.toBeNull()
-      expect(Array.isArray(result.data)).toBe(true)
-      expect(result.data?.length).toBe(0)
+      expect(result.ok).toBe(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toContain('No data from provider')
     })
 
     it('returns not ok for 404 and does not retry', async () => {

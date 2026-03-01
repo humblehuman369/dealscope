@@ -5,6 +5,7 @@ import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
+import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -36,12 +37,32 @@ const spaceMono = Space_Mono({
   display: 'swap',
 })
 
+const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
+const defaultDescription =
+  'Analyze properties across 6 investment strategies: Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, and Wholesale'
+const canonicalBase =
+  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_APP_URL
+    ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+    : 'https://dealgapiq.com'
+
 export const metadata: Metadata = {
-  title: 'DealGapIQ - Real Estate Investment Analytics',
-  description: 'Analyze properties across 6 investment strategies: Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, and Wholesale',
+  title: defaultTitle,
+  description: defaultDescription,
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',
+  },
+  openGraph: {
+    title: defaultTitle,
+    description: defaultDescription,
+    type: 'website',
+    url: canonicalBase,
+    siteName: 'DealGapIQ',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: defaultTitle,
+    description: defaultDescription,
   },
 }
 
@@ -69,6 +90,7 @@ export default function RootLayout({
 
           {/* Toast notifications */}
           <Toaster />
+          <AnalyticsAndConsent />
         </Providers>
       </body>
     </html>

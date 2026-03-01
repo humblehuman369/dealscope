@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import styles from './StrategyPageLayout.module.css';
 
 /* ───────────────── Property Context (from active analysis) ───────────────── */
 
@@ -261,34 +262,6 @@ export function StrategyPageLayout({
     >
       {/* Font: Inter is self-hosted via next/font in layout.tsx */}
 
-      {/* Responsive styles */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .strat-benefits-grid {
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 1.5rem;
-            }
-            @media (max-width: 768px) {
-              .strat-benefits-grid { grid-template-columns: repeat(2, 1fr); }
-              .strat-hero-title { font-size: 2rem !important; }
-              .strat-content-card { padding: 2rem !important; }
-            }
-            @media (max-width: 480px) {
-              .strat-benefits-grid { grid-template-columns: 1fr; }
-              .strat-hero-title { font-size: 1.75rem !important; }
-              .strat-content-card { padding: 1.5rem !important; }
-              .strat-nav-actions { gap: 0.375rem !important; }
-              .strat-nav-actions button, .strat-nav-actions a {
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.8125rem !important;
-              }
-            }
-          `,
-        }}
-      />
-
       {/* ── Header ── */}
       <header
         style={{
@@ -325,7 +298,7 @@ export function StrategyPageLayout({
               DealGap<span style={{ color: '#0EA5E9' }}>IQ</span>
             </span>
           </Link>
-          <nav className="strat-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <nav className={styles.stratNavActions}>
             {isAuthenticated && user ? (
               <>
                 <Link
@@ -439,7 +412,7 @@ export function StrategyPageLayout({
             {icon}
           </div>
           <h1
-            className="strat-hero-title"
+            className={styles.stratHeroTitle}
             style={{
               fontWeight: 700,
               fontSize: '2.5rem',
@@ -459,7 +432,7 @@ export function StrategyPageLayout({
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 2rem 4rem' }}>
         {/* Primary Content Card */}
         <div
-          className="strat-content-card"
+          className={styles.stratContentCard}
           style={{
             background: '#0C1220',
             border: '1px solid rgba(255,255,255,0.07)',
@@ -509,7 +482,7 @@ export function StrategyPageLayout({
 
         {/* Benefits Card */}
         <div
-          className="strat-content-card"
+          className={styles.stratContentCard}
           style={{
             background: '#0C1220',
             border: '1px solid rgba(255,255,255,0.07)',
@@ -529,7 +502,7 @@ export function StrategyPageLayout({
           >
             {benefitsHeadline}
           </h2>
-          <div className="strat-benefits-grid">
+          <div className={styles.stratBenefitsGrid}>
             {benefits.map((b, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
                 <div

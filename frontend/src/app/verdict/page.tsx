@@ -41,6 +41,7 @@ import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { ProGate } from '@/components/ProGate'
+import { trackEvent } from '@/lib/eventTracking'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
@@ -226,6 +227,16 @@ function VerdictContent() {
   // Reset recording flag when user navigates to a different property (new address or propertyId)
   useEffect(() => {
     hasRecordedAnalysisRef.current = false
+  }, [addressParam, propertyIdParam])
+
+  // Analytics: verdict page view (when user landed with a property context)
+  useEffect(() => {
+    if (addressParam || propertyIdParam) {
+      trackEvent('verdict_viewed', {
+        has_address: !!addressParam,
+        has_property_id: !!propertyIdParam,
+      })
+    }
   }, [addressParam, propertyIdParam])
 
   // Record one analysis for Starter usage when verdict loads from address (not from Deal Maker)

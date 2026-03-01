@@ -17,6 +17,10 @@ import { API_BASE_URL } from '@/lib/env'
 // Types
 // ------------------------------------------------------------------
 
+/** Default request timeout: GET 30s, mutating 60s. Override via timeoutMs. */
+const DEFAULT_GET_TIMEOUT_MS = 30_000
+const DEFAULT_MUTATE_TIMEOUT_MS = 60_000
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
@@ -26,6 +30,8 @@ interface RequestOptions {
   softAuth?: boolean
   /** AbortSignal for request cancellation (e.g. debounced hooks). */
   signal?: AbortSignal
+  /** Request timeout in ms. Defaults: GET 30s, mutating 60s. */
+  timeoutMs?: number
 }
 
 class ApiError extends Error {
@@ -164,11 +170,37 @@ async function refreshTokens(): Promise<boolean> {
 // Core request function
 // ------------------------------------------------------------------
 
+function runWithTimeout<T>(
+  timeoutMs: number,
+  signal: AbortSignal | undefined,
+  fn: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId)
+      return Promise.reject(new ApiError('Request aborted.', 0))
+    }
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timeoutId)
+        controller.abort()
+      },
+      { once: true },
+    )
+  }
+  return fn(controller.signal).finally(() => clearTimeout(timeoutId))
+}
+
 async function apiRequest<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false, signal } = options
+  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false, signal, timeoutMs } = options
+  const timeout =
+    timeoutMs ?? (method === 'GET' ? DEFAULT_GET_TIMEOUT_MS : DEFAULT_MUTATE_TIMEOUT_MS)
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -190,18 +222,30 @@ async function apiRequest<T>(
     }
   }
 
-  const config: RequestInit = {
-    method,
-    headers: requestHeaders,
-    credentials: 'include',
-    ...(signal && { signal }),
+  const doFetch = async (requestSignal: AbortSignal): Promise<Response> => {
+    const config: RequestInit = {
+      method,
+      headers: requestHeaders,
+      credentials: 'include',
+      signal: requestSignal,
+    }
+    if (body !== undefined) {
+      config.body = JSON.stringify(body)
+    }
+    return fetch(`${API_BASE_URL}${endpoint}`, config)
   }
 
-  if (body !== undefined) {
-    config.body = JSON.stringify(body)
+  let response: Response
+  try {
+    response = await runWithTimeout(timeout, signal, doFetch)
+  } catch (err) {
+    if (err instanceof ApiError) throw err
+    const isAbort = err instanceof Error && err.name === 'AbortError'
+    throw new ApiError(
+      isAbort ? 'Request timed out. Please try again.' : (err as Error).message || 'Request failed.',
+      0,
+    )
   }
-
-  let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
   // 401 → try a silent token refresh, then retry with fresh headers.
   if (response.status === 401 && !skipAuth) {
@@ -212,16 +256,27 @@ async function apiRequest<T>(
       if (freshToken) {
         retryHeaders['Authorization'] = `Bearer ${freshToken}`
       }
-      const retryConfig: RequestInit = {
-        method,
-        headers: retryHeaders,
-        credentials: 'include',
-        ...(signal && { signal }),
+      try {
+        response = await runWithTimeout(timeout, signal, async (requestSignal) => {
+          const retryConfig: RequestInit = {
+            method,
+            headers: retryHeaders,
+            credentials: 'include',
+            signal: requestSignal,
+          }
+          if (body !== undefined) {
+            retryConfig.body = JSON.stringify(body)
+          }
+          return fetch(`${API_BASE_URL}${endpoint}`, retryConfig)
+        })
+      } catch (err) {
+        if (err instanceof ApiError) throw err
+        const isAbort = err instanceof Error && err.name === 'AbortError'
+        throw new ApiError(
+          isAbort ? 'Request timed out. Please try again.' : (err as Error).message || 'Request failed.',
+          0,
+        )
       }
-      if (body !== undefined) {
-        retryConfig.body = JSON.stringify(body)
-      }
-      response = await fetch(`${API_BASE_URL}${endpoint}`, retryConfig)
     }
   }
 
@@ -354,15 +409,15 @@ export const authApi = {
 // ------------------------------------------------------------------
 
 export const api = {
-  get: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+  get: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
     apiRequest<T>(endpoint, opts),
-  post: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+  post: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
     apiRequest<T>(endpoint, { method: 'POST', body, ...opts }),
-  put: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+  put: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
     apiRequest<T>(endpoint, { method: 'PUT', body, ...opts }),
-  patch: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+  patch: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
     apiRequest<T>(endpoint, { method: 'PATCH', body, ...opts }),
-  delete: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth'>) =>
+  delete: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
     apiRequest<T>(endpoint, { method: 'DELETE', ...opts }),
 }
 

@@ -9,6 +9,7 @@ import React, { useState, useCallback } from 'react'
 import { X, Loader2, Check } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 
 interface PricingPlan {
   id: string
@@ -73,6 +74,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
         success_url: successUrl,
         cancel_url: cancelUrl,
       })
+      trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly' })
       window.location.href = checkout_url
     } catch (e: unknown) {
       const msg =

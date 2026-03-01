@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import * as Sentry from '@sentry/browser'
 import { AlertTriangle, RefreshCw, Home, ArrowLeft } from 'lucide-react'
 
 interface ErrorProps {
@@ -11,8 +12,12 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Application error:', error)
+    if (typeof window !== 'undefined') {
+      Sentry.captureException(error)
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Application error:', error)
+    }
   }, [error])
 
   return (
