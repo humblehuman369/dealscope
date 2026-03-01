@@ -182,12 +182,17 @@ export default function SearchScreen() {
         <Text style={st.heroTitle}>
           Is That Property{'\n'}a <Text style={st.heroAccent}>Good Deal</Text>?
         </Text>
-        <Text style={st.heroSubheadline}>
+        <Text
+          style={st.heroSubheadline}
+          numberOfLines={2}
+          adjustsFontSizeToFit
+          minimumFontScale={0.65}
+        >
           <Text style={{ color: colors.accent }}>Know if it's Worth</Text> Your Time{'\n'}
           <Text style={{ color: colors.accent }}>Before You Spend Hours on It.</Text>
         </Text>
         <Text style={st.heroSubtitle}>
-          Paste any address. In 60 seconds, get a buy price, a deal score, that tell you whether to pursue or pass.
+          Paste any address. In 60 seconds, get a buy price, a deal score,{'\n'}that tell you whether to pursue or pass.
         </Text>
       </View>
 
