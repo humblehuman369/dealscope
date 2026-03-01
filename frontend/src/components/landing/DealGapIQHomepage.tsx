@@ -250,7 +250,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         <p style={{
           fontFamily: s.fontBody, fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.25,
-          fontWeight: 700, letterSpacing: -0.8, marginBottom: 90,
+          fontWeight: 700, letterSpacing: -0.8, marginBottom: 77,
           opacity: 0, animation: "fadeUp 0.6s 0.25s forwards",
         }}>
           <span style={{ color: s.teal }}>Know if it Is Worth</span> Your Time<br />
@@ -262,7 +262,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          Paste any address. In 60 seconds, get a buy price, a deal score,<br />
+          In 60 seconds, get a buy price, a deal score,<br />
           that tell you whether to pursue or pass.
         </p>
 
