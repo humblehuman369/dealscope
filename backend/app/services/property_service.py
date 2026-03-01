@@ -330,9 +330,14 @@ class PropertyService:
 
             # Fetch from Redfin (value estimate only)
             # #region agent log
-            _log_path = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor", "debug-3ea175.log")
-            _payload = {"sessionId": "3ea175", "location": "property_service.py:Redfin", "message": "redfin_branch", "data": {"redfin_is_none": self.redfin is None, "address": address[:50]}, "timestamp": int(time.time() * 1000), "hypothesisId": "H1"}
-            open(_log_path, "a").write(__import__("json").dumps(_payload) + "\n")
+            _log_dir = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor")
+            _log_path = __import__("os").path.join(_log_dir, "debug-3ea175.log")
+            try:
+                __import__("os").makedirs(_log_dir, exist_ok=True)
+                _payload = {"sessionId": "3ea175", "location": "property_service.py:Redfin", "message": "redfin_branch", "data": {"redfin_is_none": self.redfin is None, "address": address[:50]}, "timestamp": int(time.time() * 1000), "hypothesisId": "H1"}
+                open(_log_path, "a").write(__import__("json").dumps(_payload) + "\n")
+            except Exception:
+                pass
             # #endregion
             if self.redfin:
                 t_rf = time.perf_counter()

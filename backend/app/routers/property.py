@@ -57,6 +57,16 @@ async def search_property(
 
     logger.info(f"Searching for property: {full_address}")
 
+    # #region agent log
+    _log_dir = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor")
+    _log_path = __import__("os").path.join(_log_dir, "debug-3ea175.log")
+    try:
+        __import__("os").makedirs(_log_dir, exist_ok=True)
+        open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "property.py:search_property", "message": "request", "data": {"address": full_address[:80]}, "timestamp": int(__import__("time").time() * 1000), "hypothesisId": "H0"}) + "\n")
+    except Exception:
+        pass
+    # #endregion
+
     try:
         result = await property_service.search_property(full_address)
     except ExternalAPIError as e:
