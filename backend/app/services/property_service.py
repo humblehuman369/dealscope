@@ -1569,6 +1569,8 @@ class PropertyService:
                         or raw.get("similarRentals")
                         or []
                     )
+                    if "results" in raw and isinstance(raw.get("results"), list):
+                        logger.info("Similar rent: raw['results'] length = %d", len(raw["results"]))
                     if not results and isinstance(raw, dict):
                         for key in ("data", "items", "rentalList", "rental_list", "forRent", "listings"):
                             val = raw.get(key)
