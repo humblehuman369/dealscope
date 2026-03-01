@@ -158,14 +158,19 @@ export async function initPayments(): Promise<void> {
 
 type CustomerInfoListener = (info: CustomerInfo) => void;
 const _listeners = new Set<CustomerInfoListener>();
+let _nativeListenerRegistered = false;
+
+function ensureNativeListener(): void {
+  if (_nativeListenerRegistered || !_initialized) return;
+  _nativeListenerRegistered = true;
+  Purchases.addCustomerInfoUpdateListener((info) => {
+    _listeners.forEach((l) => l(info));
+  });
+}
 
 export function addCustomerInfoListener(listener: CustomerInfoListener): () => void {
   _listeners.add(listener);
-  if (_initialized && _listeners.size === 1) {
-    Purchases.addCustomerInfoUpdateListener((info) => {
-      _listeners.forEach((l) => l(info));
-    });
-  }
+  ensureNativeListener();
   return () => { _listeners.delete(listener); };
 }
 
