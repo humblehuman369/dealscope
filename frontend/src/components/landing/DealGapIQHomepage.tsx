@@ -616,7 +616,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: s.muted, lineHeight: 1.7, fontStyle: "italic", maxWidth: 580, margin: "0 auto 24px" }}>
                 &ldquo;I spent 35 years building real estate data systems — HomePath.com for Fannie Mae, HomeSteps.com for Freddie Mac, and Foreclosure.com which I founded and operated for 21 years. I built <strong style={{ fontStyle: "normal" }}>DealGap<span style={{ color: s.teal }}>IQ</span></strong> because investors still don&apos;t have a fast, data-backed way to know their number before making an offer.&rdquo;
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, justifyContent: "center" }}>
+              <div className="dgiq-founder-stats" style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, justifyContent: "center" }}>
                 {[
                   { num: "35+", label: "years in RE data" },
                   { num: "80+", label: "companies served" },

@@ -141,6 +141,14 @@ html, body {
   flex-shrink: 0;
 }
 
+@media (max-width: 639px) {
+  .worksheet-back-link {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+}
+
 @media (min-width: 640px) {
   .worksheet-back-link {
     padding: 8px 12px;
@@ -225,8 +233,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   background: var(--ws-bg-alt);
   color: var(--ws-text-secondary);
@@ -1110,6 +1120,16 @@ html, body {
   user-select: none;
 }
 
+@media (max-width: 639px) {
+  .section-header {
+    min-height: 44px;
+    padding: 12px var(--ws-spacing-sm);
+  }
+  .section-card {
+    scroll-margin-top: 72px;
+  }
+}
+
 @media (min-width: 768px) {
   .section-header {
     padding: 14px var(--ws-spacing-md);
@@ -1543,6 +1563,20 @@ html, body {
   border-color: var(--iq-teal-dark);
 }
 
+/* Mobile: larger thumb for touch (44px tap target) */
+@media (max-width: 639px) {
+  .slider-input {
+    height: 12px;
+    min-height: 12px;
+  }
+  .slider-input::-webkit-slider-thumb {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
 .slider-input::-moz-range-thumb {
   width: 16px;
   height: 16px;
@@ -1560,10 +1594,25 @@ html, body {
   }
 }
 
+@media (max-width: 639px) {
+  .slider-input::-moz-range-thumb {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
 .slider-input::-moz-range-track {
   height: 6px;
   border-radius: 3px;
   background: #e2e8f0;
+}
+
+@media (max-width: 639px) {
+  .slider-input::-moz-range-track {
+    height: 12px;
+  }
 }
 
 .slider-input::-moz-range-progress {

@@ -112,7 +112,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
       >
         Property Facts
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {facts.map((fact, i) => (
           <div 
             key={i} 
@@ -166,7 +166,7 @@ export function KeyFactsGridSkeleton() {
       style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
     >
       <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="p-3 rounded-lg" style={{ backgroundColor: colors.background.cardUp }}>
             <div className="h-3 w-16 rounded animate-pulse mb-2" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />

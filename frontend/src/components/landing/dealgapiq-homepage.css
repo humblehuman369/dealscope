@@ -35,4 +35,5 @@
   .hero-address-bar input { width: 100% !important; text-align: center !important; padding: 12px !important; min-height: 48px !important; box-sizing: border-box !important; }
   .hero-address-bar button { width: 100% !important; justify-content: center !important; min-height: 48px !important; }
   .dgiq-nav { padding-left: 16px !important; padding-right: 16px !important; }
+  .dgiq-founder-stats { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; justify-items: center !important; }
 }

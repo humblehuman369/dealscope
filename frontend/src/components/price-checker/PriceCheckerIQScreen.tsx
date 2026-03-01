@@ -855,26 +855,26 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           />
         </div>
 
-        {/* Filters + Controls */}
-        <div className="px-4 mt-3 space-y-2">
-          <div className="flex items-center gap-2">
+        {/* Filters + Controls — wrap on narrow screens, no horizontal overflow */}
+        <div className="px-4 mt-3 space-y-2 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-[#F1F5F9]">Filter:</span>
             <div className="flex rounded-lg bg-white/[0.05] p-0.5">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors min-h-[44px] sm:min-h-0 ${
                     recencyFilter === val ? 'bg-[#0C1220] text-[#38bdf8] shadow-sm shadow-black/20' : 'text-[#F1F5F9] hover:text-[#F1F5F9]'
                   }`}>{label}</button>
               ))}
             </div>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm text-[#F1F5F9]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                className="px-3 py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Select All</button>
+                className="min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Select All</button>
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                className="px-3 py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Clear</button>
+                className="min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Clear</button>
             </div>
           </div>
         </div>
@@ -938,7 +938,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Comp Cards */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="px-4 mt-3 space-y-3">
+          <div className="w-full min-w-0 px-4 mt-3 space-y-3">
             {filteredComps.map(comp => (
               <CompCard
                 key={comp.id}

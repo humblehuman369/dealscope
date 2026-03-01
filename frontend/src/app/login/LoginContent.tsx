@@ -28,7 +28,7 @@ function LoginInner() {
         minHeight: '100vh',
         background: '#0B1120',
         color: '#E2E8F0',
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
         overflowX: 'hidden',
       }}
     >
