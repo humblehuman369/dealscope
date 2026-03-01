@@ -9,9 +9,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "extra": {
-      "eas": {
-        "projectId": "413e1c97-3bfc-44ef-9437-e8a89b79cde8"
-      }
+      "eas": {}
     },
     "owner": "dealgapiq",
     "ios": {
