@@ -29,7 +29,9 @@ function toStr(v: unknown): string {
 function extractCompsArray(raw: BackendCompsResponse): unknown[] {
   const list =
     raw.results ??
+    (raw as unknown as { similarProperties?: unknown[] }).similarProperties ??
     (raw as unknown as { comparableSales?: unknown[] }).comparableSales ??
+    (raw as unknown as { properties?: unknown[] }).properties ??
     (raw as unknown as { comps?: unknown[] }).comps ??
     (raw as unknown as { data?: unknown[] }).data ??
     []
@@ -195,6 +197,9 @@ export async function fetchSaleComps(
   }
 
   const transformed = transformSaleComps(res.data, subject)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[comps_api] similar-sold transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+  }
   return {
     ...res,
     data: transformed,
