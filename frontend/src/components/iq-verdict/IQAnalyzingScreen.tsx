@@ -17,6 +17,8 @@ import { IQProperty } from './types'
 const ACCENT = colors.brand.teal
 const ACCENT_BG = 'rgba(14,165,233,0.08)'
 const ACCENT_BORDER = 'rgba(14,165,233,0.2)'
+// Glow around logo — rgba(14, 165, 233, [opacity]) per color system
+const LOGO_GLOW = '0 0 24px rgba(14,165,233,0.35), 0 0 48px rgba(14,165,233,0.15)'
 
 // Rotating micro-tips — real, credibility-building content
 const MICRO_TIPS = [
@@ -119,11 +121,14 @@ export function IQAnalyzingScreen({
               style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
             />
           </svg>
-          {/* Center logo — actual DealGapIQ icon (head + house) */}
+          {/* Center logo — transparent DealGapIQ icon with color-system glow */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: ACCENT_BG }}
+              style={{
+                backgroundColor: 'transparent',
+                boxShadow: LOGO_GLOW,
+              }}
             >
               <img
                 src="/images/iq-logo-icon.png"
