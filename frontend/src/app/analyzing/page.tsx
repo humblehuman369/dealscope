@@ -64,7 +64,7 @@ function AnalyzingContent() {
     <IQAnalyzingScreen
       property={property}
       onAnalysisComplete={handleAnalysisComplete}
-      minimumDisplayTime={2800}
+      minimumDisplayTime={6000}
     />
   )
 }

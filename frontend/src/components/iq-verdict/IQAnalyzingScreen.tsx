@@ -17,8 +17,9 @@ import { IQProperty } from './types'
 const ACCENT = colors.brand.teal
 const ACCENT_BG = 'rgba(14,165,233,0.08)'
 const ACCENT_BORDER = 'rgba(14,165,233,0.2)'
-// Glow around logo — rgba(14, 165, 233, [opacity]) per color system
-const LOGO_GLOW = '0 0 24px rgba(14,165,233,0.35), 0 0 48px rgba(14,165,233,0.15)'
+// Glow around logo — rgba(14, 165, 233, [opacity]) per color system (base for pulse)
+const LOGO_GLOW_BASE = '0 0 24px rgba(14,165,233,0.35), 0 0 48px rgba(14,165,233,0.15)'
+const LOGO_GLOW_PULSE = '0 0 32px rgba(14,165,233,0.5), 0 0 64px rgba(14,165,233,0.22)'
 
 // Rotating micro-tips — real, credibility-building content
 const MICRO_TIPS = [
@@ -92,17 +93,40 @@ export function IQAnalyzingScreen({
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
+      <style>{`
+        @keyframes analyzing-glow-pulse {
+          0%, 100% { box-shadow: ${LOGO_GLOW_BASE}; opacity: 1; }
+          50% { box-shadow: ${LOGO_GLOW_PULSE}; opacity: 0.95; }
+        }
+        @keyframes analyzing-ring-pulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.35; }
+        }
+        .analyzing-logo-pulse {
+          animation: analyzing-glow-pulse 2s ease-in-out infinite;
+        }
+        .analyzing-ring-pulse {
+          animation: analyzing-ring-pulse 2s ease-in-out infinite;
+        }
+        @keyframes analyzing-tip-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.85; }
+        }
+        .analyzing-tip-pulse {
+          animation: analyzing-tip-pulse 2.2s ease-in-out infinite;
+        }
+      `}</style>
       <div className="flex flex-col items-center px-8 max-w-md">
-        {/* Animated progress ring with IQ logo */}
+        {/* Animated progress ring with IQ logo — pulsating while waiting */}
         <div className="relative mb-8" style={{ width: size, height: size }}>
-          {/* Background ring */}
-          <svg width={size} height={size} className="absolute inset-0">
+          {/* Background ring — subtle pulse */}
+          <svg width={size} height={size} className="absolute inset-0 analyzing-ring-pulse">
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="none"
-              stroke="rgba(148,163,184,0.1)"
+              stroke="rgba(148,163,184,0.2)"
               strokeWidth={strokeWidth}
             />
           </svg>
@@ -121,13 +145,13 @@ export function IQAnalyzingScreen({
               style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
             />
           </svg>
-          {/* Center logo — transparent DealGapIQ icon with color-system glow */}
+          {/* Center logo — transparent DealGapIQ icon with pulsating color-system glow */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
+              className="analyzing-logo-pulse w-20 h-20 rounded-full flex items-center justify-center"
               style={{
                 backgroundColor: 'transparent',
-                boxShadow: LOGO_GLOW,
+                boxShadow: LOGO_GLOW_BASE,
               }}
             >
               <img
@@ -147,9 +171,9 @@ export function IQAnalyzingScreen({
           Just a moment while IQ evaluates this deal...
         </p>
 
-        {/* Rotating Micro-tip */}
+        {/* Rotating Micro-tip — subtle pulse so the whole block feels alive */}
         <div
-          className="mb-6 px-5 py-3 rounded-xl text-center max-w-xs"
+          className="mb-6 px-5 py-3 rounded-xl text-center max-w-xs analyzing-tip-pulse"
           style={{ backgroundColor: ACCENT_BG, border: `1px solid ${ACCENT_BORDER}` }}
         >
           <p
