@@ -125,11 +125,11 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
             <div className="flex items-center gap-2 mb-2">
               <fact.icon 
                 size={16} 
-                style={{ color: fact.highlight ? colors.brand.blue : colors.text.tertiary }}
+                style={{ color: fact.highlight ? colors.brand.blue : '#F1F5F9' }}
               />
               <span
                 className="text-[11px] font-bold uppercase tracking-[0.04em]"
-                style={{ color: colors.text.tertiary }}
+                style={{ color: '#F1F5F9' }}
               >
                 {fact.label}
               </span>
@@ -144,7 +144,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
               {fact.value}
             </div>
             {fact.sublabel && (
-              <div className="text-sm mt-1" style={{ color: colors.text.tertiary }}>
+              <div className="text-sm mt-1" style={{ color: '#F1F5F9' }}>
                 {fact.sublabel}
               </div>
             )}

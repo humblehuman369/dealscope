@@ -31,10 +31,10 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
           style={{ backgroundColor: colors.background.cardUp, border: `1px solid ${colors.ui.border}` }}
         >
           <div className="text-center">
-            <MapPin size={24} className="mx-auto mb-2" style={{ color: colors.text.tertiary }} />
-            <p className="text-sm" style={{ color: colors.text.secondary }}>{address}</p>
+            <MapPin size={24} className="mx-auto mb-2" style={{ color: '#F1F5F9' }} />
+            <p className="text-sm" style={{ color: '#F1F5F9' }}>{address}</p>
             {hasCoordinates && (
-              <p className="text-xs mt-1" style={{ color: colors.text.tertiary, fontVariantNumeric: 'tabular-nums' }}>
+              <p className="text-xs mt-1" style={{ color: '#F1F5F9', fontVariantNumeric: 'tabular-nums' }}>
                 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
             )}
@@ -62,7 +62,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
           </Map>
         </APIProvider>
       </div>
-      <p className="text-xs mt-2 text-center" style={{ color: colors.text.tertiary }}>
+      <p className="text-xs mt-2 text-center" style={{ color: '#F1F5F9' }}>
         {address}
       </p>
     </div>

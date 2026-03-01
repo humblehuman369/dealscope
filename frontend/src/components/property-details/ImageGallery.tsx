@@ -54,8 +54,8 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-            <ImageOff size={48} style={{ color: colors.text.tertiary }} />
-            <span className="text-sm" style={{ color: colors.text.tertiary }}>Photo unavailable</span>
+            <ImageOff size={48} style={{ color: '#F1F5F9' }} />
+            <span className="text-sm" style={{ color: '#F1F5F9' }}>Photo unavailable</span>
           </div>
         )}
 
@@ -66,7 +66,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
               className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2"
               style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
             >
-              <Eye size={14} style={{ color: colors.text.secondary }} />
+              <Eye size={14} style={{ color: '#F1F5F9' }} />
               <span className="text-sm font-medium" style={{ color: colors.text.body, fontVariantNumeric: 'tabular-nums' }}>
                 {formatNumber(views)} views
               </span>
@@ -77,7 +77,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
               className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2 ml-auto"
               style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
             >
-              <Camera size={14} style={{ color: colors.text.secondary }} />
+              <Camera size={14} style={{ color: '#F1F5F9' }} />
               <span className="text-sm font-medium" style={{ color: colors.text.body, fontVariantNumeric: 'tabular-nums' }}>
                 {currentIndex + 1}/{totalPhotos}
               </span>
@@ -133,7 +133,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageOff size={16} style={{ color: colors.text.tertiary }} />
+                  <ImageOff size={16} style={{ color: '#F1F5F9' }} />
                 </div>
               )}
             </button>
@@ -141,7 +141,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           {totalPhotos > rawImages.length && (
             <button
               className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-white/5"
-              style={{ backgroundColor: colors.background.cardUp, color: colors.text.secondary }}
+              style={{ backgroundColor: colors.background.cardUp, color: '#F1F5F9' }}
             >
               +{totalPhotos - rawImages.length}
             </button>
@@ -166,8 +166,8 @@ export function ImageGallerySkeleton() {
         style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
       >
         <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-          <ImageOff size={48} style={{ color: colors.text.tertiary }} />
-          <span className="text-sm" style={{ color: colors.text.tertiary }}>Loading property photos...</span>
+          <ImageOff size={48} style={{ color: '#F1F5F9' }} />
+          <span className="text-sm" style={{ color: '#F1F5F9' }}>Loading property photos...</span>
         </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">

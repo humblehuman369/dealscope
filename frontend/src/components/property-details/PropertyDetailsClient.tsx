@@ -48,7 +48,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           <button
             onClick={() => router.back()}
             className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5"
-            style={{ color: colors.text.secondary }}
+            style={{ color: '#F1F5F9' }}
             aria-label="Go back"
           >
             <ArrowLeft size={18} />
@@ -59,10 +59,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           >
             Property Details
           </span>
-          <ChevronRight size={12} style={{ color: colors.text.tertiary }} />
+          <ChevronRight size={12} style={{ color: '#F1F5F9' }} />
           <span
             className="text-[10px] uppercase tracking-wide truncate max-w-[200px] sm:max-w-none"
-            style={{ color: colors.text.tertiary }}
+            style={{ color: '#F1F5F9' }}
           >
             {property.address.streetAddress}
           </span>

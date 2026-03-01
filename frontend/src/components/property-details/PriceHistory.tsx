@@ -29,7 +29,7 @@ export function PriceHistory({ history }: PriceHistoryProps) {
         <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
           Price History
         </div>
-        <p className="text-sm text-center py-4" style={{ color: colors.text.tertiary }}>
+        <p className="text-sm text-center py-4" style={{ color: '#F1F5F9' }}>
           No price history available
         </p>
       </div>
@@ -63,7 +63,7 @@ export function PriceHistory({ history }: PriceHistoryProps) {
                 {isSold ? (
                   <Check size={12} className="text-white" />
                 ) : (
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.text.tertiary }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F1F5F9' }} />
                 )}
               </div>
 
@@ -74,7 +74,7 @@ export function PriceHistory({ history }: PriceHistoryProps) {
                     <div className="text-sm font-semibold" style={{ color: colors.text.primary }}>
                       {item.event}
                     </div>
-                    <div className="text-xs" style={{ color: colors.text.tertiary }}>
+                    <div className="text-xs" style={{ color: '#F1F5F9' }}>
                       {formatDate(item.date)} · {item.source}
                     </div>
                   </div>
