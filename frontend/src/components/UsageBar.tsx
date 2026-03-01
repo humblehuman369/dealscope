@@ -119,7 +119,7 @@ export function UsageBar() {
     >
       {/* Plan badge */}
       <div className="flex items-center gap-2 w-full md:w-auto pr-0 md:pr-7 flex-shrink-0 border-r-0 md:border-r border-white/10">
-        <span style={{ fontSize: '0.82rem', fontWeight: 700 }}>Starter</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#F1F5F9' }}>Starter</span>
         <span
           style={{
             fontSize: '0.55rem',
@@ -195,7 +195,7 @@ function Meter({
 }) {
   return (
     <div className="flex items-center" style={{ gap: '0.6rem' }}>
-      <span style={{ fontSize: '0.72rem', color: '#71717A', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: '0.72rem', color: '#F1F5F9', whiteSpace: 'nowrap' }}>
         {label}
       </span>
       <div
@@ -227,7 +227,7 @@ function Meter({
         }}
       >
         {used}
-        <span style={{ color: '#71717A', fontWeight: 400 }}>/{limit}</span>
+        <span style={{ color: '#F1F5F9', fontWeight: 400 }}>/{limit}</span>
       </span>
     </div>
   )

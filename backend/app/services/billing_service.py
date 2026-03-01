@@ -286,6 +286,19 @@ class BillingService:
             days_until_reset=days_until_reset,
         )
 
+    async def record_analysis(self, db: AsyncSession, user_id: uuid.UUID) -> UsageResponse:
+        """
+        Record one property analysis for usage limits.
+        Only increments for non-Pro (Starter) users. Pro has unlimited analyses.
+        Returns updated usage so the client can refresh the usage bar.
+        """
+        subscription = await self.get_or_create_subscription(db, user_id)
+        if subscription.searches_per_month != -1:
+            subscription.increment_search()
+            await db.commit()
+            await db.refresh(subscription)
+        return await self.get_usage(db, user_id)
+
     # ===========================================
     # Stripe Integration
     # ===========================================

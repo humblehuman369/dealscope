@@ -104,6 +104,18 @@ async def get_usage(current_user: CurrentUser, db: DbSession):
     return await billing_service.get_usage(db, current_user.id)
 
 
+@router.post("/usage/record-analysis", response_model=UsageResponse, summary="Record one property analysis")
+async def record_analysis(current_user: CurrentUser, db: DbSession):
+    """
+    Record one property analysis against the user's monthly limit.
+
+    Called when a user completes an analysis (e.g. leaves the analyzing screen
+    and lands on the verdict). Starter users' Analyses count increments;
+    Pro users have unlimited analyses so no change. Returns updated usage.
+    """
+    return await billing_service.record_analysis(db, current_user.id)
+
+
 @router.post("/subscription/cancel", response_model=CancelSubscriptionResponse, summary="Cancel subscription")
 async def cancel_subscription(data: CancelSubscriptionRequest, current_user: CurrentUser, db: DbSession):
     """
