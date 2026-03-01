@@ -84,24 +84,26 @@ const nextConfig = {
     // Without this, cookies set by the Railway backend are third-party
     // and get blocked by modern browsers.
     //
-    // On Vercel, set NEXT_PUBLIC_API_URL to your public backend URL (e.g. https://your-app.up.railway.app).
-    // If unset, we fall back to localhost and API rewrites will 404 until you add the var and redeploy.
+    // On Vercel, set NEXT_PUBLIC_API_URL to your public backend URL (e.g. https://dealgapiq.com).
+    // If unset in production, we use https://dealgapiq.com so API rewrites work when the app is on investiq.guru or other domains.
     const raw = process.env.NEXT_PUBLIC_API_URL || ''
-    const apiUrl = raw.trim().replace(/\/+$/, '') || 'http://localhost:8000'
+    const trimmed = raw.trim().replace(/\/+$/, '')
+    const apiUrl =
+      trimmed ||
+      (process.env.VERCEL ? 'https://dealgapiq.com' : 'http://localhost:8000')
     if (process.env.VERCEL) {
       console.log(`[next.config.js] NEXT_PUBLIC_API_URL raw value: "${raw}" (length=${raw.length})`)
       console.log(`[next.config.js] Rewrite destination: ${apiUrl}/api/:path*`)
       const isLocalhost = apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1')
-      if (raw && isLocalhost) {
+      if (trimmed && isLocalhost) {
         throw new Error(
           'NEXT_PUBLIC_API_URL must be your public backend URL on Vercel, not localhost. ' +
-          'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://your-app.up.railway.app), then redeploy.'
+          'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://dealgapiq.com), then redeploy.'
         )
       }
-      if (!raw) {
-        console.warn(
-          '[next.config.js] NEXT_PUBLIC_API_URL is not set on Vercel. API rewrites will target localhost and may 404. ' +
-          'Add NEXT_PUBLIC_API_URL in Vercel → Settings → Environment Variables, then redeploy.'
+      if (!trimmed) {
+        console.log(
+          '[next.config.js] NEXT_PUBLIC_API_URL not set; using production default https://dealgapiq.com for API rewrites.'
         )
       }
     }
