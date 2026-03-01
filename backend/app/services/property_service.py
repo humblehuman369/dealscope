@@ -1570,7 +1570,23 @@ class PropertyService:
                         or []
                     )
                     if "results" in raw and isinstance(raw.get("results"), list):
-                        logger.info("Similar rent: raw['results'] length = %d", len(raw["results"]))
+                        rlen = len(raw["results"])
+                        logger.info("Similar rent: raw['results'] length = %d", rlen)
+                        if rlen > 0:
+                            first = raw["results"][0]
+                            if isinstance(first, dict):
+                                first_keys = list(first.keys())
+                                logger.info("Similar rent: first item keys = %s", first_keys)
+                                if "property" in first and isinstance(first["property"], dict):
+                                    logger.info(
+                                        "Similar rent: first item.property keys = %s",
+                                        list(first["property"].keys()),
+                                    )
+                                if "listing" in first and isinstance(first["listing"], dict):
+                                    logger.info(
+                                        "Similar rent: first item.listing keys = %s",
+                                        list(first["listing"].keys()),
+                                    )
                     if not results and isinstance(raw, dict):
                         for key in ("data", "items", "rentalList", "rental_list", "forRent", "listings"):
                             val = raw.get(key)
