@@ -44,13 +44,13 @@ export function LTRSectionCard({
   )
   
   return (
-    <div className={`bg-white dark:bg-surface-800 rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-card-hover ${
+    <div className={`bg-white dark:bg-surface-800 rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-card-hover scroll-mt-[72px] ${
       expanded ? 'ring-2 ring-teal-600/20 dark:ring-teal-400/20' : 'border border-surface-100 dark:border-surface-700'
     }`}>
       {/* Header */}
       <button 
         onClick={() => setExpanded(!expanded)} 
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-700/30"
+        className="w-full flex items-center justify-between px-4 py-3.5 min-h-[44px] text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-700/30"
       >
         <div className="flex items-center gap-3">
           {icon && <span className="text-teal-600 dark:text-teal-400">{icon}</span>}

@@ -313,7 +313,7 @@ export function FlipWorksheet({
         </div>
         <div className="relative">
           <div className="h-1.5 bg-slate-200 rounded-full"><div className="h-full bg-blue-500 rounded-full transition-all duration-100" style={{ width: `${percentage}%` }} /></div>
-          <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer"/>
+          <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-10 -top-[17px] opacity-0 cursor-pointer"/>
         </div>
       </div>
     )
@@ -334,8 +334,8 @@ export function FlipWorksheet({
     const isOpen = isSectionOpen(index)
     const isComplete = completedSections.has(index) && !isOpen
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
-        <button onClick={() => toggleSection(index)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden scroll-mt-[72px]">
+        <button onClick={() => toggleSection(index)} className="w-full flex items-center justify-between p-4 min-h-[44px] hover:bg-slate-50 transition-colors">
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isComplete ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>{Icons[iconKey]}</div>
             <span className="font-semibold text-slate-800">{title}</span>
