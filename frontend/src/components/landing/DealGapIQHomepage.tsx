@@ -262,7 +262,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          Paste any address. In 60 seconds, get a score and buy price to know whether to dig deeper or move on.
+          Paste any address. In 60 seconds, get a buy price, a deal score,<br />
+          that tell you whether to pursue or pass.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
