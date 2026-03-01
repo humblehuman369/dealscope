@@ -88,9 +88,13 @@ const nextConfig = {
     // If unset in production, we use https://dealgapiq.com so API rewrites work when the app is on investiq.guru or other domains.
     const raw = process.env.NEXT_PUBLIC_API_URL || ''
     const trimmed = raw.trim().replace(/\/+$/, '')
-    const apiUrl =
-      trimmed ||
-      (process.env.VERCEL ? 'https://dealgapiq.com' : 'http://localhost:8000')
+    const canonicalBackend = 'https://dealgapiq.com'
+    // When on Vercel, never proxy /api to the frontend host (investiq.guru); backend lives at dealgapiq.com
+    const pointsToFrontend =
+      process.env.VERCEL && trimmed && trimmed.includes('investiq.guru')
+    const apiUrl = pointsToFrontend
+      ? canonicalBackend
+      : trimmed || (process.env.VERCEL ? canonicalBackend : 'http://localhost:8000')
     if (process.env.VERCEL) {
       console.log(`[next.config.js] NEXT_PUBLIC_API_URL raw value: "${raw}" (length=${raw.length})`)
       console.log(`[next.config.js] Rewrite destination: ${apiUrl}/api/:path*`)
@@ -104,6 +108,11 @@ const nextConfig = {
       if (!trimmed) {
         console.log(
           '[next.config.js] NEXT_PUBLIC_API_URL not set; using production default https://dealgapiq.com for API rewrites.'
+        )
+      }
+      if (pointsToFrontend) {
+        console.warn(
+          '[next.config.js] NEXT_PUBLIC_API_URL pointed at investiq.guru (frontend); rewriting /api to https://dealgapiq.com instead.'
         )
       }
     }
