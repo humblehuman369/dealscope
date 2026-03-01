@@ -651,18 +651,17 @@ export function RentalCompsSection() {
     return []
   }, [subject, zpid, subjectForComps])
 
-  // Initial fetch (non-blocking; after section mounts)
+  // Initial fetch when we have an identifier (runs when zpid/address becomes available)
   useEffect(() => {
+    if (!subject.address && !zpid) return
     const doFetch = async () => {
       const fetched = await fetchComps()
       if (fetched.length > 0) {
         setSelectedCompIds(new Set(fetched.slice(0, 3).map(c => c.id)))
       }
     }
-    if (subject.address || zpid) {
-      doFetch()
-    }
-  }, []) // Only fetch on mount
+    doFetch()
+  }, [zpid, subject.address, subject.city, subject.state, subject.zip, fetchComps])
 
   // When comps have zpid but no image, fetch photos from /api/v1/photos and set first photo as image
   const compsNeedingPhotos = comps.filter((c) => c.zpid && !(c.imageUrl && c.imageUrl.startsWith('http')))

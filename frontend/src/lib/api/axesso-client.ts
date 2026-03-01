@@ -132,6 +132,7 @@ export async function axessoGet<T>(
         method: 'GET',
         headers,
         signal: requestSignal,
+        credentials: 'include',
       })
       clearTimeout(timeoutId)
       const durationMs = Math.round(performance.now() - start)

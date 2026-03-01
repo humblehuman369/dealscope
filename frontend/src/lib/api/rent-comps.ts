@@ -177,6 +177,18 @@ export async function fetchRentComps(
     }
   }
 
+  const body = res.data as BackendCompsResponse
+  if (body.success === false) {
+    return {
+      ok: false,
+      data: null,
+      status: res.status,
+      error: body.error ?? 'Failed to load comparable rentals',
+      attempts: res.attempts,
+      durationMs: res.durationMs,
+    }
+  }
+
   const transformed = transformRentComps(res.data, subject)
   return {
     ...res,
