@@ -47,7 +47,7 @@ export function ListingInfo({ property }: ListingInfoProps) {
             className="flex items-center justify-between py-2.5"
             style={i < rows.length - 1 ? { borderBottom: `1px solid ${colors.ui.border}` } : undefined}
           >
-            <span className="text-sm" style={{ color: colors.text.secondary }}>{row.label}</span>
+            <span className="text-sm" style={{ color: '#F1F5F9' }}>{row.label}</span>
             <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>
               {row.value}
             </span>

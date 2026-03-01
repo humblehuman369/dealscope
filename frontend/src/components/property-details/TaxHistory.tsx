@@ -27,7 +27,7 @@ export function TaxHistory({ history }: TaxHistoryProps) {
         <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
           Tax History
         </div>
-        <p className="text-sm text-center py-4" style={{ color: colors.text.tertiary }}>
+        <p className="text-sm text-center py-4" style={{ color: '#F1F5F9' }}>
           No tax history available
         </p>
       </div>
@@ -44,19 +44,19 @@ export function TaxHistory({ history }: TaxHistoryProps) {
         <table className="w-full min-w-[500px]">
           <thead>
             <tr style={{ borderBottom: `1px solid ${colors.ui.border}` }}>
-              <th className="text-left py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: colors.text.tertiary }}>
+              <th className="text-left py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: '#F1F5F9' }}>
                 Year
               </th>
-              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: colors.text.tertiary }}>
+              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: '#F1F5F9' }}>
                 Tax Paid
               </th>
-              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: colors.text.tertiary }}>
+              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: '#F1F5F9' }}>
                 Assessed Value
               </th>
-              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: colors.text.tertiary }}>
+              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: '#F1F5F9' }}>
                 Land
               </th>
-              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: colors.text.tertiary }}>
+              <th className="text-right py-2 text-[10px] font-bold uppercase tracking-[0.04em]" style={{ color: '#F1F5F9' }}>
                 Improvements
               </th>
             </tr>

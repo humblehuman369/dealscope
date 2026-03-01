@@ -154,7 +154,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: colors.background.cardUp }}>
-                <span style={{ color: colors.text.tertiary }}>No images available</span>
+                <span style={{ color: '#F1F5F9' }}>No images available</span>
               </div>
             )}
             
@@ -229,7 +229,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
             <span className="flex-1 text-sm font-bold uppercase tracking-[0.08em]" style={{ color: colors.text.primary }}>Property Facts</span>
             <svg 
               className={`w-5 h-5 transition-transform ${expandedSections.facts ? 'rotate-180' : ''}`} 
-              style={{ color: colors.text.tertiary }}
+              style={{ color: '#F1F5F9' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -264,16 +264,16 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                     style={idx < propertyFacts.length - 1 ? { borderBottom: `1px solid ${colors.ui.border}` } : undefined}
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: colors.background.cardUp, color: colors.text.secondary }}>
+                      <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: colors.background.cardUp, color: '#F1F5F9' }}>
                         {renderFactIcon(fact.icon)}
                       </div>
-                      <span className="text-[13px] font-medium" style={{ color: colors.text.secondary }}>{fact.label}</span>
+                      <span className="text-[13px] font-medium" style={{ color: '#F1F5F9' }}>{fact.label}</span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
                       <span className="text-sm font-semibold tabular-nums" style={{ color: fact.highlight ? colors.brand.blue : colors.text.primary }}>
                         {fact.value}
                       </span>
-                      {fact.subValue && <span className="text-[11px]" style={{ color: colors.text.tertiary }}>{fact.subValue}</span>}
+                      {fact.subValue && <span className="text-[11px]" style={{ color: '#F1F5F9' }}>{fact.subValue}</span>}
                     </div>
                   </div>
                 ))}
@@ -294,7 +294,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
             <span className="flex-1 text-sm font-bold uppercase tracking-[0.08em]" style={{ color: colors.text.primary }}>Features & Amenities</span>
             <svg 
               className={`w-5 h-5 transition-transform ${expandedSections.features ? 'rotate-180' : ''}`} 
-              style={{ color: colors.text.tertiary }}
+              style={{ color: '#F1F5F9' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -311,7 +311,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                     className="px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all border-none cursor-pointer"
                     style={{
                       backgroundColor: activeFeatureTab === tab ? colors.brand.blueDeep : colors.background.cardUp,
-                      color: activeFeatureTab === tab ? '#FFFFFF' : colors.text.secondary,
+                      color: activeFeatureTab === tab ? '#FFFFFF' : '#F1F5F9',
                     }}
                     onClick={() => setActiveFeatureTab(tab)}
                   >
@@ -332,7 +332,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-center text-[13px]" style={{ color: colors.text.tertiary }}>
+                  <p className="text-center text-[13px]" style={{ color: '#F1F5F9' }}>
                     No {activeFeatureTab} features listed
                   </p>
                 )}
@@ -354,7 +354,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
             <span className="flex-1 text-sm font-bold uppercase tracking-[0.08em]" style={{ color: colors.text.primary }}>Location</span>
             <svg 
               className={`w-5 h-5 transition-transform ${expandedSections.location ? 'rotate-180' : ''}`} 
-              style={{ color: colors.text.tertiary }}
+              style={{ color: '#F1F5F9' }}
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>

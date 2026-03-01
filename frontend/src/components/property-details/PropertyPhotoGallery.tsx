@@ -73,8 +73,8 @@ export function PropertyPhotoGallery({
           className="relative rounded-[14px] overflow-hidden flex flex-col items-center justify-center gap-3"
           style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
         >
-          <Home size={48} style={{ color: colors.text.tertiary }} />
-          <span className="text-sm" style={{ color: colors.text.tertiary }}>
+          <Home size={48} style={{ color: '#F1F5F9' }} />
+          <span className="text-sm" style={{ color: '#F1F5F9' }}>
             Photos not available
           </span>
           <a

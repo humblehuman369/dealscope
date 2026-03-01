@@ -69,7 +69,7 @@ export function PropertyFeatures({
             className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
             style={{
               backgroundColor: activeTab === tab.id ? colors.brand.blueDeep : colors.background.cardUp,
-              color: activeTab === tab.id ? '#FFFFFF' : colors.text.secondary,
+              color: activeTab === tab.id ? '#FFFFFF' : '#F1F5F9',
               border: activeTab === tab.id ? 'none' : `1px solid ${colors.ui.border}`,
             }}
           >
@@ -89,7 +89,7 @@ export function PropertyFeatures({
       </div>
 
       {currentFeatures.length === 0 && (
-        <p className="text-base text-center py-6" style={{ color: colors.text.tertiary }}>
+        <p className="text-base text-center py-6" style={{ color: '#F1F5F9' }}>
           No {activeTab} features listed
         </p>
       )}
@@ -127,7 +127,7 @@ export function PropertyFeatures({
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: colors.text.tertiary }}
+                style={{ color: '#F1F5F9' }}
               >
                 Construction
               </div>
@@ -140,7 +140,7 @@ export function PropertyFeatures({
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: colors.text.tertiary }}
+                style={{ color: '#F1F5F9' }}
               >
                 Roof
               </div>
@@ -153,7 +153,7 @@ export function PropertyFeatures({
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: colors.text.tertiary }}
+                style={{ color: '#F1F5F9' }}
               >
                 Foundation
               </div>

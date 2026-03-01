@@ -39,7 +39,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
         <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
           Nearby Schools
         </div>
-        <p className="text-sm text-center py-4" style={{ color: colors.text.tertiary }}>
+        <p className="text-sm text-center py-4" style={{ color: '#F1F5F9' }}>
           No school information available
         </p>
       </div>
@@ -79,7 +79,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
                 className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: colors.background.card }}
               >
-                <LevelIcon size={18} style={{ color: colors.text.secondary }} />
+                <LevelIcon size={18} style={{ color: '#F1F5F9' }} />
               </div>
               
               <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
                     </a>
                   )}
                 </div>
-                <div className="text-xs" style={{ color: colors.text.secondary }}>
+                <div className="text-xs" style={{ color: '#F1F5F9' }}>
                   {school.type} · Grades {school.grades} · {school.distance} mi
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
         })}
       </div>
 
-      <p className="mt-3 text-[10px]" style={{ color: colors.text.tertiary }}>
+      <p className="mt-3 text-[10px]" style={{ color: '#F1F5F9' }}>
         School ratings provided by GreatSchools. Ratings are on a scale of 1-10.
       </p>
     </div>

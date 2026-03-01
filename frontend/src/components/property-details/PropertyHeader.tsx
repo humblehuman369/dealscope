@@ -41,7 +41,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
             {property.address.streetAddress}, {property.address.city}, {property.address.state} {property.address.zipcode}
           </h1>
           {property.address.neighborhood && (
-            <p className="text-xs mt-1" style={{ color: colors.text.tertiary }}>
+            <p className="text-xs mt-1" style={{ color: '#F1F5F9' }}>
               {property.address.neighborhood} · {property.address.county}
             </p>
           )}
@@ -52,7 +52,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
           </div>
           <div
             className="text-[10px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: colors.text.tertiary }}
+            style={{ color: '#F1F5F9' }}
           >
             {priceLabel}
           </div>
@@ -65,28 +65,28 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
         style={{ borderTop: `1px solid ${colors.ui.border}` }}
       >
         <div className="flex items-center gap-2">
-          <Bed size={18} style={{ color: colors.text.tertiary }} />
+          <Bed size={18} style={{ color: '#F1F5F9' }} />
           <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{property.bedrooms}</span>
-          <span className="text-xs" style={{ color: colors.text.secondary }}>beds</span>
+          <span className="text-xs" style={{ color: '#F1F5F9' }}>beds</span>
         </div>
         <div className="flex items-center gap-2">
-          <Bath size={18} style={{ color: colors.text.tertiary }} />
+          <Bath size={18} style={{ color: '#F1F5F9' }} />
           <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{property.bathrooms}</span>
-          <span className="text-xs" style={{ color: colors.text.secondary }}>baths</span>
+          <span className="text-xs" style={{ color: '#F1F5F9' }}>baths</span>
         </div>
         <div className="flex items-center gap-2">
-          <Square size={18} style={{ color: colors.text.tertiary }} />
+          <Square size={18} style={{ color: '#F1F5F9' }} />
           <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>
             {formatNumber(property.livingArea)}
           </span>
-          <span className="text-xs" style={{ color: colors.text.secondary }}>sqft</span>
+          <span className="text-xs" style={{ color: '#F1F5F9' }}>sqft</span>
         </div>
         <div className="flex items-center gap-2">
-          <Calendar size={18} style={{ color: colors.text.tertiary }} />
+          <Calendar size={18} style={{ color: '#F1F5F9' }} />
           <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>
             {property.yearBuilt}
           </span>
-          <span className="text-xs" style={{ color: colors.text.secondary }}>built</span>
+          <span className="text-xs" style={{ color: '#F1F5F9' }}>built</span>
         </div>
         {property.daysOnZillow !== undefined && (
           <div
