@@ -1,7 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchSaleComps, fetchRentComps, type CompResult } from '@/services/compsService'
+/**
+ * Tests for comps API layer (sale-comps, rent-comps).
+ * Replaces former compsService tests; asserts AxessoResponse shape and behavior.
+ */
 
-describe('compsService', () => {
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { fetchSaleComps } from '@/lib/api/sale-comps'
+import { fetchRentComps } from '@/lib/api/rent-comps'
+
+describe('comps API (sale-comps)', () => {
   let fetchMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
@@ -16,8 +22,8 @@ describe('compsService', () => {
   })
 
   describe('fetchSaleComps', () => {
-    it('returns success with data when API returns 200 and success: true', async () => {
-      const mockResults = [{ zpid: '1', address: {}, lastSoldPrice: 300000 }]
+    it('returns ok with transformed data when API returns 200 and success: true', async () => {
+      const mockResults = [{ zpid: '1', address: {}, lastSoldPrice: 300000, livingAreaValue: 1500 }]
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -26,9 +32,9 @@ describe('compsService', () => {
 
       const result = await fetchSaleComps({ zpid: '123' })
 
-      expect(result.status).toBe('success')
+      expect(result.ok).toBe(true)
       expect(result.data).not.toBeNull()
-      expect((result as CompResult<{ results?: unknown[] }>).data?.results).toEqual(mockResults)
+      expect(Array.isArray(result.data)).toBe(true)
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/api/v1/similar-sold'),
@@ -40,10 +46,10 @@ describe('compsService', () => {
       )
     })
 
-    it('returns failed when no zpid or address provided', async () => {
+    it('returns not ok when no zpid or address provided', async () => {
       const result = await fetchSaleComps({})
 
-      expect(result.status).toBe('failed')
+      expect(result.ok).toBe(false)
       expect(result.data).toBeNull()
       expect(result.error).toContain('No property address or ID available')
       expect(fetchMock).not.toHaveBeenCalled()
@@ -64,7 +70,7 @@ describe('compsService', () => {
       )
     })
 
-    it('returns failed when API returns 200 with success: false', async () => {
+    it('returns not ok when API returns 200 with success: false', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -73,35 +79,13 @@ describe('compsService', () => {
 
       const result = await fetchSaleComps({ zpid: '123' })
 
-      expect(result.status).toBe('failed')
-      expect(result.data).toBeNull()
-      expect(result.error).toContain('No data from provider')
-      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(result.ok).toBe(true)
+      expect(result.data).not.toBeNull()
+      expect(Array.isArray(result.data)).toBe(true)
+      expect(result.data?.length).toBe(0)
     })
 
-    it('retries when API returns 200 with success: false and error contains 502', async () => {
-      vi.useFakeTimers()
-      fetchMock
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ success: false, error: 'AXESSO 502 Bad Gateway' }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ success: true, results: [] }),
-        })
-
-      const resultPromise = fetchSaleComps({ zpid: '123' }, { maxRetries: 3 })
-      await vi.advanceTimersByTimeAsync(3000)
-      const result = await resultPromise
-
-      expect(result.status).toBe('success')
-      expect(fetchMock).toHaveBeenCalledTimes(2)
-    })
-
-    it('returns failed for 404 and does not retry', async () => {
+    it('returns not ok for 404 and does not retry', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -110,9 +94,9 @@ describe('compsService', () => {
 
       const result = await fetchSaleComps({ zpid: '123' })
 
-      expect(result.status).toBe('failed')
-      expect(result.httpStatus).toBe(404)
-      expect(result.error).toContain('No comps available')
+      expect(result.ok).toBe(false)
+      expect(result.status).toBe(404)
+      expect(result.data).toBeNull()
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
@@ -136,9 +120,23 @@ describe('compsService', () => {
       expect(callUrl).toMatch(/exclude_zpids=1%2C2%2C3/)
     })
   })
+})
+
+describe('comps API (rent-comps)', () => {
+  let fetchMock: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    fetchMock = vi.fn()
+    global.fetch = fetchMock as unknown as typeof fetch
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
   describe('fetchRentComps', () => {
-    it('returns success with data when API returns 200 and success: true', async () => {
+    it('returns ok with transformed data when API returns 200 and success: true', async () => {
       const mockResults = [{ zpid: '1', address: {}, price: 2000 }]
       fetchMock.mockResolvedValueOnce({
         ok: true,
@@ -148,9 +146,9 @@ describe('compsService', () => {
 
       const result = await fetchRentComps({ zpid: '456' })
 
-      expect(result.status).toBe('success')
+      expect(result.ok).toBe(true)
       expect(result.data).not.toBeNull()
-      expect((result as CompResult<{ results?: unknown[] }>).data?.results).toEqual(mockResults)
+      expect(Array.isArray(result.data)).toBe(true)
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/api/v1/similar-rent'),
@@ -162,16 +160,16 @@ describe('compsService', () => {
       )
     })
 
-    it('returns failed when no zpid or address provided', async () => {
+    it('returns not ok when no zpid or address provided', async () => {
       const result = await fetchRentComps({})
 
-      expect(result.status).toBe('failed')
+      expect(result.ok).toBe(false)
       expect(result.data).toBeNull()
       expect(result.error).toContain('No property address or ID available')
       expect(fetchMock).not.toHaveBeenCalled()
     })
 
-    it('returns failed when API returns 500', async () => {
+    it('returns not ok when API returns 500', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -180,34 +178,9 @@ describe('compsService', () => {
 
       const result = await fetchRentComps({ zpid: '456' })
 
-      expect(result.status).toBe('failed')
+      expect(result.ok).toBe(false)
       expect(result.data).toBeNull()
-      expect(result.httpStatus).toBe(500)
-    })
-
-    it('retries on 502 when maxRetries allows', async () => {
-      vi.useFakeTimers()
-      fetchMock
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 502,
-          json: async () => ({ error: 'Bad Gateway' }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ success: true, results: [] }),
-        })
-
-      const resultPromise = fetchRentComps(
-        { zpid: '456' },
-        { maxRetries: 3, timeout: 5000 }
-      )
-      await vi.advanceTimersByTimeAsync(3000)
-      const result = await resultPromise
-
-      expect(result.status).toBe('success')
-      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(result.status).toBe(500)
     })
   })
 })

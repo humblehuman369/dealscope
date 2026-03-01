@@ -11,14 +11,14 @@ import {
   calculateAppraisalValues,
   calculateSimilarityScore,
   calculateSaleAdjustments,
-  type SubjectProperty,
+  type SubjectProperty as AppraisalSubjectProperty,
   type CompProperty,
   type AppraisalResult,
   type CompAdjustment
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
-
-import { fetchSaleComps } from '@/services/compsService'
+import { fetchSaleComps } from '@/lib/api/sale-comps'
+import type { SaleComp, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
 
 // ============================================
 // UTILITIES
@@ -61,134 +61,22 @@ const getFreshnessBadge = (dateString: string): { label: string; color: string; 
   return null
 }
 
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 3959
-  const dLat = (lat2 - lat1) * (Math.PI / 180)
-  const dLon = (lon2 - lon1) * (Math.PI / 180)
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+// Convert SaleComp to appraisal calculation format
+function toCompProperty(comp: SaleComp): CompProperty {
+  return {
+    id: comp.id,
+    zpid: comp.zpid,
+    address: comp.address,
+    price: comp.salePrice,
+    sqft: comp.sqft,
+    beds: comp.beds,
+    baths: comp.baths,
+    yearBuilt: comp.yearBuilt,
+    lotSize: comp.lotSize ?? 0,
+    distance: comp.distanceMiles,
+    pricePerSqft: comp.pricePerSqft,
+  }
 }
-
-// ============================================
-// TYPES
-// ============================================
-interface LocalCompProperty {
-  id: number | string
-  zpid?: string
-  address: string
-  city: string
-  state: string
-  zip: string
-  salePrice: number
-  pricePerSqft: number
-  beds: number
-  baths: number
-  sqft: number
-  lotSize: number
-  yearBuilt: number
-  saleDate: string
-  distance: number
-  image: string
-  latitude: number
-  longitude: number
-}
-
-interface LocalSubjectProperty {
-  address: string
-  city: string
-  state: string
-  zip: string
-  price: number
-  beds: number
-  baths: number
-  sqft: number
-  lotSize: number
-  yearBuilt: number
-  latitude: number
-  longitude: number
-  rehabCost?: number
-}
-
-// ============================================
-// DATA TRANSFORMATION
-// ============================================
-const transformApiResponse = (apiData: Record<string, unknown>, subject: LocalSubjectProperty): LocalCompProperty[] => {
-  const rawResults = (apiData.results || apiData.data || []) as Record<string, unknown>[]
-  
-  return rawResults.map((item: Record<string, unknown>, index: number) => {
-    const comp = (item.property || item) as Record<string, unknown>
-    const address = (comp.address || {}) as Record<string, unknown>
-    
-    let imageUrl = ''
-    const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
-    if (photos?.length) {
-      const photoData = photos[0]
-      const mixedSources = photoData.mixedSources as Record<string, unknown[]> | undefined
-      if (mixedSources?.jpeg?.length) {
-        imageUrl = (mixedSources.jpeg[0] as Record<string, string>).url
-      }
-    }
-    
-    let distance = 0
-    if (subject.latitude && subject.longitude && comp.latitude && comp.longitude) {
-      distance = calculateDistance(
-        subject.latitude, 
-        subject.longitude, 
-        comp.latitude as number, 
-        comp.longitude as number
-      )
-    }
-    
-    const salePrice = parseFloat(String(comp.lastSoldPrice || comp.price || 0))
-    const sqft = parseInt(String(comp.livingAreaValue || 0))
-    
-    let saleDateStr = ''
-    if (comp.dateSold) {
-      saleDateStr = new Date(comp.dateSold as string).toISOString().split('T')[0]
-    }
-    
-    let lotSize = parseFloat(String(comp.lotAreaValue || 0))
-    if (comp.lotAreaUnits === 'Square Feet' || comp.lotAreaUnits === 'sqft') {
-      lotSize = lotSize / 43560
-    }
-
-    return {
-      id: (comp.zpid as string) || index + 1,
-      zpid: comp.zpid as string,
-      address: (address.streetAddress as string) || '',
-      city: (address.city as string) || '',
-      state: (address.state as string) || '',
-      zip: (address.zipcode as string) || '',
-      salePrice,
-      pricePerSqft: sqft > 0 ? Math.round(salePrice / sqft) : 0,
-      beds: parseInt(String(comp.bedrooms || 0)),
-      baths: parseFloat(String(comp.bathrooms || 0)),
-      sqft,
-      lotSize: Math.round(lotSize * 100) / 100,
-      yearBuilt: parseInt(String(comp.yearBuilt || 0)),
-      saleDate: saleDateStr,
-      distance: Math.round(distance * 100) / 100,
-      image: imageUrl,
-      latitude: parseFloat(String(comp.latitude || 0)),
-      longitude: parseFloat(String(comp.longitude || 0)),
-    }
-  })
-}
-
-// Convert local comp to appraisal calculation format
-const toCompProperty = (comp: LocalCompProperty): CompProperty => ({
-  id: comp.id,
-  zpid: comp.zpid,
-  address: comp.address,
-  price: comp.salePrice,
-  sqft: comp.sqft,
-  beds: comp.beds,
-  baths: comp.baths,
-  yearBuilt: comp.yearBuilt,
-  lotSize: comp.lotSize,
-  distance: comp.distance,
-  pricePerSqft: comp.pricePerSqft,
-})
 
 // ============================================
 // COMPONENTS
@@ -470,8 +358,8 @@ const CompCard = ({
   refreshing,
   freshnessBadge
 }: { 
-  comp: LocalCompProperty
-  subject: LocalSubjectProperty
+  comp: SaleComp
+  subject: { address: string; city: string; state: string; zip: string; sqft: number; beds: number; baths: number; yearBuilt: number; lotSize: number; latitude: number; longitude: number }
   isSelected: boolean
   onToggle: () => void
   isExpanded: boolean
@@ -481,7 +369,7 @@ const CompCard = ({
   freshnessBadge?: { label: string; color: string; bgColor: string } | null
 }) => {
   // Calculate similarity and adjustments for this comp
-  const subjectForCalc: SubjectProperty = {
+    const subjectForCalc: AppraisalSubjectProperty = {
     sqft: subject.sqft,
     beds: subject.beds,
     baths: subject.baths,
@@ -523,9 +411,9 @@ const CompCard = ({
       <div className="flex">
         {/* Image */}
         <div className="relative w-24 h-24 flex-shrink-0 bg-slate-100">
-          {comp.image ? (
+          {comp.imageUrl ? (
             <img 
-              src={comp.image} 
+              src={comp.imageUrl} 
               alt="" 
               className="w-full h-full object-cover" 
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
@@ -536,7 +424,7 @@ const CompCard = ({
             </div>
           )}
           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm">
-            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distance?.toFixed(2)} mi</span>
+            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distanceMiles?.toFixed(2)} mi</span>
           </div>
         </div>
 
@@ -640,7 +528,7 @@ const CompCard = ({
 export function SalesCompsSection() {
   const { propertyData, assumptions, updateAssumption } = useWorksheetStore()
   
-  const [comps, setComps] = useState<LocalCompProperty[]>([])
+  const [comps, setComps] = useState<SaleComp[]>([])
   const [loading, setLoading] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
   const [selectedCompIds, setSelectedCompIds] = useState<Set<string | number>>(new Set())
@@ -658,7 +546,7 @@ export function SalesCompsSection() {
 
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
-  const subject: LocalSubjectProperty = useMemo(() => ({
+  const subject = useMemo(() => ({
     address: snapshot?.street || snapshot?.streetAddress || snapshot?.address || propertyData?.address_street || '',
     city: snapshot?.city || propertyData?.address_city || '',
     state: snapshot?.state || propertyData?.address_state || '',
@@ -676,13 +564,31 @@ export function SalesCompsSection() {
 
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
+  const subjectForComps: CompsSubjectProperty | undefined = useMemo(() => (subject.address || zpid ? {
+    zpid: zpid || '',
+    address: subject.address,
+    city: subject.city,
+    state: subject.state,
+    zip: subject.zip,
+    beds: subject.beds,
+    baths: subject.baths,
+    sqft: subject.sqft,
+    yearBuilt: subject.yearBuilt,
+    propertyType: '',
+    listPrice: subject.price,
+    zestimate: null,
+    rentZestimate: null,
+    latitude: subject.latitude,
+    longitude: subject.longitude,
+  } : undefined), [subject, zpid])
+
   // Calculate appraisal values from selected comps
   const appraisalResult = useMemo(() => {
     const selectedComps = comps
       .filter(c => selectedCompIds.has(c.id))
       .map(toCompProperty)
     
-    const subjectForCalc: SubjectProperty = {
+    const subjectForCalc: AppraisalSubjectProperty = {
       sqft: subject.sqft,
       beds: subject.beds,
       baths: subject.baths,
@@ -699,27 +605,26 @@ export function SalesCompsSection() {
     setLoading(true)
     setLoadFailed(false)
 
-    const params: { zpid?: string; address?: string; limit: number; offset: number; exclude_zpids?: string } = {
+    const identifier = {
+      zpid: zpid || undefined,
+      address: subject.address ? `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim() : undefined,
       limit: 10,
       offset,
+      exclude_zpids: excludeZpids.length > 0 ? excludeZpids.join(',') : undefined,
     }
-    if (zpid) params.zpid = zpid
-    else if (subject.address) params.address = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
-    if (excludeZpids.length > 0) params.exclude_zpids = excludeZpids.join(',')
 
-    const result = await fetchSaleComps(params)
+    const result = await fetchSaleComps(identifier, subjectForComps ?? undefined)
 
     setLoading(false)
-    if (result.status === 'success' && result.data) {
-      const transformed = transformApiResponse(result.data as Record<string, unknown>, subject)
-      setComps(transformed)
+    if (result.ok && result.data) {
+      setComps(result.data)
       setLoadFailed(false)
-      return transformed
+      return result.data
     }
     setLoadFailed(true)
     setComps([])
     return []
-  }, [subject, zpid])
+  }, [subject, zpid, subjectForComps])
 
   // Initial fetch (non-blocking; after section mounts)
   useEffect(() => {
@@ -1004,19 +909,19 @@ export function SalesCompsSection() {
         <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">
-              {comps.filter(c => c.distance <= 0.5).length} of {comps.length} comps within 0.5 mi
+              {comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} comps within 0.5 mi
             </span>
             <span className={`text-xs font-semibold ${
-              comps.filter(c => c.distance <= 0.5).length >= 3 
+              comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
                 ? 'text-teal-600' 
-                : comps.filter(c => c.distance <= 1).length >= 3 
+                : comps.filter(c => c.distanceMiles <= 1).length >= 3 
                   ? 'text-amber-500' 
                   : 'text-slate-500'
             }`}>
               Location Quality: {
-                comps.filter(c => c.distance <= 0.5).length >= 3 
+                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
                   ? 'EXCELLENT' 
-                  : comps.filter(c => c.distance <= 1).length >= 3 
+                  : comps.filter(c => c.distanceMiles <= 1).length >= 3 
                     ? 'GOOD' 
                     : 'FAIR'
               }
