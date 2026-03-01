@@ -149,6 +149,7 @@ interface DealGapIQHomepageProps {
 export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
   const [address, setAddress] = useState('');
+  const [navOpen, setNavOpen] = useState(false);
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,7 +170,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       </Suspense>
 
       {/* ═══════════ NAV ═══════════ */}
-      <nav style={{
+      <nav className="dgiq-nav" style={{
         position: "fixed" as const, top: 0, left: 0, right: 0, zIndex: 100,
         padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between",
         background: "rgba(0,0,0,0.88)", backdropFilter: "blur(20px)",
@@ -178,11 +179,56 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <Link href="/" style={{ fontFamily: s.fontLogo, fontSize: 22, fontWeight: 700, letterSpacing: -0.5, color: "#fff", textDecoration: "none" }}>
           DealGap<span style={{ color: s.teal }}>IQ</span>
         </Link>
-        <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
+        <div className="dgiq-nav-desktop-links" style={{ display: "flex", gap: 28, alignItems: "center" }}>
           <Link href="/about" style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 500 }}>Product</Link>
           <Link href="/pricing" style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 500 }}>Pricing</Link>
           <Link href="/login" style={{ color: s.teal, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 600 }}>Login / Register</Link>
         </div>
+        <button
+          type="button"
+          className="dgiq-nav-hamburger"
+          onClick={() => setNavOpen((o) => !o)}
+          aria-label={navOpen ? "Close menu" : "Open menu"}
+          aria-expanded={navOpen}
+          style={{
+            width: 44,
+            minWidth: 44,
+            height: 44,
+            minHeight: 44,
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            color: "#fff",
+            cursor: "pointer",
+            flexDirection: "column" as const,
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 5,
+          }}
+        >
+          <span style={{ width: 20, height: 2, background: "currentColor", borderRadius: 1 }} />
+          <span style={{ width: 20, height: 2, background: "currentColor", borderRadius: 1 }} />
+          <span style={{ width: 20, height: 2, background: "currentColor", borderRadius: 1 }} />
+        </button>
+        {navOpen && (
+          <div className="dgiq-nav-dropdown" style={{
+            position: "absolute" as const,
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "rgba(0,0,0,0.96)",
+            borderBottom: "1px solid rgba(14,165,233,0.2)",
+            padding: "12px 24px 20px",
+            display: "flex",
+            flexDirection: "column" as const,
+            gap: 4,
+            zIndex: 101,
+          }}>
+            <Link href="/about" onClick={() => setNavOpen(false)} style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 500, padding: "12px 0" }}>Product</Link>
+            <Link href="/pricing" onClick={() => setNavOpen(false)} style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 500, padding: "12px 0" }}>Pricing</Link>
+            <Link href="/login" onClick={() => setNavOpen(false)} style={{ color: s.teal, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 600, padding: "12px 0" }}>Login / Register</Link>
+          </div>
+        )}
       </nav>
 
       {/* ═══════════ HERO ═══════════ */}
