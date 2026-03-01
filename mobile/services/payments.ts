@@ -1,12 +1,15 @@
 /**
  * Payment abstraction layer — RevenueCat SDK wrapper.
  *
- * Unified interface for IAP (iOS via Apple) and Stripe (Android).
+ * Unified interface for IAP (iOS via Apple) and Google Play (Android).
  * RevenueCat handles routing automatically based on Platform.OS.
  *
- * Products configured in App Store Connect / RevenueCat:
+ * Products configured in RevenueCat:
  * - pro_monthly: $29/month with 7-day trial
  * - pro_annual: $290/year with 7-day trial
+ * - pro_lifetime: one-time lifetime purchase
+ *
+ * Entitlement: "pro" (maps to DealGapIQ Pro)
  */
 
 import { Platform } from 'react-native';
@@ -17,10 +20,14 @@ import Purchases, {
   type PurchasesEntitlementInfo,
   LOG_LEVEL,
 } from 'react-native-purchases';
+import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
 const APPLE_KEY = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_KEY ?? '';
 const GOOGLE_KEY = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY ?? '';
+const TEST_KEY = 'test_xzbytpAbtdKvskFqkECPaqULtZO';
 const PRO_ENTITLEMENT_ID = 'pro';
+
+export { PAYWALL_RESULT };
 
 let _initialized = false;
 
@@ -131,18 +138,35 @@ function deriveStatus(entitlement: PurchasesEntitlementInfo | undefined): Detail
 
 export async function initPayments(): Promise<void> {
   if (_initialized) return;
-  const apiKey = Platform.OS === 'ios' ? APPLE_KEY : GOOGLE_KEY;
+  const platformKey = Platform.OS === 'ios' ? APPLE_KEY : GOOGLE_KEY;
+  const apiKey = platformKey || TEST_KEY;
   if (!apiKey) {
     console.log('[Payments] No RevenueCat API key — skipping init');
     return;
   }
   try {
-    Purchases.setLogLevel(LOG_LEVEL.WARN);
+    Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN);
     Purchases.configure({ apiKey });
     _initialized = true;
+    if (__DEV__) {
+      console.log(`[Payments] RevenueCat initialized (${platformKey ? 'production' : 'test'} key)`);
+    }
   } catch (err) {
     console.error('[Payments] Failed to configure RevenueCat:', err);
   }
+}
+
+type CustomerInfoListener = (info: CustomerInfo) => void;
+const _listeners = new Set<CustomerInfoListener>();
+
+export function addCustomerInfoListener(listener: CustomerInfoListener): () => void {
+  _listeners.add(listener);
+  if (_initialized && _listeners.size === 1) {
+    Purchases.addCustomerInfoUpdateListener((info) => {
+      _listeners.forEach((l) => l(info));
+    });
+  }
+  return () => { _listeners.delete(listener); };
 }
 
 export async function identifyUser(userId: string): Promise<void> {
@@ -246,3 +270,44 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
 export function isPaymentsInitialized(): boolean {
   return _initialized;
 }
+
+// ---------------------------------------------------------------------------
+// RevenueCat UI — Paywalls & Customer Center
+// ---------------------------------------------------------------------------
+
+export async function presentPaywall(): Promise<PAYWALL_RESULT> {
+  if (!_initialized) {
+    console.warn('[Payments] Cannot present paywall — SDK not initialized');
+    return PAYWALL_RESULT.NOT_PRESENTED;
+  }
+  return RevenueCatUI.presentPaywall();
+}
+
+export async function presentPaywallIfNeeded(): Promise<PAYWALL_RESULT> {
+  if (!_initialized) {
+    console.warn('[Payments] Cannot present paywall — SDK not initialized');
+    return PAYWALL_RESULT.NOT_PRESENTED;
+  }
+  return RevenueCatUI.presentPaywallIfNeeded({
+    requiredEntitlementIdentifier: PRO_ENTITLEMENT_ID,
+  });
+}
+
+export async function presentCustomerCenter(): Promise<void> {
+  if (!_initialized) {
+    console.warn('[Payments] Cannot present customer center — SDK not initialized');
+    return;
+  }
+  return RevenueCatUI.presentCustomerCenter({
+    callbacks: {
+      onFeedbackSurveyCompleted: ({ feedbackSurveyOptionId }) => {
+        if (__DEV__) console.log('[Payments] Feedback survey:', feedbackSurveyOptionId);
+      },
+      onRestoreCompleted: () => {
+        if (__DEV__) console.log('[Payments] Restore completed via Customer Center');
+      },
+    },
+  });
+}
+
+export { RevenueCatUI };

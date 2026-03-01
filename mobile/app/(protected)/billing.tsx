@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Platform,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -19,18 +20,22 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { UsageBar } from '@/components/billing/UsageBar';
 import { colors, fontFamily, fontSize, spacing, radius } from '@/constants/tokens';
 import type { PurchasesPackage } from 'react-native-purchases';
+import { PAYWALL_RESULT } from '@/services/payments';
 
 export default function BillingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
     isPro,
+    isLifetime,
     offerings,
     expiresDate,
     willRenew,
     purchase,
     restore,
     manageSubscription,
+    presentPaywall,
+    presentCustomerCenter,
     isPurchasing,
     isRestoring,
     purchaseError,
@@ -177,12 +182,27 @@ export default function BillingScreen() {
 
       {/* Actions */}
       <View style={styles.actionsSection}>
-        {isPro && (
+        {!isPro && (
           <Button
-            title="Manage Subscription"
-            variant="secondary"
-            onPress={manageSubscription}
+            title="View Plans & Subscribe"
+            onPress={presentPaywall}
           />
+        )}
+        {isPro && (
+          <>
+            <Button
+              title="Manage Subscription"
+              variant="secondary"
+              onPress={presentCustomerCenter}
+            />
+            {!isLifetime && (
+              <Pressable onPress={manageSubscription}>
+                <Text style={styles.restoreText}>
+                  Manage via {Platform.OS === 'ios' ? 'App Store' : 'Google Play'}
+                </Text>
+              </Pressable>
+            )}
+          </>
         )}
         <Pressable onPress={handleRestore} disabled={isRestoring}>
           <Text style={styles.restoreText}>
