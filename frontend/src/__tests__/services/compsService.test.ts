@@ -151,7 +151,7 @@ describe('comps API (rent-comps)', () => {
       expect(Array.isArray(result.data)).toBe(true)
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/similar-rent'),
+        expect.stringContaining('/api/v1/rentcast/rental-comps'),
         expect.objectContaining({ method: 'GET' })
       )
       expect(fetchMock).toHaveBeenCalledWith(

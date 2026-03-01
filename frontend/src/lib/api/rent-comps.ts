@@ -7,7 +7,7 @@ import { axessoGet, type AxessoResponse } from './axesso-client'
 import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
 import type { CompsIdentifier, RentComp, SubjectProperty } from './types'
 
-const SIMILAR_RENT_ENDPOINT = '/api/v1/similar-rent'
+const SIMILAR_RENT_ENDPOINT = '/api/v1/rentcast/rental-comps'
 
 interface BackendCompsResponse {
   success?: boolean
@@ -56,10 +56,10 @@ export function transformRentComps(
       ? (item as { property: unknown }).property
       : item) as Record<string, unknown>
     const addr = (comp?.address as Record<string, unknown>) ?? {}
-    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
+    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.formattedAddress ?? comp?.addressLine1 ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
     const city = toStr(addr.city ?? comp?.city ?? '')
     const state = toStr(addr.state ?? comp?.state ?? '')
-    const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zip ?? comp?.zipcode ?? '')
+    const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zipCode ?? comp?.zip ?? comp?.zipcode ?? '')
     const units = comp?.units as unknown[] | undefined
     const unitPrice = Array.isArray(units) && units.length > 0 ? (units[0] as Record<string, unknown>)?.price : undefined
     const monthlyRent = toNum(
@@ -72,7 +72,7 @@ export function transformRentComps(
         unitPrice ??
         0
     )
-    const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
+    const sqft = toNum(comp?.squareFootage ?? comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
     const listingDateRaw = comp?.datePosted ?? comp?.listingDate ?? comp?.listedDate ?? comp?.dateSold ?? comp?.seenDate ?? comp?.lastSeenDate ?? comp?.dateSeen ?? ''
     const listingDate = listingDateRaw ? new Date(listingDateRaw as string).toISOString().split('T')[0] : ''
     const daysAgo = listingDate
@@ -209,7 +209,7 @@ export async function fetchRentComps(
 
   const transformed = transformRentComps(res.data, subject)
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[comps_api] similar-rent transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+    console.log('[comps_api] rental-comps transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
   }
   return {
     ...res,
