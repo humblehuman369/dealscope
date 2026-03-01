@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
+import { trackEvent } from '@/lib/eventTracking'
 
 /* ── Design tokens (DealGapIQ billing design system) ─────────── */
 
@@ -169,6 +170,7 @@ function BillingContent() {
         success_url: `${origin}/billing?success=true`,
         cancel_url: `${origin}/billing?canceled=true`,
       })
+      trackEvent('checkout_started', { source: 'billing_page' })
       window.location.href = checkout_url
     } catch (err: unknown) {
       let msg = 'Could not start checkout. Please try again.'

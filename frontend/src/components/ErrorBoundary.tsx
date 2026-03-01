@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Component, type ErrorInfo, type ReactNode } from 'react'
+import * as Sentry from '@sentry/browser'
 import { AlertTriangle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface ErrorBoundaryProps {
@@ -30,6 +31,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    if (typeof window !== 'undefined') {
+      Sentry.captureException(error)
+    }
     if (process.env.NODE_ENV === 'development') {
       console.error('[ErrorBoundary]', error)
       console.error('[ErrorBoundary] Component stack:', errorInfo.componentStack)

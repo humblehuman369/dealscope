@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Camera, Search, X, ArrowLeft } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
+import { trackEvent } from '@/lib/eventTracking';
 
 interface SearchPropertyModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (address.trim()) {
+      trackEvent('property_searched', { source: 'search_modal' });
       onClose();
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
       router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);

@@ -8,6 +8,7 @@ import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
+import { trackEvent } from '@/lib/eventTracking'
 
 // ── Dynamic imports — each worksheet is 800-2000+ lines. ──
 // Only the active strategy is loaded; the rest are code-split out.
@@ -70,6 +71,12 @@ export default function StrategyWorksheetPage() {
       router.replace(`/worksheet/${propertyId}/ltr`)
     }
   }, [isValidStrategy, propertyId, router])
+
+  useEffect(() => {
+    if (propertyId && strategyParam && property) {
+      trackEvent('worksheet_viewed', { strategy: strategyParam })
+    }
+  }, [propertyId, strategyParam, property])
 
   if (isLoading) {
     return (

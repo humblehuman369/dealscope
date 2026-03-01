@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@dealscope/shared": "*",
+    "@vercel/analytics": "^1.4.0",
     "@hookform/resolvers": "^3.3.2",
     "@sentry/browser": "^8.55.0",
     "@stripe/react-stripe-js": "^5.6.0",
