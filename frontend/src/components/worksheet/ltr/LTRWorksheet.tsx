@@ -26,11 +26,11 @@ const strategies = [
 const getGradeStyles = (grade: string) => {
   switch(grade) {
     case 'A': return { bg: '#E0F7FA', text: '#0EA5E9' }
-    case 'B': return { bg: '#F1F5F9', text: '#64748B' }
+    case 'B': return { bg: '#F1F5F9', text: '#F1F5F9' }
     case 'C': return { bg: '#FEF3C7', text: '#D97706' }
     case 'D': return { bg: '#FEE2E2', text: '#E11D48' }
     case 'F': return { bg: '#FEE2E2', text: '#E11D48' }
-    default: return { bg: '#F1F5F9', text: '#64748B' }
+    default: return { bg: '#F1F5F9', text: '#F1F5F9' }
   }
 }
 
@@ -389,7 +389,7 @@ export function LTRWorksheet({
           <div style={{ flex: 1, textAlign: 'center' }}>
             <p style={{ 
               fontSize: '11px', 
-              color: '#94A3B8', 
+              color: '#F1F5F9', 
               margin: '0 0 4px 0',
               letterSpacing: '0.02em'
             }}>
@@ -472,7 +472,7 @@ export function LTRWorksheet({
                 <p style={{
                   fontSize: '10px',
                   fontWeight: 700,
-                  color: '#94A3B8',
+                  color: '#F1F5F9',
                   margin: 0,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase'
@@ -581,22 +581,22 @@ export function LTRWorksheet({
                 justifyContent: 'center' 
               }}>
                 <span style={{ fontSize: '32px', fontWeight: 700, color: '#0A1628', lineHeight: 1 }}>{profitQualityScore}</span>
-                <span style={{ fontSize: '11px', color: '#94A3B8' }}>/100</span>
+                <span style={{ fontSize: '11px', color: '#F1F5F9' }}>/100</span>
               </div>
             </div>
 
             {/* Score Details */}
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '14px', color: '#64748B' }}>Strategy Fit</span>
+                <span style={{ fontSize: '14px', color: '#F1F5F9' }}>Strategy Fit</span>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>{getStrategyFit(profitQualityScore)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '14px', color: '#64748B' }}>Risk Level</span>
+                <span style={{ fontSize: '14px', color: '#F1F5F9' }}>Risk Level</span>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>{getRiskLevel(profitQualityScore)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '14px', color: '#64748B' }}>Protection</span>
+                <span style={{ fontSize: '14px', color: '#F1F5F9' }}>Protection</span>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: protectionColor }}>{getProtection(calc.dscr)}</span>
               </div>
             </div>
@@ -612,7 +612,7 @@ export function LTRWorksheet({
               marginTop: '16px',
               background: 'none',
               border: 'none',
-              color: '#94A3B8',
+              color: '#F1F5F9',
               fontSize: '14px',
               cursor: 'pointer',
               padding: 0
@@ -641,11 +641,11 @@ export function LTRWorksheet({
               gap: '12px'
             }}>
               <div>
-                <p style={{ fontSize: '10px', color: '#94A3B8', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Return Profile</p>
+                <p style={{ fontSize: '10px', color: '#F1F5F9', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Return Profile</p>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628', margin: 0 }}>Yield Focused</p>
               </div>
               <div>
-                <p style={{ fontSize: '10px', color: '#94A3B8', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Deal Rating</p>
+                <p style={{ fontSize: '10px', color: '#F1F5F9', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Deal Rating</p>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: dealRatingColor, margin: 0 }}>{getDealRating(profitQualityScore)}</p>
               </div>
             </div>
@@ -713,7 +713,7 @@ export function LTRWorksheet({
               width="20" height="20" 
               fill="none" 
               viewBox="0 0 24 24" 
-              stroke="#94A3B8" 
+              stroke="#F1F5F9" 
               strokeWidth={1.5}
               style={{ transform: expandedSections.returns ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
@@ -738,7 +738,7 @@ export function LTRWorksheet({
                   >
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1628', margin: '0 0 2px 0' }}>{row.metric}</p>
-                      <p style={{ fontSize: '12px', color: '#94A3B8', margin: 0 }}>{row.status}</p>
+                      <p style={{ fontSize: '12px', color: '#F1F5F9', margin: 0 }}>{row.status}</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ 
@@ -810,7 +810,7 @@ export function LTRWorksheet({
               width="20" height="20" 
               fill="none" 
               viewBox="0 0 24 24" 
-              stroke="#94A3B8" 
+              stroke="#F1F5F9" 
               strokeWidth={1.5}
               style={{ transform: expandedSections.cashFlow ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
@@ -835,7 +835,7 @@ export function LTRWorksheet({
                   >
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 500, color: '#0A1628', margin: '0 0 2px 0' }}>{row.metric}</p>
-                      <p style={{ fontSize: '12px', color: '#94A3B8', margin: 0 }}>{row.status}</p>
+                      <p style={{ fontSize: '12px', color: '#F1F5F9', margin: 0 }}>{row.status}</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ 
@@ -903,14 +903,14 @@ export function LTRWorksheet({
               </div>
               <div>
                 <span style={{ fontSize: '15px', fontWeight: 600, color: '#0A1628', display: 'block' }}>At-a-Glance</span>
-                <span style={{ fontSize: '12px', color: '#94A3B8' }}>Performance breakdown</span>
+                <span style={{ fontSize: '12px', color: '#F1F5F9' }}>Performance breakdown</span>
               </div>
             </div>
             <svg 
               width="20" height="20" 
               fill="none" 
               viewBox="0 0 24 24" 
-              stroke="#94A3B8" 
+              stroke="#F1F5F9" 
               strokeWidth={1.5}
               style={{ transform: expandedSections.atGlance ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
@@ -1000,7 +1000,7 @@ export function LTRWorksheet({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              color: '#64748B',
+              color: '#F1F5F9',
               fontSize: '14px',
               padding: '12px',
               cursor: 'pointer'

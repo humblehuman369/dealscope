@@ -46,8 +46,8 @@ const COLORS = {
   surface100: '#F1F5F9',
   surface200: '#E2E8F0',
   surface300: '#CBD5E1',
-  surface400: '#94A3B8',
-  surface500: '#64748B',
+  surface400: '#F1F5F9',
+  surface500: '#F1F5F9',
   surface600: '#475569',
   surface700: '#334155',
 }
@@ -341,7 +341,7 @@ export function IQVerdictScreen({
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
       <div className={`text-[9px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        recommended ? 'text-[#0EA5E9]' : 'text-[#64748B]'
+        recommended ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'
       }`}>
         {label}
         <HelpCircle className="w-3 h-3 text-[#CBD5E1]" />
@@ -349,7 +349,7 @@ export function IQVerdictScreen({
       <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
         {formatPrice(value)}
       </div>
-      <div className="text-[9px] text-[#94A3B8] leading-tight">{desc}</div>
+      <div className="text-[9px] text-[#F1F5F9] leading-tight">{desc}</div>
     </div>
   )
 
@@ -358,13 +358,13 @@ export function IQVerdictScreen({
     <div className="flex justify-between items-center py-2">
       <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
         {icon === 'clock' ? (
-          <Clock className="w-4 h-4 text-[#94A3B8]" />
+          <Clock className="w-4 h-4 text-[#F1F5F9]" />
         ) : (
-          <AlertTriangle className="w-4 h-4 text-[#94A3B8]" />
+          <AlertTriangle className="w-4 h-4 text-[#F1F5F9]" />
         )}
         {label}
       </div>
-      <span className={`text-[13px] font-semibold ${positive ? 'text-[#0EA5E9]' : 'text-[#94A3B8]'}`}>
+      <span className={`text-[13px] font-semibold ${positive ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'}`}>
         {value}
       </span>
     </div>
@@ -403,14 +403,14 @@ export function IQVerdictScreen({
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-[#0EA5E9] mb-0.5">{verdictInfo.label}</div>
-            <div className="text-[13px] text-[#64748B] mb-2">{verdictInfo.sublabel}</div>
+            <div className="text-[13px] text-[#F1F5F9] mb-2">{verdictInfo.sublabel}</div>
             <div className="flex gap-3 flex-wrap">
-              <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                <TrendingDown className="w-3 h-3 text-[#94A3B8]" />
+              <span className="flex items-center gap-1 text-[11px] text-[#F1F5F9]">
+                <TrendingDown className="w-3 h-3 text-[#F1F5F9]" />
                 Gap: <span className="font-semibold text-[#0EA5E9]">{opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%</span>
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                <Settings2 className="w-3 h-3 text-[#94A3B8]" />
+              <span className="flex items-center gap-1 text-[11px] text-[#F1F5F9]">
+                <Settings2 className="w-3 h-3 text-[#F1F5F9]" />
                 Motivation: <span className="font-semibold text-[#0EA5E9]">{sellerMotivation.level}</span>
               </span>
             </div>
@@ -429,7 +429,7 @@ export function IQVerdictScreen({
           <div className="flex justify-between items-start mb-1">
             <div>
               <div className="text-[15px] font-bold text-[#0A1628]">YOUR INVESTMENT ANALYSIS</div>
-              <div className="text-xs text-[#64748B]">
+              <div className="text-xs text-[#F1F5F9]">
                 Based on YOUR financing terms ({((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}% down, {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%)
               </div>
             </div>
@@ -457,7 +457,7 @@ export function IQVerdictScreen({
 
           {/* Price Cards */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
+            <span className="text-[13px] text-[#F1F5F9]">Three ways to approach this deal:</span>
             <button 
               className="flex items-center gap-1.5 text-[#0EA5E9] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setShowCalculation(!showCalculation)}
@@ -512,35 +512,35 @@ export function IQVerdictScreen({
               
               <div className="grid grid-cols-2 gap-4 text-[11px]">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">FINANCING</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#F1F5F9] mb-2">FINANCING</div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Down Payment</span>
+                      <span className="text-[#F1F5F9]">Down Payment</span>
                       <span className="font-medium text-[#0A1628]">{((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Interest Rate</span>
+                      <span className="text-[#F1F5F9]">Interest Rate</span>
                       <span className="font-medium text-[#0A1628]">{((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Loan Term</span>
+                      <span className="text-[#F1F5F9]">Loan Term</span>
                       <span className="font-medium text-[#0A1628]">{defaults?.financing?.loan_term_years ?? 30} years</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">EXPENSES</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#F1F5F9] mb-2">EXPENSES</div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Vacancy</span>
+                      <span className="text-[#F1F5F9]">Vacancy</span>
                       <span className="font-medium text-[#0A1628]">{((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Management</span>
+                      <span className="text-[#F1F5F9]">Management</span>
                       <span className="font-medium text-[#0A1628]">{((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Maintenance</span>
+                      <span className="text-[#F1F5F9]">Maintenance</span>
                       <span className="font-medium text-[#0A1628]">{((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
@@ -571,7 +571,7 @@ export function IQVerdictScreen({
           {/* Deal Gap */}
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
+              <TrendingDown className="w-[18px] h-[18px] text-[#F1F5F9]" />
               Deal Gap
             </div>
             <div className="text-lg font-bold text-[#0EA5E9]">
@@ -581,15 +581,15 @@ export function IQVerdictScreen({
 
           <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
+              <span className="text-[13px] text-[#F1F5F9]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
               <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">Your Target</span>
+              <span className="text-[13px] text-[#F1F5F9]">Your Target</span>
               <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(userTargetPrice)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">Discount needed</span>
+              <span className="text-[13px] text-[#F1F5F9]">Discount needed</span>
               <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(Math.abs(discountNeeded))}</span>
             </div>
           </div>
@@ -597,19 +597,19 @@ export function IQVerdictScreen({
           {/* Seller Motivation */}
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <Target className="w-[18px] h-[18px] text-[#64748B]" />
+              <Target className="w-[18px] h-[18px] text-[#F1F5F9]" />
               Seller Motivation
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
                 {sellerMotivation.level}
               </span>
-              <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
+              <span className="text-xs text-[#F1F5F9]">{sellerMotivation.score}</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center py-2">
-            <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
+            <span className="text-[13px] text-[#F1F5F9]">Max achievable discount</span>
             <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
           </div>
 
@@ -631,7 +631,7 @@ export function IQVerdictScreen({
         {/* Additional Opportunity Factors */}
         <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
           <div className="flex justify-between items-center">
-            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#64748B]">
+            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#F1F5F9]">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
               </svg>
@@ -670,7 +670,7 @@ export function IQVerdictScreen({
           <ArrowRight className="w-[18px] h-[18px]" />
         </button>
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#F1F5F9] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors"
         >
           <Download className="w-4 h-4" />
           Export PDF Report

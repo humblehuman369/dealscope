@@ -353,7 +353,7 @@ export function VerdictIQPageNew({
         </button>
         
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#0A1628] transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#F1F5F9] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#0A1628] transition-colors disabled:opacity-50"
           onClick={handleExport}
           disabled={isExporting}
         >

@@ -239,7 +239,7 @@ function StrategyContent() {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: colors.text.secondary }}>Loading strategy...</p>
+          <p style={{ color: '#F1F5F9' }}>Loading strategy...</p>
         </div>
       </div>
     )
@@ -587,7 +587,7 @@ function StrategyContent() {
               ].map(([label, value, strike, color], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label as string}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: colors.text.secondary } : {}) }}>{value as string}</span>
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: '#F1F5F9' } : {}) }}>{value as string}</span>
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
@@ -775,9 +775,9 @@ function StrategyContent() {
           <table className="w-full">
             <thead>
               <tr className="border-b" style={{ borderColor: colors.ui.border }}>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: colors.text.secondary }}>Metric</th>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: colors.text.secondary }}>This Deal</th>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: colors.text.secondary }}>Target</th>
+                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Metric</th>
+                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>This Deal</th>
+                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Target</th>
                 <th className="py-3"></th>
               </tr>
             </thead>
@@ -786,7 +786,7 @@ function StrategyContent() {
                 <tr key={i} className="border-b" style={{ borderColor: colors.ui.border }}>
                   <td className="py-3 text-sm font-medium" style={{ color: colors.text.primary }}>{b.metric}</td>
                   <td className="py-3 text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{b.value}</td>
-                  <td className="py-3 text-sm font-medium tabular-nums" style={{ color: colors.text.secondary }}>{b.target}</td>
+                  <td className="py-3 text-sm font-medium tabular-nums" style={{ color: '#F1F5F9' }}>{b.target}</td>
                   <td className="py-3 text-right">
                     <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
                       style={{
@@ -831,7 +831,7 @@ function StrategyContent() {
               >
                 Create Free Account
               </button>
-              <p className="text-xs" style={{ color: colors.text.secondary }}>No credit card · 3 free scans per month</p>
+              <p className="text-xs" style={{ color: '#F1F5F9' }}>No credit card · 3 free scans per month</p>
             </>
           )}
         </section>
@@ -847,7 +847,7 @@ export default function StrategyPage() {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#94A3B8' }}>Loading strategy...</p>
+          <p style={{ color: '#F1F5F9' }}>Loading strategy...</p>
         </div>
       </div>
     }>

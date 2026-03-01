@@ -34,7 +34,7 @@ function getAssessmentStyle(assessment: Assessment): { bg: string; text: string;
     case 'POOR':
       return { bg: 'bg-transparent', text: 'text-[#E11D48]', border: 'border-[#E11D48]' }
     default:
-      return { bg: 'bg-[#64748B]', text: 'text-white', border: 'border-[#64748B]' }
+      return { bg: 'bg-[#F1F5F9]', text: 'text-white', border: 'border-[#F1F5F9]' }
   }
 }
 
@@ -48,16 +48,16 @@ export function PerformanceMetricsTable({ metrics }: PerformanceMetricsTableProp
 
       {/* Table Header Row */}
       <div className="grid grid-cols-4 px-5 py-2 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-        <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wide">
+        <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide">
           Metric
         </span>
-        <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wide text-center">
+        <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide text-center">
           Value
         </span>
-        <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wide text-center">
+        <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide text-center">
           Benchmark
         </span>
-        <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wide text-right">
+        <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide text-right">
           Assessment
         </span>
       </div>
@@ -82,7 +82,7 @@ export function PerformanceMetricsTable({ metrics }: PerformanceMetricsTableProp
               </span>
               
               {/* Benchmark */}
-              <span className="text-xs text-[#94A3B8] text-center">
+              <span className="text-xs text-[#F1F5F9] text-center">
                 {metric.benchmark}
               </span>
               

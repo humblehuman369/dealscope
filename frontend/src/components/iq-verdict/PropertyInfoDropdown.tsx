@@ -80,7 +80,7 @@ export function PropertyInfoDropdown({
         </div>
         
         <ChevronUp 
-          className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isOpen ? '' : 'rotate-180'}`}
+          className={`w-5 h-5 text-[#F1F5F9] transition-transform duration-200 ${isOpen ? '' : 'rotate-180'}`}
         />
       </button>
 
@@ -98,7 +98,7 @@ export function PropertyInfoDropdown({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Home className="w-6 h-6 text-[#94A3B8]" />
+                  <Home className="w-6 h-6 text-[#F1F5F9]" />
                 </div>
               )}
             </div>
@@ -108,29 +108,29 @@ export function PropertyInfoDropdown({
               {/* Top Row: Beds, Baths, Sqft */}
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0A1628]">{beds}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Beds</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Beds</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0A1628]">{baths}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Baths</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Baths</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0A1628]">{formatNumber(sqft)}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Sqft</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Sqft</span>
               </div>
 
               {/* Bottom Row: Est. Value, Est. Rent, Status */}
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedValue)}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Est. Value</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Est. Value</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedRent)}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Est. Rent</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Est. Rent</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-[#0A1628]">{displayStatus}</span>
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">Status</span>
+                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Status</span>
               </div>
             </div>
           </div>

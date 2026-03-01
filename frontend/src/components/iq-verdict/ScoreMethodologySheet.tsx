@@ -29,8 +29,8 @@ const T = {
   // Four-tier Slate text hierarchy
   heading: '#F1F5F9',     // Near-white — headings
   body: '#CBD5E1',        // Solid grey — body text
-  secondary: '#94A3B8',   // Mid-slate — secondary
-  label: '#64748B',       // Slate — smallest labels
+  secondary: '#F1F5F9',   // Match primary text
+  label: '#F1F5F9',       // Match primary text
 
   // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0EA5E9
   blue: '#0EA5E9',       // Primary accent (unified)

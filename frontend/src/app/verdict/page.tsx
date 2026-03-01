@@ -774,7 +774,7 @@ function VerdictContent() {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#94A3B8' }}>Analyzing property...</p>
+          <p style={{ color: '#F1F5F9' }}>Analyzing property...</p>
         </div>
       </div>
     )
@@ -793,7 +793,7 @@ function VerdictContent() {
           <h2 className="text-xl font-semibold" style={{ color: '#F1F5F9' }}>
             {error || 'Unable to load property'}
           </h2>
-          <p className="max-w-md" style={{ color: '#94A3B8' }}>
+          <p className="max-w-md" style={{ color: '#F1F5F9' }}>
             We couldn&apos;t fetch the property data. Please try again or search for a different address.
           </p>
           <button
@@ -882,8 +882,8 @@ function VerdictContent() {
                   boxShadow: card.active ? cardGlow.active.boxShadow : cardGlow.sm.boxShadow,
                   transition: cardGlow.sm.transition,
                 }}>
-                  <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : colors.text.tertiary }}>{card.label}</p>
-                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : colors.text.secondary }}>{fmtShort(card.value)}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : '#F1F5F9' }}>{card.label}</p>
+                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : '#F1F5F9' }}>{fmtShort(card.value)}</p>
                   <p className="text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
                 </div>
               ))}
@@ -993,7 +993,7 @@ function VerdictContent() {
                   </>
                 )
               })()}
-              <p className="text-center text-[0.82rem] mt-3.5" style={{ color: colors.text.secondary }}>
+              <p className="text-center text-[0.82rem] mt-3.5" style={{ color: '#F1F5F9' }}>
                 Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </p>
               <div className="flex justify-center mt-4">
@@ -1092,7 +1092,7 @@ function VerdictContent() {
               {['Free to use', 'No signup needed', '60 seconds'].map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5">
                   <svg width="14" height="14" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span className="text-xs font-medium" style={{ color: colors.text.secondary }}>{f}</span>
+                  <span className="text-xs font-medium" style={{ color: '#F1F5F9' }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -1102,7 +1102,7 @@ function VerdictContent() {
 
           {/* Trust Strip — full-width, spans both columns on desktop */}
           <div className="px-5 py-5 text-center border-t lg:col-span-2" style={{ borderColor: colors.ui.border }}>
-            <p className="text-xs leading-relaxed" style={{ color: colors.text.secondary }}>
+            <p className="text-xs leading-relaxed" style={{ color: '#F1F5F9' }}>
               DealGap IQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
             </p>
           </div>
@@ -1194,7 +1194,7 @@ export default function VerdictPage() {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#94A3B8' }}>Loading verdict...</p>
+          <p style={{ color: '#F1F5F9' }}>Loading verdict...</p>
         </div>
       </div>
     }>

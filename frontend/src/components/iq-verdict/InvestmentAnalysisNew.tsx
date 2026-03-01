@@ -73,7 +73,7 @@ function PriceCard({
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
       <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        isRecommended ? 'text-[#0EA5E9]' : 'text-[#64748B]'
+        isRecommended ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'
       }`}>
         {label}
         <HelpCircle className="w-3 h-3 text-[#E2E8F0]" />
@@ -81,7 +81,7 @@ function PriceCard({
       <div className={`text-xl font-bold mb-1 ${isRecommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
         {formatCurrency(value)}
       </div>
-      <div className="text-[10px] text-[#94A3B8] leading-tight">{description}</div>
+      <div className="text-[10px] text-[#F1F5F9] leading-tight">{description}</div>
     </div>
   )
 }
@@ -107,7 +107,7 @@ function MetricCard({
       <span className={`text-lg font-bold tabular-nums ${isPositive ? 'text-[#0EA5E9]' : 'text-[#E11D48]'}`}>
         {displayValue}
       </span>
-      <span className="text-[10px] text-[#94A3B8] uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">{label}</span>
     </div>
   )
 }
@@ -140,7 +140,7 @@ export function InvestmentAnalysisNew({
         <div className="flex justify-between items-start mb-1">
           <div>
             <h3 className="text-base font-bold text-[#0A1628]">YOUR INVESTMENT ANALYSIS</h3>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-[#F1F5F9]">
               Based on YOUR financing terms ({downPaymentPct}% down, {interestRate}%)
             </p>
           </div>
@@ -189,7 +189,7 @@ export function InvestmentAnalysisNew({
 
         {/* Calculation Info Row */}
         <div className="flex items-center justify-between mt-3 mb-4">
-          <span className="text-sm text-[#64748B]">Three ways to approach this deal:</span>
+          <span className="text-sm text-[#F1F5F9]">Three ways to approach this deal:</span>
           <button 
             className="flex items-center gap-1.5 text-[#0EA5E9] text-sm font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
             onClick={() => setShowCalculation(!showCalculation)}
@@ -202,20 +202,20 @@ export function InvestmentAnalysisNew({
         {/* Calculation Breakdown - Expandable */}
         {showCalculation && (
           <div className="mb-4 p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
-            <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">
+            <div className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wide mb-2">
               Income Value Calculation
             </div>
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-[#64748B]">Monthly Gross Rent</span>
+                <span className="text-[#F1F5F9]">Monthly Gross Rent</span>
                 <span className="font-medium text-[#0A1628]">× 12 months</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#64748B]">Less: Vacancy & Operating Expenses</span>
+                <span className="text-[#F1F5F9]">Less: Vacancy & Operating Expenses</span>
                 <span className="font-medium text-[#0A1628]">= NOI</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-[#E2E8F0]">
-                <span className="text-[#64748B]">NOI ÷ Mortgage Constant</span>
+                <span className="text-[#F1F5F9]">NOI ÷ Mortgage Constant</span>
                 <span className="font-bold text-[#0EA5E9]">= Income Value</span>
               </div>
             </div>

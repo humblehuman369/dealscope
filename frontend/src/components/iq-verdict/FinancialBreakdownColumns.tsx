@@ -91,7 +91,7 @@ export function FinancialBreakdownColumns({
               Purchase Terms
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#F1F5F9] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustPurchase}
             >
               Adjust →
@@ -137,7 +137,7 @@ export function FinancialBreakdownColumns({
               Rental Income
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#F1F5F9] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustIncome}
             >
               Adjust →
@@ -173,7 +173,7 @@ export function FinancialBreakdownColumns({
               Expenses
             </span>
             <button 
-              className="text-[11px] text-[#64748B] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
+              className="text-[11px] text-[#F1F5F9] hover:text-[#0EA5E9] transition-colors cursor-pointer bg-transparent border-none"
               onClick={onAdjustExpenses}
             >
               Adjust →
