@@ -23,6 +23,7 @@ import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { DealGapIQHomepage } from '@/components/landing';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -58,15 +59,18 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const handleAddressSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addressInput.trim()) return;
-    
     setIsSearching(true);
     try {
-      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
       router.push(`/verdict?address=${encodeURIComponent(addressInput.trim())}`);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
     }
+  };
+
+  const handlePlaceSelect = (selectedAddress: string) => {
+    setAddressInput(selectedAddress);
+    router.push(`/verdict?address=${encodeURIComponent(selectedAddress)}`);
   };
   const { user, isAuthenticated } = useSession();
   const { openAuthModal } = useAuthModal();
@@ -239,14 +243,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               <form onSubmit={handleAddressSearch} className="w-full">
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
+                    <AddressAutocomplete
                       value={addressInput}
-                      onChange={(e) => setAddressInput(e.target.value)}
+                      onChange={setAddressInput}
+                      onPlaceSelect={handlePlaceSelect}
                       placeholder="Enter property address..."
-                      className="w-full py-3 pl-10 pr-4 bg-gray-800 text-white rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]"
                       autoFocus
+                      className="w-full py-3 pl-10 pr-4 bg-gray-800 text-white rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] placeholder-gray-500"
                     />
                   </div>
                   <button
