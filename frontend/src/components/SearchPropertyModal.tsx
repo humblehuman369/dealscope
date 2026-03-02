@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, Search, X, ArrowLeft } from 'lucide-react';
+import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
+import type { AddressValidationResult } from '@/types/address';
+
+type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
 interface SearchPropertyModalProps {
   isOpen: boolean;
@@ -17,6 +20,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
   const [address, setAddress] = useState('');
   const [showAddressInput, setShowAddressInput] = useState(false);
   const [showScanInfo, setShowScanInfo] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle');
+  const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null);
 
   if (!isOpen) return null;
 
@@ -24,14 +29,65 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
     setShowScanInfo(true);
   };
 
-  const handleAddressSubmit = (e: React.FormEvent) => {
+  const proceedToVerdict = (addressToUse: string) => {
+    trackEvent('property_searched', { source: 'search_modal' });
+    onClose();
+    router.push(`/verdict?address=${encodeURIComponent(addressToUse)}`);
+  };
+
+  const handleAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (address.trim()) {
-      trackEvent('property_searched', { source: 'search_modal' });
-      onClose();
-      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);
+    const raw = address.trim();
+    if (!raw) return;
+
+    setValidationStatus('validating');
+    setValidationResult(null);
+
+    try {
+      const res = await fetch('/api/validate-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: raw }),
+      });
+      const data = await res.json();
+
+      if (res.status === 503 || (res.ok === false && data?.code === 'VALIDATION_UNAVAILABLE')) {
+        setValidationStatus('unavailable');
+        proceedToVerdict(raw);
+        return;
+      }
+
+      if (!res.ok) {
+        setValidationStatus('error');
+        return;
+      }
+
+      const result = data as AddressValidationResult;
+      setValidationResult(result);
+
+      if (result.isValid) {
+        setValidationStatus('valid');
+        proceedToVerdict(result.formattedAddress || raw);
+        return;
+      }
+
+      setValidationStatus('issues');
+    } catch {
+      setValidationStatus('error');
     }
+  };
+
+  const acceptCorrection = () => {
+    const formatted = validationResult?.formattedAddress?.trim();
+    if (formatted) {
+      setAddress(formatted);
+      setValidationStatus('idle');
+      setValidationResult(null);
+    }
+  };
+
+  const useAsEntered = () => {
+    proceedToVerdict(address.trim());
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -44,6 +100,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
     onClose();
     setShowAddressInput(false);
     setAddress('');
+    setValidationStatus('idle');
+    setValidationResult(null);
   };
 
   return (
@@ -178,7 +236,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
               <div className="relative">
                 <Search 
                   size={20} 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" 
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" 
                 />
                 <AddressAutocomplete
                   placeholder="Enter property address..."
@@ -186,19 +244,79 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   onChange={setAddress}
                   onPlaceSelect={setAddress}
                   autoFocus
-                  className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 />
+                {/* Validation indicator */}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                  {validationStatus === 'validating' && (
+                    <Loader2 size={20} className="text-gray-400 animate-spin" />
+                  )}
+                  {validationStatus === 'valid' && (
+                    <CheckCircle2 size={20} className="text-emerald-400" aria-hidden />
+                  )}
+                  {validationStatus === 'issues' && (
+                    <AlertTriangle size={20} className="text-amber-400" aria-hidden />
+                  )}
+                  {validationStatus === 'error' && (
+                    <AlertCircle size={20} className="text-red-400" aria-hidden />
+                  )}
+                </div>
               </div>
+
+              {/* Validation messages and actions */}
+              {validationStatus === 'error' && (
+                <p className="text-sm text-red-400">
+                  Could not validate address. You can try again or use the address as entered.
+                </p>
+              )}
+              {validationStatus === 'issues' && validationResult && (
+                <div className="rounded-xl p-3 space-y-3" style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  {validationResult.issues.length > 0 && (
+                    <ul className="text-xs text-amber-200/90 space-y-1">
+                      {validationResult.issues.slice(0, 3).map((issue, i) => (
+                        <li key={i}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {validationResult.formattedAddress && validationResult.formattedAddress.trim() !== address.trim() && (
+                    <p className="text-sm text-gray-300">
+                      Did you mean: <span className="font-medium text-white">{validationResult.formattedAddress}</span>?
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {validationResult.formattedAddress && validationResult.formattedAddress.trim() !== address.trim() && (
+                      <button
+                        type="button"
+                        onClick={acceptCorrection}
+                        className="text-sm py-2 px-3 rounded-lg font-medium transition-colors"
+                        style={{ background: 'rgba(8, 145, 178, 0.3)', color: '#5eead4' }}
+                      >
+                        Accept correction
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={useAsEntered}
+                      className="text-sm py-2 px-3 rounded-lg font-medium text-gray-400 hover:text-white transition-colors"
+                    >
+                      Use as entered
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddressInput(false);
                     setAddress('');
+                    setValidationStatus('idle');
+                    setValidationResult(null);
                   }}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-colors"
                   style={{
@@ -212,16 +330,23 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 </button>
                 <button
                   type="submit"
-                  disabled={!address.trim()}
-                  className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!address.trim() || validationStatus === 'validating'}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    background: address.trim() 
+                    background: address.trim() && validationStatus !== 'validating'
                       ? 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' 
                       : 'rgba(8, 145, 178, 0.3)',
                     color: 'white',
                   }}
                 >
-                  Analyze Property
+                  {validationStatus === 'validating' ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Validating…
+                    </>
+                  ) : (
+                    'Analyze Property'
+                  )}
                 </button>
               </div>
             </form>
