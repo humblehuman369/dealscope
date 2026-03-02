@@ -29,6 +29,7 @@ router = APIRouter(prefix="/api/v1", tags=["Properties"])
 # ============================================
 # PROPERTY SEARCH
 # ============================================
+# SEARCH PROPERTY  
 
 
 @router.post("/properties/search", response_model=PropertyResponse)
