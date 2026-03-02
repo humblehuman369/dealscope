@@ -232,7 +232,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
         </span>
       </div>
       <p
-        className={`text-xs mb-3 pl-0 text-center ${highlightIntro && !introSeen ? 'animate-pulse-soft' : ''}`}
+        className={`text-xs font-semibold mb-3 pl-0 text-center ${highlightIntro && !introSeen ? 'animate-pulse-intro' : ''}`}
         style={{ color: '#FBBF24' }}
       >
         Select any source and price targets recalculate instantly.
