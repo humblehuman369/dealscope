@@ -910,13 +910,13 @@ function VerdictContent() {
               Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
+            <div className="flex flex-row max-[520px]:flex-col gap-2.5 items-stretch">
               {[
                 { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false, dominant: false },
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
                 { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center active:border-[rgba(14,165,233,0.55)] active:shadow-[0_0_30px_rgba(14,165,233,0.15)] ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
+                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center active:border-[rgba(14,165,233,0.55)] active:shadow-[0_0_30px_rgba(14,165,233,0.15)] ${card.dominant ? 'flex-[1.2] max-[520px]:flex-none' : 'flex-1 max-[520px]:flex-none'}`} style={{
                   background: card.active ? cardGlow.active.background : cardGlow.sm.background,
                   border: card.active ? cardGlow.active.border : cardGlow.sm.border,
                   boxShadow: card.active ? cardGlow.active.boxShadow : cardGlow.sm.boxShadow,
