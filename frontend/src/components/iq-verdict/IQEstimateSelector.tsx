@@ -207,8 +207,8 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           Data Sources
         </span>
       </div>
-      <p className="text-xs mb-3 pl-0" style={{ color: colors.text.tertiary }}>
-        Select any source—the verdict and price targets recalculate instantly.
+      <p className="text-xs mb-3 pl-0 text-center" style={{ color: colors.text.tertiary }}>
+        Select any source—<span style={{ color: '#FBBF24' }}>price targets recalculate instantly.</span>
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
