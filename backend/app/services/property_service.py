@@ -329,16 +329,6 @@ class PropertyService:
             timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
 
             # Fetch from Redfin (value estimate only)
-            # #region agent log
-            _log_dir = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__)))), ".cursor")
-            _log_path = __import__("os").path.join(_log_dir, "debug-3ea175.log")
-            try:
-                __import__("os").makedirs(_log_dir, exist_ok=True)
-                _payload = {"sessionId": "3ea175", "location": "property_service.py:Redfin", "message": "redfin_branch", "data": {"redfin_is_none": self.redfin is None, "address": address[:50]}, "timestamp": int(time.time() * 1000), "hypothesisId": "H1"}
-                open(_log_path, "a").write(__import__("json").dumps(_payload) + "\n")
-            except Exception:
-                pass
-            # #endregion
             if self.redfin:
                 t_rf = time.perf_counter()
                 try:
@@ -352,9 +342,6 @@ class PropertyService:
                         logger.warning("Redfin estimate unavailable for: %s", address)
                 except Exception as e:
                     logger.error("Error fetching Redfin data: %s", e)
-                    # #region agent log
-                    open(_log_path, "a").write(__import__("json").dumps({"sessionId": "3ea175", "location": "property_service.py:Redfin_except", "message": "redfin_exception", "data": {"type": type(e).__name__, "msg": str(e)[:200]}, "timestamp": int(time.time() * 1000), "hypothesisId": "H4"}) + "\n")
-                    # #endregion
                 timings["redfin_ms"] = (time.perf_counter() - t_rf) * 1000
 
         # Normalize and merge data
