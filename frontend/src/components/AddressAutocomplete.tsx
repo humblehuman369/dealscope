@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-const DEBOUNCE_MS = 300
-
 export interface AddressComponents {
   streetNumber: string
   street: string
@@ -33,12 +31,13 @@ function getComponent(place: google.maps.places.PlaceResult, type: string): stri
 
 /**
  * AddressAutocomplete
- * 
- * A Google Places Autocomplete input restricted to US addresses.
- * Falls back to a plain text input if the API key is missing or the script fails to load.
  *
- * Uses the Google Maps JavaScript API (Places library).
- * Requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to be set.
+ * A Google Places Autocomplete input restricted to US addresses.
+ * Uses an UNCONTROLLED input so the dropdown can open correctly (controlled
+ * inputs conflict with the Places widget). Parent value is synced when it
+ * changes (e.g. "Accept correction") and on place selection or typing.
+ *
+ * Requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and Maps JavaScript API with Places library.
  */
 export function AddressAutocomplete({
   value,
@@ -53,14 +52,18 @@ export function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [inputValue, setInputValue] = useState(value)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onChangeRef = useRef(onChange)
+  const onPlaceSelectRef = useRef(onPlaceSelect)
+  onChangeRef.current = onChange
+  onPlaceSelectRef.current = onPlaceSelect
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
-  // Keep input in sync with controlled value (e.g. when parent sets address from validation)
+  // Sync parent value into the input when it changes (e.g. "Accept correction")
   useEffect(() => {
-    setInputValue(value)
+    if (inputRef.current && value !== inputRef.current.value) {
+      inputRef.current.value = value
+    }
   }, [value])
 
   // Load the Google Maps script once globally
@@ -68,15 +71,12 @@ export function AddressAutocomplete({
     if (!apiKey) return
     if (typeof window === 'undefined') return
 
-    // Already loaded
     if (window.google?.maps?.places) {
       setIsLoaded(true)
       return
     }
 
-    // Already loading
     if (document.querySelector('script[data-google-places]')) {
-      // Wait for it
       const check = setInterval(() => {
         if (window.google?.maps?.places) {
           setIsLoaded(true)
@@ -102,28 +102,13 @@ export function AddressAutocomplete({
     loadScript()
   }, [loadScript])
 
-  // Debounced onChange to parent (300ms)
-  const scheduleOnChange = useCallback(
-    (newValue: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => {
-        debounceRef.current = null
-        onChange(newValue)
-      }, DEBOUNCE_MS)
-    },
-    [onChange]
-  )
+  // Notify parent of current value (no debounce). We do NOT set React state for the input,
+  // so the input stays uncontrolled and the Places dropdown works.
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onChangeRef.current(e.target.value)
+  }, [])
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const v = e.target.value
-      setInputValue(v)
-      scheduleOnChange(v)
-    },
-    [scheduleOnChange]
-  )
-
-  // Initialize the autocomplete widget once the script is loaded
+  // Initialize Autocomplete once after script loads. Use refs for callbacks so this runs only when isLoaded/ref are ready (mount-only deps).
   useEffect(() => {
     if (!isLoaded || !inputRef.current || autocompleteRef.current) return
 
@@ -137,11 +122,9 @@ export function AddressAutocomplete({
       const place = autocomplete.getPlace()
       const formatted = place?.formatted_address
       if (formatted) {
-        setInputValue(formatted)
-        onChange(formatted)
+        onChangeRef.current(formatted)
         const streetNumber = getComponent(place, 'street_number')
         const route = getComponent(place, 'route')
-        const street = [streetNumber, route].filter(Boolean).join(' ')
         const components: AddressComponents = {
           streetNumber,
           street: route,
@@ -150,25 +133,22 @@ export function AddressAutocomplete({
           zipCode: getComponent(place, 'postal_code'),
           county: getComponent(place, 'administrative_area_level_2') || undefined,
         }
-        onPlaceSelect?.(formatted, components)
+        onPlaceSelectRef.current?.(formatted, components)
       }
     })
 
     autocompleteRef.current = autocomplete
-  }, [isLoaded, onChange, onPlaceSelect])
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (typeof console !== 'undefined' && console.log) {
+      console.log('Google Places Autocomplete initialized successfully')
     }
-  }, [])
+  }, [isLoaded])
 
   return (
     <input
       ref={inputRef}
       id={id}
       type="text"
-      value={inputValue}
+      defaultValue={value}
       onChange={handleInputChange}
       placeholder={placeholder}
       className={className}
