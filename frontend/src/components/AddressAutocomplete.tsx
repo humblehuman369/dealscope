@@ -59,6 +59,16 @@ export function AddressAutocomplete({
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
+  // Warn once when key is missing (NEXT_PUBLIC_* is inlined at build time — set env and restart dev or redeploy)
+  useEffect(() => {
+    if (apiKey) return
+    console.warn(
+      '[AddressAutocomplete] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set. ' +
+      'Add it to .env.local (local) or Vercel env vars, then restart the dev server or redeploy. ' +
+      'Address suggestions will not appear until the key is available at build time.'
+    )
+  }, [apiKey])
+
   // Sync parent value into the input when it changes (e.g. "Accept correction")
   useEffect(() => {
     if (inputRef.current && value !== inputRef.current.value) {
@@ -76,7 +86,8 @@ export function AddressAutocomplete({
       return
     }
 
-    if (document.querySelector('script[data-google-places]')) {
+    const existing = document.querySelector('script[data-google-places]')
+    if (existing) {
       const check = setInterval(() => {
         if (window.google?.maps?.places) {
           setIsLoaded(true)
@@ -93,7 +104,11 @@ export function AddressAutocomplete({
     script.setAttribute('data-google-places', 'true')
     script.onload = () => setIsLoaded(true)
     script.onerror = () => {
-      console.warn('AddressAutocomplete: Failed to load Google Places script')
+      console.error(
+        '[AddressAutocomplete] Google Places script failed to load. ' +
+        'Check that Maps JavaScript API and Places API are enabled for this key in Google Cloud Console, ' +
+        'and that the key is restricted to your domain (or localhost) if needed.'
+      )
     }
     document.head.appendChild(script)
   }, [apiKey])
@@ -112,11 +127,21 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (!isLoaded || !inputRef.current || autocompleteRef.current) return
 
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-      types: ['address'],
-      componentRestrictions: { country: 'us' },
-      fields: ['formatted_address', 'address_components'],
-    })
+    let autocomplete: google.maps.places.Autocomplete
+    try {
+      autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+        types: ['address'],
+        componentRestrictions: { country: 'us' },
+        fields: ['formatted_address', 'address_components'],
+      })
+    } catch (err) {
+      console.error(
+        '[AddressAutocomplete] Failed to create Places Autocomplete. ' +
+        'Ensure Maps JavaScript API and Places API (or Places API (New)) are enabled for your key in Google Cloud Console.',
+        err
+      )
+      return
+    }
 
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace()
@@ -138,9 +163,6 @@ export function AddressAutocomplete({
     })
 
     autocompleteRef.current = autocomplete
-    if (typeof console !== 'undefined' && console.log) {
-      console.log('Google Places Autocomplete initialized successfully')
-    }
   }, [isLoaded])
 
   return (
