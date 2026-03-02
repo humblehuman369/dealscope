@@ -38,6 +38,8 @@ export interface IQEstimateSelectorProps {
   sources: IQEstimateSources
   onSourceChange?: (type: 'value' | 'rent', sourceId: DataSourceId, value: number | null) => void
   sessionKey?: string
+  /** When true, the intro sentence pulses to draw attention (Verdict page only). Stops after first source change. */
+  highlightIntro?: boolean
 }
 
 const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
@@ -66,6 +68,23 @@ function persistSelections(sessionKey: string, value: DataSourceId, rent: DataSo
   if (typeof window === 'undefined') return
   try {
     sessionStorage.setItem(sessionKey, JSON.stringify({ value, rent }))
+  } catch { /* ignore */ }
+}
+
+const INTRO_SEEN_KEY = (sessionKey: string) => `${sessionKey}_intro_seen`
+
+function getIntroSeen(sessionKey: string): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return sessionStorage.getItem(INTRO_SEEN_KEY(sessionKey)) === '1'
+  } catch { /* ignore */ }
+  return false
+}
+
+function setIntroSeen(sessionKey: string) {
+  if (typeof window === 'undefined') return
+  try {
+    sessionStorage.setItem(INTRO_SEEN_KEY(sessionKey), '1')
   } catch { /* ignore */ }
 }
 
@@ -160,10 +179,11 @@ function resolveDefaults(
   }
 }
 
-export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_source_selection' }: IQEstimateSelectorProps) {
+export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_source_selection', highlightIntro = false }: IQEstimateSelectorProps) {
   const [selections, setSelections] = useState(() =>
     resolveDefaults(sources, getStoredSelections(sessionKey)),
   )
+  const [introSeen, setIntroSeenState] = useState(() => getIntroSeen(sessionKey))
 
   useEffect(() => {
     const stored = getStoredSelections(sessionKey)
@@ -186,9 +206,13 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
         persistSelections(sessionKey, next.value, next.rent)
         return next
       })
+      if (highlightIntro && !introSeen) {
+        setIntroSeen(sessionKey)
+        setIntroSeenState(true)
+      }
       onSourceChange?.(type, sourceId, newValue)
     },
-    [sources, sessionKey, onSourceChange],
+    [sources, sessionKey, onSourceChange, highlightIntro, introSeen],
   )
 
   const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin']
@@ -207,7 +231,10 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           Data Sources
         </span>
       </div>
-      <p className="text-xs mb-3 pl-0 text-center" style={{ color: '#FBBF24' }}>
+      <p
+        className={`text-xs mb-3 pl-0 text-center ${highlightIntro && !introSeen ? 'animate-pulse-soft' : ''}`}
+        style={{ color: '#FBBF24' }}
+      >
         Select any source and price targets recalculate instantly.
       </p>
 

@@ -1131,6 +1131,7 @@ function VerdictContent() {
             <section className="px-5 pb-5">
               <IQEstimateSelector
                 sources={iqSources}
+                highlightIntro
                 onSourceChange={(type, _sourceId, _value) => {
                   if (_value == null) return
                   setProperty((prev) => {
