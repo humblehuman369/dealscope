@@ -576,7 +576,6 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Market Price', formatCurrency(listPrice), true],
@@ -601,7 +600,6 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Loan Amount', formatCurrency(loanAmount)],
@@ -626,7 +624,6 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Monthly Rent', formatCurrency(monthlyRent)],
@@ -652,7 +649,6 @@ function StrategyContent() {
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
                 </div>
-                <button onClick={handleOpenDealMaker} className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:brightness-125 underline decoration-2 underline-offset-2 rounded px-2 py-1 -mr-2" style={{ color: colors.brand.teal }} title="Change assumptions"><svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Adjust</button>
               </div>
               {[
                 ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
@@ -677,7 +673,7 @@ function StrategyContent() {
           {/* Summary Cards — use per-strategy metrics when available */}
           {isFlipOrWholesale ? (
             /* Flip & Wholesale: Profit-oriented cards */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-10 pt-4">
               <div className="rounded-xl p-4" style={{ background: strategyAnnualCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyAnnualCashFlow >= 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }}>
                 <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>{activeStrategyId === 'wholesale' ? 'Assignment Fee' : 'Net Profit'}</p>
                 <div className="flex justify-between items-baseline mt-1">
@@ -695,7 +691,7 @@ function StrategyContent() {
             </div>
           ) : (
             /* Rental strategies: NOI and Net Pocket — hero summary cards, full-width and prominent */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-6 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-10 pt-4 w-full">
               <div className="rounded-2xl p-5 sm:p-6 w-full" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.25)`, boxShadow: `0 0 24px rgba(52,211,153,0.12)` }}>
                 <p className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.text.primary }}>Before Your Loan</p>
                 <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>NOI</p>
