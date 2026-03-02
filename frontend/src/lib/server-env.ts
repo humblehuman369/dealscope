@@ -39,7 +39,7 @@ function resolveBackendUrl(): string {
     return publicApiUrl
   }
 
-  // Production fallback so server-side API routes (e.g. report, property by zpid) work when app is on investiq.guru
+  // Production fallback so server-side API routes (e.g. report, property by zpid) work (app and backend at dealgapiq.com)
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     console.warn(
       '[server-env] Neither BACKEND_URL nor NEXT_PUBLIC_API_URL is set. Using https://dealgapiq.com for server-side API calls.',

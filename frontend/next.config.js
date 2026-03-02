@@ -84,17 +84,13 @@ const nextConfig = {
     // Without this, cookies set by the Railway backend are third-party
     // and get blocked by modern browsers.
     //
-    // On Vercel, set NEXT_PUBLIC_API_URL to your public backend URL (e.g. https://dealgapiq.com).
-    // If unset in production, we use https://dealgapiq.com so API rewrites work when the app is on investiq.guru or other domains.
+    // App and backend are both at https://dealgapiq.com. On Vercel, set NEXT_PUBLIC_API_URL to that URL
+    // (or leave unset to use it as the default).
     const raw = process.env.NEXT_PUBLIC_API_URL || ''
     const trimmed = raw.trim().replace(/\/+$/, '')
     const canonicalBackend = 'https://dealgapiq.com'
-    // When on Vercel, never proxy /api to the frontend host (investiq.guru); backend lives at dealgapiq.com
-    const pointsToFrontend =
-      process.env.VERCEL && trimmed && trimmed.includes('investiq.guru')
-    const apiUrl = pointsToFrontend
-      ? canonicalBackend
-      : trimmed || (process.env.VERCEL ? canonicalBackend : 'http://localhost:8000')
+    const apiUrl =
+      trimmed || (process.env.VERCEL ? canonicalBackend : 'http://localhost:8000')
     if (process.env.VERCEL) {
       console.log(`[next.config.js] NEXT_PUBLIC_API_URL raw value: "${raw}" (length=${raw.length})`)
       console.log(`[next.config.js] Rewrite destination: ${apiUrl}/api/:path*`)
@@ -107,12 +103,7 @@ const nextConfig = {
       }
       if (!trimmed) {
         console.log(
-          '[next.config.js] NEXT_PUBLIC_API_URL not set; using production default https://dealgapiq.com for API rewrites.'
-        )
-      }
-      if (pointsToFrontend) {
-        console.warn(
-          '[next.config.js] NEXT_PUBLIC_API_URL pointed at investiq.guru (frontend); rewriting /api to https://dealgapiq.com instead.'
+          '[next.config.js] NEXT_PUBLIC_API_URL not set; using https://dealgapiq.com for API rewrites.'
         )
       }
     }
