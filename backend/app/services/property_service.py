@@ -941,6 +941,7 @@ class PropertyService:
                 },
             )
 
+
             normalized_comps: list[dict[str, Any]] = []
             for comp in comps_raw:
                 comp_id = str(comp.get("id") or comp.get("zpid") or comp.get("propertyId") or "")
