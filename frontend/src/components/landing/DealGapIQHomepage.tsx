@@ -592,27 +592,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       <DivC />
 
-      {/* ═══════════ COST COMPARISON ═══════════ */}
-      <FadeIn>
-        <section style={{ padding: "72px 24px" }}>
-          <div className="cost-inner" style={{ maxWidth: 860, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 40, alignItems: "center", textAlign: "center" as const }}>
-            <div>
-              <div style={{ fontFamily: s.fontData, fontSize: "clamp(36px, 5vw, 46px)", fontWeight: 700, color: s.danger, letterSpacing: -2 }}>$21,165</div>
-              <div style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, marginTop: 8, lineHeight: 1.5 }}>Average cost of a bad<br />investment decision</div>
-            </div>
-            <div style={{ width: 1, height: 72, background: "rgba(14,165,233,0.15)", position: "relative" as const }}>
-              <span style={{ position: "absolute" as const, top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#000", padding: "4px 10px", fontFamily: s.fontBody, fontSize: 11, fontWeight: 700, color: s.muted, letterSpacing: "0.15em", textTransform: "uppercase" as const }}>VS</span>
-            </div>
-            <div>
-              <div style={{ fontFamily: s.fontData, fontSize: "clamp(36px, 5vw, 46px)", fontWeight: 700, color: s.teal, letterSpacing: -2 }}>$273<span style={{ fontSize: 22 }}>/yr</span></div>
-              <div style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, marginTop: 8, lineHeight: 1.5 }}>Cost of <BrandName /> Pro<br />Pays for itself once.</div>
-            </div>
-          </div>
-        </section>
-      </FadeIn>
-
-      <DivB />
-
       {/* ═══════════ FOUNDER ═══════════ */}
       <FadeIn>
         <section style={{ padding: "96px 24px" }}>
