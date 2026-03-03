@@ -4,7 +4,7 @@ import PricingContent from './PricingContent'
 export const metadata: Metadata = {
   title: 'Pricing — DealGapIQ',
   description:
-    'Choose the plan that fits how you invest. Free Starter or Pro with full calculation breakdowns, editable inputs, and Excel proformas.',
+    'Know your number before you make the offer. DealGapIQ pricing: Starter free forever, Pro with 7-day free trial.',
 }
 
 export default function PricingPage() {
