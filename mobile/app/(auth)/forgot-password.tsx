@@ -28,12 +28,20 @@ export default function ForgotPasswordScreen() {
         'If an account exists with that email, we sent a password reset link.',
         [{ text: 'OK', onPress: () => router.back() }],
       );
-    } catch {
-      Alert.alert(
-        'Check Your Email',
-        'If an account exists with that email, we sent a password reset link.',
-        [{ text: 'OK', onPress: () => router.back() }],
-      );
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status && status >= 500) {
+        Alert.alert(
+          'Something Went Wrong',
+          'We couldn\'t process your request right now. Please try again later.',
+        );
+      } else {
+        Alert.alert(
+          'Check Your Email',
+          'If an account exists with that email, we sent a password reset link.',
+          [{ text: 'OK', onPress: () => router.back() }],
+        );
+      }
     } finally {
       setLoading(false);
     }
