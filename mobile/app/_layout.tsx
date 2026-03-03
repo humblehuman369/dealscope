@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
+import { useDeepLinking } from '@/hooks/useDeepLinking';
 import { useSession } from '@/hooks/useSession';
 import { hydrateTokens, getAccessToken } from '@/services/token-manager';
 
@@ -24,6 +25,7 @@ function AuthGate() {
   const { user, isLoading } = useSession();
   const segments = useSegments();
   const router = useRouter();
+  useDeepLinking();
 
   useEffect(() => {
     if (isLoading) return;

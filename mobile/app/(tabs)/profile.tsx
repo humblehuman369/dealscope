@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/constants/colors';
@@ -41,6 +41,18 @@ export default function ProfileScreen() {
         <InfoRow label="MFA" value={user?.mfa_enabled ? 'Enabled' : 'Disabled'} />
       </View>
 
+      {/* Navigation Links */}
+      <View style={styles.navCard}>
+        <NavRow
+          label="Search History"
+          onPress={() => router.push('/(protected)/search-history')}
+        />
+        <NavRow
+          label="Settings"
+          onPress={() => router.push('/(protected)/settings')}
+        />
+      </View>
+
       <Button
         title="Sign Out"
         variant="secondary"
@@ -63,6 +75,15 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function NavRow({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={styles.navRow}>
+      <Text style={styles.navLabel}>{label}</Text>
+      <Text style={styles.navChevron}>›</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -72,7 +93,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   avatar: {
     width: 72,
@@ -106,6 +127,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
+    marginBottom: 12,
   },
   infoRow: {
     flexDirection: 'row',
@@ -122,6 +144,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.textHeading,
+  },
+  navCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  navLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.textHeading,
+  },
+  navChevron: {
+    fontSize: 20,
+    color: colors.textMuted,
   },
   version: {
     textAlign: 'center',
