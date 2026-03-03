@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { colors } from '@/constants/colors';
 
@@ -23,25 +24,27 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color }) => <TabIcon name="search" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon icon="🔍" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="deal-vault"
+        options={{
+          title: 'Deal Vault',
+          tabBarIcon: ({ color }) => <TabIcon icon="📋" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabIcon name="profile" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon icon="👤" color={color} />,
         }}
       />
     </Tabs>
   );
 }
 
-function TabIcon({ name, color }: { name: string; color: string }) {
-  const icons: Record<string, string> = {
-    search: '🔍',
-    profile: '👤',
-  };
-  const { Text } = require('react-native');
-  return <Text style={{ fontSize: 20, color }}>{icons[name] ?? '●'}</Text>;
+function TabIcon({ icon, color }: { icon: string; color: string }) {
+  return <Text style={{ fontSize: 20, color }}>{icon}</Text>;
 }
