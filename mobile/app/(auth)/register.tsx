@@ -45,12 +45,20 @@ export default function RegisterScreen() {
           'We sent a verification link to your email address.',
           [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }],
         );
-      } else {
-        router.replace('/(tabs)/search');
       }
+      // AuthGate handles navigation to (tabs)/search when tokens are set
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.detail ?? 'Registration failed. Try again.';
+      const data = err?.response?.data;
+      let msg: string;
+      if (typeof data?.detail === 'string') {
+        msg = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        msg = data.detail.map((e: any) => e.msg ?? e.message ?? '').filter(Boolean).join('\n');
+      } else if (data?.error?.message) {
+        msg = data.error.message;
+      } else {
+        msg = 'Registration failed. Try again.';
+      }
       Alert.alert('Error', msg);
     }
   }
