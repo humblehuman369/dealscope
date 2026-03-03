@@ -180,7 +180,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           DealGap<span style={{ color: s.teal }}>IQ</span>
         </Link>
         <div className="dgiq-nav-desktop-links" style={{ display: "flex", gap: 28, alignItems: "center" }}>
-          <Link href="/about" style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 500 }}>Product</Link>
+          <Link href="/about" style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 500 }}>About</Link>
           <Link href="/pricing" style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 500 }}>Pricing</Link>
           <Link href="/login" style={{ color: s.teal, textDecoration: "none", fontFamily: s.fontBody, fontSize: 14, fontWeight: 600 }}>Login / Register</Link>
         </div>
@@ -224,7 +224,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             gap: 4,
             zIndex: 101,
           }}>
-            <Link href="/about" onClick={() => setNavOpen(false)} style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 500, padding: "12px 0" }}>Product</Link>
+            <Link href="/about" onClick={() => setNavOpen(false)} style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 500, padding: "12px 0" }}>About</Link>
             <Link href="/pricing" onClick={() => setNavOpen(false)} style={{ color: s.mutedDim, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 500, padding: "12px 0" }}>Pricing</Link>
             <Link href="/login" onClick={() => setNavOpen(false)} style={{ color: s.teal, textDecoration: "none", fontFamily: s.fontBody, fontSize: 15, fontWeight: 600, padding: "12px 0" }}>Login / Register</Link>
           </div>
