@@ -41,10 +41,15 @@ export default function LoginScreen() {
       }
     } catch (err: any) {
       let msg: string;
-      if (err?.response?.data?.detail) {
-        msg = err.response.data.detail;
+      const data = err?.response?.data;
+      if (data?.detail) {
+        msg = data.detail;
+      } else if (data?.error?.message) {
+        msg = data.error.message;
       } else if (err?.code === 'ERR_NETWORK' || err?.message?.includes('Network')) {
         msg = 'Cannot reach the server. Check your internet connection and try again.';
+      } else if (err?.response?.status === 401) {
+        msg = 'Invalid email or password.';
       } else {
         msg = err?.message ?? 'Login failed. Check your credentials.';
       }
