@@ -262,7 +262,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          In 60 seconds, get a buy price, a deal score and why, so you can decide to pursue or pass.
+          In 60 seconds, get a buy price, a deal score and why,<br />
+          so you can decide to pursue or pass.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
@@ -319,11 +320,11 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             { num: "35+", label: "Years in RE data\n& technology" },
             { num: "47", suffix: "s", label: "Average time\nto analyze" },
             { num: "6", label: "Strategies scored\nsimultaneously" },
-            { num: "4", label: "Data sources cross-\nreferenced per property" },
+            { num: "Multiple", label: "Data sources cross-\nreferenced per property" },
           ].map((stat, i) => (
             <div key={i}>
               <div style={{ fontFamily: s.fontData, fontSize: 26, fontWeight: 700, letterSpacing: -1 }}>
-                <span style={{ color: s.teal }}>{stat.num}</span>{stat.suffix || ""}
+                <span style={{ color: s.teal }}>{stat.num}{stat.suffix || ""}</span>
               </div>
               <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, lineHeight: 1.4, marginTop: 4, whiteSpace: "pre-line" as const }}>{stat.label}</div>
             </div>
