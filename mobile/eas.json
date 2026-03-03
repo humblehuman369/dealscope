@@ -17,17 +17,6 @@
       "ios": { "buildConfiguration": "Release" },
       "env": { "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com" }
     },
-    "beta": {
-      "distribution": "store",
-      "autoIncrement": true,
-      "node": "20.18.0",
-      "ios": { "buildConfiguration": "Release" },
-      "android": { "buildType": "apk" },
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com",
-        "SENTRY_ALLOW_FAILURE": "true"
-      }
-    },
     "production": {
       "distribution": "store",
       "autoIncrement": true,
@@ -35,8 +24,7 @@
       "ios": { "buildConfiguration": "Release" },
       "android": { "buildType": "app-bundle" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.dealgapiq.com",
-        "SENTRY_ALLOW_FAILURE": "true"
+        "EXPO_PUBLIC_API_URL": "https://api.dealgapiq.com"
       }
     }
   },

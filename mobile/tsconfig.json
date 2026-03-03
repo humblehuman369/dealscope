@@ -2,9 +2,10 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@dealscope/shared": ["../shared/src/index.ts"],
+      "@dealscope/shared": ["../shared/src"],
       "@dealscope/shared/*": ["../shared/src/*"]
     }
   },
@@ -12,11 +13,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "../shared/src/**/*.ts"
+    "expo-env.d.ts"
   ],
   "exclude": [
-    "node_modules",
-    "__tests__"
+    "node_modules"
   ]
 }
