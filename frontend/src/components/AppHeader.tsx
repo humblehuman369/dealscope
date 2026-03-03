@@ -119,10 +119,11 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/reset-password',
   '/forgot-password',
   '/admin',
+  '/about',
 ]
 
 // Map routes to active tabs
-function getActiveTabFromPath(pathname: string): AppTab {
+function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/verdict')) return 'analyze'
   if (pathname.startsWith('/strategy')) return 'strategy'
   if (pathname.startsWith('/property')) return 'details'
@@ -130,6 +131,7 @@ function getActiveTabFromPath(pathname: string): AppTab {
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
   if (pathname.startsWith('/deal-maker')) return 'analyze'
+  if (pathname.startsWith('/about')) return undefined
   return 'analyze'
 }
 
@@ -328,7 +330,8 @@ export function AppHeader({
   // }
 
   // Determine active tab from prop or pathname
-  const activeTab = activeTabProp || getActiveTabFromPath(pathname || '')
+  const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
+  const isAboutPage = pathname?.startsWith('/about')
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar = showPropertyBarProp !== undefined 
@@ -461,24 +464,37 @@ export function AppHeader({
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: headerBg }}
         >
-          {/* Logo - Dynamic per page, clickable to go home */}
-          <button 
-            onClick={handleLogoClick}
-            className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
-          >
-            <span 
-              className="text-lg font-bold tracking-tight"
-              style={{ color: colors.text.white }}
+          {/* Left: Logo + About link */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleLogoClick}
+              className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
             >
-              DealGap
-            </span>
-            <span 
-              className="text-lg font-bold tracking-tight"
-              style={{ color: colors.brand.teal }}
+              <span 
+                className="text-lg font-bold tracking-tight"
+                style={{ color: colors.text.white }}
+              >
+                DealGap
+              </span>
+              <span 
+                className="text-lg font-bold tracking-tight"
+                style={{ color: colors.brand.teal }}
+              >
+                IQ
+              </span>
+            </button>
+            <Link
+              href="/about"
+              className="text-sm font-medium transition-colors hover:text-white"
+              style={{
+                color: pathname === '/about' ? colors.text.white : colors.text.secondary,
+                borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                paddingBottom: 2,
+              }}
             >
-              IQ
-            </span>
-          </button>
+              About
+            </Link>
+          </div>
 
           {/* Right Icons */}
           <div className="flex items-center gap-3">
@@ -572,8 +588,8 @@ export function AppHeader({
           </div>
         </div>
 
-        {/* Tab Bar - Dark surface (pure black on /analyzing) */}
-        {showTabs && (
+        {/* Tab Bar - Dark surface (pure black on /analyzing), hidden on /about */}
+        {showTabs && !isAboutPage && (
           <div 
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
