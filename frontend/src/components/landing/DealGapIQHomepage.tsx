@@ -267,29 +267,43 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
-          <form className="hero-address-bar" onSubmit={handleAnalyze} style={{
-            display: "flex", alignItems: "center", background: "#000",
-            border: "1px solid rgba(14,165,233,0.3)",
-            boxShadow: "0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05)",
-            borderRadius: 12, padding: "5px 5px 5px 20px", width: "100%", maxWidth: 520,
+          <form onSubmit={handleAnalyze} style={{
+            display: "flex", flexDirection: "column" as const, gap: 12,
+            width: "100%", maxWidth: 440, margin: "0 auto",
           }}>
-            <AddressAutocomplete
-              value={address}
-              onChange={setAddress}
-              onPlaceSelect={handlePlaceSelect}
-              placeholder="Enter any property address..."
-              style={{ flex: 1, background: "none", border: "none", color: "#fff", fontFamily: s.fontBody, fontSize: 15, outline: "none", padding: "12px 0" }}
-            />
-            <button type="submit" style={{
-              background: s.teal, color: "#000", border: "none", padding: "12px 28px",
-              borderRadius: 10, fontFamily: s.fontBody, fontWeight: 700, fontSize: 14,
-              cursor: "pointer", whiteSpace: "nowrap" as const,
+            <div style={{ position: "relative" as const }}>
+              <svg style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const }} width="16" height="16" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <AddressAutocomplete
+                value={address}
+                onChange={setAddress}
+                onPlaceSelect={handlePlaceSelect}
+                placeholder="Enter any property address..."
+                className="hero-search-input"
+                style={{
+                  width: "100%", boxSizing: "border-box" as const,
+                  padding: "12px 14px 12px 38px", fontSize: 14, fontFamily: s.fontBody,
+                  borderRadius: 8, border: "2px solid #1e2a3a",
+                  background: "#0f1825", color: "#fff", outline: "none",
+                }}
+              />
+            </div>
+            <button type="submit" className="hero-cta-btn" style={{
+              width: "100%", padding: "12px 24px",
+              fontSize: 14, fontWeight: 700, fontFamily: s.fontBody,
+              borderRadius: 8, border: "none",
+              background: "linear-gradient(135deg, #00bbff 0%, #0099dd 100%)",
+              color: "#000", cursor: "pointer",
+              boxShadow: "0 4px 24px rgba(0,187,255,0.3)",
+              transition: "transform 0.15s, box-shadow 0.15s",
             }}>
               Analyze a Property Free →
             </button>
           </form>
 
-          <div style={{ display: "flex", gap: 20, alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          <div style={{ display: "flex", gap: 24, alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
             <TrustCheck text="No credit card" />
             <TrustCheck text="5 free analyses / month" />
             <TrustCheck text="60-second results" />
