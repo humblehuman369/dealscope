@@ -12,8 +12,8 @@ import {
 } from './token-manager';
 
 const BASE_URL =
-  Constants.expoConfig?.extra?.apiUrl ??
   process.env.EXPO_PUBLIC_API_URL ??
+  Constants.expoConfig?.extra?.apiUrl ??
   '';
 
 let isRefreshing = false;

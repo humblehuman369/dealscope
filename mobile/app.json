@@ -12,7 +12,8 @@
       "eas": {
         "projectId": "a75cf449-712d-4ac2-9463-30fca751c69c"
       },
-      "router": {}
+      "router": {},
+      "apiUrl": "https://api-staging.dealgapiq.com"
     },
     "owner": "dealgapiq",
     "ios": {

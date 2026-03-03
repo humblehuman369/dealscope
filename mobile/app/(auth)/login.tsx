@@ -40,8 +40,14 @@ export default function LoginScreen() {
         router.replace('/(tabs)/search');
       }
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.detail ?? 'Login failed. Check your credentials.';
+      let msg: string;
+      if (err?.response?.data?.detail) {
+        msg = err.response.data.detail;
+      } else if (err?.code === 'ERR_NETWORK' || err?.message?.includes('Network')) {
+        msg = 'Cannot reach the server. Check your internet connection and try again.';
+      } else {
+        msg = err?.message ?? 'Login failed. Check your credentials.';
+      }
       Alert.alert('Login Error', msg);
     }
   }
