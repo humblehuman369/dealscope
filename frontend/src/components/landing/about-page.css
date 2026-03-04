@@ -29,11 +29,13 @@
 /* ── HERO ── */
 
 .about-page .about-hero {
+  min-height: 30vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 64px 24px 48px;
+  padding: 48px 24px 32px;
   position: relative;
   overflow: hidden;
 }
