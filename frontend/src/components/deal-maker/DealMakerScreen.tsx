@@ -1078,7 +1078,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               onClick={() => toggleAccordion(section.id)}
             >
               <div className="w-6 h-6 text-[#0EA5E9]">{section.icon}</div>
-              <span className="flex-1 text-[15px] sm:text-base font-semibold text-[#ffffff]">{section.title}</span>
+              <span className="flex-1 text-[15px] sm:text-base font-semibold" style={{ color: '#ffffff' }}>{section.title}</span>
               <svg
                 className={`w-5 h-5 text-white/60 transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
                 fill="none"
@@ -2742,7 +2742,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       <div className="fixed bottom-0 left-0 right-0 max-w-[960px] mx-auto px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-black via-black to-transparent pointer-events-none z-20">
         <button
           onClick={handleSeeResults}
-          className="w-full sm:w-auto sm:min-w-[320px] sm:mx-auto sm:block flex items-center justify-center gap-2 py-4 px-8 rounded-xl text-white font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
+          className="w-full sm:w-auto sm:min-w-[320px] sm:mx-auto sm:block flex items-center justify-center gap-2 py-2 px-8 rounded-xl text-white font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
           style={{ 
             background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
             boxShadow: '0 0 30px rgba(14, 165, 233, 0.3), 0 4px 20px rgba(14, 165, 233, 0.2)'
