@@ -104,7 +104,7 @@ const TABS: { id: AppTab; label: string }[] = [
 
 // Pages where header should be completely hidden
 // Verdict & strategy now use the same AppHeader as the rest of the platform
-const HIDDEN_ROUTES = ['/pricing', '/register', '/what-is-dealgapiq']
+const HIDDEN_ROUTES = ['/register', '/what-is-dealgapiq']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
@@ -120,6 +120,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/forgot-password',
   '/admin',
   '/about',
+  '/pricing',
 ]
 
 // Map routes to active tabs
@@ -132,6 +133,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
   if (pathname.startsWith('/deal-maker')) return 'analyze'
   if (pathname.startsWith('/about')) return undefined
+  if (pathname.startsWith('/pricing')) return undefined
   return 'analyze'
 }
 
@@ -331,7 +333,7 @@ export function AppHeader({
 
   // Determine active tab from prop or pathname
   const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
-  const isAboutPage = pathname?.startsWith('/about')
+  const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar = showPropertyBarProp !== undefined 
@@ -464,40 +466,49 @@ export function AppHeader({
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: headerBg }}
         >
-          {/* Left: Logo + About link */}
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleLogoClick}
-              className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
+          {/* Left: Logo */}
+          <button 
+            onClick={handleLogoClick}
+            className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
+          >
+            <span 
+              className="text-lg font-bold tracking-tight"
+              style={{ color: colors.text.white }}
             >
-              <span 
-                className="text-lg font-bold tracking-tight"
-                style={{ color: colors.text.white }}
-              >
-                DealGap
-              </span>
-              <span 
-                className="text-lg font-bold tracking-tight"
-                style={{ color: colors.brand.teal }}
-              >
-                IQ
-              </span>
-            </button>
+              DealGap
+            </span>
+            <span 
+              className="text-lg font-bold tracking-tight"
+              style={{ color: colors.brand.teal }}
+            >
+              IQ
+            </span>
+          </button>
+
+          {/* Right: About, Pricing, Search, Profile/Login */}
+          <div className="flex items-center gap-5">
             <Link
               href="/about"
-              className="text-sm font-medium transition-colors hover:text-white"
+              className="text-sm font-medium transition-opacity hover:opacity-80"
               style={{
-                color: pathname === '/about' ? colors.text.white : colors.text.secondary,
+                color: '#FFFFFF',
                 borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                 paddingBottom: 2,
               }}
             >
               About
             </Link>
-          </div>
-
-          {/* Right Icons */}
-          <div className="flex items-center gap-3">
+            <Link
+              href="/pricing"
+              className="text-sm font-medium transition-opacity hover:opacity-80"
+              style={{
+                color: '#FFFFFF',
+                borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                paddingBottom: 2,
+              }}
+            >
+              Pricing
+            </Link>
             <button
               onClick={handleSearchClick}
               className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
@@ -505,91 +516,101 @@ export function AppHeader({
             >
               <Search 
                 className="w-5 h-5" 
-                style={{ color: colors.text.white }}
+                style={{ color: '#FFFFFF' }}
               />
             </button>
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                onClick={handleProfileClick}
-                className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
-                aria-label="Profile"
-                aria-expanded={showProfileMenu}
-                aria-haspopup="true"
-              >
-                <User 
-                  className="w-5 h-5" 
-                  style={{ color: colors.text.white }}
-                />
-              </button>
+            {isAuthenticated ? (
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  onClick={handleProfileClick}
+                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                  aria-label="Profile"
+                  aria-expanded={showProfileMenu}
+                  aria-haspopup="true"
+                >
+                  <User 
+                    className="w-5 h-5" 
+                    style={{ color: '#FFFFFF' }}
+                  />
+                </button>
 
-              {showProfileMenu && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
-                  {user && (
-                    <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
-                        <span
-                          className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
-                          style={{
-                            background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
-                            color: isPro ? '#0ea5e9' : '#64748b',
-                          }}
-                        >
-                          {isPro ? 'Pro' : 'Starter'}
-                        </span>
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
+                    {user && (
+                      <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
+                          <span
+                            className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
+                            style={{
+                              background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
+                              color: isPro ? '#0ea5e9' : '#64748b',
+                            }}
+                          >
+                            {isPro ? 'Pro' : 'Starter'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
                       </div>
-                      <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                    )}
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <UserCircle className="w-4 h-4" /> Profile
+                    </button>
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/search-history') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <History className="w-4 h-4" /> Search History
+                    </button>
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/saved-properties') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <Bookmark className="w-4 h-4" /> Saved Properties
+                    </button>
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/billing') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <CreditCard className="w-4 h-4" /> Billing
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                      >
+                        <ShieldCheck className="w-4 h-4" /> Admin Dashboard
+                      </button>
+                    )}
+                    <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
+                      <button
+                        onClick={handleLogout}
+                        disabled={logoutMutation.isPending}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" /> Sign Out
+                      </button>
                     </div>
-                  )}
-                  <button
-                    onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                  >
-                    <UserCircle className="w-4 h-4" /> Profile
-                  </button>
-                  <button
-                    onClick={() => { setShowProfileMenu(false); router.push('/search-history') }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                  >
-                    <History className="w-4 h-4" /> Search History
-                  </button>
-                  <button
-                    onClick={() => { setShowProfileMenu(false); router.push('/saved-properties') }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                  >
-                    <Bookmark className="w-4 h-4" /> Saved Properties
-                  </button>
-                  <button
-                    onClick={() => { setShowProfileMenu(false); router.push('/billing') }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                  >
-                    <CreditCard className="w-4 h-4" /> Billing
-                  </button>
-                  {isAdmin && (
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                    >
-                      <ShieldCheck className="w-4 h-4" /> Admin Dashboard
-                    </button>
-                  )}
-                  <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
-                    <button
-                      onClick={handleLogout}
-                      disabled={logoutMutation.isPending}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-semibold transition-opacity hover:opacity-80 whitespace-nowrap"
+                style={{ color: colors.brand.teal }}
+              >
+                Login / Register
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* Tab Bar - Dark surface (pure black on /analyzing), hidden on /about */}
-        {showTabs && !isAboutPage && (
+        {/* Tab Bar - Dark surface (pure black on /analyzing), hidden on info pages */}
+        {showTabs && !isInfoPage && (
           <div 
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
