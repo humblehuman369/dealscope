@@ -235,9 +235,9 @@ export default function DealMakerIndexPage() {
           <div
             className="rounded-xl p-5 sm:p-6"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(14, 165, 233, 0.25)',
-              boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+              background: 'rgba(14, 165, 233, 0.12)',
+              border: '1px solid rgba(14, 165, 233, 0.4)',
+              boxShadow: '0 0 40px rgba(14, 165, 233, 0.2), 0 0 80px rgba(14, 165, 233, 0.1)',
             }}
           >
             <form onSubmit={handleAddressSubmit} className="space-y-4">
@@ -254,8 +254,8 @@ export default function DealMakerIndexPage() {
                   autoFocus
                   className="w-full pl-12 pr-12 py-4 rounded-xl text-[#ffffff] placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
                   style={{
-                    background: '#000000',
-                    border: '1px solid rgba(14, 165, 233, 0.15)',
+                    background: 'rgba(14, 165, 233, 0.1)',
+                    border: '1px solid rgba(14, 165, 233, 0.3)',
                   }}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
@@ -283,8 +283,8 @@ export default function DealMakerIndexPage() {
                 <div
                   className="rounded-xl p-3 sm:p-4 space-y-3"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(14, 165, 233, 0.15)',
+                    background: 'rgba(14, 165, 233, 0.1)',
+                    border: '1px solid rgba(14, 165, 233, 0.3)',
                   }}
                 >
                   {validationResult.issues.length > 0 && (
@@ -333,7 +333,9 @@ export default function DealMakerIndexPage() {
                 className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 style={{
                   color: '#ffffff',
-                  background: '#000000',
+                  background: 'rgba(14, 165, 233, 0.2)',
+                  border: '1px solid rgba(14, 165, 233, 0.4)',
+                  boxShadow: '0 0 20px rgba(14, 165, 233, 0.15)',
                 }}
               >
                 {validationStatus === 'validating' ? (
