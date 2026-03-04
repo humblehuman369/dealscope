@@ -252,9 +252,9 @@ export default function DealMakerIndexPage() {
                   onChange={setSearchAddress}
                   onPlaceSelect={setSearchAddress}
                   autoFocus
-                  className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-[#64748B] outline-none transition-colors text-sm sm:text-base"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl text-[#ffffff] placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: '#000000',
                     border: '1px solid rgba(14, 165, 233, 0.15)',
                   }}
                 />
@@ -330,8 +330,9 @@ export default function DealMakerIndexPage() {
               <button
                 type="submit"
                 disabled={!searchAddress.trim() || validationStatus === 'validating'}
-                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
+                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 style={{
+                  color: '#ffffff',
                   background:
                     searchAddress.trim() && validationStatus !== 'validating'
                       ? 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)'
