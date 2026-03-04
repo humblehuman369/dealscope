@@ -694,29 +694,28 @@ function StrategyContent() {
               </div>
             </div>
           ) : (
-            /* Rental strategies: NOI and Net Cash Flow — enhanced hero summary cards */
+            /* Rental strategies: NOI and Net Cash Flow — compact, always side-by-side, responsive */
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-10 pt-4 w-full">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 mt-6 sm:mt-8 md:mt-10 pt-2 sm:pt-4 w-full min-w-0">
                 <div
-                  className="w-full p-6 sm:p-7"
+                  className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                   style={{
                     background: '#000000',
-                    borderLeft: `4px solid ${colors.status.positive}`,
+                    borderLeft: `3px solid ${colors.status.positive}`,
                     borderTop: '1px solid rgba(52,211,153,0.2)',
                     borderRight: '1px solid rgba(52,211,153,0.2)',
                     borderBottom: '1px solid rgba(52,211,153,0.2)',
-                    borderRadius: 16,
-                    boxShadow: '0 0 24px rgba(52,211,153,0.12)',
+                    boxShadow: '0 0 20px rgba(52,211,153,0.1)',
                   }}
                 >
-                  <p className="text-[14px] font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
-                  <p className="text-[13px] font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
-                  <p className="text-[24px] sm:text-[28px] font-extrabold tabular-nums mt-3" style={{ color: colors.status.positive }}>
-                    {formatCurrency(noi)}
-                    <span className="text-[14px] font-semibold ml-1 opacity-70">/yr</span>
+                  <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: colors.status.positive }}>NOI</p>
+                  <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>Before Mortgage</p>
+                  <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: colors.status.positive }}>
+                    <span className="truncate block">{formatCurrency(noi)}</span>
+                    <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                   </p>
-                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
-                    <p className="text-[16px] font-semibold tabular-nums" style={{ color: colors.status.positive }}>
+                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
+                    <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: colors.status.positive }}>
                       {formatCurrency(Math.round(noi / 12))}/mo
                     </p>
                   </div>
@@ -727,25 +726,24 @@ function StrategyContent() {
                   const netGreen = strategyCashFlow >= 0
                   return (
                     <div
-                      className="w-full p-6 sm:p-7"
+                      className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                       style={{
                         background: '#000000',
-                        borderLeft: `4px solid ${netColor}`,
+                        borderLeft: `3px solid ${netColor}`,
                         borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
                         borderRight: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
                         borderBottom: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
-                        borderRadius: 16,
-                        boxShadow: netGreen ? '0 0 24px rgba(52,211,153,0.12)' : '0 0 24px rgba(248,113,113,0.12)',
+                        boxShadow: netGreen ? '0 0 20px rgba(52,211,153,0.1)' : '0 0 20px rgba(248,113,113,0.1)',
                       }}
                     >
-                      <p className="text-[14px] font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
-                      <p className="text-[13px] font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
-                      <p className="text-[24px] sm:text-[28px] font-extrabold tabular-nums mt-3" style={{ color: netColor }}>
-                        {netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
-                        <span className="text-[14px] font-semibold ml-1 opacity-70">/yr</span>
+                      <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: netColor }}>Net Cash Flow</p>
+                      <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>After Mortgage</p>
+                      <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: netColor }}>
+                        <span className="truncate block">{netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}</span>
+                        <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                       </p>
-                      <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
-                        <p className="text-[16px] font-semibold tabular-nums" style={{ color: netColor }}>
+                      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
+                        <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: netColor }}>
                           {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
                         </p>
                       </div>
@@ -853,39 +851,41 @@ function StrategyContent() {
           </div>
         </section>
 
-        {/* Benchmarks */}
+        {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
         <section className="px-5 py-8 border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
-          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
-            We compare this deal against the numbers experienced investors actually look for. Green means this deal meets or beats the benchmark.
-          </p>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b" style={{ borderColor: colors.ui.border }}>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Metric</th>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>This Deal</th>
-                <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Target</th>
-                <th className="py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {benchmarks.map((b, i) => (
-                <tr key={i} className="border-b" style={{ borderColor: colors.ui.border }}>
-                  <td className="py-3 text-sm font-medium" style={{ color: colors.text.primary }}>{b.metric}</td>
-                  <td className="py-3 text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{b.value}</td>
-                  <td className="py-3 text-sm font-medium tabular-nums" style={{ color: '#F1F5F9' }}>{b.target}</td>
-                  <td className="py-3 text-right">
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                      style={{
-                        color: b.status === 'good' ? colors.status.positive : colors.status.negative,
-                        background: b.status === 'good' ? colors.accentBg.green : colors.accentBg.red,
-                      }}>{b.status === 'good' ? 'Good' : 'Below'}</span>
-                  </td>
+          <div className="w-full rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+            <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
+            <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
+            <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
+              We compare this deal against the numbers experienced investors actually look for. Green means this deal meets or beats the benchmark.
+            </p>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b" style={{ borderColor: colors.ui.border }}>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Metric</th>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>This Deal</th>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Target</th>
+                  <th className="py-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {benchmarks.map((b, i) => (
+                  <tr key={i} className="border-b" style={{ borderColor: colors.ui.border }}>
+                    <td className="py-3 text-sm font-medium" style={{ color: colors.text.primary }}>{b.metric}</td>
+                    <td className="py-3 text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{b.value}</td>
+                    <td className="py-3 text-sm font-medium tabular-nums" style={{ color: '#F1F5F9' }}>{b.target}</td>
+                    <td className="py-3 text-right">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                        style={{
+                          color: b.status === 'good' ? colors.status.positive : colors.status.negative,
+                          background: b.status === 'good' ? colors.accentBg.green : colors.accentBg.red,
+                        }}>{b.status === 'good' ? 'Good' : 'Below'}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         </AuthGate>
