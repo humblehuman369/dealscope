@@ -700,7 +700,7 @@ function StrategyContent() {
                 <div
                   className="w-full p-6 sm:p-7"
                   style={{
-                    background: colors.accentBg.green,
+                    background: '#000000',
                     borderLeft: `4px solid ${colors.status.positive}`,
                     borderTop: '1px solid rgba(52,211,153,0.2)',
                     borderRight: '1px solid rgba(52,211,153,0.2)',
@@ -729,7 +729,7 @@ function StrategyContent() {
                     <div
                       className="w-full p-6 sm:p-7"
                       style={{
-                        background: netGreen ? colors.accentBg.green : colors.accentBg.red,
+                        background: '#000000',
                         borderLeft: `4px solid ${netColor}`,
                         borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
                         borderRight: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
