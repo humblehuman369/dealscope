@@ -365,12 +365,12 @@ export function DealMakerPage({
               borderBottom: '1px solid #E2E8F0',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
               Loan Amount
             </span>
             <span 
               className="tabular-nums"
-              style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9' }}
+              style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}
             >
               {formatSliderValue(metrics.loanAmount, 'currency')}
             </span>
@@ -378,7 +378,7 @@ export function DealMakerPage({
 
           {/* Loan Type */}
           <div style={{ marginTop: '16px', marginBottom: '8px' }}>
-            <label style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628', display: 'block', marginBottom: '8px' }}>
+            <label style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: '8px' }}>
               Loan Type
             </label>
             <div className="flex rounded-lg p-1" style={{ background: '#F1F5F9' }}>

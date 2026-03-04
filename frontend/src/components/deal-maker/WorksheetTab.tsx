@@ -83,7 +83,7 @@ export function WorksheetTab({
         {/* Step Title */}
         <span 
           className="flex-1 text-left"
-          style={{ fontSize: '15px', fontWeight: 600, color: '#0A1628' }}
+          style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}
         >
           {title}
         </span>
@@ -121,7 +121,7 @@ export function WorksheetTab({
               <div style={{ 
                 fontSize: '10px', 
                 fontWeight: 600, 
-                color: '#64748B',
+                color: '#ffffff',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 marginBottom: '4px',
@@ -130,7 +130,7 @@ export function WorksheetTab({
               </div>
               <div 
                 className="tabular-nums"
-                style={{ fontSize: '24px', fontWeight: 700, color: '#0A1628' }}
+                style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff' }}
               >
                 {derivedOutput.value}
               </div>
