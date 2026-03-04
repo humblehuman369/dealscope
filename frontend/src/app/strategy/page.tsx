@@ -591,7 +591,7 @@ function StrategyContent() {
                   <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: '#F1F5F9' } : {}) }}>{value as string}</span>
                 </div>
               ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
                 <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Cash Needed</span>
                 <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
               </div>
@@ -613,7 +613,7 @@ function StrategyContent() {
                   <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
                 </div>
               ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
                 <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Monthly Payment</span>
                 <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(monthlyPI)}</span>
               </div>
@@ -639,7 +639,7 @@ function StrategyContent() {
                   <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
                 </div>
               ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.negative}`, borderBottom: `2px solid ${colors.status.negative}` }}>
                 <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Total Costs</span>
                 <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(totalExpenses)}/yr</span>
               </div>
@@ -664,7 +664,7 @@ function StrategyContent() {
                 <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(vacancyPct * 100)}%)</span>
                 <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(vacancyLoss)})</span>
               </div>
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.positive}`, borderBottom: `2px solid ${colors.status.positive}` }}>
                 <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Effective Income</span>
                 <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(effectiveIncome)}</span>
               </div>
