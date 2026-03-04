@@ -620,8 +620,32 @@ function StrategyContent() {
 
             </div>
 
-            {/* Right: Earn + Expenses */}
+            {/* Right: Costs + Earn */}
             <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
+                </div>
+              </div>
+              {[
+                ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
+                ['Insurance', `${formatCurrency(insurance)}/yr`],
+                [`Management (${Math.round(mgmtPct * 100)}%)`, `${formatCurrency(mgmt)}/yr`],
+                [`Maintenance (${Math.round(maintPct * 100)}%)`, `${formatCurrency(maint)}/yr`],
+                [`Reserves (${Math.round(reservesPct * 100)}%)`, `${formatCurrency(reserves)}/yr`],
+              ].map(([label, value], i) => (
+                <div key={i} className="flex justify-between py-1.5">
+                  <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
+                </div>
+              ))}
+              <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
+                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Total Costs</span>
+                <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.negative }}>{formatCurrency(totalExpenses)}/yr</span>
+              </div>
+
+              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
+
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
                   <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
@@ -643,30 +667,6 @@ function StrategyContent() {
               <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
                 <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Effective Income</span>
                 <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(effectiveIncome)}</span>
-              </div>
-
-              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
-
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
-                </div>
-              </div>
-              {[
-                ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
-                ['Insurance', `${formatCurrency(insurance)}/yr`],
-                [`Management (${Math.round(mgmtPct * 100)}%)`, `${formatCurrency(mgmt)}/yr`],
-                [`Maintenance (${Math.round(maintPct * 100)}%)`, `${formatCurrency(maint)}/yr`],
-                [`Reserves (${Math.round(reservesPct * 100)}%)`, `${formatCurrency(reserves)}/yr`],
-              ].map(([label, value], i) => (
-                <div key={i} className="flex justify-between py-1.5">
-                  <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
-                </div>
-              ))}
-              <div className="flex justify-between pt-2.5 mt-1.5 border-t" style={{ borderColor: colors.ui.border }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Total Costs</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.negative }}>{formatCurrency(totalExpenses)}/yr</span>
               </div>
 
             </div>
