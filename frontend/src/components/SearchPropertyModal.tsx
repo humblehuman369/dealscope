@@ -120,9 +120,9 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
         <div 
           className="relative w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-8"
           style={{
-            background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+            background: '#000000',
             border: '1px solid rgba(14, 165, 233, 0.3)',
-            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(14, 165, 233, 0.1)',
+            boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)',
           }}
         >
           {/* Close Button */}
@@ -164,16 +164,17 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 onClick={handleScanProperty}
                 className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: '#000000',
+                  border: '1px solid rgba(14, 165, 233, 0.25)',
+                  boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.1)';
-                  e.currentTarget.style.borderColor = '#0EA5E9';
+                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.55)';
+                  e.currentTarget.style.boxShadow = '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.25)';
+                  e.currentTarget.style.boxShadow = '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)';
                 }}
               >
                 <div 
@@ -196,16 +197,17 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 onClick={() => setShowAddressInput(true)}
                 className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: '#000000',
+                  border: '1px solid rgba(14, 165, 233, 0.25)',
+                  boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.1)';
-                  e.currentTarget.style.borderColor = '#0EA5E9';
+                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.55)';
+                  e.currentTarget.style.boxShadow = '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.25)';
+                  e.currentTarget.style.boxShadow = '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)';
                 }}
               >
                 <div 
