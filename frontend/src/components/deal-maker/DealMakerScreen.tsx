@@ -1063,11 +1063,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             key={section.id}
             className="rounded-xl mb-3 overflow-hidden transition-all"
             style={activeAccordion === section.id ? {
-              background: 'rgba(255,255,255,0.03)',
+              background: 'rgba(30, 41, 59, 0.95)',
               border: '1px solid rgba(14, 165, 233, 0.55)',
               boxShadow: '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)',
             } : {
-              background: 'rgba(255,255,255,0.03)',
+              background: 'rgba(30, 41, 59, 0.85)',
               border: '1px solid rgba(14, 165, 233, 0.25)',
               boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
             }}
