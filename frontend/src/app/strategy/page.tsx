@@ -756,7 +756,7 @@ function StrategyContent() {
                 {(() => {
                   const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                    <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
                         <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -778,7 +778,7 @@ function StrategyContent() {
                 {(() => {
                   const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                    <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
                         <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -802,7 +802,7 @@ function StrategyContent() {
           )}
 
           {/* The Bottom Line */}
-          <div className="mt-7 p-5 rounded-r-xl border border-l-[3px]" style={{ background: colors.background.card, borderColor: `rgba(56,189,248,0.12)`, borderLeftColor: colors.brand.blue }}>
+          <div className="mt-7 p-5 rounded-xl border" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
             <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
               {isFlipOrWholesale ? (
@@ -820,7 +820,7 @@ function StrategyContent() {
           </div>
 
           {/* Try Another Strategy */}
-          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
             <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.gold }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
             </div>
@@ -853,7 +853,7 @@ function StrategyContent() {
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
         <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
-          <div className="w-full rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+          <div className="w-full rounded-[14px] p-5" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
