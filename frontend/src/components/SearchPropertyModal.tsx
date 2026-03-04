@@ -121,8 +121,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
           className="relative w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-8"
           style={{
             background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
-            border: '1px solid rgba(8, 145, 178, 0.3)',
-            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(8, 145, 178, 0.1)',
+            border: '1px solid rgba(14, 165, 233, 0.3)',
+            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(14, 165, 233, 0.1)',
           }}
         >
           {/* Close Button */}
@@ -152,7 +152,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
                   How would you like to<br />analyze a property?
                 </h2>
-                <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                <p className="text-xs sm:text-sm mt-1" style={{ color: '#FFFFFF' }}>
                   Choose your method to get started
                 </p>
               </div>
@@ -171,7 +171,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   borderColor: 'rgba(255, 255, 255, 0.08)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(8, 145, 178, 0.1)';
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.1)';
                   e.currentTarget.style.borderColor = '#0EA5E9';
                 }}
                 onMouseLeave={(e) => {
@@ -181,16 +181,14 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
               >
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)',
-                  }}
+                  style={{ background: '#0EA5E9' }}
                 >
                   <Camera size={22} className="text-white sm:hidden" />
                   <Camera size={28} className="text-white hidden sm:block" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-white mb-0.5 sm:mb-1">Scan Property</h3>
-                  <p className="text-xs sm:text-sm text-gray-400 leading-snug">
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Scan Property</h3>
+                  <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
                     Point your camera at any property for instant analysis
                   </p>
                 </div>
@@ -205,7 +203,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   borderColor: 'rgba(255, 255, 255, 0.08)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(8, 145, 178, 0.1)';
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.1)';
                   e.currentTarget.style.borderColor = '#0EA5E9';
                 }}
                 onMouseLeave={(e) => {
@@ -215,16 +213,14 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
               >
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)',
-                  }}
+                  style={{ background: '#0EA5E9' }}
                 >
                   <Search size={22} className="text-white sm:hidden" />
                   <Search size={28} className="text-white hidden sm:block" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-white mb-0.5 sm:mb-1">Enter Address</h3>
-                  <p className="text-xs sm:text-sm text-gray-400 leading-snug">
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Enter Address</h3>
+                  <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
                     Type in an address to analyze any property
                   </p>
                 </div>
@@ -293,7 +289,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                         type="button"
                         onClick={acceptCorrection}
                         className="text-sm py-2 px-3 rounded-lg font-medium transition-colors"
-                        style={{ background: 'rgba(8, 145, 178, 0.3)', color: '#5eead4' }}
+                        style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
                       >
                         Accept correction
                       </button>
@@ -335,7 +331,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   style={{
                     background: address.trim() && validationStatus !== 'validating'
                       ? 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' 
-                      : 'rgba(8, 145, 178, 0.3)',
+                      : 'rgba(14, 165, 233, 0.3)',
                     color: 'white',
                   }}
                 >

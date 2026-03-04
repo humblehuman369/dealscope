@@ -629,9 +629,10 @@ export function AppHeader({
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
                   style={{
-                    backgroundColor: isActive ? headerBg : 'transparent',
-                    color: isActive ? colors.text.white : colors.text.secondary,
+                    backgroundColor: 'transparent',
+                    color: '#FFFFFF',
                     borderColor: colors.ui.border,
+                    borderBottom: isActive ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                   }}
                 >
                   {tab.label}
