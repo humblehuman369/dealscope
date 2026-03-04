@@ -29,7 +29,7 @@ import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
 import { PropertyContextBar } from './PropertyContextBar'
 import { NavTabs } from './NavTabs'
-import { DealMakerPopup, DealMakerValues, PopupStrategyType, DealMakerTab } from '../deal-maker/DealMakerPopup'
+import type { DealMakerValues, DealMakerTab } from '../deal-maker/DealMakerPopup'
 import { ProGate } from '@/components/ProGate'
 import {
   IQProperty,
@@ -73,18 +73,6 @@ const HEADER_STRATEGIES = [
   { short: 'Wholesale', full: 'Wholesale' },
 ]
 
-// Map header strategy to popup strategy type
-function getPopupStrategyType(headerStrategy: string): PopupStrategyType {
-  switch (headerStrategy) {
-    case 'Short-term': return 'str'
-    case 'BRRRR': return 'brrrr'
-    case 'Fix & Flip': return 'flip'
-    case 'House Hack': return 'house_hack'
-    case 'Wholesale': return 'wholesale'
-    default: return 'ltr'
-  }
-}
-
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
@@ -127,8 +115,6 @@ export function VerdictIQCombined({
   const [showFactors, setShowFactors] = useState(false)
   const [showPriceLikelihood, setShowPriceLikelihood] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
-  const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
-  const [dealMakerInitialTab, setDealMakerInitialTab] = useState<DealMakerTab | undefined>(undefined)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   
@@ -558,45 +544,26 @@ export function VerdictIQCombined({
     setCurrentStrategy(strategy)
   }, [])
 
-  // Handle strategy change from popup (maps popup type back to header format)
-  const handlePopupStrategyChange = useCallback((popupStrategy: PopupStrategyType) => {
-    const headerMap: Record<PopupStrategyType, string> = {
-      ltr: 'Long-term',
-      str: 'Short-term',
-      brrrr: 'BRRRR',
-      flip: 'Fix & Flip',
-      house_hack: 'House Hack',
-      wholesale: 'Wholesale',
-    }
-    setCurrentStrategy(headerMap[popupStrategy])
-  }, [])
+  const navigateToDealMaker = useCallback((tab?: DealMakerTab) => {
+    const addr = [property.address, property.city, property.state, property.zip]
+      .filter(Boolean)
+      .join(', ')
+    const params = new URLSearchParams({ address: addr, from: 'verdict' })
+    if (tab) params.set('tab', tab)
+    router.push(`/deal-maker?${params.toString()}`)
+  }, [property.address, property.city, property.state, property.zip, router])
 
-  // Open DealMaker popup instead of navigating to page
-  const handleOpenDealMakerPopup = useCallback(() => {
-    setDealMakerInitialTab(undefined)
-    setShowDealMakerPopup(true)
-  }, [])
-
-  // Open DealMaker popup with a specific tab
   const openDealMakerWithTab = useCallback((tab: DealMakerTab) => {
-    setDealMakerInitialTab(tab)
-    setShowDealMakerPopup(true)
-  }, [])
+    navigateToDealMaker(tab)
+  }, [navigateToDealMaker])
 
-  // Handle apply from DealMaker popup
-  const handleApplyDealMakerValues = useCallback((values: DealMakerValues) => {
-    setOverrideValues(values)
-    setShowDealMakerPopup(false)
-  }, [])
-
-  // For backward compatibility - calls popup
   const handleNavigateToDealMaker = useCallback(() => {
-    handleOpenDealMakerPopup()
-  }, [handleOpenDealMakerPopup])
+    navigateToDealMaker()
+  }, [navigateToDealMaker])
 
   const handleEditAssumptions = useCallback(() => {
-    handleOpenDealMakerPopup()
-  }, [handleOpenDealMakerPopup])
+    navigateToDealMaker()
+  }, [navigateToDealMaker])
 
   // Export proforma handlers
   const handleExportProforma = useCallback(async (format: 'excel' | 'pdf') => {
@@ -1017,85 +984,7 @@ export function VerdictIQCombined({
         })}
       />
 
-      {/* DealMaker Popup */}
-      <DealMakerPopup
-        isOpen={showDealMakerPopup}
-        onClose={() => setShowDealMakerPopup(false)}
-        onApply={handleApplyDealMakerValues}
-        strategyType={getPopupStrategyType(currentStrategy)}
-        onStrategyChange={handlePopupStrategyChange}
-        initialTab={dealMakerInitialTab}
-        activePriceTarget={activePriceTarget}
-        onPriceTargetChange={handlePriceTargetChange}
-        initialValues={{
-          // Common fields
-          buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),
-          downPayment: (defaults.financing.down_payment_pct * 100),
-          closingCosts: ((defaults.financing.closing_costs_pct || 0.03) * 100),
-          interestRate: (defaults.financing.interest_rate * 100),
-          loanTerm: defaults.financing.loan_term_years,
-          rehabBudget: overrideValues?.rehabBudget ?? 0,
-          arv: overrideValues?.arv ?? property.arv ?? buyPrice * 1.15,
-          propertyTaxes: overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012),
-          insurance: overrideValues?.insurance ?? property.insurance ?? Math.round(buyPrice * 0.01),
-          // LTR fields
-          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? 0,
-          vacancyRate: (defaults.operating.vacancy_rate * 100),
-          managementRate: (defaults.operating.property_management_pct * 100),
-          // STR fields
-          averageDailyRate: overrideValues?.averageDailyRate ?? 200,
-          occupancyRate: overrideValues?.occupancyRate ?? 65,
-          cleaningFeeRevenue: overrideValues?.cleaningFeeRevenue ?? 150,
-          avgLengthOfStayDays: overrideValues?.avgLengthOfStayDays ?? 3,
-          platformFeeRate: overrideValues?.platformFeeRate ?? 15,
-          strManagementRate: overrideValues?.strManagementRate ?? 20,
-          cleaningCostPerTurnover: overrideValues?.cleaningCostPerTurnover ?? 100,
-          suppliesMonthly: overrideValues?.suppliesMonthly ?? 150,
-          additionalUtilitiesMonthly: overrideValues?.additionalUtilitiesMonthly ?? 200,
-          furnitureSetupCost: overrideValues?.furnitureSetupCost ?? 6000,
-          // BRRRR fields
-          buyDiscountPct: overrideValues?.buyDiscountPct ?? 15,
-          hardMoneyRate: overrideValues?.hardMoneyRate ?? 12,
-          holdingPeriodMonths: overrideValues?.holdingPeriodMonths ?? 6,
-          holdingCostsMonthly: overrideValues?.holdingCostsMonthly ?? 1500,
-          postRehabMonthlyRent: overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? 0,
-          refinanceLtv: overrideValues?.refinanceLtv ?? 75,
-          refinanceInterestRate: overrideValues?.refinanceInterestRate ?? 6.5,
-          refinanceTermYears: overrideValues?.refinanceTermYears ?? 30,
-          refinanceClosingCostsPct: overrideValues?.refinanceClosingCostsPct ?? 2,
-          contingencyPct: overrideValues?.contingencyPct ?? 10,
-          maintenanceRate: overrideValues?.maintenanceRate ?? 5,
-          monthlyHoa: overrideValues?.monthlyHoa ?? 0,
-          // Fix & Flip fields
-          financingType: overrideValues?.financingType ?? 'hardMoney',
-          hardMoneyLtv: overrideValues?.hardMoneyLtv ?? 90,
-          loanPoints: overrideValues?.loanPoints ?? 2,
-          rehabTimeMonths: overrideValues?.rehabTimeMonths ?? 4,
-          daysOnMarket: overrideValues?.daysOnMarket ?? 45,
-          sellingCostsPct: overrideValues?.sellingCostsPct ?? 8,
-          capitalGainsRate: overrideValues?.capitalGainsRate ?? 25,
-          // House Hack fields
-          totalUnits: overrideValues?.totalUnits ?? 4,
-          ownerOccupiedUnits: overrideValues?.ownerOccupiedUnits ?? 1,
-          ownerUnitMarketRent: overrideValues?.ownerUnitMarketRent ?? 1500,
-          loanType: overrideValues?.loanType ?? 'fha',
-          pmiRate: overrideValues?.pmiRate ?? 0.85,
-          avgRentPerUnit: overrideValues?.avgRentPerUnit ?? 1500,
-          currentHousingPayment: overrideValues?.currentHousingPayment ?? 2000,
-          utilitiesMonthly: overrideValues?.utilitiesMonthly ?? 200,
-          capexRate: overrideValues?.capexRate ?? 5,
-          // Wholesale fields
-          estimatedRepairs: overrideValues?.estimatedRepairs ?? 40000,
-          squareFootage: overrideValues?.squareFootage ?? property.sqft ?? 1500,
-          contractPrice: overrideValues?.contractPrice ?? buyPrice * 0.85,
-          earnestMoney: overrideValues?.earnestMoney ?? 1000,
-          inspectionPeriodDays: overrideValues?.inspectionPeriodDays ?? 14,
-          daysToClose: overrideValues?.daysToClose ?? 45,
-          assignmentFee: overrideValues?.assignmentFee ?? 15000,
-          marketingCosts: overrideValues?.marketingCosts ?? 500,
-          wholesaleClosingCosts: overrideValues?.wholesaleClosingCosts ?? 500,
-        }}
-      />
+      
     </div>
   )
 }
