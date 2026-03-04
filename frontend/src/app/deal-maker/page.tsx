@@ -254,7 +254,7 @@ export default function DealMakerIndexPage() {
                   autoFocus
                   className="w-full pl-12 pr-12 py-4 rounded-xl text-[#ffffff] placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
                   style={{
-                    background: 'rgba(14, 165, 233, 0.1)',
+                    background: '#000000',
                     border: '1px solid rgba(14, 165, 233, 0.3)',
                   }}
                 />
@@ -333,9 +333,7 @@ export default function DealMakerIndexPage() {
                 className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 style={{
                   color: '#ffffff',
-                  background: 'rgba(14, 165, 233, 0.2)',
-                  border: '1px solid rgba(14, 165, 233, 0.4)',
-                  boxShadow: '0 0 20px rgba(14, 165, 233, 0.15)',
+                  background: '#000000',
                 }}
               >
                 {validationStatus === 'validating' ? (
