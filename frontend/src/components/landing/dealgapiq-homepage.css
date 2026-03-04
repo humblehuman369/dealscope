@@ -8,19 +8,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── HERO ── */
-
-.hero-homepage {
-  min-height: 40vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 48px 24px 32px;
-  position: relative;
-  overflow: hidden;
-}
 /* Hero stacked search — focus & hover states */
 .hero-search-input:focus {
   border-color: #00bbff !important;
