@@ -852,7 +852,7 @@ function StrategyContent() {
         </section>
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
-        <section className="px-5 py-8 border-t" style={{ background: colors.background.bg, borderColor: colors.ui.border }}>
+        <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
           <div className="w-full rounded-[14px] p-5" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
