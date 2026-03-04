@@ -197,7 +197,7 @@ export function AboutPageRedesign() {
           <div className="metric-grid">
             <Reveal>
               <div className="section-label">The Core Concept</div>
-              <h2 className="section-title">What is the<br />Deal Gap?</h2>
+              <h2 className="section-title">What is the<br /><span style={{ color: '#0EA5E9' }}>Deal Gap?</span></h2>
               <p className="section-desc" style={{ marginBottom: 20 }}>
                 The <strong>Deal Gap</strong> is a proprietary concept — the distance between the asking price and what the numbers say you should actually pay.
               </p>
