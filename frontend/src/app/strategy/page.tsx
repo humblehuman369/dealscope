@@ -709,14 +709,14 @@ function StrategyContent() {
                     boxShadow: '0 0 24px rgba(52,211,153,0.12)',
                   }}
                 >
-                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
-                  <p className="text-[11px] font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
-                  <p className="text-3xl sm:text-4xl font-extrabold tabular-nums mt-3" style={{ color: colors.status.positive }}>
+                  <p className="text-[14px] font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
+                  <p className="text-[13px] font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
+                  <p className="text-[24px] sm:text-[28px] font-extrabold tabular-nums mt-3" style={{ color: colors.status.positive }}>
                     {formatCurrency(noi)}
-                    <span className="text-sm font-semibold ml-1 opacity-70">/yr</span>
+                    <span className="text-[14px] font-semibold ml-1 opacity-70">/yr</span>
                   </p>
                   <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
-                    <p className="text-base font-semibold tabular-nums" style={{ color: colors.status.positive }}>
+                    <p className="text-[16px] font-semibold tabular-nums" style={{ color: colors.status.positive }}>
                       {formatCurrency(Math.round(noi / 12))}/mo
                     </p>
                   </div>
@@ -738,14 +738,14 @@ function StrategyContent() {
                         boxShadow: netGreen ? '0 0 24px rgba(52,211,153,0.12)' : '0 0 24px rgba(248,113,113,0.12)',
                       }}
                     >
-                      <p className="text-xs font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
-                      <p className="text-[11px] font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
-                      <p className="text-3xl sm:text-4xl font-extrabold tabular-nums mt-3" style={{ color: netColor }}>
+                      <p className="text-[14px] font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
+                      <p className="text-[13px] font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
+                      <p className="text-[24px] sm:text-[28px] font-extrabold tabular-nums mt-3" style={{ color: netColor }}>
                         {netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
-                        <span className="text-sm font-semibold ml-1 opacity-70">/yr</span>
+                        <span className="text-[14px] font-semibold ml-1 opacity-70">/yr</span>
                       </p>
                       <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
-                        <p className="text-base font-semibold tabular-nums" style={{ color: netColor }}>
+                        <p className="text-[16px] font-semibold tabular-nums" style={{ color: netColor }}>
                           {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
                         </p>
                       </div>
