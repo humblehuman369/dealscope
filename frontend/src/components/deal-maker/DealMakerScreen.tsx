@@ -163,8 +163,8 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
         <span className="text-sm font-semibold text-[#0A1628]">{label}</span>
         <span className="text-base font-bold text-[#0EA5E9] tabular-nums">{displayValue}</span>
       </div>
-      <div className="relative h-6 flex items-center">
-        <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full relative">
+      <div className="relative h-8 flex items-center">
+        <div className="w-full h-2 bg-[#E2E8F0] rounded-full relative">
           <div 
             className="absolute left-0 top-0 h-full bg-[#0EA5E9] rounded-full"
             style={{ width: `${fillPercent}%` }}
@@ -178,12 +178,12 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div 
-            className="absolute w-4 h-4 bg-[#0EA5E9] border-2 border-white rounded-full shadow-md -translate-y-1/2 top-1/2"
-            style={{ left: `calc(${fillPercent}% - 8px)` }}
+            className="absolute w-5 h-5 bg-[#0EA5E9] border-2 border-white rounded-full shadow-md -translate-y-1/2 top-1/2 transition-shadow hover:shadow-lg"
+            style={{ left: `calc(${fillPercent}% - 10px)` }}
           />
         </div>
       </div>
-      <div className="flex justify-between mt-1.5 text-[11px] text-[#94A3B8]">
+      <div className="flex justify-between mt-1 text-[11px] text-[#94A3B8]">
         <span>{minLabel}</span>
         <span>{maxLabel}</span>
       </div>
@@ -992,39 +992,55 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }, [strategyType, metrics, state])
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] max-w-[480px] mx-auto font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-[#F8FAFC] max-w-[960px] mx-auto font-['Inter',sans-serif]">
       {/* Header is now handled by global AppHeader in layout */}
 
-      {/* Back Navigation */}
-      {backTo && (
-        <div className="bg-[#0A1628] px-4 pt-3">
+      {/* Back Navigation + Strategy Selector */}
+      <div className="bg-[#0A1628] px-4 sm:px-6 pt-3">
+        {backTo && (
           <button
             onClick={handleBack}
-            className="flex items-center gap-1.5 text-sm text-[#94A3B8] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#94A3B8] hover:text-white transition-colors mb-3"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             Back to {backTo.label}
           </button>
+        )}
+
+        {/* Strategy Selector */}
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {['Long-term', 'Short-term', 'BRRRR', 'Fix & Flip', 'House Hack', 'Wholesale'].map((strategy) => (
+            <button
+              key={strategy}
+              onClick={() => handleStrategyChange(strategy)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                currentStrategy === strategy
+                  ? 'bg-[#0EA5E9] text-white shadow-[0_0_12px_rgba(14,165,233,0.4)]'
+                  : 'bg-white/8 text-[#94A3B8] hover:text-white hover:bg-white/12'
+              }`}
+            >
+              {strategy}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Key Metrics Row */}
-      <div className="bg-[#0A1628] px-4 pb-4 -mt-1">
-        {/* Live calculation indicator */}
+      <div className="bg-[#0A1628] px-4 sm:px-6 pb-4">
         {isCalculating && (
           <div className="flex items-center justify-center gap-2 py-1.5 text-[10px] text-[#00D4FF]">
             <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-pulse" />
             Recalculating...
           </div>
         )}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 pt-3 border-t border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-1.5 pt-3 border-t border-white/10">
           {headerMetrics.map((metric, index) => (
-            <div key={index} className="flex justify-between items-center py-0.5">
+            <div key={index} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
               <span className="text-xs text-[#94A3B8]">{metric.label}</span>
               <span 
-                className={`text-[13px] font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
+                className={`text-[13px] sm:text-base font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
@@ -1035,25 +1051,25 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       </div>
 
       {/* Main Content - Accordion Sections */}
-      <main className="p-4 pb-8">
+      <main className="p-4 sm:p-6 pb-24 sm:pb-28">
         {accordionSections.map((section) => (
           <div
             key={section.id}
-            className={`bg-white rounded-xl mb-2.5 shadow-sm border overflow-hidden transition-all ${
+            className={`bg-white rounded-xl mb-3 shadow-sm border overflow-hidden transition-all ${
               activeAccordion === section.id 
                 ? 'border-[#0EA5E9]/20 shadow-[0_0_0_2px_rgba(14,165,233,0.1)]' 
-                : 'border-[#F1F5F9]'
+                : 'border-[#F1F5F9] hover:border-[#E2E8F0]'
             }`}
           >
             {/* Accordion Header */}
             <button
-              className="flex items-center gap-3 p-3.5 w-full text-left"
+              className="flex items-center gap-3 p-4 sm:p-5 w-full text-left"
               onClick={() => toggleAccordion(section.id)}
             >
               <div className="w-6 h-6 text-[#0EA5E9]">{section.icon}</div>
-              <span className="flex-1 text-[15px] font-semibold text-[#0A1628]">{section.title}</span>
+              <span className="flex-1 text-[15px] sm:text-base font-semibold text-[#0A1628]">{section.title}</span>
               <svg
-                className={`w-5 h-5 text-[#94A3B8] transition-transform ${activeAccordion === section.id ? 'rotate-180' : ''}`}
+                className={`w-5 h-5 text-[#94A3B8] transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -1065,7 +1081,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
             {/* Accordion Content */}
             {activeAccordion === section.id && (
-              <div className="px-4 pb-4 border-t border-[#F1F5F9]">
+              <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[#F1F5F9]">
                 {/* Buy Price Section */}
                 {section.id === 'buyPrice' && (
                   <>
@@ -1112,8 +1128,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="15%"
                           onChange={(v) => updateState('hardMoneyRate', v / 100)}
                         />
-                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">PHASE 1 CASH NEEDED</div>
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 sm:p-4 mt-4 text-right">
+                          <div className="text-[10px] sm:text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-1">PHASE 1 CASH NEEDED</div>
                           <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
                             {formatPrice('cashRequiredPhase1' in metrics ? (metrics as BRRRRMetrics).cashRequiredPhase1 : 0)}
                           </div>
@@ -2696,7 +2712,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
                 {/* Continue Button */}
                 <button
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-[#0EA5E9] text-white rounded-xl text-base font-semibold mt-4 hover:bg-[#0EA5E9] transition-colors"
+                  className="w-full sm:w-auto sm:min-w-[240px] sm:ml-auto sm:block flex items-center justify-center gap-2 py-3.5 px-6 bg-[#0EA5E9] text-white rounded-xl text-sm sm:text-base font-semibold mt-5 hover:bg-[#0284c7] transition-colors"
                   onClick={() => handleContinue(section.id)}
                 >
                   {section.id === 'expenses' ? 'View Analysis' : 'Continue to Next'}
@@ -2711,10 +2727,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       </main>
 
       {/* Floating "See Results" Button */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-4 pt-2 bg-gradient-to-t from-[#F1F5F9] via-[#F1F5F9] to-transparent pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[960px] mx-auto px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-[#F1F5F9] via-[#F1F5F9] to-transparent pointer-events-none z-20">
         <button
           onClick={handleSeeResults}
-          className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
+          className="w-full sm:w-auto sm:min-w-[320px] sm:mx-auto sm:block flex items-center justify-center gap-2 py-4 px-8 rounded-xl text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
           style={{ 
             background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
             boxShadow: '0 4px 20px rgba(8, 145, 178, 0.25)'
