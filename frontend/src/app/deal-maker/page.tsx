@@ -223,129 +223,139 @@ export default function DealMakerIndexPage() {
 
   return (
     <AuthGate feature="deal maker" mode="section">
-      <div
-        className="min-h-screen flex items-center justify-center px-4 sm:px-6"
-        style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)' }}
-      >
-        <div className="w-full max-w-lg">
-          <div className="text-center mb-8 sm:mb-10">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">Deal Maker IQ</h1>
-            <p className="text-slate-400 text-sm sm:text-base">
+      <div className="min-h-screen bg-black px-4 sm:px-6 pt-6 sm:pt-10">
+        <div className="w-full max-w-lg mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Deal Maker IQ</h1>
+            <p className="text-[#94A3B8] text-sm sm:text-base">
               Search for a property to start building your deal
             </p>
           </div>
 
-          <form onSubmit={handleAddressSubmit} className="space-y-4">
-            <div className="relative">
-              <Search
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
-              />
-              <AddressAutocomplete
-                placeholder="Enter property address..."
-                value={searchAddress}
-                onChange={setSearchAddress}
-                onPlaceSelect={setSearchAddress}
-                autoFocus
-                className="w-full pl-12 pr-12 py-4 sm:py-5 rounded-xl text-white placeholder-gray-500 outline-none transition-colors text-sm sm:text-base"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
-                {validationStatus === 'validating' && (
-                  <Loader2 size={20} className="text-gray-400 animate-spin" />
-                )}
-                {validationStatus === 'valid' && (
-                  <CheckCircle2 size={20} className="text-emerald-400" />
-                )}
-                {validationStatus === 'issues' && (
-                  <AlertTriangle size={20} className="text-amber-400" />
-                )}
-                {validationStatus === 'error' && (
-                  <AlertCircle size={20} className="text-red-400" />
-                )}
-              </div>
-            </div>
-
-            {validationStatus === 'error' && (
-              <p className="text-sm text-red-400">
-                Could not validate address. You can try again or use the address as entered.
-              </p>
-            )}
-            {validationStatus === 'issues' && validationResult && (
-              <div
-                className="rounded-xl p-3 sm:p-4 space-y-3"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                {validationResult.issues.length > 0 && (
-                  <ul className="text-xs sm:text-sm text-amber-200/90 space-y-1">
-                    {validationResult.issues.slice(0, 3).map((issue, i) => (
-                      <li key={i}>{issue.message}</li>
-                    ))}
-                  </ul>
-                )}
-                {validationResult.formattedAddress &&
-                  validationResult.formattedAddress.trim() !== searchAddress.trim() && (
-                    <p className="text-sm text-gray-300">
-                      Did you mean:{' '}
-                      <span className="font-medium text-white">
-                        {validationResult.formattedAddress}
-                      </span>
-                      ?
-                    </p>
+          <div
+            className="rounded-xl p-5 sm:p-6"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(14, 165, 233, 0.25)',
+              boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+            }}
+          >
+            <form onSubmit={handleAddressSubmit} className="space-y-4">
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B] pointer-events-none z-10"
+                />
+                <AddressAutocomplete
+                  placeholder="Enter property address..."
+                  value={searchAddress}
+                  onChange={setSearchAddress}
+                  onPlaceSelect={setSearchAddress}
+                  autoFocus
+                  className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-[#64748B] outline-none transition-colors text-sm sm:text-base"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(14, 165, 233, 0.15)',
+                  }}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                  {validationStatus === 'validating' && (
+                    <Loader2 size={20} className="text-[#64748B] animate-spin" />
                   )}
-                <div className="flex flex-wrap gap-2">
-                  {validationResult.formattedAddress &&
-                    validationResult.formattedAddress.trim() !== searchAddress.trim() && (
-                      <button
-                        type="button"
-                        onClick={acceptCorrection}
-                        className="text-sm py-2 px-4 rounded-lg font-medium transition-colors"
-                        style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
-                      >
-                        Accept correction
-                      </button>
-                    )}
-                  <button
-                    type="button"
-                    onClick={useAsEntered}
-                    className="text-sm py-2 px-4 rounded-lg font-medium text-gray-400 hover:text-white transition-colors"
-                  >
-                    Use as entered
-                  </button>
+                  {validationStatus === 'valid' && (
+                    <CheckCircle2 size={20} className="text-[#34D399]" />
+                  )}
+                  {validationStatus === 'issues' && (
+                    <AlertTriangle size={20} className="text-[#FBBF24]" />
+                  )}
+                  {validationStatus === 'error' && (
+                    <AlertCircle size={20} className="text-[#F97066]" />
+                  )}
                 </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={!searchAddress.trim() || validationStatus === 'validating'}
-              className="w-full flex items-center justify-center gap-2 py-4 sm:py-5 px-6 rounded-xl text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
-              style={{
-                background:
-                  searchAddress.trim() && validationStatus !== 'validating'
-                    ? 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)'
-                    : 'rgba(14, 165, 233, 0.3)',
-              }}
-            >
-              {validationStatus === 'validating' ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Validating...
-                </>
-              ) : (
-                <>
-                  <Search size={18} />
-                  Search Property
-                </>
+              {validationStatus === 'error' && (
+                <p className="text-sm text-[#F97066]">
+                  Could not validate address. You can try again or use the address as entered.
+                </p>
               )}
-            </button>
-          </form>
+              {validationStatus === 'issues' && validationResult && (
+                <div
+                  className="rounded-xl p-3 sm:p-4 space-y-3"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(14, 165, 233, 0.15)',
+                  }}
+                >
+                  {validationResult.issues.length > 0 && (
+                    <ul className="text-xs sm:text-sm text-[#FBBF24]/90 space-y-1">
+                      {validationResult.issues.slice(0, 3).map((issue, i) => (
+                        <li key={i}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {validationResult.formattedAddress &&
+                    validationResult.formattedAddress.trim() !== searchAddress.trim() && (
+                      <p className="text-sm text-[#94A3B8]">
+                        Did you mean:{' '}
+                        <span className="font-medium text-white">
+                          {validationResult.formattedAddress}
+                        </span>
+                        ?
+                      </p>
+                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {validationResult.formattedAddress &&
+                      validationResult.formattedAddress.trim() !== searchAddress.trim() && (
+                        <button
+                          type="button"
+                          onClick={acceptCorrection}
+                          className="text-sm py-2 px-4 rounded-lg font-medium transition-colors"
+                          style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
+                        >
+                          Accept correction
+                        </button>
+                      )}
+                    <button
+                      type="button"
+                      onClick={useAsEntered}
+                      className="text-sm py-2 px-4 rounded-lg font-medium text-[#94A3B8] hover:text-white transition-colors"
+                    >
+                      Use as entered
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={!searchAddress.trim() || validationStatus === 'validating'}
+                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
+                style={{
+                  background:
+                    searchAddress.trim() && validationStatus !== 'validating'
+                      ? 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)'
+                      : 'rgba(14, 165, 233, 0.2)',
+                  boxShadow:
+                    searchAddress.trim() && validationStatus !== 'validating'
+                      ? '0 0 20px rgba(14, 165, 233, 0.3)'
+                      : 'none',
+                }}
+              >
+                {validationStatus === 'validating' ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    <Search size={18} />
+                    Search Property
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </AuthGate>
