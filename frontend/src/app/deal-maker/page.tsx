@@ -178,7 +178,7 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && isLoading) {
     return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400 mx-auto mb-4" />
           <p className="text-slate-500 text-sm">Loading property data...</p>
@@ -189,16 +189,16 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && error) {
     return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-6 h-6 text-red-500" />
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center px-4 sm:px-6">
+        <div className="text-center w-full max-w-md">
+          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="w-7 h-7 text-red-500" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-800 mb-2">Unable to Load Property</h2>
-          <p className="text-slate-500 text-sm mb-6">{error}</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">Unable to Load Property</h2>
+          <p className="text-slate-500 text-sm sm:text-base mb-6">{error}</p>
           <button
             onClick={() => loadProperty(addressParam)}
-            className="px-6 py-2 rounded-lg text-white font-medium text-sm"
+            className="px-8 py-3 rounded-lg text-white font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
             style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)' }}
           >
             Retry
@@ -224,13 +224,13 @@ export default function DealMakerIndexPage() {
   return (
     <AuthGate feature="deal maker" mode="section">
       <div
-        className="min-h-screen flex items-center justify-center px-4"
+        className="min-h-screen flex items-center justify-center px-4 sm:px-6"
         style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)' }}
       >
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">Deal Maker IQ</h1>
-            <p className="text-slate-400 text-sm">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-8 sm:mb-10">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">Deal Maker IQ</h1>
+            <p className="text-slate-400 text-sm sm:text-base">
               Search for a property to start building your deal
             </p>
           </div>
@@ -247,7 +247,7 @@ export default function DealMakerIndexPage() {
                 onChange={setSearchAddress}
                 onPlaceSelect={setSearchAddress}
                 autoFocus
-                className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
+                className="w-full pl-12 pr-12 py-4 sm:py-5 rounded-xl text-white placeholder-gray-500 outline-none transition-colors text-sm sm:text-base"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -276,14 +276,14 @@ export default function DealMakerIndexPage() {
             )}
             {validationStatus === 'issues' && validationResult && (
               <div
-                className="rounded-xl p-3 space-y-3"
+                className="rounded-xl p-3 sm:p-4 space-y-3"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
                 {validationResult.issues.length > 0 && (
-                  <ul className="text-xs text-amber-200/90 space-y-1">
+                  <ul className="text-xs sm:text-sm text-amber-200/90 space-y-1">
                     {validationResult.issues.slice(0, 3).map((issue, i) => (
                       <li key={i}>{issue.message}</li>
                     ))}
@@ -305,7 +305,7 @@ export default function DealMakerIndexPage() {
                       <button
                         type="button"
                         onClick={acceptCorrection}
-                        className="text-sm py-2 px-3 rounded-lg font-medium transition-colors"
+                        className="text-sm py-2 px-4 rounded-lg font-medium transition-colors"
                         style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
                       >
                         Accept correction
@@ -314,7 +314,7 @@ export default function DealMakerIndexPage() {
                   <button
                     type="button"
                     onClick={useAsEntered}
-                    className="text-sm py-2 px-3 rounded-lg font-medium text-gray-400 hover:text-white transition-colors"
+                    className="text-sm py-2 px-4 rounded-lg font-medium text-gray-400 hover:text-white transition-colors"
                   >
                     Use as entered
                   </button>
@@ -325,7 +325,7 @@ export default function DealMakerIndexPage() {
             <button
               type="submit"
               disabled={!searchAddress.trim() || validationStatus === 'validating'}
-              className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-4 sm:py-5 px-6 rounded-xl text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
               style={{
                 background:
                   searchAddress.trim() && validationStatus !== 'validating'
