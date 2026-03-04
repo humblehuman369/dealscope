@@ -20,7 +20,7 @@ import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
-import { colors, typography, tw } from '@/components/iq-verdict/verdict-design-tokens'
+import { colors, typography, tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
 
@@ -692,25 +692,113 @@ function StrategyContent() {
               </div>
             </div>
           ) : (
-            /* Rental strategies: NOI and Net Pocket — hero summary cards, full-width and prominent */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-10 pt-4 w-full">
-              <div className="rounded-2xl p-5 sm:p-6 w-full" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.25)`, boxShadow: `0 0 24px rgba(52,211,153,0.12)` }}>
-                <p className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.text.primary }}>Before Your Loan</p>
-                <p className="text-xs font-medium mt-0.5" style={{ color: colors.status.positive }}>NOI</p>
-                <p className="text-2xl sm:text-3xl font-bold tabular-nums mt-2" style={{ color: colors.status.positive }}>{formatCurrency(noi)}</p>
-                <p className="text-sm font-semibold tabular-nums mt-1" style={{ color: colors.status.positive }}>{formatCurrency(Math.round(noi / 12))}/mo</p>
+            /* Rental strategies: NOI and Net Cash Flow — enhanced hero summary cards */
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-10 pt-4 w-full">
+                <div
+                  className="w-full p-6 sm:p-7"
+                  style={{
+                    background: colors.accentBg.green,
+                    borderLeft: `4px solid ${colors.status.positive}`,
+                    borderTop: '1px solid rgba(52,211,153,0.2)',
+                    borderRight: '1px solid rgba(52,211,153,0.2)',
+                    borderBottom: '1px solid rgba(52,211,153,0.2)',
+                    borderRadius: 16,
+                    boxShadow: '0 0 24px rgba(52,211,153,0.12)',
+                  }}
+                >
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
+                  <p className="text-[11px] font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
+                  <p className="text-3xl sm:text-4xl font-extrabold tabular-nums mt-3" style={{ color: colors.status.positive }}>
+                    {formatCurrency(noi)}
+                    <span className="text-sm font-semibold ml-1 opacity-70">/yr</span>
+                  </p>
+                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
+                    <p className="text-base font-semibold tabular-nums" style={{ color: colors.status.positive }}>
+                      {formatCurrency(Math.round(noi / 12))}/mo
+                    </p>
+                  </div>
+                </div>
+
+                {(() => {
+                  const netColor = strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative
+                  const netGreen = strategyCashFlow >= 0
+                  return (
+                    <div
+                      className="w-full p-6 sm:p-7"
+                      style={{
+                        background: netGreen ? colors.accentBg.green : colors.accentBg.red,
+                        borderLeft: `4px solid ${netColor}`,
+                        borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
+                        borderRight: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
+                        borderBottom: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
+                        borderRadius: 16,
+                        boxShadow: netGreen ? '0 0 24px rgba(52,211,153,0.12)' : '0 0 24px rgba(248,113,113,0.12)',
+                      }}
+                    >
+                      <p className="text-xs font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
+                      <p className="text-[11px] font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
+                      <p className="text-3xl sm:text-4xl font-extrabold tabular-nums mt-3" style={{ color: netColor }}>
+                        {netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
+                        <span className="text-sm font-semibold ml-1 opacity-70">/yr</span>
+                      </p>
+                      <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
+                        <p className="text-base font-semibold tabular-nums" style={{ color: netColor }}>
+                          {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
-              <div className="rounded-2xl p-5 sm:p-6 w-full" style={{ background: strategyCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyCashFlow >= 0 ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)'}`, boxShadow: strategyCashFlow >= 0 ? `0 0 24px rgba(52,211,153,0.12)` : `0 0 24px rgba(248,113,113,0.12)` }}>
-                <p className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.text.primary }}>What You&apos;d Pocket</p>
-                <p className="text-xs font-medium mt-0.5" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Net</p>
-                <p className="text-2xl sm:text-3xl font-bold tabular-nums mt-2" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
-                  {strategyCashFlow >= 0 ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}
-                </p>
-                <p className="text-sm font-semibold tabular-nums mt-1" style={{ color: strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>
-                  {strategyCashFlow >= 0 ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{strategyCashFlow >= 0 ? '' : ')'}
-                </p>
+
+              <div className="grid grid-cols-2 gap-4 mt-4 w-full">
+                {(() => {
+                  const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
+                  return (
+                    <div className="rounded-xl p-4" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
+                        <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                          {capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—'}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-[11px]" style={{ color: colors.text.body }}>Target: 6.0%</p>
+                        {capAssess && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: capAssess.color }}>
+                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: capAssess.color }} />
+                            {capAssess.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+                {(() => {
+                  const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
+                  return (
+                    <div className="rounded-xl p-4" style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}` }}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
+                        <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                          {cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-[11px]" style={{ color: colors.text.body }}>Target: 8.0%</p>
+                        {cocAssess && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: cocAssess.color }}>
+                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: cocAssess.color }} />
+                            {cocAssess.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
-            </div>
+            </>
           )}
 
           {/* The Bottom Line */}
