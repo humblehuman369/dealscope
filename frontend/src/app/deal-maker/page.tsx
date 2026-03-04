@@ -178,10 +178,10 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && isLoading) {
     return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400 mx-auto mb-4" />
-          <p className="text-slate-500 text-sm">Loading property data...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0EA5E9] mx-auto mb-4" />
+          <p className="text-[#94A3B8] text-sm">Loading property data...</p>
         </div>
       </div>
     )
@@ -189,17 +189,17 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && error) {
     return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center px-4 sm:px-6">
+      <div className="min-h-screen bg-black flex items-center justify-center px-4 sm:px-6">
         <div className="text-center w-full max-w-md">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
-            <AlertCircle className="w-7 h-7 text-red-500" />
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(239,68,68,0.15)' }}>
+            <AlertCircle className="w-7 h-7 text-red-400" />
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">Unable to Load Property</h2>
-          <p className="text-slate-500 text-sm sm:text-base mb-6">{error}</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-2">Unable to Load Property</h2>
+          <p className="text-[#94A3B8] text-sm sm:text-base mb-6">{error}</p>
           <button
             onClick={() => loadProperty(addressParam)}
             className="px-8 py-3 rounded-lg text-white font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
-            style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)', boxShadow: '0 0 20px rgba(14,165,233,0.3)' }}
           >
             Retry
           </button>
