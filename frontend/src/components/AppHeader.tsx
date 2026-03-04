@@ -23,7 +23,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark, CreditCard } from 'lucide-react'
+import { Search, Menu, ChevronDown, ChevronUp, LogOut, UserCircle, ShieldCheck, History, Heart, Bookmark, CreditCard } from 'lucide-react'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -531,11 +531,11 @@ export function AppHeader({
                 <button
                   onClick={handleProfileClick}
                   className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
-                  aria-label="Profile"
+                  aria-label="Menu"
                   aria-expanded={showProfileMenu}
                   aria-haspopup="true"
                 >
-                  <User 
+                  <Menu 
                     className="w-5 h-5" 
                     style={{ color: '#FFFFFF' }}
                   />
