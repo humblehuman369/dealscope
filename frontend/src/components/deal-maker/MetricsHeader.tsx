@@ -6,11 +6,11 @@
  * - Header bg: #0A1628
  * - Address: 11px, color #94A3B8, letter-spacing 0.02em
  * - Title: 22px, font-weight 800, letter-spacing 0.05em
- *   - DEAL: white, MAKER: #00D4FF, PRO: white
+ *   - DEAL: white, MAKER: #0EA5E9, PRO: white
  * - Metrics grid: 2 columns, gap 6px 24px
  * - Metric label: 12px, color #94A3B8
  * - Metric value: 13px, font-weight 600, white
- *   - Deal Gap: #00D4FF, Annual Profit: #0EA5E9
+ *   - Deal Gap: #0EA5E9, Annual Profit: #0EA5E9
  * - NO score badges
  */
 
@@ -56,7 +56,7 @@ export function MetricsHeader({
         {/* DEAL MAKER IQ Title */}
         <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
           <span className="text-white">DEAL </span>
-          <span style={{ color: '#00D4FF' }}>MAKER </span>
+          <span style={{ color: '#0EA5E9' }}>MAKER </span>
           <span className="text-white">IQ</span>
         </div>
       </div>
@@ -88,7 +88,7 @@ export function MetricsHeader({
             style={{ 
               fontSize: '13px', 
               fontWeight: 600, 
-              color: metrics.dealGap < 0 ? '#E11D48' : '#00D4FF' 
+              color: metrics.dealGap < 0 ? '#E11D48' : '#0EA5E9' 
             }}
           >
             {formatPercent(metrics.dealGap * 100, { decimals: 0, showSign: true })}

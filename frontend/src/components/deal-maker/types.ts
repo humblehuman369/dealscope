@@ -1353,7 +1353,7 @@ export function calculateMortgagePayment(principal: number, annualRate: number, 
 
 export function getValueColor(color: string): string {
   switch (color) {
-    case 'cyan': return '#00D4FF'
+    case 'cyan': return '#0EA5E9'
     case 'teal': return '#0EA5E9'
     case 'rose': return '#F43F5E'
     default: return '#FFFFFF'
