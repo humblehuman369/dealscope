@@ -252,10 +252,11 @@ export default function DealMakerIndexPage() {
                   onChange={setSearchAddress}
                   onPlaceSelect={setSearchAddress}
                   autoFocus
-                  className="w-full pl-12 pr-12 py-4 rounded-xl text-[#ffffff] placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
                   style={{
                     background: '#000000',
                     border: '1px solid rgba(14, 165, 233, 0.3)',
+                    color: '#ffffff',
                   }}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">

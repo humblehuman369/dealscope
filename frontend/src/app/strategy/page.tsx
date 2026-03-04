@@ -341,6 +341,7 @@ function StrategyContent() {
     ? (targetPrice > 0 ? noi / targetPrice * 100 : 0)
     : (topStrategy?.cap_rate ?? null)
   const totalCashNeeded = downPayment + closingCosts + rehabCost
+  const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
   const strategyCoc = hasDealMakerOverrides
     ? (totalCashNeeded > 0 ? annualCashFlow / totalCashNeeded * 100 : 0)
     : (topStrategy?.cash_on_cash ?? null)
@@ -580,6 +581,7 @@ function StrategyContent() {
               {[
                 ['Market Price', formatCurrency(listPrice), true],
                 ['Target Buy', formatCurrency(targetPrice), false, colors.brand.blue],
+                ['Deal Gap', `${dealGapPct >= 0 ? '+' : ''}${dealGapPct.toFixed(1)}%`, false, colors.brand.blue],
                 [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
                 [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
                 ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
