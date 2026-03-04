@@ -244,7 +244,7 @@ export default function DealMakerIndexPage() {
               <div className="relative">
                 <Search
                   size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B] pointer-events-none z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0EA5E9] pointer-events-none z-10"
                 />
                 <AddressAutocomplete
                   placeholder="Enter property address..."
@@ -333,24 +333,17 @@ export default function DealMakerIndexPage() {
                 className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 style={{
                   color: '#ffffff',
-                  background:
-                    searchAddress.trim() && validationStatus !== 'validating'
-                      ? 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)'
-                      : 'rgba(14, 165, 233, 0.2)',
-                  boxShadow:
-                    searchAddress.trim() && validationStatus !== 'validating'
-                      ? '0 0 20px rgba(14, 165, 233, 0.3)'
-                      : 'none',
+                  background: '#000000',
                 }}
               >
                 {validationStatus === 'validating' ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2 size={18} className="animate-spin text-[#0EA5E9]" />
                     Validating...
                   </>
                 ) : (
                   <>
-                    <Search size={18} />
+                    <Search size={18} className="text-[#0EA5E9]" />
                     Search Property
                   </>
                 )}
