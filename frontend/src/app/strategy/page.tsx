@@ -227,10 +227,10 @@ function StrategyContent() {
   const handleOpenDealMaker = useCallback(() => {
     const params = new URLSearchParams({
       address: addressParam,
-      openDealMaker: '1',
+      from: 'strategy',
     })
     if (selectedStrategyId) params.set('strategy', selectedStrategyId)
-    router.push(`/verdict?${params.toString()}`)
+    router.push(`/deal-maker?${params.toString()}`)
   }, [router, addressParam, selectedStrategyId])
 
 

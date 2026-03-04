@@ -36,7 +36,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
-import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '@/components/deal-maker/DealMakerPopup'
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
@@ -209,8 +208,7 @@ function VerdictContent() {
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
-  const [currentStrategy, setCurrentStrategy] = useState<PopupStrategyType>('ltr')
+  
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
@@ -698,10 +696,12 @@ function VerdictContent() {
     [parseAnalysisResponse],
   )
 
-  // Auto-open DealMaker popup if navigated from StrategyIQ with openDealMaker=1
+  // Auto-redirect to DealMaker page if navigated with openDealMaker=1
   useEffect(() => {
     if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
-      setShowDealMakerPopup(true)
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=verdict`)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, property, analysis])
@@ -711,18 +711,13 @@ function VerdictContent() {
     router.back()
   }, [router])
 
-  // Navigate to Deal Maker with property data
+  // Navigate to Deal Maker page with property data
   const handleNavigateToDealMaker = useCallback(() => {
     if (!property) return
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    
-    const url = propertyIdParam
-      ? `/deal-maker/${encodedAddress}?propertyId=${propertyIdParam}`
-      : `/deal-maker/${encodedAddress}`
-    router.push(url)
-  }, [property, propertyIdParam, router])
+    router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=verdict`)
+  }, [property, router])
 
   // Navigate to property details page - uses zpid or propertyId
   // Property page requires address query param for backend fetch
@@ -949,8 +944,7 @@ function VerdictContent() {
     const params = new URLSearchParams({ address: fullAddress })
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
-    // Pass current strategy so Strategy page shows the same one
-    if (currentStrategy) params.set('strategy', currentStrategy)
+    
     router.push(`/strategy?${params.toString()}`)
   }
 
@@ -1109,7 +1103,7 @@ function VerdictContent() {
               </p>
               <div className="flex justify-center mt-4">
                 <button
-                  onClick={() => setShowDealMakerPopup(true)}
+                  onClick={handleNavigateToDealMaker}
                   className="px-6 py-2 rounded-full text-sm font-semibold transition-all"
                   style={{ color: colors.brand.blue, border: `1.5px solid ${colors.brand.blue}50`, background: `${colors.brand.blue}10` }}
                 >
@@ -1150,7 +1144,7 @@ function VerdictContent() {
           <section className="px-5 pb-6">
             <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={() => setShowDealMakerPopup(true)}
+                onClick={handleNavigateToDealMaker}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
                 style={{ background: colors.brand.teal, color: '#fff' }}
               >
@@ -1219,7 +1213,7 @@ function VerdictContent() {
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
             <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-[0.8rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
-              style={{ background: colors.brand.blueDeep, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
+              style={{ background: colors.brand.teal, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
               Show Me the Numbers
               <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
@@ -1241,73 +1235,6 @@ function VerdictContent() {
           </div>
         </div>
       </div>
-
-      {/* DealMaker Popup for editing terms/assumptions */}
-      {property && analysis && (
-        <DealMakerPopup
-          isOpen={showDealMakerPopup}
-          onClose={() => setShowDealMakerPopup(false)}
-          onApply={(values: DealMakerValues) => {
-            setShowDealMakerPopup(false)
-            // Persist ALL DealMaker values + strategy to sessionStorage so they
-            // survive the page reload and re-populate the popup next time.
-            const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-            const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-            try {
-              const sessionKey = `dealMaker_${encodeURIComponent(fullAddress)}`
-              sessionStorage.setItem(sessionKey, JSON.stringify({
-                ...values,
-                strategy: currentStrategy,
-                timestamp: Date.now(),
-              }))
-            } catch { /* ignore storage errors */ }
-
-            // Pass values the backend API accepts as URL overrides
-            const params = new URLSearchParams({
-              address: fullAddress,
-              purchasePrice: String(values.buyPrice),
-              monthlyRent: String(values.monthlyRent),
-              propertyTaxes: String(values.propertyTaxes),
-              insurance: String(values.insurance),
-            })
-            if (values.arv) params.set('arv', String(values.arv))
-            if (property.zpid) params.set('zpid', String(property.zpid))
-            router.push(`/verdict?${params.toString()}`)
-          }}
-          strategyType={currentStrategy}
-          onStrategyChange={(s) => setCurrentStrategy(s)}
-          activePriceTarget={activePriceTarget}
-          onPriceTargetChange={(target) => setActivePriceTarget(target)}
-          initialValues={(() => {
-            const targetBuyPrice = analysis.purchasePrice || Math.round(property.price * 0.95)
-            const incomeVal = analysis.incomeValue || property.price
-            const wholesaleVal = Math.round((analysis.listPrice || property.price) * 0.70)
-            const buyPrice = activePriceTarget === 'breakeven' ? incomeVal
-              : activePriceTarget === 'wholesale' ? wholesaleVal
-              : targetBuyPrice
-            const propertyValues = {
-              buyPrice,
-              monthlyRent: property.monthlyRent || 0,
-              propertyTaxes: property.propertyTaxes || 0,
-              insurance: property.insurance || 0,
-              arv: property.arv || property.price,
-            }
-            if (typeof window === 'undefined') return propertyValues
-            try {
-              const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-              const fullAddr = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-              const stored = sessionStorage.getItem(`dealMaker_${encodeURIComponent(fullAddr)}`)
-              if (stored) {
-                const parsed = JSON.parse(stored)
-                if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
-                  return { ...propertyValues, ...parsed }
-                }
-              }
-            } catch { /* ignore */ }
-            return propertyValues
-          })()}
-        />
-      )}
 
       {/* Score Methodology Sheet */}
       <ScoreMethodologySheet

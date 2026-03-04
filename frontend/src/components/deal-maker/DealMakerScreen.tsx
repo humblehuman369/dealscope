@@ -90,6 +90,7 @@ interface DealMakerScreenProps {
   listPrice?: number
   initialStrategy?: string
   savedPropertyId?: string
+  backTo?: { label: string; href: string }
 }
 
 // Accordion section definitions
@@ -190,7 +191,7 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
   )
 }
 
-export function DealMakerScreen({ property, listPrice, initialStrategy, savedPropertyId }: DealMakerScreenProps) {
+export function DealMakerScreen({ property, listPrice, initialStrategy, savedPropertyId, backTo }: DealMakerScreenProps) {
   const router = useRouter()
   
   // Deal Maker Store (for saved properties)
@@ -878,7 +879,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }
 
   const handleBack = () => {
-    router.back()
+    if (backTo) {
+      router.push(backTo.href)
+    } else {
+      router.back()
+    }
   }
 
   const toggleAccordion = (section: AccordionSection) => {
@@ -989,6 +994,21 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   return (
     <div className="min-h-screen bg-[#F8FAFC] max-w-[480px] mx-auto font-['Inter',sans-serif]">
       {/* Header is now handled by global AppHeader in layout */}
+
+      {/* Back Navigation */}
+      {backTo && (
+        <div className="bg-[#0A1628] px-4 pt-3">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1.5 text-sm text-[#94A3B8] hover:text-white transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to {backTo.label}
+          </button>
+        </div>
+      )}
 
       {/* Key Metrics Row */}
       <div className="bg-[#0A1628] px-4 pb-4 -mt-1">
