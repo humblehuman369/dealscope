@@ -174,7 +174,7 @@ export function AboutPageRedesign() {
   return (
     <div className="about-page">
       {/* HERO */}
-      <section className="about-hero">
+      <section className="about-hero" style={{ minHeight: '60vh' }}>
         <div className="hero-badge"><span className="dot" /> Decision-Grade Intelligence</div>
         <h1>The metric no one else <em>calculates.</em></h1>
         <p className="hero-sub">

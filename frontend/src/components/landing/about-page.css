@@ -29,7 +29,7 @@
 /* ── HERO ── */
 
 .about-page .about-hero {
-  min-height: 60vh;
+  min-height: 60vh !important;
   display: flex;
   flex-direction: column;
   align-items: center;
