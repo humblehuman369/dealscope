@@ -18,7 +18,7 @@ export default function DealMakerLoading() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 animate-spin text-teal-500 mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-[#0EA5E9] mx-auto mb-4" />
             <p className="text-slate-600 dark:text-slate-400 font-medium">Loading Deal Maker...</p>
             <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">Preparing property analysis tools</p>
           </div>

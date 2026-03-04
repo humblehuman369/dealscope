@@ -48,7 +48,7 @@ export default function DealMakerError({ error, reset }: ErrorProps) {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0EA5E9] hover:bg-[#0284c7] text-white font-medium rounded-lg transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               Try Again
@@ -64,7 +64,7 @@ export default function DealMakerError({ error, reset }: ErrorProps) {
 
           <button
             onClick={() => window.history.back()}
-            className="mt-6 inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
+            className="mt-6 inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-[#0EA5E9] dark:hover:text-[#38BDF8] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Go back

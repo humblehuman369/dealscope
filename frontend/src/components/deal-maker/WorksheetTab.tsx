@@ -4,7 +4,7 @@
  * 
  * Design specs:
  * - Card: white bg, border-radius 12px, border 1px solid #F1F5F9
- * - Active card: box-shadow 0 0 0 2px rgba(8, 145, 178, 0.2)
+ * - Active card: box-shadow 0 0 0 2px rgba(14, 165, 233, 0.2)
  * - Header: padding 14px 16px, gap 12px
  * - Icon: 24x24, color #0EA5E9
  * - Title: 15px, font-weight 600, color #0A1628
@@ -64,7 +64,7 @@ export function WorksheetTab({
       className="bg-white rounded-xl mx-4 mb-[10px] overflow-hidden"
       style={{
         boxShadow: isExpanded 
-          ? '0 0 0 2px rgba(8, 145, 178, 0.2)' 
+          ? '0 0 0 2px rgba(14, 165, 233, 0.2)' 
           : '0 1px 3px rgba(0, 0, 0, 0.05)',
         border: isExpanded ? 'none' : '1px solid #F1F5F9',
       }}
