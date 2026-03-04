@@ -449,8 +449,7 @@ export function AppHeader({
   // Determine if header should be hidden
   // Moved here to ensure all hooks (useCallback) are called before return
   const isHiddenRoute = HIDDEN_ROUTES.includes(pathname || '')
-  const isHomepageUnauthenticated = (pathname || '') === '/' && !isAuthenticated
-  if (isHiddenRoute || isHomepageUnauthenticated) {
+  if (isHiddenRoute) {
     return null
   }
 

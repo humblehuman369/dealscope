@@ -119,27 +119,6 @@ export default function PricingContent() {
     >
       <style>{RESPONSIVE_STYLE}</style>
 
-      {/* ─── NAV ─── */}
-      <nav
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 0",
-        }}
-      >
-        <Link href="/" style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px", color: "#fff", textDecoration: "none" }}>
-          DealGap<span style={{ color: "#0EA5E9" }}>IQ</span>
-        </Link>
-        <div style={{ display: "flex", gap: "28px", fontSize: "14px", alignItems: "center" }}>
-          <Link href="/" style={{ color: "#888", textDecoration: "none", cursor: "pointer" }}>Product</Link>
-          <Link href="/pricing" style={{ color: "#888", textDecoration: "none", cursor: "pointer", fontWeight: 600 }}>Pricing</Link>
-          <Link href="/register" style={{ color: "#0EA5E9", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}>Login / Register</Link>
-        </div>
-      </nav>
-
       {/* ─── HEADER ─── */}
       <div style={{ textAlign: "center", maxWidth: "600px", margin: "48px auto 0" }}>
         <p style={{ fontSize: "13px", color: "#0EA5E9", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 16px 0" }}>
