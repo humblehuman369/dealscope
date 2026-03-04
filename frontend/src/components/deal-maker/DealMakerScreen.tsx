@@ -161,7 +161,7 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
     <div className="mt-4">
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm font-semibold text-white">{label}</span>
-        <span className="text-base font-bold text-[#38BDF8] tabular-nums">{displayValue}</span>
+        <span className="text-base font-bold text-[#ffffff] tabular-nums">{displayValue}</span>
       </div>
       <div className="relative h-8 flex items-center">
         <div className="w-full h-2 rounded-full relative" style={{ background: 'rgba(255,255,255,0.08)' }}>
@@ -1078,7 +1078,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               onClick={() => toggleAccordion(section.id)}
             >
               <div className="w-6 h-6 text-[#0EA5E9]">{section.icon}</div>
-              <span className="flex-1 text-[15px] sm:text-base font-semibold text-white">{section.title}</span>
+              <span className="flex-1 text-[15px] sm:text-base font-semibold text-[#ffffff]">{section.title}</span>
               <svg
                 className={`w-5 h-5 text-white/60 transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
                 fill="none"

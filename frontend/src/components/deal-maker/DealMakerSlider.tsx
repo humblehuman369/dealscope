@@ -168,7 +168,7 @@ export function DealMakerSlider({
     <div style={{ marginTop: '16px' }}>
       {/* Label and Value */}
       <div className="flex justify-between items-center" style={{ marginBottom: '8px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
           {config.label}
         </span>
         
@@ -183,7 +183,7 @@ export function DealMakerSlider({
             }}
           >
             {(config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear') && (
-              <span style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9', marginRight: '2px' }}>$</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', marginRight: '2px' }}>$</span>
             )}
             <input
               ref={inputRef}
@@ -196,7 +196,7 @@ export function DealMakerSlider({
               style={{
                 fontSize: '16px',
                 fontWeight: 700,
-                color: '#0EA5E9',
+                color: '#ffffff',
                 width: '80px',
                 textAlign: 'right',
                 background: 'transparent',
@@ -222,7 +222,7 @@ export function DealMakerSlider({
           <button
             onClick={handleValueClick}
             className="tabular-nums hover:bg-slate-100 rounded px-2 py-1 transition-colors cursor-pointer"
-            style={{ fontSize: '16px', fontWeight: 700, color: '#0EA5E9', background: 'transparent', border: 'none' }}
+            style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', background: 'transparent', border: 'none' }}
             title="Click to edit value directly"
           >
             {formattedValue}
