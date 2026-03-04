@@ -337,22 +337,24 @@ function StrategyContent() {
 
   // Benchmarks — backend strategy metrics are authoritative; fall back to local calc
   // When DealMaker overrides change the underlying financials, use locally-derived values
+  // API returns camelCase (capRate, cashOnCash); support both for compatibility
   const strategyCapRate = hasDealMakerOverrides
     ? (targetPrice > 0 ? noi / targetPrice * 100 : 0)
-    : (topStrategy?.cap_rate ?? null)
+    : ((topStrategy as { cap_rate?: number; capRate?: number })?.capRate ?? topStrategy?.cap_rate ?? null)
   const totalCashNeeded = downPayment + closingCosts + rehabCost
   const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
   const strategyCoc = hasDealMakerOverrides
     ? (totalCashNeeded > 0 ? annualCashFlow / totalCashNeeded * 100 : 0)
-    : (topStrategy?.cash_on_cash ?? null)
+    : ((topStrategy as { cash_on_cash?: number; cashOnCash?: number })?.cashOnCash ?? topStrategy?.cash_on_cash ?? null)
   const strategyDscr = hasDealMakerOverrides
     ? (annualDebt > 0 ? noi / annualDebt : 0)
     : (topStrategy?.dscr ?? null)
   const strategyCashFlow = hasDealMakerOverrides ? monthlyCashFlow : (topStrategy?.monthly_cash_flow ?? monthlyCashFlow)
   const strategyAnnualCashFlow = hasDealMakerOverrides ? annualCashFlow : (topStrategy?.annual_cash_flow ?? annualCashFlow)
 
-  const capRateVal = strategyCapRate
-  const cocVal = strategyCoc
+  // Prefer backend values; fall back to local calc so cap rate and CoC always render when we have the numbers
+  const capRateVal = strategyCapRate ?? (targetPrice > 0 ? noi / targetPrice * 100 : null)
+  const cocVal = strategyCoc ?? (totalCashNeeded > 0 ? annualCashFlow / totalCashNeeded * 100 : null)
 
   const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
   const benchmarks = isFlipOrWholesale
