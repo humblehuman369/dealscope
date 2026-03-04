@@ -592,8 +592,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Cash Needed</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Cash Needed</span>
+                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
               </div>
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
@@ -614,8 +614,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Monthly Payment</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.brand.blue }}>{formatCurrency(monthlyPI)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Monthly Payment</span>
+                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(monthlyPI)}</span>
               </div>
 
             </div>
@@ -640,8 +640,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Total Costs</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.negative }}>{formatCurrency(totalExpenses)}/yr</span>
+                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Total Costs</span>
+                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(totalExpenses)}/yr</span>
               </div>
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
@@ -665,8 +665,8 @@ function StrategyContent() {
                 <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(vacancyLoss)})</span>
               </div>
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>Effective Income</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: colors.status.positive }}>{formatCurrency(effectiveIncome)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Effective Income</span>
+                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(effectiveIncome)}</span>
               </div>
 
             </div>
