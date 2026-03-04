@@ -2723,12 +2723,12 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
                 {/* Continue Button */}
                 <button
-                  className="w-full sm:w-auto sm:min-w-[240px] sm:ml-auto sm:block flex items-center justify-center gap-2 py-3.5 px-6 text-white rounded-xl text-sm sm:text-base font-semibold mt-5 transition-all hover:scale-[1.02]"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-6 text-white rounded-xl text-sm font-semibold mt-5 transition-all hover:scale-[1.02] whitespace-nowrap"
                   style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)', boxShadow: '0 0 20px rgba(14,165,233,0.3)' }}
                   onClick={() => handleContinue(section.id)}
                 >
                   {section.id === 'expenses' ? 'View Analysis' : 'Continue to Next'}
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                   </svg>
                 </button>
@@ -2742,18 +2742,18 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       <div className="fixed bottom-0 left-0 right-0 max-w-[960px] mx-auto px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-black via-black to-transparent pointer-events-none z-20">
         <button
           onClick={handleSeeResults}
-          className="w-full sm:w-auto sm:min-w-[320px] sm:mx-auto sm:block flex items-center justify-center gap-2 py-2 px-8 rounded-xl text-white font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto whitespace-nowrap"
           style={{ 
             background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
             boxShadow: '0 0 30px rgba(14, 165, 233, 0.3), 0 4px 20px rgba(14, 165, 233, 0.2)'
           }}
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
           </svg>
           See Results
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
           </svg>
         </button>
