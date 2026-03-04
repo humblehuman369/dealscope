@@ -1047,7 +1047,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               <span className="text-xs text-[#ffffff]">{metric.label}</span>
               <span 
                 className={`text-[13px] sm:text-base font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
-                style={{ color: '#ffffff' }}
+                style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
               </span>
@@ -1188,7 +1188,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-white/10">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">70% RULE MAO</div>
-                            <div className="text-base font-bold text-[#ffffff] tabular-nums">
+                            <div className={`text-base font-bold tabular-nums ${'meets70PercentRule' in metrics && (metrics as FlipMetrics).meets70PercentRule ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                               {formatPrice('maxAllowableOffer' in metrics ? (metrics as FlipMetrics).maxAllowableOffer : 0)}
                             </div>
                           </div>
@@ -1579,7 +1579,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-sm text-white/60">
                               {'contractVsMAO' in metrics && (metrics as WholesaleMetrics).contractVsMAO <= 0 ? 'Under MAO by' : 'Over MAO by'}
                             </div>
-                            <div className="font-bold text-[#ffffff] tabular-nums">
+                            <div className={`font-bold tabular-nums ${'contractVsMAO' in metrics && (metrics as WholesaleMetrics).contractVsMAO <= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                               {formatPrice(Math.abs('contractVsMAO' in metrics ? (metrics as WholesaleMetrics).contractVsMAO : 0))}
                             </div>
                           </div>
@@ -2530,25 +2530,25 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             </div>
                             <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
                               <span className="text-sm text-white/75">Gross Profit</span>
-                              <span className="font-bold text-[#ffffff] tabular-nums">
+                              <span className={`font-bold tabular-nums ${'grossProfit' in metrics && (metrics as FlipMetrics).grossProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                                 {formatPrice('grossProfit' in metrics ? (metrics as FlipMetrics).grossProfit : 0)}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-white/75">Selling Costs</span>
-                              <span className="font-bold text-[#ffffff] tabular-nums">
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
                                 -{formatPrice('sellingCosts' in metrics ? (metrics as FlipMetrics).sellingCosts : 0)}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-white/75">Capital Gains Tax</span>
-                              <span className="font-bold text-[#ffffff] tabular-nums">
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
                                 -{formatPrice('capitalGainsTax' in metrics ? (metrics as FlipMetrics).capitalGainsTax : 0)}
                               </span>
                             </div>
                             <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
                               <span className="text-sm font-semibold text-white">NET PROFIT</span>
-                              <span className="text-xl font-bold text-[#ffffff] tabular-nums">
+                              <span className={`text-xl font-bold tabular-nums ${'netProfit' in metrics && (metrics as FlipMetrics).netProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                                 {formatPrice('netProfit' in metrics ? (metrics as FlipMetrics).netProfit : 0)}
                               </span>
                             </div>
