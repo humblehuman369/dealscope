@@ -160,8 +160,8 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
   return (
     <div className="mt-4">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold text-white">{label}</span>
-        <span className="text-base font-bold text-[#ffffff] tabular-nums">{displayValue}</span>
+        <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>{label}</span>
+        <span className="text-base font-bold tabular-nums" style={{ color: '#ffffff' }}>{displayValue}</span>
       </div>
       <div className="relative h-8 flex items-center">
         <div className="w-full h-2 rounded-full relative" style={{ background: 'rgba(255,255,255,0.08)' }}>
@@ -183,7 +183,7 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
           />
         </div>
       </div>
-      <div className="flex justify-between mt-1 text-[11px] text-white/60">
+      <div className="flex justify-between mt-1 text-[11px]" style={{ color: '#ffffff' }}>
         <span>{minLabel}</span>
         <span>{maxLabel}</span>
       </div>
