@@ -139,8 +139,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-[60px] h-[60px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
                 <img 
-                  src="/images/iq-brain-dark.png" 
-                  alt="IQ" 
+                  src="/images/dealgapiq-icon.png" 
+                  alt="DealGap IQ" 
                   className="w-[54px] h-[54px] sm:w-[78px] sm:h-[78px] object-contain"
                   onError={(e) => {
                     // Fallback if image doesn't load
@@ -150,11 +150,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
-                  How would you like to<br />analyze a property?
+                  How would you like to search property?
                 </h2>
-                <p className="text-xs sm:text-sm mt-1" style={{ color: '#FFFFFF' }}>
-                  Choose your method to get started
-                </p>
               </div>
             </div>
           </div>
