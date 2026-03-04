@@ -959,26 +959,20 @@ function VerdictContent() {
       <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         {/* Header and property bar are provided by AppHeader in layout */}
 
-        {/* Responsive container: mobile-first single column, desktop 2-column. Wide: left = Verdict + Score Components, right = Price Targets + Snapshot + CTA. */}
-        <div className="max-w-[520px] lg:max-w-6xl xl:max-w-7xl mx-auto lg:grid lg:grid-cols-2 lg:gap-0">
-          {/* LEFT COLUMN (wide): Verdict + Score Components */}
-          <div className="min-w-0 flex flex-col lg:pr-0">
-            <VerdictScoreCard
-              score={score}
-              verdictLabel={verdictLabel}
-              dealGapPercent={dealGap}
-              targetBuyPrice={purchasePrice}
-            />
-            {/* AI-generated deal narrative */}
-            <VerdictNarrative
-              narrative={analysis.dealNarrative}
-              onHowItWorks={handleShowMethodology}
-            />
-          </div>
+        {/* Centered single-column container */}
+        <div className="max-w-[520px] sm:max-w-2xl lg:max-w-3xl mx-auto">
+          <VerdictScoreCard
+            score={score}
+            verdictLabel={verdictLabel}
+            dealGapPercent={dealGap}
+            targetBuyPrice={purchasePrice}
+          />
+          <VerdictNarrative
+            narrative={analysis.dealNarrative}
+            onHowItWorks={handleShowMethodology}
+          />
 
-          {/* RIGHT COLUMN (wide): Price Targets + Market Snapshot + CTA — sticky sidebar with internal scroll */}
-          <div className="min-w-0 lg:border-l lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto" style={{ borderColor: colors.ui.border }}>
-          <section className="px-5 py-8 border-t lg:border-t-0 lg:pt-8" style={{ borderColor: colors.ui.border }}>
+          <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
 
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>
               {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
@@ -1239,10 +1233,8 @@ function VerdictContent() {
             </div>
           </section>
 
-          </div>{/* end right column */}
-
-          {/* Trust Strip — full-width, spans both columns on desktop */}
-          <div className="px-5 py-5 text-center border-t lg:col-span-2" style={{ borderColor: colors.ui.border }}>
+          {/* Trust Strip */}
+          <div className="px-5 py-5 text-center border-t" style={{ borderColor: colors.ui.border }}>
             <p className="text-xs leading-relaxed" style={{ color: '#F1F5F9' }}>
               DealGap IQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
             </p>
