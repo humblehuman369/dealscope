@@ -425,32 +425,80 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         Resolve address via auto-complete → propertyId (or regionId → search-sale) →
         get-listingId → properties/estimate. Returns redfin_estimate and redfin_rental_estimate.
         """
-        # Step 1: auto-complete with address query
+        # Step 1: auto-complete
         ac_resp = await self.auto_complete(address)
         if not ac_resp.success or not ac_resp.data:
+            logger.warning(
+                "Redfin step 1 FAILED: auto-complete returned success=%s, data_keys=%s, error=%s",
+                ac_resp.success,
+                list(ac_resp.data.keys()) if isinstance(ac_resp.data, dict) else type(ac_resp.data).__name__,
+                ac_resp.error,
+            )
             return None
         property_id, region_id = self._extract_from_autocomplete(ac_resp.data)
-        # Step 2: if we only got regionId, get propertyId from search-sale (or search-rent)
+        logger.info(
+            "Redfin step 1 OK: auto-complete → propertyId=%s, regionId=%s (top-level keys: %s)",
+            property_id,
+            region_id,
+            list(ac_resp.data.keys()) if isinstance(ac_resp.data, dict) else type(ac_resp.data).__name__,
+        )
+
+        # Step 2: regionId → search-sale/rent → propertyId
         if not property_id and region_id:
             search_resp = await self.search_sale(region_id)
             if not search_resp.success or not search_resp.data:
+                logger.info("Redfin step 2: search-sale failed, trying search-rent for regionId=%s", region_id)
                 search_resp = await self.search_rent(region_id)
             if search_resp.success and search_resp.data:
                 property_id = self._extract_property_id_from_search(search_resp.data)
+                logger.info("Redfin step 2 OK: search → propertyId=%s", property_id)
+            else:
+                logger.warning(
+                    "Redfin step 2 FAILED: search returned success=%s, error=%s",
+                    search_resp.success,
+                    search_resp.error,
+                )
         if not property_id:
+            logger.warning("Redfin ABORT: no propertyId resolved for address=%s", address)
             return None
-        # Step 3: get listingId from propertyId
+
+        # Step 3: get listingId
         lid_resp = await self.get_listing_id(property_id)
         if not lid_resp.success or not lid_resp.data:
+            logger.warning(
+                "Redfin step 3 FAILED: get-listingId(propertyId=%s) returned success=%s, error=%s",
+                property_id,
+                lid_resp.success,
+                lid_resp.error,
+            )
             return None
         listing_id = self._extract_listing_id(lid_resp.data)
         if not listing_id:
+            logger.warning(
+                "Redfin step 3 FAILED: could not extract listingId from response keys=%s",
+                list(lid_resp.data.keys()) if isinstance(lid_resp.data, dict) else type(lid_resp.data).__name__,
+            )
             return None
-        # Step 4: fetch estimate
+        logger.info("Redfin step 3 OK: get-listingId → listingId=%s", listing_id)
+
+        # Step 4: estimate
         est_resp = await self.get_estimate(property_id, listing_id)
         if not est_resp.success or not est_resp.data:
+            logger.warning(
+                "Redfin step 4 FAILED: estimate(propertyId=%s, listingId=%s) returned success=%s, error=%s",
+                property_id,
+                listing_id,
+                est_resp.success,
+                est_resp.error,
+            )
             return None
         parsed = self._parse_estimate_response(est_resp.data)
+        logger.info(
+            "Redfin step 4 OK: estimate → redfin_estimate=%s, redfin_rental_estimate=%s (response keys: %s)",
+            parsed.get("redfin_estimate"),
+            parsed.get("redfin_rental_estimate"),
+            list(est_resp.data.keys()) if isinstance(est_resp.data, dict) else type(est_resp.data).__name__,
+        )
         return parsed if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else None
 
 
