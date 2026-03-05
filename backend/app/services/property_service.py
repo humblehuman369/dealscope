@@ -68,7 +68,7 @@ class PropertyService:
             axesso_url=settings.AXESSO_URL,
             redfin_api_key=settings.REDFIN_API_KEY,
             redfin_rapidapi_host=settings.RAPIDAPI_HOST,
-            realtor_api_key=settings.REALTOR_API_KEY,
+            realtor_api_key=settings.REALTOR_API_KEY or settings.REDFIN_API_KEY,
             realtor_rapidapi_host=settings.REALTOR_RAPIDAPI_HOST,
         )
 
