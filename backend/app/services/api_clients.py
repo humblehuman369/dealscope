@@ -221,8 +221,9 @@ class RedfinClient(BaseAPIClient[APIResponse]):
     """
     Client for Redfin API via RapidAPI (redfin-com-data.p.rapidapi.com).
 
-    Uses GET /property/search-rent?location=<address> to fetch rental (and
-    optionally value) estimates. Headers: X-Rapidapi-Key, X-Rapidapi-Host.
+    Flow: auto-complete(query) → propertyId or regionId → search-sale/rent if
+    regionId → get-listingId(propertyId) → properties/estimate(propertyId, listingId).
+    Headers: X-Rapidapi-Key, X-Rapidapi-Host.
     """
 
     def __init__(
@@ -269,15 +270,43 @@ class RedfinClient(BaseAPIClient[APIResponse]):
     def _get_provider_name(self) -> str:
         return "REDFIN"
 
-    async def search_rent(self, location: str) -> APIResponse:
-        """GET /property/search-rent?location=<location>."""
+    async def auto_complete(self, query: str) -> APIResponse:
+        """GET /properties/auto-complete?query=."""
         return await self._make_request(
-            "property/search-rent",
-            params={"location": location},
+            "properties/auto-complete",
+            params={"query": query},
         )
 
-    def _parse_rent_response(self, data: Any) -> dict[str, Any]:
-        """Extract redfin_estimate and redfin_rental_estimate from API response."""
+    async def search_sale(self, region_id: str) -> APIResponse:
+        """GET /properties/search-sale?regionId=."""
+        return await self._make_request(
+            "properties/search-sale",
+            params={"regionId": region_id},
+        )
+
+    async def search_rent(self, region_id: str) -> APIResponse:
+        """GET /properties/search-rent?regionId=."""
+        return await self._make_request(
+            "properties/search-rent",
+            params={"regionId": region_id},
+        )
+
+    async def get_listing_id(self, property_id: str) -> APIResponse:
+        """GET /properties/get-listingId?propertyId=."""
+        return await self._make_request(
+            "properties/get-listingId",
+            params={"propertyId": property_id},
+        )
+
+    async def get_estimate(self, property_id: str, listing_id: str) -> APIResponse:
+        """GET /properties/estimate?propertyId=&listingId=."""
+        return await self._make_request(
+            "properties/estimate",
+            params={"propertyId": property_id, "listingId": listing_id},
+        )
+
+    def _parse_estimate_response(self, data: Any) -> dict[str, Any]:
+        """Extract redfin_estimate and redfin_rental_estimate from /properties/estimate response."""
         result: dict[str, Any] = {}
 
         def _num(obj: Any, key: str) -> float | None:
@@ -294,72 +323,135 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         if not isinstance(data, dict):
             return result
 
-        # Top-level or nested avm (property value)
-        avm = data.get("avm")
+        # Unwrap nested .data if present
+        payload = data.get("data") if isinstance(data.get("data"), dict) else data
+        if not isinstance(payload, dict):
+            payload = data
+
+        # AVM / value
+        avm = payload.get("avm")
         if isinstance(avm, dict):
             result["redfin_estimate"] = _num(avm, "predictedValue") or avm.get("predictedValue")
         if result.get("redfin_estimate") is None:
-            result["redfin_estimate"] = _num(data, "value") or _num(data, "predictedValue")
+            result["redfin_estimate"] = (
+                _num(payload, "predictedValue")
+                or _num(payload, "value")
+                or _num(payload, "avm")
+            )
 
-        # Rental: top-level or nested rental-estimate
-        rental = data.get("rentalEstimate") or data.get("rental-estimate") or data.get("rental_estimate")
+        # Rental
+        rental = (
+            payload.get("rentalEstimate")
+            or payload.get("rental-estimate")
+            or payload.get("rental_estimate")
+        )
         if isinstance(rental, dict):
             inner = rental.get("rentalEstimateInfo") or rental.get("rental_estimate_info") or rental
             if isinstance(inner, dict):
                 result["redfin_rental_estimate"] = _num(inner, "predictedValue") or inner.get("predictedValue")
         if result.get("redfin_rental_estimate") is None:
             result["redfin_rental_estimate"] = (
-                _num(data, "rent") or _num(data, "price") or _num(data, "monthly_rent")
+                _num(payload, "rent")
+                or _num(payload, "price")
+                or _num(payload, "monthlyRent")
+                or _num(payload, "monthly_rent")
             )
-
-        # Nested list (e.g. data.properties or data.results)
-        for container in ("data", "properties", "results", "listings"):
-            raw = data.get(container)
-            if isinstance(raw, list) and raw and isinstance(raw[0], dict):
-                first = raw[0]
-                if result.get("redfin_rental_estimate") is None:
-                    result["redfin_rental_estimate"] = (
-                        _num(first, "price")
-                        or _num(first, "rent")
-                        or first.get("price_min")
-                        or first.get("predictedValue")
-                    )
-                if result.get("redfin_estimate") is None:
-                    result["redfin_estimate"] = (
-                        _num(first, "value")
-                        or _num(first, "avm")
-                        or first.get("predictedValue")
-                    )
-                break
-            if isinstance(raw, dict):
-                nested = self._parse_rent_response(raw)
-                if nested.get("redfin_estimate") is not None:
-                    result["redfin_estimate"] = result.get("redfin_estimate") or nested["redfin_estimate"]
-                if nested.get("redfin_rental_estimate") is not None:
-                    result["redfin_rental_estimate"] = (
-                        result.get("redfin_rental_estimate") or nested["redfin_rental_estimate"]
-                    )
-                break
 
         return result
 
+    def _extract_from_autocomplete(self, data: Any) -> tuple[str | None, str | None]:
+        """From auto-complete response, get (propertyId, regionId). Either may be None."""
+        if not isinstance(data, dict):
+            return None, None
+        # Unwrap .data
+        payload = data.get("data")
+        if payload is None:
+            payload = data
+        # Single object
+        if isinstance(payload, dict):
+            pid = payload.get("propertyId") or payload.get("property_id")
+            rid = payload.get("regionId") or payload.get("region_id")
+            return (str(pid) if pid is not None else None), (str(rid) if rid is not None else None)
+        # List of suggestions
+        if isinstance(payload, list) and payload:
+            first = payload[0] if isinstance(payload[0], dict) else None
+            if first:
+                pid = first.get("propertyId") or first.get("property_id")
+                rid = first.get("regionId") or first.get("region_id")
+                return (str(pid) if pid is not None else None), (str(rid) if rid is not None else None)
+        for key in ("suggestions", "results", "items", "matches"):
+            arr = data.get(key) if isinstance(data, dict) else None
+            if isinstance(arr, list) and arr and isinstance(arr[0], dict):
+                first = arr[0]
+                pid = first.get("propertyId") or first.get("property_id")
+                rid = first.get("regionId") or first.get("region_id")
+                return (str(pid) if pid is not None else None), (str(rid) if rid is not None else None)
+        return None, None
+
+    def _extract_property_id_from_search(self, data: Any) -> str | None:
+        """Get propertyId from search-sale or search-rent response (first result)."""
+        if not isinstance(data, dict):
+            return None
+        for container in ("data", "properties", "results", "listings", "rows"):
+            raw = data.get(container)
+            if isinstance(raw, list) and raw and isinstance(raw[0], dict):
+                first = raw[0]
+                pid = first.get("propertyId") or first.get("property_id") or first.get("id")
+                if pid is not None:
+                    return str(pid)
+        payload = data.get("data") if isinstance(data.get("data"), dict) else data
+        if isinstance(payload, dict):
+            pid = payload.get("propertyId") or payload.get("property_id")
+            if pid is not None:
+                return str(pid)
+        return None
+
+    def _extract_listing_id(self, data: Any) -> str | None:
+        """Get listingId from get-listingId response."""
+        if not isinstance(data, dict):
+            return None
+        payload = data.get("data") if isinstance(data.get("data"), dict) else data
+        if not isinstance(payload, dict):
+            payload = data
+        lid = payload.get("listingId") or payload.get("listing_id")
+        if lid is not None:
+            return str(lid)
+        if isinstance(data.get("listingId"), (str, int)):
+            return str(data["listingId"])
+        return None
+
     async def get_property_estimate(self, address: str) -> dict[str, Any] | None:
         """
-        GET /property/search-rent?location=<address>, then extract value and rental.
-
-        Returns a dict with ``redfin_estimate`` (property value) and
-        ``redfin_rental_estimate`` (monthly rent), or ``None`` on failure.
+        Resolve address via auto-complete → propertyId (or regionId → search-sale) →
+        get-listingId → properties/estimate. Returns redfin_estimate and redfin_rental_estimate.
         """
-        resp = await self.search_rent(address)
-        if not resp.success:
+        # Step 1: auto-complete with address query
+        ac_resp = await self.auto_complete(address)
+        if not ac_resp.success or not ac_resp.data:
             return None
-        data = resp.data
-        if data is None:
+        property_id, region_id = self._extract_from_autocomplete(ac_resp.data)
+        # Step 2: if we only got regionId, get propertyId from search-sale (or search-rent)
+        if not property_id and region_id:
+            search_resp = await self.search_sale(region_id)
+            if not search_resp.success or not search_resp.data:
+                search_resp = await self.search_rent(region_id)
+            if search_resp.success and search_resp.data:
+                property_id = self._extract_property_id_from_search(search_resp.data)
+        if not property_id:
             return None
-        parsed = self._parse_rent_response(data)
-        if not parsed:
+        # Step 3: get listingId from propertyId
+        lid_resp = await self.get_listing_id(property_id)
+        if not lid_resp.success or not lid_resp.data:
             return None
-        return parsed
+        listing_id = self._extract_listing_id(lid_resp.data)
+        if not listing_id:
+            return None
+        # Step 4: fetch estimate
+        est_resp = await self.get_estimate(property_id, listing_id)
+        if not est_resp.success or not est_resp.data:
+            return None
+        parsed = self._parse_estimate_response(est_resp.data)
+        return parsed if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else None
 
 
 class DataNormalizer:
