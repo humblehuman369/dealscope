@@ -997,6 +997,22 @@ input[type="range"]::-moz-range-thumb {
   animation: bracket-pulse 3s ease-in-out infinite;
 }
 
+/* Data Sources CTA — draw attention to "Select any source..." */
+@keyframes data-sources-attention {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+  }
+  50% {
+    opacity: 0.85;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.85);
+  }
+}
+
+.animate-data-sources-attention {
+  animation: data-sources-attention 2.25s ease-in-out infinite;
+}
+
 /* ==========================================
    PROPERTY HERO — Dark Fintech
    ========================================== */
