@@ -67,7 +67,7 @@ class PropertyService:
             axesso_api_key=settings.AXESSO_API_KEY,
             axesso_url=settings.AXESSO_URL,
             redfin_api_key=settings.REDFIN_API_KEY,
-            redfin_url=settings.REDFIN_URL,
+            redfin_rapidapi_host=settings.RAPIDAPI_HOST,
         )
 
         # Use the comprehensive ZillowClient for Zillow data

@@ -219,16 +219,18 @@ class AXESSOClient(BaseAPIClient[APIResponse]):
 
 class RedfinClient(BaseAPIClient[APIResponse]):
     """
-    Client for Redfin Base API via RapidAPI.
+    Client for Redfin API via RapidAPI (redfin-com-data.p.rapidapi.com).
 
-    Two-step lookup:
-    1. auto-complete  → resolve address to Redfin property name
-    2. detail         → fetch AVM (predictedValue) and rental estimate
+    Uses GET /property/search-rent?location=<address> to fetch rental (and
+    optionally value) estimates. Headers: X-Rapidapi-Key, X-Rapidapi-Host.
     """
 
-    RAPIDAPI_HOST = "redfin-base.p.rapidapi.com"
-
-    def __init__(self, api_key: str, base_url: str = "https://redfin-base.p.rapidapi.com"):
+    def __init__(
+        self,
+        api_key: str,
+        rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
+    ):
+        base_url = f"https://{rapidapi_host.rstrip('/')}"
         super().__init__(
             api_key=api_key,
             base_url=base_url,
@@ -237,11 +239,12 @@ class RedfinClient(BaseAPIClient[APIResponse]):
             max_retries=2,
             enable_circuit_breaker=True,
         )
+        self.rapidapi_host = rapidapi_host
 
     def _get_headers(self) -> dict[str, str]:
         return {
             "x-rapidapi-key": self.api_key,
-            "x-rapidapi-host": self.RAPIDAPI_HOST,
+            "x-rapidapi-host": self.rapidapi_host,
             "Accept": "application/json",
         }
 
@@ -266,83 +269,97 @@ class RedfinClient(BaseAPIClient[APIResponse]):
     def _get_provider_name(self) -> str:
         return "REDFIN"
 
-    async def search_address(self, address: str) -> APIResponse:
-        """Resolve a full address to Redfin's short location name via auto-complete."""
-        return await self._make_request("redfin/1.1/auto-complete", params={"location": address})
+    async def search_rent(self, location: str) -> APIResponse:
+        """GET /property/search-rent?location=<location>."""
+        return await self._make_request(
+            "property/search-rent",
+            params={"location": location},
+        )
 
-    async def get_detail(self, location: str) -> APIResponse:
-        """Fetch full property detail (AVM, rental estimate, etc.)."""
-        return await self._make_request("redfin/detail", params={"location": location})
+    def _parse_rent_response(self, data: Any) -> dict[str, Any]:
+        """Extract redfin_estimate and redfin_rental_estimate from API response."""
+        result: dict[str, Any] = {}
+
+        def _num(obj: Any, key: str) -> float | None:
+            if not isinstance(obj, dict):
+                return None
+            v = obj.get(key)
+            if v is None:
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        if not isinstance(data, dict):
+            return result
+
+        # Top-level or nested avm (property value)
+        avm = data.get("avm")
+        if isinstance(avm, dict):
+            result["redfin_estimate"] = _num(avm, "predictedValue") or avm.get("predictedValue")
+        if result.get("redfin_estimate") is None:
+            result["redfin_estimate"] = _num(data, "value") or _num(data, "predictedValue")
+
+        # Rental: top-level or nested rental-estimate
+        rental = data.get("rentalEstimate") or data.get("rental-estimate") or data.get("rental_estimate")
+        if isinstance(rental, dict):
+            inner = rental.get("rentalEstimateInfo") or rental.get("rental_estimate_info") or rental
+            if isinstance(inner, dict):
+                result["redfin_rental_estimate"] = _num(inner, "predictedValue") or inner.get("predictedValue")
+        if result.get("redfin_rental_estimate") is None:
+            result["redfin_rental_estimate"] = (
+                _num(data, "rent") or _num(data, "price") or _num(data, "monthly_rent")
+            )
+
+        # Nested list (e.g. data.properties or data.results)
+        for container in ("data", "properties", "results", "listings"):
+            raw = data.get(container)
+            if isinstance(raw, list) and raw and isinstance(raw[0], dict):
+                first = raw[0]
+                if result.get("redfin_rental_estimate") is None:
+                    result["redfin_rental_estimate"] = (
+                        _num(first, "price")
+                        or _num(first, "rent")
+                        or first.get("price_min")
+                        or first.get("predictedValue")
+                    )
+                if result.get("redfin_estimate") is None:
+                    result["redfin_estimate"] = (
+                        _num(first, "value")
+                        or _num(first, "avm")
+                        or first.get("predictedValue")
+                    )
+                break
+            if isinstance(raw, dict):
+                nested = self._parse_rent_response(raw)
+                if nested.get("redfin_estimate") is not None:
+                    result["redfin_estimate"] = result.get("redfin_estimate") or nested["redfin_estimate"]
+                if nested.get("redfin_rental_estimate") is not None:
+                    result["redfin_rental_estimate"] = (
+                        result.get("redfin_rental_estimate") or nested["redfin_rental_estimate"]
+                    )
+                break
+
+        return result
 
     async def get_property_estimate(self, address: str) -> dict[str, Any] | None:
-        """Convenience: auto-complete → detail → extract AVM + rental estimate.
+        """
+        GET /property/search-rent?location=<address>, then extract value and rental.
 
         Returns a dict with ``redfin_estimate`` (property value) and
         ``redfin_rental_estimate`` (monthly rent), or ``None`` on failure.
         """
-        ac = await self.search_address(address)
-        if not ac.success or not ac.data:
+        resp = await self.search_rent(address)
+        if not resp.success:
             return None
-
-        # Auto-complete: accept nested "data", top-level dict, or top-level list
-        if isinstance(ac.data, list):
-            rows = ac.data
-            inner = {}
-            exact = None
-        elif isinstance(ac.data, dict):
-            inner = ac.data.get("data") if isinstance(ac.data.get("data"), dict) else ac.data
-            if not isinstance(inner, dict):
-                inner = {}
-            rows = inner.get("rows") if isinstance(inner.get("rows"), list) else []
-            exact = inner.get("exactMatch")
-        else:
-            inner = {}
-            rows = []
-
-        match = None
-        if isinstance(inner, dict):
-            exact = inner.get("exactMatch")
-            match = exact if isinstance(exact, dict) else None
-        if match is None and rows and isinstance(rows[0], dict):
-            match = rows[0]
-        if not match or not isinstance(match, dict):
+        data = resp.data
+        if data is None:
             return None
-
-        location_name = match.get("name")
-        if not location_name or not isinstance(location_name, str):
+        parsed = self._parse_rent_response(data)
+        if not parsed:
             return None
-
-        detail = await self.get_detail(location_name)
-        if not detail.success or not detail.data or not isinstance(detail.data, dict):
-            return None
-
-        payload = detail.data.get("data") if isinstance(detail.data.get("data"), dict) else detail.data
-        if not isinstance(payload, dict):
-            payload = {}
-        result: dict[str, Any] = {}
-
-        avm = payload.get("avm") if isinstance(payload.get("avm"), dict) else {}
-        if not isinstance(avm, dict):
-            avm = {}
-        result["redfin_estimate"] = avm.get("predictedValue")
-        result["redfin_last_sold_price"] = avm.get("lastSoldPrice")
-
-        # Support both "rental-estimate" (kebab) and "rentalEstimate" (camel) and similar
-        rental = (
-            payload.get("rental-estimate")
-            or payload.get("rentalEstimate")
-            or {}
-        )
-        if not isinstance(rental, dict):
-            rental = {}
-        rental_info = rental.get("rentalEstimateInfo") or rental.get("rental_estimate_info") or {}
-        if not isinstance(rental_info, dict):
-            rental_info = {}
-        result["redfin_rental_estimate"] = rental_info.get("predictedValue")
-        result["redfin_rental_low"] = rental_info.get("predictedValueLow")
-        result["redfin_rental_high"] = rental_info.get("predictedValueHigh")
-
-        return result
+        return parsed
 
 
 class DataNormalizer:
@@ -766,12 +783,16 @@ def create_api_clients(
     axesso_api_key: str,
     axesso_url: str,
     redfin_api_key: str = "",
-    redfin_url: str = "https://redfin-base.p.rapidapi.com",
+    redfin_rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
 ) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None]:
     """Create configured API clients and normalizer."""
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
     normalizer = DataNormalizer()
-    redfin = RedfinClient(redfin_api_key, redfin_url) if redfin_api_key else None
+    redfin = (
+        RedfinClient(redfin_api_key, redfin_rapidapi_host)
+        if redfin_api_key and redfin_rapidapi_host
+        else None
+    )
 
     return rentcast, axesso, normalizer, redfin
