@@ -80,10 +80,11 @@ export function transformRentComps(
       : 999
     const lat = toNum(comp?.latitude ?? comp?.lat ?? 0)
     const lon = toNum(comp?.longitude ?? comp?.lng ?? comp?.lon ?? 0)
-    const distanceMiles =
+    const haversineDist =
       subjectLat && subjectLon && lat && lon
         ? haversineDistance(subjectLat, subjectLon, lat, lon)
         : 0
+    const distanceMiles = haversineDist || toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))

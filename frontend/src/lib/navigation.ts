@@ -9,6 +9,8 @@ export interface NavContext {
   address?: string;
   zpid?: string;
   propertyId?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 /**
@@ -84,14 +86,26 @@ export const ROUTES = {
   dealMaker: (ctx: NavContext) => 
     `/deal-maker/${encodeURIComponent(ctx.address || '')}`,
   
-  compare: (ctx: NavContext) => 
-    `/price-intel?view=sale&address=${encodeURIComponent(ctx.address || '')}`,
+  compare: (ctx: NavContext) => {
+    const q = new URLSearchParams({ view: 'sale', address: ctx.address || '' });
+    if (ctx.latitude) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    return `/price-intel?${q.toString()}`;
+  },
   
-  rentalComps: (ctx: NavContext) => 
-    `/price-intel?view=rent&address=${encodeURIComponent(ctx.address || '')}`,
+  rentalComps: (ctx: NavContext) => {
+    const q = new URLSearchParams({ view: 'rent', address: ctx.address || '' });
+    if (ctx.latitude) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    return `/price-intel?${q.toString()}`;
+  },
   
-  priceChecker: (ctx: NavContext) =>
-    `/price-intel?address=${encodeURIComponent(ctx.address || '')}`,
+  priceChecker: (ctx: NavContext) => {
+    const q = new URLSearchParams({ address: ctx.address || '' });
+    if (ctx.latitude) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    return `/price-intel?${q.toString()}`;
+  },
   
   // Worksheets
   worksheet: (propertyId: string, strategy: string) => 

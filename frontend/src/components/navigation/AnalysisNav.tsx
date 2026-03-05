@@ -69,6 +69,10 @@ export function AnalysisNav() {
     ? (() => {
         const q = new URLSearchParams({ address })
         if (zpid) q.set('zpid', String(zpid))
+        const lat = searchParams.get('lat')
+        const lng = searchParams.get('lng')
+        if (lat) q.set('lat', lat)
+        if (lng) q.set('lng', lng)
         return `/price-intel?${q.toString()}`
       })()
     : '/search'

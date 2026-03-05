@@ -375,6 +375,8 @@ function VerdictContent() {
           // Use null check (not truthy check) to properly handle 0% occupancy
           occupancyRate: occupancyRate != null ? occupancyRate / 100 : undefined,
           arv: arv ?? undefined,
+          latitude: data.address?.latitude ?? undefined,
+          longitude: data.address?.longitude ?? undefined,
         }
 
         setProperty(propertyData)
@@ -874,6 +876,8 @@ function VerdictContent() {
         // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
         const compsQuery = new URLSearchParams({ address: fullAddress })
         if (propertyId) compsQuery.set('zpid', String(propertyId))
+        if (property.latitude) compsQuery.set('lat', String(property.latitude))
+        if (property.longitude) compsQuery.set('lng', String(property.longitude))
         router.push(`/price-intel?${compsQuery.toString()}`)
         break
       case 'dashboard':

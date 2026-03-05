@@ -35,6 +35,8 @@ export interface IQProperty {
   averageDailyRate?: number;
   occupancyRate?: number;
   arv?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 // ===================

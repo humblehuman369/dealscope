@@ -71,10 +71,11 @@ export function transformSaleComps(
       : 999
     const lat = toNum(comp?.latitude ?? comp?.lat ?? 0)
     const lon = toNum(comp?.longitude ?? comp?.lng ?? comp?.lon ?? 0)
-    const distanceMiles =
+    const haversineDist =
       subjectLat && subjectLon && lat && lon
         ? haversineDistance(subjectLat, subjectLon, lat, lon)
         : 0
+    const distanceMiles = haversineDist || toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
@@ -111,6 +112,12 @@ export function transformSaleComps(
     if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
     if (!imageUrl && comp?.photo) imageUrl = toStr(comp.photo)
     if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
+    if (!imageUrl && address) {
+      const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+      if (key) {
+        imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : ''))}&key=${key}&source=outdoor`
+      }
+    }
 
     return {
       id: zpid,

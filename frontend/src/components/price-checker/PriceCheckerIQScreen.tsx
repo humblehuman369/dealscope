@@ -53,6 +53,8 @@ export interface PriceCheckerProperty {
   yearBuilt?: number
   lotSize?: number
   price?: number
+  latitude?: number
+  longitude?: number
 }
 
 interface PriceCheckerIQScreenProps {
@@ -478,8 +480,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     listPrice: property.price ?? 0,
     zestimate: null,
     rentZestimate: null,
-    latitude: 0,
-    longitude: 0,
+    latitude: property.latitude ?? 0,
+    longitude: property.longitude ?? 0,
   } : undefined, [fullAddress, property])
 
   const buildIdentifier = useCallback((offset = 0, excludeZpids: string[] = []): CompsIdentifier => {
