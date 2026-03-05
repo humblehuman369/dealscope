@@ -7,7 +7,8 @@ import { axessoGet, type AxessoResponse } from './axesso-client'
 import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
 import type { CompsIdentifier, RentComp, SubjectProperty } from './types'
 
-const SIMILAR_RENT_ENDPOINT = '/api/v1/similar-rent'
+const ZILLOW_RENT_ENDPOINT = '/api/v1/similar-rent'
+const RENTCAST_ENDPOINT = '/api/v1/rentcast/rental-comps'
 
 interface BackendCompsResponse {
   success?: boolean
@@ -167,7 +168,7 @@ export function transformRentComps(
 }
 
 /**
- * Fetch rent comps from backend and return transformed RentComp[]. Same flow as fetchSaleComps.
+ * Fetch rent comps: try Zillow first (has photos), fall back to RentCast (reliable data + distance).
  */
 export async function fetchRentComps(
   identifier: CompsIdentifier,
@@ -196,38 +197,58 @@ export async function fetchRentComps(
   if (params.limit === undefined) params.limit = '10'
   if (params.offset === undefined) params.offset = '0'
 
-  const res = await axessoGet<BackendCompsResponse>(
-    SIMILAR_RENT_ENDPOINT,
+  // Try Zillow first (returns photos via AXESSO)
+  const zillowRes = await axessoGet<BackendCompsResponse>(
+    ZILLOW_RENT_ENDPOINT,
     params,
     undefined,
     options?.signal
   )
 
-  if (!res.ok || !res.data) {
-    return {
-      ...res,
-      data: null,
+  if (zillowRes.ok && zillowRes.data) {
+    const body = zillowRes.data as BackendCompsResponse
+    if (body.success !== false) {
+      const transformed = transformRentComps(zillowRes.data, subject)
+      if (transformed.length > 0) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[comps_api] rental-comps (zillow) transformed', { count: transformed.length })
+        }
+        return { ...zillowRes, data: transformed }
+      }
     }
   }
 
-  const body = res.data as BackendCompsResponse
-  if (body.success === false) {
+  // Zillow returned nothing — fall back to RentCast (reliable, has distance, no photos)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[comps_api] Zillow rent comps empty, falling back to RentCast')
+  }
+
+  const rcRes = await axessoGet<BackendCompsResponse>(
+    RENTCAST_ENDPOINT,
+    params,
+    undefined,
+    options?.signal
+  )
+
+  if (!rcRes.ok || !rcRes.data) {
+    return { ...rcRes, data: null }
+  }
+
+  const rcBody = rcRes.data as BackendCompsResponse
+  if (rcBody.success === false) {
     return {
       ok: false,
       data: null,
-      status: res.status,
-      error: body.error ?? 'Failed to load comparable rentals',
-      attempts: res.attempts,
-      durationMs: res.durationMs,
+      status: rcRes.status,
+      error: rcBody.error ?? 'Failed to load comparable rentals',
+      attempts: rcRes.attempts,
+      durationMs: rcRes.durationMs,
     }
   }
 
-  const transformed = transformRentComps(res.data, subject)
+  const transformed = transformRentComps(rcRes.data, subject)
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[comps_api] rental-comps transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+    console.log('[comps_api] rental-comps (rentcast fallback) transformed', { count: transformed.length })
   }
-  return {
-    ...res,
-    data: transformed,
-  }
+  return { ...rcRes, data: transformed }
 }
