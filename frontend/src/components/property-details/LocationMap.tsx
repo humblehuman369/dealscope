@@ -50,7 +50,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
         Location
       </div>
       <div className="h-48 rounded-xl overflow-hidden">
-        <APIProvider apiKey={apiKey}>
+        <APIProvider apiKey={apiKey} libraries={['places']}>
           <Map
             defaultCenter={{ lat: latitude, lng: longitude }}
             defaultZoom={15}

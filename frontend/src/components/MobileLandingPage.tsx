@@ -13,6 +13,7 @@ import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
 import { PhoneScannerMockup } from './PhoneScannerMockup';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 
 interface LandingPageProps {
   onPointAndScan: () => void;
@@ -159,55 +160,61 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             }`}
             style={{ backdropFilter: isDark ? 'blur(12px)' : undefined }}
           >
-            <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
-              isDark 
-                ? 'bg-white/10 border-white/10' 
-                : 'bg-gray-50 border-gray-200'
-            }`}>
-              <MapPin className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
-              <input
-                type="text"
-                placeholder="Enter property address..."
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                className={`flex-1 bg-transparent text-sm outline-none ${
-                  isDark 
-                    ? 'text-white placeholder-white/50' 
-                    : 'text-gray-900 placeholder-gray-400'
-                }`}
-                autoFocus
-              />
-            </div>
-            <button
-              onClick={handleAnalyze}
-              disabled={!searchAddress.trim() || isSearching}
-              className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
-                ${searchAddress.trim() 
-                  ? `text-white shadow-lg` 
-                  : isDark 
-                    ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              style={searchAddress.trim() ? {
-                background: isDark 
-                  ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
-                  : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
-                boxShadow: '0 4px 20px rgba(0, 151, 167, 0.4)'
-              } : undefined}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAnalyze();
+              }}
             >
-              {isSearching ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  Analyze Property
-                </>
-              )}
-            </button>
+              <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
+                isDark 
+                  ? 'bg-white/10 border-white/10' 
+                  : 'bg-gray-50 border-gray-200'
+              }`}>
+                <MapPin className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
+                <AddressAutocomplete
+                  value={searchAddress}
+                  onChange={setSearchAddress}
+                  onPlaceSelect={setSearchAddress}
+                  placeholder="Enter property address..."
+                  className={`flex-1 bg-transparent text-sm outline-none ${
+                    isDark 
+                      ? 'text-white placeholder-white/50' 
+                      : 'text-gray-900 placeholder-gray-400'
+                  }`}
+                  autoFocus
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!searchAddress.trim() || isSearching}
+                className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
+                  ${searchAddress.trim() 
+                    ? `text-white shadow-lg` 
+                    : isDark 
+                      ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+                style={searchAddress.trim() ? {
+                  background: isDark 
+                    ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
+                    : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
+                  boxShadow: '0 4px 20px rgba(0, 151, 167, 0.4)'
+                } : undefined}
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4" />
+                    Analyze Property
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         )}
       </section>
