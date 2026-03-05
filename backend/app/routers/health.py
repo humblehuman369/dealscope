@@ -148,6 +148,18 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
     else:
         external_checks["axesso"] = {"status": "not_configured"}
 
+    # Redfin (RapidAPI)
+    if settings.REDFIN_API_KEY and settings.RAPIDAPI_HOST:
+        redfin_url = f"https://{settings.RAPIDAPI_HOST}"
+        external_checks["redfin"] = await _probe("redfin", redfin_url)
+    else:
+        missing = []
+        if not settings.REDFIN_API_KEY:
+            missing.append("REDFIN_API_KEY")
+        if not settings.RAPIDAPI_HOST:
+            missing.append("RAPIDAPI_HOST")
+        external_checks["redfin"] = {"status": "not_configured", "missing": missing}
+
     # Stripe
     if settings.STRIPE_SECRET_KEY:
         external_checks["stripe"] = await _probe("stripe", "https://api.stripe.com/v1")
@@ -233,3 +245,103 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         "checks": checks,
         "timestamp": datetime.now(UTC).isoformat(),
     }
+
+
+@router.get("/debug/redfin")
+async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
+    """
+    Debug endpoint: runs the full Redfin pipeline step-by-step and returns
+    the raw response from each stage so you can see the exact shape.
+
+    Non-production only — returns 403 in production.
+    """
+    if settings.is_production:
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": "disabled in production"}, status_code=403)
+
+    from app.services.api_clients import RedfinClient
+
+    steps: dict[str, Any] = {"address": address, "timestamp": datetime.now(UTC).isoformat()}
+
+    if not settings.REDFIN_API_KEY:
+        steps["error"] = "REDFIN_API_KEY not set"
+        return steps
+    if not settings.RAPIDAPI_HOST:
+        steps["error"] = "RAPIDAPI_HOST not set"
+        return steps
+
+    client = RedfinClient(settings.REDFIN_API_KEY, settings.RAPIDAPI_HOST)
+
+    def _summarize(resp) -> dict[str, Any]:
+        """Truncated summary of an API response for debugging."""
+        import json
+
+        raw = resp.data
+        summary: dict[str, Any] = {
+            "success": resp.success,
+            "status_code": resp.status_code,
+            "error": resp.error,
+        }
+        if isinstance(raw, dict):
+            summary["keys"] = list(raw.keys())
+            truncated = json.dumps(raw, default=str)[:2000]
+            summary["data_preview"] = json.loads(truncated) if len(truncated) < 2000 else truncated
+        elif isinstance(raw, list):
+            summary["list_length"] = len(raw)
+            summary["first_item_keys"] = list(raw[0].keys()) if raw and isinstance(raw[0], dict) else None
+        else:
+            summary["data_type"] = type(raw).__name__
+        return summary
+
+    # Step 1: auto-complete
+    ac_resp = await client.auto_complete(address)
+    steps["step1_auto_complete"] = _summarize(ac_resp)
+    if not ac_resp.success or not ac_resp.data:
+        steps["result"] = "FAILED at step 1 (auto-complete)"
+        return steps
+    property_id, region_id = client._extract_from_autocomplete(ac_resp.data)
+    steps["step1_extracted"] = {"propertyId": property_id, "regionId": region_id}
+
+    # Step 2: search (only if regionId but no propertyId)
+    if not property_id and region_id:
+        sale_resp = await client.search_sale(region_id)
+        steps["step2_search_sale"] = _summarize(sale_resp)
+        if not sale_resp.success or not sale_resp.data:
+            rent_resp = await client.search_rent(region_id)
+            steps["step2_search_rent"] = _summarize(rent_resp)
+            if rent_resp.success and rent_resp.data:
+                property_id = client._extract_property_id_from_search(rent_resp.data)
+        else:
+            property_id = client._extract_property_id_from_search(sale_resp.data)
+        steps["step2_extracted_propertyId"] = property_id
+    elif property_id:
+        steps["step2_skipped"] = "propertyId already resolved from auto-complete"
+
+    if not property_id:
+        steps["result"] = "FAILED: no propertyId resolved"
+        return steps
+
+    # Step 3: get-listingId
+    lid_resp = await client.get_listing_id(property_id)
+    steps["step3_get_listingId"] = _summarize(lid_resp)
+    if not lid_resp.success or not lid_resp.data:
+        steps["result"] = "FAILED at step 3 (get-listingId)"
+        return steps
+    listing_id = client._extract_listing_id(lid_resp.data)
+    steps["step3_extracted_listingId"] = listing_id
+    if not listing_id:
+        steps["result"] = "FAILED: could not extract listingId"
+        return steps
+
+    # Step 4: estimate
+    est_resp = await client.get_estimate(property_id, listing_id)
+    steps["step4_estimate"] = _summarize(est_resp)
+    if not est_resp.success or not est_resp.data:
+        steps["result"] = "FAILED at step 4 (estimate)"
+        return steps
+    parsed = client._parse_estimate_response(est_resp.data)
+    steps["step4_parsed"] = parsed
+    steps["result"] = "SUCCESS" if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else "PARSED_BUT_EMPTY"
+
+    return steps
