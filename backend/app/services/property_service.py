@@ -4,6 +4,7 @@ Property service - orchestrates data fetching, normalization, and calculations.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -845,6 +846,80 @@ class PropertyService:
 
         return response.zpid
 
+    async def _resolve_subject_coords(
+        self,
+        zpid: str | None,
+        address: str | None,
+        url: str | None = None,
+    ) -> tuple[float | None, float | None]:
+        """Resolve subject latitude/longitude using Zillow property details."""
+        try:
+            resolved_zpid = zpid
+            if not resolved_zpid and address and not url:
+                resolved_zpid = await self._resolve_zpid_from_address(address)
+
+            detail = None
+            if resolved_zpid or url:
+                detail = await self.zillow.get_property_details(zpid=resolved_zpid, url=url)
+
+            if not detail or not detail.success or not detail.data:
+                return None, None
+
+            payload = detail.data
+            if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
+                payload = payload["data"]
+            if not isinstance(payload, dict):
+                return None, None
+
+            def _to_float(v: Any) -> float | None:
+                try:
+                    return float(v)
+                except (TypeError, ValueError):
+                    return None
+
+            lat = _to_float(payload.get("latitude") or payload.get("lat"))
+            lon = _to_float(payload.get("longitude") or payload.get("lng") or payload.get("lon"))
+
+            if lat is None or lon is None:
+                addr = payload.get("address") if isinstance(payload.get("address"), dict) else {}
+                lat = lat or _to_float(addr.get("latitude") or addr.get("lat"))
+                lon = lon or _to_float(addr.get("longitude") or addr.get("lng") or addr.get("lon"))
+
+            if lat is None or lon is None:
+                lat_long = payload.get("latLong") if isinstance(payload.get("latLong"), dict) else {}
+                lat = lat or _to_float(lat_long.get("latitude") or lat_long.get("lat"))
+                lon = lon or _to_float(lat_long.get("longitude") or lat_long.get("lng") or lat_long.get("lon"))
+
+            return lat, lon
+        except Exception:
+            return None, None
+
+    async def _enrich_comps_with_photos(self, comps: list[dict[str, Any]], max_concurrency: int = 5) -> None:
+        """Attach Zillow photo URL to comps when missing."""
+        sem = asyncio.Semaphore(max_concurrency)
+
+        async def _fetch(comp: dict[str, Any]) -> None:
+            if comp.get("imageUrl"):
+                return
+            zpid = comp.get("zpid")
+            url = comp.get("url")
+            if not zpid and not url:
+                return
+            async with sem:
+                try:
+                    res = await self.get_property_photos(zpid=zpid, url=url)
+                except Exception:
+                    return
+            photos = res.get("photos") if isinstance(res, dict) else None
+            if isinstance(photos, list) and photos:
+                first = photos[0]
+                if isinstance(first, dict) and first.get("url"):
+                    comp["imageUrl"] = first["url"]
+
+        tasks = [_fetch(comp) for comp in comps]
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
     async def _resolve_address_from_zpid(self, zpid: str) -> str | None:
         """Resolve a formatted address from a Zillow zpid."""
         if not zpid:
@@ -1012,6 +1087,7 @@ class PropertyService:
                         "longitude": comp.get("longitude"),
                         "status": comp.get("status"),
                         "listingType": comp.get("listingType"),
+                        "url": comp.get("url") or comp.get("listingUrl") or comp.get("listingURL"),
                         "imageUrl": comp.get("imageUrl"),
                         "raw": comp,
                     }
@@ -1029,6 +1105,9 @@ class PropertyService:
 
             total_available = len(normalized_comps)
             paginated_results = normalized_comps[offset : offset + limit]
+
+            # Enrich missing photos via Zillow when possible
+            await self._enrich_comps_with_photos(paginated_results)
 
             logger.info(
                 "RentCast rental comps ready",
@@ -1637,7 +1716,11 @@ class PropertyService:
                     exclude_set = set(str(z) for z in exclude_zpids)
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
 
-                # Compute distance from subject when coordinates are provided
+                # Resolve subject coords when not provided
+                if not subject_lat or not subject_lon:
+                    subject_lat, subject_lon = await self._resolve_subject_coords(resolved_zpid, address, url)
+
+                # Compute distance from subject when coordinates are available
                 if subject_lat and subject_lon:
                     for comp in results:
                         comp_lat = comp.get("latitude") or comp.get("lat")
