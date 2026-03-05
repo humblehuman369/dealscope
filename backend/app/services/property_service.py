@@ -877,18 +877,34 @@ class PropertyService:
                 except (TypeError, ValueError):
                     return None
 
-            lat = _to_float(payload.get("latitude") or payload.get("lat"))
-            lon = _to_float(payload.get("longitude") or payload.get("lng") or payload.get("lon"))
+            def _first_non_none(*values: Any) -> Any:
+                for value in values:
+                    if value is not None:
+                        return value
+                return None
+
+            lat = _to_float(_first_non_none(payload.get("latitude"), payload.get("lat")))
+            lon = _to_float(
+                _first_non_none(payload.get("longitude"), payload.get("lng"), payload.get("lon"))
+            )
 
             if lat is None or lon is None:
                 addr = payload.get("address") if isinstance(payload.get("address"), dict) else {}
-                lat = lat or _to_float(addr.get("latitude") or addr.get("lat"))
-                lon = lon or _to_float(addr.get("longitude") or addr.get("lng") or addr.get("lon"))
+                if lat is None:
+                    lat = _to_float(_first_non_none(addr.get("latitude"), addr.get("lat")))
+                if lon is None:
+                    lon = _to_float(
+                        _first_non_none(addr.get("longitude"), addr.get("lng"), addr.get("lon"))
+                    )
 
             if lat is None or lon is None:
                 lat_long = payload.get("latLong") if isinstance(payload.get("latLong"), dict) else {}
-                lat = lat or _to_float(lat_long.get("latitude") or lat_long.get("lat"))
-                lon = lon or _to_float(lat_long.get("longitude") or lat_long.get("lng") or lat_long.get("lon"))
+                if lat is None:
+                    lat = _to_float(_first_non_none(lat_long.get("latitude"), lat_long.get("lat")))
+                if lon is None:
+                    lon = _to_float(
+                        _first_non_none(lat_long.get("longitude"), lat_long.get("lng"), lat_long.get("lon"))
+                    )
 
             return lat, lon
         except Exception:
@@ -1717,18 +1733,26 @@ class PropertyService:
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
 
                 # Resolve subject coords when not provided
-                if not subject_lat or not subject_lon:
+                if subject_lat is None or subject_lon is None:
                     subject_lat, subject_lon = await self._resolve_subject_coords(resolved_zpid, address, url)
 
                 # Compute distance from subject when coordinates are available
-                if subject_lat and subject_lon:
+                if subject_lat is not None and subject_lon is not None:
                     for comp in results:
-                        comp_lat = comp.get("latitude") or comp.get("lat")
-                        comp_lon = comp.get("longitude") or comp.get("lng") or comp.get("lon")
-                        if comp_lat and comp_lon:
+                        comp_lat = comp.get("latitude")
+                        if comp_lat is None:
+                            comp_lat = comp.get("lat")
+                        comp_lon = comp.get("longitude")
+                        if comp_lon is None:
+                            comp_lon = comp.get("lng")
+                        if comp_lon is None:
+                            comp_lon = comp.get("lon")
+                        if comp_lat is not None and comp_lon is not None:
                             try:
                                 comp["distance"] = round(
-                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
+                                    self._haversine_miles(
+                                        subject_lat, subject_lon, float(comp_lat), float(comp_lon)
+                                    ),
                                     2,
                                 )
                             except (ValueError, TypeError):
@@ -1843,14 +1867,22 @@ class PropertyService:
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
 
                 # Compute distance from subject when coordinates are provided
-                if subject_lat and subject_lon:
+                if subject_lat is not None and subject_lon is not None:
                     for comp in results:
-                        comp_lat = comp.get("latitude") or comp.get("lat")
-                        comp_lon = comp.get("longitude") or comp.get("lng") or comp.get("lon")
-                        if comp_lat and comp_lon:
+                        comp_lat = comp.get("latitude")
+                        if comp_lat is None:
+                            comp_lat = comp.get("lat")
+                        comp_lon = comp.get("longitude")
+                        if comp_lon is None:
+                            comp_lon = comp.get("lng")
+                        if comp_lon is None:
+                            comp_lon = comp.get("lon")
+                        if comp_lat is not None and comp_lon is not None:
                             try:
                                 comp["distance"] = round(
-                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
+                                    self._haversine_miles(
+                                        subject_lat, subject_lon, float(comp_lat), float(comp_lon)
+                                    ),
                                     2,
                                 )
                             except (ValueError, TypeError):
