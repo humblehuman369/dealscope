@@ -86,6 +86,28 @@ export function AddressAutocomplete({
       return
     }
 
+    if (window.google?.maps) {
+      const importLibrary = window.google.maps.importLibrary
+      if (typeof importLibrary === 'function') {
+        importLibrary('places')
+          .then(() => setIsLoaded(true))
+          .catch((err) => {
+            console.error(
+              '[AddressAutocomplete] Failed to load Places library via importLibrary(). ' +
+                'Ensure the Places API is enabled for this key.',
+              err
+            )
+          })
+        return
+      }
+
+      console.error(
+        '[AddressAutocomplete] Google Maps JS API is already loaded without the Places library. ' +
+          'Load the initial script with libraries=places to enable address suggestions.'
+      )
+      return
+    }
+
     const existing = document.querySelector('script[data-google-places]')
     if (existing) {
       const check = setInterval(() => {

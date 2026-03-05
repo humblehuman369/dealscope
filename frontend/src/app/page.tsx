@@ -302,10 +302,10 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             <form onSubmit={handleAddressSearch}>
               <div className="relative mb-4">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
+                <AddressAutocomplete
                   value={addressInput}
-                  onChange={(e) => setAddressInput(e.target.value)}
+                  onChange={setAddressInput}
+                  onPlaceSelect={handlePlaceSelect}
                   placeholder="Enter property address..."
                   className="w-full py-4 pl-12 pr-4 bg-gray-800 text-white rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   autoFocus

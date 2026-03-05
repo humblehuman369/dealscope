@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Search, X } from 'lucide-react';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 
 interface TryItNowModalProps {
   isOpen: boolean;
@@ -96,12 +97,12 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
           <form className="try-modal-address-form" onSubmit={handleAddressSubmit}>
             <div className="try-modal-input-wrapper">
               <Search size={20} className="try-modal-input-icon" />
-              <input
-                type="text"
-                className="try-modal-input"
-                placeholder="Enter property address..."
+              <AddressAutocomplete
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={setAddress}
+                onPlaceSelect={setAddress}
+                placeholder="Enter property address..."
+                className="try-modal-input"
                 autoFocus
               />
             </div>
