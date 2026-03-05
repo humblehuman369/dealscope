@@ -489,8 +489,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     if (property.zpid) id.zpid = property.zpid
     else if (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2) id.address = fullAddress
     if (excludeZpids.length > 0) id.exclude_zpids = excludeZpids.join(',')
+    if (property.latitude) id.subject_lat = property.latitude
+    if (property.longitude) id.subject_lon = property.longitude
     return id
-  }, [property.zpid, fullAddress])
+  }, [property.zpid, fullAddress, property.latitude, property.longitude])
 
   const fetchSaleComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
     setSaleLoading(true)

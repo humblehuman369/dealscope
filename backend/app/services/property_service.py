@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import re
 import time
 from datetime import UTC, datetime
@@ -1675,6 +1676,18 @@ class PropertyService:
                 "fetched_at": datetime.now(UTC).isoformat(),
             }
 
+    @staticmethod
+    def _haversine_miles(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Haversine distance between two coordinates in miles."""
+        R = 3958.8
+        d_lat = math.radians(lat2 - lat1)
+        d_lon = math.radians(lon2 - lon1)
+        a = (
+            math.sin(d_lat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(d_lon / 2) ** 2
+        )
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
     async def get_similar_sold(
         self,
         zpid: str | None = None,
@@ -1683,6 +1696,8 @@ class PropertyService:
         limit: int = 10,
         offset: int = 0,
         exclude_zpids: list[str] | None = None,
+        subject_lat: float | None = None,
+        subject_lon: float | None = None,
     ) -> dict[str, Any]:
         """
         Fetch similar sold properties from Zillow via AXESSO API.
@@ -1694,6 +1709,8 @@ class PropertyService:
             limit: Number of results to return
             offset: Number of results to skip
             exclude_zpids: List of zpids to exclude from results
+            subject_lat: Subject property latitude (for distance calculation)
+            subject_lon: Subject property longitude (for distance calculation)
 
         Returns:
             Dict with similar sold properties and pagination metadata
@@ -1723,6 +1740,20 @@ class PropertyService:
                 if exclude_zpids:
                     exclude_set = set(str(z) for z in exclude_zpids)
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
+
+                # Compute distance from subject when coordinates are provided
+                if subject_lat and subject_lon:
+                    for comp in results:
+                        comp_lat = comp.get("latitude") or comp.get("lat")
+                        comp_lon = comp.get("longitude") or comp.get("lng") or comp.get("lon")
+                        if comp_lat and comp_lon:
+                            try:
+                                comp["distance"] = round(
+                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
+                                    2,
+                                )
+                            except (ValueError, TypeError):
+                                pass
 
                 # Store total before pagination for metadata
                 total_available = len(results)

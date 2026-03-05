@@ -112,10 +112,15 @@ export function transformSaleComps(
     if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
     if (!imageUrl && comp?.photo) imageUrl = toStr(comp.photo)
     if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
-    if (!imageUrl && address) {
+    if (!imageUrl) {
       const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
       if (key) {
-        imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : ''))}&key=${key}&source=outdoor`
+        if (lat && lon) {
+          imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lon}&zoom=18&size=400x300&maptype=satellite&markers=color:blue%7C${lat},${lon}&key=${key}`
+        } else if (address) {
+          const fullAddr = address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : '')
+          imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(fullAddr)}&zoom=18&size=400x300&maptype=satellite&markers=color:blue%7C${encodeURIComponent(fullAddr)}&key=${key}`
+        }
       }
     }
 
@@ -164,6 +169,8 @@ export async function fetchSaleComps(
   if (identifier.limit != null) params.limit = String(identifier.limit)
   if (identifier.offset != null) params.offset = String(identifier.offset)
   if (identifier.exclude_zpids) params.exclude_zpids = identifier.exclude_zpids
+  if (identifier.subject_lat) params.subject_lat = String(identifier.subject_lat)
+  if (identifier.subject_lon) params.subject_lon = String(identifier.subject_lon)
   if (!params.zpid && !params.address && !params.url) {
     return {
       ok: false,

@@ -10,6 +10,8 @@ export interface CompsIdentifier {
   limit?: number
   offset?: number
   exclude_zpids?: string
+  subject_lat?: number
+  subject_lon?: number
 }
 
 // === Subject Property (for distance + similarity calculations) ===
