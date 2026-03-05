@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { colors, cardGlow } from './verdict-design-tokens'
 
-export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin'
+export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin' | 'realtor'
 
 interface SourceValue {
   value: number | null
@@ -25,12 +25,14 @@ export interface IQEstimateSources {
     zillow: number | null
     rentcast: number | null
     redfin: number | null
+    realtor: number | null
   }
   rent: {
     iq: number | null
     zillow: number | null
     rentcast: number | null
     redfin: number | null
+    realtor: number | null
   }
 }
 
@@ -47,6 +49,7 @@ const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   zillow: { label: 'Zillow', color: '#4A90D9' },
   rentcast: { label: 'RentCast', color: '#F59E0B' },
   redfin: { label: 'Redfin', color: '#A02B2D' },
+  realtor: { label: 'Realtor.com', color: '#D92228' },
 }
 
 function getStoredSelections(sessionKey: string): { value: DataSourceId; rent: DataSourceId } {
@@ -163,6 +166,7 @@ function resolveDefaults(
     if (group.zillow != null) return 'zillow'
     if (group.rentcast != null) return 'rentcast'
     if (group.redfin != null) return 'redfin'
+    if (group.realtor != null) return 'realtor'
     return 'iq'
   }
   const resolveRent = (group: IQEstimateSources['rent'], sel: DataSourceId): DataSourceId => {
@@ -171,6 +175,7 @@ function resolveDefaults(
     if (group.zillow != null) return 'zillow'
     if (group.rentcast != null) return 'rentcast'
     if (group.redfin != null) return 'redfin'
+    if (group.realtor != null) return 'realtor'
     return 'iq'
   }
   return {
@@ -215,8 +220,8 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
     [sources, sessionKey, onSourceChange, highlightIntro, introSeen],
   )
 
-  const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin']
-  const rentSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin']
+  const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
+  const rentSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
 
   return (
     <div
@@ -239,7 +244,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Property Value column (4 sources: IQ, Zillow, RentCast, Redfin) */}
+        {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
             Property Value
@@ -258,7 +263,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           </div>
         </div>
 
-        {/* Monthly Rent column (4 sources: IQ, Zillow, RentCast, Redfin) */}
+        {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
             Monthly Rent

@@ -79,8 +79,8 @@ function StrategyContent() {
   const [isExporting, setIsExporting] = useState<string | null>(null)
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
-    value: { iq: null, zillow: null, rentcast: null, redfin: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
 
@@ -185,12 +185,14 @@ function StrategyContent() {
             zillow: propData.valuations?.zestimate ?? null,
             rentcast: propData.valuations?.rentcast_avm ?? null,
             redfin: propData.valuations?.redfin_estimate ?? null,
+            realtor: propData.valuations?.realtor_estimate ?? null,
           },
           rent: {
             iq: rentalStats?.iq_estimate ?? propData.rentals?.monthly_rent_ltr ?? null,
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
             redfin: rentalStats?.redfin_estimate ?? null,
+            realtor: rentalStats?.realtor_estimate ?? null,
           },
         })
 
@@ -550,8 +552,8 @@ function StrategyContent() {
         </section>
 
         {/* IQ Estimate Source Selector */}
-        {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
-          iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
+        {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
+          iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
           <section className="px-5 pt-2 pb-4">
             <IQEstimateSelector
               sources={iqSources}

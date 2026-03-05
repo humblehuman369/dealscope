@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     REDFIN_API_KEY: str = ""
     RAPIDAPI_HOST: str = "redfin-com-data.p.rapidapi.com"
 
+    REALTOR_API_KEY: str = ""
+    REALTOR_RAPIDAPI_HOST: str = "realtor-search.p.rapidapi.com"
+
     ANTHROPIC_API_KEY: str = ""
 
     # ===========================================
@@ -317,6 +320,7 @@ def validate_settings(settings: Settings) -> None:
             ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY, "property data"),
             ("AXESSO_API_KEY", settings.AXESSO_API_KEY, "Zillow data"),
             ("REDFIN_API_KEY", settings.REDFIN_API_KEY, "Redfin data"),
+            ("REALTOR_API_KEY", settings.REALTOR_API_KEY, "Realtor.com data"),
             ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY, "billing"),
             ("RESEND_API_KEY", settings.RESEND_API_KEY, "email delivery"),
         ]
@@ -333,6 +337,7 @@ def validate_settings(settings: Settings) -> None:
             ("RENTCAST_API_KEY", settings.RENTCAST_API_KEY),
             ("AXESSO_API_KEY", settings.AXESSO_API_KEY),
             ("REDFIN_API_KEY", settings.REDFIN_API_KEY),
+            ("REALTOR_API_KEY", settings.REALTOR_API_KEY),
             ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY),
         ]
         for key_name, key_value in _optional_keys:

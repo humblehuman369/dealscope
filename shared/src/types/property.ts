@@ -72,6 +72,7 @@ export interface ValuationData {
   zestimate_high_pct?: number | null;
   zestimate_low_pct?: number | null;
   redfin_estimate?: number | null;
+  realtor_estimate?: number | null;
   market_price?: number | null;
 }
 
@@ -83,6 +84,7 @@ export interface RentalMarketStatistics {
   rentcast_estimate?: number | null;
   zillow_estimate?: number | null;
   redfin_estimate?: number | null;
+  realtor_estimate?: number | null;
   iq_estimate?: number | null;
 
   estimate_low?: number | null;

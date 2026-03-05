@@ -23,6 +23,7 @@ class APIProvider(StrEnum):
     RENTCAST = "rentcast"
     AXESSO = "axesso"
     REDFIN = "redfin"
+    REALTOR = "realtor"
 
 
 @dataclass
@@ -402,6 +403,188 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         return parsed if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else None
 
 
+class RealtorClient(BaseAPIClient[APIResponse]):
+    """
+    Client for Realtor.com API via RapidAPI (realtor-search.p.rapidapi.com).
+
+    Two-step flow:
+      1. GET /properties/auto-complete?input=<address> → extract ``mpr_id`` from first address match
+      2. GET /properties/detail?propertyId=<mpr_id>    → extract value estimate from estimates.current_values
+
+    Response paths (verified against live API):
+      Value: data.estimates.current_values → item where isbest_homevalue=true → estimate
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        rapidapi_host: str = "realtor-search.p.rapidapi.com",
+    ):
+        base_url = f"https://{rapidapi_host.rstrip('/')}"
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=15.0,
+            connect_timeout=5.0,
+            max_retries=2,
+            enable_circuit_breaker=True,
+        )
+        self.rapidapi_host = rapidapi_host
+
+    def _get_headers(self) -> dict[str, str]:
+        return {
+            "x-rapidapi-key": self.api_key,
+            "x-rapidapi-host": self.rapidapi_host,
+            "Accept": "application/json",
+        }
+
+    def _create_response(
+        self,
+        success: bool,
+        data: dict[str, Any] | None,
+        error: str | None,
+        status_code: int | None,
+        raw_response: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> APIResponse:
+        return APIResponse(
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
+            provider=APIProvider.REALTOR,
+            raw_response=raw_response,
+        )
+
+    def _get_provider_name(self) -> str:
+        return "REALTOR"
+
+    async def auto_complete(self, query: str) -> APIResponse:
+        """GET /properties/auto-complete?input=."""
+        return await self._make_request(
+            "properties/auto-complete",
+            params={"input": query},
+        )
+
+    async def get_detail(self, property_id: str) -> APIResponse:
+        """GET /properties/detail?propertyId=."""
+        return await self._make_request(
+            "properties/detail",
+            params={"propertyId": property_id},
+        )
+
+    @staticmethod
+    def _extract_property_id_from_autocomplete(data: Any) -> str | None:
+        """
+        Extract mpr_id from auto-complete response.
+
+        Response shape:
+          { "data": { "autocomplete": [ { "area_type": "address", "mpr_id": "...", ... } ] } }
+        """
+        if not isinstance(data, dict):
+            return None
+        inner = data.get("data")
+        if not isinstance(inner, dict):
+            return None
+        suggestions = inner.get("autocomplete")
+        if not isinstance(suggestions, list):
+            return None
+        for item in suggestions:
+            if not isinstance(item, dict):
+                continue
+            if item.get("area_type") == "address" and item.get("mpr_id"):
+                return str(item["mpr_id"])
+        # Fallback: first item with an mpr_id
+        for item in suggestions:
+            if isinstance(item, dict) and item.get("mpr_id"):
+                return str(item["mpr_id"])
+        return None
+
+    @staticmethod
+    def _parse_detail_response(data: Any) -> dict[str, Any]:
+        """
+        Extract realtor_estimate from /properties/detail response.
+
+        Value path: data.estimates.current_values → best or average
+        """
+        result: dict[str, Any] = {}
+        if not isinstance(data, dict):
+            return result
+        payload = data.get("data")
+        if not isinstance(payload, dict):
+            return result
+
+        def _safe_float(v: Any) -> float | None:
+            if v is None:
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        estimates = payload.get("estimates")
+        if isinstance(estimates, dict):
+            current_values = estimates.get("current_values")
+            if isinstance(current_values, list) and current_values:
+                best = next(
+                    (v for v in current_values if isinstance(v, dict) and v.get("isbest_homevalue")),
+                    None,
+                )
+                if best:
+                    result["realtor_estimate"] = _safe_float(best.get("estimate"))
+                if result.get("realtor_estimate") is None:
+                    for v in current_values:
+                        if isinstance(v, dict):
+                            val = _safe_float(v.get("estimate"))
+                            if val is not None:
+                                result["realtor_estimate"] = val
+                                break
+
+        return result
+
+    async def get_property_estimate(self, address: str) -> dict[str, Any] | None:
+        """
+        Two-step lookup: auto-complete(address) → detail(propertyId).
+
+        Returns dict with realtor_estimate, or None.
+        """
+        # Step 1: auto-complete → extract propertyId (mpr_id)
+        ac_resp = await self.auto_complete(address)
+        if not ac_resp.success or not ac_resp.data:
+            logger.warning(
+                "Realtor step 1 FAILED: auto-complete success=%s, error=%s",
+                ac_resp.success,
+                ac_resp.error,
+            )
+            return None
+
+        property_id = self._extract_property_id_from_autocomplete(ac_resp.data)
+        if not property_id:
+            logger.warning(
+                "Realtor step 1 FAILED: no mpr_id found in auto-complete response",
+            )
+            return None
+        logger.info("Realtor step 1 OK: auto-complete → propertyId=%s", property_id)
+
+        # Step 2: detail → extract value estimate
+        det_resp = await self.get_detail(property_id)
+        if not det_resp.success or not det_resp.data:
+            logger.warning(
+                "Realtor step 2 FAILED: detail(%s) success=%s, error=%s",
+                property_id,
+                det_resp.success,
+                det_resp.error,
+            )
+            return None
+
+        parsed = self._parse_detail_response(det_resp.data)
+        logger.info(
+            "Realtor step 2 OK: detail → realtor_estimate=%s",
+            parsed.get("realtor_estimate"),
+        )
+        return parsed if parsed.get("realtor_estimate") else None
+
+
 class DataNormalizer:
     """
     Normalizes and merges data from multiple API providers
@@ -462,6 +645,7 @@ class DataNormalizer:
         axesso_data: dict[str, Any] | None,
         timestamp: datetime,
         redfin_data: dict[str, Any] | None = None,
+        realtor_data: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Normalize and merge data from all providers.
@@ -535,8 +719,11 @@ class DataNormalizer:
                 "conflict_flag": conflict,
             }
 
-        # Inject Redfin estimate as a standalone source (value-only, bypasses FIELD_MAPPING)
+        # Inject Redfin estimate as a standalone source (bypasses FIELD_MAPPING)
         self._inject_redfin_data(normalized, provenance, redfin_data, timestamp)
+
+        # Inject Realtor.com estimate as a standalone source (bypasses FIELD_MAPPING)
+        self._inject_realtor_data(normalized, provenance, realtor_data, timestamp)
 
         # Extract complex listing info from AXESSO data
         self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
@@ -574,6 +761,30 @@ class DataNormalizer:
 
         _inject_field("redfin_estimate", "redfin_estimate")
         _inject_field("redfin_rental_estimate", "redfin_rental_estimate")
+
+    def _inject_realtor_data(
+        self,
+        normalized: dict[str, Any],
+        provenance: dict[str, Any],
+        realtor_data: dict[str, Any] | None,
+        timestamp: datetime,
+    ):
+        """Inject Realtor.com value estimate into normalized data."""
+        ts = timestamp.isoformat()
+        val = realtor_data.get("realtor_estimate") if realtor_data else None
+        if val is not None:
+            try:
+                val = float(val)
+            except (TypeError, ValueError):
+                val = None
+        normalized["realtor_estimate"] = val
+        provenance["realtor_estimate"] = {
+            "source": "realtor" if val is not None else "missing",
+            "fetched_at": ts,
+            "confidence": "high" if val is not None else "low",
+            "raw_values": {"realtor": val} if val is not None else None,
+            "conflict_flag": False,
+        }
 
     def _extract_listing_info(
         self,
@@ -757,6 +968,7 @@ class DataNormalizer:
                 "rentcast": normalized.get("rentcast_avm"),
                 "axesso": normalized.get("zestimate"),
                 "redfin": normalized.get("redfin_estimate"),
+                "realtor": normalized.get("realtor_estimate"),
             },
             "value_iq_estimate",
         )
@@ -824,7 +1036,9 @@ def create_api_clients(
     axesso_url: str,
     redfin_api_key: str = "",
     redfin_rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
-) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None]:
+    realtor_api_key: str = "",
+    realtor_rapidapi_host: str = "realtor-search.p.rapidapi.com",
+) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None]:
     """Create configured API clients and normalizer."""
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
@@ -834,5 +1048,10 @@ def create_api_clients(
         if redfin_api_key and redfin_rapidapi_host
         else None
     )
+    realtor = (
+        RealtorClient(realtor_api_key, realtor_rapidapi_host)
+        if realtor_api_key and realtor_rapidapi_host
+        else None
+    )
 
-    return rentcast, axesso, normalizer, redfin
+    return rentcast, axesso, normalizer, redfin, realtor
