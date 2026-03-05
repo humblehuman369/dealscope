@@ -28,7 +28,7 @@ function finiteOrNull(v: unknown): number | null {
 function validatePropertyResponse(data: PropertyResponseCompat): PropertyResponseCompat {
   const v = data.valuations as Record<string, any> | undefined
   if (v) {
-    for (const k of ['zestimate', 'current_value_avm', 'market_price', 'tax_assessed_value', 'value_iq_estimate', 'rentcast_avm', 'redfin_estimate']) {
+    for (const k of ['zestimate', 'current_value_avm', 'market_price', 'tax_assessed_value', 'value_iq_estimate', 'rentcast_avm', 'redfin_estimate', 'realtor_estimate']) {
       if (v[k] != null) v[k] = finiteOrNull(v[k])
     }
   }
@@ -38,7 +38,7 @@ function validatePropertyResponse(data: PropertyResponseCompat): PropertyRespons
     if (r.monthly_rent_ltr != null) r.monthly_rent_ltr = finiteOrNull(r.monthly_rent_ltr)
     const rs = r.rental_stats as Record<string, any> | undefined
     if (rs) {
-      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate']) {
+      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate', 'realtor_estimate']) {
         if (rs[k] != null) rs[k] = finiteOrNull(rs[k])
       }
     }

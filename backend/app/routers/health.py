@@ -160,6 +160,13 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
             missing.append("RAPIDAPI_HOST")
         external_checks["redfin"] = {"status": "not_configured", "missing": missing}
 
+    # Realtor.com (RapidAPI)
+    if settings.REALTOR_API_KEY and settings.REALTOR_RAPIDAPI_HOST:
+        realtor_url = f"https://{settings.REALTOR_RAPIDAPI_HOST}"
+        external_checks["realtor"] = await _probe("realtor", realtor_url)
+    else:
+        external_checks["realtor"] = {"status": "not_configured"}
+
     # Stripe
     if settings.STRIPE_SECRET_KEY:
         external_checks["stripe"] = await _probe("stripe", "https://api.stripe.com/v1")

@@ -216,8 +216,8 @@ function VerdictContent() {
 
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
-    value: { iq: null, zillow: null, rentcast: null, redfin: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
 
   // Stores the static analysis inputs so the verdict can be re-calculated
@@ -387,12 +387,14 @@ function VerdictContent() {
             zillow: data.valuations?.zestimate ?? null,
             rentcast: data.valuations?.rentcast_avm ?? null,
             redfin: data.valuations?.redfin_estimate ?? null,
+            realtor: data.valuations?.realtor_estimate ?? null,
           },
           rent: {
             iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
             redfin: rentalStats?.redfin_estimate ?? null,
+            realtor: rentalStats?.realtor_estimate ?? null,
           },
         })
 
@@ -1114,8 +1116,8 @@ function VerdictContent() {
           </section>
 
           {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
-          {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null ||
-            iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null) && (
+          {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
+            iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
             <section className="px-5 pb-5">
               <IQEstimateSelector
                 sources={iqSources}

@@ -196,6 +196,7 @@ class ValuationData(BaseModel):
     zestimate_high_pct: float | None = None
     zestimate_low_pct: float | None = None
     redfin_estimate: float | None = None
+    realtor_estimate: float | None = None
     market_price: float | None = None
 
 
@@ -221,6 +222,7 @@ class RentalMarketStatistics(BaseModel):
     rentcast_estimate: float | None = None  # RentCast rent estimate
     zillow_estimate: float | None = None  # Zillow rentZestimate
     redfin_estimate: float | None = None  # Redfin rental estimate
+    realtor_estimate: float | None = None  # Realtor.com rental estimate
     iq_estimate: float | None = None  # DealGapIQ: avg of available sources
 
     # Estimate range (from RentCast)
