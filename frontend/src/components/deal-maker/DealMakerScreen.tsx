@@ -298,7 +298,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         return {
           purchasePrice: record.buy_price,
           purchaseDiscountPct: record.purchase_discount_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
-          closingCostsPercent: record.closing_costs_pct,
+          closingCostsPercent: record.closing_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.closingCostsPercent,
           financingType: (record.financing_type as 'cash' | 'hardMoney' | 'conventional') ?? DEFAULT_FLIP_DEAL_MAKER_STATE.financingType,
           hardMoneyLtv: record.hard_money_ltv ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
           hardMoneyRate: record.hard_money_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
