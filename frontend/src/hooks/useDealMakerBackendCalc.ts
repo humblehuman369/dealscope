@@ -113,18 +113,29 @@ function buildPayload(
   }
 
   if (strategyType === 'flip') {
-    const s = state as Record<string, number>
+    const s = state as Record<string, number | string>
+    const purchasePrice = Number(s.purchasePrice) || Number(s.buyPrice) || 0
+    const closingCostsPct = Number(s.closingCostsPercent) || 0.03
+    const rehabTimeMonths = Number(s.rehabTimeMonths) || 4
+    const daysOnMarket = Number(s.daysOnMarket) || 45
+    const holdingMonths = rehabTimeMonths + daysOnMarket / 30
+    const isCash = s.financingType === 'cash'
     return {
-      purchase_price: s.purchasePrice || s.buyPrice,
-      rehab_costs: s.rehabBudget || 0,
-      arv: s.arv || 0,
-      down_payment_pct: (s.downPaymentPercent || 0.2) * 100,
-      interest_rate: (s.interestRate || 0.06) * 100,
-      holding_months: s.holdingPeriodMonths || 6,
-      selling_costs_pct: (s.sellingCostsPct || 0.08) * 100,
-      capital_gains_rate: (s.capitalGainsRate || 0.15) * 100,
-      property_taxes_annual: s.annualPropertyTax || 3600,
-      insurance_annual: s.annualInsurance || 1500,
+      purchase_price: purchasePrice,
+      purchase_costs: purchasePrice * closingCostsPct,
+      rehab_costs: Number(s.rehabBudget) || 0,
+      arv: Number(s.arv) || 0,
+      down_payment_pct: isCash ? 1.0 : 1.0 - (Number(s.hardMoneyLtv) || 0.90),
+      interest_rate: isCash ? 0 : Number(s.hardMoneyRate) || 0.12,
+      points: isCash ? 0 : Number(s.loanPoints) ?? 2,
+      holding_months: holdingMonths,
+      contingency_pct: Number(s.contingencyPct) ?? 0.10,
+      selling_costs_pct: Number(s.sellingCostsPct) || 0.08,
+      capital_gains_rate: Number(s.capitalGainsRate) || 0.22,
+      property_taxes_annual: 0,
+      insurance_annual: 0,
+      utilities_monthly: Number(s.holdingCostsMonthly) || 0,
+      dumpster_monthly: 0,
     }
   }
 

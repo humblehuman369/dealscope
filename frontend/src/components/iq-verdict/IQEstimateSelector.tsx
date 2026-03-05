@@ -236,12 +236,6 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
           Data Sources
         </span>
       </div>
-      <p
-        className={`mb-3 pl-0 text-center${highlightIntro && !introSeen ? ' animate-data-sources-attention' : ''}`}
-        style={{ color: '#FBBF24', fontSize: '14px', fontWeight: 800 }}
-      >
-        Select any source and price targets recalculate instantly.
-      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}

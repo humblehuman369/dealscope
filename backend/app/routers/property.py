@@ -336,6 +336,8 @@ async def get_similar_rent(
     limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
     offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
     exclude_zpids: str | None = Query(default=None, description="Comma-separated zpids to exclude"),
+    subject_lat: float | None = Query(default=None, description="Subject property latitude for distance calculation"),
+    subject_lon: float | None = Query(default=None, description="Subject property longitude for distance calculation"),
 ):
     """
     Get similar rental properties from Zillow via AXESSO API.
@@ -347,6 +349,8 @@ async def get_similar_rent(
         limit: Number of comps to return (1-50, default 10)
         offset: Number of comps to skip for pagination
         exclude_zpids: Comma-separated list of zpids to exclude from results
+        subject_lat: Subject property latitude for computing distance to each comp
+        subject_lon: Subject property longitude for computing distance to each comp
 
     Returns:
         List of similar rental properties with pagination metadata
@@ -367,7 +371,8 @@ async def get_similar_rent(
         )
 
         result = await property_service.get_similar_rent(
-            zpid=zpid, url=url, address=address, limit=limit, offset=offset, exclude_zpids=exclude_list
+            zpid=zpid, url=url, address=address, limit=limit, offset=offset, exclude_zpids=exclude_list,
+            subject_lat=subject_lat, subject_lon=subject_lon,
         )
         return result
 
