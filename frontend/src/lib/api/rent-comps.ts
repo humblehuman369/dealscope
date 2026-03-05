@@ -7,7 +7,7 @@ import { axessoGet, type AxessoResponse } from './axesso-client'
 import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
 import type { CompsIdentifier, RentComp, SubjectProperty } from './types'
 
-const SIMILAR_RENT_ENDPOINT = '/api/v1/rentcast/rental-comps'
+const SIMILAR_RENT_ENDPOINT = '/api/v1/similar-rent'
 
 interface BackendCompsResponse {
   success?: boolean
@@ -181,6 +181,8 @@ export async function fetchRentComps(
   if (identifier.limit != null) params.limit = String(identifier.limit)
   if (identifier.offset != null) params.offset = String(identifier.offset)
   if (identifier.exclude_zpids) params.exclude_zpids = identifier.exclude_zpids
+  if (identifier.subject_lat) params.subject_lat = String(identifier.subject_lat)
+  if (identifier.subject_lon) params.subject_lon = String(identifier.subject_lon)
   if (!params.zpid && !params.address && !params.url) {
     return {
       ok: false,

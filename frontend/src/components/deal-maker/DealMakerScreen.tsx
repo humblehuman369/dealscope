@@ -152,9 +152,10 @@ interface SliderInputProps {
   minLabel: string
   maxLabel: string
   onChange: (value: number) => void
+  step?: number
 }
 
-function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel, onChange }: SliderInputProps) {
+function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel, onChange, step }: SliderInputProps) {
   const fillPercent = ((value - min) / (max - min)) * 100
 
   return (
@@ -173,6 +174,7 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
             type="range"
             min={min}
             max={max}
+            step={step}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -696,6 +698,47 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const metrics = useMemo<AnyStrategyMetrics>(() => {
     // If backend result available for non-LTR strategies, use it directly
     if (backendResult && strategyType !== 'ltr') {
+      // Flip: transform backend snake_case keys to FlipMetrics camelCase
+      if (strategyType === 'flip') {
+        const br = backendResult as Record<string, number | boolean>
+        const purchasePrice = Number(br.purchase_price) || 0
+        const loanAmount = Number(br.loan_amount) || 0
+        const downPayment = purchasePrice - loanAmount
+        const purchaseCosts = Number(br.purchase_costs) || 0
+        const pointsCost = Number(br.points_cost) || 0
+        const inspectionCosts = Number(br.inspection_costs) || 0
+        const holdingMonths = Number(br.holding_months) || 0
+        const monthlyPayment = Number(br.monthly_payment) || 0
+        const netProfitBefore = Number(br.net_profit_before_tax) || 0
+        const netProfitAfter = Number(br.net_profit_after_tax) || 0
+        const ds = Number(br.deal_score) || 0
+        return {
+          loanAmount,
+          downPayment,
+          closingCosts: purchaseCosts,
+          loanPointsCost: pointsCost,
+          cashAtPurchase: downPayment + purchaseCosts + pointsCost + inspectionCosts,
+          totalRehabCost: Number(br.total_renovation) || 0,
+          holdingPeriodMonths: holdingMonths,
+          totalHoldingCosts: Number(br.total_holding_costs) || 0,
+          interestCosts: monthlyPayment * holdingMonths,
+          grossSaleProceeds: Number(br.arv) || 0,
+          sellingCosts: Number(br.selling_costs) || 0,
+          netSaleProceeds: Number(br.net_sale_proceeds) || 0,
+          totalProjectCost: Number(br.total_project_cost) || 0,
+          grossProfit: Number(br.gross_profit) || 0,
+          capitalGainsTax: Math.max(0, netProfitBefore - netProfitAfter),
+          netProfit: netProfitBefore,
+          cashRequired: Number(br.total_cash_required) || 0,
+          roi: Number(br.roi) || 0,
+          annualizedRoi: Number(br.annualized_roi) || 0,
+          profitMargin: Number(br.profit_margin) || 0,
+          maxAllowableOffer: Number(br.mao) || 0,
+          meets70PercentRule: !!br.meets_70_rule,
+          dealScore: ds,
+          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as FlipMetrics['dealGrade'],
+        } as FlipMetrics
+      }
       return backendResult as unknown as AnyStrategyMetrics
     }
     
@@ -1175,6 +1218,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           displayValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`}
                           min={2}
                           max={5}
+                          step={0.5}
                           minLabel="2%"
                           maxLabel="5%"
                           onChange={(v) => updateState('closingCostsPercent', v / 100)}
@@ -1188,7 +1232,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-white/10">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">70% RULE MAO</div>
-                            <div className={`text-base font-bold tabular-nums ${'meets70PercentRule' in metrics && (metrics as FlipMetrics).meets70PercentRule ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                            <div className="text-base font-bold tabular-nums text-[#ffffff]">
                               {formatPrice('maxAllowableOffer' in metrics ? (metrics as FlipMetrics).maxAllowableOffer : 0)}
                             </div>
                           </div>

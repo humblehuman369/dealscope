@@ -1550,6 +1550,8 @@ class PropertyService:
         limit: int = 10,
         offset: int = 0,
         exclude_zpids: list[str] | None = None,
+        subject_lat: float | None = None,
+        subject_lon: float | None = None,
     ) -> dict[str, Any]:
         """
         Fetch similar rental properties from Zillow via AXESSO API.
@@ -1561,6 +1563,8 @@ class PropertyService:
             limit: Number of results to return
             offset: Number of results to skip
             exclude_zpids: List of zpids to exclude from results
+            subject_lat: Subject property latitude (for distance calculation)
+            subject_lon: Subject property longitude (for distance calculation)
 
         Returns:
             Dict with similar rental properties and pagination metadata
@@ -1632,6 +1636,20 @@ class PropertyService:
                 if exclude_zpids:
                     exclude_set = set(str(z) for z in exclude_zpids)
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
+
+                # Compute distance from subject when coordinates are provided
+                if subject_lat and subject_lon:
+                    for comp in results:
+                        comp_lat = comp.get("latitude") or comp.get("lat")
+                        comp_lon = comp.get("longitude") or comp.get("lng") or comp.get("lon")
+                        if comp_lat and comp_lon:
+                            try:
+                                comp["distance"] = round(
+                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
+                                    2,
+                                )
+                            except (ValueError, TypeError):
+                                pass
 
                 # Store total before pagination for metadata
                 total_available = len(results)
