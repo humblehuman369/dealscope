@@ -247,7 +247,6 @@ module.exports = {
         'target-glow': 'target-glow 3s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
         'pulse-intro': 'pulse-intro 1.5s ease-in-out infinite',
-        'data-sources-attention': 'data-sources-attention 2.25s ease-in-out infinite',
         'score-fill': 'score-fill 1s ease-out forwards',
         'marker-slide': 'marker-slide 0.5s ease-out',
         'expand-collapse': 'expand-collapse 0.3s ease-in-out',
@@ -291,10 +290,6 @@ module.exports = {
         'pulse-intro': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
-        },
-        'data-sources-attention': {
-          '0%, 100%': { opacity: '1', textShadow: '0 0 12px rgba(251, 191, 36, 0.5)' },
-          '50%': { opacity: '0.85', textShadow: '0 0 20px rgba(251, 191, 36, 0.85)' },
         },
         'score-fill': {
           '0%': { strokeDashoffset: '100%' },
