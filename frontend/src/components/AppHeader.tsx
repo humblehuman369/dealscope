@@ -72,6 +72,8 @@ interface PropertyInfo {
   price?: number
   zpid?: string
   listingStatus?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface AppHeaderProps {
@@ -433,6 +435,8 @@ export function AppHeader({
         if (displayAddress) {
           const compsQuery = new URLSearchParams({ address: displayAddress })
           if (zpid) compsQuery.set('zpid', String(zpid))
+          if (resolvedProperty?.latitude) compsQuery.set('lat', String(resolvedProperty.latitude))
+          if (resolvedProperty?.longitude) compsQuery.set('lng', String(resolvedProperty.longitude))
           router.push(`/price-intel?${compsQuery.toString()}`)
         } else {
           router.push('/search')

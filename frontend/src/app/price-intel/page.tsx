@@ -20,6 +20,8 @@ function PriceIntelContent() {
   const addressParam = decodeURIComponent(rawAddress)
   const viewParam = (searchParams.get('view') as 'sale' | 'rent') || 'sale'
   const zpidParam = searchParams.get('zpid') || searchParams.get('propertyId') || ''
+  const latParam = parseFloat(searchParams.get('lat') || '') || undefined
+  const lngParam = parseFloat(searchParams.get('lng') || '') || undefined
 
   // Parse address components from the full address
   const addressParts = addressParam.split(',').map(s => s.trim())
@@ -39,6 +41,8 @@ function PriceIntelContent() {
           state,
           zipCode,
           zpid: zpidParam,
+          latitude: latParam,
+          longitude: lngParam,
         }}
         initialView={viewParam}
       />
