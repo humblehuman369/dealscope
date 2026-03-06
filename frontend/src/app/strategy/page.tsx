@@ -564,6 +564,17 @@ function StrategyContent() {
                 if (_value == null) return
                 if (type === 'value') {
                   setSourceOverrides((prev) => ({ ...prev, price: _value }))
+                  // Keep property bar header in sync with selected data source value
+                  try {
+                    const existingData = sessionStorage.getItem('dealMakerOverrides')
+                    const parsed = existingData ? JSON.parse(existingData) : {}
+                    parsed.price = _value
+                    parsed.listPrice = _value
+                    sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+                    window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+                  } catch {
+                    // Ignore storage errors
+                  }
                 } else {
                   setSourceOverrides((prev) => ({ ...prev, monthlyRent: _value }))
                 }

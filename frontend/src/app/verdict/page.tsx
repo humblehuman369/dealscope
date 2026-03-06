@@ -1170,6 +1170,19 @@ function VerdictContent() {
                       ? { list_price: _value }
                       : { monthly_rent: _value },
                   )
+                  // Keep property bar header in sync with selected data source value
+                  if (type === 'value') {
+                    try {
+                      const existingData = sessionStorage.getItem('dealMakerOverrides')
+                      const parsed = existingData ? JSON.parse(existingData) : {}
+                      parsed.price = _value
+                      parsed.listPrice = _value
+                      sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+                      window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+                    } catch {
+                      // Ignore storage errors
+                    }
+                  }
                 }}
               />
             </section>
