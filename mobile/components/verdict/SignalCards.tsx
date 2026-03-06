@@ -4,14 +4,14 @@ import { fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
 
 interface SignalData {
-  dealGapPercent: number | null;
-  opportunity: string | null;
-  returnRating: string | null;
+  dealGapPercent: number | null | undefined;
+  opportunity: string | null | undefined;
+  returnRating: string | null | undefined;
   opportunityFactors: string[];
 }
 
-function getSignalStatus(value: string | null): { label: string; color: string } {
-  if (!value) return { label: '—', color: colors.textMuted };
+function getSignalStatus(value: string | null | undefined): { label: string; color: string } {
+  if (value == null || typeof value !== 'string') return { label: '—', color: colors.textMuted };
   const v = value.toLowerCase();
   if (v.includes('strong') || v.includes('high') || v.includes('good') || v.includes('deep'))
     return { label: value, color: colors.success };
@@ -20,7 +20,7 @@ function getSignalStatus(value: string | null): { label: string; color: string }
   return { label: value, color: colors.error };
 }
 
-function getDealGapSignal(pct: number | null): { label: string; color: string } {
+function getDealGapSignal(pct: number | null | undefined): { label: string; color: string } {
   if (pct == null) return { label: '—', color: colors.textMuted };
   if (pct <= -15) return { label: 'Deep Value', color: colors.success };
   if (pct <= -5) return { label: 'Good', color: colors.success };
