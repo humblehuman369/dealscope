@@ -603,14 +603,14 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <FadeIn>
         <section style={{ padding: "96px 24px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" as const }}>
-            <Eyebrow>Built by an Insider</Eyebrow>
+            <Eyebrow>Built by an Industry Expert</Eyebrow>
             <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
               35 Years of Real Estate Data,<br />Distilled Into One Tool
             </h2>
 
             <div style={{ ...cardLgStyle, padding: "44px 36px", marginTop: 36, position: "relative" as const }}>
               <div style={{ position: "absolute" as const, top: -1, left: "50%", transform: "translateX(-50%)", width: 100, height: 2, background: s.teal, borderRadius: "0 0 2px 2px" }} />
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#000", border: `2px solid ${s.teal}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", fontFamily: s.fontBody, fontSize: 22, fontWeight: 700, color: s.teal, boxShadow: "0 0 20px rgba(14,165,233,0.12)" }}>BG</div>
+              <img src="/brad-geisen.png" alt="Brad Geisen" style={{ width: 80, height: 80, borderRadius: "50%", border: `2px solid ${s.teal}`, margin: "0 auto 18px", display: "block", objectFit: "cover" as const, boxShadow: "0 0 20px rgba(14,165,233,0.12)" }} />
               <div style={{ fontFamily: s.fontBody, fontSize: 19, fontWeight: 700 }}>Brad Geisen</div>
               <div style={{ fontFamily: s.fontBody, fontSize: 13, color: s.teal, marginBottom: 18 }}>Founder &amp; CEO, DealGapIQ</div>
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: s.muted, lineHeight: 1.7, fontStyle: "italic", maxWidth: 580, margin: "0 auto 24px" }}>
