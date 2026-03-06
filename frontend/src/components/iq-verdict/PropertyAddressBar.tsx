@@ -24,6 +24,9 @@ interface PropertyAddressBarProps {
   listingStatus?: 'FOR_SALE' | 'PENDING' | 'SOLD' | 'OFF_MARKET' | string
   /** Property ID for the profile link */
   zpid?: string | number
+  /** Optional controlled bookmark (e.g. from AppHeader save-property) */
+  bookmarked?: boolean
+  onBookmarkClick?: () => void
 }
 
 function formatShortPrice(price: number): string {
@@ -134,8 +137,15 @@ export function PropertyAddressBar({
   price,
   listingStatus,
   zpid,
+  bookmarked: bookmarkedProp,
+  onBookmarkClick,
 }: PropertyAddressBarProps) {
-  const [bookmarked, setBookmarked] = useState(false)
+  const [internalBookmarked, setInternalBookmarked] = useState(false)
+  const isControlled = onBookmarkClick != null
+  const bookmarked = isControlled ? (bookmarkedProp ?? false) : internalBookmarked
+  const handleBookmarkClick = isControlled
+    ? () => onBookmarkClick?.()
+    : () => setInternalBookmarked((v) => !v)
 
   const cleanAddress = safeDecode(address)
   const cleanCity = safeDecode(city)
@@ -249,7 +259,7 @@ export function PropertyAddressBar({
         {/* Right: Bookmark */}
         <button
           type="button"
-          onClick={() => setBookmarked((v) => !v)}
+          onClick={handleBookmarkClick}
           style={{
             background: 'none',
             border: 'none',
