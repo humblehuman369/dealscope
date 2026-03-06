@@ -1,206 +1,267 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
+  Text,
+  ScrollView,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Location from 'expo-location';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { colors, cardGlow } from '@/constants/colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card } from '@/components/ui';
+import { usePropertyData } from '@/hooks/usePropertyData';
+import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
-import { spacing } from '@/constants/spacing';
+import { spacing, layout } from '@/constants/spacing';
 
-const TRUST_SIGNALS = [
-  '6 Investment Strategies',
-  '3 Proprietary Metrics',
-  '~60 Second Analysis',
-];
+const STRATEGY_PILLS = [
+  { id: 'ltr', label: 'Long-Term Rental', icon: '🏠' },
+  { id: 'str', label: 'Short-Term Rental', icon: '🏨' },
+  { id: 'brrrr', label: 'BRRRR', icon: '🔄' },
+  { id: 'flip', label: 'Fix & Flip', icon: '🔨' },
+  { id: 'houseHack', label: 'House Hack', icon: '🏡' },
+  { id: 'wholesale', label: 'Wholesale', icon: '📋' },
+] as const;
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { fetchProperty } = usePropertyData();
   const [address, setAddress] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  function handleSearch() {
+  const handleSearch = useCallback(async () => {
     const trimmed = address.trim();
-    if (!trimmed) {
-      Alert.alert('Enter Address', 'Please enter a property address to analyze.');
-      return;
-    }
-    setIsSearching(true);
-    router.push({
-      pathname: '/analyzing' as any,
-      params: { address: trimmed },
-    });
-    setTimeout(() => setIsSearching(false), 500);
-  }
-
-  async function handleScan() {
-    setIsScanning(true);
+    if (!trimmed) return;
+    setLoading(true);
+    setError('');
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Location Permission', 'Please enable location access to scan nearby properties.');
-        return;
-      }
-
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-      const results = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
+      await fetchProperty(trimmed);
+      router.push({
+        pathname: '/analyzing',
+        params: { address: trimmed },
       });
-
-      if (results.length > 0) {
-        const r = results[0];
-        const parts = [
-          r.streetNumber,
-          r.street,
-          r.city,
-          r.region,
-          r.postalCode,
-        ].filter(Boolean);
-        const resolved = parts.join(' ');
-        if (resolved) {
-          setAddress(resolved);
-          Alert.alert('Address Found', resolved, [
-            { text: 'Edit', style: 'cancel' },
-            { text: 'Analyze', onPress: () => {
-              router.push({ pathname: '/analyzing' as any, params: { address: resolved } });
-            }},
-          ]);
-        } else {
-          Alert.alert('Could Not Resolve', 'Unable to determine the address at this location.');
-        }
-      }
-    } catch (err) {
-      Alert.alert('Scan Failed', 'Could not get your current location. Please enter the address manually.');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail ?? err?.message ?? 'Property not found');
     } finally {
-      setIsScanning(false);
+      setLoading(false);
     }
-  }
+  }, [address, fetchProperty, router]);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.brand}>
-            DealGap<Text style={styles.brandAccent}>IQ</Text>
+        <View style={styles.hero}>
+          <Text style={styles.brandTag}>DEALGAPIQ</Text>
+          <Text style={styles.heroTitle}>
+            Know Before You Buy
           </Text>
-          <Text style={styles.heroText}>
-            Is That Property a Good Deal?
-          </Text>
-          <Text style={styles.heroSubtext}>
-            Know if it is worth your time before you spend hours on it.
+          <Text style={styles.heroSubtitle}>
+            Analyze any property across 6 investment strategies in seconds
           </Text>
         </View>
 
-        {/* Search Methods */}
-        <View style={styles.methodRow}>
-          <Pressable
-            onPress={handleScan}
-            style={[styles.methodCard, cardGlow.sm]}
-            disabled={isScanning}
-          >
-            <Text style={styles.methodIcon}>📍</Text>
-            <Text style={styles.methodTitle}>Scan Property</Text>
-            <Text style={styles.methodDesc}>Use GPS to find the address</Text>
-          </Pressable>
-          <View style={[styles.methodCard, styles.methodCardActive, cardGlow.active]}>
-            <Text style={styles.methodIcon}>🔍</Text>
-            <Text style={[styles.methodTitle, { color: colors.primary }]}>Enter Address</Text>
-            <Text style={styles.methodDesc}>Type any US address</Text>
+        <Card glow="lg" style={styles.searchCard}>
+          <Text style={styles.searchLabel}>PROPERTY ADDRESS</Text>
+          <View style={styles.searchRow}>
+            <TextInput
+              style={styles.searchInput}
+              value={address}
+              onChangeText={(t) => {
+                setAddress(t);
+                setError('');
+              }}
+              placeholder="Enter an address to analyze..."
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="words"
+              returnKeyType="search"
+              onSubmitEditing={handleSearch}
+              editable={!loading}
+            />
           </View>
-        </View>
-
-        {/* Search Card */}
-        <View style={[styles.searchCard, cardGlow.sm]}>
-          <Input
-            label="Property Address"
-            placeholder="123 Main St, City, State ZIP"
-            value={address}
-            onChangeText={setAddress}
-            autoCapitalize="words"
-            returnKeyType="search"
-            onSubmitEditing={handleSearch}
-          />
-
-          <Button
-            title={isScanning ? 'Finding address...' : 'Analyze Property'}
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Pressable
             onPress={handleSearch}
-            loading={isSearching || isScanning}
-            disabled={!address.trim() || isScanning}
-          />
-        </View>
+            disabled={loading || !address.trim()}
+            style={({ pressed }) => [
+              styles.searchBtn,
+              pressed && styles.searchBtnPressed,
+              (loading || !address.trim()) && styles.searchBtnDisabled,
+            ]}
+          >
+            {loading ? (
+              <ActivityIndicator color="#000" size="small" />
+            ) : (
+              <Text style={styles.searchBtnText}>Analyze Property</Text>
+            )}
+          </Pressable>
+        </Card>
 
-        {/* Trust Signals */}
-        <View style={styles.trustRow}>
-          {TRUST_SIGNALS.map((signal) => (
-            <View key={signal} style={styles.trustItem}>
-              <View style={styles.trustDot} />
-              <Text style={styles.trustText}>{signal}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Strategies */}
-        <View style={styles.strategiesSection}>
-          <Text style={styles.sectionLabel}>STRATEGIES COVERED</Text>
-          <View style={styles.pillRow}>
-            {(['LTR', 'STR', 'BRRRR', 'Fix & Flip', 'House Hack', 'Wholesale'] as const).map((s) => (
-              <View key={s} style={styles.pill}>
-                <Text style={styles.pillText}>{s}</Text>
+        <View style={styles.strategySection}>
+          <Text style={styles.sectionLabel}>6 STRATEGIES ANALYZED</Text>
+          <View style={styles.pillGrid}>
+            {STRATEGY_PILLS.map((s) => (
+              <View key={s.id} style={styles.pill}>
+                <Text style={styles.pillIcon}>{s.icon}</Text>
+                <Text style={styles.pillLabel}>{s.label}</Text>
               </View>
             ))}
           </View>
         </View>
+
+        <View style={styles.metrics}>
+          <Text style={styles.sectionLabel}>PROPRIETARY METRICS</Text>
+          <View style={styles.metricGrid}>
+            {[
+              { title: 'Income Value', desc: 'Max price where cash flow = $0' },
+              { title: 'Target Buy', desc: 'Recommended purchase price' },
+              { title: 'Deal Gap', desc: 'Discount from list to target' },
+              { title: 'Verdict Score', desc: '0-100 composite deal quality' },
+            ].map((m) => (
+              <Card key={m.title} glow="sm" style={styles.metricCard}>
+                <Text style={styles.metricTitle}>{m.title}</Text>
+                <Text style={styles.metricDesc}>{m.desc}</Text>
+              </Card>
+            ))}
+          </View>
+        </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.base },
-  scroll: { flexGrow: 1, padding: spacing.lg, paddingTop: 60 },
-  header: { marginBottom: spacing.lg },
-  brand: { fontFamily: fontFamilies.heading, fontSize: 32, fontWeight: '700', color: colors.textHeading },
-  brandAccent: { color: colors.primary },
-  heroText: { fontFamily: fontFamilies.heading, fontSize: 22, fontWeight: '700', color: colors.textHeading, marginTop: spacing.md, lineHeight: 30 },
-  heroSubtext: { fontFamily: fontFamilies.body, fontSize: 15, color: colors.textSecondary, marginTop: spacing.xs, lineHeight: 22 },
-
-  methodRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
-  methodCard: {
-    flex: 1, backgroundColor: colors.base, borderRadius: 14, padding: spacing.md,
-    alignItems: 'center', gap: spacing.xs,
+  safe: { flex: 1, backgroundColor: colors.base },
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing['2xl'],
   },
-  methodCardActive: { backgroundColor: colors.card },
-  methodIcon: { fontSize: 28 },
-  methodTitle: { fontFamily: fontFamilies.heading, fontSize: 13, fontWeight: '700', color: colors.textHeading },
-  methodDesc: { fontFamily: fontFamilies.body, fontSize: 11, color: colors.textMuted, textAlign: 'center' },
-
-  searchCard: { backgroundColor: colors.card, borderRadius: 14, padding: spacing.lg },
-  cardTitle: { ...typography.h3, color: colors.textHeading, marginBottom: spacing.xs },
-
-  trustRow: { marginTop: spacing.lg, gap: spacing.sm },
-  trustItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  trustDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary },
-  trustText: { fontFamily: fontFamilies.bodyMedium, fontSize: 13, color: colors.textSecondary },
-  strategiesSection: { marginTop: spacing.xl },
-  sectionLabel: { ...typography.label, color: colors.primary, marginBottom: spacing.sm },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, borderWidth: 1, borderColor: colors.borderLight, backgroundColor: 'rgba(14,165,233,0.06)' },
-  pillText: { fontFamily: fontFamilies.bodyMedium, fontSize: 12, color: colors.textBody },
+  hero: {
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+  },
+  brandTag: {
+    ...typography.label,
+    color: colors.primary,
+    marginBottom: spacing.sm,
+  },
+  heroTitle: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.textHeading,
+    textAlign: 'center',
+    lineHeight: 38,
+  },
+  heroSubtitle: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    maxWidth: 300,
+  },
+  searchCard: {
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  searchLabel: {
+    ...typography.label,
+    color: colors.textLabel,
+    marginBottom: spacing.sm,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchInput: {
+    flex: 1,
+    height: layout.inputHeight,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.inputBorder,
+    borderRadius: layout.inputRadius,
+    paddingHorizontal: 14,
+    fontFamily: fontFamilies.body,
+    fontSize: 16,
+    color: colors.textHeading,
+  },
+  error: {
+    fontFamily: fontFamilies.body,
+    fontSize: 13,
+    color: colors.error,
+    marginTop: spacing.xs,
+  },
+  searchBtn: {
+    height: layout.buttonHeight,
+    backgroundColor: colors.primary,
+    borderRadius: layout.buttonRadius,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.md,
+  },
+  searchBtnPressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
+  searchBtnDisabled: { opacity: 0.5 },
+  searchBtnText: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#000',
+  },
+  strategySection: {
+    marginTop: spacing['2xl'],
+  },
+  sectionLabel: {
+    ...typography.label,
+    color: colors.textLabel,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  pillGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.panel,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pillIcon: { fontSize: 14 },
+  pillLabel: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: 13,
+    color: colors.textBody,
+    fontWeight: '600',
+  },
+  metrics: {
+    marginTop: spacing['2xl'],
+  },
+  metricGrid: {
+    gap: spacing.sm,
+  },
+  metricCard: {
+    padding: spacing.md,
+  },
+  metricTitle: {
+    ...typography.h4,
+    color: colors.textHeading,
+    marginBottom: 4,
+  },
+  metricDesc: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+  },
 });

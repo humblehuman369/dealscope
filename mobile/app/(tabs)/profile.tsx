@@ -1,137 +1,175 @@
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button } from '@/components/ui/Button';
-import { UsageBar } from '@/components/UsageBar';
-import { Paywall } from '@/components/Paywall';
-import { colors, cardGlow } from '@/constants/colors';
-import { fontFamilies } from '@/constants/typography';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card } from '@/components/ui';
+import { useSession, useLogout } from '@/hooks/useSession';
+import { colors } from '@/constants/colors';
+import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
-import { useLogout, useSession } from '@/hooks/useSession';
 
-export default function ProfileScreen() {
-  const { user } = useSession();
-  const logout = useLogout();
-  const router = useRouter();
-  const [showPaywall, setShowPaywall] = useState(false);
-
-  async function handleLogout() {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logout.mutateAsync();
-          router.replace('/(auth)/login');
-        },
-      },
-    ]);
-  }
-
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <View style={[styles.avatar, cardGlow.sm]}>
-            <Text style={styles.avatarText}>
-              {user?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
-            </Text>
-          </View>
-          <Text style={styles.name}>{user?.full_name ?? 'User'}</Text>
-          <Text style={styles.email}>{user?.email ?? ''}</Text>
-        </View>
-
-        {/* Usage Bar */}
-        <UsageBar onUpgrade={() => setShowPaywall(true)} />
-
-        {/* Account Info */}
-        <View style={[styles.card, cardGlow.sm]}>
-          <Text style={styles.sectionLabel}>ACCOUNT</Text>
-          <InfoRow label="Subscription" value={user?.subscription_tier ?? 'Free'} />
-          <InfoRow label="Status" value={user?.subscription_status ?? 'Active'} />
-          <InfoRow label="MFA" value={user?.mfa_enabled ? 'Enabled' : 'Disabled'} />
-        </View>
-
-        {/* Navigation Links */}
-        <View style={styles.navCard}>
-          <NavRow label="Search History" onPress={() => router.push('/(protected)/search-history')} />
-          <NavRow label="Payment History" onPress={() => router.push('/(protected)/payment-history' as any)} />
-          <NavRow label="Settings" onPress={() => router.push('/(protected)/settings')} />
-          <NavRow label="Pricing" onPress={() => router.push('/pricing' as any)} />
-          <NavRow label="About DealGapIQ" onPress={() => router.push('/about' as any)} />
-        </View>
-
-        {user?.subscription_tier !== 'pro' && (
-          <Button
-            title="Upgrade to Pro"
-            onPress={() => setShowPaywall(true)}
-            style={{ marginTop: spacing.md }}
-          />
-        )}
-
-        <Button
-          title="Sign Out"
-          variant="secondary"
-          onPress={handleLogout}
-          loading={logout.isPending}
-          style={{ marginTop: spacing.sm }}
-        />
-
-        <Text style={styles.version}>DealGapIQ v1.0.0</Text>
-      </ScrollView>
-
-      <Paywall visible={showPaywall} onClose={() => setShowPaywall(false)} />
-    </View>
-  );
+interface MenuItemProps {
+  label: string;
+  onPress: () => void;
+  destructive?: boolean;
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function MenuItem({ label, onPress, destructive }: MenuItemProps) {
   return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
-function NavRow({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={styles.navRow}>
-      <Text style={styles.navLabel}>{label}</Text>
-      <Text style={styles.navChevron}>›</Text>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+    >
+      <Text style={[styles.menuLabel, destructive && styles.menuDestructive]}>
+        {label}
+      </Text>
+      <Text style={styles.menuChevron}>›</Text>
     </Pressable>
   );
 }
 
+export default function ProfileScreen() {
+  const router = useRouter();
+  const { user, isPro } = useSession();
+  const logout = useLogout();
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.screenTitle}>Profile</Text>
+
+        <Card glow="sm" style={styles.userCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {user?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+            </Text>
+          </View>
+          <Text style={styles.userName}>{user?.full_name ?? 'Guest'}</Text>
+          <Text style={styles.userEmail}>{user?.email ?? ''}</Text>
+          <View style={styles.tierBadge}>
+            <Text style={styles.tierText}>
+              {isPro ? 'PRO' : 'STARTER'}
+            </Text>
+          </View>
+        </Card>
+
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>ACCOUNT</Text>
+          <Card glow="none" style={styles.menuCard}>
+            <MenuItem label="Saved Properties" onPress={() => router.push('/(protected)/saved-properties')} />
+            <MenuItem label="Search History" onPress={() => router.push('/(protected)/search-history')} />
+            <MenuItem label="Billing" onPress={() => router.push('/(protected)/billing')} />
+            <MenuItem label="Settings" onPress={() => router.push('/(protected)/settings')} />
+          </Card>
+        </View>
+
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>ABOUT</Text>
+          <Card glow="none" style={styles.menuCard}>
+            <MenuItem label="Pricing" onPress={() => router.push('/pricing')} />
+            <MenuItem label="About DealGapIQ" onPress={() => router.push('/about')} />
+          </Card>
+        </View>
+
+        <View style={styles.menuSection}>
+          <Card glow="none" style={styles.menuCard}>
+            <MenuItem
+              label="Sign Out"
+              onPress={() => logout.mutate()}
+              destructive
+            />
+          </Card>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.base },
-  scroll: { padding: spacing.lg, paddingTop: 60, paddingBottom: 40 },
-
-  header: { alignItems: 'center', marginBottom: spacing.lg },
+  safe: { flex: 1, backgroundColor: colors.base },
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing['2xl'],
+  },
+  screenTitle: {
+    ...typography.h1,
+    color: colors.textHeading,
+    paddingTop: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  userCard: {
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
   avatar: {
-    width: 72, height: 72, borderRadius: 36,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  avatarText: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000',
+  },
+  userName: {
+    ...typography.h3,
+    color: colors.textHeading,
+  },
+  userEmail: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  tierBadge: {
+    marginTop: spacing.sm,
+    backgroundColor: colors.accentBg.teal,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  tierText: {
+    ...typography.label,
+    color: colors.primary,
+  },
+  menuSection: {
+    marginTop: spacing.lg,
+  },
+  menuSectionTitle: {
+    ...typography.label,
+    color: colors.textLabel,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
+  },
+  menuCard: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  menuItemPressed: {
     backgroundColor: colors.panel,
-    borderWidth: 2, borderColor: colors.primary,
-    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm,
   },
-  avatarText: { fontFamily: fontFamilies.heading, fontSize: 28, fontWeight: '700', color: colors.primary },
-  name: { fontFamily: fontFamilies.heading, fontSize: 20, fontWeight: '600', color: colors.textHeading },
-  email: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textSecondary, marginTop: 2 },
-
-  card: {
-    backgroundColor: colors.base, borderRadius: 14, padding: spacing.md, marginBottom: spacing.sm,
+  menuLabel: {
+    fontFamily: fontFamilies.body,
+    fontSize: 16,
+    color: colors.textBody,
   },
-  sectionLabel: { fontFamily: fontFamilies.heading, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: colors.primary, textTransform: 'uppercase', marginBottom: spacing.sm },
-
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
-  infoLabel: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textSecondary },
-  infoValue: { fontFamily: fontFamilies.mono, fontSize: 14, fontWeight: '600', color: colors.textHeading },
-
-  navCard: { backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginTop: spacing.sm },
-  navRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
-  navLabel: { fontFamily: fontFamilies.bodyMedium, fontSize: 15, fontWeight: '500', color: colors.textHeading },
-  navChevron: { fontSize: 20, color: colors.textMuted },
-
-  version: { fontFamily: fontFamilies.body, textAlign: 'center', color: colors.textMuted, fontSize: 12, marginTop: spacing.xl },
+  menuDestructive: {
+    color: colors.error,
+  },
+  menuChevron: {
+    fontSize: 20,
+    color: colors.textMuted,
+  },
 });

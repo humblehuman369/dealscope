@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  View,
+  Text,
+  Animated,
+  Easing,
+  StyleSheet,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
+import { usePropertyData } from '@/hooks/usePropertyData';
 import { colors } from '@/constants/colors';
-import { fontFamilies } from '@/constants/typography';
+import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
 
-const MICRO_TIPS = [
+const TIPS = [
   'Checking rental comps within 1 mile...',
   'Evaluating 6 investment strategies in parallel...',
   'Calculating breakeven price and target purchase price...',
@@ -14,171 +23,166 @@ const MICRO_TIPS = [
   'Running risk-adjusted return scenarios...',
 ];
 
+const RING_SIZE = 120;
+const STROKE_WIDTH = 6;
+const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const MIN_DISPLAY_MS = 2200;
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export default function AnalyzingScreen() {
   const { address } = useLocalSearchParams<{ address: string }>();
   const router = useRouter();
-  const [tipIndex, setTipIndex] = useState(0);
-  const progress = useRef(new Animated.Value(0)).current;
-  const tipFade = useRef(new Animated.Value(1)).current;
+  const { fetchProperty } = usePropertyData();
 
-  useEffect(() => {
-    Animated.timing(progress, {
-      toValue: 1,
-      duration: MIN_DISPLAY_MS * 0.9,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-  }, []);
+  const [tipIndex, setTipIndex] = useState(0);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const navigated = useRef(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      Animated.timing(tipFade, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setTipIndex((prev) => (prev + 1) % MICRO_TIPS.length);
-        Animated.timing(tipFade, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      });
+      Animated.sequence([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+      setTipIndex((i) => (i + 1) % TIPS.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fadeAnim]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace({
-        pathname: '/verdict',
-        params: { address },
-      });
-    }, MIN_DISPLAY_MS);
-    return () => clearTimeout(timer);
-  }, [address]);
+    Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: MIN_DISPLAY_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progressAnim]);
 
-  const SIZE = 128;
-  const STROKE = 5;
-  const RADIUS = (SIZE - STROKE) / 2;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  useEffect(() => {
+    if (!address || navigated.current) return;
 
-  const strokeDashoffset = progress.interpolate({
+    const startTime = Date.now();
+
+    (async () => {
+      try {
+        await fetchProperty(address);
+      } catch {
+        // property data will show error on verdict screen
+      }
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
+      setTimeout(() => {
+        if (navigated.current) return;
+        navigated.current = true;
+        router.replace({ pathname: '/verdict', params: { address } });
+      }, remaining);
+    })();
+  }, [address, fetchProperty, router]);
+
+  const strokeDashoffset = progressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [CIRCUMFERENCE, 0],
+    outputRange: [CIRCUMFERENCE, CIRCUMFERENCE * 0.05],
   });
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={styles.center}>
-        {/* Progress ring */}
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
         <View style={styles.ringContainer}>
-          <Animated.View style={styles.svgWrap}>
-            <View style={styles.ringTrack} />
-            <Animated.View
-              style={[
-                styles.ringProgress,
-                {
-                  borderColor: colors.primary,
-                  transform: [
-                    {
-                      rotate: progress.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                },
-              ]}
+          <Svg width={RING_SIZE} height={RING_SIZE}>
+            <Circle
+              cx={RING_SIZE / 2}
+              cy={RING_SIZE / 2}
+              r={RADIUS}
+              stroke={colors.panel}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
             />
-          </Animated.View>
-          <Text style={styles.logoText}>
-            IQ<Text style={styles.logoAccent}>.</Text>
-          </Text>
+            <AnimatedCircle
+              cx={RING_SIZE / 2}
+              cy={RING_SIZE / 2}
+              r={RADIUS}
+              stroke={colors.primary}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={strokeDashoffset}
+              transform={`rotate(-90, ${RING_SIZE / 2}, ${RING_SIZE / 2})`}
+            />
+          </Svg>
+          <View style={styles.ringCenter}>
+            <Text style={styles.ringIcon}>🧠</Text>
+          </View>
         </View>
 
-        <Text style={styles.analyzing}>Analyzing property...</Text>
-        <Text style={styles.address} numberOfLines={2}>
-          {address}
+        <Text style={styles.title}>Analyzing Property</Text>
+        <Text style={styles.subtitle}>
+          Just a moment while IQ evaluates this deal...
         </Text>
 
-        <Animated.Text style={[styles.tip, { opacity: tipFade }]}>
-          {MICRO_TIPS[tipIndex]}
+        <Animated.Text style={[styles.tip, { opacity: fadeAnim }]}>
+          {TIPS[tipIndex]}
         </Animated.Text>
+
+        {address && (
+          <Text style={styles.address} numberOfLines={2}>
+            {address}
+          </Text>
+        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.base },
   container: {
     flex: 1,
-    backgroundColor: colors.base,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
-  center: { alignItems: 'center', paddingHorizontal: spacing.lg },
   ringContainer: {
-    width: 128,
-    height: 128,
+    width: RING_SIZE,
+    height: RING_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
-  svgWrap: {
+  ringCenter: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  ringTrack: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    borderWidth: 5,
-    borderColor: 'rgba(14,165,233,0.12)',
-    position: 'absolute',
-  },
-  ringProgress: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    borderWidth: 5,
-    borderTopColor: colors.primary,
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderLeftColor: 'transparent',
-    position: 'absolute',
-  },
-  logoText: {
-    fontFamily: fontFamilies.heading,
+  ringIcon: {
     fontSize: 36,
-    fontWeight: '700',
-    color: colors.textHeading,
   },
-  logoAccent: { color: colors.primary },
-  analyzing: {
-    fontFamily: fontFamilies.heading,
-    fontSize: 18,
-    fontWeight: '600',
+  title: {
+    ...typography.h1,
     color: colors.textHeading,
     marginBottom: spacing.sm,
   },
-  address: {
-    fontFamily: fontFamilies.body,
-    fontSize: 14,
+  subtitle: {
+    ...typography.bodySmall,
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
   tip: {
     fontFamily: fontFamilies.body,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.primary,
     textAlign: 'center',
-    paddingHorizontal: spacing.lg,
+    minHeight: 40,
+  },
+  address: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing['2xl'],
+    maxWidth: 280,
   },
 });

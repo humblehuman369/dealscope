@@ -1,235 +1,272 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-  Alert,
+  View,
+  Text,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  Pressable,
   StyleSheet,
-  Text,
-  TextInput,
-  View,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { colors } from '@/constants/colors';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button, Input } from '@/components/ui';
 import { useLogin, useLoginMfa } from '@/hooks/useSession';
 import { isMFA } from '@/services/auth';
+import { colors } from '@/constants/colors';
+import { typography, fontFamilies } from '@/constants/typography';
+import { spacing, layout } from '@/constants/spacing';
 
 export default function LoginScreen() {
   const router = useRouter();
   const login = useLogin();
   const loginMfa = useLoginMfa();
-  const passwordRef = useRef<TextInput>(null);
-  const mfaRef = useRef<TextInput>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
-  const [totpCode, setTotpCode] = useState('');
+  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const isLoading = login.isPending || loginMfa.isPending;
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    if (!email.trim()) errors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Please enter a valid email address';
+    if (!password) errors.password = 'Password is required';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   async function handleLogin() {
-    if (!email || !password) return;
+    if (!validate()) return;
+    setError('');
     try {
-      const result = await login.mutateAsync({ email, password });
+      const result = await login.mutateAsync({ email: email.trim(), password });
       if (isMFA(result)) {
         setChallengeToken(result.challenge_token);
       } else {
         router.replace('/(tabs)/search');
       }
     } catch (err: any) {
-      let msg: string;
-      const data = err?.response?.data;
-      if (data?.detail) {
-        msg = data.detail;
-      } else if (data?.error?.message) {
-        msg = data.error.message;
-      } else if (err?.code === 'ERR_NETWORK' || err?.message?.includes('Network')) {
-        msg = 'Cannot reach the server. Check your internet connection and try again.';
-      } else if (err?.response?.status === 401) {
-        msg = 'Invalid email or password.';
-      } else {
-        msg = err?.message ?? 'Login failed. Check your credentials.';
-      }
-      Alert.alert('Login Error', msg);
+      setError(err?.response?.data?.detail ?? err?.message ?? 'Login failed');
     }
   }
 
   async function handleMfa() {
-    if (!challengeToken || totpCode.length !== 6) return;
+    if (!mfaCode || mfaCode.length !== 6) return;
+    setError('');
     try {
-      await loginMfa.mutateAsync({ challengeToken, totpCode });
+      await loginMfa.mutateAsync({ challengeToken: challengeToken!, totpCode: mfaCode });
       router.replace('/(tabs)/search');
     } catch (err: any) {
-      const msg = err?.response?.data?.detail ?? 'Invalid code. Try again.';
-      Alert.alert('MFA Error', msg);
+      setError(err?.response?.data?.detail ?? err?.message ?? 'Invalid MFA code');
     }
   }
 
   if (challengeToken) {
     return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
+      <SafeAreaView style={styles.safe}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.flex}
         >
-          <Text style={styles.title}>Two-Factor Authentication</Text>
-          <Text style={styles.subtitle}>
-            Enter the 6-digit code from your authenticator app.
-          </Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.header}>
+              <Text style={styles.logo}>DealGapIQ</Text>
+              <Text style={styles.title}>Two-Factor Authentication</Text>
+              <Text style={styles.subtitle}>
+                Enter the 6-digit code from your authenticator app.
+              </Text>
+            </View>
 
-          <Input
-            ref={mfaRef}
-            label="Verification Code"
-            placeholder="000000"
-            value={totpCode}
-            onChangeText={setTotpCode}
-            keyboardType="number-pad"
-            maxLength={6}
-            autoFocus
-            onSubmitEditing={handleMfa}
-          />
+            {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
 
-          <Button
-            title="Verify"
-            onPress={handleMfa}
-            loading={loginMfa.isPending}
-            disabled={totpCode.length !== 6}
-          />
+            <Input
+              label="MFA Code"
+              value={mfaCode}
+              onChangeText={setMfaCode}
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleMfa}
+            />
 
-          <Button
-            title="Back to Login"
-            variant="ghost"
-            onPress={() => {
-              setChallengeToken(null);
-              setTotpCode('');
-            }}
-            style={{ marginTop: 12 }}
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <Button
+              title="Verify"
+              onPress={handleMfa}
+              loading={loginMfa.isPending}
+              disabled={mfaCode.length !== 6}
+              style={styles.cta}
+            />
+
+            <Pressable onPress={() => setChallengeToken(null)}>
+              <Text style={styles.link}>Back to login</Text>
+            </Pressable>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
       >
-        <Text style={styles.brand}>
-          DealGap<Text style={styles.brandAccent}>IQ</Text>
-        </Text>
-        <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.subtitle}>
-          Analyze any property in seconds.
-        </Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text style={styles.logo}>DealGapIQ</Text>
+            <Text style={styles.title}>Sign In</Text>
+            <Text style={styles.subtitle}>
+              Analyze any property across 6 investment strategies
+            </Text>
+          </View>
 
-        <Input
-          label="Email"
-          placeholder="you@example.com"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          returnKeyType="next"
-          onSubmitEditing={() => passwordRef.current?.focus()}
-        />
+          {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
 
-        <Input
-          ref={passwordRef}
-          label="Password"
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          textContentType="password"
-          returnKeyType="go"
-          onSubmitEditing={handleLogin}
-        />
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              value={email}
+              onChangeText={(t) => {
+                setEmail(t);
+                setFieldErrors((p) => ({ ...p, email: '' }));
+              }}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              error={fieldErrors.email}
+              returnKeyType="next"
+            />
 
-        <Link href="/(auth)/forgot-password" style={styles.forgotLink}>
-          <Text style={styles.forgotText}>Forgot password?</Text>
-        </Link>
+            <Input
+              label="Password"
+              value={password}
+              onChangeText={(t) => {
+                setPassword(t);
+                setFieldErrors((p) => ({ ...p, password: '' }));
+              }}
+              placeholder="Enter your password"
+              secureTextEntry
+              autoComplete="current-password"
+              error={fieldErrors.password}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
 
-        <Button
-          title="Sign In"
-          onPress={handleLogin}
-          loading={isLoading}
-          disabled={!email || !password}
-        />
+            <Pressable
+              onPress={() => router.push('/(auth)/forgot-password')}
+              style={styles.forgotRow}
+            >
+              <Text style={styles.linkSmall}>Forgot password?</Text>
+            </Pressable>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
-          <Link href="/(auth)/register">
-            <Text style={styles.footerLink}>Sign Up</Text>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <Button
+              title="Sign In"
+              onPress={handleLogin}
+              loading={login.isPending}
+              style={styles.cta}
+            />
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
+              <Text style={styles.link}>Sign up</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
     backgroundColor: colors.base,
   },
-  scroll: {
+  flex: { flex: 1 },
+  scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing['2xl'],
   },
-  brand: {
+  header: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  logo: {
+    fontFamily: fontFamilies.heading,
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textHeading,
-    marginBottom: 8,
-  },
-  brandAccent: {
     color: colors.primary,
+    marginBottom: spacing.sm,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    ...typography.h1,
     color: colors.textHeading,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 15,
+    ...typography.bodySmall,
     color: colors.textSecondary,
-    marginBottom: 28,
+    textAlign: 'center',
   },
-  forgotLink: {
+  form: {
+    gap: spacing.md,
+  },
+  forgotRow: {
     alignSelf: 'flex-end',
-    marginBottom: 20,
-    marginTop: -8,
+    marginTop: -spacing.sm,
   },
-  forgotText: {
-    color: colors.primary,
+  cta: {
+    marginTop: spacing.sm,
+  },
+  errorBanner: {
+    fontFamily: fontFamilies.body,
     fontSize: 14,
+    color: colors.error,
+    backgroundColor: colors.errorBg,
+    padding: spacing.md,
+    borderRadius: layout.inputRadius,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    overflow: 'hidden',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: spacing.xl,
   },
   footerText: {
+    ...typography.bodySmall,
     color: colors.textSecondary,
-    fontSize: 14,
   },
-  footerLink: {
+  link: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: 15,
     color: colors.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: spacing.md,
+  },
+  linkSmall: {
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 14,
+    color: colors.primary,
     fontWeight: '600',
   },
 });
