@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,13 +11,10 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { STRATEGY_CONFIG, type StrategyId } from '@dealscope/shared';
 import { Button } from '@/components/ui/Button';
-import { PriceComparisonBar } from '@/components/ui/PriceComparisonBar';
 import { ScoreGauge } from '@/components/verdict/ScoreGauge';
-import { SignalCards } from '@/components/verdict/SignalCards';
 import { PriceCards } from '@/components/verdict/PriceCards';
 import { FinancialBreakdown, buildLTRSections } from '@/components/verdict/FinancialBreakdown';
-import { ConfidenceMetrics } from '@/components/verdict/ConfidenceMetrics';
-import { colors, cardGlow, shadows } from '@/constants/colors';
+import { colors, cardGlow } from '@/constants/colors';
 import { fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
 import { usePropertySearch } from '@/hooks/usePropertyData';
@@ -116,8 +112,7 @@ export default function VerdictScreen() {
   }
 
   function handleDealMaker() {
-    const baseUrl = api.defaults.baseURL?.replace('/api', '').replace(':8000', ':3000') ?? 'https://dealgapiq.com';
-    const url = `${baseUrl}/deal-maker?address=${encodeURIComponent(address ?? '')}`;
+    const url = `https://dealgapiq.com/deal-maker?address=${encodeURIComponent(address ?? '')}`;
     WebBrowser.openBrowserAsync(url);
   }
 
@@ -139,19 +134,49 @@ export default function VerdictScreen() {
           title="← Back to Search"
           variant="ghost"
           onPress={() => router.replace('/(tabs)/search')}
-          style={{ alignSelf: 'flex-start', marginBottom: spacing.sm }}
+          style={{ alignSelf: 'flex-start', marginBottom: spacing.xs }}
         />
 
-        {/* Address */}
-        <Text style={styles.address}>{data.address.street}</Text>
-        <Text style={styles.location}>
-          {data.address.city}, {data.address.state} {data.address.zip_code}
-        </Text>
+        {/* ===== PROPERTY SUMMARY BAR ===== */}
+        <View style={styles.summaryBar}>
+          <Text style={styles.address}>{data.address.street}</Text>
+          <Text style={styles.location}>
+            {data.address.city}, {data.address.state} {data.address.zip_code}
+          </Text>
+          <View style={styles.statsRow}>
+            <StatChip label="Beds" value={String(d.bedrooms ?? '—')} />
+            <StatChip label="Baths" value={String(d.bathrooms ?? '—')} />
+            <StatChip label="Sqft" value={fmt(d.square_footage)} />
+            <StatChip label="Year" value={String(d.year_built ?? '—')} />
+            <StatChip label="Price" value={moneyShort(v.market_price)} />
+          </View>
+        </View>
 
-        {/* Score Gauge Hero */}
+        {/* ===== SECTION A: PRICE CARDS (Star of the show) ===== */}
         {vr && (
-          <View style={[styles.heroCard, cardGlow.lg]}>
-            <View style={styles.heroCenter}>
+          <View style={[styles.section, cardGlow.lg]}>
+            <PriceCards
+              incomeValue={vr.income_value}
+              targetBuy={vr.income_value != null ? Math.round(vr.income_value * 0.95) : null}
+              wholesalePrice={vr.wholesale_mao}
+              listPrice={vr.list_price ?? v.market_price ?? null}
+            />
+            {vr.deal_gap_percent != null && (
+              <View style={styles.gapRow}>
+                <Text style={styles.gapLabel}>Deal Gap</Text>
+                <Text style={[styles.gapValue, { color: (vr.deal_gap_percent ?? 0) < 0 ? colors.success : colors.error }]}>
+                  {(vr.deal_gap_percent ?? 0) > 0 ? '+' : ''}{vr.deal_gap_percent?.toFixed(1)}%
+                  {vr.deal_gap_amount != null && ` (${money(vr.deal_gap_amount)})`}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ===== SECTION B: SCORE HERO ===== */}
+        {vr && (
+          <View style={[styles.section, cardGlow.lg]}>
+            <View style={styles.scoreCenter}>
               <ScoreGauge score={vr.deal_score} verdictLabel={vr.deal_verdict} />
             </View>
             {vr.verdict_description && (
@@ -166,101 +191,9 @@ export default function VerdictScreen() {
           </View>
         )}
 
-        {/* Signal Cards */}
-        {vr && (
-          <SignalCards
-            dealGapPercent={vr.deal_gap_percent}
-            opportunity={vr.opportunity}
-            returnRating={vr.return_rating}
-            opportunityFactors={vr.opportunity_factors ?? []}
-          />
-        )}
-
-        {/* Price Cards */}
-        {vr && (
-          <View style={[styles.card, cardGlow.sm]}>
-            <PriceCards
-              incomeValue={vr.income_value}
-              targetBuy={vr.income_value != null ? Math.round(vr.income_value * 0.95) : null}
-              wholesalePrice={vr.wholesale_mao}
-              listPrice={vr.list_price ?? v.market_price ?? null}
-            />
-          </View>
-        )}
-
-        {/* Price Comparison Bar */}
-        <View style={[styles.card, cardGlow.sm]}>
-          <PriceComparisonBar
-            listPrice={vr?.list_price ?? v.market_price ?? null}
-            incomeValue={vr?.income_value ?? null}
-            wholesalePrice={vr?.wholesale_mao ?? null}
-          />
-        </View>
-
-        {/* Confidence Metrics */}
-        {vr && (
-          <ConfidenceMetrics
-            dealScore={vr.deal_score}
-            dealGapPercent={vr.deal_gap_percent}
-            incomeGapPercent={vr.income_gap_percent}
-          />
-        )}
-
-        {/* Property Quick Stats */}
-        <View style={[styles.card, cardGlow.sm]}>
-          <Text style={styles.sectionLabel}>PROPERTY DETAILS</Text>
-          <View style={styles.statsGrid}>
-            <QuickStat label="Beds" value={String(d.bedrooms ?? '—')} />
-            <QuickStat label="Baths" value={String(d.bathrooms ?? '—')} />
-            <QuickStat label="Sqft" value={fmt(d.square_footage)} />
-            <QuickStat label="Year" value={String(d.year_built ?? '—')} />
-          </View>
-          <Pressable
-            onPress={() => router.push({ pathname: '/property-details' as any, params: { address: address! } })}
-            style={styles.seeMoreBtn}
-          >
-            <Text style={styles.seeMoreText}>See Full Details →</Text>
-          </Pressable>
-        </View>
-
-        {/* Financial Breakdown */}
-        {ws && <FinancialBreakdown sections={buildLTRSections(ws)} />}
-
-        {/* Action Buttons */}
-        <View style={styles.actionGrid}>
-          <Button
-            title={isSaved ? '✓ Saved' : 'Save to Deal Vault'}
-            variant={isSaved ? 'secondary' : 'primary'}
-            onPress={handleSave}
-            disabled={isSaved}
-            loading={saveProperty.isPending}
-            style={styles.actionBtn}
-          />
-          <Button
-            title="Open Deal Maker"
-            variant="secondary"
-            onPress={handleDealMaker}
-            style={styles.actionBtn}
-          />
-          <Button
-            title={pdfExport.isPending ? 'Generating...' : 'Download PDF'}
-            variant="secondary"
-            onPress={handlePdfExport}
-            loading={pdfExport.isPending}
-            style={styles.actionBtn}
-          />
-          <Button
-            title={excelExport.isPending ? 'Generating...' : 'Download Excel'}
-            variant="secondary"
-            onPress={handleExcelExport}
-            loading={excelExport.isPending}
-            style={styles.actionBtn}
-          />
-        </View>
-
-        {/* Strategy Rankings */}
+        {/* ===== SECTION C: STRATEGY RANKINGS ===== */}
         {strategies.length > 0 && (
-          <View style={[styles.card, cardGlow.sm]}>
+          <View style={[styles.section, cardGlow.sm]}>
             <Text style={styles.sectionLabel}>STRATEGY RANKINGS</Text>
             {strategies.map((s, i) => (
               <StrategyRow
@@ -275,8 +208,11 @@ export default function VerdictScreen() {
           </View>
         )}
 
-        {/* Valuations */}
-        <View style={[styles.card, cardGlow.sm]}>
+        {/* ===== SECTION D: FINANCIAL BREAKDOWN ===== */}
+        {ws && <FinancialBreakdown sections={buildLTRSections(ws)} />}
+
+        {/* ===== SECTION E: VALUATIONS ===== */}
+        <View style={[styles.section, cardGlow.sm]}>
           <Text style={styles.sectionLabel}>VALUATIONS</Text>
           <DataRow label="IQ Estimate" value={money(v.value_iq_estimate)} highlight />
           <DataRow label="Zestimate" value={money(v.zestimate)} />
@@ -285,8 +221,8 @@ export default function VerdictScreen() {
           <DataRow label="Market Price" value={money(v.market_price)} />
         </View>
 
-        {/* Rental Estimates */}
-        <View style={[styles.card, cardGlow.sm]}>
+        {/* ===== SECTION F: RENTAL ESTIMATES ===== */}
+        <View style={[styles.section, cardGlow.sm]}>
           <Text style={styles.sectionLabel}>RENTAL ESTIMATES</Text>
           <DataRow label="IQ Rent Estimate" value={moneyMo(r.monthly_rent_ltr)} highlight />
           <DataRow label="RentCast" value={moneyMo(r.rental_stats?.rentcast_estimate)} />
@@ -294,12 +230,36 @@ export default function VerdictScreen() {
           <DataRow label="Redfin" value={moneyMo(r.rental_stats?.redfin_estimate)} />
         </View>
 
-        {/* Navigation links */}
+        {/* ===== ACTIONS ===== */}
+        <View style={styles.actionGrid}>
+          <ActionButton
+            label={isSaved ? '✓ Saved' : 'Save to Vault'}
+            onPress={handleSave}
+            disabled={isSaved}
+            loading={saveProperty.isPending}
+            primary={!isSaved}
+          />
+          <ActionButton label="Deal Maker" onPress={handleDealMaker} />
+          <ActionButton label="PDF Report" onPress={handlePdfExport} loading={pdfExport.isPending} />
+          <ActionButton label="Excel Export" onPress={handleExcelExport} loading={excelExport.isPending} />
+        </View>
+
+        {/* ===== NAVIGATION ===== */}
         <View style={styles.navLinks}>
-          <NavLink label="View Comps" onPress={() => router.push({ pathname: '/comps' as any, params: { address: address! } })} />
-          <NavLink label="View Photos" onPress={() => router.push({ pathname: '/photos' as any, params: { address: address! } })} />
+          <NavLink label="Property Details" onPress={() => router.push({ pathname: '/property-details' as any, params: { address: address! } })} />
+          <NavLink label="Sale & Rent Comps" onPress={() => router.push({ pathname: '/comps' as any, params: { address: address! } })} />
+          <NavLink label="Property Photos" onPress={() => router.push({ pathname: '/photos' as any, params: { address: address! } })} />
         </View>
       </ScrollView>
+    </View>
+  );
+}
+
+function StatChip({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.statChip}>
+      <Text style={styles.statChipValue}>{value}</Text>
+      <Text style={styles.statChipLabel}>{label}</Text>
     </View>
   );
 }
@@ -309,25 +269,16 @@ function StrategyRow({ strategy, rank, onPress }: { strategy: StrategyResult; ra
   const scoreColor = getScoreColor(strategy.score);
   return (
     <Pressable onPress={onPress} style={styles.strategyRow}>
-      <Text style={styles.rankBadge}>{rank}</Text>
-      <Text style={styles.strategyIcon}>{config?.icon ?? '●'}</Text>
+      <Text style={styles.rankNum}>{rank}</Text>
+      <Text style={styles.stratIcon}>{config?.icon ?? '●'}</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.strategyName}>{config?.name ?? strategy.name}</Text>
-        <Text style={styles.strategyMetric}>{strategy.metric_label}: {formatMetric(strategy)}</Text>
+        <Text style={styles.stratName}>{config?.name ?? strategy.name}</Text>
+        <Text style={styles.stratMetric}>{strategy.metric_label}: {formatMetric(strategy)}</Text>
       </View>
-      <View style={[styles.scoreChip, { borderColor: scoreColor }]}>
-        <Text style={[styles.scoreChipText, { color: scoreColor }]}>{Math.round(strategy.score)}</Text>
+      <View style={[styles.scoreRing, { borderColor: scoreColor }]}>
+        <Text style={[styles.scoreRingText, { color: scoreColor }]}>{Math.round(strategy.score)}</Text>
       </View>
     </Pressable>
-  );
-}
-
-function QuickStat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.quickStat}>
-      <Text style={styles.quickStatValue}>{value}</Text>
-      <Text style={styles.quickStatLabel}>{label}</Text>
-    </View>
   );
 }
 
@@ -337,6 +288,22 @@ function DataRow({ label, value, highlight }: { label: string; value: string; hi
       <Text style={styles.dataLabel}>{label}</Text>
       <Text style={[styles.dataValue, highlight && styles.dataHighlight]}>{value}</Text>
     </View>
+  );
+}
+
+function ActionButton({ label, onPress, disabled, loading, primary }: { label: string; onPress: () => void; disabled?: boolean; loading?: boolean; primary?: boolean }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={[styles.actionBtn, primary && styles.actionBtnPrimary, disabled && styles.actionBtnDisabled]}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={primary ? '#fff' : colors.primary} />
+      ) : (
+        <Text style={[styles.actionBtnText, primary && styles.actionBtnTextPrimary]}>{label}</Text>
+      )}
+    </Pressable>
   );
 }
 
@@ -360,6 +327,13 @@ function money(n: number | null | undefined): string {
   if (n == null) return '—';
   return '$' + Math.round(n).toLocaleString();
 }
+function moneyShort(n: number | null | undefined): string {
+  if (n == null) return '—';
+  const v = Math.round(n);
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+  return `$${v}`;
+}
 function moneyMo(n: number | null | undefined): string {
   if (n == null) return '—';
   return '$' + Math.round(n).toLocaleString() + '/mo';
@@ -371,51 +345,73 @@ function fmt(n: number | null | undefined): string {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.base },
-  scroll: { padding: spacing.lg, paddingTop: 56, paddingBottom: 60 },
+  scroll: { padding: spacing.md, paddingTop: 56, paddingBottom: 60 },
   centered: { flex: 1, backgroundColor: colors.base, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   loadingText: { fontFamily: fontFamilies.heading, color: colors.textHeading, fontSize: 18, fontWeight: '600', marginTop: spacing.md },
   loadingSubtext: { fontFamily: fontFamilies.body, color: colors.textSecondary, fontSize: 14, marginTop: spacing.xs, textAlign: 'center' },
   errorTitle: { fontFamily: fontFamilies.heading, color: colors.error, fontSize: 20, fontWeight: '600', marginBottom: spacing.sm },
-  errorText: { fontFamily: fontFamilies.body, color: colors.textSecondary, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  errorText: { fontFamily: fontFamilies.body, color: colors.textBody, fontSize: 14, textAlign: 'center', lineHeight: 20 },
 
+  // Property summary bar
+  summaryBar: { marginBottom: spacing.md },
   address: { fontFamily: fontFamilies.heading, fontSize: 22, fontWeight: '700', color: colors.textHeading },
-  location: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textSecondary, marginBottom: spacing.md },
+  location: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textBody, marginBottom: spacing.sm },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  statChip: { alignItems: 'center' },
+  statChipValue: { fontFamily: fontFamilies.monoBold, fontSize: 16, fontWeight: '700', color: colors.textHeading },
+  statChipLabel: { fontFamily: fontFamilies.body, fontSize: 10, color: colors.textBody, marginTop: 1 },
 
-  heroCard: { backgroundColor: colors.base, borderRadius: 14, padding: spacing.md, marginBottom: spacing.md, alignItems: 'center' },
-  heroCenter: { marginBottom: spacing.sm },
-  verdictDesc: { fontFamily: fontFamilies.body, fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 18, marginBottom: spacing.sm },
-  narrativeBox: { flexDirection: 'row', backgroundColor: 'rgba(14,165,233,0.05)', borderRadius: 10, padding: spacing.sm, gap: spacing.sm, width: '100%' },
+  // Sections
+  section: { backgroundColor: colors.base, borderRadius: 14, padding: spacing.md, marginBottom: spacing.md },
+  sectionLabel: { fontFamily: fontFamilies.heading, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: colors.primary, textTransform: 'uppercase', marginBottom: spacing.sm },
+
+  // Deal gap
+  gapRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border },
+  gapLabel: { fontFamily: fontFamilies.heading, fontSize: 14, fontWeight: '600', color: colors.textHeading },
+  gapValue: { fontFamily: fontFamilies.monoBold, fontSize: 16, fontWeight: '700' },
+
+  // Score hero
+  scoreCenter: { alignItems: 'center', marginBottom: spacing.sm },
+  verdictDesc: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textBody, textAlign: 'center', lineHeight: 20, marginBottom: spacing.sm },
+  narrativeBox: { flexDirection: 'row', backgroundColor: 'rgba(14,165,233,0.06)', borderRadius: 10, padding: spacing.sm, gap: spacing.sm },
   narrativeAccent: { width: 3, backgroundColor: colors.primary, borderRadius: 2 },
   narrativeText: { fontFamily: fontFamilies.body, fontSize: 13, color: colors.textBody, lineHeight: 20, flex: 1 },
 
-  card: { backgroundColor: colors.base, borderRadius: 14, padding: spacing.md, marginBottom: spacing.md },
-  sectionLabel: { fontFamily: fontFamilies.heading, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: colors.primary, textTransform: 'uppercase', marginBottom: spacing.sm },
-
-  statsGrid: { flexDirection: 'row', justifyContent: 'space-between' },
-  quickStat: { alignItems: 'center', flex: 1 },
-  quickStatValue: { fontFamily: fontFamilies.monoBold, fontSize: 20, fontWeight: '700', color: colors.textHeading },
-  quickStatLabel: { fontFamily: fontFamilies.body, fontSize: 11, color: colors.textSecondary, marginTop: 2 },
-  seeMoreBtn: { marginTop: spacing.sm, alignSelf: 'center', paddingVertical: spacing.xs },
-  seeMoreText: { fontFamily: fontFamilies.bodyMedium, fontSize: 13, color: colors.primary },
-
-  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
-  actionBtn: { width: '48%' },
-
+  // Strategies
   strategyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border, gap: spacing.sm },
-  rankBadge: { fontFamily: fontFamilies.monoBold, fontSize: 14, fontWeight: '700', color: colors.textMuted, width: 20, textAlign: 'center' },
-  strategyIcon: { fontSize: 20 },
-  strategyName: { fontFamily: fontFamilies.heading, fontSize: 14, fontWeight: '600', color: colors.textHeading },
-  strategyMetric: { fontFamily: fontFamilies.body, fontSize: 12, color: colors.textSecondary, marginTop: 2 },
-  scoreChip: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  scoreChipText: { fontFamily: fontFamilies.monoBold, fontSize: 14, fontWeight: '700' },
+  rankNum: { fontFamily: fontFamilies.monoBold, fontSize: 14, fontWeight: '700', color: colors.textBody, width: 20, textAlign: 'center' },
+  stratIcon: { fontSize: 20 },
+  stratName: { fontFamily: fontFamilies.heading, fontSize: 14, fontWeight: '600', color: colors.textHeading },
+  stratMetric: { fontFamily: fontFamilies.body, fontSize: 12, color: colors.textBody, marginTop: 2 },
+  scoreRing: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  scoreRingText: { fontFamily: fontFamilies.monoBold, fontSize: 14, fontWeight: '700' },
 
+  // Data rows
   dataRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border },
-  dataLabel: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textSecondary },
+  dataLabel: { fontFamily: fontFamilies.body, fontSize: 14, color: colors.textBody },
   dataValue: { fontFamily: fontFamilies.mono, fontSize: 14, fontWeight: '600', color: colors.textHeading },
   dataHighlight: { color: colors.primary, fontSize: 15, fontWeight: '700' },
 
-  navLinks: { gap: spacing.sm, marginTop: spacing.sm },
-  navLink: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.card, borderRadius: 12, padding: spacing.md, borderWidth: 1, borderColor: colors.border },
+  // Actions
+  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  actionBtn: {
+    width: '48%',
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnPrimary: { backgroundColor: colors.primary, borderColor: colors.primary },
+  actionBtnDisabled: { opacity: 0.5 },
+  actionBtnText: { fontFamily: fontFamilies.heading, fontSize: 13, fontWeight: '600', color: colors.textHeading },
+  actionBtnTextPrimary: { color: '#fff' },
+
+  // Nav links
+  navLinks: { gap: spacing.sm },
+  navLink: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.card, borderRadius: 10, paddingHorizontal: spacing.md, paddingVertical: 14, borderWidth: 1, borderColor: colors.border },
   navLinkText: { fontFamily: fontFamilies.heading, fontSize: 14, fontWeight: '600', color: colors.textHeading },
   navLinkArrow: { fontSize: 16, color: colors.primary },
 });
