@@ -610,7 +610,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
             <div style={{ ...cardLgStyle, padding: "44px 36px", marginTop: 36, position: "relative" as const }}>
               <div style={{ position: "absolute" as const, top: -1, left: "50%", transform: "translateX(-50%)", width: 100, height: 2, background: s.teal, borderRadius: "0 0 2px 2px" }} />
-              <img src="/brad-geisen.png" alt="Brad Geisen" style={{ width: 80, height: 80, borderRadius: "50%", border: `2px solid ${s.teal}`, margin: "0 auto 18px", display: "block", objectFit: "cover" as const, boxShadow: "0 0 20px rgba(14,165,233,0.12)" }} />
+              <img src="/brad-geisen.png" alt="Brad Geisen" style={{ width: 112, height: 112, borderRadius: "50%", border: `2px solid ${s.teal}`, margin: "0 auto 18px", display: "block", objectFit: "cover" as const, objectPosition: "50% 38%", boxShadow: "0 0 20px rgba(14,165,233,0.12)", boxSizing: "border-box" as const }} />
               <div style={{ fontFamily: s.fontBody, fontSize: 19, fontWeight: 700 }}>Brad Geisen</div>
               <div style={{ fontFamily: s.fontBody, fontSize: 13, color: s.teal, marginBottom: 18 }}>Founder &amp; CEO, DealGapIQ</div>
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: s.muted, lineHeight: 1.7, fontStyle: "italic", maxWidth: 580, margin: "0 auto 24px" }}>
