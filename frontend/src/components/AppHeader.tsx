@@ -129,6 +129,8 @@ const NO_PROPERTY_BAR_ROUTES = [
 
 // Map routes to active tabs
 function getActiveTabFromPath(pathname: string): AppTab | undefined {
+  // Homepage: no tab selected
+  if (pathname === '/' || pathname === '') return undefined
   if (pathname.startsWith('/verdict')) return 'analyze'
   if (pathname.startsWith('/strategy')) return 'strategy'
   if (pathname.startsWith('/property')) return 'details'
