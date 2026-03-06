@@ -396,14 +396,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState, localHouseHackState, localWholesaleState])
   
   // Navigate to Verdict IQ page
-  // For saved properties, Verdict will read from the store (same data source)
-  // For unsaved properties, store values in sessionStorage and pass via URL params
-  const handleSeeResults = useCallback(() => {
+  // For saved properties: save adjustments first, then Verdict/Strategy use store + sessionStorage
+  // For unsaved properties: store values in sessionStorage and pass via URL params
+  const [isSavingForNavigate, setIsSavingForNavigate] = useState(false)
+  const handleSeeResults = useCallback(async () => {
     const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
     
     if (isSavedPropertyMode && savedPropertyId) {
-      // For saved properties, navigate with just the propertyId
-      // Verdict will load the DealMakerRecord from the same store
+      // Persist any pending Deal Maker adjustments before navigating so Verdict/Strategy recalculate with latest values
+      try {
+        setIsSavingForNavigate(true)
+        await dealMakerStore.flushAndSave()
+      } catch (e) {
+        console.error('Failed to save Deal Maker adjustments:', e)
+        setIsSavingForNavigate(false)
+        return
+      } finally {
+        setIsSavingForNavigate(false)
+      }
       router.push(`/verdict?propertyId=${savedPropertyId}&strategy=${strategyType}`)
     } else {
       // For unsaved properties:
@@ -680,7 +690,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       
       router.push(`/verdict?${params.toString()}`)
     }
-  }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType])
+  }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType, dealMakerStore])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
@@ -2791,21 +2801,34 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       {/* Floating "See Results" Button */}
       <div className="fixed bottom-0 left-0 right-0 max-w-[960px] mx-auto px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-black via-black to-transparent pointer-events-none z-20">
         <button
-          onClick={handleSeeResults}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto whitespace-nowrap"
+          onClick={() => void handleSeeResults()}
+          disabled={isSavingForNavigate}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
           style={{ 
             background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
             boxShadow: '0 0 30px rgba(14, 165, 233, 0.3), 0 4px 20px rgba(14, 165, 233, 0.2)'
           }}
         >
-          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-          See Results
-          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-          </svg>
+          {isSavingForNavigate ? (
+            <>
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Saving…
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              See Results
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </>
+          )}
         </button>
       </div>
 

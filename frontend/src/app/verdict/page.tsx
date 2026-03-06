@@ -544,25 +544,43 @@ function VerdictContent() {
           const backendListPrice = analysisData.list_price ?? analysisData.listPrice
           const backendIncomeValue = analysisData.income_value ?? analysisData.incomeValue
           const backendPurchasePrice = analysisData.purchase_price ?? analysisData.purchasePrice
-          if (backendListPrice != null || backendIncomeValue != null || backendPurchasePrice != null) {
-            try {
-              const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
-              const parts = [propertyData.address, propertyData.city, stateZip].filter(Boolean)
-              const canonicalAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
-              if (canonicalAddress) {
-                const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
-                const existing = sessionStorage.getItem(sessionKey)
-                const parsed = existing ? JSON.parse(existing) : {}
-                if (backendListPrice != null) parsed.listPrice = backendListPrice
-                if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
-                if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
-                parsed.timestamp = Date.now()
-                parsed.canonicalAddress = canonicalAddress
-                sessionStorage.setItem(sessionKey, JSON.stringify(parsed))
+          // Persist to sessionStorage so Strategy page (and toolbar nav) get same values
+          try {
+            const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+            const parts = [propertyData.address, propertyData.city, stateZip].filter(Boolean)
+            const canonicalAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+            if (canonicalAddress) {
+              const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
+              const existing = sessionStorage.getItem(sessionKey)
+              const parsed = existing ? JSON.parse(existing) : {}
+              if (backendListPrice != null) parsed.listPrice = backendListPrice
+              if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
+              if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
+              parsed.timestamp = Date.now()
+              parsed.canonicalAddress = canonicalAddress
+              // For saved properties, write full Deal Maker overrides so Strategy recalculates with adjusted values
+              if (isSavedPropertyMode && dealMakerStore.record) {
+                const record = dealMakerStore.record
+                parsed.address = canonicalAddress
+                parsed.purchasePrice = record.buy_price
+                parsed.buyPrice = record.buy_price
+                parsed.monthlyRent = record.monthly_rent
+                parsed.propertyTaxes = record.annual_property_tax
+                parsed.insurance = record.annual_insurance
+                parsed.arv = record.arv
+                parsed.rehabBudget = record.rehab_budget
+                parsed.listPrice = propertyData.price
+                parsed.downPayment = Math.round((record.down_payment_pct ?? 0.2) * 100)
+                parsed.closingCosts = Math.round((record.closing_costs_pct ?? 0.03) * 100)
+                parsed.interestRate = Math.round((record.interest_rate ?? 0.06) * 1000) / 10
+                parsed.loanTerm = record.loan_term_years ?? 30
+                parsed.vacancyRate = Math.round((record.vacancy_rate ?? 0.05) * 100)
+                parsed.managementRate = Math.round((record.management_pct ?? 0) * 100)
               }
-            } catch {
-              // Ignore storage errors
+              sessionStorage.setItem(sessionKey, JSON.stringify(parsed))
             }
+          } catch {
+            // Ignore storage errors
           }
 
           // Use backend list_price as displayed Market (single source of truth)
