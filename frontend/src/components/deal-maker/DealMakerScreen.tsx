@@ -1051,13 +1051,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           </button>
         )}
 
-        {/* Strategy Selector */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Strategy Selector - responsive grid, expands with worksheet width */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 pb-3 w-full">
           {['Long-term', 'Short-term', 'BRRRR', 'Fix & Flip', 'House Hack', 'Wholesale'].map((strategy) => (
             <button
               key={strategy}
               onClick={() => handleStrategyChange(strategy)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 currentStrategy === strategy
                   ? 'bg-[#0EA5E9] text-white shadow-[0_0_12px_rgba(14,165,233,0.4)]'
                   : 'bg-white/[0.06] text-white/75 hover:text-white hover:bg-white/10'
