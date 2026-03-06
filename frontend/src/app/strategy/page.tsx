@@ -306,9 +306,12 @@ function StrategyContent() {
   )
 
   // Input percentages: DealMaker override > backend strategy breakdown > conservative default
+  // Interest rate: backend and DealMaker sessionStorage use decimal (0.06 = 6%); Verdict sessionStorage uses percentage (6)
+  const rawInterest = dealMakerOverrides?.interestRate ?? bd?.interest_rate ?? 6
+  const rate = rawInterest <= 1 ? rawInterest : rawInterest / 100
+
   const downPaymentPct = (dealMakerOverrides?.downPayment ?? bd?.down_payment_pct ?? 20) / 100
   const closingCostsPct = (dealMakerOverrides?.closingCosts ?? bd?.closing_costs_pct ?? 3) / 100
-  const rate = (dealMakerOverrides?.interestRate ?? bd?.interest_rate ?? 6) / 100
   const loanTermYears = dealMakerOverrides?.loanTerm ?? bd?.loan_term_years ?? 30
   const vacancyPct = (dealMakerOverrides?.vacancyRate ?? bd?.vacancy_rate ?? 5) / 100
   const mgmtPct = (dealMakerOverrides?.managementRate ?? bd?.management_pct ?? 8) / 100
