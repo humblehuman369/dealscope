@@ -259,6 +259,10 @@ export function AppHeader({
         const parsed = JSON.parse(stored)
         if (parsed.beds || parsed.baths || parsed.sqft || parsed.price) {
           const addrParts = parseDisplayAddress(displayAddress)
+          // Display list/market price in bar, never target buy: prefer listPrice when set
+          const displayPrice = (parsed.listPrice != null && parsed.listPrice > 0)
+            ? parsed.listPrice
+            : parsed.price
           setResolvedProperty({
             address: addrParts.streetAddress,
             city: addrParts.city,
@@ -267,7 +271,7 @@ export function AppHeader({
             beds: parsed.beds,
             baths: parsed.baths,
             sqft: parsed.sqft,
-            price: parsed.price,
+            price: displayPrice,
             zpid: parsed.zpid,
             listingStatus: parsed.listingStatus,
           })
