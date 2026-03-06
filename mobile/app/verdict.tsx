@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,6 +17,7 @@ import { spacing } from '@/constants/spacing';
 import { usePropertySearch } from '@/hooks/usePropertyData';
 import { useSaveProperty, useCheckSaved } from '@/hooks/useSavedProperties';
 import { useVerdict, type StrategyResult } from '@/hooks/useVerdict';
+import { useRecordAnalysis } from '@/hooks/useUsage';
 import { getScoreColor } from '@/constants/theme';
 
 export default function VerdictScreen() {
@@ -26,8 +28,18 @@ export default function VerdictScreen() {
   const savedCheck = useCheckSaved(address ?? null);
   const saveProperty = useSaveProperty();
 
+  const recordAnalysis = useRecordAnalysis();
+  const hasRecordedRef = useRef(false);
+
   const isLoading = property.isLoading || verdict.isLoading;
   const error = property.error || verdict.error;
+
+  useEffect(() => {
+    if (!isLoading && property.data && verdict.data && address && !hasRecordedRef.current) {
+      hasRecordedRef.current = true;
+      recordAnalysis.mutate();
+    }
+  }, [isLoading, property.data, verdict.data, address]);
 
   if (isLoading) {
     return (
@@ -41,14 +53,21 @@ export default function VerdictScreen() {
   }
 
   if (error || !property.data) {
+    const axiosErr = error as any;
+    const status = axiosErr?.response?.status;
+    const detail = axiosErr?.response?.data?.detail;
+
+    let errorMsg = 'Could not analyze this property. Please try again.';
+    if (status === 401) errorMsg = 'Your session has expired. Please log in again.';
+    else if (status === 429) errorMsg = 'Too many requests. Please wait a moment and try again.';
+    else if (status === 404) errorMsg = 'Property not found. Please check the address and try again.';
+    else if (detail) errorMsg = detail;
+
     return (
       <View style={styles.centered}>
         <Stack.Screen options={{ headerShown: false }} />
         <Text style={styles.errorTitle}>Analysis Failed</Text>
-        <Text style={styles.errorText}>
-          {(error as any)?.response?.data?.detail ??
-            'Could not analyze this property. Please try again.'}
-        </Text>
+        <Text style={styles.errorText}>{errorMsg}</Text>
         <Button
           title="Go Back"
           onPress={() => router.back()}

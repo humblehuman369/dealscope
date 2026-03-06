@@ -155,10 +155,10 @@ export default function StrategyScreen() {
             <View style={[styles.card, cardGlow.sm]}>
               <Text style={styles.sectionLabel}>KEY METRICS</Text>
               <View style={styles.metricsGrid}>
-                <MetricCard label="Cash on Cash" value={`${ws.cash_on_cash.toFixed(1)}%`} color={ws.cash_on_cash >= 8 ? colors.success : ws.cash_on_cash >= 4 ? colors.warning : colors.error} />
-                <MetricCard label="Cap Rate" value={`${ws.cap_rate.toFixed(1)}%`} color={ws.cap_rate >= 7 ? colors.success : ws.cap_rate >= 4 ? colors.warning : colors.error} />
-                <MetricCard label="DSCR" value={`${ws.dscr.toFixed(2)}x`} color={ws.dscr >= 1.25 ? colors.success : ws.dscr >= 1.0 ? colors.warning : colors.error} />
-                <MetricCard label="Annual Cash Flow" value={money(ws.annual_cash_flow)} color={ws.annual_cash_flow >= 0 ? colors.success : colors.error} />
+                <MetricCard label="Cash on Cash" value={pct(ws.cash_on_cash)} color={(ws.cash_on_cash ?? 0) >= 8 ? colors.success : (ws.cash_on_cash ?? 0) >= 4 ? colors.warning : colors.error} />
+                <MetricCard label="Cap Rate" value={pct(ws.cap_rate)} color={(ws.cap_rate ?? 0) >= 7 ? colors.success : (ws.cap_rate ?? 0) >= 4 ? colors.warning : colors.error} />
+                <MetricCard label="DSCR" value={ratio(ws.dscr)} color={(ws.dscr ?? 0) >= 1.25 ? colors.success : (ws.dscr ?? 0) >= 1.0 ? colors.warning : colors.error} />
+                <MetricCard label="Annual Cash Flow" value={money(ws.annual_cash_flow)} color={(ws.annual_cash_flow ?? 0) >= 0 ? colors.success : colors.error} />
               </View>
             </View>
 
@@ -166,13 +166,13 @@ export default function StrategyScreen() {
             <View style={[styles.card, cardGlow.sm]}>
               <Text style={styles.sectionLabel}>STRATEGY ANALYSIS</Text>
               {selected.cap_rate != null && (
-                <DataRow label="Cap Rate" value={`${selected.cap_rate.toFixed(1)}%`} />
+                <DataRow label="Cap Rate" value={pct(selected.cap_rate)} />
               )}
               {selected.cash_on_cash != null && (
-                <DataRow label="Cash on Cash" value={`${selected.cash_on_cash.toFixed(1)}%`} />
+                <DataRow label="Cash on Cash" value={pct(selected.cash_on_cash)} />
               )}
               {selected.dscr != null && (
-                <DataRow label="DSCR" value={`${selected.dscr.toFixed(2)}x`} />
+                <DataRow label="DSCR" value={ratio(selected.dscr)} />
               )}
               {selected.monthly_cash_flow != null && (
                 <DataRow label="Monthly Cash Flow" value={moneyMo(selected.monthly_cash_flow)} />
@@ -188,6 +188,15 @@ export default function StrategyScreen() {
           <View style={styles.worksheetLoading}>
             <ActivityIndicator size="small" color={colors.primary} />
             <Text style={styles.worksheetLoadingText}>Calculating worksheet...</Text>
+          </View>
+        )}
+
+        {worksheet.error && !worksheet.isLoading && (
+          <View style={[styles.card, cardGlow.sm]}>
+            <Text style={styles.sectionLabel}>WORKSHEET</Text>
+            <Text style={styles.worksheetErrorText}>
+              Worksheet calculation unavailable for this strategy. Strategy scores above are still valid.
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -235,6 +244,16 @@ function money(n: number | null | undefined): string {
 function moneyMo(n: number | null | undefined): string {
   if (n == null) return '—';
   return '$' + Math.round(n).toLocaleString();
+}
+
+function pct(n: number | null | undefined): string {
+  if (n == null) return '—';
+  return `${n.toFixed(1)}%`;
+}
+
+function ratio(n: number | null | undefined): string {
+  if (n == null) return '—';
+  return `${n.toFixed(2)}x`;
 }
 
 const styles = StyleSheet.create({
@@ -292,4 +311,5 @@ const styles = StyleSheet.create({
 
   worksheetLoading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.md },
   worksheetLoadingText: { fontFamily: fontFamilies.body, fontSize: 13, color: colors.textSecondary },
+  worksheetErrorText: { fontFamily: fontFamilies.body, fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
 });
