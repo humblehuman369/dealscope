@@ -51,8 +51,7 @@ function safeDecode(s: string | undefined): string {
   }
 }
 
-function StatusPill({ status }: { status: string }) {
-  const isOffMarket = status === 'Off-Market'
+function StatusText({ status }: { status: string }) {
   return (
     <span
       style={{
@@ -61,11 +60,7 @@ function StatusPill({ status }: { status: string }) {
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
-        color: isOffMarket ? '#71717A' : '#34D399',
-        background: isOffMarket ? 'rgba(113,113,122,0.12)' : 'rgba(52,211,153,0.1)',
-        border: `1px solid ${isOffMarket ? 'rgba(113,113,122,0.2)' : 'rgba(52,211,153,0.2)'}`,
-        borderRadius: 4,
-        padding: '3px 8px',
+        color: '#0EA5E9',
         whiteSpace: 'nowrap',
       }}
     >
@@ -253,7 +248,7 @@ export function PropertyAddressBar({
           <Dot />
           <DetailItem label="" value={formatShortPrice(price)} accent />
           <Dot />
-          <StatusPill status={statusLabel} />
+          <StatusText status={statusLabel} />
         </div>
 
         {/* Right: Bookmark */}
