@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { hydrateTokens } from '@/services/token-manager';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { colors } from '@/constants/colors';
 
 SplashScreen.preventAutoHideAsync();
@@ -48,7 +50,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
         <StatusBar style="light" />
+        <OfflineBanner />
         <Stack
           screenOptions={{
             headerShown: false,
@@ -69,6 +73,7 @@ export default function RootLayout() {
           <Stack.Screen name="about" />
           <Stack.Screen name="(protected)" />
         </Stack>
+        </ErrorBoundary>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
