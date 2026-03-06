@@ -589,6 +589,19 @@ function VerdictContent() {
               if (!prev) return null
               return { ...prev, price: Math.round(backendListPrice) } as IQProperty
             })
+            // Keep address bar in sync: list/market price (never target buy)
+            try {
+              const existingData = sessionStorage.getItem('dealMakerOverrides')
+              if (existingData) {
+                const parsed = JSON.parse(existingData)
+                parsed.listPrice = backendListPrice
+                parsed.price = Math.round(backendListPrice)
+                sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+                window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+              }
+            } catch {
+              // Ignore storage errors
+            }
           }
 
           // Phase 2: non-blocking photo fetch — do not await; update property when done
