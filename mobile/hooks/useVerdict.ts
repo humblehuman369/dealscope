@@ -68,16 +68,62 @@ function buildVerdictInput(property: PropertyResponse) {
   };
 }
 
+/**
+ * Normalize the backend response which uses camelCase aliases
+ * and nested objects for opportunity/return_rating into a flat shape.
+ */
+function normalizeVerdict(raw: any): VerdictResponse {
+  return {
+    deal_score: raw.dealScore ?? raw.deal_score ?? 0,
+    deal_verdict: raw.dealVerdict ?? raw.deal_verdict ?? 'Unknown',
+    verdict_description: raw.verdictDescription ?? raw.verdict_description ?? '',
+    discount_percent: raw.discountPercent ?? raw.discount_percent ?? null,
+    strategies: raw.strategies ?? [],
+    purchase_price: raw.purchasePrice ?? raw.purchase_price ?? null,
+    income_value: raw.incomeValue ?? raw.income_value ?? null,
+    list_price: raw.listPrice ?? raw.list_price ?? null,
+    opportunity: typeof raw.opportunity === 'string'
+      ? raw.opportunity
+      : raw.opportunity?.label ?? raw.opportunity?.grade ?? null,
+    opportunity_factors: normalizeFactors(raw.opportunityFactors ?? raw.opportunity_factors),
+    return_rating: typeof raw.returnRating === 'string'
+      ? raw.returnRating
+      : typeof raw.return_rating === 'string'
+        ? raw.return_rating
+        : raw.returnRating?.label ?? raw.return_rating?.label ?? null,
+    return_factors: normalizeFactors(raw.returnFactors ?? raw.return_factors),
+    income_gap_amount: raw.incomeGapAmount ?? raw.income_gap_amount ?? null,
+    income_gap_percent: raw.incomeGapPercent ?? raw.income_gap_percent ?? null,
+    deal_gap_amount: raw.dealGapAmount ?? raw.deal_gap_amount ?? null,
+    deal_gap_percent: raw.dealGapPercent ?? raw.deal_gap_percent ?? null,
+    deal_gap_score: raw.dealGapScore ?? raw.deal_gap_score ?? null,
+    wholesale_mao: raw.wholesaleMao ?? raw.wholesale_mao ?? null,
+    deal_narrative: raw.dealNarrative ?? raw.deal_narrative ?? null,
+  };
+}
+
+function normalizeFactors(factors: any): string[] {
+  if (!factors) return [];
+  if (Array.isArray(factors)) return factors.filter((f: any) => typeof f === 'string');
+  if (typeof factors === 'object') {
+    return Object.entries(factors)
+      .filter(([_, v]) => v != null && v !== false && v !== 0)
+      .map(([k, v]) => {
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number') return `${k}: ${v}`;
+        return k;
+      });
+  }
+  return [];
+}
+
 export function useVerdict(property: PropertyResponse | undefined) {
   return useQuery<VerdictResponse>({
     queryKey: ['verdict', property?.property_id],
     queryFn: async () => {
       const input = buildVerdictInput(property!);
-      const { data } = await api.post<VerdictResponse>(
-        '/api/v1/analysis/verdict',
-        input,
-      );
-      return data;
+      const { data } = await api.post('/api/v1/analysis/verdict', input);
+      return normalizeVerdict(data);
     },
     enabled: !!property,
     staleTime: 5 * 60 * 1000,
