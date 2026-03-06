@@ -43,12 +43,47 @@ export default function CompsScreen() {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await api.get<{ comps: CompItem[] }>(
-        `/api/v1/properties/${property.data.zpid}/comps/${compType}`,
-      );
-      if (compType === 'sale') setSaleComps(data.comps ?? []);
-      else setRentComps(data.comps ?? []);
+
+      const endpoint = compType === 'sale' ? '/api/v1/similar-sold' : '/api/v1/similar-rent';
+      const { data } = await api.get<any>(endpoint, {
+        params: { zpid: property.data.zpid, limit: 10 },
+      });
+
+      const items: CompItem[] = (data?.results ?? data?.comps ?? []).map((c: any) => ({
+        address: c.address ?? c.formattedAddress ?? c.streetAddress ?? '—',
+        price: c.price ?? c.listPrice ?? c.soldPrice ?? c.rent ?? 0,
+        sqft: c.sqft ?? c.livingArea ?? c.squareFootage ?? 0,
+        bedrooms: c.bedrooms ?? c.beds ?? 0,
+        bathrooms: c.bathrooms ?? c.baths ?? 0,
+        distance_miles: c.distance_miles ?? c.distanceMiles ?? null,
+        sold_date: c.sold_date ?? c.dateSold ?? c.lastSoldDate ?? null,
+        price_per_sqft: c.price_per_sqft ?? (c.price && c.sqft ? Math.round(c.price / c.sqft) : null),
+      }));
+
+      if (compType === 'sale') setSaleComps(items);
+      else setRentComps(items);
     } catch (err) {
+      if (compType === 'rent' && retry === 0) {
+        try {
+          const { data: rcData } = await api.get<any>('/api/v1/rentcast/rental-comps', {
+            params: { zpid: property.data!.zpid, limit: 10 },
+          });
+          const items: CompItem[] = (rcData?.results ?? []).map((c: any) => ({
+            address: c.address ?? c.formattedAddress ?? '—',
+            price: c.rent ?? c.price ?? 0,
+            sqft: c.sqft ?? c.squareFootage ?? 0,
+            bedrooms: c.bedrooms ?? c.beds ?? 0,
+            bathrooms: c.bathrooms ?? c.baths ?? 0,
+            distance_miles: c.distance_miles ?? c.distanceMiles ?? null,
+            sold_date: null,
+            price_per_sqft: null,
+          }));
+          setRentComps(items);
+          setLoading(false);
+          return;
+        } catch { /* fall through to retry/error */ }
+      }
+
       if (retry < 2) {
         setTimeout(() => fetchComps(compType, retry + 1), 2000 * (retry + 1));
         return;
