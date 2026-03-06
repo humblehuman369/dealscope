@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import './dealgapiq-homepage.css';
+import { DataSourcesSection } from './DataSourcesSection';
 
 // ── Check icon SVG ──
 const CheckIcon = () => (
@@ -590,6 +591,11 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           </div>
         </section>
       </FadeIn>
+
+      <DivC />
+
+      {/* ═══════════ DATA SOURCES ═══════════ */}
+      <DataSourcesSection />
 
       <DivC />
 
