@@ -56,6 +56,7 @@ export default function ProfileScreen() {
         {/* Navigation Links */}
         <View style={styles.navCard}>
           <NavRow label="Search History" onPress={() => router.push('/(protected)/search-history')} />
+          <NavRow label="Payment History" onPress={() => router.push('/(protected)/payment-history' as any)} />
           <NavRow label="Settings" onPress={() => router.push('/(protected)/settings')} />
           <NavRow label="Pricing" onPress={() => router.push('/pricing' as any)} />
           <NavRow label="About DealGapIQ" onPress={() => router.push('/about' as any)} />
