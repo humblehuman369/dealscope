@@ -480,8 +480,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     listPrice: property.price ?? 0,
     zestimate: null,
     rentZestimate: null,
-    latitude: property.latitude ?? 0,
-    longitude: property.longitude ?? 0,
+    latitude: property.latitude ?? null,
+    longitude: property.longitude ?? null,
   } : undefined, [fullAddress, property])
 
   const buildIdentifier = useCallback((offset = 0, excludeZpids: string[] = []): CompsIdentifier => {
@@ -489,8 +489,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     if (property.zpid) id.zpid = property.zpid
     else if (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2) id.address = fullAddress
     if (excludeZpids.length > 0) id.exclude_zpids = excludeZpids.join(',')
-    if (property.latitude) id.subject_lat = property.latitude
-    if (property.longitude) id.subject_lon = property.longitude
+    if (property.latitude != null) id.subject_lat = property.latitude
+    if (property.longitude != null) id.subject_lon = property.longitude
     return id
   }, [property.zpid, fullAddress, property.latitude, property.longitude])
 

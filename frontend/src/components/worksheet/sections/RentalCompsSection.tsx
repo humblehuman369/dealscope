@@ -580,8 +580,8 @@ export function RentalCompsSection() {
     sqft: snapshot?.sqft || snapshot?.livingArea || 0,
     lotSize: snapshot?.lotSize || 0,
     yearBuilt: snapshot?.yearBuilt || 0,
-    latitude: snapshot?.latitude || 0,
-    longitude: snapshot?.longitude || 0,
+    latitude: snapshot?.latitude ?? null,
+    longitude: snapshot?.longitude ?? null,
   }), [snapshot, propertyData, assumptions.purchasePrice])
 
   const subjectForComps: CompsSubjectProperty | undefined = useMemo(() => {

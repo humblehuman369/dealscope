@@ -88,22 +88,22 @@ export const ROUTES = {
   
   compare: (ctx: NavContext) => {
     const q = new URLSearchParams({ view: 'sale', address: ctx.address || '' });
-    if (ctx.latitude) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
     return `/price-intel?${q.toString()}`;
   },
   
   rentalComps: (ctx: NavContext) => {
     const q = new URLSearchParams({ view: 'rent', address: ctx.address || '' });
-    if (ctx.latitude) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
     return `/price-intel?${q.toString()}`;
   },
   
   priceChecker: (ctx: NavContext) => {
     const q = new URLSearchParams({ address: ctx.address || '' });
-    if (ctx.latitude) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude) q.set('lng', String(ctx.longitude));
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
     return `/price-intel?${q.toString()}`;
   },
   

@@ -435,8 +435,8 @@ export function AppHeader({
         if (displayAddress) {
           const compsQuery = new URLSearchParams({ address: displayAddress })
           if (zpid) compsQuery.set('zpid', String(zpid))
-          if (resolvedProperty?.latitude) compsQuery.set('lat', String(resolvedProperty.latitude))
-          if (resolvedProperty?.longitude) compsQuery.set('lng', String(resolvedProperty.longitude))
+          if (resolvedProperty?.latitude != null) compsQuery.set('lat', String(resolvedProperty.latitude))
+          if (resolvedProperty?.longitude != null) compsQuery.set('lng', String(resolvedProperty.longitude))
           router.push(`/price-intel?${compsQuery.toString()}`)
         } else {
           router.push('/search')

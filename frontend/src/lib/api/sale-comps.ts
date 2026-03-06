@@ -26,6 +26,12 @@ function toStr(v: unknown): string {
   return String(v).trim() || ''
 }
 
+function hasFiniteNumber(value: unknown): boolean {
+  if (value == null || value === '') return false
+  const n = Number(value)
+  return Number.isFinite(n)
+}
+
 function extractCompsArray(raw: BackendCompsResponse): unknown[] {
   const list =
     raw.results ??
@@ -46,8 +52,10 @@ export function transformSaleComps(
   subject?: SubjectProperty
 ): SaleComp[] {
   const list = extractCompsArray(raw)
-  const subjectLat = subject?.latitude ?? 0
-  const subjectLon = subject?.longitude ?? 0
+  const subjectLat = subject?.latitude ?? null
+  const subjectLon = subject?.longitude ?? null
+  const hasSubjectCoords =
+    hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
   const subjectSqft = subject?.sqft ?? 1
   const subjectBeds = subject?.beds ?? 0
   const subjectBaths = subject?.baths ?? 0
@@ -69,13 +77,17 @@ export function transformSaleComps(
     const daysAgo = saleDate
       ? Math.floor((Date.now() - new Date(saleDate).getTime()) / 86400000)
       : 999
-    const lat = toNum(comp?.latitude ?? comp?.lat ?? 0)
-    const lon = toNum(comp?.longitude ?? comp?.lng ?? comp?.lon ?? 0)
+    const rawLat = comp?.latitude ?? comp?.lat
+    const rawLon = comp?.longitude ?? comp?.lng ?? comp?.lon
+    const lat = hasFiniteNumber(rawLat) ? Number(rawLat) : 0
+    const lon = hasFiniteNumber(rawLon) ? Number(rawLon) : 0
+    const hasCompCoords = hasFiniteNumber(rawLat) && hasFiniteNumber(rawLon)
     const haversineDist =
-      subjectLat && subjectLon && lat && lon
-        ? haversineDistance(subjectLat, subjectLon, lat, lon)
-        : 0
-    const distanceMiles = haversineDist || toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
+      hasSubjectCoords && hasCompCoords
+        ? haversineDistance(subjectLat as number, subjectLon as number, lat, lon)
+        : null
+    const distanceMiles =
+      haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
@@ -115,7 +127,7 @@ export function transformSaleComps(
     if (!imageUrl) {
       const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
       if (key) {
-        if (lat && lon) {
+        if (hasCompCoords) {
           imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lon}&zoom=18&size=400x300&maptype=satellite&markers=color:blue%7C${lat},${lon}&key=${key}`
         } else if (address) {
           const fullAddr = address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : '')
@@ -169,8 +181,8 @@ export async function fetchSaleComps(
   if (identifier.limit != null) params.limit = String(identifier.limit)
   if (identifier.offset != null) params.offset = String(identifier.offset)
   if (identifier.exclude_zpids) params.exclude_zpids = identifier.exclude_zpids
-  if (identifier.subject_lat) params.subject_lat = String(identifier.subject_lat)
-  if (identifier.subject_lon) params.subject_lon = String(identifier.subject_lon)
+  if (identifier.subject_lat != null) params.subject_lat = String(identifier.subject_lat)
+  if (identifier.subject_lon != null) params.subject_lon = String(identifier.subject_lon)
   if (!params.zpid && !params.address && !params.url) {
     return {
       ok: false,
