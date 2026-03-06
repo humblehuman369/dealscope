@@ -763,8 +763,8 @@ function StrategyContent() {
                   return (
                     <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
                       <div className="flex items-center justify-between">
-                        <p className="text-[22px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
-                        <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                        <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
+                        <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
                           {capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—'}
                         </p>
                       </div>
@@ -785,8 +785,8 @@ function StrategyContent() {
                   return (
                     <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
                       <div className="flex items-center justify-between">
-                        <p className="text-[22px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
-                        <p className="text-lg font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                        <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
+                        <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
                           {cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}
                         </p>
                       </div>
