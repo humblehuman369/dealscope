@@ -569,7 +569,7 @@ function VerdictContent() {
                 parsed.insurance = record.annual_insurance
                 parsed.arv = record.arv
                 parsed.rehabBudget = record.rehab_budget
-                parsed.listPrice = propertyData.price
+                // Keep parsed.listPrice from backendListPrice (set above) — backend analysis is single source of truth
                 parsed.downPayment = Math.round((record.down_payment_pct ?? 0.2) * 100)
                 parsed.closingCosts = Math.round((record.closing_costs_pct ?? 0.03) * 100)
                 parsed.interestRate = Math.round((record.interest_rate ?? 0.06) * 1000) / 10
