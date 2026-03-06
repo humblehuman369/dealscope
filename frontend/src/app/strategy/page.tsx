@@ -588,6 +588,7 @@ function StrategyContent() {
               {[
                 ['Market Price', formatCurrency(listPrice), true],
                 ['Target Buy', formatCurrency(targetPrice), false, colors.brand.blue],
+                ['Loan Amount', formatCurrency(loanAmount), false],
                 [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
                 [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
                 ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
@@ -610,7 +611,6 @@ function StrategyContent() {
                 </div>
               </div>
               {[
-                ['Loan Amount', formatCurrency(loanAmount)],
                 ['Interest Rate', `${(rate * 100).toFixed(1)}%`],
                 ['Loan Term', `${loanTermYears} years`],
                 ['Monthly Payment', formatCurrency(monthlyPI)],
