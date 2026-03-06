@@ -156,7 +156,8 @@ interface SliderInputProps {
 }
 
 function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel, onChange, step }: SliderInputProps) {
-  const fillPercent = ((value - min) / (max - min)) * 100
+  const clampedValue = Math.min(max, Math.max(min, value))
+  const fillPercent = ((clampedValue - min) / (max - min)) * 100
 
   return (
     <div className="mt-4">
@@ -174,14 +175,14 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
             type="range"
             min={min}
             max={max}
-            step={step}
-            value={value}
+            step={step ?? (Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.01)}
+            value={clampedValue}
             onChange={(e) => onChange(parseFloat(e.target.value))}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div 
             className="absolute w-5 h-5 bg-[#F1F5F9] rounded-full shadow-md -translate-y-1/2 top-1/2 transition-shadow hover:shadow-lg"
-            style={{ left: `calc(${fillPercent}% - 10px)`, border: '3px solid #0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.4)' }}
+            style={{ left: `calc(${Math.min(100, Math.max(0, fillPercent))}% - 10px)`, border: '3px solid #0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.4)' }}
           />
         </div>
       </div>
@@ -1027,7 +1028,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     return [
       { label: 'Buy Price', value: formatPrice(ltrState.buyPrice), color: 'white' },
       { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
-      { label: 'Deal Gap', value: `${ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(ltrMetrics.dealGap)}`, color: 'cyan' },
+      { label: 'Deal Gap', value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`, color: 'cyan' },
       { label: 'Annual Profit', value: formatPrice(ltrMetrics.annualProfit), color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose' },
       { label: 'CAP Rate', value: `${ltrMetrics.capRate.toFixed(1)}%`, color: 'white' },
       { label: 'COC Return', value: `${ltrMetrics.cocReturn.toFixed(1)}%`, color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose' },
@@ -1178,6 +1179,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`}
                           min={8}
                           max={15}
+                          step={0.5}
                           minLabel="8%"
                           maxLabel="15%"
                           onChange={(v) => updateState('hardMoneyRate', v / 100)}
@@ -1463,6 +1465,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`}
                               min={8}
                               max={18}
+                              step={0.5}
                               minLabel="8%"
                               maxLabel="18%"
                               onChange={(v) => updateState('hardMoneyRate', v / 100)}
@@ -1531,6 +1534,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           displayValue={`${(state.interestRate * 100).toFixed(2)}%`}
                           min={4}
                           max={10}
+                          step={0.25}
                           minLabel="4%"
                           maxLabel="10%"
                           onChange={(v) => updateState('interestRate', v / 100)}
@@ -1646,6 +1650,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               displayValue={`${(ltrStrState.interestRate * 100).toFixed(2)}%`}
                               min={5}
                               max={12}
+                              step={0.25}
                               minLabel="5.00%"
                               maxLabel="12.00%"
                               onChange={(v) => updateState('interestRate', v / 100)}
@@ -1963,6 +1968,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           displayValue={`${(state.refinanceInterestRate * 100).toFixed(2)}%`}
                           min={4}
                           max={10}
+                          step={0.25}
                           minLabel="4%"
                           maxLabel="10%"
                           onChange={(v) => updateState('refinanceInterestRate', v / 100)}

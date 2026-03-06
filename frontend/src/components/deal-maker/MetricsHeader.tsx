@@ -91,7 +91,7 @@ export function MetricsHeader({
               color: metrics.dealGap < 0 ? '#E11D48' : '#0EA5E9' 
             }}
           >
-            {formatPercent(metrics.dealGap * 100, { decimals: 0, showSign: true })}
+            {formatPercent(-metrics.dealGap * 100, { decimals: 0, showSign: true })}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
