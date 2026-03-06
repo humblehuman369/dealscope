@@ -101,7 +101,7 @@ const s = {
 // ── Eyebrow component ──
 const Eyebrow = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
   <div style={{
-    fontFamily: s.fontBody, fontSize: "0.72rem", fontWeight: 600,
+    fontFamily: s.fontBody, fontSize: "clamp(12px, 0.85vw, 15px)", fontWeight: 600,
     letterSpacing: "0.10em", textTransform: "uppercase" as const,
     color: s.teal, marginBottom: 56, ...style,
   }}>
