@@ -56,7 +56,7 @@ function StatusText({ status }: { status: string }) {
     <span
       style={{
         fontFamily: "'Space Mono', monospace",
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
