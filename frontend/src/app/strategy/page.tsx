@@ -614,6 +614,7 @@ function StrategyContent() {
                 ['Loan Amount', formatCurrency(loanAmount)],
                 ['Interest Rate', `${(rate * 100).toFixed(1)}%`],
                 ['Loan Term', `${loanTermYears} years`],
+                ['Monthly Payment', formatCurrency(monthlyPI)],
               ].map(([label, value], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
@@ -621,8 +622,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Monthly Payment</span>
-                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(monthlyPI)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Annual Payment</span>
+                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(annualDebt)}</span>
               </div>
 
             </div>
