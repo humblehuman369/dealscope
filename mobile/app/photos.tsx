@@ -43,10 +43,16 @@ export default function PhotosScreen() {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await api.get<{ photos: PhotoItem[] }>(
-        `/api/v1/properties/${property.data.zpid}/photos`,
+      const { data } = await api.get<any>(
+        '/api/v1/photos',
+        { params: { zpid: property.data.zpid } },
       );
-      setPhotos(data.photos ?? []);
+      const photoList: PhotoItem[] = Array.isArray(data)
+        ? data.map((url: string) => ({ url }))
+        : Array.isArray(data?.photos)
+          ? data.photos
+          : [];
+      setPhotos(photoList);
     } catch (err) {
       if (retry < 2) {
         setTimeout(() => fetchPhotos(retry + 1), 2000 * (retry + 1));
