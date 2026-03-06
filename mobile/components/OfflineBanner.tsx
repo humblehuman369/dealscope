@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import { fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
+import api from '@/services/api';
 
 export function OfflineBanner() {
   const [isOffline, setIsOffline] = useState(false);
@@ -12,7 +13,8 @@ export function OfflineBanner() {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
-        await fetch('https://api.dealgapiq.com/health', { signal: controller.signal, method: 'HEAD' });
+        const baseUrl = api.defaults.baseURL ?? '';
+        await fetch(`${baseUrl}/health`, { signal: controller.signal, method: 'GET' });
         clearTimeout(timeout);
         setIsOffline(false);
       } catch {
