@@ -1127,11 +1127,11 @@ function VerdictContent() {
               </p>
               <div className="flex justify-center mt-4">
                 <button
-                  onClick={handleNavigateToDealMaker}
+                  onClick={navigateToStrategy}
                   className="px-6 py-2 rounded-full text-sm font-semibold transition-all"
                   style={{ color: colors.brand.blue, border: `1.5px solid ${colors.brand.blue}50`, background: `${colors.brand.blue}10` }}
                 >
-                  Change Terms
+                  See Breakdown
                 </button>
               </div>
             </div>
