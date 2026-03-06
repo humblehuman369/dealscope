@@ -1,6 +1,7 @@
 import { Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { colors } from '@/constants/colors';
+import { fontFamilies } from '@/constants/typography';
 
 export default function TabLayout() {
   return (
@@ -13,9 +14,11 @@ export default function TabLayout() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          paddingBottom: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontFamily: fontFamilies.bodyMedium,
+          fontSize: 11,
           fontWeight: '600',
         },
       }}
