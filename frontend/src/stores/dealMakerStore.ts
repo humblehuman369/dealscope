@@ -298,6 +298,8 @@ export interface DealMakerState {
   updateField: <K extends keyof DealMakerUpdate>(field: K, value: DealMakerUpdate[K]) => void
   updateMultipleFields: (updates: DealMakerUpdate) => void
   saveToBackend: () => Promise<void>
+  /** Flush debounced save and await completion (e.g. before navigating away). */
+  flushAndSave: () => Promise<void>
   debouncedSave: () => void
   reset: () => void
   setActivePriceTarget: (target: PriceTarget) => void
@@ -450,6 +452,14 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     saveTimeout = setTimeout(() => {
       get().saveToBackend()
     }, SAVE_DEBOUNCE_MS)
+  },
+
+  flushAndSave: async () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
+    await get().saveToBackend()
   },
 
   reset: () => {
