@@ -588,7 +588,6 @@ function StrategyContent() {
               {[
                 ['Market Price', formatCurrency(listPrice), true],
                 ['Target Buy', formatCurrency(targetPrice), false, colors.brand.blue],
-                ['Deal Gap', `${dealGapPct >= 0 ? '+' : ''}${dealGapPct.toFixed(1)}%`, false, colors.brand.blue],
                 [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
                 [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
                 ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
@@ -607,7 +606,7 @@ function StrategyContent() {
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan</span>
+                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan Payment</span>
                 </div>
               </div>
               {[
