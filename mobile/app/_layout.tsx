@@ -2,15 +2,21 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Slot, useRouter, useSegments } from 'expo-router';
+import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { useDeepLinking } from '@/hooks/useDeepLinking';
 import { useSession } from '@/hooks/useSession';
 import { hydrateTokens, getAccessToken } from '@/services/token-manager';
+import { initSentry } from '@/services/sentry';
+import { initPurchases } from '@/services/purchases';
 
 SplashScreen.preventAutoHideAsync();
+initSentry();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +26,16 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const customFonts = {
+  'DMSans-Bold': require('@/assets/fonts/DMSans-Variable.ttf'),
+  'DMSans-Medium': require('@/assets/fonts/DMSans-Variable.ttf'),
+  'SpaceMono-Regular': require('@/assets/fonts/SpaceMono-Regular.ttf'),
+  'SpaceMono-Bold': require('@/assets/fonts/SpaceMono-Bold.ttf'),
+  'SourceSans3-Regular': require('@/assets/fonts/SourceSans3-Variable.ttf'),
+  'SourceSans3-SemiBold': require('@/assets/fonts/SourceSans3-Variable.ttf'),
+  'SourceSans3-Bold': require('@/assets/fonts/SourceSans3-Variable.ttf'),
+};
 
 function AuthGate() {
   const { user, isLoading } = useSession();
@@ -40,6 +56,12 @@ function AuthGate() {
     }
   }, [user, isLoading, segments]);
 
+  useEffect(() => {
+    if (user?.id) {
+      initPurchases(user.id);
+    }
+  }, [user?.id]);
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -52,24 +74,32 @@ function AuthGate() {
 }
 
 export default function RootLayout() {
-  const [hydrated, setHydrated] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    hydrateTokens().then(() => {
-      setHydrated(true);
+    async function prepare() {
+      await Promise.all([
+        hydrateTokens(),
+        Font.loadAsync(customFonts),
+      ]);
+      setReady(true);
       SplashScreen.hideAsync();
-    });
+    }
+    prepare();
   }, []);
 
-  if (!hydrated) return null;
+  if (!ready) return null;
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthGate />
-        <StatusBar style="light" />
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <OfflineBanner />
+          <AuthGate />
+          <StatusBar style="light" />
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

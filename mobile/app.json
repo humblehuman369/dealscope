@@ -28,7 +28,8 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "Authenticate with Face ID to securely access your DealGapIQ account."
       }
     },
     "android": {
@@ -49,6 +50,8 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-font",
+      "expo-sharing",
       [
         "expo-splash-screen",
         {
@@ -59,6 +62,13 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "dealgapiq",
+          "project": "dealgapiq-mobile"
         }
       ]
     ],
