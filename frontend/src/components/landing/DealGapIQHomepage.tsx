@@ -357,23 +357,48 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div style={{ ...cardLgStyle, padding: 28, position: "relative" as const, overflow: "hidden" }}>
               <div style={{ position: "absolute" as const, top: -1, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${s.teal}, ${s.success}, ${s.warning})`, borderRadius: "16px 16px 0 0" }} />
 
-              {/* Score + Badge */}
-              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-                <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${s.warning}`, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", boxShadow: "0 0 16px rgba(251,191,36,0.12)" }}>
-                  <span style={{ fontFamily: s.fontData, fontSize: 26, fontWeight: 700, lineHeight: 1 }}>53</span>
-                  <span style={{ fontFamily: s.fontData, fontSize: 10, color: s.muted }}>/100</span>
-                </div>
-                <span style={{ background: "rgba(251,191,36,0.12)", color: s.warning, fontFamily: s.fontBody, fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 20 }}>⚠ Marginal Opportunity</span>
+              {/* THE VERDICT title */}
+              <div style={{ textAlign: "center" as const, marginBottom: 22, fontFamily: s.fontBody, fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: s.muted }}>
+                The Verdict
               </div>
 
-              <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginBottom: 22 }}>1451 Sw 10th St, Boca Raton, FL 33486</div>
+              {/* Score Hero */}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, padding: "16px 18px", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 14, background: "rgba(14,165,233,0.03)" }}>
+                {/* SVG Arc Gauge */}
+                <div style={{ position: "relative" as const, width: 100, height: 100, flexShrink: 0 }}>
+                  <svg viewBox="0 0 120 120" style={{ width: "100%", height: "100%", transform: "rotate(-150deg)" }}>
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeDasharray="217.82 108.91" strokeLinecap="round" />
+                    <circle cx="60" cy="60" r="52" fill="none" stroke={s.teal} strokeWidth="10" strokeDasharray="141.58 185.15" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 12px rgba(14,165,233,0.38)) drop-shadow(0 0 24px rgba(14,165,233,0.15))" }} />
+                  </svg>
+                  <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontFamily: s.fontData, fontSize: 30, fontWeight: 700, lineHeight: 1, color: s.teal }}>65</span>
+                    <span style={{ fontFamily: s.fontData, fontSize: 10, color: s.muted }}>/100</span>
+                  </div>
+                </div>
+
+                {/* Deal Gap + Target Buy */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: s.fontBody, fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: s.muted, marginBottom: 2 }}>Deal Gap</div>
+                  <div style={{ fontFamily: s.fontData, fontSize: 26, fontWeight: 700, color: s.warning, lineHeight: 1.1 }}>-16.6%</div>
+                  <div style={{ fontFamily: s.fontBody, fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: s.muted, marginTop: 8, marginBottom: 2 }}>Target Buy</div>
+                  <div style={{ fontFamily: s.fontData, fontSize: 20, fontWeight: 700, color: s.teal, lineHeight: 1.1 }}>$673,269</div>
+                </div>
+
+                {/* Verdict Badge */}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 20, alignSelf: "flex-start" as const }}>
+                  <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.85)" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                  <span style={{ fontFamily: s.fontBody, fontSize: 12, fontWeight: 700, color: "#fff" }}>Challenging</span>
+                </div>
+              </div>
 
               {/* Three price cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 22 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 24 }}>
                 {[
-                  { label: "WHOLESALE", value: "$561,820", sub: "30% net discount", highlight: false },
-                  { label: "TARGET BUY", value: "$669,608", sub: "Positive Cashflow", highlight: true, subGreen: true },
-                  { label: "INCOME VALUE", value: "$704,851", sub: "Income covers all costs", highlight: false },
+                  { label: "WHOLESALE", value: "$565,110", sub: "30% net discount", highlight: false },
+                  { label: "TARGET BUY", value: "$673,269", sub: "Positive Cashflow", highlight: true, subGreen: true },
+                  { label: "INCOME VALUE", value: "$708,704", sub: "Price where income covers all costs", highlight: false },
                 ].map((card, i) => (
                   <div key={i} style={{
                     background: "#000", borderRadius: 10, padding: "12px 10px", textAlign: "center" as const,
@@ -387,29 +412,67 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 ))}
               </div>
 
-              {/* Number line */}
-              <div style={{ margin: "24px 0 14px", padding: "0 4px" }}>
-                <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, position: "relative" as const }}>
-                  <div style={{ position: "absolute" as const, left: 0, top: 0, height: "100%", width: "60%", borderRadius: 3, background: `linear-gradient(90deg, ${s.teal}, ${s.warning})` }} />
+              {/* Price Scale Bar with Deal Gap & Price Gap brackets */}
+              <div style={{ position: "relative" as const, padding: "0 4px", marginTop: 8 }}>
+                {/* Deal Gap bracket (above bar) */}
+                <div style={{ position: "relative" as const, height: 24, marginBottom: 8 }}>
+                  <div style={{ position: "absolute" as const, left: "16%", width: "65%", display: "flex", alignItems: "center", top: 4 }}>
+                    <div style={{ width: 1, height: 12, background: s.teal, flexShrink: 0 }} />
+                    <div style={{ height: 1, background: s.teal, flex: 1 }} />
+                    <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 700, color: s.teal, whiteSpace: "nowrap" as const, padding: "0 6px" }}>DEAL GAP &nbsp;-16.6%</span>
+                    <div style={{ height: 1, background: s.teal, flex: 1 }} />
+                    <div style={{ width: 1, height: 12, background: s.teal, flexShrink: 0 }} />
+                  </div>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
+
+                {/* Gradient bar with positioned dots */}
+                <div style={{ position: "relative" as const, height: 8, borderRadius: 4, background: `linear-gradient(90deg, ${s.teal}30, ${s.warning}30, ${s.danger}25)` }}>
                   {[
-                    { color: s.teal, name: "Target Buy", value: "$669,608" },
-                    { color: s.warning, name: "Income Value", value: "$704,851" },
-                    { color: s.danger, name: "Market", value: "$802,600" },
+                    { pos: 16, color: s.teal },
+                    { pos: 33, color: s.warning },
+                    { pos: 81, color: s.danger },
+                  ].map((dot, i) => (
+                    <div key={i} style={{
+                      position: "absolute" as const, width: 14, height: 14, borderRadius: "50%",
+                      top: -3, left: `${dot.pos}%`, transform: "translateX(-50%)",
+                      background: dot.color, border: "2px solid #000",
+                      boxShadow: `0 0 6px ${dot.color}60`,
+                    }} />
+                  ))}
+                </div>
+
+                {/* Price Gap bracket (below bar) */}
+                <div style={{ position: "relative" as const, height: 24, marginTop: 6 }}>
+                  <div style={{ position: "absolute" as const, left: "33%", width: "48%", display: "flex", alignItems: "center", top: 0 }}>
+                    <div style={{ width: 1, height: 12, background: s.warning, flexShrink: 0 }} />
+                    <div style={{ height: 1, background: s.warning, flex: 1 }} />
+                    <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 700, color: s.warning, whiteSpace: "nowrap" as const, padding: "0 6px" }}>PRICE GAP &nbsp;-12.2%</span>
+                    <div style={{ height: 1, background: s.warning, flex: 1 }} />
+                    <div style={{ width: 1, height: 12, background: s.warning, flexShrink: 0 }} />
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                  {[
+                    { color: s.teal, name: "Target Buy", value: "$673,269" },
+                    { color: s.warning, name: "Income Value", value: "$708,704" },
+                    { color: s.danger, name: "Market", value: "$807,300" },
                   ].map((item, i) => (
                     <div key={i} style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 2 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: item.color, boxShadow: `0 0 6px ${item.color}40`, marginBottom: 3 }} />
-                      <div style={{ fontFamily: s.fontBody, color: s.muted, fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{item.name}</div>
-                      <div style={{ fontFamily: s.fontData, fontWeight: 700, fontSize: 12, color: item.color }}>{item.value}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.color }} />
+                        <span style={{ fontFamily: s.fontBody, fontSize: 10, fontWeight: 500, color: item.color }}>{item.name}</span>
+                      </div>
+                      <span style={{ fontFamily: s.fontData, fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Deal Gap badge */}
-              <div style={{ textAlign: "center" as const, marginTop: 14, padding: "7px 14px", background: "rgba(14,165,233,0.05)", border: "1px solid rgba(14,165,233,0.12)", borderRadius: 8, fontFamily: s.fontBody, fontSize: 12, color: s.muted }}>
-                Deal Gap: <span style={{ fontFamily: s.fontData, fontWeight: 700, color: s.teal }}>−16.6%</span> below market · Price Gap: <span style={{ fontFamily: s.fontData, fontWeight: 700, color: s.teal }}>−12.2%</span>
+              {/* Based on line */}
+              <div style={{ textAlign: "center" as const, marginTop: 16, fontFamily: s.fontBody, fontSize: 12, color: s.muted }}>
+                Based on <span style={{ fontWeight: 600, color: s.teal }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </div>
 
               {/* See how to make it work */}
