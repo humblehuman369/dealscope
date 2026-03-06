@@ -19,7 +19,7 @@ import { ArrowRight, FileSpreadsheet, Loader2 } from 'lucide-react'
 // Components
 import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { VerdictScoreHero } from './VerdictScoreHero'
-import { PropertyInfoDropdown } from './PropertyInfoDropdown'
+import { PropertyAddressBar } from './PropertyAddressBar'
 import { InvestmentAnalysisNew } from './InvestmentAnalysisNew'
 import { FinancialBreakdownColumns } from './FinancialBreakdownColumns'
 import { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMetricsTable'
@@ -264,8 +264,8 @@ export function VerdictIQPageNew({
 
       {/* Main Content - Scrollable */}
       <main className="flex-1 overflow-y-auto pb-36">
-        {/* Property Info Dropdown - NEW */}
-        <PropertyInfoDropdown
+        {/* Property Address Bar - single-line, always visible */}
+        <PropertyAddressBar
           address={property.address}
           city={property.city || ''}
           state={property.state || ''}
@@ -273,11 +273,9 @@ export function VerdictIQPageNew({
           beds={property.beds}
           baths={property.baths}
           sqft={property.sqft || 0}
-          estimatedValue={property.price}
-          estimatedRent={property.monthlyRent || 0}
-          status={property.listingStatus || 'OFF-MARKET'}
-          imageUrl={property.imageUrl}
-          defaultOpen={true}
+          price={property.price}
+          listingStatus={property.listingStatus || 'OFF_MARKET'}
+          zpid={property.zpid}
         />
 
         {/* Score Hero - NEW Centered Stacked Layout */}

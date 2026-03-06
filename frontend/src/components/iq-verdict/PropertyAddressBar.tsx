@@ -1,17 +1,15 @@
 'use client'
 
 /**
- * PropertyAddressBar — Compact address bar for analysis pages.
+ * PropertyAddressBar — Single-line, always-visible address bar for analysis pages.
  *
- * Collapsed: clickable address link → property profile page, expand chevron.
- * Expanded:  single-row detail strip showing Beds | Baths | Sqft | Price | Status.
- * Dark theme to match the verdict page background.
+ * Shows address + property details (Beds · Baths · Sqft · Price · Status) inline.
+ * No dropdown, no toggle. One persistent horizontal bar.
+ * Dark theme (#000000) with accent #0EA5E9.
  */
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import { colors } from './verdict-design-tokens'
 
 interface PropertyAddressBarProps {
   address: string
@@ -39,7 +37,6 @@ function safeDecode(s: string | undefined): string {
   if (!s) return ''
   try {
     let decoded = s
-    // Decode up to two levels of encoding (%2520 → %20 → space)
     for (let i = 0; i < 2; i++) {
       const next = decodeURIComponent(decoded)
       if (next === decoded) break
@@ -49,6 +46,81 @@ function safeDecode(s: string | undefined): string {
   } catch {
     return s
   }
+}
+
+function StatusPill({ status }: { status: string }) {
+  const isOffMarket = status === 'Off-Market'
+  return (
+    <span
+      style={{
+        fontFamily: "'Space Mono', monospace",
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        color: isOffMarket ? '#71717A' : '#34D399',
+        background: isOffMarket ? 'rgba(113,113,122,0.12)' : 'rgba(52,211,153,0.1)',
+        border: `1px solid ${isOffMarket ? 'rgba(113,113,122,0.2)' : 'rgba(52,211,153,0.2)'}`,
+        borderRadius: 4,
+        padding: '3px 8px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {status}
+    </span>
+  )
+}
+
+function DetailItem({
+  label,
+  value,
+  accent,
+}: {
+  label: string
+  value: string | number
+  accent?: boolean
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+      {label ? (
+        <span
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 10,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: '#71717A',
+          }}
+        >
+          {label}
+        </span>
+      ) : null}
+      <span
+        style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 13,
+          fontWeight: 600,
+          color: accent ? '#0EA5E9' : '#FFFFFF',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function Dot() {
+  return (
+    <span
+      style={{
+        width: 3,
+        height: 3,
+        borderRadius: '50%',
+        background: 'rgba(255,255,255,0.15)',
+        flexShrink: 0,
+      }}
+    />
+  )
 }
 
 export function PropertyAddressBar({
@@ -63,87 +135,153 @@ export function PropertyAddressBar({
   listingStatus,
   zpid,
 }: PropertyAddressBarProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [bookmarked, setBookmarked] = useState(false)
 
-  // Defensively decode all address parts in case URL-encoded text leaks through
   const cleanAddress = safeDecode(address)
   const cleanCity = safeDecode(city)
   const cleanState = safeDecode(state)
   const cleanZip = safeDecode(zip)
-
   const fullAddress = [cleanAddress, cleanCity, [cleanState, cleanZip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const encodedAddress = encodeURIComponent(fullAddress)
 
-  // Determine price label and status from listing status
   const isListed = listingStatus === 'FOR_SALE' || listingStatus === 'PENDING'
-  const priceLabel = isListed ? 'Asking' : 'Market'
   const statusLabel = isListed ? 'Listed' : 'Off-Market'
 
-  // Build profile link
   const profileHref = zpid
     ? `/property/${zpid}?address=${encodedAddress}`
     : `/property?address=${encodedAddress}`
 
   return (
     <div
-      className="border-b"
-      style={{ backgroundColor: colors.background.card, borderColor: colors.ui.border }}
+      style={{
+        background: '#000000',
+        fontFamily: "'DM Sans', sans-serif",
+        padding: '0 24px',
+        width: '100%',
+      }}
     >
-      {/* Header row: address link + expand toggle */}
-      <div className="flex items-center justify-between px-4 py-2.5">
-        <Link
-          href={profileHref}
-          className="text-sm font-medium truncate hover:underline transition-colors"
-          style={{ color: colors.brand.teal }}
-          title="View property profile"
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 0',
+          borderBottom: '1px solid rgba(14,165,233,0.12)',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* Left: House icon + Address link */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            minWidth: 0,
+            flex: '0 1 auto',
+          }}
         >
-          {fullAddress}
-        </Link>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            style={{ flexShrink: 0 }}
+          >
+            <path
+              d="M2 7.5L8 2.5L14 7.5V13.5C14 14.05 13.55 14.5 13 14.5H3C2.45 14.5 2 14.05 2 13.5V7.5Z"
+              stroke="#0EA5E9"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <path
+              d="M6 14.5V8.5H10V14.5"
+              stroke="#0EA5E9"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <Link
+            href={profileHref}
+            title="View property profile"
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              textDecoration: 'none',
+            }}
+            className="hover:underline"
+          >
+            {fullAddress}
+          </Link>
+        </div>
 
-        <button
-          onClick={() => setIsExpanded((v) => !v)}
-          className="p-1 rounded transition-colors flex-shrink-0 ml-2"
-          style={{ color: colors.text.tertiary }}
-          aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+        {/* Center: Inline details with dot separators */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flex: '1 1 auto',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
         >
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <DetailItem label="Beds" value={beds} />
+          <Dot />
+          <DetailItem label="Ba" value={baths} />
+          <Dot />
+          <DetailItem label="Sqft" value={sqft.toLocaleString()} />
+          <Dot />
+          <DetailItem label="" value={formatShortPrice(price)} accent />
+          <Dot />
+          <StatusPill status={statusLabel} />
+        </div>
+
+        {/* Right: Bookmark */}
+        <button
+          type="button"
+          onClick={() => setBookmarked((v) => !v)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            borderRadius: 6,
+            transition: 'background 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(14,165,233,0.08)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'none'
+          }}
+          title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+          aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? '#0EA5E9' : 'none'}>
+            <path
+              d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
+              stroke="#0EA5E9"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
-
-      {/* Expanded detail strip — single row */}
-      {isExpanded && (
-        <div
-          className="grid grid-cols-5 gap-1 px-4 pb-3 border-t"
-          style={{ borderColor: colors.ui.border }}
-        >
-          <div className="text-center pt-2.5">
-            <div className="text-[10px] uppercase tracking-wide mb-0.5" style={{ color: colors.text.muted }}>Beds</div>
-            <div className="text-sm font-semibold" style={{ color: colors.text.primary }}>{beds}</div>
-          </div>
-          <div className="text-center pt-2.5">
-            <div className="text-[10px] uppercase tracking-wide mb-0.5" style={{ color: colors.text.muted }}>Baths</div>
-            <div className="text-sm font-semibold" style={{ color: colors.text.primary }}>{baths}</div>
-          </div>
-          <div className="text-center pt-2.5">
-            <div className="text-[10px] uppercase tracking-wide mb-0.5" style={{ color: colors.text.muted }}>Sqft</div>
-            <div className="text-sm font-semibold" style={{ color: colors.text.primary }}>{sqft.toLocaleString()}</div>
-          </div>
-          <div className="text-center pt-2.5">
-            <div className="text-[10px] uppercase tracking-wide mb-0.5" style={{ color: colors.text.muted }}>{priceLabel}</div>
-            <div className="text-sm font-semibold" style={{ color: colors.text.primary }}>{formatShortPrice(price)}</div>
-          </div>
-          <div className="text-center pt-2.5">
-            <div className="text-[10px] uppercase tracking-wide mb-0.5" style={{ color: colors.text.muted }}>Status</div>
-            <div className="text-sm font-semibold" style={{ color: isListed ? colors.status.positive : colors.text.secondary }}>
-              {statusLabel}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
