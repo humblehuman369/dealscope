@@ -716,7 +716,7 @@ function StrategyContent() {
                   <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: colors.status.positive }}>NOI</p>
                   <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>Before Mortgage</p>
                   <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: colors.status.positive }}>
-                    <span className="truncate block">{formatCurrency(noi)}</span>
+                    <span className="truncate">{formatCurrency(noi)}</span>
                     <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                   </p>
                   <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
@@ -744,7 +744,7 @@ function StrategyContent() {
                       <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: netColor }}>Net Cash Flow</p>
                       <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>After Mortgage</p>
                       <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: netColor }}>
-                        <span className="truncate block">{netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}</span>
+                        <span className="truncate">{netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}</span>
                         <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                       </p>
                       <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
