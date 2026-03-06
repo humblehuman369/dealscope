@@ -70,7 +70,8 @@
           "organization": "dealgapiq",
           "project": "dealgapiq-mobile"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
