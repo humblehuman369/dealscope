@@ -387,6 +387,119 @@ async def get_payment_history(current_user: CurrentUser, db: DbSession, limit: i
 # ===========================================
 
 
+@router.post("/revenuecat-webhook", summary="RevenueCat webhook handler")
+async def revenuecat_webhook(
+    request: Request,
+    db: DbSession,
+    authorization: str | None = Header(None),
+):
+    """
+    Handle RevenueCat webhook events for mobile IAP subscription sync.
+
+    RevenueCat sends events when:
+    - User makes an initial purchase or starts a trial
+    - Subscription renews
+    - Subscription is cancelled or expires
+    - Billing issue occurs (grace period)
+
+    Configure webhook URL in RevenueCat dashboard:
+    https://api.dealgapiq.com/api/v1/billing/revenuecat-webhook
+
+    The shared secret is sent as a Bearer token in the Authorization header.
+    """
+    expected_secret = settings.REVENUECAT_WEBHOOK_SECRET
+    if expected_secret:
+        token = (authorization or "").removeprefix("Bearer ").strip()
+        if token != expected_secret:
+            logger.warning("RevenueCat webhook: invalid authorization")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid webhook secret")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON payload")
+
+    event = payload.get("event", {})
+    event_type = event.get("type", "")
+    app_user_id = event.get("app_user_id", "")
+
+    logger.info(f"RevenueCat webhook: type={event_type}, app_user_id={app_user_id}")
+
+    if not app_user_id:
+        logger.warning("RevenueCat webhook: missing app_user_id")
+        return {"received": True, "event_type": event_type, "message": "No app_user_id, skipped"}
+
+    from sqlalchemy import select
+    from app.models.user import User
+    from app.models.subscription import Subscription, SubscriptionTier, SubscriptionStatus, TIER_LIMITS
+
+    try:
+        user_id = __import__("uuid").UUID(app_user_id)
+    except (ValueError, AttributeError):
+        logger.warning(f"RevenueCat webhook: invalid user ID format: {app_user_id}")
+        return {"received": True, "event_type": event_type, "message": "Invalid user ID format"}
+
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+    subscription = result.scalar_one_or_none()
+
+    if not subscription:
+        logger.warning(f"RevenueCat webhook: no subscription found for user {user_id}")
+        return {"received": True, "event_type": event_type, "message": "User subscription not found"}
+
+    pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+    free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+    from datetime import datetime, UTC
+
+    if event_type in ("INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
+        subscription.tier = SubscriptionTier.PRO
+        subscription.status = SubscriptionStatus.ACTIVE
+        subscription.properties_limit = pro_limits["properties_limit"]
+        subscription.searches_per_month = pro_limits["searches_per_month"]
+        subscription.api_calls_per_month = pro_limits["api_calls_per_month"]
+        subscription.cancel_at_period_end = False
+        subscription.canceled_at = None
+
+        expiration = event.get("expiration_at_ms")
+        if expiration:
+            subscription.current_period_end = datetime.fromtimestamp(expiration / 1000, tz=UTC)
+
+        logger.info(f"RevenueCat: upgraded user {user_id} to Pro ({event_type})")
+
+    elif event_type == "CANCELLATION":
+        subscription.cancel_at_period_end = True
+        subscription.canceled_at = datetime.now(UTC)
+        logger.info(f"RevenueCat: user {user_id} cancelled (access until period end)")
+
+    elif event_type in ("EXPIRATION", "NON_RENEWING_PURCHASE"):
+        subscription.tier = SubscriptionTier.FREE
+        subscription.status = SubscriptionStatus.CANCELED
+        subscription.properties_limit = free_limits["properties_limit"]
+        subscription.searches_per_month = free_limits["searches_per_month"]
+        subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+        subscription.cancel_at_period_end = False
+        logger.info(f"RevenueCat: user {user_id} expired, downgraded to Free")
+
+    elif event_type == "BILLING_ISSUE":
+        subscription.status = SubscriptionStatus.PAST_DUE
+        logger.info(f"RevenueCat: billing issue for user {user_id}")
+
+    elif event_type == "SUBSCRIBER_ALIAS":
+        logger.info(f"RevenueCat: alias event for user {user_id}, no action taken")
+
+    else:
+        logger.info(f"RevenueCat: unhandled event type {event_type} for user {user_id}")
+
+    subscription.updated_at = datetime.now(UTC)
+    subscription.extra_data = {
+        **(subscription.extra_data or {}),
+        "last_revenuecat_event": event_type,
+        "last_revenuecat_event_at": datetime.now(UTC).isoformat(),
+    }
+    await db.commit()
+
+    return {"received": True, "event_type": event_type, "message": f"Processed {event_type}"}
+
+
 @router.post("/webhook", response_model=WebhookEventResponse, summary="Stripe webhook handler")
 async def stripe_webhook(
     request: Request,

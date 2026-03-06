@@ -200,6 +200,11 @@ class Settings(BaseSettings):
     STRIPE_PRICE_PRO_YEARLY: str = ""
 
     # ===========================================
+    # RevenueCat (Mobile IAP)
+    # ===========================================
+    REVENUECAT_WEBHOOK_SECRET: str = ""
+
+    # ===========================================
     # Google OAuth
     # ===========================================
     # Optional: public URL of this backend (e.g. https://dealscope-production.up.railway.app).
