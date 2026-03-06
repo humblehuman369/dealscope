@@ -876,8 +876,8 @@ function VerdictContent() {
         // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
         const compsQuery = new URLSearchParams({ address: fullAddress })
         if (propertyId) compsQuery.set('zpid', String(propertyId))
-        if (property.latitude) compsQuery.set('lat', String(property.latitude))
-        if (property.longitude) compsQuery.set('lng', String(property.longitude))
+        if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+        if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
         router.push(`/price-intel?${compsQuery.toString()}`)
         break
       case 'dashboard':

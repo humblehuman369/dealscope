@@ -29,8 +29,8 @@ export interface SubjectProperty {
   listPrice: number
   zestimate: number | null
   rentZestimate: number | null
-  latitude: number
-  longitude: number
+  latitude: number | null
+  longitude: number | null
 }
 
 // === Sale Comp ===

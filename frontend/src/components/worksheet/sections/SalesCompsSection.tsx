@@ -557,8 +557,8 @@ export function SalesCompsSection() {
     sqft: snapshot?.sqft || snapshot?.livingArea || 0,
     lotSize: snapshot?.lotSize || 0,
     yearBuilt: snapshot?.yearBuilt || 0,
-    latitude: snapshot?.latitude || 0,
-    longitude: snapshot?.longitude || 0,
+    latitude: snapshot?.latitude ?? null,
+    longitude: snapshot?.longitude ?? null,
     rehabCost: assumptions.rehabCosts || 0,
   }), [snapshot, propertyData, assumptions.purchasePrice, assumptions.rehabCosts])
 
