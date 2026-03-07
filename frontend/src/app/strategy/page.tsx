@@ -502,7 +502,7 @@ function StrategyContent() {
     <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       {/* Header and property bar are provided by AppHeader in layout */}
 
-      <div className="max-w-[640px] lg:max-w-5xl mx-auto">
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
         {/* Page Header + Actions */}
         <section className="px-5 pt-8 pb-0">
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
@@ -912,7 +912,7 @@ function StrategyContent() {
         <section className="px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>You screened it. You proved it.</p>
           <h2 className="text-2xl font-extrabold mb-3" style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}>Now Save It.</h2>
-          <p className="text-[15px] mb-7 mx-auto max-w-sm" style={{ color: colors.text.body, lineHeight: 1.6 }}>
+          <p className="text-[15px] mb-7 mx-auto max-w-md" style={{ color: colors.text.body, lineHeight: 1.6 }}>
             Save to your DealVaultIQ and we&apos;ll keep the numbers fresh and alert you if anything changes.
           </p>
           {isAuthenticated ? (
