@@ -167,12 +167,10 @@ export function PropertyAddressBar({
     >
       <div
         style={{
-          maxWidth: 1200,
-          margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 0',
+          padding: '12px 16px',
           borderBottom: '1px solid rgba(14,165,233,0.12)',
           gap: 16,
           flexWrap: 'wrap',

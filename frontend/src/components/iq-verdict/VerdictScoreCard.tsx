@@ -326,7 +326,7 @@ export function VerdictScoreCard({
           boxShadow: cardGlow.lg.boxShadow,
         }}
       >
-      <div className="flex flex-row flex-wrap items-center justify-center gap-5 sm:gap-6 max-w-md mx-auto">
+      <div className="flex flex-row flex-wrap items-center justify-center gap-5 sm:gap-6 w-full">
         <ScoreGauge score={score} color={color} />
         {showMetrics && (
           <div className="flex flex-col gap-3">
