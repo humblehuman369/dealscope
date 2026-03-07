@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { SearchPropertyModal } from '@/components/SearchPropertyModal';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 
@@ -150,6 +151,7 @@ interface DealGapIQHomepageProps {
 export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
   const [address, setAddress] = useState('');
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,6 +250,42 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             </button>
           </form>
 
+          {onPointAndScan && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", maxWidth: 440 }}>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: s.fontBody, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>or</span>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSearchModal(true)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  width: "100%", maxWidth: 440, padding: "12px 24px",
+                  fontSize: 14, fontWeight: 600, fontFamily: s.fontBody,
+                  borderRadius: 8, border: "1px solid rgba(14,165,233,0.3)",
+                  background: "transparent", color: "#fff", cursor: "pointer",
+                  transition: "border-color 0.2s, background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.6)";
+                  e.currentTarget.style.background = "rgba(14,165,233,0.08)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.3)";
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                  <circle cx="12" cy="13" r="3" />
+                </svg>
+                Scan Property
+              </button>
+            </>
+          )}
+
           <div style={{ display: "flex", gap: 24, alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
             <TrustCheck text="No credit card" />
             <TrustCheck text="5 free analyses / month" />
@@ -255,6 +293,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           </div>
         </div>
       </section>
+
+      <SearchPropertyModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onScanProperty={onPointAndScan}
+      />
 
       <DivC />
 
