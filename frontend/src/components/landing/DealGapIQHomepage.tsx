@@ -201,8 +201,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
           <span className="hero-subtitle-desktop">
-            In 60 seconds, get a buy price.<br />
-            a deal score and why, so you can decide to pursue or pass.
+            In 60 seconds, get a buy price, a deal score<br />
+            and why, so you can decide to pursue or pass.
           </span>
           <span className="hero-subtitle-mobile">
             In 60 seconds, get a buy price.<br />
