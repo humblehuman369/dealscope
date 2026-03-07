@@ -104,7 +104,7 @@ const Eyebrow = ({ children, style }: { children: React.ReactNode; style?: React
   <div style={{
     fontFamily: s.fontBody, fontSize: "clamp(12px, 1.35vw, 15px)", fontWeight: 600,
     letterSpacing: "0.10em", textTransform: "uppercase" as const,
-    color: s.teal, marginBottom: 56, ...style,
+    color: s.teal, marginBottom: 76, ...style,
   }}>
     {children}
   </div>
@@ -170,7 +170,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       </Suspense>
 
       {/* ═══════════ HERO ═══════════ */}
-      <section style={{ padding: "120px 24px 120px", maxWidth: 800, margin: "0 auto", textAlign: "center" as const, position: "relative" as const }}>
+      <section style={{ padding: "100px 24px 120px", maxWidth: 800, margin: "0 auto", textAlign: "center" as const, position: "relative" as const }}>
         <div style={{
           position: "absolute" as const, top: 40, left: "50%", transform: "translateX(-50%)",
           width: 500, height: 500, background: "radial-gradient(ellipse, rgba(14,165,233,0.08) 0%, transparent 70%)", pointerEvents: "none" as const,
