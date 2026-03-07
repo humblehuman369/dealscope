@@ -14,7 +14,7 @@ export function OfflineBanner() {
 
     async function check() {
       try {
-        await api.get('/api/v1/health', { timeout: 5000 });
+        await api.get('/health', { timeout: 5000 });
         if (mounted) setOffline(false);
       } catch {
         if (mounted) setOffline(true);
