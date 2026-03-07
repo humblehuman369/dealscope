@@ -5,7 +5,7 @@ export default function StrategyLoading() {
     <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
       {/* Header Skeleton */}
       <div className="bg-white dark:bg-navy-800 border-b border-slate-200 dark:border-navy-700 px-4 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="w-full flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 bg-slate-200 dark:bg-navy-700 rounded-full animate-pulse" />
             <div>
@@ -27,7 +27,7 @@ export default function StrategyLoading() {
       </div>
 
       {/* Financial Breakdown Skeleton */}
-      <div className="max-w-6xl mx-auto px-4 pb-8">
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 pb-8">
         {/* Price Cards */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[1, 2, 3].map(i => (
