@@ -13,7 +13,6 @@ const config: CapacitorConfig = {
     ],
   },
   ios: {
-    scheme: 'DealGapIQ',
     contentInset: 'automatic',
   },
   plugins: {
