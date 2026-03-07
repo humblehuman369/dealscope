@@ -38,6 +38,22 @@
   .hero-address-bar button { width: 100% !important; justify-content: center !important; }
 }
 
+/* Hero subtitle: desktop = 2 lines, mobile = 3 lines */
+.hero-subtitle-mobile,
+.hero-subtitle-desktop {
+  display: none;
+}
+@media (min-width: 640px) {
+  .hero-subtitle-desktop {
+    display: block;
+  }
+}
+@media (max-width: 639px) {
+  .hero-subtitle-mobile {
+    display: block;
+  }
+}
+
 /* Mobile (< 640px): full single-column stacking, 2x2 proof bar, CTA row stacks, hamburger nav */
 @media (max-width: 639px) {
   .proof-bar-inner { grid-template-columns: repeat(2, 1fr) !important; }

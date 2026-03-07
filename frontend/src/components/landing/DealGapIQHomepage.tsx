@@ -200,9 +200,15 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          In 60 seconds, get a buy price.<br />
-          a deal score and why,<br />
-          so you can decide to pursue or pass.
+          <span className="hero-subtitle-desktop">
+            In 60 seconds, get a buy price.<br />
+            a deal score and why, so you can decide to pursue or pass.
+          </span>
+          <span className="hero-subtitle-mobile">
+            In 60 seconds, get a buy price.<br />
+            a deal score and why,<br />
+            so you can decide to pursue or pass.
+          </span>
         </p>
 
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
