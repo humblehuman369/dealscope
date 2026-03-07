@@ -704,7 +704,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
-      <main className="max-w-[640px] mx-auto pb-6">
+      <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
         {/* Page Header */}
         <div className="bg-black border-b border-[rgba(14,165,233,0.3)] p-4 shadow-[0_0_30px_rgba(14,165,233,0.06)]">
           <div className="flex items-center justify-between mb-3">
@@ -910,7 +910,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-black ${cardBorderGlow}`}>
             <MapPin className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">Enter a property to view comps</h3>
-            <p className="text-xs text-[#F1F5F9] mb-4 max-w-sm mx-auto">
+            <p className="text-xs text-[#F1F5F9] mb-4 max-w-md mx-auto">
               Open a property from Verdict or search, then use the Comps tab to see comparable sales and rentals.
             </p>
             <button
@@ -940,7 +940,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">
               Comparable {isSale ? 'sales' : 'rentals'} temporarily unavailable
             </h3>
-            <p className="text-xs text-[#F1F5F9] mb-4 max-w-sm mx-auto">
+            <p className="text-xs text-[#F1F5F9] mb-4 max-w-md mx-auto">
               Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
             </p>
             <button
