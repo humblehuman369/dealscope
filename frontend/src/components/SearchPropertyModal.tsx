@@ -158,7 +158,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
-                  How would you like to search property?
+                  {showAddressInput ? 'Enter property address' : 'How would you like to search property?'}
                 </h2>
               </div>
             </div>
@@ -338,8 +338,10 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   style={{
                     background: address.trim() && validationStatus !== 'validating'
                       ? 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' 
-                      : 'rgba(14, 165, 233, 0.3)',
-                    color: 'white',
+                      : 'rgba(14, 165, 233, 0.15)',
+                    color: address.trim() && validationStatus !== 'validating'
+                      ? 'white'
+                      : 'rgba(148, 163, 184, 0.6)',
                   }}
                 >
                   {validationStatus === 'validating' ? (
