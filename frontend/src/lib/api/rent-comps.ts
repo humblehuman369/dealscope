@@ -34,6 +34,39 @@ function hasFiniteNumber(value: unknown): boolean {
   return Number.isFinite(n)
 }
 
+function pickPhotoUrl(value: unknown): string | null {
+  if (!value) return null
+  if (typeof value === 'string') return toStr(value) || null
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const url = pickPhotoUrl(item)
+      if (url) return url
+    }
+    return null
+  }
+  if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    const direct =
+      toStr(obj.url) ||
+      toStr(obj.href) ||
+      toStr(obj.src) ||
+      toStr(obj.imageUrl) ||
+      toStr(obj.imgSrc) ||
+      toStr(obj.thumbnailUrl)
+    if (direct) return direct
+    return (
+      pickPhotoUrl(obj.jpeg) ||
+      pickPhotoUrl(obj.webp) ||
+      pickPhotoUrl(obj.png) ||
+      pickPhotoUrl(obj.mixedSources) ||
+      pickPhotoUrl(obj.photo) ||
+      pickPhotoUrl(obj.image) ||
+      null
+    )
+  }
+  return null
+}
+
 /** Same extraction as sale-comps: results first, then same fallback keys. Backend normalizes both to results. */
 function extractCompsArray(raw: BackendCompsResponse): unknown[] {
   const list =
@@ -61,6 +94,9 @@ export function transformRentComps(
     hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
 
   const comps: RentComp[] = list.map((item: unknown, index: number) => {
+    const wrapper = (item && typeof item === 'object')
+      ? (item as Record<string, unknown>)
+      : null
     const comp = (item && typeof item === 'object' && 'property' in item
       ? (item as { property: unknown }).property
       : item) as Record<string, unknown>
@@ -114,27 +150,29 @@ export function transformRentComps(
     const zpid = toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `rent-${index + 1}`
 
     let imageUrl: string | null = null
-    const photos = comp?.compsCarouselPropertyPhotos as unknown[] | undefined
-    if (Array.isArray(photos) && photos.length > 0) {
-      const first = photos[0] as Record<string, unknown>
-      const mixed = first?.mixedSources as Record<string, unknown[]> | undefined
-      const jpeg = mixed?.jpeg
-      if (Array.isArray(jpeg) && jpeg.length > 0) {
-        const img = jpeg[0] as Record<string, string>
-        if (img?.url) imageUrl = img.url
-      }
-    }
-    if (!imageUrl) {
-      const miniCard = comp?.miniCardPhotos as unknown[] | undefined
-      if (Array.isArray(miniCard) && miniCard.length > 0) {
-        const first = miniCard[0] as Record<string, string>
-        if (first?.url) imageUrl = first.url
-      }
-    }
+    imageUrl =
+      pickPhotoUrl(comp?.compsCarouselPropertyPhotos) ||
+      pickPhotoUrl(comp?.miniCardPhotos) ||
+      pickPhotoUrl(comp?.carouselPhotos) ||
+      pickPhotoUrl(comp?.photos) ||
+      pickPhotoUrl(comp?.listingPhotos) ||
+      pickPhotoUrl(comp?.responsivePhotos) ||
+      pickPhotoUrl(wrapper?.compsCarouselPropertyPhotos) ||
+      pickPhotoUrl(wrapper?.miniCardPhotos) ||
+      pickPhotoUrl(wrapper?.carouselPhotos) ||
+      pickPhotoUrl(wrapper?.photos) ||
+      pickPhotoUrl(wrapper?.listingPhotos) ||
+      pickPhotoUrl(wrapper?.responsivePhotos)
     if (!imageUrl && comp?.imageUrl) imageUrl = toStr(comp.imageUrl)
     if (!imageUrl && comp?.imgSrc) imageUrl = toStr(comp.imgSrc)
     if (!imageUrl && comp?.image) imageUrl = toStr(comp.image)
+    if (!imageUrl && comp?.photo) imageUrl = toStr(comp.photo)
     if (!imageUrl && comp?.thumbnailUrl) imageUrl = toStr(comp.thumbnailUrl)
+    if (!imageUrl && wrapper?.imageUrl) imageUrl = toStr(wrapper.imageUrl)
+    if (!imageUrl && wrapper?.imgSrc) imageUrl = toStr(wrapper.imgSrc)
+    if (!imageUrl && wrapper?.image) imageUrl = toStr(wrapper.image)
+    if (!imageUrl && wrapper?.photo) imageUrl = toStr(wrapper.photo)
+    if (!imageUrl && wrapper?.thumbnailUrl) imageUrl = toStr(wrapper.thumbnailUrl)
     if (!imageUrl) {
       const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
       if (key) {
