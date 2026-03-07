@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { fetchSaleComps as fetchSaleCompsApi } from '@/lib/api/sale-comps'
 import { fetchRentComps as fetchRentCompsApi } from '@/lib/api/rent-comps'
+import { CompsProximityMap } from './CompsProximityMap'
 import type { SaleComp, RentComp, CompsIdentifier, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
 import {
   calculateAppraisalValues,
@@ -684,6 +685,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     return true
   }), [comps, recencyFilter])
 
+  const mapComps = useMemo(() => filteredComps.map(c => ({
+    id: c.id,
+    latitude: c.latitude,
+    longitude: c.longitude,
+    address: c.address,
+  })), [filteredComps])
+
   // Current appraisal result
   const appraisal = isSale ? saleAppraisal : null
   const rentResult = !isSale ? rentAppraisal : null
@@ -885,6 +893,17 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
           </div>
         </div>
+
+        {/* Proximity Map */}
+        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+          <div className="px-4 mt-3">
+            <CompsProximityMap
+              subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+              comps={mapComps}
+              activeView={activeView}
+            />
+          </div>
+        )}
 
         {/* No property (landed without address or zpid) */}
         {!hasValidSubject && (
