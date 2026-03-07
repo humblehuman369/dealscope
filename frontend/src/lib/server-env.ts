@@ -11,7 +11,8 @@
  * Resolution order for BACKEND_URL:
  * 1. BACKEND_URL environment variable (preferred)
  * 2. NEXT_PUBLIC_API_URL as fallback (same host in most deployments)
- * 3. Empty string — fetch will fail with a clear network error
+ * 3. Production fallback to Railway backend
+ * 4. Empty string — fetch will fail with a clear network error
  *
  * This module NEVER throws at import time so the app can always start.
  */
@@ -19,6 +20,7 @@
 function resolveBackendUrl(): string {
   const backendUrl = process.env.BACKEND_URL
   const publicApiUrl = process.env.NEXT_PUBLIC_API_URL
+  const railwayFallback = 'https://dealscope-production.up.railway.app'
 
   if (backendUrl) {
     if (backendUrl.includes('vercel.app')) {
@@ -39,12 +41,13 @@ function resolveBackendUrl(): string {
     return publicApiUrl
   }
 
-  // Production fallback so server-side API routes (e.g. report, property by zpid) work (app and backend at dealgapiq.com)
+  // Production fallback so server-side API routes continue to work even
+  // when env vars are missing in Vercel.
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     console.warn(
-      '[server-env] Neither BACKEND_URL nor NEXT_PUBLIC_API_URL is set. Using https://dealgapiq.com for server-side API calls.',
+      `[server-env] Neither BACKEND_URL nor NEXT_PUBLIC_API_URL is set. Using ${railwayFallback} for server-side API calls.`,
     )
-    return 'https://dealgapiq.com'
+    return railwayFallback
   }
 
   console.error(

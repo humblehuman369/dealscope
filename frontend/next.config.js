@@ -47,24 +47,24 @@ if (!isCapacitor) {
   ]
 
   nextConfig.rewrites = async () => {
-    const raw = process.env.NEXT_PUBLIC_API_URL || ''
-    const trimmed = raw.trim().replace(/\/+$/, '')
-    const canonicalBackend = 'https://dealgapiq.com'
+    const rawBackend = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || ''
+    const trimmed = rawBackend.trim().replace(/\/+$/, '')
+    const canonicalBackend = 'https://dealscope-production.up.railway.app'
     const apiUrl =
       trimmed || (process.env.VERCEL ? canonicalBackend : 'http://localhost:8000')
     if (process.env.VERCEL) {
-      console.log(`[next.config.js] NEXT_PUBLIC_API_URL raw value: "${raw}" (length=${raw.length})`)
+      console.log(`[next.config.js] BACKEND_URL/NEXT_PUBLIC_API_URL raw value: "${rawBackend}" (length=${rawBackend.length})`)
       console.log(`[next.config.js] Rewrite destination: ${apiUrl}/api/:path*`)
       const isLocalhost = apiUrl.startsWith('http://localhost') || apiUrl.startsWith('http://127.0.0.1')
       if (trimmed && isLocalhost) {
         throw new Error(
-          'NEXT_PUBLIC_API_URL must be your public backend URL on Vercel, not localhost. ' +
-          'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://dealgapiq.com), then redeploy.'
+          'BACKEND_URL/NEXT_PUBLIC_API_URL must be your public backend URL on Vercel, not localhost. ' +
+          'Set it in Vercel → Project → Settings → Environment Variables (e.g. https://dealscope-production.up.railway.app), then redeploy.'
         )
       }
       if (!trimmed) {
         console.log(
-          '[next.config.js] NEXT_PUBLIC_API_URL not set; using https://dealgapiq.com for API rewrites.'
+          '[next.config.js] BACKEND_URL/NEXT_PUBLIC_API_URL not set; using Railway backend fallback for API rewrites.'
         )
       }
     }
