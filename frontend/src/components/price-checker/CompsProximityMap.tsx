@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps'
 import { MapPin } from 'lucide-react'
 
@@ -46,13 +46,17 @@ const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
  */
 function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
   const map = useMap()
+  const [geocodedPos, setGeocodedPos] = useState<google.maps.LatLngLiteral | null>(null)
 
   const validComps = useMemo(
     () => comps.filter(c => isFiniteCoord(c.latitude, c.longitude)),
     [comps],
   )
 
-  const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
+  const hasDirectCoords = isFiniteCoord(subject.latitude, subject.longitude)
+  const subjectPos = hasDirectCoords
+    ? { lat: subject.latitude!, lng: subject.longitude! }
+    : geocodedPos
 
   useEffect(() => {
     if (!map) return
@@ -60,9 +64,20 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
   }, [map])
 
   useEffect(() => {
+    if (hasDirectCoords || !map || !subject.address) return
+    const geocoder = new google.maps.Geocoder()
+    geocoder.geocode({ address: subject.address }, (results, status) => {
+      if (status === 'OK' && results?.[0]?.geometry?.location) {
+        const loc = results[0].geometry.location
+        setGeocodedPos({ lat: loc.lat(), lng: loc.lng() })
+      }
+    })
+  }, [map, hasDirectCoords, subject.address])
+
+  useEffect(() => {
     if (!map) return
     const points: google.maps.LatLngLiteral[] = []
-    if (hasSubject) points.push({ lat: subject.latitude!, lng: subject.longitude! })
+    if (subjectPos) points.push(subjectPos)
     validComps.forEach(c => points.push({ lat: c.latitude, lng: c.longitude }))
 
     if (points.length === 0) return
@@ -75,7 +90,7 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
     const bounds = new google.maps.LatLngBounds()
     points.forEach(p => bounds.extend(p))
     map.fitBounds(bounds, 50)
-  }, [map, hasSubject, subject.latitude, subject.longitude, validComps])
+  }, [map, subjectPos, validComps])
 
   if (!map) return null
 
@@ -83,9 +98,9 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
 
   return (
     <>
-      {hasSubject && (
+      {subjectPos && (
         <Marker
-          position={{ lat: subject.latitude!, lng: subject.longitude! }}
+          position={subjectPos}
           title={`Subject: ${subject.address}`}
           zIndex={1000}
           label={{
