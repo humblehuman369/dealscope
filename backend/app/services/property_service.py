@@ -1866,7 +1866,11 @@ class PropertyService:
                     exclude_set = set(str(z) for z in exclude_zpids)
                     results = [r for r in results if str(r.get("zpid", r.get("id", ""))) not in exclude_set]
 
-                # Compute distance from subject when coordinates are provided
+                # Resolve subject coords when not provided (matches get_similar_rent behaviour)
+                if subject_lat is None or subject_lon is None:
+                    subject_lat, subject_lon = await self._resolve_subject_coords(resolved_zpid, address, url)
+
+                # Compute distance from subject when coordinates are available
                 if subject_lat is not None and subject_lon is not None:
                     for comp in results:
                         comp_lat = comp.get("latitude")

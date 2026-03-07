@@ -611,6 +611,8 @@ export function SalesCompsSection() {
       limit: 10,
       offset,
       exclude_zpids: excludeZpids.length > 0 ? excludeZpids.join(',') : undefined,
+      subject_lat: subject.latitude ?? undefined,
+      subject_lon: subject.longitude ?? undefined,
     }
 
     const result = await fetchSaleComps(identifier, subjectForComps ?? undefined)
