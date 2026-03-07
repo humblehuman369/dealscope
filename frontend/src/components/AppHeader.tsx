@@ -614,11 +614,12 @@ export function AppHeader({
 
         {/* Tab Bar - pure black, hidden on info pages */}
         {showTabs && !isInfoPage && (
-          <div 
+          <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
               backgroundColor: '#000000',
-              borderBottom: `1px solid ${colors.ui.border}`,
+              borderTop: '1px solid rgba(14, 165, 233, 0.25)',
+              borderBottom: '1px solid rgba(14, 165, 233, 0.25)',
               WebkitOverflowScrolling: 'touch',
             }}
           >
