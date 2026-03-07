@@ -21,6 +21,24 @@ function isFiniteCoord(lat: unknown, lng: unknown): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng)
 }
 
+const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a8a9a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a2e' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#2a2a3e' }] },
+  { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#6a6a7a' }] },
+  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#16162a' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a3e' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a2e' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#6a6a7a' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#333350' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a2e' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e0e1a' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3a3a4a' }] },
+]
+
 /**
  * Inner component rendered as a child of <Map> so the Google Maps JS API
  * (and therefore `google.maps.*`) is guaranteed to be loaded by the time
@@ -35,6 +53,11 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
   )
 
   const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
+
+  useEffect(() => {
+    if (!map) return
+    map.setOptions({ styles: DARK_MAP_STYLES })
+  }, [map])
 
   useEffect(() => {
     if (!map) return
@@ -65,6 +88,21 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
           position={{ lat: subject.latitude!, lng: subject.longitude! }}
           title={`Subject: ${subject.address}`}
           zIndex={1000}
+          label={{
+            text: 'S',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: '13px',
+          }}
+          icon={{
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 16,
+            fillColor: '#EA4335',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 3,
+            labelOrigin: new google.maps.Point(0, 0),
+          }}
         />
       )}
 
