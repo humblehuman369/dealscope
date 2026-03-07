@@ -11,7 +11,7 @@
  * - credentials: 'include' on every request
  */
 
-import { API_BASE_URL } from '@/lib/env'
+import { API_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 
 // ------------------------------------------------------------------
 // Types
@@ -84,26 +84,38 @@ function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<
 }
 
 // ------------------------------------------------------------------
-// In-memory token fallback
+// Token storage
 //
-// Browsers sometimes delay persisting httpOnly cookies (especially
-// through reverse-proxy rewrites).  We keep a short-lived copy of
-// the access token in memory so that the first /me call right after
-// login can fall back to the Authorization header.
+// Web: Short-lived in-memory fallback (60s) — cookies are the
+// primary auth mechanism. Memory token bridges the gap between
+// login and cookie propagation.
+//
+// Capacitor: Persistent localStorage — cookies don't work cross-origin
+// in the WebView, so Bearer tokens are the sole auth mechanism.
 // ------------------------------------------------------------------
+
+const CAP_ACCESS_KEY = 'dgiq_access_token'
+const CAP_REFRESH_KEY = 'dgiq_refresh_token'
 
 let _memoryToken: string | null = null
 let _memoryTokenSetAt = 0
-const MEMORY_TOKEN_TTL_MS = 60_000 // 60 seconds — plenty for the first /me check
+const MEMORY_TOKEN_TTL_MS = 60_000
 
-/** Store the access token in memory (called right after login). */
-export function setMemoryToken(token: string) {
+/** Store the access token (called right after login). */
+export function setMemoryToken(token: string, refreshToken?: string) {
   _memoryToken = token
   _memoryTokenSetAt = Date.now()
+  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+    localStorage.setItem(CAP_ACCESS_KEY, token)
+    if (refreshToken) localStorage.setItem(CAP_REFRESH_KEY, refreshToken)
+  }
 }
 
-/** Read the in-memory access token (returns null after TTL expires). */
+/** Read the access token. */
 function getMemoryToken(): string | null {
+  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+    return localStorage.getItem(CAP_ACCESS_KEY)
+  }
   if (!_memoryToken) return null
   if (Date.now() - _memoryTokenSetAt > MEMORY_TOKEN_TTL_MS) {
     _memoryToken = null
@@ -112,9 +124,21 @@ function getMemoryToken(): string | null {
   return _memoryToken
 }
 
-/** Clear the in-memory token (called on logout). */
+/** Read the refresh token (Capacitor only). */
+function getStoredRefreshToken(): string | null {
+  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+    return localStorage.getItem(CAP_REFRESH_KEY)
+  }
+  return null
+}
+
+/** Clear all stored tokens (called on logout). */
 export function clearMemoryToken() {
   _memoryToken = null
+  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+    localStorage.removeItem(CAP_ACCESS_KEY)
+    localStorage.removeItem(CAP_REFRESH_KEY)
+  }
 }
 
 // ------------------------------------------------------------------
@@ -140,21 +164,32 @@ async function refreshTokens(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
+      const storedRefresh = getStoredRefreshToken()
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
-        credentials: 'include',
+        credentials: IS_CAPACITOR ? 'omit' : 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(IS_CAPACITOR && storedRefresh
+            ? { Authorization: `Bearer ${storedRefresh}` }
+            : {}),
+        },
+        ...(IS_CAPACITOR && storedRefresh
+          ? { body: JSON.stringify({ refresh_token: storedRefresh }) }
+          : {}),
       })
       if (res.ok) {
         try {
           const body = await res.json()
           if (body.access_token) {
-            setMemoryToken(body.access_token)
+            setMemoryToken(body.access_token, body.refresh_token)
           }
         } catch {
           // Token still set via cookie; memory replenishment is best-effort
         }
         return true
       }
+      if (IS_CAPACITOR) clearMemoryToken()
       return false
     } catch {
       return false
@@ -226,7 +261,7 @@ async function apiRequest<T>(
     const config: RequestInit = {
       method,
       headers: requestHeaders,
-      credentials: 'include',
+      credentials: IS_CAPACITOR ? 'omit' : 'include',
       signal: requestSignal,
     }
     if (body !== undefined) {
@@ -261,7 +296,7 @@ async function apiRequest<T>(
           const retryConfig: RequestInit = {
             method,
             headers: retryHeaders,
-            credentials: 'include',
+            credentials: IS_CAPACITOR ? 'omit' : 'include',
             signal: requestSignal,
           }
           if (body !== undefined) {
@@ -321,10 +356,8 @@ export const authApi = {
       method: 'POST',
       body: { email, password, remember_me: rememberMe },
     })
-    // Store access token in memory so the very next /me call
-    // can use the Authorization header if cookies haven't propagated yet.
     if ('access_token' in result && result.access_token) {
-      setMemoryToken(result.access_token)
+      setMemoryToken(result.access_token, (result as LoginResponse).refresh_token)
     }
     return result
   },
@@ -335,7 +368,7 @@ export const authApi = {
       body: { challenge_token: challengeToken, totp_code: totpCode, remember_me: rememberMe },
     })
     if (result.access_token) {
-      setMemoryToken(result.access_token)
+      setMemoryToken(result.access_token, result.refresh_token)
     }
     return result
   },

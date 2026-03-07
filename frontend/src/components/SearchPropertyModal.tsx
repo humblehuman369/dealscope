@@ -7,6 +7,7 @@ import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
+import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
@@ -44,7 +45,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
     setValidationResult(null);
 
     try {
-      const res = await fetch('/api/validate-address', {
+      const validateUrl = IS_CAPACITOR ? `${WEB_BASE_URL}/api/validate-address` : '/api/validate-address';
+      const res = await fetch(validateUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: raw }),

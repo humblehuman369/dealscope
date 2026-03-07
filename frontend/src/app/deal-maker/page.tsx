@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import dynamic from 'next/dynamic'
 import { Search, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react'
 import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
@@ -123,7 +124,8 @@ export default function DealMakerIndexPage() {
     setValidationResult(null)
 
     try {
-      const res = await fetch('/api/validate-address', {
+      const validateUrl = IS_CAPACITOR ? `${WEB_BASE_URL}/api/validate-address` : '/api/validate-address'
+      const res = await fetch(validateUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: raw }),

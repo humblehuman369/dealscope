@@ -1,17 +1,26 @@
 /**
  * Centralized environment variable access (client-side).
  *
- * API calls always use relative URLs (/api/v1/...) so they go through
- * the Vercel rewrite proxy → Railway backend. This makes auth cookies
- * first-party (same domain), avoiding third-party cookie blocking in
- * modern browsers.
+ * Web (Vercel): API_BASE_URL is empty — requests use relative paths
+ * through the Vercel rewrite proxy, keeping auth cookies first-party.
  *
- * NEXT_PUBLIC_API_URL is used ONLY by next.config.js rewrites to know
- * where to proxy requests. The frontend code itself never needs it.
+ * Capacitor: API_BASE_URL is the full backend URL (e.g. https://api.dealgapiq.com).
+ * Requests go directly to the backend with Bearer token auth.
  */
+
+/** Detect Capacitor runtime (WebView native shell). */
+export const IS_CAPACITOR =
+  typeof window !== 'undefined' && !!(window as any).Capacitor
 
 /**
  * Base URL prefix for client-side API calls.
- * Always empty string — requests use relative paths through the proxy.
+ * - Web (Vercel): empty string — relative paths go through proxy
+ * - Capacitor: full backend URL — direct API calls
  */
-export const API_BASE_URL = ''
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
+/**
+ * Base URL for the web app (used when Capacitor needs to call
+ * Vercel-hosted API routes like /api/report).
+ */
+export const WEB_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || ''
