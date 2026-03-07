@@ -31,9 +31,10 @@ export function ScoreGauge({ score, size = 160 }: ScoreGaugeProps) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - 12;
-  const scoreColor = getScoreColor(score);
-  const verdictLabel = getScoreLabel(score);
-  const clampedScore = Math.max(0, Math.min(100, score));
+  const safeScore = Number.isFinite(score) ? score : 0;
+  const scoreColor = getScoreColor(safeScore);
+  const verdictLabel = getScoreLabel(safeScore);
+  const clampedScore = Math.max(0, Math.min(100, safeScore));
   const scoreAngle = ARC_START + (clampedScore / 100) * ARC_SWEEP;
 
   useEffect(() => {
@@ -45,7 +46,10 @@ export function ScoreGauge({ score, size = 160 }: ScoreGaugeProps) {
   }, [animValue]);
 
   const bgArc = describeArc(cx, cy, r, ARC_START, ARC_START + ARC_SWEEP);
-  const scoreArc = describeArc(cx, cy, r, ARC_START, scoreAngle);
+  const showScoreArc = clampedScore > 0;
+  const scoreArc = showScoreArc
+    ? describeArc(cx, cy, r, ARC_START, scoreAngle)
+    : '';
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -57,13 +61,15 @@ export function ScoreGauge({ score, size = 160 }: ScoreGaugeProps) {
           fill="none"
           strokeLinecap="round"
         />
-        <Path
-          d={scoreArc}
-          stroke={scoreColor}
-          strokeWidth={10}
-          fill="none"
-          strokeLinecap="round"
-        />
+        {showScoreArc && (
+          <Path
+            d={scoreArc}
+            stroke={scoreColor}
+            strokeWidth={10}
+            fill="none"
+            strokeLinecap="round"
+          />
+        )}
       </Svg>
       <View style={styles.center}>
         <Animated.Text
