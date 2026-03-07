@@ -947,6 +947,11 @@ function VerdictContent() {
           <p className="max-w-md" style={{ color: '#F1F5F9' }}>
             We couldn&apos;t fetch the property data. Please try again or search for a different address.
           </p>
+          {error && error !== 'Unable to load property' && (
+            <p className="max-w-md text-sm opacity-80" style={{ color: '#94A3B8' }}>
+              {error}
+            </p>
+          )}
           <button
             onClick={handleBack}
             className="mt-4 px-6 py-2 bg-sky-500 text-white rounded-full font-bold hover:bg-sky-400 transition-colors"
