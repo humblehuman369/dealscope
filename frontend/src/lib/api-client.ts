@@ -83,6 +83,31 @@ function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<
   return `Request failed (${status}). Please check your input and try again.`
 }
 
+function buildNetworkErrorMessage(endpoint: string, rawError: unknown): string {
+  const base = API_BASE_URL || ''
+  const errorMessage = rawError instanceof Error ? rawError.message : 'Failed to fetch'
+
+  if (typeof window === 'undefined') {
+    const baseLabel = base || '(same-origin)'
+    return `Network request failed for ${endpoint} via ${baseLabel}. Check backend reachability.`
+  }
+
+  const pageOrigin = window.location.origin
+  let requestOrigin = pageOrigin
+  try {
+    requestOrigin = new URL(base || '/', pageOrigin).origin
+  } catch {
+    requestOrigin = pageOrigin
+  }
+  const isCrossOrigin = requestOrigin !== pageOrigin
+
+  if (isCrossOrigin) {
+    return `Network request failed for ${endpoint} (${errorMessage}). Frontend origin ${pageOrigin} is calling ${requestOrigin}; verify backend is reachable and allows this origin in CORS.`
+  }
+
+  return `Network request failed for ${endpoint} (${errorMessage}). Check that the frontend origin is reachable and that API rewrites/proxy configuration points to a live backend.`
+}
+
 // ------------------------------------------------------------------
 // Token storage
 //
@@ -258,6 +283,7 @@ async function apiRequest<T>(
   }
 
   const doFetch = async (requestSignal: AbortSignal): Promise<Response> => {
+    const requestUrl = `${API_BASE_URL}${endpoint}`
     const config: RequestInit = {
       method,
       headers: requestHeaders,
@@ -267,7 +293,7 @@ async function apiRequest<T>(
     if (body !== undefined) {
       config.body = JSON.stringify(body)
     }
-    return fetch(`${API_BASE_URL}${endpoint}`, config)
+    return fetch(requestUrl, config)
   }
 
   let response: Response
@@ -277,7 +303,7 @@ async function apiRequest<T>(
     if (err instanceof ApiError) throw err
     const isAbort = err instanceof Error && err.name === 'AbortError'
     throw new ApiError(
-      isAbort ? 'Request timed out. Please try again.' : (err as Error).message || 'Request failed.',
+      isAbort ? 'Request timed out. Please try again.' : buildNetworkErrorMessage(endpoint, err),
       0,
     )
   }
@@ -308,7 +334,7 @@ async function apiRequest<T>(
         if (err instanceof ApiError) throw err
         const isAbort = err instanceof Error && err.name === 'AbortError'
         throw new ApiError(
-          isAbort ? 'Request timed out. Please try again.' : (err as Error).message || 'Request failed.',
+          isAbort ? 'Request timed out. Please try again.' : buildNetworkErrorMessage(endpoint, err),
           0,
         )
       }
