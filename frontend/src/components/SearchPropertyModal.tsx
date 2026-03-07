@@ -14,9 +14,10 @@ type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | '
 interface SearchPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onScanProperty?: () => void;
 }
 
-export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProps) {
+export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchPropertyModalProps) {
   const router = useRouter();
   const [address, setAddress] = useState('');
   const [showAddressInput, setShowAddressInput] = useState(false);
@@ -27,6 +28,11 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
   if (!isOpen) return null;
 
   const handleScanProperty = () => {
+    if (onScanProperty) {
+      onScanProperty();
+      handleClose();
+      return;
+    }
     setShowScanInfo(true);
   };
 
