@@ -458,14 +458,13 @@ export function AppHeader({
     return null
   }
 
-  // Analyzing page: pure black background per CURSOR-UNIFY-COLOR-SYSTEM
-  const isAnalyzingPage = pathname?.startsWith('/analyzing')
-  const headerBg = isAnalyzingPage ? '#000000' : colors.background.deepNavy
+  // Header and toolbar: pure black background
+  const headerBg = '#000000'
 
   return (
     <>
       <header className="sticky top-0 z-50">
-        {/* Brand Bar - Dark Navy (pure black on /analyzing) */}
+        {/* Brand Bar - pure black */}
         <div 
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: headerBg }}
@@ -613,12 +612,12 @@ export function AppHeader({
           </div>
         </div>
 
-        {/* Tab Bar - Dark surface (pure black on /analyzing), hidden on info pages */}
+        {/* Tab Bar - pure black, hidden on info pages */}
         {showTabs && !isInfoPage && (
           <div 
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
-              backgroundColor: isAnalyzingPage ? '#000000' : colors.background.surface,
+              backgroundColor: '#000000',
               borderBottom: `1px solid ${colors.ui.border}`,
               WebkitOverflowScrolling: 'touch',
             }}
@@ -635,7 +634,8 @@ export function AppHeader({
                   `}
                   style={{
                     backgroundColor: 'transparent',
-                    color: '#FFFFFF',
+                    fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
+                    color: colors.brand.teal,
                     borderColor: colors.ui.border,
                     borderBottom: isActive ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                   }}
