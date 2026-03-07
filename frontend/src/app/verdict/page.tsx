@@ -34,6 +34,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
+import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
 import { PriceTarget } from '@/lib/priceUtils'
@@ -782,7 +783,8 @@ function VerdictContent() {
       theme,
       propertyId: String(propertyId),
     })
-    window.open(`/api/report?${params}`, '_blank')
+    const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+    window.open(`${reportBase}/api/report?${params}`, '_blank')
   }, [analysis?.propertyId, addressParam])
 
   const handlePDFDownload = useCallback((theme: 'light' | 'dark' = 'light') => {

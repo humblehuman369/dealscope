@@ -17,6 +17,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
+import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
@@ -403,7 +404,8 @@ function StrategyContent() {
       if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
       // Open the Vercel-hosted HTML report in a new tab
       // The report auto-triggers window.print() for Save as PDF
-      const url = `/api/report?${params}`
+      const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+      const url = `${reportBase}/api/report?${params}`
       window.open(url, '_blank')
     } catch (err) {
       console.error('PDF report failed:', err)
