@@ -62,6 +62,10 @@ export function transformSaleComps(
   const subjectYear = subject?.yearBuilt ?? 0
 
   const comps: SaleComp[] = list.map((item: unknown, index: number) => {
+    const wrapper = (item && typeof item === 'object')
+      ? (item as Record<string, unknown>)
+      : null
+    const wrapperDistance = wrapper?.distance ?? wrapper?.distanceMiles
     const comp = (item && typeof item === 'object' && 'property' in item
       ? (item as { property: unknown }).property
       : item) as Record<string, unknown>
@@ -87,7 +91,7 @@ export function transformSaleComps(
         ? haversineDistance(subjectLat as number, subjectLon as number, lat, lon)
         : null
     const distanceMiles =
-      haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
+      haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? wrapperDistance ?? 0)
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
