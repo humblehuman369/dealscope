@@ -14,11 +14,14 @@ export const IS_CAPACITOR =
 
 /**
  * Base URL prefix for client-side API calls.
- * - Web (Vercel): empty string — relative paths go through proxy
- * - Capacitor: also empty — use same-origin so requests go to dealgapiq.com
- *   and Vercel rewrites to the backend. Avoids CORS and WebView cross-origin issues.
+ * - Default: empty string — relative paths go through the app origin and rewrites
+ * - Optional direct mode: set NEXT_PUBLIC_USE_DIRECT_API=true to call
+ *   NEXT_PUBLIC_API_URL directly (useful for targeted debugging only)
  */
-export const API_BASE_URL = IS_CAPACITOR ? '' : (process.env.NEXT_PUBLIC_API_URL || '')
+const DIRECT_API_ENABLED = process.env.NEXT_PUBLIC_USE_DIRECT_API === 'true'
+const PUBLIC_API_URL = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, '')
+
+export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
 
 /**
  * Base URL for the web app (used when Capacitor needs to call

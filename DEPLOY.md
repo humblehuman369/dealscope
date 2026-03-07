@@ -40,7 +40,7 @@ AXESSO_URL=https://api.axesso.de/zil
 SECRET_KEY=generate-with-openssl-rand-hex-32
 
 # CORS - Add your Vercel URL after deploying frontend
-CORS_ORIGINS=["https://your-app.vercel.app","http://localhost:3000"]
+CORS_ORIGINS_STR=https://your-app.vercel.app,http://localhost:3000
 ```
 
 ### 1.4 Get Your Backend URL
@@ -266,7 +266,7 @@ RENTCAST_URL=https://api.rentcast.io/v1
 AXESSO_API_KEY=your_axesso_key
 AXESSO_URL=https://api.axesso.de/zil
 SECRET_KEY=your_secret_key_min_32_chars
-CORS_ORIGINS=["https://your-frontend.vercel.app"]
+CORS_ORIGINS_STR=https://your-frontend.vercel.app
 ```
 
 ### Frontend (.env.local)

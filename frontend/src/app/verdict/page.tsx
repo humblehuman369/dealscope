@@ -950,7 +950,9 @@ function VerdictContent() {
           {error && error !== 'Unable to load property' && (
             <p className="max-w-md text-sm opacity-80" style={{ color: '#94A3B8' }}>
               {error}
-              {error === 'Failed to fetch' && (
+              {(error === 'Failed to fetch' ||
+                error.toLowerCase().includes('network request failed') ||
+                error.toLowerCase().includes('allows this origin in cors')) && (
                 <span className="block mt-2">Check your connection and that the API backend is reachable. If you use a separate frontend URL (e.g. Vercel), ensure the backend allows your origin in CORS.</span>
               )}
             </p>
