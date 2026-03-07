@@ -1739,22 +1739,49 @@ class PropertyService:
                 # Compute distance from subject when coordinates are available
                 if subject_lat is not None and subject_lon is not None:
                     for comp in results:
-                        comp_lat = comp.get("latitude")
+                        if not isinstance(comp, dict):
+                            continue
+
+                        # AXESSO often wraps payloads as {"property": {...}}.
+                        # Compute using nested coords when present and store distance
+                        # in both nested and wrapper objects so downstream consumers
+                        # can read either shape.
+                        target = comp
+                        nested = comp.get("property")
+                        if isinstance(nested, dict):
+                            target = nested
+
+                        comp_lat = target.get("latitude")
                         if comp_lat is None:
-                            comp_lat = comp.get("lat")
-                        comp_lon = comp.get("longitude")
+                            comp_lat = target.get("lat")
+                        if comp_lat is None and target is not comp:
+                            comp_lat = comp.get("latitude")
+                            if comp_lat is None:
+                                comp_lat = comp.get("lat")
+
+                        comp_lon = target.get("longitude")
                         if comp_lon is None:
-                            comp_lon = comp.get("lng")
+                            comp_lon = target.get("lng")
                         if comp_lon is None:
-                            comp_lon = comp.get("lon")
+                            comp_lon = target.get("lon")
+                        if comp_lon is None and target is not comp:
+                            comp_lon = comp.get("longitude")
+                            if comp_lon is None:
+                                comp_lon = comp.get("lng")
+                            if comp_lon is None:
+                                comp_lon = comp.get("lon")
+
                         if comp_lat is not None and comp_lon is not None:
                             try:
-                                comp["distance"] = round(
+                                distance = round(
                                     self._haversine_miles(
                                         subject_lat, subject_lon, float(comp_lat), float(comp_lon)
                                     ),
                                     2,
                                 )
+                                target["distance"] = distance
+                                if target is not comp:
+                                    comp["distance"] = distance
                             except (ValueError, TypeError):
                                 pass
 
@@ -1873,22 +1900,49 @@ class PropertyService:
                 # Compute distance from subject when coordinates are available
                 if subject_lat is not None and subject_lon is not None:
                     for comp in results:
-                        comp_lat = comp.get("latitude")
+                        if not isinstance(comp, dict):
+                            continue
+
+                        # AXESSO often wraps payloads as {"property": {...}}.
+                        # Compute using nested coords when present and store distance
+                        # in both nested and wrapper objects so downstream consumers
+                        # can read either shape.
+                        target = comp
+                        nested = comp.get("property")
+                        if isinstance(nested, dict):
+                            target = nested
+
+                        comp_lat = target.get("latitude")
                         if comp_lat is None:
-                            comp_lat = comp.get("lat")
-                        comp_lon = comp.get("longitude")
+                            comp_lat = target.get("lat")
+                        if comp_lat is None and target is not comp:
+                            comp_lat = comp.get("latitude")
+                            if comp_lat is None:
+                                comp_lat = comp.get("lat")
+
+                        comp_lon = target.get("longitude")
                         if comp_lon is None:
-                            comp_lon = comp.get("lng")
+                            comp_lon = target.get("lng")
                         if comp_lon is None:
-                            comp_lon = comp.get("lon")
+                            comp_lon = target.get("lon")
+                        if comp_lon is None and target is not comp:
+                            comp_lon = comp.get("longitude")
+                            if comp_lon is None:
+                                comp_lon = comp.get("lng")
+                            if comp_lon is None:
+                                comp_lon = comp.get("lon")
+
                         if comp_lat is not None and comp_lon is not None:
                             try:
-                                comp["distance"] = round(
+                                distance = round(
                                     self._haversine_miles(
                                         subject_lat, subject_lon, float(comp_lat), float(comp_lon)
                                     ),
                                     2,
                                 )
+                                target["distance"] = distance
+                                if target is not comp:
+                                    comp["distance"] = distance
                             except (ValueError, TypeError):
                                 pass
 
