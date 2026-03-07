@@ -7,9 +7,18 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://dealgapiq.com',
     cleartext: false,
+    allowNavigation: [
+      'dealgapiq.com',
+      '*.dealgapiq.com',
+      'dealscope-production.up.railway.app',
+      'api.dealgapiq.com',
+      'api-staging.dealgapiq.com',
+    ],
   },
   ios: {
     scheme: 'DealGapIQ',
+    allowsLinkPreview: false,
+    contentInset: 'automatic',
   },
   plugins: {
     SplashScreen: {
