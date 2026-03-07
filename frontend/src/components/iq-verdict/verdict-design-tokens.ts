@@ -25,10 +25,6 @@ export const breakpoints = {
 } as const
 
 export const layout = {
-  /** Max content width for readability on wide screens */
-  maxWidth: 640,
-  /** Max width with padding */
-  maxWidthPadded: 672,
   /** Container padding on mobile */
   mobilePadding: 16,
   /** Container padding on desktop */
@@ -434,8 +430,8 @@ export const tw = {
   glowRing: 'drop-shadow-[0_0_12px_rgba(56,189,248,0.25)]',
 
   // Layout
-  pageContainer: 'min-h-screen max-w-[480px] mx-auto bg-black',
-  container: 'max-w-[480px] mx-auto',
+  pageContainer: 'min-h-screen w-full bg-black',
+  container: 'w-full',
   section: 'px-5 py-8',
 
   // Responsive typography

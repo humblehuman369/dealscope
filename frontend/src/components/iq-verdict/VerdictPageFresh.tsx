@@ -28,7 +28,6 @@ import {
   colors, 
   components, 
   tw,
-  layout,
   getScoreColor,
   getHarmonizedBarColor,
   getAssessment,
@@ -1328,10 +1327,9 @@ export function VerdictPageFresh({
     >
       {/* Header and Property Bar are now handled by global AppHeader in layout */}
 
-      {/* Content Container - Max width for readability on wide screens */}
+      {/* Content Container */}
       <div 
-        className="mx-auto w-full"
-        style={{ maxWidth: layout.maxWidth }}
+        className="w-full px-4 sm:px-8 lg:px-12 xl:px-16"
       >
         {/* Investment Analysis FIRST (Star of the show - conversion driver) */}
         <InvestmentAnalysisSection
