@@ -218,9 +218,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 760, margin: "0 auto 18px",
           opacity: 0, animation: "fadeUp 0.6s 0.35s forwards",
         }}>
-          Built for aspiring investors and small portfolio owners who want
-          <br />
-          institutional-grade underwriting without a Wall Street team.
+          Built for aspiring investors and small portfolio owners who want institutional-grade underwriting without a Wall Street team.
         </p>
 
         <div
