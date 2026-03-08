@@ -202,7 +202,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          In 60 seconds, get a buy price, a deal score and why, so you can decide to pursue or pass.
+          In 60 seconds, get a buy price, a deal score and intel, so you can decide to pursue or pass.
           Built for aspiring investors and small portfolio owners who want institutional-grade underwriting without a Wall Street team.
         </p>
 
