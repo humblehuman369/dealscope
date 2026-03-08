@@ -206,42 +206,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           Built for aspiring investors and small portfolio owners who want institutional-grade underwriting without a Wall Street team.
         </p>
 
-        <div
-          className="hero-investor-points"
-          style={{
-            maxWidth: 980,
-            margin: "0 auto 28px",
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: 12,
-            opacity: 0,
-            animation: "fadeUp 0.6s 0.4s forwards",
-          }}
-        >
-          {[
-            "Avoid your first negative-cash-flow mistake before it costs you thousands.",
-            "See every expense and assumption - taxes, insurance, vacancy, maintenance, debt.",
-            "Download full PDF and Excel underwriting reports to review with partners or lenders.",
-          ].map((point, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 8,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid rgba(14,165,233,0.14)",
-                background: "rgba(14,165,233,0.04)",
-                textAlign: "left" as const,
-              }}
-            >
-              <CheckIcon />
-              <span style={{ fontFamily: s.fontBody, fontSize: 13, lineHeight: 1.5, color: s.muted }}>{point}</span>
-            </div>
-          ))}
-        </div>
-
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
           <form onSubmit={handleAnalyze} style={{
             display: "flex", flexDirection: "column" as const, gap: 12,

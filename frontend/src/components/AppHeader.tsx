@@ -330,6 +330,7 @@ export function AppHeader({
   // Determine active tab from prop or pathname
   const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
   const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
+  const isHomepage = !pathname || pathname === '/'
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar = showPropertyBarProp !== undefined 
@@ -613,7 +614,7 @@ export function AppHeader({
         </div>
 
         {/* Tab Bar - pure black, hidden on info pages */}
-        {showTabs && !isInfoPage && (
+        {showTabs && !isInfoPage && !isHomepage && (
           <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
