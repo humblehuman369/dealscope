@@ -839,6 +839,17 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           />
         </div>
 
+        {/* Proximity Map */}
+        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+          <div className="px-4 mt-3">
+            <CompsProximityMap
+              subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+              comps={mapComps}
+              activeView={activeView}
+            />
+          </div>
+        )}
+
         {/* Controls + Filters */}
         <div className="px-4 mt-3 min-w-0">
           <div className="flex items-center justify-between gap-2">
@@ -888,17 +899,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
           </div>
         </div>
-
-        {/* Proximity Map */}
-        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="px-4 mt-3">
-            <CompsProximityMap
-              subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
-              comps={mapComps}
-              activeView={activeView}
-            />
-          </div>
-        )}
 
         {/* No property (landed without address or zpid) */}
         {!hasValidSubject && (
