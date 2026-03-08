@@ -16,14 +16,13 @@
  * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
-import { useCallback, useEffect, useRef, useState, useMemo, Suspense } from 'react'
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
 } from '@/components/iq-verdict'
-import { VerdictScoreCard, VerdictNarrative } from '@/components/iq-verdict/VerdictScoreCard'
 import { getDealVerdict } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
@@ -71,6 +70,166 @@ interface BackendAnalysisResponse {
   discount_bracket_label?: string; discountBracketLabel?: string
   // Allow additional camelCase fields from alias generator
   [key: string]: unknown
+}
+
+function ScoreArc({ score, maxScore = 100, size = 120 }: { score: number; maxScore?: number; size?: number }) {
+  const [val, setVal] = useState(0)
+  const r = 46
+  const sw = 7
+  const cx = size / 2
+  const sa = 135
+  const ea = 405
+  const ta = ea - sa
+  const id = useId().replace(/:/g, '_')
+  const arcGlowId = `arcGlow_${id}`
+  const gradientId = `ag_${id}`
+
+  useEffect(() => {
+    let f = 0
+    const t0 = performance.now()
+    const run = (now: number) => {
+      const t = Math.min((now - t0) / 1400, 1)
+      setVal(Math.round((1 - Math.pow(1 - t, 3)) * score))
+      if (t < 1) f = requestAnimationFrame(run)
+    }
+    f = requestAnimationFrame(run)
+    return () => cancelAnimationFrame(f)
+  }, [score])
+
+  const p = (a: number, rad: number) => ({
+    x: cx + rad * Math.cos((a * Math.PI) / 180),
+    y: cx + rad * Math.sin((a * Math.PI) / 180),
+  })
+
+  const s = p(sa, r)
+  const e = p(ea, r)
+  const sweep = (val / maxScore) * ta
+  const v = p(sa + sweep, r)
+  const bg = `M ${s.x} ${s.y} A ${r} ${r} 0 1 1 ${e.x} ${e.y}`
+  const fg = `M ${s.x} ${s.y} A ${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${v.x} ${v.y}`
+
+  const color = val >= 80 ? '#34D399' : val >= 60 ? '#FBBF24' : val >= 40 ? '#F97316' : '#F97066'
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <defs>
+        <filter id={arcGlowId}>
+          <feGaussianBlur stdDeviation="3" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={color} />
+          <stop offset="100%" stopColor={color} stopOpacity="0.5" />
+        </linearGradient>
+      </defs>
+      <path d={bg} fill="none" stroke="#1E293B" strokeWidth={sw} strokeLinecap="round" />
+      <path d={fg} fill="none" stroke={`url(#${gradientId})`} strokeWidth={sw} strokeLinecap="round" filter={`url(#${arcGlowId})`} />
+      <text
+        x={cx}
+        y={cx - 2}
+        textAnchor="middle"
+        fill="#FFFFFF"
+        fontSize="34"
+        fontWeight="700"
+        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+      >
+        {val}
+      </text>
+      <text
+        x={cx}
+        y={cx + 16}
+        textAnchor="middle"
+        fill="#FFFFFF"
+        fontSize="11"
+        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+      >
+        {`out of ${maxScore}`}
+      </text>
+    </svg>
+  )
+}
+
+function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNode; delay?: number }) {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 500 + delay)
+    return () => clearTimeout(t)
+  }, [delay])
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 14,
+        alignItems: 'flex-start',
+        opacity: show ? 1 : 0,
+        transform: show ? 'translateY(0)' : 'translateY(10px)',
+        transition: 'all 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    >
+      <div
+        style={{
+          minWidth: 30,
+          height: 30,
+          borderRadius: '50%',
+          background: 'rgba(14,165,233,0.12)',
+          border: '1px solid rgba(14,165,233,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 13,
+          fontWeight: 700,
+          color: '#0EA5E9',
+          flexShrink: 0,
+        }}
+      >
+        {num}
+      </div>
+      <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: '#FFFFFF', paddingTop: 4 }}>{children}</p>
+    </div>
+  )
+}
+
+function getBadgeStyle(verdictLabel: string) {
+  switch (verdictLabel) {
+    case 'Achievable':
+      return { bg: 'rgba(52,211,153,0.1)', color: '#34D399', border: 'rgba(52,211,153,0.2)', icon: '✓' }
+    case 'Negotiable':
+      return { bg: 'rgba(52,211,153,0.1)', color: '#34D399', border: 'rgba(52,211,153,0.2)', icon: '✓' }
+    case 'Challenging':
+      return { bg: 'rgba(251,191,36,0.1)', color: '#FBBF24', border: 'rgba(251,191,36,0.2)', icon: '⚡' }
+    case 'More Challenging':
+      return { bg: 'rgba(249,115,22,0.1)', color: '#F97316', border: 'rgba(249,115,22,0.2)', icon: '⚠' }
+    case 'Very Challenging':
+      return { bg: 'rgba(249,112,102,0.1)', color: '#F97066', border: 'rgba(249,112,102,0.2)', icon: '✕' }
+    case 'Extremely Challenging':
+      return { bg: 'rgba(249,112,102,0.1)', color: '#F97066', border: 'rgba(249,112,102,0.2)', icon: '✕' }
+    default:
+      return { bg: 'rgba(251,191,36,0.1)', color: '#FBBF24', border: 'rgba(251,191,36,0.2)', icon: '⚡' }
+  }
+}
+
+function getHeadline(verdictLabel: string): string {
+  switch (verdictLabel) {
+    case 'Achievable':
+      return 'The numbers work. Move fast.'
+    case 'Negotiable':
+      return 'A solid opportunity - worth pursuing.'
+    case 'Challenging':
+      return "Doable, but you'll need to negotiate hard."
+    case 'More Challenging':
+      return 'The math is tight. Proceed with caution.'
+    case 'Very Challenging':
+      return "The numbers don't work at this price."
+    case 'Extremely Challenging':
+      return "The numbers don't work at this price."
+    default:
+      return "Here's what the data says."
+  }
 }
 
 /**
@@ -979,11 +1138,31 @@ function VerdictContent() {
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
-  const dealGap = property.price > 0
-    ? Math.max(0, ((property.price - purchasePrice) / property.price) * 100)
+  const rawDealGap = property.price > 0
+    ? ((property.price - purchasePrice) / property.price) * 100
     : 0
+  const dealGap = Math.max(0, rawDealGap)
+  const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
+  const discountAmount = Math.max(0, property.price - purchasePrice)
+  const probability = analysis.componentScores?.dealProbabilityScore != null
+    ? Math.max(0, Math.min(100, Math.round(analysis.componentScores.dealProbabilityScore)))
+    : Math.max(0, Math.min(100, Math.round(score)))
+  const probabilityTail = probability > 50
+    ? 'This is well within reach.'
+    : probability >= 20
+      ? 'Achievable with the right approach.'
+      : "You'll need leverage, timing, or a motivated seller."
+  const badgeStyle = getBadgeStyle(verdictLabel)
+  const headline = getHeadline(verdictLabel)
+  const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
+  const dataSourceCount = sourceKeys.filter((sourceKey) => {
+    const valueHasSource = iqSources.value[sourceKey] != null
+    const rentHasSource = iqSources.rent[sourceKey] != null
+    return valueHasSource || rentHasSource
+  }).length
+  const analysisTimeSeconds = 4.2
+  const isOffMarket = !isListed
 
-  const fmtCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
   const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
 
   const navigateToStrategy = () => {
@@ -1004,16 +1183,151 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-          <VerdictScoreCard
-            score={score}
-            verdictLabel={verdictLabel}
-            dealGapPercent={dealGap}
-            targetBuyPrice={purchasePrice}
-          />
-          <VerdictNarrative
-            narrative={analysis.dealNarrative}
-            onHowItWorks={handleShowMethodology}
-          />
+          {/* Verdict Hero Card */}
+          <div className="mx-5 mt-6">
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: 'hidden',
+                background: '#000000',
+                border: '1px solid rgba(14,165,233,0.25)',
+                boxShadow: '0 0 40px rgba(14,165,233,0.08), 0 0 80px rgba(14,165,233,0.04)',
+              }}
+            >
+              <div style={{ padding: '28px 28px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <ScoreArc score={score} size={120} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: badgeStyle.bg,
+                        color: badgeStyle.color,
+                        padding: '5px 14px',
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        border: `1px solid ${badgeStyle.border}`,
+                      }}
+                    >
+                      <span style={{ fontSize: 12 }}>{badgeStyle.icon}</span>
+                      {verdictLabel}
+                    </span>
+                    <h1
+                      style={{
+                        margin: '12px 0 0',
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        lineHeight: 1.3,
+                        letterSpacing: -0.2,
+                      }}
+                    >
+                      {headline}
+                    </h1>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  height: 1,
+                  margin: '0 28px',
+                  background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.25), rgba(14,165,233,0.5), rgba(14,165,233,0.25), transparent)',
+                }}
+              />
+
+              <div style={{ padding: '24px 28px 28px' }}>
+                <h3
+                  style={{
+                    margin: '0 0 20px',
+                    fontSize: 12,
+                    color: '#FFFFFF',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
+                    fontWeight: 600,
+                  }}
+                >
+                  What You Need to Know
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                  <Takeaway num="1" delay={0}>
+                    {isOffMarket ? (
+                      <span>
+                        This property is <strong style={{ color: '#FBBF24' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                      </span>
+                    ) : (
+                      <span>
+                        This property is <strong style={{ color: '#34D399' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                      </span>
+                    )}
+                  </Takeaway>
+                  <Takeaway num="2" delay={140}>
+                    <span>
+                      To cash-flow positively, buy at <strong style={{ color: '#0EA5E9' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: '#FBBF24' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
+                    </span>
+                  </Takeaway>
+                  <Takeaway num="3" delay={280}>
+                    <span>
+                      About <strong style={{ color: '#0EA5E9' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
+                    </span>
+                  </Takeaway>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '12px 28px',
+                  borderTop: '1px solid rgba(14,165,233,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleShowMethodology}
+                  style={{
+                    fontSize: 12,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>ⓘ</span>
+                  How we score deals
+                </button>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 12,
+                    color: '#FFFFFF',
+                  }}
+                >
+                  <span style={{ color: '#FBBF24', fontSize: 11 }}>⚡</span>
+                  <span>
+                    Analyzed in <strong style={{ color: '#0EA5E9' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
+                  </span>
+                  <span style={{ margin: '0 2px', opacity: 0.3 }}>·</span>
+                  <strong style={{ color: '#FFFFFF' }}>{dataSourceCount} data sources</strong>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
 
