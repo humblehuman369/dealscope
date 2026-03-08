@@ -705,9 +705,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
-        {/* Page Header — empty anchor for spacing */}
-        <div className="bg-black border-b border-[rgba(14,165,233,0.3)] shadow-[0_0_30px_rgba(14,165,233,0.06)]" />
-
         {/* Dual Valuation Panel */}
         <div className="mx-4 mt-4 sticky top-[120px] z-40">
           <div className={`relative rounded-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
@@ -835,13 +832,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 flex-shrink-0">
               <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                  isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                  isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
                 }`}>
                 Sale Comps
               </button>
               <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                  !isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                  !isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
                 }`}>
                 Rent Comps
               </button>
@@ -874,7 +871,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             <div className="flex rounded-lg bg-black/50 border border-[rgba(14,165,233,0.2)] p-0.5 flex-shrink-0">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
                     recencyFilter === val ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)]' : 'text-[#F1F5F9] hover:text-[#F1F5F9]'
                   }`}>{label}</button>
               ))}
