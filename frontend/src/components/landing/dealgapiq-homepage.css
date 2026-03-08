@@ -29,10 +29,13 @@
 @media (max-width: 768px) {
   .steps-grid { grid-template-columns: 1fr !important; }
   .verdict-inner { grid-template-columns: 1fr !important; }
+  .verdict-method-inner { grid-template-columns: 1fr !important; }
+  .investor-fit-inner { grid-template-columns: 1fr !important; }
   .numbers-grid { grid-template-columns: 1fr !important; }
   .strategy-inner { grid-template-columns: 1fr !important; }
   .cost-inner { grid-template-columns: 1fr !important; }
   .proof-bar-inner { grid-template-columns: repeat(2, 1fr) !important; }
+  .hero-investor-points { grid-template-columns: 1fr !important; }
   .hero-address-bar { flex-direction: column !important; padding: 10px !important; gap: 8px !important; }
   .hero-address-bar input { width: 100% !important; text-align: center !important; padding: 10px !important; }
   .hero-address-bar button { width: 100% !important; justify-content: center !important; }
