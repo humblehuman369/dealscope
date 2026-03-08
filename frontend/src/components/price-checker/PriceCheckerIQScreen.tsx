@@ -710,7 +710,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           <div className={`relative rounded-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-3 gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-black border border-[rgba(14,165,233,0.3)] flex items-center justify-center">
                   <Target className="w-4.5 h-4.5 text-[#38bdf8]" />
@@ -719,6 +719,20 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <h3 className="text-sm font-bold text-[#F1F5F9]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
                   <p className="text-xs text-[#F1F5F9]">From {selectedIds.size} selected comps</p>
                 </div>
+              </div>
+              <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 justify-self-center">
+                <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                    isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                  }`}>
+                  Sale Comps
+                </button>
+                <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                    !isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                  }`}>
+                  Rent Comps
+                </button>
               </div>
               <div className="text-center px-2 py-1 rounded-lg bg-black border border-[rgba(14,165,233,0.25)]">
                 <div className="text-base font-bold tabular-nums" style={{
@@ -828,22 +842,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Controls + Filters — single row with overflow scroll on narrow screens */}
         <div className="px-4 mt-3 space-y-2 min-w-0">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            {/* Sale / Rent toggle */}
-            <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 flex-shrink-0">
-              <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                  isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
-                }`}>
-                Sale Comps
-              </button>
-              <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                  !isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
-                }`}>
-                Rent Comps
-              </button>
-            </div>
-
             {/* New / All / Reset */}
             <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
               className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
