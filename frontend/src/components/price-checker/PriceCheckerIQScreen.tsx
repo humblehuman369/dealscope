@@ -332,7 +332,7 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[#38bdf8]" />
           <span className="text-sm font-semibold text-[#F1F5F9]">Adjustment Breakdown</span>
-          <span className="text-xs text-[#F1F5F9]">({compAdjustments.length} comps)</span>
+          <span className="text-xs text-[#F1F5F9]">({compAdjustments.length})</span>
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
       </button>
@@ -717,7 +717,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#F1F5F9]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
-                  <p className="text-xs text-[#F1F5F9]">From {selectedIds.size} selected comps</p>
+                  <p className="text-xs text-[#F1F5F9]">From {selectedIds.size} selected</p>
                 </div>
               </div>
               <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 justify-self-center">
@@ -839,9 +839,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           />
         </div>
 
-        {/* Controls + Filters — single row with overflow scroll on narrow screens */}
-        <div className="px-4 mt-3 space-y-2 min-w-0">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+        {/* Controls + Filters */}
+        <div className="px-4 mt-3 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-[#F1F5F9] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
+
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
             {/* New / All / Reset */}
             <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
               className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
@@ -865,7 +868,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             <div className="w-px h-5 bg-[rgba(14,165,233,0.2)] flex-shrink-0" />
 
             {/* Recency filter */}
-            <span className="text-xs text-[#F1F5F9] flex-shrink-0">Filter:</span>
             <div className="flex rounded-lg bg-black/50 border border-[rgba(14,165,233,0.2)] p-0.5 flex-shrink-0">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
@@ -874,15 +876,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   }`}>{label}</button>
               ))}
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm text-[#F1F5F9]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
-            <div className="flex flex-wrap gap-2">
+            <div className="w-px h-5 bg-[rgba(14,165,233,0.2)] flex-shrink-0" />
+
+            <div className="flex items-center gap-2">
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                className="min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Select All</button>
+                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg whitespace-nowrap">Select All</button>
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                className="min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg">Clear</button>
+                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg whitespace-nowrap">Clear</button>
+            </div>
             </div>
           </div>
         </div>
