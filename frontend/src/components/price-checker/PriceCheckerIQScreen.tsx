@@ -777,6 +777,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
+                <div className="mt-2 flex justify-end">
+                  <button
+                    onClick={handleApplyValues}
+                    disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
+                    className="px-2 py-1 rounded-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-[11px] font-semibold disabled:opacity-50 transition-colors"
+                  >
+                    Apply to Deal
+                  </button>
+                </div>
               </div>
 
               {/* Right: ARV / Improved Rent */}
@@ -807,6 +816,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <TrendingUp className="w-3 h-3 text-[#34d399]" />
                   <span className="text-[10px] font-medium text-[#34d399]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
+                <div className="mt-2 flex justify-end">
+                  <button
+                    onClick={handleApplyValues}
+                    disabled={(isSale ? displayArv : displayImprovedRent) === 0}
+                    className="px-2 py-1 rounded-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-[11px] font-semibold disabled:opacity-50 transition-colors"
+                  >
+                    Apply to Deal
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -821,11 +839,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </span>
             </div>
 
-            <button onClick={handleApplyValues}
-              disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
-              className="w-full px-4 py-2.5 rounded-lg bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-sm font-semibold disabled:opacity-50 transition-colors">
-              Apply to Deal Analysis
-            </button>
           </div>
         </div>
 
