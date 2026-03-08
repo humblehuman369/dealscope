@@ -67,6 +67,11 @@ const RESPONSIVE_STYLE = `
     .pricing-grid { grid-template-columns: 1fr !important; }
     .proforma-grid { grid-template-columns: 1fr 1fr !important; }
     .stats-grid { grid-template-columns: 1fr 1fr !important; }
+    .pricing-trust-grid { grid-template-columns: 1fr !important; }
+    .pricing-bottom-options { flex-direction: column !important; align-items: stretch !important; }
+    .pricing-bottom-option { width: 100% !important; }
+    .pricing-bottom-option a,
+    .pricing-bottom-option button { width: 100% !important; text-align: center !important; }
   }
 `;
 
@@ -75,10 +80,10 @@ export default function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  const features: Feature[] = [
-    { name: "Property analyses per month", free: "5", pro: "Unlimited" },
-    { name: "Deal Gap + Income Value + Target Buy", free: true, pro: true },
-    { name: "IQ Verdict score (Pass / Marginal / Buy)", free: true, pro: true },
+  const starterFeatures: Feature[] = [
+    { name: "Up to 5 property analyses per month.", free: true, pro: true },
+    { name: "Full Verdict, Income Value, and Target Buy on each property.", free: true, pro: true },
+    { name: "Plain-language explanations of every key metric.", free: true, pro: true },
     { name: "All 6 strategy models", free: true, pro: true },
     { name: "Seller Motivation indicator", free: true, pro: true },
     { name: "Full calculation breakdown", free: false, pro: true },
@@ -88,6 +93,18 @@ export default function PricingContent() {
     { name: "DealVaultIQ pipeline & tracking", free: false, pro: true },
     { name: "Access nearby ZIP comparisons", free: false, pro: true },
     { name: "Side-by-side deal comparison", free: false, pro: true },
+  ];
+
+  const proFeatures: string[] = [
+    "Unlimited property analyses plus full PDF and Excel underwriting reports.",
+    "Editable assumptions and stress testing for rent, rates, and expenses.",
+    "DealVaultIQ pipeline & tracking so you can monitor offers from first look to closed deal.",
+    "Full calculation breakdown",
+    "Comparable rental data sources",
+    "Access nearby ZIP comparisons",
+    "Side-by-side deal comparison",
+    "Seller Motivation indicator",
+    "All 6 strategy models",
   ];
 
   const faqs = [
@@ -195,6 +212,43 @@ export default function PricingContent() {
         </div>
       </div>
 
+      {/* ─── TRUST & FIT BLOCK ─── */}
+      <div style={{ maxWidth: "960px", margin: "28px auto 0" }}>
+        <p style={{ fontSize: "14px", color: "#ffffff", textAlign: "center", margin: "0 0 18px 0", lineHeight: 1.6 }}>
+          For aspiring investors and small portfolio owners analyzing 1-20 properties a month.
+        </p>
+        <div
+          className="pricing-trust-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: "12px",
+          }}
+        >
+          {[
+            "Every analysis is built on real comparables, rent data, taxes, and your loan terms - you can see and edit every assumption.",
+            "Verdict Scores are benchmarked against real U.S. investor discount data by % below list price.",
+            "Each deal comes with a detailed PDF and Excel pro forma so there's nothing hidden when you show the numbers to someone you trust.",
+          ].map((text, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "8px",
+                padding: "10px 12px",
+                borderRadius: "10px",
+                border: "1px solid rgba(14, 165, 233, 0.2)",
+                background: "rgba(14, 165, 233, 0.04)",
+              }}
+            >
+              <CheckIcon color="#0EA5E9" />
+              <span style={{ fontSize: "12px", color: "#b9b9b9", lineHeight: 1.55 }}>{text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ─── PRICING CARDS ─── */}
       <div
         className="pricing-grid"
@@ -223,6 +277,9 @@ export default function PricingContent() {
           <div style={{ display: "flex", alignItems: "baseline", gap: "4px", margin: "0 0 6px 0" }}>
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>Free</span>
           </div>
+          <p style={{ fontSize: "13px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 10px 0" }}>
+            Best for learning the numbers and screening your first few deals.
+          </p>
           <p style={{ fontSize: "13px", color: "#555", margin: "0 0 28px 0" }}>
             Always free. No credit card required.
           </p>
@@ -250,7 +307,7 @@ export default function PricingContent() {
           </Link>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {features.map((f, i) => (
+            {starterFeatures.map((f, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
                 {f.free === true ? (
                   <CheckIcon color="#444" />
@@ -307,6 +364,9 @@ export default function PricingContent() {
             </span>
             <span style={{ fontSize: "15px", color: "#555", fontWeight: 500 }}>/mo</span>
           </div>
+          <p style={{ fontSize: "13px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 10px 0" }}>
+            Best for active small portfolio investors analyzing multiple deals every month.
+          </p>
           {isAnnual ? (
             <p style={{ fontSize: "13px", color: "#555", margin: "0 0 28px 0" }}>
               $348 billed annually &middot; <span style={{ color: "#0EA5E9" }}>Save $120/yr</span>
@@ -364,19 +424,10 @@ export default function PricingContent() {
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {features.map((f, i) => (
+            {proFeatures.map((feature, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
                 <CheckIcon color="#0EA5E9" />
-                <span style={{ color: "#ccc" }}>
-                  {typeof f.pro === "string" ? (
-                    <>
-                      <span style={{ color: "#0EA5E9", fontWeight: 600 }}>{f.pro}</span>
-                      {" — " + f.name.toLowerCase()}
-                    </>
-                  ) : (
-                    f.name
-                  )}
-                </span>
+                <span style={{ color: "#ccc" }}>{feature}</span>
               </div>
             ))}
           </div>
@@ -575,60 +626,71 @@ export default function PricingContent() {
         <p style={{ fontSize: "14px", color: "#555", margin: "0 0 24px 0" }}>
           Every property has a Deal Gap. Only DealGapIQ measures it.
         </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-          {proCtaHref ? (
+        <div className="pricing-bottom-options" style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", alignItems: "flex-start" }}>
+          <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>
+              Already analyzing multiple deals each month?
+            </p>
+            {proCtaHref ? (
+              <Link
+                href={proCtaHref}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
+                  color: "#000",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                  textDecoration: "none",
+                }}
+              >
+                Start 7-Day Free Trial &rarr;
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={handleProClick}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
+                  color: "#000",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                }}
+              >
+                Start 7-Day Free Trial &rarr;
+              </button>
+            )}
+          </div>
+
+          <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>
+              Just starting or learning the numbers?
+            </p>
             <Link
-              href={proCtaHref}
+              href="/register?plan=starter"
               style={{
                 padding: "12px 24px",
                 borderRadius: "8px",
-                border: "none",
-                background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                color: "#000",
+                border: "1px solid #333",
+                background: "transparent",
+                color: "#ccc",
                 fontSize: "14px",
-                fontWeight: 700,
+                fontWeight: 600,
                 cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
                 textDecoration: "none",
               }}
             >
-              Start 7-Day Free Trial &rarr;
+              Start Free
             </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={handleProClick}
-              style={{
-                padding: "12px 24px",
-                borderRadius: "8px",
-                border: "none",
-                background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                color: "#000",
-                fontSize: "14px",
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
-              }}
-            >
-              Start 7-Day Free Trial &rarr;
-            </button>
-          )}
-          <Link
-            href="/register?plan=starter"
-            style={{
-              padding: "12px 24px",
-              borderRadius: "8px",
-              border: "1px solid #333",
-              background: "transparent",
-              color: "#ccc",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: "pointer",
-              textDecoration: "none",
-            }}
-          >
-            Start Free
-          </Link>
+          </div>
         </div>
         <p style={{ fontSize: "11px", color: "#444", margin: "14px 0 0 0" }}>
           No credit card required for Starter. 7-day free trial on Pro.

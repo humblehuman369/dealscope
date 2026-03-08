@@ -213,6 +213,50 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           </span>
         </p>
 
+        <p style={{
+          fontFamily: s.fontBody, fontSize: 15, lineHeight: 1.7, color: "rgba(255,255,255,0.8)",
+          maxWidth: 760, margin: "0 auto 18px",
+          opacity: 0, animation: "fadeUp 0.6s 0.35s forwards",
+        }}>
+          Built for aspiring investors and small portfolio owners who want institutional-grade underwriting without a Wall Street team.
+        </p>
+
+        <div
+          className="hero-investor-points"
+          style={{
+            maxWidth: 980,
+            margin: "0 auto 28px",
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 12,
+            opacity: 0,
+            animation: "fadeUp 0.6s 0.4s forwards",
+          }}
+        >
+          {[
+            "Avoid your first negative-cash-flow mistake before it costs you thousands.",
+            "See every expense and assumption - taxes, insurance, vacancy, maintenance, debt.",
+            "Download full PDF and Excel underwriting reports to review with partners or lenders.",
+          ].map((point, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid rgba(14,165,233,0.14)",
+                background: "rgba(14,165,233,0.04)",
+                textAlign: "left" as const,
+              }}
+            >
+              <CheckIcon />
+              <span style={{ fontFamily: s.fontBody, fontSize: 13, lineHeight: 1.5, color: s.muted }}>{point}</span>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
           <form onSubmit={handleAnalyze} style={{
             display: "flex", flexDirection: "column" as const, gap: 12,
@@ -320,6 +364,76 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           ))}
         </div>
       </div>
+
+      <DivB />
+
+      {/* ═══════════ VERDICT SCORE METHODOLOGY ═══════════ */}
+      <FadeIn>
+        <section style={{ padding: "96px 24px" }}>
+          <div className="verdict-method-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
+            <div>
+              <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 18 }}>
+                How the Verdict Score Is Calculated
+              </h2>
+              <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", lineHeight: 1.7, marginBottom: 18 }}>
+                The Verdict Score answers one question: How achievable is this deal for an investor like you?
+              </p>
+              <p style={{ fontFamily: s.fontBody, fontSize: 15, color: "rgba(255,255,255,0.9)", lineHeight: 1.7, marginBottom: 10, fontWeight: 600 }}>
+                Every score combines:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 9, marginBottom: 18 }}>
+                {[
+                  "Your loan terms and down payment.",
+                  "Income Value - the price where rent covers all expenses and debt.",
+                  "Real U.S. investor discount data by % below list price.",
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <CheckIcon />
+                    <span style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.7 }}>
+                No black box: you can open the full explanation on any deal and inspect the brackets and breakeven math.
+              </p>
+            </div>
+
+            <div>
+              <div style={{ ...cardLgStyle, padding: 22 }}>
+                <div style={{ fontFamily: s.fontBody, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: s.muted, marginBottom: 12 }}>
+                  How The Verdict Works
+                </div>
+                <div style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 14, background: "#0C1220" }}>
+                  <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(14,165,233,0.2)", background: "rgba(14,165,233,0.06)", marginBottom: 10 }}>
+                    <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginBottom: 4 }}>Core question</div>
+                    <div style={{ fontFamily: s.fontBody, fontSize: 15, fontWeight: 700, color: s.teal, lineHeight: 1.35 }}>
+                      How achievable is this Deal Gap?
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginBottom: 10 }}>
+                    {[
+                      ["0-5% below list", "88-95"],
+                      ["6-10% below list", "75-88"],
+                      ["11-20% below list", "60-75"],
+                    ].map(([range, score]) => (
+                      <React.Fragment key={range}>
+                        <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted }}>{range}</div>
+                        <div style={{ fontFamily: s.fontData, fontSize: 12, color: "#fff", fontWeight: 700 }}>{score}</div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 10, fontFamily: s.fontBody, fontSize: 12, color: s.muted }}>
+                    Includes financing assumptions + breakeven math + investor discount benchmarks.
+                  </div>
+                </div>
+              </div>
+              <p style={{ marginTop: 12, fontFamily: s.fontBody, fontSize: 13, color: s.muted, lineHeight: 1.6 }}>
+                Your Deal Gap is benchmarked against real U.S. investor transaction discounts - not guesswork.
+              </p>
+            </div>
+          </div>
+        </section>
+      </FadeIn>
 
       <DivB />
 
@@ -676,6 +790,54 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 ].map((cred, i) => (
                   <div key={i} style={{ background: "#000", border: "1px solid rgba(14,165,233,0.15)", borderRadius: 8, padding: "7px 14px", fontFamily: s.fontBody, fontSize: 12, color: s.muted, display: "flex", alignItems: "center", gap: 5, boxShadow: "0 0 16px rgba(14,165,233,0.04)" }}>
                     <span style={{ fontFamily: s.fontData, fontWeight: 700, color: "#fff", fontSize: 12 }}>{cred.num}</span> {cred.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+
+      <DivC />
+
+      {/* ═══════════ INVESTOR FIT ═══════════ */}
+      <FadeIn>
+        <section style={{ padding: "96px 24px" }}>
+          <div className="investor-fit-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+            <div style={{ ...cardLgStyle, padding: "28px 24px" }}>
+              <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 18 }}>
+                Built for Aspiring and Small Portfolio Investors
+              </h2>
+              <h3 style={{ fontFamily: s.fontBody, fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                If you&apos;re just getting started
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                {[
+                  "Screen your first few deals in minutes instead of wrestling with spreadsheets.",
+                  "Learn the numbers - cap rate, cash-on-cash, and DSCR - with plain-language explanations.",
+                  "Know the highest price you can pay and still break even on your first rental.",
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <CheckIcon />
+                    <span style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.65 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ ...cardLgStyle, padding: "28px 24px" }}>
+              <h3 style={{ fontFamily: s.fontBody, fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                If you&apos;re growing a small portfolio
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                {[
+                  "Quickly compare multiple offers per month using consistent, transparent assumptions.",
+                  "Export full underwriting PDFs and Excel files for partners, lenders, and your records.",
+                  "Stress-test rent, rates, and repairs before you commit to a new property.",
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <CheckIcon />
+                    <span style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.65 }}>{item}</span>
                   </div>
                 ))}
               </div>
