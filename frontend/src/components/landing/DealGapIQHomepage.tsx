@@ -202,25 +202,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          <span className="hero-subtitle-desktop">
-            In 60 seconds, get a buy price, a deal score<br />
-            and why, so you can decide to pursue or pass.
-          </span>
-          <span className="hero-subtitle-mobile">
-            In 60 seconds, get a buy price.<br />
-            a deal score and why,<br />
-            so you can decide to pursue or pass.
-          </span>
-        </p>
-
-        <p style={{
-          fontFamily: s.fontBody, fontSize: 15, lineHeight: 1.7, color: "rgba(255,255,255,0.8)",
-          maxWidth: 760, margin: "0 auto 18px",
-          opacity: 0, animation: "fadeUp 0.6s 0.35s forwards",
-        }}>
-          Built for aspiring investors and small portfolio owners who want
-          <br />
-          institutional-grade underwriting without a Wall Street team.
+          In 60 seconds, get a buy price, a deal score and why, so you can decide to pursue or pass.
+          Built for aspiring investors and small portfolio owners who want institutional-grade underwriting without a Wall Street team.
         </p>
 
         <div
