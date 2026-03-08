@@ -705,45 +705,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
-        {/* Page Header */}
-        <div className="bg-black border-b border-[rgba(14,165,233,0.3)] p-4 shadow-[0_0_30px_rgba(14,165,233,0.06)]">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {/* Sub-tabs: Sale Comps | Rent Comps */}
-            <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1">
-              <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
-                className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all ${
-                  isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
-                }`}>
-                Sale Comps
-              </button>
-              <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
-                className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all ${
-                  !isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
-                }`}>
-                Rent Comps
-              </button>
-            </div>
-
-            <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-              className="px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1"
-              title="Replace unselected comps with new ones">
-              <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
-            </button>
-            <button onClick={handleRefreshAll} disabled={loading}
-              className="px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1"
-              title="Fetch all new comps from API">
-              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
-            </button>
-
-            {hasChangedFromOriginal && (
-              <button onClick={handleResetToOriginal} disabled={loading}
-                className="px-2.5 py-1.5 rounded-lg bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[11px] font-medium text-[#fbbf24] hover:bg-[#fbbf24]/15 disabled:opacity-50 flex items-center gap-1"
-                title="Restore original system-selected comps">
-                <RotateCcw className="w-3 h-3" />Reset
-              </button>
-            )}
-          </div>
-        </div>
+        {/* Page Header — empty anchor for spacing */}
+        <div className="bg-black border-b border-[rgba(14,165,233,0.3)] shadow-[0_0_30px_rgba(14,165,233,0.06)]" />
 
         {/* Dual Valuation Panel */}
         <div className="mx-4 mt-4 sticky top-[120px] z-40">
@@ -865,19 +828,59 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           />
         </div>
 
-        {/* Filters + Controls — wrap on narrow screens, no horizontal overflow */}
+        {/* Controls + Filters — single row with overflow scroll on narrow screens */}
         <div className="px-4 mt-3 space-y-2 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-[#F1F5F9]">Filter:</span>
-            <div className="flex rounded-lg bg-black/50 border border-[rgba(14,165,233,0.2)] p-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {/* Sale / Rent toggle */}
+            <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 flex-shrink-0">
+              <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                }`}>
+                Sale Comps
+              </button>
+              <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  !isSale ? 'bg-black text-[#F1F5F9] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                }`}>
+                Rent Comps
+              </button>
+            </div>
+
+            {/* New / All / Reset */}
+            <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
+              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+              title="Replace unselected comps with new ones">
+              <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
+            </button>
+            <button onClick={handleRefreshAll} disabled={loading}
+              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+              title="Fetch all new comps from API">
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
+            </button>
+            {hasChangedFromOriginal && (
+              <button onClick={handleResetToOriginal} disabled={loading}
+                className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[11px] font-medium text-[#fbbf24] hover:bg-[#fbbf24]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                title="Restore original system-selected comps">
+                <RotateCcw className="w-3 h-3" />Reset
+              </button>
+            )}
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-[rgba(14,165,233,0.2)] flex-shrink-0" />
+
+            {/* Recency filter */}
+            <span className="text-xs text-[#F1F5F9] flex-shrink-0">Filter:</span>
+            <div className="flex rounded-lg bg-black/50 border border-[rgba(14,165,233,0.2)] p-0.5 flex-shrink-0">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors min-h-[44px] sm:min-h-0 ${
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                     recencyFilter === val ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)]' : 'text-[#F1F5F9] hover:text-[#F1F5F9]'
                   }`}>{label}</button>
               ))}
             </div>
           </div>
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm text-[#F1F5F9]">{selectedIds.size} of {filteredComps.length} {isSale ? 'comps' : 'rentals'} selected</span>
             <div className="flex flex-wrap gap-2">
