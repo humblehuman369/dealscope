@@ -19,11 +19,12 @@ import { useRouter } from 'next/navigation'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, Building2, Home,
-  Pencil, TrendingUp, RotateCcw, Info
+  Pencil, TrendingUp, RotateCcw, Info, Camera
 } from 'lucide-react'
 import { fetchSaleComps as fetchSaleCompsApi } from '@/lib/api/sale-comps'
 import { fetchRentComps as fetchRentCompsApi } from '@/lib/api/rent-comps'
 import { CompsProximityMap } from './CompsProximityMap'
+import { CompPhotosModal } from './CompPhotosModal'
 import type { SaleComp, RentComp, CompsIdentifier, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
 import {
   calculateAppraisalValues,
@@ -162,10 +163,10 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
 }
 
 // Comp Card -- key metrics always visible, match score in expandable details
-function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onExpand, onRefreshComp, refreshing }: {
+function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onExpand, onRefreshComp, refreshing, onViewPhotos }: {
   comp: SaleComp | RentComp; subject: SubjectProperty; isSale: boolean; isSelected: boolean
   onToggle: () => void; isExpanded: boolean; onExpand: () => void
-  onRefreshComp: () => void; refreshing: boolean
+  onRefreshComp: () => void; refreshing: boolean; onViewPhotos?: () => void
 }) {
   const compForCalc = toCompProperty(comp)
   const similarity = calculateSimilarityScore(subject, compForCalc)
@@ -259,12 +260,23 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       {/* Expandable Details: match score, similarity, adjustments */}
       {isExpanded && (
         <div className="border-t border-[rgba(14,165,233,0.25)] p-3 bg-black/50">
-          {/* Match Score header */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
-            <span className="text-lg font-bold tabular-nums" style={{
-              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
-            }}>{similarity.overall}%</span>
+          {/* Match Score header + View Photos */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
+              <span className="text-lg font-bold tabular-nums" style={{
+                color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
+              }}>{similarity.overall}%</span>
+            </div>
+            {comp.zpid && onViewPhotos && (
+              <button
+                onClick={onViewPhotos}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#38bdf8] hover:border-[rgba(14,165,233,0.55)] hover:bg-white/[0.03] transition-colors"
+              >
+                <Camera className="w-3 h-3" />
+                View Photos
+              </button>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -429,6 +441,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [expandedComp, setExpandedComp] = useState<string | number | null>(null)
   const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
   const [refreshingCompId, setRefreshingCompId] = useState<string | number | null>(null)
+  const [photoModalComp, setPhotoModalComp] = useState<SaleComp | RentComp | null>(null)
   const [showAdjGrid, setShowAdjGrid] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
@@ -990,6 +1003,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
                 onRefreshComp={() => handleRefreshComp(comp.id)}
                 refreshing={refreshingCompId === comp.id}
+                onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
               />
             ))}
           </div>
@@ -1015,6 +1029,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-[#F1F5F9] text-black text-sm font-medium rounded-lg shadow-lg shadow-black/40 z-50">
           {saveMessage}
         </div>
+      )}
+
+      {/* Comp Photos Modal */}
+      {photoModalComp && (
+        <CompPhotosModal
+          comp={{ zpid: photoModalComp.zpid, address: photoModalComp.address }}
+          open={!!photoModalComp}
+          onClose={() => setPhotoModalComp(null)}
+        />
       )}
     </div>
   )
