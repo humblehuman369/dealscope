@@ -294,25 +294,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       <DivC />
 
-      {/* ═══════════ PROOF BAR ═══════════ */}
-      <div style={{ padding: "36px 24px", opacity: 0, animation: "fadeUp 0.6s 0.6s forwards" }}>
-        <div className="proof-bar-inner" style={{ maxWidth: 880, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, textAlign: "center" as const }}>
-          {[
-            { num: "35+", label: "Years in RE data\n& technology" },
-            { num: "47", suffix: "s", label: "Average time\nto analyze" },
-            { num: "6", label: "Strategies scored\nsimultaneously" },
-            { num: "Multiple", label: "Data sources cross-\nreferenced per property" },
-          ].map((stat, i) => (
-            <div key={i}>
-              <div style={{ fontFamily: s.fontData, fontSize: 26, fontWeight: 700, letterSpacing: -1 }}>
-                <span style={{ color: s.teal }}>{stat.num}{stat.suffix || ""}</span>
-              </div>
-              <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, lineHeight: 1.4, marginTop: 4, whiteSpace: "pre-line" as const }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <DivB />
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
@@ -334,7 +315,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Any U.S. property address. No account needed for your first scan.</p>
               <div style={{ marginTop: 18, background: "rgba(14,165,233,0.03)", borderRadius: 10, padding: 14, border: "1px solid rgba(14,165,233,0.1)" }}>
                 <div style={{ background: "rgba(14,165,233,0.05)", borderRadius: 8, padding: "11px 14px", color: s.muted, fontFamily: s.fontBody, fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: s.teal }}>📍</span> 1451 Sw 10th St, Boca Raton, FL
+                  <span style={{ color: s.teal }}>📍</span> 1451 Sw 10th St, <span style={{ filter: "blur(2px)" }}>Boca Raton, FL</span>
                 </div>
               </div>
             </div>
@@ -343,15 +324,16 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div style={{ ...cardSmStyle, padding: "28px 22px 24px", textAlign: "center" as const }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "#000", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>2</div>
               <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>We Analyze the Market</h3>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Four valuation sources cross-referenced. Rents, expenses, and comps modeled through our proprietary IQ engine.</p>
+              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Multiple valuation sources cross-referenced. Rents, expenses, and comps modeled through our proprietary IQ engine.</p>
               <div style={{ marginTop: 18, background: "rgba(14,165,233,0.03)", borderRadius: 10, padding: 14, border: "1px solid rgba(14,165,233,0.1)", textAlign: "left" as const }}>
                 {[
                   { label: "IQ Estimate", value: "$869,326", teal: true },
                   { label: "Zillow", value: "$802,600" },
                   { label: "RentCast", value: "$1,016,000" },
                   { label: "Redfin", value: "$789,378" },
+                  { label: "Realtor.com", value: "$805,600" },
                 ].map((row, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: i < 3 ? "1px solid rgba(14,165,233,0.08)" : "none", fontSize: 13 }}>
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: i < 4 ? "1px solid rgba(14,165,233,0.08)" : "none", fontSize: 13 }}>
                     <span style={{ fontFamily: s.fontBody, color: s.muted }}>{row.label}</span>
                     <span style={{ fontFamily: s.fontData, fontWeight: 700, fontSize: 12, color: row.teal ? s.teal : "#fff" }}>{row.value}</span>
                   </div>
