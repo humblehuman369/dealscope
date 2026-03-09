@@ -331,7 +331,8 @@ function VerdictContent() {
     try {
       const data = readDealMakerOverrides(addressParam)
       // Check if data is recent (within last hour)
-      if (data?.timestamp && Date.now() - data.timestamp < 3600000) {
+      const ts = data?.timestamp
+      if (typeof ts === 'number' && !Number.isNaN(ts) && Date.now() - ts < 3600000) {
         console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
         return data
       }
