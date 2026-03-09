@@ -11,7 +11,7 @@ const mutedDim = '#71717A'
 const PROPERTY_VALUES = [
   { source: 'IQ Estimate', value: 858789, isIQ: true },
   { source: 'Zillow', value: 807300 },
-  { source: 'RentCast', value: 1029000 },
+  { source: 'RentCast', value: 963000 },
   { source: 'Redfin', value: 793256 },
   { source: 'Realtor.com', value: 805600 },
 ]

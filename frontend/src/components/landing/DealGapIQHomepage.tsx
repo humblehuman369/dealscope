@@ -206,7 +206,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           maxWidth: 540, margin: "0 auto 32px",
           opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
         }}>
-          Get a buy price, a deal score, and a verdict in 60 seconds — so you know whether to pursue or pass.
+          Get a buy price, a deal score, and a verdict — to help you decide whether to pursue or pass.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
@@ -246,46 +246,9 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             </button>
           </form>
 
-          {onPointAndScan && (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", maxWidth: 440 }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: s.fontBody, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>or</span>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSearchModal(true)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  width: "100%", maxWidth: 440, padding: "12px 24px",
-                  fontSize: 14, fontWeight: 600, fontFamily: s.fontBody,
-                  borderRadius: 8, border: "1px solid rgba(14,165,233,0.3)",
-                  background: "transparent", color: "#fff", cursor: "pointer",
-                  transition: "border-color 0.2s, background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.6)";
-                  e.currentTarget.style.background = "rgba(14,165,233,0.08)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.3)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                  <circle cx="12" cy="13" r="3" />
-                </svg>
-                Scan Property
-              </button>
-            </>
-          )}
-
           <div style={{ display: "flex", gap: 24, alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
             <TrustCheck text="No credit card" />
             <TrustCheck text="5 free analyses / month" />
-            <TrustCheck text="60-second results" />
           </div>
         </div>
       </section>
@@ -308,7 +271,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             Three Steps. One Decision.
           </h2>
           <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
-            Paste an address and let the data do the work.
+            Multiple valuation sources cross-referenced. Rents, expenses, and comps.
           </p>
 
           <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginTop: 52 }}>
@@ -333,7 +296,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 {[
                   { label: "IQ Estimate", value: "$869,326", teal: true },
                   { label: "Zillow", value: "$802,600" },
-                  { label: "RentCast", value: "$1,016,000" },
+                  { label: "RentCast", value: "$963,000" },
                   { label: "Redfin", value: "$789,378" },
                   { label: "Realtor.com", value: "$805,600" },
                 ].map((row, i) => (
@@ -376,7 +339,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 Your 60-Second<br />Investment Screen
               </h2>
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 560, lineHeight: 1.7, marginBottom: 20 }}>
-                A Verdict Score from 0–100 that tells you whether this property is in the range worth pursuing — synthesizing Deal Gap, return quality, market alignment, and deal probability into one number. Below it: your three price thresholds and the number line showing where the deal sits.
+                A Verdict Score from 0–100 helps you gauge whether this property is in the range worth pursuing — synthesizing Deal Gap, return quality, market alignment, and deal probability into one number. Below it: your three price thresholds and the number line showing where the deal sits.
               </p>
               <p style={{ marginTop: 24, fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>
                 <strong style={{ color: s.teal, fontWeight: 600 }}>This isn&apos;t a pass/fail.</strong> Every score links to <strong style={{ color: s.teal, fontWeight: 600 }}>&ldquo;See how to make it work&rdquo;</strong> — the full strategy breakdown showing the math, the terms, and exactly what needs to change for the deal to pencil.
@@ -530,7 +493,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             Every Investment Comes Down to Three Numbers
           </h2>
           <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
-            What&apos;s the most I can pay and break even? Where does cash flow start? How far is the market from both? <BrandName /> calculates all three automatically. Every assumption is editable.
+            What&apos;s the most I can pay and break even? Where does cash flow start? How far is the market from both? <BrandName /> calculates all three automatically. <strong>Every assumption is editable.</strong>
           </p>
 
           <div className="numbers-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginTop: 48 }}>
@@ -609,8 +572,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div style={{ ...cardLgStyle, padding: "44px 36px", marginTop: 36, position: "relative" as const }}>
               <div style={{ position: "absolute" as const, top: -1, left: "50%", transform: "translateX(-50%)", width: 100, height: 2, background: s.teal, borderRadius: "0 0 2px 2px" }} />
               <img src="/brad-geisen.png" alt="Brad Geisen" style={{ width: 112, height: 112, borderRadius: "50%", border: `2px solid ${s.teal}`, margin: "0 auto 18px", display: "block", objectFit: "cover" as const, objectPosition: "50% 38%", boxShadow: "0 0 20px rgba(14,165,233,0.12)", boxSizing: "border-box" as const }} />
-              <div style={{ fontFamily: s.fontBody, fontSize: 19, fontWeight: 700 }}>Brad Geisen</div>
-              <div style={{ fontFamily: s.fontBody, fontSize: 13, color: s.teal, marginBottom: 18 }}>Founder &amp; CEO, DealGapIQ</div>
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: s.muted, lineHeight: 1.7, fontStyle: "italic", maxWidth: 580, margin: "0 auto 24px" }}>
                 &ldquo;I spent 35 years building real estate data systems — HomePath.com for Fannie Mae, HomeSteps.com for Freddie Mac, and Foreclosure.com which I founded and operated for 21 years. I built <strong style={{ fontStyle: "normal" }}>DealGap<span style={{ color: s.teal }}>IQ</span></strong> because investors still don&apos;t have a fast, data-backed way to know their number before making an offer.&rdquo;
               </p>
@@ -691,7 +652,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             Every Property Has a Deal Gap.<br />Find Yours.
           </h2>
           <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 480, margin: "0 auto 32px", lineHeight: 1.7 }}>
-            Paste an address. See the three price thresholds, the Verdict Score, and which strategy makes it work — in under 60 seconds.
+            Paste an address. See the three price thresholds, the Verdict Score, and which strategy makes it work.
           </p>
 
           <div style={{ maxWidth: 440, margin: "0 auto 20px" }}>
@@ -735,7 +696,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 18, flexWrap: "wrap" as const }}>
             <TrustCheck text="No credit card" />
             <TrustCheck text="5 free analyses per month" />
-            <TrustCheck text="Results in 60 seconds" />
             <TrustCheck text="Every assumption editable" />
           </div>
 
