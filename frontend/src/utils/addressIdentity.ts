@@ -5,11 +5,17 @@ export function canonicalizeAddressForIdentity(address: string): string {
     .replace(/,\s*USA$/i, '')
 }
 
+export function isLikelyFullAddress(address: string): boolean {
+  const value = canonicalizeAddressForIdentity(address)
+  // "123 Main St, Boca Raton, FL 33486"
+  return /^\d+[\w\s.#-]*,\s*[^,]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?$/i.test(value)
+}
+
 export function buildDealMakerSessionKey(address: string): string {
   return `dealMaker_${encodeURIComponent(canonicalizeAddressForIdentity(address))}`
 }
 
-function tryParseJson(raw: string | null): Record<string, any> | null {
+function tryParseJson(raw: string | null): Record<string, unknown> | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
@@ -19,7 +25,7 @@ function tryParseJson(raw: string | null): Record<string, any> | null {
   }
 }
 
-export function readDealMakerOverrides(address?: string): Record<string, any> | null {
+export function readDealMakerOverrides(address?: string): Record<string, unknown> | null {
   if (typeof window === 'undefined') return null
 
   const keysToTry: string[] = []
@@ -27,9 +33,6 @@ export function readDealMakerOverrides(address?: string): Record<string, any> | 
 
   const activeAddress = sessionStorage.getItem('dealMaker_activeAddress')
   if (activeAddress) keysToTry.push(buildDealMakerSessionKey(activeAddress))
-
-  // Backward-compat fallback while old keys are phased out.
-  keysToTry.push('dealMakerOverrides')
 
   for (const key of keysToTry) {
     const parsed = tryParseJson(sessionStorage.getItem(key))
@@ -41,7 +44,7 @@ export function readDealMakerOverrides(address?: string): Record<string, any> | 
 export function writeDealMakerOverrides(
   address: string,
   patch: Record<string, unknown>,
-): Record<string, any> | null {
+): Record<string, unknown> | null {
   if (typeof window === 'undefined') return null
 
   const canonicalAddress = canonicalizeAddressForIdentity(address)
@@ -53,8 +56,6 @@ export function writeDealMakerOverrides(
 
   sessionStorage.setItem(sessionKey, JSON.stringify(merged))
   sessionStorage.setItem('dealMaker_activeAddress', canonicalAddress)
-  // Backward-compat mirror for legacy readers.
-  sessionStorage.setItem('dealMakerOverrides', JSON.stringify(merged))
   window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
   return merged
 }

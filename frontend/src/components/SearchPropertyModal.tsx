@@ -8,7 +8,7 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
@@ -97,7 +97,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
   };
 
   const useAsEntered = () => {
-    proceedToVerdict(address.trim());
+    const entered = canonicalizeAddressForIdentity(address);
+    if (!isLikelyFullAddress(entered)) {
+      setValidationStatus('issues');
+      return;
+    }
+    proceedToVerdict(entered);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {

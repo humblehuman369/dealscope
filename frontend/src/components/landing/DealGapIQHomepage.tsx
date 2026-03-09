@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { SearchPropertyModal } from '@/components/SearchPropertyModal';
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 
@@ -153,10 +153,11 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
   const [address, setAddress] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const hasValidAddress = isLikelyFullAddress(address);
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim()) return;
+    if (!hasValidAddress) return;
     const canonicalAddress = canonicalizeAddressForIdentity(address);
     router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
@@ -232,7 +233,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 }}
               />
             </div>
-            <button type="submit" className="hero-cta-btn" style={{
+            <button type="submit" className="hero-cta-btn" disabled={!hasValidAddress} style={{
               width: "100%", padding: "12px 24px",
               fontSize: 14, fontWeight: 700, fontFamily: s.fontBody,
               borderRadius: 8, border: "none",
@@ -748,7 +749,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   }}
                 />
               </div>
-              <button type="submit" className="hero-cta-btn" style={{
+            <button type="submit" className="hero-cta-btn" disabled={!hasValidAddress} style={{
                 width: "100%", padding: "12px 24px",
                 fontSize: 14, fontWeight: 700, fontFamily: s.fontBody,
                 borderRadius: 8, border: "none",

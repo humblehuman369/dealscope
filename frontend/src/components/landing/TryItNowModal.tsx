@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Search, X } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 
 interface TryItNowModalProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
   const router = useRouter();
   const [address, setAddress] = useState('');
   const [showAddressInput, setShowAddressInput] = useState(false);
+  const hasValidAddress = isLikelyFullAddress(address);
 
   if (!isOpen) return null;
 
@@ -26,7 +27,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (address.trim()) {
+    if (hasValidAddress) {
       onClose();
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
       const canonicalAddress = canonicalizeAddressForIdentity(address);
@@ -122,7 +123,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={!address.trim()}
+                disabled={!hasValidAddress}
               >
                 Analyze Property
               </button>
