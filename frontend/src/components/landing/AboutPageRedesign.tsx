@@ -127,9 +127,9 @@ const strategies: Strategy[] = [
 
 const dataFeatures = [
   { title: 'Verified Listing Data', desc: 'Property details, market values, and pricing are sourced from authoritative real estate databases — never guessed.' },
-  { title: 'Comparable Rent Estimates', desc: 'Rent estimates come from RentCast, with the ability to compare similar listings and adjust to your own expectations.' },
-  { title: 'Editable Loan Terms', desc: 'Every calculation uses the down payment, rate, and term you set. Change a number, recalculate instantly.' },
-  { title: 'Operating Cost Defaults', desc: 'Industry-standard expense ratios as defaults — vacancy, management, maintenance, insurance — all visible, all editable.' },
+  { title: 'Comparable Rent Estimates', desc: 'Rent estimates come from RentCast, Zillow, Realtor.com, Redfin, with the ability to compare similar listings and adjust to your own expectations.' },
+  { title: 'Editable Deal Terms & Assumptions', desc: 'Every calculation uses the down payment, rate, and term you set. Change a number, recalculate instantly.' },
+  { title: 'Editable Operating Cost Defaults', desc: 'Industry-standard expense ratios as defaults — vacancy, management, maintenance, insurance — all visible, all editable.' },
 ]
 
 const beforeItems = [
@@ -199,7 +199,7 @@ export function AboutPageRedesign() {
               <div className="section-label">The Core Concept</div>
               <h2 className="section-title">What is the<br /><span style={{ color: '#0EA5E9' }}>Deal Gap?</span></h2>
               <p className="section-desc" style={{ marginBottom: 20 }}>
-                The <strong>Deal Gap</strong> is a proprietary concept — the distance between the asking price and what the numbers say you should actually pay.
+                The <strong>Deal Gap</strong> is the distance between the asking price and what the numbers say you should actually pay.
               </p>
               <p className="section-desc">
                 That single number tells you whether the deal is worth pursuing, how much room to negotiate, and how hard the numbers work in your favor — <em>before</em> you spend a single hour on due diligence.
@@ -281,7 +281,7 @@ export function AboutPageRedesign() {
           <Reveal>
             <div className="section-label">Strategy Engine</div>
             <h2 className="section-title">Every address analyzed<br />six ways — automatically.</h2>
-            <p className="section-desc">No more one-size-fits-all analysis. DealGapIQ evaluates every property through six distinct investment lenses and surfaces the best strategy for that specific address.</p>
+            <p className="section-desc">No more one-size-fits-all analysis. DealGapIQ evaluates every property through six distinct investment lenses and provides fully editable strategy specific worksheets that you can download in Excel.</p>
           </Reveal>
           <Reveal>
             <div className="strategies-grid">
@@ -359,7 +359,9 @@ export function AboutPageRedesign() {
           <Reveal><div className="section-label">Built by Experience</div></Reveal>
           <Reveal>
             <div className="founder-grid">
-              <div className="founder-portrait"><div className="initials">BG</div></div>
+              <div className="founder-portrait">
+                <img src="/brad-geisen.png" alt="Brad Geisen" />
+              </div>
               <div className="founder-info">
                 <h3>Brad Geisen</h3>
                 <div className="founder-title">Founder &amp; CEO, DealGapIQ</div>
