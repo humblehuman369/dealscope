@@ -503,8 +503,8 @@ class AppraisalReportPDFExporter:
       <div class="card" style="margin-top:16px;">
         <h3 class="card-title">Confidence Assessment</h3>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div class="conf-ring" style="--conf-color:{conf_color};">
-            <span class="conf-ring-value">{d.confidence:.0f}%</span>
+          <div class="conf-ring" style="border-color:{conf_color};">
+            <span class="conf-ring-value" style="color:{conf_color};">{d.confidence:.0f}%</span>
           </div>
           <div>
             <div style="font-weight:700;color:{conf_color};font-size:13px;">{conf_label} CONFIDENCE</div>
@@ -1198,7 +1198,7 @@ td.money {{
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    border: 4px solid var(--conf-color);
+    border: 4px solid {p["brand"]};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1208,7 +1208,7 @@ td.money {{
 .conf-ring-value {{
     font-size: 14px;
     font-weight: 700;
-    color: var(--conf-color);
+    color: {p["brand"]};
 }}
 
 /* ===== DISCLAIMER ===== */
