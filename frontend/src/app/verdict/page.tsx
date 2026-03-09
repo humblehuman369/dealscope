@@ -1142,7 +1142,8 @@ function VerdictContent() {
   const dealGap = Math.max(0, rawDealGap)
   const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
-  const probability = analysis.componentScores?.dealProbabilityScore != null
+  // Backend returns deal_probability_score from investor discount brackets; fallback to deal score when 0 or missing (e.g. old cache)
+  const probability = (analysis.componentScores?.dealProbabilityScore != null && analysis.componentScores.dealProbabilityScore > 0)
     ? Math.max(0, Math.min(100, Math.round(analysis.componentScores.dealProbabilityScore)))
     : Math.max(0, Math.min(100, Math.round(score)))
   const probabilityTail = probability > 50
