@@ -555,67 +555,36 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       <DivB />
 
-      {/* ═══════════ MULTI-STRATEGY ═══════════ */}
+      {/* ═══════════ STRATEGY ENGINE ═══════════ */}
       <FadeIn>
         <section style={{ padding: "96px 24px" }}>
-          <div className="strategy-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
-            <div>
-              <Eyebrow>One Property, Six Strategies</Eyebrow>
-              <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
-                Every Angle,<br />Analyzed Simultaneously
-              </h2>
-              <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 560, lineHeight: 1.7, marginBottom: 16 }}>
-                Other tools analyze one strategy at a time. <BrandName /> models the financials across all six simultaneously — so you can see which approach puts the investment in range.
-              </p>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: "rgba(255,255,255,0.85)", maxWidth: 560, lineHeight: 1.7 }}>
-                A property that doesn&apos;t pencil as a long-term rental might score 100 as a BRRRR. You&apos;d never see that with a single-strategy calculator.
-              </p>
-
-              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, marginTop: 28 }}>
-                {[
-                  { score: "100", label: "BRRRR", level: "high" },
-                  { score: "100", label: "House Hack", level: "high" },
-                  { score: "100", label: "Wholesale", level: "high" },
-                  { score: "74", label: "Fix & Flip", level: "mid" },
-                  { score: "57", label: "Long-Term Rental", level: "low" },
-                  { score: "45", label: "Short-Term Rental", level: "low" },
-                ].map((pill, i) => {
-                  const colors = { high: { bg: "rgba(52,211,153,0.12)", color: s.success }, mid: { bg: "rgba(251,191,36,0.12)", color: s.warning }, low: { bg: "rgba(249,112,102,0.12)", color: s.danger } };
-                  const c = colors[pill.level as keyof typeof colors];
-                  return (
-                    <div key={i} style={{ background: "#000", border: "1px solid rgba(14,165,233,0.15)", borderRadius: 8, padding: "8px 14px", fontFamily: s.fontBody, fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 8, boxShadow: "0 0 16px rgba(14,165,233,0.04)" }}>
-                      <span style={{ fontFamily: s.fontData, fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: c.bg, color: c.color }}>{pill.score}</span>
-                      {pill.label}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Strategy mockup */}
-            <div style={{ ...cardLgStyle, overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(14,165,233,0.12)", display: "flex", alignItems: "center", gap: 10, fontFamily: s.fontBody, fontSize: 14, fontWeight: 600 }}>
-                <span style={{ background: s.teal, color: "#000", fontFamily: s.fontBody, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>BRRRR</span>
-                Strategy Deep Dive
-              </div>
-              <div style={{ padding: "22px 20px" }}>
-                {[
-                  { label: "Target Buy", value: "$669,608", color: s.teal },
-                  { label: "Monthly Rent", value: "$4,975" },
-                  { label: "Monthly Payment", value: "$3,212" },
-                  { label: "NOI (Before Loan)", value: "$3,831/mo", color: s.success },
-                  { label: "Net Cash Flow", value: "$619/mo", color: s.success },
-                  { label: "DSCR", value: "0.81" },
-                ].map((row, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: i < 5 ? "1px solid rgba(14,165,233,0.06)" : "none", fontSize: 14 }}>
-                    <span style={{ fontFamily: s.fontBody, color: s.muted }}>{row.label}</span>
-                    <span style={{ fontFamily: s.fontData, fontWeight: 700, fontSize: 13, color: row.color || "#fff" }}>{row.value}</span>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            <Eyebrow>Strategy Engine</Eyebrow>
+            <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
+              Every address analyzed six ways — automatically.
+            </h2>
+            <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 640, lineHeight: 1.7, marginBottom: 36 }}>
+              No more one-size-fits-all analysis. <BrandName /> evaluates every property through six distinct investment lenses, each with a fully editable Excel worksheet you can download and make your own.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              {[
+                { name: "Long-Term Rental", desc: "Traditional buy-and-hold cashflow" },
+                { name: "Short-Term Rental", desc: "Airbnb / vacation income" },
+                { name: "BRRRR", desc: "Buy, rehab, rent, refinance, repeat" },
+                { name: "Fix & Flip", desc: "Purchase, renovate, sell for profit" },
+                { name: "House Hack", desc: "Owner-occupy + rent spare units" },
+                { name: "Wholesale", desc: "Contract assignment for quick equity" },
+              ].map((item, i) => (
+                <div key={i} style={{ background: "rgba(14,165,233,0.06)", border: "1px solid rgba(14,165,233,0.12)", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(14,165,233,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: s.fontBody, fontSize: 14, fontWeight: 700, color: s.teal }}>{item.name.charAt(0)}</span>
                   </div>
-                ))}
-                <div style={{ marginTop: 16, padding: 14, background: "rgba(14,165,233,0.04)", border: "1px solid rgba(14,165,233,0.1)", borderRadius: 10, fontFamily: s.fontBody, fontSize: 13, color: s.muted, lineHeight: 1.6 }}>
-                  At the Target Buy of <span style={{ fontFamily: s.fontData, fontWeight: 700, color: s.teal, fontSize: 13 }}>$669,608</span>, this property would generate about <span style={{ fontFamily: s.fontData, fontWeight: 700, color: s.teal, fontSize: 13 }}>$619/mo</span> in cash flow as a BRRRR. This is your starting point — adjust assumptions, change terms, and verify with your own due diligence.
+                  <div>
+                    <div style={{ fontFamily: s.fontBody, fontSize: 15, fontWeight: 600 }}>{item.name}</div>
+                    <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginTop: 2 }}>{item.desc}</div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
