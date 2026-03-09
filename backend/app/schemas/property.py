@@ -7,9 +7,10 @@ Do NOT hardcode default values in this file.
 
 from datetime import datetime
 from enum import StrEnum
+import re
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Import centralized defaults - SINGLE SOURCE OF TRUTH
 from app.core.defaults import BRRRR, FINANCING, FLIP, GROWTH, HOUSE_HACK, OPERATING, REHAB, STR, WHOLESALE
@@ -875,6 +876,51 @@ class PropertySearchRequest(BaseModel):
     state: str | None = None
     zip_code: str | None = None
     search_source: str | None = None
+
+    @field_validator("address", "city", "state", "zip_code", mode="before")
+    @classmethod
+    def _normalize_address_fields(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            compact = re.sub(r"\s+", " ", value).strip()
+            return compact or None
+        return value
+
+    @model_validator(mode="after")
+    def _require_full_address(self) -> "PropertySearchRequest":
+        full_address_re = re.compile(r"^\d[\w\s.#/-]*,\s*[^,]+,\s*[A-Za-z]{2}\s+\d{5}(?:-\d{4})?$")
+        state_re = re.compile(r"^[A-Za-z]{2}$")
+        zip_re = re.compile(r"^\d{5}(?:-\d{4})?$")
+
+        address = self.address or ""
+        city = self.city
+        state = self.state
+        zip_code = self.zip_code
+
+        if "," in address:
+            normalized = re.sub(r",\s*USA$", "", address, flags=re.IGNORECASE)
+            if not full_address_re.match(normalized):
+                raise ValueError(
+                    "address must include street, city, state, and zip code "
+                    "(example: '1451 NW 10 St, Boca Raton, FL 33486')"
+                )
+            self.address = normalized
+            return self
+
+        if not city or not state or not zip_code:
+            raise ValueError(
+                "full address required: provide either a complete 'address' string "
+                "or include city, state, and zip_code fields"
+            )
+        if not state_re.match(state):
+            raise ValueError("state must be a 2-letter code (example: 'FL')")
+        if not zip_re.match(zip_code):
+            raise ValueError("zip_code must be 5 digits or ZIP+4 (example: '33486' or '33486-1234')")
+
+        self.state = state.upper()
+        self.address = f"{address}, {city}, {self.state} {zip_code}"
+        return self
 
 
 class PropertyResponse(BaseModel):

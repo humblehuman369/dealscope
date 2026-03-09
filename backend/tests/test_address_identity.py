@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from unittest.mock import AsyncMock
 
 from app.routers import property as property_router
+from app.schemas.property import PropertySearchRequest
 from app.services.cache_service import CacheService
 
 
@@ -11,6 +12,14 @@ class TestAddressIdentityNormalization:
         key_a = CacheService.generate_key("property", "1451 NW 10 St, Boca Raton, FL 33486")
         key_b = CacheService.generate_key("property", " 1451   NW 10 St, Boca Raton, FL 33486, USA ")
         assert key_a == key_b
+
+    def test_property_search_request_accepts_full_address(self):
+        req = PropertySearchRequest(address="1451 NW 10 St, Boca Raton, FL 33486")
+        assert req.address == "1451 NW 10 St, Boca Raton, FL 33486"
+
+    def test_property_search_request_rejects_incomplete_address(self):
+        with pytest.raises(ValueError):
+            PropertySearchRequest(address="1451 NW 10 St")
 
 
 class TestPhotosEndpointIdentityBinding:
