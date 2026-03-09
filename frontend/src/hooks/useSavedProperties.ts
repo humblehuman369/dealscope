@@ -15,6 +15,7 @@ import {
   useMutation,
   useQueryClient,
   keepPreviousData,
+  type QueryKey,
 } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import type {
@@ -98,7 +99,7 @@ export function useDeleteSavedProperty() {
     mutationFn: (id: string) =>
       api.delete(`/api/v1/properties/saved/${id}`),
 
-    onMutate: async (deletedId) => {
+    onMutate: async (deletedId: string) => {
       // Cancel in-flight refetches so they don't overwrite optimistic data
       await queryClient.cancelQueries({
         queryKey: SAVED_PROPERTIES_KEYS.lists(),
@@ -112,15 +113,20 @@ export function useDeleteSavedProperty() {
       // Optimistically remove the item from all cached list queries
       queryClient.setQueriesData<SavedPropertySummary[]>(
         { queryKey: SAVED_PROPERTIES_KEYS.lists() },
-        (old) => old?.filter((p) => p.id !== deletedId),
+        (old: SavedPropertySummary[] | undefined) =>
+          old?.filter((p: SavedPropertySummary) => p.id !== deletedId),
       )
 
       return { previousLists }
     },
 
-    onError: (_err, _id, context) => {
+    onError: (
+      _err: unknown,
+      _id: string,
+      context: { previousLists: Array<[QueryKey, SavedPropertySummary[] | undefined]> } | undefined,
+    ) => {
       // Roll back to the snapshots
-      context?.previousLists?.forEach(([key, data]) => {
+      context?.previousLists?.forEach(([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
         queryClient.setQueryData(key, data)
       })
     },

@@ -57,7 +57,7 @@ export default function SessionManager() {
       </p>
 
       <div className="space-y-3">
-        {sessions?.map((session) => {
+        {sessions?.map((session: SessionInfo) => {
           const { icon: DeviceIcon, label: deviceLabel } = parseUserAgent(session.user_agent)
           return (
             <div

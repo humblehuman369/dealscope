@@ -233,7 +233,7 @@ export function useLogin() {
       const result = await authApi.login(email, password, rememberMe)
       return result
     },
-    onSuccess: (data) => {
+    onSuccess: (data: LoginResponse | MFAChallengeResponse) => {
       if ('mfa_required' in data && data.mfa_required) {
         return
       }
@@ -265,7 +265,7 @@ export function useLoginMfa() {
     }) => {
       return authApi.loginMfa(challengeToken, totpCode, rememberMe)
     },
-    onSuccess: (data) => {
+    onSuccess: (data: LoginResponse) => {
       _lastKnownUser = data.user
       persistSession(data.user)
       setLastTokenRefresh()

@@ -12,6 +12,7 @@ import {
   useMutation,
   useQueryClient,
   keepPreviousData,
+  type QueryKey,
 } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 
@@ -112,7 +113,7 @@ export function useDeleteSearchHistoryEntry() {
     mutationFn: (id: string) =>
       api.delete(`/api/v1/search-history/${id}`),
 
-    onMutate: async (deletedId) => {
+    onMutate: async (deletedId: string) => {
       await queryClient.cancelQueries({
         queryKey: SEARCH_HISTORY_KEYS.lists(),
       })
@@ -123,14 +124,19 @@ export function useDeleteSearchHistoryEntry() {
 
       queryClient.setQueriesData<SearchHistoryItem[]>(
         { queryKey: SEARCH_HISTORY_KEYS.lists() },
-        (old) => old?.filter((h) => h.id !== deletedId),
+        (old: SearchHistoryItem[] | undefined) =>
+          old?.filter((h: SearchHistoryItem) => h.id !== deletedId),
       )
 
       return { previousLists }
     },
 
-    onError: (_err, _id, context) => {
-      context?.previousLists?.forEach(([key, data]) => {
+    onError: (
+      _err: unknown,
+      _id: string,
+      context: { previousLists: Array<[QueryKey, SearchHistoryItem[] | undefined]> } | undefined,
+    ) => {
+      context?.previousLists?.forEach(([key, data]: [QueryKey, SearchHistoryItem[] | undefined]) => {
         queryClient.setQueryData(key, data)
       })
     },
