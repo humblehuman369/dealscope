@@ -5,7 +5,7 @@ import { useWorksheetStore } from '@/stores/worksheetStore'
 import { 
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, Info, Building2,
-  Lock, Unlock, Ruler, TrendingUp, RotateCcw
+  Lock, Unlock, Ruler, TrendingUp, RotateCcw, FileDown, Loader2
 } from 'lucide-react'
 import {
   calculateAppraisalValues,
@@ -18,6 +18,7 @@ import {
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { fetchSaleComps } from '@/lib/api/sale-comps'
+import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
 import type { SaleComp, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
 
 // ============================================
@@ -123,6 +124,8 @@ const DualValuationPanel = ({
   onToggleMarketValueOverride,
   onToggleArvOverride,
   onApplyValues,
+  onDownloadReport,
+  downloadingReport,
   loading,
   selectedCount,
 }: {
@@ -136,6 +139,8 @@ const DualValuationPanel = ({
   onToggleMarketValueOverride: () => void
   onToggleArvOverride: () => void
   onApplyValues: () => void
+  onDownloadReport: () => void
+  downloadingReport: boolean
   loading: boolean
   selectedCount: number
 }) => {
@@ -250,14 +255,25 @@ const DualValuationPanel = ({
         <span className="tabular-nums">${appraisalResult.weightedAveragePpsf}/sqft avg</span>
       </div>
 
-      {/* Apply Button */}
-      <button
-        onClick={onApplyValues}
-        disabled={displayMarketValue === 0 && displayArv === 0}
-        className="w-full px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Apply Values to Deal Analysis
-      </button>
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={onApplyValues}
+          disabled={displayMarketValue === 0 && displayArv === 0}
+          className="flex-1 px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          Apply Values to Deal Analysis
+        </button>
+        <button
+          onClick={onDownloadReport}
+          disabled={selectedCount === 0 || downloadingReport}
+          className="px-3 py-2.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+          title="Download appraisal report as PDF"
+        >
+          {downloadingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+          PDF
+        </button>
+      </div>
     </div>
   )
 }
@@ -543,6 +559,7 @@ export function SalesCompsSection() {
   const [isArvOverridden, setIsArvOverridden] = useState(false)
   const [manualMarketValue, setManualMarketValue] = useState(0)
   const [manualArv, setManualArv] = useState(0)
+  const [downloadingReport, setDownloadingReport] = useState(false)
 
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
@@ -737,6 +754,36 @@ export function SalesCompsSection() {
     }
   }
 
+  const handleDownloadReport = async () => {
+    if (selectedCompIds.size === 0) return
+    setDownloadingReport(true)
+    try {
+      const fullAddress = [subject.address, subject.city, subject.state, subject.zip].filter(Boolean).join(', ')
+      const payload = buildAppraisalPayload({
+        appraisalResult,
+        comps,
+        selectedIds: selectedCompIds,
+        subject: {
+          address: fullAddress,
+          beds: subject.beds,
+          baths: subject.baths,
+          sqft: subject.sqft,
+          yearBuilt: subject.yearBuilt,
+          lotSize: subject.lotSize,
+          rehabCost: subject.rehabCost,
+          price: subject.price,
+        },
+        overrideMarketValue: isMarketValueOverridden ? manualMarketValue : null,
+        overrideArv: isArvOverridden ? manualArv : null,
+      })
+      await downloadAppraisalReportPDF(payload)
+    } catch (err) {
+      console.error('Failed to download appraisal report:', err)
+    } finally {
+      setDownloadingReport(false)
+    }
+  }
+
   // Filter comps by recency
   const filteredComps = useMemo(() => {
     return comps.filter(c => {
@@ -791,6 +838,8 @@ export function SalesCompsSection() {
         onToggleMarketValueOverride={handleToggleMarketValueOverride}
         onToggleArvOverride={handleToggleArvOverride}
         onApplyValues={handleApplyValues}
+        onDownloadReport={handleDownloadReport}
+        downloadingReport={downloadingReport}
         loading={loading}
         selectedCount={selectedCompIds.size}
       />

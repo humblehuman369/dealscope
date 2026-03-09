@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, Building2, Home,
-  Pencil, TrendingUp, RotateCcw, Info, Camera
+  Pencil, TrendingUp, RotateCcw, Info, Camera, FileDown, Loader2
 } from 'lucide-react'
 import { fetchSaleComps as fetchSaleCompsApi } from '@/lib/api/sale-comps'
 import { fetchRentComps as fetchRentCompsApi } from '@/lib/api/rent-comps'
@@ -39,6 +39,7 @@ import {
   type CompAdjustment,
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
+import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
 
 // ============================================
 // TYPES
@@ -444,6 +445,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [photoModalComp, setPhotoModalComp] = useState<SaleComp | RentComp | null>(null)
   const [showAdjGrid, setShowAdjGrid] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [downloadingReport, setDownloadingReport] = useState(false)
 
   // Active state shortcuts
   const comps = isSale ? saleComps : rentComps
@@ -689,6 +691,38 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     else { await navigator.clipboard.writeText(window.location.href); setSaveMessage('Link copied!'); setTimeout(() => setSaveMessage(null), 2000) }
   }
 
+  const handleDownloadReport = async () => {
+    if (!isSale || saleSelected.size === 0) return
+    setDownloadingReport(true)
+    try {
+      const payload = buildAppraisalPayload({
+        appraisalResult: saleAppraisal,
+        comps: saleComps,
+        selectedIds: saleSelected,
+        subject: {
+          address: fullAddress,
+          beds: subject.beds,
+          baths: subject.baths,
+          sqft: subject.sqft,
+          yearBuilt: subject.yearBuilt,
+          lotSize: subject.lotSize,
+          price: property.price ?? undefined,
+        },
+        overrideMarketValue: saleOverrideMarket,
+        overrideArv: saleOverrideArv,
+      })
+      await downloadAppraisalReportPDF(payload)
+      setSaveMessage('Report downloaded')
+      setTimeout(() => setSaveMessage(null), 2000)
+    } catch (err) {
+      console.error('Failed to download appraisal report:', err)
+      setSaveMessage('Download failed')
+      setTimeout(() => setSaveMessage(null), 2000)
+    } finally {
+      setDownloadingReport(false)
+    }
+  }
+
   // Filtered comps
   const filteredComps = useMemo(() => comps.filter(c => {
     const dateStr = 'saleDate' in c ? c.saleDate : c.listingDate
@@ -845,15 +879,28 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
             </div>
 
-            {/* Methodology + $/sqft */}
+            {/* Methodology + $/sqft + PDF */}
             <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-1 px-0.5">
               <div className="flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>Weighted hybrid methodology</span>
               </div>
-              <span className="tabular-nums font-medium text-[#F1F5F9]">
-                ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="tabular-nums font-medium text-[#F1F5F9]">
+                  ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
+                </span>
+                {isSale && (
+                  <button
+                    onClick={handleDownloadReport}
+                    disabled={saleSelected.size === 0 || downloadingReport}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.08] border border-[rgba(14,165,233,0.25)] hover:border-[rgba(14,165,233,0.55)] text-[#F1F5F9] hover:text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
+                    title="Download appraisal report as PDF"
+                  >
+                    {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
+                    PDF
+                  </button>
+                )}
+              </div>
             </div>
 
             </div>
