@@ -219,7 +219,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           {comp.zpid && onViewPhotos && (
             <button
               onClick={onViewPhotos}
-              className="flex items-center justify-center gap-1 py-1 bg-black/80 border-t border-[rgba(14,165,233,0.2)] text-[10px] font-medium text-[#38bdf8] hover:bg-white/[0.05] transition-colors"
+              className="flex items-center justify-center gap-1 py-1.5 w-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-white text-[10px] font-medium transition-colors"
             >
               <Camera className="w-3 h-3" />
               Photos
