@@ -36,6 +36,12 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
+import {
+  buildDealMakerSessionKey,
+  canonicalizeAddressForIdentity,
+  readDealMakerOverrides,
+  writeDealMakerOverrides,
+} from '@/utils/addressIdentity'
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
@@ -323,16 +329,11 @@ function VerdictContent() {
     }
     
     try {
-      const canonicalAddress = addressParam.trim().replace(/\s+/g, ' ').replace(/,\s*USA$/i, '')
-      const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
-      const stored = sessionStorage.getItem(sessionKey)
-      if (stored) {
-        const data = JSON.parse(stored)
-        // Check if data is recent (within last hour)
-        if (data.timestamp && Date.now() - data.timestamp < 3600000) {
-          console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
-          return data
-        }
+      const data = readDealMakerOverrides(addressParam)
+      // Check if data is recent (within last hour)
+      if (data?.timestamp && Date.now() - data.timestamp < 3600000) {
+        console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
+        return data
       }
     } catch (e) {
       console.warn('Failed to load sessionStorage:', e)
@@ -562,17 +563,16 @@ function VerdictContent() {
 
         // Store property info to sessionStorage so global AppHeader can access it
         try {
-          const existingData = sessionStorage.getItem('dealMakerOverrides')
-          const parsed = existingData ? JSON.parse(existingData) : {}
-          if (propertyData.zpid) parsed.zpid = propertyData.zpid
-          parsed.beds = propertyData.beds
-          parsed.baths = propertyData.baths
-          parsed.sqft = propertyData.sqft
-          parsed.price = propertyData.price
-          parsed.listingStatus = propertyData.listingStatus || null
-          sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
-          // Notify AppHeader that property details are available
-          window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+          const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+          const fullAddress = [propertyData.address, propertyData.city, stateZip].filter(Boolean).join(', ')
+          writeDealMakerOverrides(fullAddress || addressParam, {
+            zpid: propertyData.zpid,
+            beds: propertyData.beds,
+            baths: propertyData.baths,
+            sqft: propertyData.sqft,
+            price: propertyData.price,
+            listingStatus: propertyData.listingStatus || null,
+          })
         } catch {
           // Ignore storage errors
         }
@@ -708,9 +708,9 @@ function VerdictContent() {
           try {
             const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
             const parts = [propertyData.address, propertyData.city, stateZip].filter(Boolean)
-            const canonicalAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+            const canonicalAddress = canonicalizeAddressForIdentity(parts.join(', '))
             if (canonicalAddress) {
-              const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
+              const sessionKey = buildDealMakerSessionKey(canonicalAddress)
               const existing = sessionStorage.getItem(sessionKey)
               const parsed = existing ? JSON.parse(existing) : {}
               if (backendListPrice != null) parsed.listPrice = backendListPrice
@@ -737,7 +737,7 @@ function VerdictContent() {
                 parsed.vacancyRate = Math.round((record.vacancy_rate ?? 0.05) * 100)
                 parsed.managementRate = Math.round((record.management_pct ?? 0) * 100)
               }
-              sessionStorage.setItem(sessionKey, JSON.stringify(parsed))
+              writeDealMakerOverrides(canonicalAddress, parsed)
             }
           } catch {
             // Ignore storage errors
@@ -751,14 +751,12 @@ function VerdictContent() {
             })
             // Keep address bar in sync: list/market price (never target buy)
             try {
-              const existingData = sessionStorage.getItem('dealMakerOverrides')
-              if (existingData) {
-                const parsed = JSON.parse(existingData)
-                parsed.listPrice = backendListPrice
-                parsed.price = Math.round(backendListPrice)
-                sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
-                window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
-              }
+              const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+              const fullAddress = [propertyData.address, propertyData.city, stateZip].filter(Boolean).join(', ')
+              writeDealMakerOverrides(fullAddress || addressParam, {
+                listPrice: backendListPrice,
+                price: Math.round(backendListPrice),
+              })
             } catch {
               // Ignore storage errors
             }
@@ -766,7 +764,7 @@ function VerdictContent() {
 
           // Phase 2: non-blocking photo fetch — do not await; update property when done
           if (propertyData.zpid) {
-            fetchPropertyPhotos(String(propertyData.zpid)).then((result) => {
+            fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then((result) => {
               if (result.status === 'success' && result.photos[0]) {
                 setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
               }
@@ -1498,12 +1496,12 @@ function VerdictContent() {
                   // Keep property bar header in sync with selected data source value
                   if (type === 'value') {
                     try {
-                      const existingData = sessionStorage.getItem('dealMakerOverrides')
-                      const parsed = existingData ? JSON.parse(existingData) : {}
-                      parsed.price = _value
-                      parsed.listPrice = _value
-                      sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
-                      window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+                      const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
+                      const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                      writeDealMakerOverrides(fullAddress || addressParam, {
+                        price: _value,
+                        listPrice: _value,
+                      })
                     } catch {
                       // Ignore storage errors
                     }

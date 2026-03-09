@@ -19,7 +19,7 @@ function PriceIntelContent() {
   const rawAddress = searchParams.get('address') || ''
   const addressParam = decodeURIComponent(rawAddress)
   const viewParam = (searchParams.get('view') as 'sale' | 'rent') || 'sale'
-  const zpidParam = searchParams.get('zpid') || searchParams.get('propertyId') || ''
+  const zpidParam = searchParams.get('zpid') || ''
   const latParam = parseFloat(searchParams.get('lat') || '') || undefined
   const lngParam = parseFloat(searchParams.get('lng') || '') || undefined
 

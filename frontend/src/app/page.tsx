@@ -24,6 +24,7 @@ import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { DealGapIQHomepage } from '@/components/landing';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -61,7 +62,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     if (!addressInput.trim()) return;
     setIsSearching(true);
     try {
-      router.push(`/verdict?address=${encodeURIComponent(addressInput.trim())}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(addressInput);
+      router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
@@ -69,8 +71,9 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   };
 
   const handlePlaceSelect = (selectedAddress: string) => {
-    setAddressInput(selectedAddress);
-    router.push(`/verdict?address=${encodeURIComponent(selectedAddress)}`);
+    const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress);
+    setAddressInput(canonicalAddress);
+    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
   const { user, isAuthenticated } = useSession();
   const { openAuthModal } = useAuthModal();
@@ -101,7 +104,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       if (data.status === 'OK' && data.results?.length > 0) {
         // Get the formatted address
         const result = data.results[0];
-        const address = result.formatted_address;
+        const address = canonicalizeAddressForIdentity(result.formatted_address);
         
         // Navigate to IQ Analyzing screen (new IQ Verdict flow)
         router.push(`/verdict?address=${encodeURIComponent(address)}`);
@@ -186,7 +189,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       ].filter(Boolean).join(', ');
       
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/verdict?address=${encodeURIComponent(address)}`);
+      router.push(`/verdict?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
     }
   };
 

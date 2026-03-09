@@ -54,7 +54,7 @@ function logPhotoFetch(
  */
 export async function fetchPropertyPhotos(
   zpid: string,
-  options?: { timeout?: number; maxRetries?: number }
+  options?: { timeout?: number; maxRetries?: number; propertyId?: string }
 ): Promise<PhotoResult> {
   const timeoutMs = options?.timeout ?? DEFAULT_TIMEOUT_MS
   const maxRetries = options?.maxRetries ?? DEFAULT_MAX_RETRIES
@@ -65,7 +65,9 @@ export async function fetchPropertyPhotos(
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
     try {
-      const url = `/api/v1/photos?zpid=${encodeURIComponent(zpid)}`
+      const params = new URLSearchParams({ zpid: String(zpid) })
+      if (options?.propertyId) params.set('property_id', options.propertyId)
+      const url = `/api/v1/photos?${params.toString()}`
       const response = await fetch(url, {
         headers: { Accept: 'application/json' },
         signal: controller.signal,

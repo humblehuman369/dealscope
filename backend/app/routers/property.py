@@ -242,7 +242,9 @@ async def get_property(property_id: str):
 
 
 @router.get("/photos")
-async def get_property_photos(zpid: str | None = None, url: str | None = None):
+async def get_property_photos(
+    zpid: str | None = None, url: str | None = None, property_id: str | None = None
+):
     """
     Get property photos from Zillow via AXESSO API.
 
@@ -254,14 +256,24 @@ async def get_property_photos(zpid: str | None = None, url: str | None = None):
         List of photo URLs for the property
     """
     try:
-        if not zpid and not url:
+        resolved_zpid = zpid
+        resolved_url = url
+
+        if property_id:
+            cached = await property_service.get_cached_property(property_id)
+            if cached and cached.zpid:
+                resolved_zpid = cached.zpid
+                resolved_url = None
+
+        if not resolved_zpid and not resolved_url:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Either zpid or url parameter is required"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Either property_id with cached zpid, zpid, or url parameter is required",
             )
 
-        logger.info(f"Fetching photos for zpid={zpid}, url={url}")
+        logger.info(f"Fetching photos for property_id={property_id}, zpid={resolved_zpid}, url={resolved_url}")
 
-        result = await property_service.get_property_photos(zpid=zpid, url=url)
+        result = await property_service.get_property_photos(zpid=resolved_zpid, url=resolved_url)
         return result
 
     except HTTPException:

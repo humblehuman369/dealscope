@@ -8,6 +8,7 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
@@ -39,7 +40,8 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
   const proceedToVerdict = (addressToUse: string) => {
     trackEvent('property_searched', { source: 'search_modal' });
     onClose();
-    router.push(`/verdict?address=${encodeURIComponent(addressToUse)}`);
+    const canonicalAddress = canonicalizeAddressForIdentity(addressToUse);
+    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
 
   const handleAddressSubmit = async (e: React.FormEvent) => {
@@ -245,7 +247,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   placeholder="Enter property address..."
                   value={address}
                   onChange={setAddress}
-                  onPlaceSelect={setAddress}
+                  onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
                   autoFocus
                   className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
                   style={{

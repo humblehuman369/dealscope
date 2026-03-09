@@ -20,6 +20,7 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
+import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { colors, typography, tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
@@ -91,8 +92,8 @@ function StrategyContent() {
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
     try {
-      const canonicalAddress = addressParam.trim().replace(/\s+/g, ' ')
-      const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
+      const canonicalAddress = canonicalizeAddressForIdentity(addressParam)
+      const sessionKey = buildDealMakerSessionKey(canonicalAddress)
       const stored = sessionStorage.getItem(sessionKey)
       if (stored) {
         const parsed = JSON.parse(stored)
@@ -570,12 +571,10 @@ function StrategyContent() {
                   setSourceOverrides((prev) => ({ ...prev, price: _value }))
                   // Keep property bar header in sync with selected data source value
                   try {
-                    const existingData = sessionStorage.getItem('dealMakerOverrides')
-                    const parsed = existingData ? JSON.parse(existingData) : {}
-                    parsed.price = _value
-                    parsed.listPrice = _value
-                    sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
-                    window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
+                    writeDealMakerOverrides(resolvedAddress, {
+                      price: _value,
+                      listPrice: _value,
+                    })
                   } catch {
                     // Ignore storage errors
                   }

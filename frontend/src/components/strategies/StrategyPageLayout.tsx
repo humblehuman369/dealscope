@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useSession, useLogout } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { readDealMakerOverrides } from '@/utils/addressIdentity';
 import styles from './StrategyPageLayout.module.css';
 
 /* ───────────────── Property Context (from active analysis) ───────────────── */
@@ -21,9 +22,8 @@ function usePropertyContext(): PropertyContext | null {
   const [ctx, setCtx] = useState<PropertyContext | null>(null);
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('dealMakerOverrides');
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
+      const parsed = readDealMakerOverrides();
+      if (!parsed) return;
       // Require at minimum a price to consider this a valid context
       if (parsed.price) {
         setCtx({

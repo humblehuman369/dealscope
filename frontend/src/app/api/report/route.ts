@@ -714,7 +714,7 @@ export async function GET(request: NextRequest) {
 
     const [proformaRes, photosRes] = await Promise.all([
       fetch(`${BACKEND_URL}/api/v1/proforma/property/${propertyId}?${backendParams}`, { headers, cache: 'no-store' }),
-      fetch(`${BACKEND_URL}/api/v1/photos?zpid=${propertyId}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      fetch(`${BACKEND_URL}/api/v1/photos?property_id=${propertyId}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
     ])
 
     if (!proformaRes.ok) {

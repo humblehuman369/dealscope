@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 import { SavePropertyButton } from '@/components/SavePropertyButton'
 import type { PropertySnapshot } from '@/hooks/useSaveProperty'
+import { readDealMakerOverrides } from '@/utils/addressIdentity'
 
 /**
  * AnalysisNav — Persistent top navigation bar for the analysis flow.
@@ -23,7 +24,7 @@ export function AnalysisNav() {
   const isStrategy = pathname === '/strategy'
 
   // Resolve zpid and optional snapshot — check URL params first, then sessionStorage
-  const zpidFromUrl = searchParams.get('zpid') || searchParams.get('propertyId') || ''
+  const zpidFromUrl = searchParams.get('zpid') || ''
   const [zpid, setZpid] = useState(zpidFromUrl)
   const [propertySnapshot, setPropertySnapshot] = useState<PropertySnapshot | null>(null)
 
@@ -31,9 +32,8 @@ export function AnalysisNav() {
     if (zpidFromUrl) setZpid(zpidFromUrl)
     if (typeof window === 'undefined') return
     try {
-      const stored = sessionStorage.getItem('dealMakerOverrides')
-      if (stored) {
-        const parsed = JSON.parse(stored)
+      const parsed = readDealMakerOverrides(address)
+      if (parsed) {
         if (parsed.zpid && !zpidFromUrl) setZpid(String(parsed.zpid))
         if (address && (parsed.beds != null || parsed.zpid != null)) {
           setPropertySnapshot({
