@@ -43,20 +43,21 @@ export function AnalysisNav() {
           return undefined
         }
 
-        const beds = toNumber(parsed.beds)
-        const baths = toNumber(parsed.baths)
+        const bedrooms = toNumber(parsed.beds)
+        const bathrooms = toNumber(parsed.baths)
         const sqft = toNumber(parsed.sqft)
-        const price = toNumber(parsed.price)
+        const listPrice = toNumber(parsed.price)
 
         if (parsed.zpid && !zpidFromUrl) setZpid(String(parsed.zpid))
-        if (address && (beds != null || parsed.zpid != null)) {
-          setPropertySnapshot({
-            bedrooms: beds,
-            bathrooms: baths,
+        if (address && (bedrooms != null || parsed.zpid != null)) {
+          const snapshot: PropertySnapshot = {
+            bedrooms,
+            bathrooms,
             sqft,
-            listPrice: price,
+            listPrice,
             zpid: parsed.zpid != null ? String(parsed.zpid) : undefined,
-          })
+          }
+          setPropertySnapshot(snapshot)
         } else {
           setPropertySnapshot(null)
         }
