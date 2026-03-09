@@ -202,7 +202,14 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
         </button>
       )}
 
-      <div className="flex">
+      <div
+        className="flex cursor-pointer"
+        onClick={onExpand}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onExpand(); } }}
+        aria-label="Expand comp details"
+      >
         {/* Image + distance badge + View Photos */}
         <div className="flex flex-col w-[100px] flex-shrink-0">
           <div className="relative h-[80px] bg-white/[0.05] rounded-tl-xl overflow-hidden">
@@ -219,7 +226,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           </div>
           {comp.zpid && onViewPhotos && (
             <button
-              onClick={onViewPhotos}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onViewPhotos(); }}
               className="flex items-center justify-center gap-1 py-1.5 w-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-white text-[10px] font-medium transition-colors"
             >
               <Camera className="w-3 h-3" />
@@ -272,7 +280,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                 {freshness.label}
               </span>
             )}
-            <button onClick={onExpand} className="ml-auto text-[14px] text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
+            <button type="button" onClick={(e) => { e.stopPropagation(); onExpand(); }} className="ml-auto text-[14px] text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
