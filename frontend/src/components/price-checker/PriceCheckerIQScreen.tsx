@@ -860,16 +860,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         </div>
 
-        {/* Adjustment Grid */}
-        <div className="mx-4 mt-3">
-          <AdjustmentGrid
-            compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
-            isExpanded={showAdjGrid}
-            onToggle={() => setShowAdjGrid(!showAdjGrid)}
-            isSale={isSale}
-          />
-        </div>
-
         {/* Proximity Map */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
           <div className="px-4 mt-3">
@@ -880,6 +870,16 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             />
           </div>
         )}
+
+        {/* Adjustment Grid */}
+        <div className="mx-4 mt-3">
+          <AdjustmentGrid
+            compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
+            isExpanded={showAdjGrid}
+            onToggle={() => setShowAdjGrid(!showAdjGrid)}
+            isSale={isSale}
+          />
+        </div>
 
         {/* Controls + Filters */}
         <div className="px-4 mt-3 min-w-0">
