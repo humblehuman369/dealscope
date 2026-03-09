@@ -419,7 +419,16 @@
   z-index: 1;
 }
 
-/* ── SIX STRATEGIES ── */
+/* ── ONE PROPERTY, SIX STRATEGIES (score pills + deep dive card) ── */
+
+.about-page .about-strategy-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+/* ── SIX STRATEGIES (legacy grid, kept for other pages) ── */
 
 .about-page .strategies-grid {
   display: grid;
@@ -916,7 +925,8 @@
   .about-page .compare-grid,
   .about-page .founder-grid,
   .about-page .pricing-grid,
-  .about-page .data-features {
+  .about-page .data-features,
+  .about-page .about-strategy-inner {
     grid-template-columns: 1fr;
   }
 
