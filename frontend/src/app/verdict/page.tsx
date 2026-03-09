@@ -1466,10 +1466,10 @@ function VerdictContent() {
               <div className="flex justify-center mt-4">
                 <button
                   onClick={navigateToStrategy}
-                  className="px-6 py-2 rounded-full text-sm font-semibold transition-all"
-                  style={{ color: colors.brand.blue, border: `1.5px solid ${colors.brand.blue}50`, background: `${colors.brand.blue}10` }}
+                  className="px-6 py-2 rounded-full text-sm font-semibold transition-all w-auto"
+                  style={{ color: '#fff', background: colors.brand.blue }}
                 >
-                  See Breakdown
+                  See Breakdown - Edit Assumptions, Terms &amp; Comps - Download Excel &amp; PDFs
                 </button>
               </div>
             </div>
