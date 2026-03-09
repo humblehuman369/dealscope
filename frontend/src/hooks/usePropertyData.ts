@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { api } from '@/lib/api-client'
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import type { PropertyResponse } from '@dealscope/shared'
 
 /**
@@ -13,13 +14,6 @@ import type { PropertyResponse } from '@dealscope/shared'
 type PropertyResponseCompat = PropertyResponse & Record<string, any>
 
 const PROPERTY_STALE_TIME = 5 * 60 * 1000 // 5 min
-
-function canonicalizeAddressKey(address: string): string {
-  return address
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/,\s*USA$/i, '')
-}
 
 /** Return the value as a finite number, or null if it's missing/invalid. */
 function finiteOrNull(v: unknown): number | null {
@@ -69,7 +63,7 @@ export function usePropertyData() {
 
   const fetchProperty = useCallback(
     async (address: string): Promise<PropertyResponseCompat> => {
-      const canonicalAddress = canonicalizeAddressKey(address)
+      const canonicalAddress = canonicalizeAddressForIdentity(address)
       return queryClient.ensureQueryData({
         queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
@@ -87,7 +81,7 @@ export function usePropertyData() {
 
   const invalidateProperty = useCallback(
     (address: string) => {
-      const canonicalAddress = canonicalizeAddressKey(address)
+      const canonicalAddress = canonicalizeAddressForIdentity(address)
       queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress] })
     },
     [queryClient],

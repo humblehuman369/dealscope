@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Search, X } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
 
 interface TryItNowModalProps {
   isOpen: boolean;
@@ -28,7 +29,8 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
     if (address.trim()) {
       onClose();
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(address);
+      router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
     }
   };
 
@@ -100,7 +102,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
               <AddressAutocomplete
                 value={address}
                 onChange={setAddress}
-                onPlaceSelect={setAddress}
+                onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
                 placeholder="Enter property address..."
                 className="try-modal-input"
                 autoFocus

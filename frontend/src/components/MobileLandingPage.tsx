@@ -14,6 +14,7 @@ import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
 import { PhoneScannerMockup } from './PhoneScannerMockup';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
 
 interface LandingPageProps {
   onPointAndScan: () => void;
@@ -45,7 +46,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
     setIsSearching(true);
     try {
       // Use new IQ Verdict flow
-      await router.push(`/verdict?address=${encodeURIComponent(searchAddress.trim())}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(searchAddress);
+      await router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
     } catch {
       // Navigation failed - user can retry
     } finally {
@@ -175,7 +177,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 <AddressAutocomplete
                   value={searchAddress}
                   onChange={setSearchAddress}
-                  onPlaceSelect={setSearchAddress}
+                  onPlaceSelect={(value) => setSearchAddress(canonicalizeAddressForIdentity(value))}
                   placeholder="Enter property address..."
                   className={`flex-1 bg-transparent text-sm outline-none ${
                     isDark 

@@ -29,6 +29,7 @@ import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { readDealMakerOverrides } from '@/utils/addressIdentity'
 import { api } from '@/lib/api-client'
 
 // ===================
@@ -256,29 +257,26 @@ export function AppHeader({
     }
     if (typeof window === 'undefined') return
     try {
-      const stored = sessionStorage.getItem('dealMakerOverrides')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (parsed.beds || parsed.baths || parsed.sqft || parsed.price) {
-          const addrParts = parseDisplayAddress(displayAddress)
-          // Display list/market price in bar, never target buy: prefer listPrice when set
-          const displayPrice = (parsed.listPrice != null && parsed.listPrice > 0)
-            ? parsed.listPrice
-            : parsed.price
-          setResolvedProperty({
-            address: addrParts.streetAddress,
-            city: addrParts.city,
-            state: addrParts.state,
-            zip: addrParts.zipCode,
-            beds: parsed.beds,
-            baths: parsed.baths,
-            sqft: parsed.sqft,
-            price: displayPrice,
-            zpid: parsed.zpid,
-            listingStatus: parsed.listingStatus,
-          })
-          return
-        }
+      const parsed = readDealMakerOverrides(displayAddress)
+      if (parsed && (parsed.beds || parsed.baths || parsed.sqft || parsed.price)) {
+        const addrParts = parseDisplayAddress(displayAddress)
+        // Display list/market price in bar, never target buy: prefer listPrice when set
+        const displayPrice = (parsed.listPrice != null && parsed.listPrice > 0)
+          ? parsed.listPrice
+          : parsed.price
+        setResolvedProperty({
+          address: addrParts.streetAddress,
+          city: addrParts.city,
+          state: addrParts.state,
+          zip: addrParts.zipCode,
+          beds: parsed.beds,
+          baths: parsed.baths,
+          sqft: parsed.sqft,
+          price: displayPrice,
+          zpid: parsed.zpid,
+          listingStatus: parsed.listingStatus,
+        })
+        return
       }
     } catch { /* ignore */ }
     setResolvedProperty(undefined)
@@ -389,12 +387,9 @@ export function AppHeader({
     // Fallback: check sessionStorage for current property zpid
     if (!zpid && typeof window !== 'undefined') {
       try {
-        const sessionData = sessionStorage.getItem('dealMakerOverrides')
-        if (sessionData) {
-          const parsed = JSON.parse(sessionData)
-          if (parsed.zpid) {
-            zpid = String(parsed.zpid)
-          }
+        const parsed = readDealMakerOverrides(displayAddress)
+        if (parsed?.zpid) {
+          zpid = String(parsed.zpid)
         }
       } catch {
         // Ignore parsing errors

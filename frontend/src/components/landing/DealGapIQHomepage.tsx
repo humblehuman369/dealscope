@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { SearchPropertyModal } from '@/components/SearchPropertyModal';
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 
@@ -156,12 +157,14 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim()) return;
-    router.push(`/verdict?address=${encodeURIComponent(address.trim())}`);
+    const canonicalAddress = canonicalizeAddressForIdentity(address);
+    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
 
   const handlePlaceSelect = (selectedAddress: string) => {
-    setAddress(selectedAddress);
-    router.push(`/verdict?address=${encodeURIComponent(selectedAddress)}`);
+    const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress);
+    setAddress(canonicalAddress);
+    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
 
   return (
