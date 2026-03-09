@@ -126,8 +126,10 @@ function StrategyContent() {
     }
   }, [addressParam, propertyInfo])
 
+  const resolvedAddress = (propertyInfo?.address?.full_address || addressParam).trim()
+
   const { isSaved, isSaving, save, toggle } = useSaveProperty({
-    displayAddress: addressParam,
+    displayAddress: resolvedAddress,
     propertySnapshot: savePropertySnapshot,
   })
 
@@ -224,17 +226,17 @@ function StrategyContent() {
   }, [addressParam, conditionParam, locationParam, dealMakerOverrides])
 
   const handleBack = useCallback(() => {
-    router.push(`/verdict?address=${encodeURIComponent(addressParam)}`)
-  }, [router, addressParam])
+    router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
+  }, [router, resolvedAddress])
 
   const handleOpenDealMaker = useCallback(() => {
     const params = new URLSearchParams({
-      address: addressParam,
+      address: resolvedAddress,
       from: 'strategy',
     })
     if (selectedStrategyId) params.set('strategy', selectedStrategyId)
     router.push(`/deal-maker?${params.toString()}`)
-  }, [router, addressParam, selectedStrategyId])
+  }, [router, resolvedAddress, selectedStrategyId])
 
 
   if (isLoading) {

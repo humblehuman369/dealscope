@@ -238,9 +238,9 @@ export function AppHeader({
   // Also decode propertyAddress prop in case it's passed encoded
   const decodedPropertyAddress = fullyDecode(propertyAddress || '')
   
-  const displayAddress = decodedPropertyAddress || addressFromUrl || (property 
+  const displayAddress = (property
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
-    : '')
+    : '') || decodedPropertyAddress || addressFromUrl
 
   // Resolve property details — use prop if available, otherwise read from sessionStorage.
   // Uses multiple strategies to stay in sync:
@@ -371,12 +371,12 @@ export function AppHeader({
     // Build address params for navigation
     const encodedAddress = encodeURIComponent(displayAddress)
     
-    // Check multiple possible sources for zpid/propertyId
+    // Check multiple possible sources for zpid
     // 1. From property prop
-    // 2. From URL params (zpid or propertyId)
+    // 2. From URL params (zpid only)
     // 3. From pathname (e.g., /property/12345)
     // 4. From sessionStorage (set by verdict page after API fetch)
-    let zpid = property?.zpid || searchParams?.get('zpid') || searchParams?.get('propertyId') || ''
+    let zpid = property?.zpid || searchParams?.get('zpid') || ''
     
     // Extract zpid from pathname if on property details page
     if (!zpid && pathname?.startsWith('/property/')) {

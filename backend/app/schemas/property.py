@@ -874,6 +874,7 @@ class PropertySearchRequest(BaseModel):
     city: str | None = None
     state: str | None = None
     zip_code: str | None = None
+    search_source: str | None = None
 
 
 class PropertyResponse(BaseModel):

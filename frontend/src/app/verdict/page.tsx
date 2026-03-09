@@ -323,7 +323,8 @@ function VerdictContent() {
     }
     
     try {
-      const sessionKey = `dealMaker_${encodeURIComponent(addressParam)}`
+      const canonicalAddress = addressParam.trim().replace(/\s+/g, ' ').replace(/,\s*USA$/i, '')
+      const sessionKey = `dealMaker_${encodeURIComponent(canonicalAddress)}`
       const stored = sessionStorage.getItem(sessionKey)
       if (stored) {
         const data = JSON.parse(stored)
@@ -504,16 +505,15 @@ function VerdictContent() {
         // Get ARV if available (for flip/BRRRR strategies)
         const arv = data.valuations?.arv ?? null
 
-        // Parse address from URL parameter as fallback when API data is incomplete
-        // This ensures city/state/zip are preserved even if API doesn't return them
-        const parsedAddress = parseAddressString(addressParam)
+        // Prefer backend-resolved full address to avoid URL/address drift in UI.
+        const backendFullAddress = data.address?.full_address || ''
+        const parsedAddress = parseAddressString(backendFullAddress || addressParam)
 
         // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
           id: data.property_id,
           zpid: data.zpid ?? undefined,
-          // Note: addressParam from searchParams is already decoded
-          address: data.address?.street || parsedAddress.street || addressParam,
+          address: data.address?.street || parsedAddress.street || backendFullAddress || addressParam,
           city: data.address?.city || parsedAddress.city,
           state: data.address?.state || parsedAddress.state,
           zip: data.address?.zip_code || parsedAddress.zip,
@@ -914,7 +914,7 @@ function VerdictContent() {
     router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=verdict`)
   }, [property, router])
 
-  // Navigate to property details page - uses zpid or propertyId
+  // Navigate to property details page - requires a Zillow zpid
   // Property page requires address query param for backend fetch
   const handlePropertyClick = useCallback(() => {
     if (!property) return
@@ -923,15 +923,14 @@ function VerdictContent() {
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
     
-    // Prefer zpid, fall back to propertyIdParam
-    const propertyId = property.zpid || propertyIdParam
-    if (propertyId) {
-      router.push(`/property/${propertyId}?address=${encodedAddress}`)
+    const zpid = property.zpid
+    if (zpid) {
+      router.push(`/property/${zpid}?address=${encodedAddress}`)
     } else {
       // Fallback: no zpid, try search instead
       router.push(`/search?q=${encodedAddress}`)
     }
-  }, [property, propertyIdParam, router])
+  }, [property, router])
 
   // Export — opens the HTML report in a new tab with auto-print for Save-as-PDF
   const handleExport = useCallback((theme: 'light' | 'dark' = 'light') => {
@@ -1052,7 +1051,7 @@ function VerdictContent() {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
-    const propertyId = property.zpid || propertyIdParam
+    const zpid = property.zpid
     
     switch (tab) {
       case 'analyze':
@@ -1060,14 +1059,14 @@ function VerdictContent() {
         break
       case 'details':
         // Navigate to property details page - requires address query param
-        if (propertyId) {
-          router.push(`/property/${propertyId}?address=${encodedAddress}`)
+        if (zpid) {
+          router.push(`/property/${zpid}?address=${encodedAddress}`)
         }
         break
       case 'price-checker':
         // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
         const compsQuery = new URLSearchParams({ address: fullAddress })
-        if (propertyId) compsQuery.set('zpid', String(propertyId))
+        if (zpid) compsQuery.set('zpid', String(zpid))
         if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
         if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
         router.push(`/price-intel?${compsQuery.toString()}`)
@@ -1076,7 +1075,7 @@ function VerdictContent() {
         router.push('/search')
         break
     }
-  }, [property, propertyIdParam, router])
+  }, [property, router])
 
   // Loading state
   if (isLoading) {

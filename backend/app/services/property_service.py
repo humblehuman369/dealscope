@@ -86,7 +86,8 @@ class PropertyService:
 
     def _generate_property_id(self, address: str) -> str:
         """Generate consistent property ID from address."""
-        normalized = address.lower().strip()
+        normalized = re.sub(r"\s+", " ", address.lower().strip())
+        normalized = re.sub(r",\s*usa$", "", normalized)
         return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
     def _generate_assumptions_hash(self, assumptions: AllAssumptions) -> str:
