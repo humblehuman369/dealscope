@@ -202,7 +202,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Scan Property</h3>
                   <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
-                    Point your camera at any property for instant analysis
+                    Point your phone camera to scan any property for quick lookup
                   </p>
                 </div>
               </button>
@@ -235,7 +235,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Enter Address</h3>
                   <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
-                    Type in an address to analyze any property
+                    Type or paste any residential address to start
                   </p>
                 </div>
               </button>

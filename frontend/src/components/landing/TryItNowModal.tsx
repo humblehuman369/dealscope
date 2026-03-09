@@ -77,7 +77,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
               <div className="try-modal-option-content">
                 <h3 className="try-modal-option-title">Scan Property</h3>
                 <p className="try-modal-option-desc">
-                  Point your camera at any property for instant analysis
+                  Point your phone camera to scan any property for quick lookup
                 </p>
               </div>
             </button>
@@ -90,7 +90,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
               <div className="try-modal-option-content">
                 <h3 className="try-modal-option-title">Enter Address</h3>
                 <p className="try-modal-option-desc">
-                  Type in an address to analyze any property
+                  Type or paste any residential address to start
                 </p>
               </div>
             </button>
