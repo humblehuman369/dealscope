@@ -259,22 +259,32 @@ export function AppHeader({
     try {
       const parsed = readDealMakerOverrides(displayAddress)
       if (parsed && (parsed.beds || parsed.baths || parsed.sqft || parsed.price)) {
+        const toNumber = (value: unknown): number | undefined => {
+          if (typeof value === 'number' && Number.isFinite(value)) return value
+          if (typeof value === 'string') {
+            const n = Number(value)
+            if (Number.isFinite(n)) return n
+          }
+          return undefined
+        }
+
         const addrParts = parseDisplayAddress(displayAddress)
+        const listPrice = toNumber(parsed.listPrice)
+        const price = toNumber(parsed.price)
         // Display list/market price in bar, never target buy: prefer listPrice when set
-        const displayPrice = (parsed.listPrice != null && parsed.listPrice > 0)
-          ? parsed.listPrice
-          : parsed.price
+        const displayPrice = listPrice != null && listPrice > 0 ? listPrice : price
+
         setResolvedProperty({
           address: addrParts.streetAddress,
           city: addrParts.city,
           state: addrParts.state,
           zip: addrParts.zipCode,
-          beds: parsed.beds,
-          baths: parsed.baths,
-          sqft: parsed.sqft,
+          beds: toNumber(parsed.beds),
+          baths: toNumber(parsed.baths),
+          sqft: toNumber(parsed.sqft),
           price: displayPrice,
-          zpid: parsed.zpid,
-          listingStatus: parsed.listingStatus,
+          zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
+          listingStatus: typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
         })
         return
       }
