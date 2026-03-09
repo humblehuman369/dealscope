@@ -21,24 +21,6 @@ function isFiniteCoord(lat: unknown, lng: unknown): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng)
 }
 
-const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#8a8a9a' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a2e' }] },
-  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#2a2a3e' }] },
-  { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#6a6a7a' }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#16162a' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a3e' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a2e' }] },
-  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#6a6a7a' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#333350' }] },
-  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a2e' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e0e1a' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3a3a4a' }] },
-]
-
 /**
  * Inner component rendered as a child of <Map> so the Google Maps JS API
  * (and therefore `google.maps.*`) is guaranteed to be loaded by the time
@@ -57,11 +39,6 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
   const subjectPos = hasDirectCoords
     ? { lat: subject.latitude!, lng: subject.longitude! }
     : geocodedPos
-
-  useEffect(() => {
-    if (!map) return
-    map.setOptions({ styles: DARK_MAP_STYLES })
-  }, [map])
 
   useEffect(() => {
     if (hasDirectCoords || !map || !subject.address) return
