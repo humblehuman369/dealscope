@@ -157,13 +157,6 @@ const steps = [
   { num: '04', title: 'Download Excel & PDF Reports', desc: 'Generate Excel proformas, download full reports, and make data-backed offers with the numbers to prove your case.' },
 ]
 
-const founderStats = [
-  { num: '35+', label: 'Years in RE Data' },
-  { num: '30+', label: 'Years GSE Partnerships' },
-  { num: '500+', label: 'RE Projects' },
-  { num: '80+', label: 'Companies' },
-]
-
 // ── Main Component ──
 
 export function AboutPageRedesign() {
@@ -178,7 +171,7 @@ export function AboutPageRedesign() {
         <div className="hero-badge"><span className="dot" /> Decision-Grade Intelligence</div>
         <h1>The metric no one else <em>calculates.</em></h1>
         <p className="hero-sub">
-          DealGapIQ reduces complex investment analysis into three proprietary numbers — powered by real market data, transparent assumptions, and 35 years of institutional real estate intelligence.
+          DealGapIQ reduces complex investment analysis into three simple numbers — powered by real market data, transparent assumptions, and 35 years of institutional real estate intelligence.
         </p>
         <div className="hero-actions">
           <Link href="/search" className="btn-primary">Analyze a Property</Link>
@@ -223,10 +216,10 @@ export function AboutPageRedesign() {
       <section style={{ padding: '120px 24px' }}>
         <div className="ap-container">
           <Reveal style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
-            <div className="section-label" style={{ textAlign: 'center' }}>Proprietary Metrics</div>
+            <div className="section-label" style={{ textAlign: 'center' }}>Simplified Metrics</div>
             <h2 className="section-title" style={{ textAlign: 'center' }}>Hours of analysis, reduced<br />to three numbers.</h2>
             <p className="section-desc" style={{ textAlign: 'center', margin: '0 auto' }}>
-              DealGapIQ reduces complex underwriting into three investor-grade price signals. In seconds, you know whether you should even look twice.
+              DealGapIQ reduces complex underwriting into three investor-grade price signals. We help you know whether you should even look twice.
             </p>
           </Reveal>
           <Reveal>
@@ -371,15 +364,7 @@ export function AboutPageRedesign() {
                 <h3>Brad Geisen</h3>
                 <div className="founder-title">Founder &amp; CEO, DealGapIQ</div>
                 <p>Brad built the digital infrastructure behind how America finds and values distressed real estate. He founded Foreclosure.com, built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac, and has maintained GSE partnerships spanning three decades.</p>
-                <p>DealGapIQ distills that same institutional-grade analytical rigor — the kind previously available only to large institutions and professional investors — and puts it in the hands of every investor, instantly.</p>
-                <div className="founder-stats">
-                  {founderStats.map(s => (
-                    <div className="founder-stat" key={s.label}>
-                      <div className="num">{s.num}</div>
-                      <div className="stat-label">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
+                <p>DealGapIQ distills that same institutional-grade analytical rigor — the kind previously available only to large institutions and professional investors — and puts it in the hands of every investor, in a simple, easy to understand platform.</p>
               </div>
             </div>
           </Reveal>
@@ -429,8 +414,8 @@ export function AboutPageRedesign() {
       {/* CTA BAND */}
       <section className="cta-band">
         <Reveal style={{ maxWidth: 760, margin: '0 auto' }}>
-          <h2>One scan. Your number.</h2>
-          <p>Enter any address and know if it&apos;s worth your time — in under 60 seconds.</p>
+          <h2>Built for Aspiring Investor</h2>
+          <p>Enter any address and know if it&apos;s worth your time.</p>
           <Link href="/search" className="btn-primary" style={{ fontSize: 18, padding: '16px 40px' }}>
             Analyze Your First Property &rarr;
           </Link>
