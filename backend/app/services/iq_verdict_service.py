@@ -511,6 +511,27 @@ def _get_bracket_label(deal_gap_pct: float) -> str:
     return INVESTOR_DISCOUNT_BRACKETS[-1][3]
 
 
+# Numeric "percent of investors" per bracket for Verdict UI (bullet #3)
+INVESTOR_PCT_BY_BRACKET: list[tuple[float, int]] = [
+    (5, 38),
+    (10, 37),
+    (20, 18),
+    (30, 10),
+    (40, 4),
+    (100, 2),
+]
+
+
+def _get_bracket_investor_pct(deal_gap_pct: float) -> int:
+    """Return the numeric percent of investors who land discounts in this deal's bracket (for Verdict UI)."""
+    if deal_gap_pct <= 0:
+        return 15  # AT_OR_ABOVE_LABEL: "about 15% of investors close at or above asking price"
+    for max_gap, pct in INVESTOR_PCT_BY_BRACKET:
+        if deal_gap_pct <= max_gap:
+            return pct
+    return 2
+
+
 def _motivation_modifier(motivation_score: int) -> int:
     """Seller motivation modifier: -10 to +10 based on availability ranking score (0-100)."""
     return round((motivation_score - 50) / 50 * 10)
@@ -958,6 +979,7 @@ def compute_iq_verdict(
     return IQVerdictResponse(
         deal_score=deal_score,
         deal_verdict=deal_verdict,
+        deal_probability_score=_get_bracket_investor_pct(deal_gap_pct),
         verdict_description=_get_verdict_description(
             deal_score,
             top_strategy,
