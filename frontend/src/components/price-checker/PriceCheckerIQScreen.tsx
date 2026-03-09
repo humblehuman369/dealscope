@@ -202,18 +202,29 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       )}
 
       <div className="flex">
-        {/* Image + distance badge */}
-        <div className="relative w-[100px] h-[80px] flex-shrink-0 bg-white/[0.05] rounded-l-xl overflow-hidden">
-          {comp.imageUrl ? (
-            <img src={comp.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-white/[0.05]">
-              {isSale ? <Building2 className="w-5 h-5 text-[#F1F5F9]" /> : <Home className="w-5 h-5 text-[#F1F5F9]" />}
+        {/* Image + distance badge + View Photos */}
+        <div className="flex flex-col w-[100px] flex-shrink-0">
+          <div className="relative h-[80px] bg-white/[0.05] rounded-tl-xl overflow-hidden">
+            {comp.imageUrl ? (
+              <img src={comp.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-white/[0.05]">
+                {isSale ? <Building2 className="w-5 h-5 text-[#F1F5F9]" /> : <Home className="w-5 h-5 text-[#F1F5F9]" />}
+              </div>
+            )}
+            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
+              <span className="text-[10px] font-semibold text-[#38bdf8] tabular-nums">{comp.distanceMiles.toFixed(2)} mi</span>
             </div>
-          )}
-          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
-            <span className="text-[10px] font-semibold text-[#38bdf8] tabular-nums">{comp.distanceMiles.toFixed(2)} mi</span>
           </div>
+          {comp.zpid && onViewPhotos && (
+            <button
+              onClick={onViewPhotos}
+              className="flex items-center justify-center gap-1 py-1 bg-black/80 border-t border-[rgba(14,165,233,0.2)] text-[10px] font-medium text-[#38bdf8] hover:bg-white/[0.05] transition-colors"
+            >
+              <Camera className="w-3 h-3" />
+              Photos
+            </button>
+          )}
         </div>
 
         {/* Details -- always visible: address, price, $/sqft, date, beds/baths/sqft */}
@@ -260,23 +271,12 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       {/* Expandable Details: match score, similarity, adjustments */}
       {isExpanded && (
         <div className="border-t border-[rgba(14,165,233,0.25)] p-3 bg-black/50">
-          {/* Match Score header + View Photos */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
-              <span className="text-lg font-bold tabular-nums" style={{
-                color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
-              }}>{similarity.overall}%</span>
-            </div>
-            {comp.zpid && onViewPhotos && (
-              <button
-                onClick={onViewPhotos}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#38bdf8] hover:border-[rgba(14,165,233,0.55)] hover:bg-white/[0.03] transition-colors"
-              >
-                <Camera className="w-3 h-3" />
-                View Photos
-              </button>
-            )}
+          {/* Match Score header */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
+            <span className="text-lg font-bold tabular-nums" style={{
+              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
+            }}>{similarity.overall}%</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
