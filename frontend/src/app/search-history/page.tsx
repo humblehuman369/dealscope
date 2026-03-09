@@ -219,7 +219,7 @@ function SearchHistoryContent() {
               Your Top Markets
             </h3>
             <div className="flex flex-wrap gap-2">
-              {stats.top_markets.map(market => (
+              {stats.top_markets.map((market: { state: string; count: number }) => (
                 <div
                   key={market.state}
                   className="px-3 py-1.5 bg-sky-400/10 rounded-full text-sm border border-sky-400/10"

@@ -325,7 +325,7 @@ function SavedPropertiesContent() {
           >
             {/* ── Property Items ──────────────────── */}
             <div className="divide-y divide-white/[0.07]">
-              {properties.map((property) => {
+              {properties.map((property: SavedPropertySummary) => {
                 const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.watching
                 return (
                   <div
@@ -391,7 +391,7 @@ function SavedPropertiesContent() {
                           </span>
                           {property.tags && property.tags.length > 0 && (
                             <div className="flex gap-1">
-                              {property.tags.slice(0, 3).map(tag => (
+                              {property.tags.slice(0, 3).map((tag: string) => (
                                 <span
                                   key={tag}
                                   className="px-1.5 py-0.5 bg-white/[0.04] border border-white/[0.07] text-xs text-slate-500 rounded"

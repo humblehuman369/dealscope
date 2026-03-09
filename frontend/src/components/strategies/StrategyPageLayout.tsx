@@ -24,14 +24,26 @@ function usePropertyContext(): PropertyContext | null {
     try {
       const parsed = readDealMakerOverrides();
       if (!parsed) return;
+      const toNumber = (value: unknown): number | undefined => {
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string') {
+          const n = Number(value);
+          if (Number.isFinite(n)) return n;
+        }
+        return undefined;
+      };
+      const toStringValue = (value: unknown): string | undefined =>
+        typeof value === 'string' ? value : undefined;
+
+      const price = toNumber(parsed.price);
       // Require at minimum a price to consider this a valid context
-      if (parsed.price) {
+      if (price != null && price > 0) {
         setCtx({
-          address: parsed.address || undefined,
-          price: parsed.price,
-          beds: parsed.beds,
-          baths: parsed.baths,
-          sqft: parsed.sqft,
+          address: toStringValue(parsed.address),
+          price,
+          beds: toNumber(parsed.beds),
+          baths: toNumber(parsed.baths),
+          sqft: toNumber(parsed.sqft),
         });
       }
     } catch {
