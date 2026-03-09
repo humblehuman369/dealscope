@@ -240,13 +240,21 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                 {formatCurrency(isSale ? (comp as SaleComp).salePrice : (comp as RentComp).monthlyRent)}
                 {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
               </p>
-              <p className="text-[11px] font-semibold text-[#38bdf8] tabular-nums">
-                ${Number(isSale ? (comp as SaleComp).pricePerSqft : (comp as RentComp).rentPerSqft).toFixed(2)}/sf{!isSale && '/mo'}
-              </p>
+              <div className="flex items-center justify-end gap-2 flex-wrap">
+                <p className="text-[13px] font-semibold text-[#38bdf8] tabular-nums">
+                  ${Number(isSale ? (comp as SaleComp).pricePerSqft : (comp as RentComp).rentPerSqft).toFixed(2)}/sf{!isSale && '/mo'}
+                </p>
+                {comp.yearBuilt > 0 && (
+                  <span className="flex items-center gap-0.5 text-[13px] text-[#F1F5F9] tabular-nums">
+                    <Calendar className="w-3 h-3 text-[#F1F5F9]" aria-hidden />
+                    Yr Built {comp.yearBuilt}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-[#F1F5F9] mb-1.5 pl-4">
+          <div className="flex items-center gap-2 text-[13px] text-[#F1F5F9] mb-1.5 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
             <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()}</span>
@@ -254,15 +262,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           </div>
 
           <div className="flex items-center gap-1.5 pl-4">
-            <span className="text-[10px] text-[#F1F5F9]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
-            <span className="text-[10px] px-1 py-0.5 rounded bg-white/[0.07] text-[#F1F5F9]">{getDaysAgo(compDate)}</span>
+            <span className="text-[12px] text-[#F1F5F9]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
+            <span className="text-[12px] px-1 py-0.5 rounded bg-white/[0.07] text-[#F1F5F9]">{getDaysAgo(compDate)}</span>
             {freshness && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+              <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium"
                 style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
                 {freshness.label}
               </span>
             )}
-            <button onClick={onExpand} className="ml-auto text-xs text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
+            <button onClick={onExpand} className="ml-auto text-[14px] text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
