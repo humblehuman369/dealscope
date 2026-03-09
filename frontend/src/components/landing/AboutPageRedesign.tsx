@@ -145,7 +145,7 @@ const afterItems = [
   'Income Value, Target Buy, and Deal Gap in seconds',
   'Six investment strategies evaluated automatically',
   'Every assumption visible, editable, defensible',
-  'AI-generated deal narratives in plain English',
+  'Key facts about the deal explained in plain English',
   'Downloadable Excel proformas for lender-ready analysis',
   'Consistent framework across every property you evaluate',
 ]
