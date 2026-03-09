@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from app.core.deps import OptionalUser, ProUser
+from app.schemas.appraisal_report import AppraisalReportRequest
 from app.schemas.proforma import (
     FinancialProforma,
     ProformaExportResponse,
@@ -20,6 +21,7 @@ from app.services.flip_exporter import FlipExcelExporter
 from app.services.house_hack_exporter import HouseHackExcelExporter
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_generator import generate_proforma_data
+from app.services.appraisal_report_pdf import AppraisalReportPDFExporter
 from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
 from app.services.str_exporter import STRExcelExporter
@@ -463,4 +465,71 @@ async def view_proforma_report(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating report: {e!s}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Appraisal Report (comps-based)
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/appraisal-report/pdf",
+    summary="Generate appraisal report PDF from selected comps",
+)
+async def generate_appraisal_report_pdf(
+    request: AppraisalReportRequest,
+    current_user: OptionalUser,
+):
+    """
+    Generate a professional appraisal-style PDF report from user-selected
+    comparable sales and their adjustments.
+
+    The frontend sends pre-computed appraisal data (subject, comps, adjustments,
+    market value, ARV) and the backend renders it into a multi-page PDF via
+    WeasyPrint.
+    """
+    try:
+        exporter = AppraisalReportPDFExporter(request)
+        buffer = exporter.generate()
+    except ImportError as exc:
+        logger.error(f"Appraisal PDF export failed — WeasyPrint not available: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="PDF export is temporarily unavailable. The server is missing required system libraries.",
+        )
+
+    safe_address = "".join(c if c.isalnum() or c in " -" else "" for c in request.subject_address).strip().replace(" ", "-")[:60]
+    filename = f"DealGapIQ_Appraisal_{safe_address}_{datetime.now().strftime('%Y%m%d')}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post(
+    "/appraisal-report/html",
+    summary="View appraisal report as HTML (browser print-to-PDF)",
+    response_class=HTMLResponse,
+)
+async def view_appraisal_report_html(
+    request: AppraisalReportRequest,
+    current_user: OptionalUser,
+    auto_print: bool = Query(True, description="Auto-trigger browser print dialog"),
+):
+    """
+    Render the appraisal report as browser-viewable HTML for print-to-PDF.
+    No WeasyPrint or system dependencies required.
+    """
+    try:
+        exporter = AppraisalReportPDFExporter(request)
+        html_content = exporter.generate_html(auto_print=auto_print)
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        logger.error(f"Error generating appraisal HTML report: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating appraisal report: {e!s}",
         )
