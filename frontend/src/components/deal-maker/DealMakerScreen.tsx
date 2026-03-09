@@ -22,6 +22,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
+import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import {
   // Strategy types & defaults
   StrategyType,
@@ -609,7 +610,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       try {
         sessionStorage.setItem(sessionKey, JSON.stringify(sessionData))
         // Also store the current address as the "active" deal maker session
-        sessionStorage.setItem('dealMaker_activeAddress', fullAddr)
+        sessionStorage.setItem('dealMaker_activeAddress', canonicalizeAddressForIdentity(fullAddr))
       } catch (e) {
         console.warn('Failed to save to sessionStorage:', e)
       }

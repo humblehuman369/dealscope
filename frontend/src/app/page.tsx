@@ -24,7 +24,7 @@ import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { DealGapIQHomepage } from '@/components/landing';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -53,13 +53,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [addressInput, setAddressInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const hasValidSearchAddress = isLikelyFullAddress(addressInput);
   
   const scanner = usePropertyScan();
 
   // Handle address search - uses new IQ Verdict flow
   const handleAddressSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addressInput.trim()) return;
+    if (!hasValidSearchAddress) return;
     setIsSearching(true);
     try {
       const canonicalAddress = canonicalizeAddressForIdentity(addressInput);
@@ -258,7 +259,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                   </div>
                   <button
                     type="submit"
-                    disabled={!addressInput.trim() || isSearching}
+                    disabled={!hasValidSearchAddress || isSearching}
                     className="px-6 py-3 bg-[#0EA5E9] text-white rounded-xl font-bold hover:bg-[#3dc0d1] transition-colors disabled:opacity-50"
                   >
                     {isSearching ? (
@@ -316,7 +317,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               </div>
               <button
                 type="submit"
-                disabled={!addressInput.trim() || isSearching}
+                disabled={!hasValidSearchAddress || isSearching}
                 className="w-full py-4 bg-brand-500 text-white rounded-xl font-bold text-lg hover:bg-[#0354d1] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSearching ? (

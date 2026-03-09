@@ -14,7 +14,7 @@ import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
 import { PhoneScannerMockup } from './PhoneScannerMockup';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 
 interface LandingPageProps {
   onPointAndScan: () => void;
@@ -40,9 +40,10 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const hasValidSearchAddress = isLikelyFullAddress(searchAddress);
 
   const handleAnalyze = async () => {
-    if (!searchAddress.trim()) return;
+    if (!hasValidSearchAddress) return;
     setIsSearching(true);
     try {
       // Use new IQ Verdict flow
@@ -189,7 +190,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
               </div>
               <button
                 type="submit"
-                disabled={!searchAddress.trim() || isSearching}
+                disabled={!hasValidSearchAddress || isSearching}
                 className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
                   ${searchAddress.trim() 
                     ? `text-white shadow-lg` 
