@@ -26,6 +26,7 @@ export interface SalesCompProperty {
   beds: number
   baths: number
   sqft: number
+  yearBuilt?: number
   lotSize?: number
   price: number
   pricePerSqft: number
@@ -71,6 +72,7 @@ const DEFAULT_COMPS: SalesCompProperty[] = [
     beds: 3,
     baths: 2,
     sqft: 1756,
+    yearBuilt: 1985,
     lotSize: 0,
     price: 750000,
     pricePerSqft: 427,
@@ -88,6 +90,7 @@ const DEFAULT_COMPS: SalesCompProperty[] = [
     beds: 3,
     baths: 2,
     sqft: 1862,
+    yearBuilt: 1992,
     lotSize: 0,
     price: 840000,
     pricePerSqft: 451,
@@ -105,6 +108,7 @@ const DEFAULT_COMPS: SalesCompProperty[] = [
     beds: 4,
     baths: 2,
     sqft: 1728,
+    yearBuilt: 1978,
     lotSize: 0,
     price: 880000,
     pricePerSqft: 509,
@@ -122,6 +126,7 @@ const DEFAULT_COMPS: SalesCompProperty[] = [
     beds: 3,
     baths: 2,
     sqft: 1727,
+    yearBuilt: 2001,
     lotSize: 0,
     price: 840000,
     pricePerSqft: 486,
@@ -139,6 +144,7 @@ const DEFAULT_COMPS: SalesCompProperty[] = [
     beds: 4,
     baths: 2,
     sqft: 2014,
+    yearBuilt: 1995,
     lotSize: 0,
     price: 798000,
     pricePerSqft: 396,
@@ -402,6 +408,14 @@ export function SalesCompsScreen({
                     </svg>
                     {formatNumber(comp.sqft)}
                   </span>
+                  {comp.yearBuilt != null && comp.yearBuilt > 0 && (
+                    <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
+                      <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                      </svg>
+                      {comp.yearBuilt}
+                    </span>
+                  )}
                   {comp.lotSize !== undefined && (
                     <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
                       <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
