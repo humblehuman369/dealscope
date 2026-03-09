@@ -654,36 +654,37 @@ export function AppHeader({
           </div>
         )}
 
-        {/* Property Address Bar - sticky so it freezes at top when user scrolls; content below scrolls under it */}
-        {shouldShowPropertyBar && displayAddress && (() => {
-          const addrParts = parseDisplayAddress(displayAddress)
-          const p = resolvedProperty
-          return (
-            <div
-              className="sticky top-0 z-50"
-              style={{ backgroundColor: '#000000' }}
-            >
-              <PropertyAddressBar
-                address={p?.address ?? addrParts.streetAddress}
-                city={p?.city ?? addrParts.city}
-                state={p?.state ?? addrParts.state}
-                zip={p?.zip ?? addrParts.zipCode}
-                beds={p?.beds ?? 0}
-                baths={p?.baths ?? 0}
-                sqft={p?.sqft ?? 0}
-                price={p?.price ?? 0}
-                listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
-                zpid={p?.zpid}
-                bookmarked={isSaved}
-                onBookmarkClick={isAuthenticated
-                  ? () => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
-                  : () => router.push(signInUrl)}
-              />
-            </div>
-          )
-        })()}
       </header>
 
+      {/* Property Address Bar — rendered OUTSIDE <header> so sticky works against the
+          viewport/body scroll, not the header's own bounds. */}
+      {shouldShowPropertyBar && displayAddress && (() => {
+        const addrParts = parseDisplayAddress(displayAddress)
+        const p = resolvedProperty
+        return (
+          <div
+            className="sticky top-0 z-50"
+            style={{ backgroundColor: '#000000' }}
+          >
+            <PropertyAddressBar
+              address={p?.address ?? addrParts.streetAddress}
+              city={p?.city ?? addrParts.city}
+              state={p?.state ?? addrParts.state}
+              zip={p?.zip ?? addrParts.zipCode}
+              beds={p?.beds ?? 0}
+              baths={p?.baths ?? 0}
+              sqft={p?.sqft ?? 0}
+              price={p?.price ?? 0}
+              listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
+              zpid={p?.zpid}
+              bookmarked={isSaved}
+              onBookmarkClick={isAuthenticated
+                ? () => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
+                : () => router.push(signInUrl)}
+            />
+          </div>
+        )
+      })()}
     </>
   )
 }
