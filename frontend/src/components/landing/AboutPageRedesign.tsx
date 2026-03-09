@@ -281,7 +281,7 @@ export function AboutPageRedesign() {
           <Reveal>
             <div className="section-label">Strategy Engine</div>
             <h2 className="section-title">Every address analyzed<br />six ways — automatically.</h2>
-            <p className="section-desc">No more one-size-fits-all analysis. DealGapIQ evaluates every property through six distinct investment lenses and provides fully editable strategy specific worksheets that you can download in Excel.</p>
+            <p className="section-desc">No more one-size-fits-all analysis. DealGapIQ evaluates every property through six distinct investment lenses, each with a fully editable Excel worksheet you can download and make your own.</p>
           </Reveal>
           <Reveal>
             <div className="strategies-grid">
