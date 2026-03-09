@@ -6,6 +6,7 @@ Provides a unified caching interface for property data.
 import hashlib
 import json
 import logging
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -45,8 +46,9 @@ class CacheService:
     @staticmethod
     def generate_key(prefix: str, identifier: str) -> str:
         """Generate a cache key with prefix."""
-        # Normalize the identifier
-        normalized = identifier.lower().strip()
+        # Normalize identifiers so equivalent full-address variants map to one key.
+        normalized = re.sub(r"\s+", " ", (identifier or "").strip().lower())
+        normalized = re.sub(r",\s*usa$", "", normalized)
         hash_part = hashlib.sha256(normalized.encode()).hexdigest()[:16]
         return f"{prefix}:{hash_part}"
 

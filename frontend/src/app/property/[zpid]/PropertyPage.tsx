@@ -33,6 +33,12 @@ export default function PropertyPage() {
       try {
         const data = await api.post<Record<string, unknown>>('/api/v1/properties/search', { address })
         if (cancelled) return
+        const responseZpid = (data as any)?.zpid ? String((data as any).zpid) : ''
+        if (responseZpid && responseZpid !== zpid) {
+          setError('Property identity mismatch. Please re-run search from the full address result.')
+          setProperty(null)
+          return
+        }
         const normalized = normalizePropertyData(data, zpid)
         setProperty(normalized)
       } catch (err) {
@@ -66,10 +72,16 @@ export default function PropertyPage() {
 function normalizePropertyData(property: Record<string, unknown>, zpid: string): PropertyData {
   const p = property as any
 
-  const streetAddress = p.address?.street || ''
-  const city = p.address?.city || ''
-  const state = p.address?.state || ''
-  const zipcode = p.address?.zip_code || ''
+  const fullAddress = typeof p.address?.full_address === 'string' ? p.address.full_address : ''
+  const [streetFromFull = '', cityFromFull = '', stateZipFromFull = ''] = fullAddress
+    .split(',')
+    .map((segment: string) => segment.trim())
+  const stateZipMatch = stateZipFromFull.match(/^([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/)
+
+  const streetAddress = p.address?.street || streetFromFull || ''
+  const city = p.address?.city || cityFromFull || ''
+  const state = p.address?.state || (stateZipMatch?.[1] ?? '')
+  const zipcode = p.address?.zip_code || (stateZipMatch?.[2] ?? '')
   const price = p.valuations?.current_value_avm || p.valuations?.zestimate || 0
   const livingArea = p.details?.square_footage || 0
 

@@ -14,6 +14,13 @@ type PropertyResponseCompat = PropertyResponse & Record<string, any>
 
 const PROPERTY_STALE_TIME = 5 * 60 * 1000 // 5 min
 
+function canonicalizeAddressKey(address: string): string {
+  return address
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*USA$/i, '')
+}
+
 /** Return the value as a finite number, or null if it's missing/invalid. */
 function finiteOrNull(v: unknown): number | null {
   if (v == null) return null
@@ -62,12 +69,13 @@ export function usePropertyData() {
 
   const fetchProperty = useCallback(
     async (address: string): Promise<PropertyResponseCompat> => {
+      const canonicalAddress = canonicalizeAddressKey(address)
       return queryClient.ensureQueryData({
-        queryKey: ['property-search', address],
+        queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
           const raw = await api.post<PropertyResponseCompat>(
             '/api/v1/properties/search',
-            { address },
+            { address: canonicalAddress },
           )
           return validatePropertyResponse(raw)
         },
@@ -79,7 +87,8 @@ export function usePropertyData() {
 
   const invalidateProperty = useCallback(
     (address: string) => {
-      queryClient.invalidateQueries({ queryKey: ['property-search', address] })
+      const canonicalAddress = canonicalizeAddressKey(address)
+      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress] })
     },
     [queryClient],
   )

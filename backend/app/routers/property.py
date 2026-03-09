@@ -5,6 +5,7 @@ Extracted from main.py for cleaner architecture.
 """
 
 import logging
+import re
 from datetime import datetime
 from io import BytesIO
 
@@ -26,6 +27,34 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["Properties"])
 
 
+def _normalize_address_part(value: str | None) -> str:
+    if not value:
+        return ""
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def _build_full_address(request: PropertySearchRequest) -> str:
+    """
+    Build a consistent full address from request data.
+    If `address` already appears fully formatted, trust it to avoid duplicate city/state/zip.
+    """
+    base = _normalize_address_part(request.address)
+    if not base:
+        return ""
+
+    # Most validated Google addresses arrive as full "street, city, ST ZIP".
+    if "," in base:
+        return base
+
+    city = _normalize_address_part(request.city)
+    state = _normalize_address_part(request.state)
+    zip_code = _normalize_address_part(request.zip_code)
+    state_zip = " ".join([part for part in [state, zip_code] if part])
+
+    extra_parts = [part for part in [city, state_zip] if part]
+    return ", ".join([base, *extra_parts]) if extra_parts else base
+
+
 # ============================================
 # PROPERTY SEARCH
 # ============================================
@@ -45,16 +74,8 @@ async def search_property(
     Returns property details, valuations, rental estimates, and data provenance.
     Automatically records the search in the user's search history when authenticated.
     """
-    # Build full address
-    address_parts = [request.address]
-    if request.city:
-        address_parts.append(request.city)
-    if request.state:
-        address_parts.append(request.state)
-    if request.zip_code:
-        address_parts.append(request.zip_code)
-
-    full_address = ", ".join(address_parts)
+    full_address = _build_full_address(request)
+    search_source = request.search_source or "web"
 
     logger.info(f"Searching for property: {full_address}")
 
@@ -74,7 +95,7 @@ async def search_property(
                         "state": request.state,
                         "zip": request.zip_code,
                     },
-                    search_source="web",
+                    search_source=search_source,
                     was_successful=False,
                     error_message=e.message,
                 )
@@ -96,7 +117,7 @@ async def search_property(
                         "state": request.state,
                         "zip": request.zip_code,
                     },
-                    search_source="web",
+                    search_source=search_source,
                     was_successful=False,
                     error_message=str(e),
                 )
@@ -133,7 +154,7 @@ async def search_property(
                     "estimated_value": (valuations.zestimate or valuations.current_value_avm) if valuations else None,
                     "rent_estimate": rentals.monthly_rent_ltr if rentals else None,
                 },
-                search_source="web",
+                search_source=search_source,
                 was_successful=True,
             )
             logger.info(f"Search history recorded for user {current_user.id}")
@@ -158,14 +179,7 @@ async def export_property_data_report(request: PropertySearchRequest):
     Request body: same as property search (address, optional city, state, zip_code).
     Returns a single .xlsx file.
     """
-    address_parts = [request.address]
-    if request.city:
-        address_parts.append(request.city)
-    if request.state:
-        address_parts.append(request.state)
-    if request.zip_code:
-        address_parts.append(request.zip_code)
-    full_address = ", ".join(address_parts)
+    full_address = _build_full_address(request)
     logger.info(f"Property data report requested for: {full_address}")
     try:
         export_data = await property_service.get_property_export_data(full_address)
