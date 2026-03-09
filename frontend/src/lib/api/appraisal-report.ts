@@ -126,7 +126,8 @@ export function buildAppraisalPayload(opts: {
 
 /**
  * Download the appraisal report as a PDF blob.
- * Falls back to opening the HTML report in a new tab if the PDF endpoint returns 501.
+ * Falls back to downloading an HTML report if WeasyPrint is unavailable (501)
+ * or the PDF endpoint fails for any reason.
  */
 export async function downloadAppraisalReportPDF(
   payload: AppraisalReportPayload,
@@ -134,41 +135,57 @@ export async function downloadAppraisalReportPDF(
   const base = API_BASE_URL
   const url = `${base}/api/v1/proforma/appraisal-report/pdf`
 
-  const response = await fetch(url, {
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    return downloadAppraisalReportHTML(payload)
+  }
+
+  if (response.ok) {
+    triggerBlobDownload(await response.blob(), 'DealGapIQ-Appraisal-Report.pdf')
+    return
+  }
+
+  return downloadAppraisalReportHTML(payload)
+}
+
+/**
+ * Fallback: fetch the print-ready HTML report and download it as an .html file.
+ * The user opens it in their browser and uses Cmd/Ctrl+P to save as PDF.
+ */
+async function downloadAppraisalReportHTML(
+  payload: AppraisalReportPayload,
+): Promise<void> {
+  const base = API_BASE_URL
+  const htmlUrl = `${base}/api/v1/proforma/appraisal-report/html?auto_print=true`
+
+  const htmlRes = await fetch(htmlUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
   })
 
-  if (response.status === 501) {
-    const htmlUrl = `${base}/api/v1/proforma/appraisal-report/html?auto_print=true`
-    const htmlRes = await fetch(htmlUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    })
-    if (htmlRes.ok) {
-      const html = await htmlRes.text()
-      const win = window.open('', '_blank')
-      if (win) {
-        win.document.write(html)
-        win.document.close()
-      }
-    }
-    return
+  if (!htmlRes.ok) {
+    throw new Error(`Appraisal report generation failed: ${htmlRes.statusText}`)
   }
 
-  if (!response.ok) {
-    throw new Error(`Appraisal PDF download failed: ${response.statusText}`)
-  }
+  const html = await htmlRes.text()
+  const blob = new Blob([html], { type: 'text/html' })
+  triggerBlobDownload(blob, 'DealGapIQ-Appraisal-Report.html')
+}
 
-  const blob = await response.blob()
+function triggerBlobDownload(blob: Blob, filename: string): void {
   const blobUrl = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = blobUrl
-  a.download = 'DealGapIQ-Appraisal-Report.pdf'
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
