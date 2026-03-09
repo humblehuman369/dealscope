@@ -706,7 +706,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
         {/* Dual Valuation Panel */}
-        <div className="mx-4 mt-4 sticky top-[120px] z-40">
+        <div className="mx-4 mt-4 sticky top-[152px] z-40">
           <div className={`relative rounded-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
             {/* Header */}
