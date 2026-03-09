@@ -705,12 +705,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   return (
     <div className="min-h-screen bg-black font-['Inter',sans-serif]">
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
-        {/* Dual Valuation Panel */}
-        <div className="mx-4 mt-4 sticky top-[152px] z-40">
-          <div className={`relative rounded-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
+        {/* Dual Valuation Panel: header scrolls away; cards row freezes at top */}
+        <div className="mx-4 mt-4">
+          {/* Header — scrolls up and out of view */}
+          <div className={`relative rounded-t-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
-            {/* Header */}
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-3 gap-2">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-black border border-[rgba(14,165,233,0.3)] flex items-center justify-center">
                   <Target className="w-4.5 h-4.5 text-[#38bdf8]" />
@@ -744,8 +744,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 <div className="text-[9px] text-[#F1F5F9] uppercase">Confidence</div>
               </div>
             </div>
+          </div>
 
-            {/* Dual values */}
+          {/* Comp Appraisal + Est. After Repair row — sticky: stops here and freezes */}
+          <div className="sticky top-[152px] z-40 overflow-hidden rounded-b-xl">
+            <div className={`relative rounded-b-xl p-4 pt-3 overflow-hidden bg-black ${largeCardBorderGlow}`}
+              style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
             <div className="grid grid-cols-2 gap-3 mb-3">
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-black rounded-lg p-3 border border-[rgba(14,165,233,0.25)]">
@@ -839,6 +843,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </span>
             </div>
 
+            </div>
           </div>
         </div>
 
