@@ -34,13 +34,27 @@ export function AnalysisNav() {
     try {
       const parsed = readDealMakerOverrides(address)
       if (parsed) {
+        const toNumber = (value: unknown): number | undefined => {
+          if (typeof value === 'number' && Number.isFinite(value)) return value
+          if (typeof value === 'string') {
+            const n = Number(value)
+            if (Number.isFinite(n)) return n
+          }
+          return undefined
+        }
+
+        const beds = toNumber(parsed.beds)
+        const baths = toNumber(parsed.baths)
+        const sqft = toNumber(parsed.sqft)
+        const price = toNumber(parsed.price)
+
         if (parsed.zpid && !zpidFromUrl) setZpid(String(parsed.zpid))
-        if (address && (parsed.beds != null || parsed.zpid != null)) {
+        if (address && (beds != null || parsed.zpid != null)) {
           setPropertySnapshot({
-            bedrooms: parsed.beds,
-            bathrooms: parsed.baths,
-            sqft: parsed.sqft,
-            listPrice: parsed.price,
+            bedrooms: beds,
+            bathrooms: baths,
+            sqft,
+            listPrice: price,
             zpid: parsed.zpid != null ? String(parsed.zpid) : undefined,
           })
         } else {
