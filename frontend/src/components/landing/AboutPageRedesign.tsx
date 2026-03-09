@@ -154,7 +154,7 @@ const steps = [
   { num: '01', title: 'Enter an Address', desc: 'Type any address or scan a property with your phone. The moment it resolves, your analysis is underway.' },
   { num: '02', title: 'Get an Instant Verdict', desc: 'In seconds, DealGapIQ delivers your three numbers: Income Value, Target Buy, and Deal Gap — with a plain-English verdict.' },
   { num: '03', title: 'Adjust the Terms', desc: 'Edit assumptions live — rates, terms, down payment, rent estimates — and watch every number recalculate instantly.' },
-  { num: '04', title: 'Download Excel & PDF Reports', desc: 'Generate Excel proformas, download full reports, and make data-backed offers with the numbers to prove your case.' },
+  { num: '04', title: 'Download Excel & PDF', desc: 'Generate Excel proformas, download them, and make data-backed offers with the numbers to prove your case.' },
 ]
 
 // ── Main Component ──
