@@ -794,7 +794,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
-                <div className="mt-0.5 flex justify-end">
+                <div className="mt-1 flex justify-end">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
@@ -833,7 +833,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <TrendingUp className="w-3 h-3 text-[#34d399]" />
                   <span className="text-[10px] font-medium text-[#34d399]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
-                <div className="mt-0.5 flex justify-end">
+                <div className="mt-1 flex justify-end">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayArv : displayImprovedRent) === 0}
