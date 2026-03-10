@@ -10,6 +10,12 @@ import { API_BASE_URL } from '@/lib/env'
 import type { AppraisalResult, CompAdjustment } from '@/utils/appraisalCalculations'
 import type { SaleComp } from './types'
 
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null
+  const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+  return csrfMatch ? csrfMatch.split('=')[1] : null
+}
+
 export interface AppraisalReportPayload {
   // Subject
   subject_address: string
@@ -235,9 +241,12 @@ export async function downloadAppraisalReportPDF(
 ): Promise<void> {
   const base = API_BASE_URL
   const url = `${base}/api/v1/proforma/appraisal-report/pdf`
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const csrf = getCsrfToken()
+  if (csrf) headers['X-CSRF-Token'] = csrf
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
     body: JSON.stringify(payload),
   })
@@ -261,10 +270,13 @@ async function downloadAppraisalReportHTML(
 ): Promise<void> {
   const base = API_BASE_URL
   const htmlUrl = `${base}/api/v1/proforma/appraisal-report/html?auto_print=true`
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const csrf = getCsrfToken()
+  if (csrf) headers['X-CSRF-Token'] = csrf
 
   const htmlRes = await fetch(htmlUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
     body: JSON.stringify(payload),
   })
