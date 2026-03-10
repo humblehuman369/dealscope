@@ -35,7 +35,12 @@ def _ensure_anthropic():
     try:
         import anthropic
 
-        _anthropic_client = anthropic.Anthropic(api_key=api_key)
+        # Keep narrative generation fast and non-blocking for report downloads.
+        _anthropic_client = anthropic.Anthropic(
+            api_key=api_key,
+            timeout=8.0,
+            max_retries=1,
+        )
         ANTHROPIC_AVAILABLE = True
         logger.info("Anthropic client initialized — AI narratives enabled")
         return _anthropic_client

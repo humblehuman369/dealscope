@@ -220,7 +220,8 @@ export function buildAppraisalPayload(opts: {
       vacancy_rate: null,
     } : null,
 
-    generate_ai_narratives: true,
+    // Reliability-first default: deterministic template narratives, no LLM dependency.
+    generate_ai_narratives: false,
   }
 }
 
@@ -234,25 +235,25 @@ export async function downloadAppraisalReportPDF(
 ): Promise<void> {
   const base = API_BASE_URL
   const url = `${base}/api/v1/proforma/appraisal-report/pdf`
-
-  let response: Response
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    })
-  } catch {
-    return downloadAppraisalReportHTML(payload)
-  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
 
   if (response.ok) {
     triggerBlobDownload(await response.blob(), 'DealGapIQ-URAR-Appraisal-Report.pdf')
     return
   }
 
-  return downloadAppraisalReportHTML(payload)
+  // Only fall back for the explicit WeasyPrint-unavailable path.
+  if (response.status === 501) {
+    return downloadAppraisalReportHTML(payload)
+  }
+
+  const errText = await response.text().catch(() => '')
+  throw new Error(`Appraisal PDF failed (${response.status}): ${errText || response.statusText}`)
 }
 
 async function downloadAppraisalReportHTML(
@@ -269,7 +270,8 @@ async function downloadAppraisalReportHTML(
   })
 
   if (!htmlRes.ok) {
-    throw new Error(`Appraisal report generation failed: ${htmlRes.statusText}`)
+    const errText = await htmlRes.text().catch(() => '')
+    throw new Error(`Appraisal HTML fallback failed (${htmlRes.status}): ${errText || htmlRes.statusText}`)
   }
 
   const html = await htmlRes.text()

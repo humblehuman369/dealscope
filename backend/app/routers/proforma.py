@@ -476,11 +476,55 @@ async def view_proforma_report(
 
 
 def _generate_narratives(request: AppraisalReportRequest) -> AppraisalReportRequest:
-    """Populate AI narratives on the request if opted in and not already provided."""
-    if not request.generate_ai_narratives:
-        return request
+    """Populate narratives on the request with AI when enabled.
+
+    Reliability-first behavior:
+    - If AI is disabled, use deterministic template narratives.
+    - If AI is enabled but fails, fall back to templates instead of failing export.
+    """
+    def _template_narratives() -> NarrativesPayload:
+        comps_used = len(request.comp_adjustments or [])
+        return NarrativesPayload(
+            neighborhood=(
+                "The subject property is located in a predominantly residential market area. "
+                "Available market indicators suggest typical exposure times and pricing behavior "
+                "for comparable housing in this location."
+            ),
+            site=(
+                "The subject site size and utility are consistent with residential use in the area. "
+                "Zoning, flood zone, and utility details should be verified through local records."
+            ),
+            improvements=(
+                f"The subject improvements include approximately {request.subject_sqft:,.0f} square feet, "
+                f"{request.subject_beds} bedrooms, and {request.subject_baths} bathrooms built in "
+                f"{request.subject_year_built}. Interior condition and quality assumptions are based "
+                "on available third-party data."
+            ),
+            reconciliation=(
+                f"The Sales Comparison Approach is given primary weight based on {comps_used} comparable sales. "
+                f"The indicated market value is ${request.market_value:,.0f} with a confidence level of "
+                f"{request.confidence:.0f}%."
+            ),
+            income_approach=(
+                "The Income Approach is presented as secondary support where rental data is available. "
+                "Applicability is limited for owner-occupied residential properties."
+            ),
+            cost_approach=(
+                "The Cost Approach is included for reference with limited reliability due to the absence of "
+                "full replacement-cost and land-sales support data."
+            ),
+            scope_of_work=(
+                "This report is a desktop analysis using public records and third-party API data. "
+                "No physical inspection was performed. The report is for investment analysis and is "
+                "not a licensed appraisal or BPO."
+            ),
+        )
 
     if request.narratives and request.narratives.reconciliation:
+        return request
+
+    if not request.generate_ai_narratives:
+        request.narratives = _template_narratives()
         return request
 
     svc = AppraisalNarrativeService()
@@ -524,14 +568,30 @@ def _generate_narratives(request: AppraisalReportRequest) -> AppraisalReportRequ
             "iq_estimate": request.rental_data.monthly_rent,
         }
 
+    fallback = _template_narratives()
+
+    def _safe(fn, fallback_text: str) -> str:
+        try:
+            text = fn()
+            return text if text else fallback_text
+        except Exception as exc:
+            logger.warning("Narrative generation fallback applied: %s", exc)
+            return fallback_text
+
     request.narratives = NarrativesPayload(
-        neighborhood=svc.generate_neighborhood_narrative(property_data, ms, comps),
-        site=svc.generate_site_narrative(property_data),
-        improvements=svc.generate_improvements_narrative(property_data),
-        reconciliation=svc.generate_reconciliation_narrative(appraisal_data),
-        income_approach=svc.generate_income_approach_narrative(rd, appraisal_data),
-        cost_approach=svc.generate_cost_approach_narrative(property_data, request.market_value),
-        scope_of_work=svc.generate_scope_of_work(property_data),
+        neighborhood=_safe(lambda: svc.generate_neighborhood_narrative(property_data, ms, comps), fallback.neighborhood),
+        site=_safe(lambda: svc.generate_site_narrative(property_data), fallback.site),
+        improvements=_safe(lambda: svc.generate_improvements_narrative(property_data), fallback.improvements),
+        reconciliation=_safe(lambda: svc.generate_reconciliation_narrative(appraisal_data), fallback.reconciliation),
+        income_approach=_safe(
+            lambda: svc.generate_income_approach_narrative(rd, appraisal_data),
+            fallback.income_approach,
+        ),
+        cost_approach=_safe(
+            lambda: svc.generate_cost_approach_narrative(property_data, request.market_value),
+            fallback.cost_approach,
+        ),
+        scope_of_work=_safe(lambda: svc.generate_scope_of_work(property_data), fallback.scope_of_work),
     )
 
     return request
