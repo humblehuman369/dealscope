@@ -847,7 +847,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
-                <div className="-mt-2 flex flex-col items-end gap-1">
+                <div className="-mt-2 flex justify-end">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
@@ -855,17 +855,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   >
                     Apply to Deal
                   </button>
-                  {isSale && (
-                    <button
-                      onClick={handleDownloadReport}
-                      disabled={saleSelected.size === 0 || downloadingReport}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-black border border-[rgba(14,165,233,0.4)] hover:border-[#38bdf8] text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
-                      title="Download appraisal report as PDF"
-                    >
-                      {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
-                      Download PDF
-                    </button>
-                  )}
                 </div>
               </div>
 
