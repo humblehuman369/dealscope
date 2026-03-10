@@ -909,10 +909,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   type="button"
                   onClick={handleDownloadReport}
                   disabled={saleSelected.size === 0 || downloadingReport}
-                  className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-full bg-black border-2 border-[#38bdf8] hover:border-[#38bdf8]/90 text-[#38bdf8] text-[16px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center gap-1.5 py-2 px-5 rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/90 text-[#38bdf8] text-[14px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
                   title="Download appraisal report as PDF"
                 >
-                  {downloadingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                  {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
                   DOWNLOAD APPRAISAL REPORT
                 </button>
               )}
