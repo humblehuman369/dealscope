@@ -634,6 +634,12 @@ class DataNormalizer:
         # Location
         "latitude": ("latitude", "latitude", "rentcast"),
         "longitude": ("longitude", "longitude", "rentcast"),
+        # Property Features (AXESSO primary — RentCast features extracted separately)
+        "stories": (None, "stories", "axesso"),
+        "has_pool": (None, "hasPool", "axesso"),
+        "has_garage": (None, "hasGarage", "axesso"),
+        "garage_spaces": (None, "parkingSpaces", "axesso"),
+        "hoa_fees_monthly": (None, "hoaFee", "axesso"),
     }
 
     def __init__(self):
@@ -725,6 +731,13 @@ class DataNormalizer:
         # Inject Realtor.com estimate as a standalone source (bypasses FIELD_MAPPING)
         self._inject_realtor_data(normalized, provenance, realtor_data, timestamp)
 
+        # Extract property features from RentCast features dict and AXESSO resoFacts
+        self._extract_property_features(normalized, rentcast_data, axesso_data)
+
+        # Extract market statistics if present in RentCast data
+        market_stats_data = rentcast_data.get("market_statistics") if rentcast_data else None
+        self._extract_market_statistics(normalized, market_stats_data)
+
         # Extract complex listing info from AXESSO data
         self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
 
@@ -785,6 +798,132 @@ class DataNormalizer:
             "raw_values": {"realtor": val} if val is not None else None,
             "conflict_flag": False,
         }
+
+    def _extract_property_features(
+        self,
+        normalized: dict[str, Any],
+        rentcast_data: dict[str, Any] | None,
+        axesso_data: dict[str, Any] | None,
+    ):
+        """Extract property features from RentCast features array and AXESSO resoFacts."""
+        if not rentcast_data and not axesso_data:
+            return
+
+        features = rentcast_data.get("features") if rentcast_data else None
+        if isinstance(features, dict):
+            if normalized.get("heating_type") is None:
+                normalized["heating_type"] = features.get("heatingType") or features.get("heating")
+            if normalized.get("cooling_type") is None:
+                normalized["cooling_type"] = features.get("coolingType") or features.get("cooling")
+            if normalized.get("has_heating") is None:
+                ht = normalized.get("heating_type")
+                normalized["has_heating"] = ht is not None and str(ht).lower() not in ("none", "")
+            if normalized.get("has_cooling") is None:
+                ct = normalized.get("cooling_type")
+                normalized["has_cooling"] = ct is not None and str(ct).lower() not in ("none", "")
+            if normalized.get("exterior_type") is None:
+                normalized["exterior_type"] = features.get("exteriorType")
+            if normalized.get("roof_type") is None:
+                normalized["roof_type"] = features.get("roofType")
+            if normalized.get("foundation_type") is None:
+                normalized["foundation_type"] = features.get("foundationType")
+            if normalized.get("has_fireplace") is None:
+                fp = features.get("fireplace")
+                if isinstance(fp, bool):
+                    normalized["has_fireplace"] = fp
+                elif isinstance(fp, (int, float)):
+                    normalized["has_fireplace"] = fp > 0
+                    normalized["fireplace_count"] = int(fp) if fp > 0 else None
+            if normalized.get("view_type") is None:
+                normalized["view_type"] = features.get("viewType")
+            if normalized.get("stories") is None:
+                fc = features.get("floorCount")
+                if fc is not None:
+                    try:
+                        normalized["stories"] = int(fc)
+                    except (TypeError, ValueError):
+                        pass
+            if normalized.get("has_pool") is None:
+                pool = features.get("pool")
+                if isinstance(pool, bool):
+                    normalized["has_pool"] = pool
+            if normalized.get("has_garage") is None:
+                garage = features.get("garage")
+                if isinstance(garage, bool):
+                    normalized["has_garage"] = garage
+            if normalized.get("garage_spaces") is None:
+                gs = features.get("garageSpaces")
+                if gs is not None:
+                    try:
+                        normalized["garage_spaces"] = int(gs)
+                    except (TypeError, ValueError):
+                        pass
+
+        reso = axesso_data.get("resoFacts") if axesso_data else None
+        if isinstance(reso, dict):
+            if normalized.get("heating_type") is None:
+                heating = reso.get("heating")
+                if isinstance(heating, list) and heating:
+                    normalized["heating_type"] = ", ".join(str(h) for h in heating)
+                    normalized["has_heating"] = True
+            if normalized.get("cooling_type") is None:
+                cooling = reso.get("cooling")
+                if isinstance(cooling, list) and cooling:
+                    normalized["cooling_type"] = ", ".join(str(c) for c in cooling)
+                    normalized["has_cooling"] = True
+            if normalized.get("roof_type") is None:
+                roof = reso.get("roofType")
+                if roof:
+                    normalized["roof_type"] = roof
+            if normalized.get("exterior_type") is None:
+                ext = reso.get("exteriorMaterial")
+                if isinstance(ext, list) and ext:
+                    normalized["exterior_type"] = ", ".join(str(e) for e in ext)
+            if normalized.get("foundation_type") is None:
+                fdn = reso.get("foundationDetails")
+                if isinstance(fdn, list) and fdn:
+                    normalized["foundation_type"] = ", ".join(str(f) for f in fdn)
+
+    def _extract_market_statistics(
+        self,
+        normalized: dict[str, Any],
+        market_data: dict[str, Any] | None,
+    ):
+        """Extract RentCast market statistics into normalized dict."""
+        if not market_data:
+            return
+
+        sale = market_data.get("saleData") if isinstance(market_data, dict) else None
+        rental = market_data.get("rentalData") if isinstance(market_data, dict) else None
+
+        def _safe_num(val: Any) -> float | int | None:
+            if val is None:
+                return None
+            try:
+                f = float(val)
+                return int(f) if f == int(f) else f
+            except (TypeError, ValueError):
+                return None
+
+        if isinstance(sale, dict):
+            normalized["market_days_on_market"] = _safe_num(sale.get("medianDaysOnMarket"))
+            normalized["market_avg_days_on_market"] = _safe_num(sale.get("averageDaysOnMarket"))
+            normalized["market_min_days_on_market"] = _safe_num(sale.get("minDaysOnMarket"))
+            normalized["market_max_days_on_market"] = _safe_num(sale.get("maxDaysOnMarket"))
+            normalized["market_total_listings"] = _safe_num(sale.get("totalListings"))
+            normalized["market_new_listings"] = _safe_num(sale.get("newListings"))
+            normalized["market_median_price"] = _safe_num(sale.get("medianPrice"))
+            normalized["market_avg_price_sqft"] = _safe_num(sale.get("averagePricePerSquareFoot"))
+
+        if isinstance(rental, dict):
+            normalized["rental_market_avg"] = _safe_num(rental.get("averageRent"))
+            normalized["rental_market_median"] = _safe_num(rental.get("medianRent"))
+            normalized["rental_market_min"] = _safe_num(rental.get("minRent"))
+            normalized["rental_market_max"] = _safe_num(rental.get("maxRent"))
+            normalized["rental_market_rent_per_sqft"] = _safe_num(rental.get("averageRentPerSquareFoot"))
+            normalized["rental_days_on_market"] = _safe_num(rental.get("medianDaysOnMarket"))
+            normalized["rental_total_listings"] = _safe_num(rental.get("totalListings"))
+            normalized["rental_new_listings"] = _safe_num(rental.get("newListings"))
 
     def _extract_listing_info(
         self,

@@ -775,6 +775,21 @@ export function SalesCompsSection() {
         },
         overrideMarketValue: isMarketValueOverridden ? manualMarketValue : null,
         overrideArv: isArvOverridden ? manualArv : null,
+        propertyData: propertyData?.property_data_snapshot ? {
+          details: {
+            property_type: snapshot?.propertyType || snapshot?.property_type,
+            stories: snapshot?.stories,
+            heating_type: snapshot?.heatingType || snapshot?.heating_type,
+            cooling_type: snapshot?.coolingType || snapshot?.cooling_type,
+            has_garage: snapshot?.hasGarage || snapshot?.has_garage,
+            garage_spaces: snapshot?.garageSpaces || snapshot?.garage_spaces,
+            exterior_type: snapshot?.exteriorType || snapshot?.exterior_type,
+            roof_type: snapshot?.roofType || snapshot?.roof_type,
+            foundation_type: snapshot?.foundationType || snapshot?.foundation_type,
+            has_fireplace: snapshot?.hasFireplace || snapshot?.has_fireplace,
+            has_pool: snapshot?.hasPool || snapshot?.has_pool,
+          },
+        } : null,
       })
       await downloadAppraisalReportPDF(payload)
     } catch (err) {
