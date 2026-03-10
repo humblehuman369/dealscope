@@ -303,6 +303,17 @@ class PropertyService:
             if rc_rent.success and rc_rent.data:
                 rentcast_data.update(rc_rent.data)
 
+            # Fetch market statistics from RentCast (for neighborhood/market analysis)
+            try:
+                zip_code = rentcast_data.get("zipCode") or (address.split()[-1] if address else None)
+                if zip_code and str(zip_code).strip():
+                    rc_market = await self.rentcast.get_market_statistics(zip_code=str(zip_code).strip())
+                    if rc_market.success and rc_market.data:
+                        rentcast_data["market_statistics"] = rc_market.data
+                        logger.info("RentCast market statistics retrieved for zip: %s", zip_code)
+            except Exception as e:
+                logger.warning("Failed to fetch RentCast market statistics: %s", e)
+
             # Fetch from Zillow via AXESSO
             t_zil = time.perf_counter()
             zillow_zpid = None
@@ -403,22 +414,19 @@ class PropertyService:
                 year_built=normalized.get("year_built"),
                 num_units=normalized.get("num_units", 1),
                 stories=normalized.get("stories"),
-                # HVAC
                 heating_type=normalized.get("heating_type"),
                 cooling_type=normalized.get("cooling_type"),
                 has_heating=normalized.get("has_heating"),
                 has_cooling=normalized.get("has_cooling"),
-                # Parking
                 has_garage=normalized.get("has_garage"),
                 garage_spaces=normalized.get("garage_spaces"),
-                # Construction
+                parking_type=normalized.get("parking_type"),
                 exterior_type=normalized.get("exterior_type"),
                 roof_type=normalized.get("roof_type"),
-                # Fireplace
+                foundation_type=normalized.get("foundation_type"),
                 has_fireplace=normalized.get("has_fireplace"),
-                # Pool
+                fireplace_count=normalized.get("fireplace_count"),
                 has_pool=normalized.get("has_pool"),
-                # View
                 view_type=normalized.get("view_type"),
             ),
             valuations=self._build_valuations(normalized),

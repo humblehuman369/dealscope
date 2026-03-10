@@ -21,6 +21,8 @@ from app.services.flip_exporter import FlipExcelExporter
 from app.services.house_hack_exporter import HouseHackExcelExporter
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_generator import generate_proforma_data
+from app.schemas.appraisal_report import NarrativesPayload
+from app.services.appraisal_narrative_service import AppraisalNarrativeService
 from app.services.appraisal_report_pdf import AppraisalReportPDFExporter
 from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
@@ -469,35 +471,95 @@ async def view_proforma_report(
 
 
 # ---------------------------------------------------------------------------
-# Appraisal Report (comps-based)
+# Appraisal Report (URAR Form 1004)
 # ---------------------------------------------------------------------------
+
+
+def _generate_narratives(request: AppraisalReportRequest) -> AppraisalReportRequest:
+    """Populate AI narratives on the request if opted in and not already provided."""
+    if not request.generate_ai_narratives:
+        return request
+
+    if request.narratives and request.narratives.reconciliation:
+        return request
+
+    svc = AppraisalNarrativeService()
+
+    property_data = {
+        "address": {"full_address": request.subject_address, "city": "", "state": ""},
+        "details": {
+            "property_type": request.subject_property_type,
+            "bedrooms": request.subject_beds,
+            "bathrooms": request.subject_baths,
+            "square_footage": request.subject_sqft,
+            "year_built": request.subject_year_built,
+            "lot_size": request.subject_lot_size,
+            **(request.property_details.model_dump() if request.property_details else {}),
+        },
+    }
+
+    parts = request.subject_address.split(",")
+    if len(parts) >= 2:
+        property_data["address"]["city"] = parts[1].strip().split()[0] if len(parts) > 1 else ""
+        property_data["address"]["state"] = parts[-1].strip().split()[0] if parts[-1].strip() else ""
+
+    ms = request.market_stats.model_dump() if request.market_stats else {}
+    comps = [c.model_dump() for c in request.comp_adjustments]
+
+    appraisal_data = {
+        "market_value": request.market_value,
+        "arv": request.arv,
+        "confidence": request.confidence,
+        "adjusted_price_value": request.adjusted_price_value,
+        "price_per_sqft_value": request.price_per_sqft_value,
+        "comp_adjustments": comps,
+        "grm": request.rental_data.grm if request.rental_data else None,
+        "cap_rate": request.rental_data.cap_rate if request.rental_data else None,
+    }
+
+    rd = None
+    if request.rental_data:
+        rd = {
+            "monthly_rent": request.rental_data.monthly_rent,
+            "iq_estimate": request.rental_data.monthly_rent,
+        }
+
+    request.narratives = NarrativesPayload(
+        neighborhood=svc.generate_neighborhood_narrative(property_data, ms, comps),
+        site=svc.generate_site_narrative(property_data),
+        improvements=svc.generate_improvements_narrative(property_data),
+        reconciliation=svc.generate_reconciliation_narrative(appraisal_data),
+        income_approach=svc.generate_income_approach_narrative(rd, appraisal_data),
+        cost_approach=svc.generate_cost_approach_narrative(property_data, request.market_value),
+        scope_of_work=svc.generate_scope_of_work(property_data),
+    )
+
+    return request
 
 
 @router.post(
     "/appraisal-report/pdf",
-    summary="Generate appraisal report PDF from selected comps",
+    summary="Generate URAR Form 1004 appraisal report PDF",
 )
 async def generate_appraisal_report_pdf(
     request: AppraisalReportRequest,
     current_user: OptionalUser,
 ):
     """
-    Generate a professional appraisal-style PDF report from user-selected
-    comparable sales and their adjustments.
-
-    The frontend sends pre-computed appraisal data (subject, comps, adjustments,
-    market value, ARV) and the backend renders it into a multi-page PDF via
-    WeasyPrint.
+    Generate a URAR Form 1004 appraisal report PDF from user-selected
+    comparable sales and their adjustments. Optionally generates AI-powered
+    narratives for Neighborhood, Improvements, Reconciliation, Income Approach,
+    Cost Approach, and Scope of Work sections via Anthropic Claude.
     """
     try:
+        request = _generate_narratives(request)
         exporter = AppraisalReportPDFExporter(request)
         buffer = exporter.generate()
     except ImportError as exc:
         logger.error(f"Appraisal PDF export failed — WeasyPrint not available: {exc}")
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="PDF export is temporarily unavailable. The server is missing required system libraries. "
-            "The frontend will fall back to an HTML report you can print to PDF.",
+            detail="PDF export is temporarily unavailable. The server is missing required system libraries.",
         )
     except Exception as exc:
         logger.error(f"Appraisal PDF generation error: {exc}", exc_info=True)
@@ -507,7 +569,7 @@ async def generate_appraisal_report_pdf(
         )
 
     safe_address = "".join(c if c.isalnum() or c in " -" else "" for c in request.subject_address).strip().replace(" ", "-")[:60]
-    filename = f"DealGapIQ_Appraisal_{safe_address}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    filename = f"DealGapIQ_URAR_{safe_address}_{datetime.now().strftime('%Y%m%d')}.pdf"
 
     return StreamingResponse(
         buffer,
@@ -518,7 +580,7 @@ async def generate_appraisal_report_pdf(
 
 @router.post(
     "/appraisal-report/html",
-    summary="View appraisal report as HTML (browser print-to-PDF)",
+    summary="View URAR appraisal report as HTML (browser print-to-PDF)",
     response_class=HTMLResponse,
 )
 async def view_appraisal_report_html(
@@ -527,10 +589,11 @@ async def view_appraisal_report_html(
     auto_print: bool = Query(True, description="Auto-trigger browser print dialog"),
 ):
     """
-    Render the appraisal report as browser-viewable HTML for print-to-PDF.
+    Render the URAR appraisal report as browser-viewable HTML for print-to-PDF.
     No WeasyPrint or system dependencies required.
     """
     try:
+        request = _generate_narratives(request)
         exporter = AppraisalReportPDFExporter(request)
         html_content = exporter.generate_html(auto_print=auto_print)
         return HTMLResponse(content=html_content)
