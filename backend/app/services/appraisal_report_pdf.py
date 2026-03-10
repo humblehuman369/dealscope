@@ -209,14 +209,16 @@ class AppraisalReportPDFExporter:
         market_cards = ""
         if ms:
             market_cards = f"""
-    <div class="grid-3 compact-grid" style="margin-top:6px;">
-      <div class="info-card-sm"><div class="info-card-label">Median Price</div><div class="info-card-value-sm">{_fmt_money(ms.median_price)}</div></div>
-      <div class="info-card-sm"><div class="info-card-label">Median DOM</div><div class="info-card-value-sm">{ms.median_days_on_market or "N/A"} days</div></div>
-      <div class="info-card-sm"><div class="info-card-label">Listings</div><div class="info-card-value-sm">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div></div>
-      <div class="info-card-sm"><div class="info-card-label">New Listings</div><div class="info-card-value-sm">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div></div>
-      <div class="info-card-sm"><div class="info-card-label">Avg $/Sq Ft</div><div class="info-card-value-sm">{_fmt_money(ms.avg_price_per_sqft)}</div></div>
-      <div class="info-card-sm"><div class="info-card-label">Temperature</div><div class="info-card-value-sm">{temp.title()}</div></div>
-    </div>"""
+      <div class="grid-3" style="margin-top:10px;">
+        <div class="info-card"><div class="info-card-label">Median Sale Price</div><div class="info-card-value">{_fmt_money(ms.median_price)}</div></div>
+        <div class="info-card"><div class="info-card-label">Median DOM</div><div class="info-card-value">{ms.median_days_on_market or "N/A"} days</div></div>
+        <div class="info-card"><div class="info-card-label">Active Listings</div><div class="info-card-value">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div></div>
+      </div>
+      <div class="grid-3" style="margin-top:8px;">
+        <div class="info-card"><div class="info-card-label">New Listings</div><div class="info-card-value">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div></div>
+        <div class="info-card"><div class="info-card-label">Avg Price/Sq Ft</div><div class="info-card-value">{_fmt_money(ms.avg_price_per_sqft)}</div></div>
+        <div class="info-card"><div class="info-card-label">Market Temperature</div><div class="info-card-value">{temp.title()}</div></div>
+      </div>"""
 
         return f"""
 <div class="page cover-page">
@@ -1134,34 +1136,26 @@ body {{ font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10
 .page:last-child {{ page-break-after: auto; }}
 
 .cover-page {{ display: flex; flex-direction: column; padding: 0; }}
-.cover-top-band {{ height: 5px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
-.cover-content {{ flex: 1; padding: 20px 48px 10px; display: flex; flex-direction: column; }}
-.cover-logo {{ font-size: 22px; font-weight: 700; color: {p["text_primary"]}; }}
-.cover-badge {{ display: inline-block; padding: 3px 12px; border-radius: 100px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; }}
-.cover-address {{ font-size: 22px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.1; margin-bottom: 2px; margin-top: 6px; }}
-.cover-city {{ font-size: 9px; color: {p["text_secondary"]}; margin-bottom: 8px; }}
-.cover-summary-cards {{ display: flex; gap: 10px; margin-bottom: 8px; }}
-.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 8px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
+.cover-top-band {{ height: 6px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
+.cover-content {{ flex: 1; padding: 28px 52px 14px; display: flex; flex-direction: column; justify-content: space-between; }}
+.cover-section-top {{ }}
+.cover-section-bottom {{ }}
+.cover-logo {{ font-size: 24px; font-weight: 700; color: {p["text_primary"]}; }}
+.cover-badge {{ display: inline-block; padding: 4px 14px; border-radius: 100px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; }}
+.cover-address {{ font-size: 24px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.15; margin-bottom: 3px; margin-top: 8px; }}
+.cover-city {{ font-size: 12px; color: {p["text_secondary"]}; margin-bottom: 4px; }}
+.cover-stats-line {{ font-size: 10px; font-weight: 600; color: {p["text_tertiary"]}; margin-bottom: 14px; }}
+.cover-summary-cards {{ display: flex; gap: 12px; margin-bottom: 14px; }}
+.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 10px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
 .cover-value-card-arv {{ border-top-color: {p["brand"]}; }}
-.cover-value-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 2px; }}
-.cover-value-amount {{ font-size: 18px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 2px; }}
-.cover-value-range {{ font-size: 7px; color: {p["text_tertiary"]}; }}
-.cover-footer {{ display: flex; justify-content: space-between; padding: 10px 48px; border-top: 1px solid {p["border"]}; }}
-.cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 1px; }}
-.cover-footer-value {{ font-size: 8px; font-weight: 600; color: {p["text_secondary"]}; }}
+.cover-value-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 2px; }}
+.cover-value-amount {{ font-size: 20px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 2px; }}
+.cover-value-range {{ font-size: 8px; color: {p["text_tertiary"]}; }}
+.cover-footer {{ display: flex; justify-content: space-between; padding: 12px 52px; border-top: 1px solid {p["border"]}; }}
+.cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 2px; }}
+.cover-footer-value {{ font-size: 9px; font-weight: 600; color: {p["text_secondary"]}; }}
 
-.section-divider {{ margin: 10px 0; border-top: 2px solid {p["brand"]}40; }}
-.section-header-compact {{ margin-bottom: 6px; }}
-.section-header-compact .section-title {{ font-size: 13px; margin-bottom: 3px; }}
-.section-header-compact .section-rule {{ width: 30px; height: 2px; }}
-
-.card-compact {{ padding: 8px 10px; }}
-.card-compact .card-title {{ margin-bottom: 4px; font-size: 9px; }}
-.card-compact .detail-row {{ padding: 3px 0; font-size: 8px; }}
-
-.compact-grid {{ flex-wrap: wrap; gap: 6px; }}
-.info-card-sm {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 6px; padding: 6px 8px; text-align: center; border-top: 2px solid {p["brand"]}; flex: 1 1 30%; min-width: 0; }}
-.info-card-value-sm {{ font-size: 11px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
+.section-divider {{ margin: 16px 0; border-top: 2px solid {p["brand"]}; }}
 
 .page-header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid {p["brand"]}; margin-bottom: 16px; }}
 .page-header-title {{ font-size: 10px; font-weight: 700; color: {p["text_secondary"]}; text-transform: uppercase; letter-spacing: 0.06em; }}
