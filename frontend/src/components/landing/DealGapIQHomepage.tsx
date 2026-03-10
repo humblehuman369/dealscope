@@ -336,7 +336,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <div>
               <Eyebrow>The Verdict Screen</Eyebrow>
               <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
-                Your 60-Second<br />Investment Screen
+                Your<br />Investment Screen
               </h2>
               <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "rgba(255,255,255,0.85)", maxWidth: 560, lineHeight: 1.7, marginBottom: 20 }}>
                 A Verdict Score from 0–100 helps you gauge whether this property is in the range worth pursuing — synthesizing Deal Gap, return quality, market alignment, and deal probability into one number. Below it: your three price thresholds and the number line showing where the deal sits.
