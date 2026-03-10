@@ -120,4 +120,4 @@ class AppraisalReportRequest(BaseModel):
 
     # Options
     theme: str = "light"
-    generate_ai_narratives: bool = True
+    generate_ai_narratives: bool = False
