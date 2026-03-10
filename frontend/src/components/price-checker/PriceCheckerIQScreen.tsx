@@ -898,13 +898,25 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
             </div>
 
-            {/* Methodology + $/sqft */}
-            <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-1 px-0.5">
-              <div className="flex items-center gap-1">
+            {/* Methodology + Download button + $/sqft */}
+            <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-1 px-0.5 gap-3">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <Info className="w-3 h-3" />
                 <span>Weighted hybrid methodology</span>
               </div>
-              <div className="flex items-center gap-2">
+              {isSale && (
+                <button
+                  type="button"
+                  onClick={handleDownloadReport}
+                  disabled={saleSelected.size === 0 || downloadingReport}
+                  className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-full bg-black border-2 border-[#38bdf8] hover:border-[#38bdf8]/90 text-[#38bdf8] text-[16px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
+                  title="Download appraisal report as PDF"
+                >
+                  {downloadingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                  DOWNLOAD APPRAISAL REPORT
+                </button>
+              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="tabular-nums font-medium text-[#F1F5F9]">
                   ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
                 </span>
