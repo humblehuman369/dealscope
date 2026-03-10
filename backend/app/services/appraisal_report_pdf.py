@@ -10,11 +10,10 @@ Report pages:
   2. Site Description
   3. Description of Improvements
   4. Sales Comparison Adjustment Grid
-  5. Reconciliation / Final Opinion of Value
-  6. Income Approach
-  7. Cost Approach
-  8. Data Sources, Verification & Addendum
-  9. Scope of Work, Limiting Conditions & Disclaimer
+  5. Reconciliation + Income Approach (combined)
+  6. Cost Approach
+  7. Data Sources, Verification & Addendum
+  8. Scope of Work, Limiting Conditions & Disclaimer
 """
 
 import logging
@@ -108,8 +107,7 @@ class AppraisalReportPDFExporter:
             self._page_site(),
             self._page_improvements(),
             self._page_sales_comparison(),
-            self._page_reconciliation(),
-            self._page_income(),
+            self._page_reconciliation_and_income(),
             self._page_cost(),
             self._page_addendum(),
             self._page_scope_disclaimer(),
@@ -695,17 +693,18 @@ class AppraisalReportPDFExporter:
 </div>"""
 
     # ------------------------------------------------------------------
-    # Page 6: Reconciliation / Final Opinion of Value
+    # Page 5: Reconciliation + Income Approach (combined)
     # ------------------------------------------------------------------
 
-    def _page_reconciliation(self) -> str:
+    def _page_reconciliation_and_income(self) -> str:
         d = self.data
         p = self.palette
         n = d.narratives
         rd = d.rental_data
         age = self._age()
 
-        narrative_text = n.reconciliation if n and n.reconciliation else ""
+        recon_narrative = n.reconciliation if n and n.reconciliation else ""
+        income_narrative = n.income_approach if n and n.income_approach else ""
         conf_color = p["positive"] if d.confidence >= 80 else (p["warning"] if d.confidence >= 60 else p["negative"])
 
         income_indicated = None
@@ -731,128 +730,117 @@ class AppraisalReportPDFExporter:
         dep_value = (total_cost_new or 0) - phys_dep - func_dep - ext_dep
         cost_indicated = (land_value or 0) + max(dep_value, 0)
 
-        return f"""
-<div class="page">
-  {self._page_header("Reconciliation")}
-  {self._section_header("RECONCILIATION", "Final Opinion of Market Value")}
-
-  {self._narrative_block(narrative_text)}
-
-  <div class="card" style="margin-top:16px;">
-    <h3 class="card-title">Indicated Value by Each Approach</h3>
-    {self._detail_row("Sales Comparison Approach", _fmt_money(d.market_value), bold=True)}
-    {self._detail_row("  Adjusted Price Method (40%)", _fmt_money(d.adjusted_price_value))}
-    {self._detail_row("  Price/Sq Ft Method (40%)", _fmt_money(d.price_per_sqft_value))}
-    {self._detail_row("  Blended Average (20%)", _fmt_money((d.adjusted_price_value + d.price_per_sqft_value) / 2))}
-    {self._detail_row("  Weighted Avg $/Sq Ft", f"${d.weighted_average_ppsf:,.0f}")}
-    {self._detail_row("Income Approach", _fmt_money(income_indicated) if income_indicated else "Not developed")}
-    {self._detail_row("Cost Approach", _fmt_money(cost_indicated) if cost_indicated else "Not developed")}
-  </div>
-
-  <div class="grid-2" style="margin-top:16px;">
-    <div>
-      <div class="hero-card">
-        <div class="hero-card-label">Opinion of Market Value</div>
-        <div class="hero-card-value">{_fmt_money(d.market_value)}</div>
-        <div class="hero-card-sub">as of {self.now.strftime("%B %d, %Y")}</div>
+        # --- Income section (bottom half) ---
+        income_section = ""
+        if rd and rd.monthly_rent:
+            annual_rent = rd.monthly_rent * 12
+            income_value = annual_rent * rd.grm / 12 if rd.grm else None
+            egi = annual_rent * (1 - (rd.vacancy_rate or 5) / 100)
+            income_section = f"""
+      <div class="section-header">
+        <div class="section-label">INCOME APPROACH</div>
+        <h2 class="section-title">Income Capitalization Analysis</h2>
+        <div class="section-rule"></div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
-        <h3 class="card-title">Value Range</h3>
-        {self._detail_row("Low", _fmt_money(d.range_low))}
-        {self._detail_row("High", _fmt_money(d.range_high))}
-        {self._detail_row("Spread", _fmt_money(d.range_high - d.range_low))}
-      </div>
-    </div>
-    <div>
-      <div class="card">
-        <h3 class="card-title">Confidence Assessment</h3>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div class="conf-ring" style="border-color:{conf_color};"><span class="conf-ring-value" style="color:{conf_color};">{d.confidence:.0f}%</span></div>
-          <div>
-            <div style="font-weight:700;color:{conf_color};font-size:13px;">{"HIGH" if d.confidence >= 80 else "MODERATE" if d.confidence >= 60 else "LOW"}</div>
-            <div style="font-size:10px;color:{p["text_secondary"]};">{len(d.comp_adjustments)} comps analyzed</div>
-          </div>
+      {self._narrative_block(income_narrative)}
+
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="card">
+          <h3 class="card-title">Rental Market Data</h3>
+          {self._detail_row("Estimated Market Rent", f"{_fmt_money(rd.monthly_rent)}/mo")}
+          {self._detail_row("Rent Range", f"{_fmt_money(rd.rent_range_low)} &mdash; {_fmt_money(rd.rent_range_high)}" if rd.rent_range_low and rd.rent_range_high else "N/A")}
+          {self._detail_row("Annual Gross Rent", _fmt_money(annual_rent))}
+          {self._detail_row("Vacancy &amp; Collection Loss", _fmt_pct(rd.vacancy_rate) if rd.vacancy_rate else "5.0%")}
+          {self._detail_row("Effective Gross Income", _fmt_money(egi))}
+          {self._detail_row("Data Source", "RentCast, Zillow Rent Zestimate, Redfin")}
         </div>
-        {self._detail_row("Avg Similarity", f"{sum(c.similarity_score for c in d.comp_adjustments) / max(len(d.comp_adjustments), 1):.0f}%")}
-        {self._detail_row("Approach Weight", "Sales Comparison &mdash; Primary")}
+        <div class="card">
+          <h3 class="card-title">Income Valuation</h3>
+          {self._detail_row("Gross Rent Multiplier (GRM)", f"{rd.grm:.1f}" if rd.grm else "N/A")}
+          {self._detail_row("Capitalization Rate", _fmt_pct(rd.cap_rate) if rd.cap_rate else "N/A")}
+          {self._detail_row("Net Operating Income", _fmt_money(rd.noi) if rd.noi else "N/A")}
+          {self._detail_row("Indicated Value (GRM)", _fmt_money(income_value) if income_value else "N/A")}
+          {self._detail_row("Applicability", "Secondary &mdash; owner-occupied market")}
+        </div>
+      </div>"""
+        else:
+            income_section = f"""
+      <div class="section-header">
+        <div class="section-label">INCOME APPROACH</div>
+        <h2 class="section-title">Income Capitalization Analysis</h2>
+        <div class="section-rule"></div>
       </div>
-
-      <div class="card" style="margin-top:12px;">
-        <h3 class="card-title">After Repair Value (ARV)</h3>
-        {self._detail_row("As-Is Market Value", _fmt_money(d.market_value))}
-        {self._detail_row("Rehab Cost" if d.rehab_cost and d.rehab_cost > 0 else "Appreciation Premium", _fmt_money(d.rehab_cost) if d.rehab_cost and d.rehab_cost > 0 else _fmt_money(d.arv - d.market_value))}
-        {self._detail_row("ARV", _fmt_money(d.arv), bold=True)}
-      </div>
-    </div>
-  </div>
-
-  <div class="callout-box" style="margin-top:12px;">
-    <strong>Opinion of Value Statement:</strong> Based on the data, research, and analysis
-    in this report, the opinion of market value of the subject property, as defined, as of
-    {self.now.strftime("%B %d, %Y")} is <strong>{_fmt_money(d.market_value)}</strong>.
-    The Sales Comparison Approach is given primary weight as it most directly reflects
-    current market behavior for this property type. The Income and Cost Approaches provide
-    secondary support.
-  </div>
-
-  {self._page_footer()}
-</div>"""
-
-    # ------------------------------------------------------------------
-    # Page 7: Income Approach
-    # ------------------------------------------------------------------
-
-    def _page_income(self) -> str:
-        d = self.data
-        n = d.narratives
-        rd = d.rental_data
-
-        narrative_text = n.income_approach if n and n.income_approach else ""
-
-        if not rd or not rd.monthly_rent:
-            return f"""
-<div class="page">
-  {self._page_header("Income Approach")}
-  {self._section_header("INCOME APPROACH", "Income Capitalization Analysis")}
-  <p class="narrative">The Income Approach was not developed due to insufficient rental market data for the subject property. This approach is typically given limited weight for owner-occupied single-family residential properties.</p>
-  {self._page_footer()}
-</div>"""
-
-        annual_rent = rd.monthly_rent * 12
-        income_value = annual_rent * rd.grm / 12 if rd.grm else None
-        egi = annual_rent * (1 - (rd.vacancy_rate or 5) / 100)
+      <p class="narrative">The Income Approach was not developed due to insufficient rental market data. This approach is typically given limited weight for owner-occupied single-family residential properties.</p>"""
 
         return f"""
-<div class="page">
-  {self._page_header("Income Approach")}
-  {self._section_header("INCOME APPROACH", "Income Capitalization Analysis")}
+<div class="page combined-page">
+  {self._page_header("Reconciliation &amp; Income Approach")}
 
-  {self._narrative_block(narrative_text)}
+  <div class="combined-section-top">
+    {self._section_header("RECONCILIATION", "Final Opinion of Market Value")}
 
-  <div class="grid-2" style="margin-top:16px;">
-    <div class="card">
-      <h3 class="card-title">Rental Market Data</h3>
-      {self._detail_row("Estimated Market Rent", f"{_fmt_money(rd.monthly_rent)}/mo")}
-      {self._detail_row("Rent Range", f"{_fmt_money(rd.rent_range_low)} &mdash; {_fmt_money(rd.rent_range_high)}" if rd.rent_range_low and rd.rent_range_high else "N/A")}
-      {self._detail_row("Annual Gross Rent", _fmt_money(annual_rent))}
-      {self._detail_row("Vacancy &amp; Collection Loss", _fmt_pct(rd.vacancy_rate) if rd.vacancy_rate else "5.0%")}
-      {self._detail_row("Effective Gross Income", _fmt_money(egi))}
-      {self._detail_row("Data Source", "RentCast, Zillow Rent Zestimate, Redfin")}
+    {self._narrative_block(recon_narrative)}
+
+    <div class="card" style="margin-top:10px;">
+      <h3 class="card-title">Indicated Value by Each Approach</h3>
+      {self._detail_row("Sales Comparison Approach", _fmt_money(d.market_value), bold=True)}
+      {self._detail_row("  Adjusted Price Method (40%)", _fmt_money(d.adjusted_price_value))}
+      {self._detail_row("  Price/Sq Ft Method (40%)", _fmt_money(d.price_per_sqft_value))}
+      {self._detail_row("  Blended Average (20%)", _fmt_money((d.adjusted_price_value + d.price_per_sqft_value) / 2))}
+      {self._detail_row("  Weighted Avg $/Sq Ft", f"${d.weighted_average_ppsf:,.0f}")}
+      {self._detail_row("Income Approach", _fmt_money(income_indicated) if income_indicated else "Not developed")}
+      {self._detail_row("Cost Approach", _fmt_money(cost_indicated) if cost_indicated else "Not developed")}
     </div>
-    <div class="card">
-      <h3 class="card-title">Income Valuation</h3>
-      {self._detail_row("Gross Rent Multiplier (GRM)", f"{rd.grm:.1f}" if rd.grm else "N/A")}
-      {self._detail_row("Capitalization Rate", _fmt_pct(rd.cap_rate) if rd.cap_rate else "N/A")}
-      {self._detail_row("Net Operating Income", _fmt_money(rd.noi) if rd.noi else "N/A")}
-      {self._detail_row("Indicated Value (GRM)", _fmt_money(income_value) if income_value else "N/A")}
-      {self._detail_row("Applicability", "Secondary &mdash; owner-occupied market")}
+
+    <div class="grid-2" style="margin-top:12px;">
+      <div>
+        <div class="hero-card">
+          <div class="hero-card-label">Opinion of Market Value</div>
+          <div class="hero-card-value">{_fmt_money(d.market_value)}</div>
+          <div class="hero-card-sub">as of {self.now.strftime("%B %d, %Y")}</div>
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <h3 class="card-title">Value Range</h3>
+          {self._detail_row("Low", _fmt_money(d.range_low))}
+          {self._detail_row("High", _fmt_money(d.range_high))}
+          {self._detail_row("Spread", _fmt_money(d.range_high - d.range_low))}
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3 class="card-title">Confidence Assessment</h3>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div class="conf-ring" style="border-color:{conf_color};"><span class="conf-ring-value" style="color:{conf_color};">{d.confidence:.0f}%</span></div>
+            <div>
+              <div style="font-weight:700;color:{conf_color};font-size:12px;">{"HIGH" if d.confidence >= 80 else "MODERATE" if d.confidence >= 60 else "LOW"}</div>
+              <div style="font-size:9px;color:{p["text_secondary"]};">{len(d.comp_adjustments)} comps analyzed</div>
+            </div>
+          </div>
+          {self._detail_row("Avg Similarity", f"{sum(c.similarity_score for c in d.comp_adjustments) / max(len(d.comp_adjustments), 1):.0f}%")}
+          {self._detail_row("Approach Weight", "Sales Comparison &mdash; Primary")}
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <h3 class="card-title">After Repair Value (ARV)</h3>
+          {self._detail_row("As-Is Market Value", _fmt_money(d.market_value))}
+          {self._detail_row("Rehab Cost" if d.rehab_cost and d.rehab_cost > 0 else "Appreciation Premium", _fmt_money(d.rehab_cost) if d.rehab_cost and d.rehab_cost > 0 else _fmt_money(d.arv - d.market_value))}
+          {self._detail_row("ARV", _fmt_money(d.arv), bold=True)}
+        </div>
+      </div>
+    </div>
+
+    <div class="callout-box" style="margin-top:10px;">
+      <strong>Opinion of Value:</strong> As of {self.now.strftime("%B %d, %Y")}, the opinion of market value is
+      <strong>{_fmt_money(d.market_value)}</strong>. The Sales Comparison Approach is given primary weight.
     </div>
   </div>
 
-  <div class="callout-box" style="margin-top:12px;">
-    <strong>Indicated Value by Income Approach:</strong> {_fmt_money(income_value) if income_value else "Not developed"}.
-    This approach is given secondary weight as the subject neighborhood is predominantly owner-occupied.
+  <div class="section-divider"></div>
+
+  <div class="combined-section-bottom">
+    {income_section}
   </div>
 
   {self._page_footer()}
@@ -1156,7 +1144,13 @@ body {{ font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10
 .cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 2px; }}
 .cover-footer-value {{ font-size: 9px; font-weight: 600; color: {p["text_secondary"]}; }}
 
-.section-divider {{ margin: 16px 0; border-top: 2px solid {p["brand"]}; }}
+.section-divider {{ margin: 8px 0; border-top: 2px solid {p["brand"]}; }}
+
+.combined-page {{ display: flex; flex-direction: column; }}
+.combined-page .page-header {{ flex-shrink: 0; }}
+.combined-page .page-footer {{ position: absolute; }}
+.combined-section-top {{ }}
+.combined-section-bottom {{ }}
 
 .page-header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid {p["brand"]}; margin-bottom: 16px; }}
 .page-header-title {{ font-size: 10px; font-weight: 700; color: {p["text_secondary"]}; text-transform: uppercase; letter-spacing: 0.06em; }}
