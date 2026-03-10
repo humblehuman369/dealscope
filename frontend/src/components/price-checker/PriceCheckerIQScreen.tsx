@@ -461,7 +461,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
   const [refreshingCompId, setRefreshingCompId] = useState<string | number | null>(null)
   const [photoModalComp, setPhotoModalComp] = useState<SaleComp | RentComp | null>(null)
-  const [showAdjGrid, setShowAdjGrid] = useState(false)
+  const [showAdjGrid, setShowAdjGrid] = useState(true)
+  const [showProximityMap, setShowProximityMap] = useState(true)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [downloadingReport, setDownloadingReport] = useState(false)
 
@@ -925,18 +926,35 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         </div>
 
-        {/* Proximity Map */}
+        {/* Proximity Map (accordion, loads open) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="px-4 mt-3">
-            <CompsProximityMap
-              subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
-              comps={mapComps}
-              activeView={activeView}
-            />
+          <div className="mx-4 mt-3">
+            <div className={`bg-black rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
+              <button
+                type="button"
+                onClick={() => setShowProximityMap(!showProximityMap)}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#38bdf8]" />
+                  <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
+                </div>
+                {showProximityMap ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
+              </button>
+              {showProximityMap && (
+                <div className="border-t border-[rgba(14,165,233,0.25)]">
+                  <CompsProximityMap
+                    subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+                    comps={mapComps}
+                    activeView={activeView}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Adjustment Grid */}
+        {/* Adjustment Grid (accordion, loads open) */}
         <div className="mx-4 mt-3">
           <AdjustmentGrid
             compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
