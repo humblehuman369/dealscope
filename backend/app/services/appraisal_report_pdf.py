@@ -222,75 +222,88 @@ class AppraisalReportPDFExporter:
 <div class="page cover-page">
   <div class="cover-top-band"></div>
   <div class="cover-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div class="cover-logo">DealGap<span class="logo-iq">IQ</span></div>
-      <div class="cover-badge">Uniform Residential Appraisal Report</div>
-    </div>
-    <h1 class="cover-address">{street}</h1>
-    <div class="cover-city">{city_state} &nbsp;&middot;&nbsp; {self._prop_type()} &nbsp;&middot;&nbsp; {d.subject_beds}bd/{d.subject_baths}ba &nbsp;&middot;&nbsp; {_fmt(d.subject_sqft)} sf &nbsp;&middot;&nbsp; Built {d.subject_year_built} &nbsp;&middot;&nbsp; {self._lot_display()}</div>
 
-    <div class="cover-summary-cards">
-      <div class="cover-value-card">
-        <div class="cover-value-label">Opinion of Market Value</div>
-        <div class="cover-value-amount">{_fmt_money(d.market_value)}</div>
-        <div class="cover-value-range">Range: {_fmt_money(d.range_low)} &mdash; {_fmt_money(d.range_high)}</div>
+    <div class="cover-section-top">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="cover-logo">DealGap<span class="logo-iq">IQ</span></div>
+        <div class="cover-badge">Uniform Residential Appraisal Report</div>
       </div>
-      <div class="cover-value-card cover-value-card-arv">
-        <div class="cover-value-label">After Repair Value (ARV)</div>
-        <div class="cover-value-amount">{_fmt_money(d.arv)}</div>
-        <div class="cover-value-range">Confidence: {d.confidence:.0f}%</div>
-      </div>
-    </div>
+      <h1 class="cover-address">{street}</h1>
+      <div class="cover-city">{city_state}</div>
+      <div class="cover-stats-line">{self._prop_type()} &nbsp;&middot;&nbsp; {d.subject_beds} Bed / {d.subject_baths} Bath &nbsp;&middot;&nbsp; {_fmt(d.subject_sqft)} sq ft &nbsp;&middot;&nbsp; Built {d.subject_year_built} &nbsp;&middot;&nbsp; {self._lot_display()}</div>
 
-    <div class="grid-2" style="margin-top:8px;">
-      <div class="card card-compact">
-        <h3 class="card-title">Subject Property</h3>
-        {self._detail_row("Property Address", d.subject_address)}
-        {self._detail_row("Type / Beds / Baths", f"{self._prop_type()} &mdash; {d.subject_beds}bd / {d.subject_baths}ba")}
-        {self._detail_row("GLA / Lot", f"{_fmt(d.subject_sqft)} sf &nbsp;/&nbsp; {self._lot_display()}")}
-        {self._detail_row("Year Built / Age", f"{d.subject_year_built} / {self._age() or 'N/A'} yrs")}
-        {self._detail_row("List Price", _fmt_money(d.list_price) if d.list_price else "Not listed")}
-        {self._detail_row("Est. Rehab", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
+      <div class="cover-summary-cards">
+        <div class="cover-value-card">
+          <div class="cover-value-label">Opinion of Market Value</div>
+          <div class="cover-value-amount">{_fmt_money(d.market_value)}</div>
+          <div class="cover-value-range">Range: {_fmt_money(d.range_low)} &mdash; {_fmt_money(d.range_high)}</div>
+        </div>
+        <div class="cover-value-card cover-value-card-arv">
+          <div class="cover-value-label">After Repair Value (ARV)</div>
+          <div class="cover-value-amount">{_fmt_money(d.arv)}</div>
+          <div class="cover-value-range">Confidence: {d.confidence:.0f}%</div>
+        </div>
       </div>
-      <div class="card card-compact">
-        <h3 class="card-title">Assignment</h3>
-        {self._detail_row("Property Rights", "Fee Simple")}
-        {self._detail_row("Assignment Type", "Investment Analysis")}
-        {self._detail_row("Intended Use / User", "Investment decision &mdash; Investor")}
-        {self._detail_row("Effective / Report Date", self.now.strftime("%B %d, %Y"))}
-        {self._detail_row("Report Type", "Desktop &mdash; Exterior Only")}
-        {self._detail_row("Data Sources", "MLS, RentCast, Zillow, Redfin")}
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="card-title">Subject Property</h3>
+          {self._detail_row("Property Address", d.subject_address)}
+          {self._detail_row("Property Type", self._prop_type())}
+          {self._detail_row("Bedrooms / Bathrooms", f"{d.subject_beds} / {d.subject_baths}")}
+          {self._detail_row("Gross Living Area", f"{_fmt(d.subject_sqft)} sq ft")}
+          {self._detail_row("Year Built / Age", f"{d.subject_year_built} / {self._age() or 'N/A'} yrs")}
+          {self._detail_row("Site Area", self._lot_display())}
+          {self._detail_row("List / Contract Price", _fmt_money(d.list_price) if d.list_price else "Not currently listed")}
+          {self._detail_row("Est. Rehab Cost", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
+        </div>
+        <div class="card">
+          <h3 class="card-title">Assignment</h3>
+          {self._detail_row("Property Rights Appraised", "Fee Simple")}
+          {self._detail_row("Assignment Type", "Investment Analysis")}
+          {self._detail_row("Intended Use", "Investment decision support")}
+          {self._detail_row("Intended User", "Investor / Client")}
+          {self._detail_row("Effective Date", self.now.strftime("%B %d, %Y"))}
+          {self._detail_row("Report Date", self.now.strftime("%B %d, %Y"))}
+          {self._detail_row("Report Type", "Desktop &mdash; Exterior Only")}
+          {self._detail_row("Data Sources", "MLS, Public Records, RentCast, Zillow, Redfin")}
+        </div>
       </div>
     </div>
 
     <div class="section-divider"></div>
 
-    <div class="section-header section-header-compact">
-      <div class="section-label">NEIGHBORHOOD</div>
-      <h2 class="section-title" style="font-size:13px;">Market Conditions &amp; Neighborhood Analysis</h2>
-      <div class="section-rule"></div>
+    <div class="cover-section-bottom">
+      <div class="section-header">
+        <div class="section-label">NEIGHBORHOOD</div>
+        <h2 class="section-title">Market Conditions &amp; Neighborhood Analysis</h2>
+        <div class="section-rule"></div>
+      </div>
+
+      {market_cards}
+
+      <div class="grid-2" style="margin-top:12px;">
+        <div class="card">
+          <h3 class="card-title">Neighborhood Characteristics</h3>
+          {self._detail_row("Location", "Urban / Suburban / Rural")}
+          {self._detail_row("Built-Up", "Over 75% / 25&ndash;75% / Under 25%")}
+          {self._detail_row("Growth Rate", trend)}
+          {self._detail_row("Property Values", trend)}
+          {self._detail_row("Demand/Supply", "Shortage" if temp == "hot" else "In Balance" if temp in ("warm", "stable") else "Over Supply")}
+          {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days" if ms and ms.median_days_on_market else "Under 3 mos")}
+        </div>
+        <div class="card">
+          <h3 class="card-title">Market Conditions (Form 1004MC)</h3>
+          {self._detail_row("Predominant Price Range", f"{_fmt_money(ms.median_price)} (median)" if ms and ms.median_price else "See comparable sales")}
+          {self._detail_row("Predominant Age Range", f"{self._age() or 'N/A'} yrs (subject)")}
+          {self._detail_row("Present Land Use", "Residential &mdash; Single Family")}
+          {self._detail_row("Land Use Change", "Not Likely")}
+          {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
+          {self._detail_row("Form", "Fannie Mae 1004 / Freddie Mac 70")}
+        </div>
+      </div>
     </div>
 
-    {market_cards}
-
-    <div class="grid-2" style="margin-top:6px;">
-      <div class="card card-compact">
-        <h3 class="card-title">Neighborhood Characteristics</h3>
-        {self._detail_row("Growth / Values", f"{trend} / {trend}")}
-        {self._detail_row("Demand/Supply", "Shortage" if temp == "hot" else "In Balance" if temp in ("warm", "stable") else "Over Supply")}
-        {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days" if ms and ms.median_days_on_market else "Under 3 mos")}
-        {self._detail_row("Present Land Use", "SFR Residential")}
-        {self._detail_row("Land Use Change", "Not Likely")}
-      </div>
-      <div class="card card-compact">
-        <h3 class="card-title">Market Conditions (1004MC)</h3>
-        {self._detail_row("Predominant Price", f"{_fmt_money(ms.median_price)} (median)" if ms and ms.median_price else "See comps")}
-        {self._detail_row("Predominant Age", f"{self._age() or 'N/A'} yrs (subject)")}
-        {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
-        {self._detail_row("Boundaries", "See comparable proximity data")}
-        {self._detail_row("Form", "Fannie Mae 1004 / Freddie Mac 70")}
-      </div>
-    </div>
   </div>
   <div class="cover-footer">
     <div><span class="cover-footer-label">Effective Date</span><span class="cover-footer-value">{self.now.strftime("%B %d, %Y")}</span></div>
