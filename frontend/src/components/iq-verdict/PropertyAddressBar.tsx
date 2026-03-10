@@ -52,6 +52,7 @@ function safeDecode(s: string | undefined): string {
 }
 
 function StatusText({ status }: { status: string }) {
+  const isListedOrOffMarket = status === 'Listed' || status === 'Off-Market'
   return (
     <span
       style={{
@@ -60,7 +61,7 @@ function StatusText({ status }: { status: string }) {
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
-        color: '#0EA5E9',
+        color: isListedOrOffMarket ? '#EF4444' : '#0EA5E9',
         whiteSpace: 'nowrap',
       }}
     >
