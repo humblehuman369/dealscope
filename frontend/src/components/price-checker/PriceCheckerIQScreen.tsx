@@ -850,7 +850,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
-                    className="px-2.5 py-[2.5px] rounded-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                    className="px-2.5 py-[2.5px] rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/80 text-[#38bdf8] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
                   </button>
@@ -889,7 +889,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayArv : displayImprovedRent) === 0}
-                    className="px-2.5 py-[2.5px] rounded-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-black text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                    className="px-2.5 py-[2.5px] rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/80 text-[#38bdf8] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
                   </button>
