@@ -265,9 +265,9 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           <div className="flex items-center gap-2 text-[13px] text-[#F1F5F9] mb-1.5 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
-            <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()}</span>
+            <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()} sq ft</span>
             {comp.yearBuilt != null && comp.yearBuilt > 0 && (
-              <span className="flex items-center gap-0.5 tabular-nums"><Calendar className="w-3 h-3" />{comp.yearBuilt}</span>
+              <span className="flex items-center gap-0.5 tabular-nums">Year Built {comp.yearBuilt}</span>
             )}
           </div>
 

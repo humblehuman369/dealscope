@@ -470,8 +470,8 @@ const RentalCompCard = ({
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
-            <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()}</span>
-            <span className="flex items-center gap-0.5 tabular-nums"><Calendar className="w-3 h-3" />{comp.yearBuilt || 'N/A'}</span>
+            <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()} sq ft</span>
+            <span className="flex items-center gap-0.5 tabular-nums">Year Built {comp.yearBuilt ?? 'N/A'}</span>
           </div>
 
           <div className="flex items-center justify-between pl-4">
