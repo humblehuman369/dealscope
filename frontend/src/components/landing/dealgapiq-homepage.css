@@ -29,6 +29,7 @@
 @media (max-width: 768px) {
   .steps-grid { grid-template-columns: 1fr !important; }
   .verdict-inner { grid-template-columns: 1fr !important; }
+  .comps-inner { grid-template-columns: 1fr !important; }
   .verdict-method-inner { grid-template-columns: 1fr !important; }
   .investor-fit-inner { grid-template-columns: 1fr !important; }
   .numbers-grid { grid-template-columns: 1fr !important; }
