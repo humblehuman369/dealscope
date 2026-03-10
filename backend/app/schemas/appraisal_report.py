@@ -47,6 +47,39 @@ class PropertyDetailsPayload(BaseModel):
     foundation_type: str | None = None
     has_fireplace: bool | None = None
     has_pool: bool | None = None
+    parking_type: str | None = None
+    hoa_fees_monthly: float | None = None
+
+
+class SiteDataPayload(BaseModel):
+    """Site data for Form 1004 Site section (requires external sources)."""
+
+    zoning_classification: str | None = None
+    zoning_compliance: str | None = None
+    flood_zone: str | None = None
+    fema_map_number: str | None = None
+    fema_map_date: str | None = None
+    water: str | None = None
+    sewer: str | None = None
+    gas: str | None = None
+    electricity: str | None = None
+    topography: str | None = None
+    lot_shape: str | None = None
+    view: str | None = None
+    easements: str | None = None
+    encroachments: str | None = None
+
+
+class CostDataPayload(BaseModel):
+    """Cost approach data (requires cost service like Marshall & Swift)."""
+
+    replacement_cost_per_sqft: float | None = None
+    total_cost_new: float | None = None
+    site_value: float | None = None
+    site_value_source: str | None = None
+    physical_depreciation_pct: float | None = None
+    functional_depreciation: float | None = None
+    external_depreciation: float | None = None
 
 
 class MarketStatsPayload(BaseModel):
@@ -114,6 +147,8 @@ class AppraisalReportRequest(BaseModel):
     property_details: PropertyDetailsPayload | None = None
     market_stats: MarketStatsPayload | None = None
     rental_data: RentalDataPayload | None = None
+    site_data: SiteDataPayload | None = None
+    cost_data: CostDataPayload | None = None
 
     # AI-generated narratives (populated by the backend endpoint)
     narratives: NarrativesPayload | None = None

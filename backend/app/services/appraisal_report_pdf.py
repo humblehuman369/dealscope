@@ -3,17 +3,19 @@ DealGapIQ URAR Form 1004 Appraisal Report — PDF Generator
 
 Generates a professional, multi-page appraisal report following the
 Uniform Residential Appraisal Report (URAR) structure. Uses WeasyPrint
-(HTML → PDF) with the same architecture as property_report_pdf.py.
+(HTML -> PDF) with the same architecture as property_report_pdf.py.
 
 Report pages:
-  1. Cover + Subject
+  1. Cover + Subject / Assignment
   2. Neighborhood Analysis
-  3. Site & Improvements
-  4-5. Sales Comparison Adjustment Grid
-  6. Reconciliation
+  3. Site Description
+  4. Description of Improvements
+  5. Sales Comparison Adjustment Grid
+  6. Reconciliation / Final Opinion of Value
   7. Income Approach
   8. Cost Approach
-  9. Scope of Work & Disclaimer
+  9. Data Sources, Verification & Addendum
+  10. Scope of Work, Limiting Conditions & Disclaimer
 """
 
 import logging
@@ -92,7 +94,7 @@ class AppraisalReportPDFExporter:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>URAR Appraisal Report — {address}</title>
+<title>URAR Form 1004 — {address}</title>
 <style>{css_content}</style>
 {print_script}
 </head>
@@ -105,11 +107,13 @@ class AppraisalReportPDFExporter:
         pages = [
             self._page_cover(),
             self._page_neighborhood(),
-            self._page_site_improvements(),
-            self._page_adjustments(),
+            self._page_site(),
+            self._page_improvements(),
+            self._page_sales_comparison(),
             self._page_reconciliation(),
             self._page_income(),
             self._page_cost(),
+            self._page_addendum(),
             self._page_scope_disclaimer(),
         ]
         return "\n".join(pages)
@@ -117,20 +121,20 @@ class AppraisalReportPDFExporter:
     def _build_html(self) -> str:
         return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
-<title>URAR Appraisal Report — {self.data.subject_address}</title>
+<title>URAR Form 1004 — {self.data.subject_address}</title>
 </head><body>{self._build_body()}</body></html>"""
 
     # ------------------------------------------------------------------
     # Layout helpers
     # ------------------------------------------------------------------
 
-    def _page_header(self, section_num: str, title: str) -> str:
+    def _page_header(self, title: str) -> str:
         parts = self.data.subject_address.split(",")
         city_state = ", ".join(parts[1:]).strip() if len(parts) > 1 else ""
         return (
             f'<div class="page-header">'
             f'<div class="logo">DealGap<span class="logo-iq">IQ</span></div>'
-            f'<div class="page-header-title">Section {section_num}: {title}</div>'
+            f'<div class="page-header-title">{title}</div>'
             f'<div class="page-header-meta">{city_state}</div>'
             f"</div>"
         )
@@ -138,7 +142,7 @@ class AppraisalReportPDFExporter:
     def _page_footer(self) -> str:
         return (
             f'<div class="page-footer">'
-            f'<div class="footer-brand">DealGapIQ URAR Form 1004</div>'
+            f'<div class="footer-brand">DealGapIQ &mdash; Uniform Residential Appraisal Report</div>'
             f'<div class="footer-date">{self.now.strftime("%B %d, %Y")}</div>'
             f"</div>"
         )
@@ -152,9 +156,10 @@ class AppraisalReportPDFExporter:
             f"</div>"
         )
 
-    def _detail_row(self, label: str, value: str) -> str:
+    def _detail_row(self, label: str, value: str, bold: bool = False) -> str:
+        style = ' style="font-weight:700;"' if bold else ""
         return (
-            f'<div class="detail-row">'
+            f'<div class="detail-row"{style}>'
             f"<span>{label}</span>"
             f'<span class="detail-value">{value}</span>'
             f"</div>"
@@ -166,45 +171,65 @@ class AppraisalReportPDFExporter:
         return f'<p class="narrative">{text}</p>'
 
     # ------------------------------------------------------------------
-    # Page 1: Cover + Subject
+    # Shared computed values
+    # ------------------------------------------------------------------
+
+    def _subject_parts(self):
+        parts = self.data.subject_address.split(",")
+        street = parts[0].strip()
+        city_state = ", ".join(parts[1:]).strip() if len(parts) > 1 else ""
+        return street, city_state
+
+    def _prop_type(self) -> str:
+        return (self.data.subject_property_type or "Single Family").replace("_", " ").title()
+
+    def _lot_display(self) -> str:
+        lot = self.data.subject_lot_size
+        if lot and lot >= 1000:
+            acres = lot / 43560
+            return f"{lot:,.0f} sf ({acres:.2f} ac)"
+        if lot:
+            return f"{lot:.2f} acres"
+        return "N/A"
+
+    def _age(self) -> int | None:
+        return 2026 - self.data.subject_year_built if self.data.subject_year_built else None
+
+    # ------------------------------------------------------------------
+    # Page 1: Cover + Subject / Assignment
     # ------------------------------------------------------------------
 
     def _page_cover(self) -> str:
         d = self.data
-        parts = d.subject_address.split(",")
-        street = parts[0].strip()
-        city_state = ", ".join(parts[1:]).strip() if len(parts) > 1 else ""
-
-        lot_display = f"{d.subject_lot_size:,.0f} sqft" if d.subject_lot_size >= 1000 else f"{d.subject_lot_size:.2f} acres"
-        ptype = (d.subject_property_type or "Single Family").replace("_", " ").title()
-
+        street, city_state = self._subject_parts()
         pd = d.property_details
-        stories_html = f'<div class="cover-stat"><div class="cover-stat-value">{pd.stories}</div><div class="cover-stat-label">Stories</div></div>' if pd and pd.stories else ""
+
+        stories_stat = f'<div class="cover-stat"><div class="cover-stat-value">{pd.stories}</div><div class="cover-stat-label">Stories</div></div>' if pd and pd.stories else ""
 
         return f"""
 <div class="page cover-page">
   <div class="cover-top-band"></div>
   <div class="cover-content">
     <div class="cover-logo">DealGap<span class="logo-iq">IQ</span></div>
-    <div class="cover-badge">URAR Comparable Sales Appraisal Report</div>
+    <div class="cover-badge">Uniform Residential Appraisal Report</div>
     <h1 class="cover-address">{street}</h1>
     <div class="cover-city">{city_state}</div>
 
     <div class="cover-stats">
-      <div class="cover-stat"><div class="cover-stat-value">{ptype}</div><div class="cover-stat-label">Type</div></div>
+      <div class="cover-stat"><div class="cover-stat-value">{self._prop_type()}</div><div class="cover-stat-label">Type</div></div>
       <div class="cover-stat"><div class="cover-stat-value">{d.subject_beds}</div><div class="cover-stat-label">Beds</div></div>
       <div class="cover-stat"><div class="cover-stat-value">{d.subject_baths}</div><div class="cover-stat-label">Baths</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{_fmt(d.subject_sqft)}</div><div class="cover-stat-label">Sq Ft</div></div>
+      <div class="cover-stat"><div class="cover-stat-value">{_fmt(d.subject_sqft)}</div><div class="cover-stat-label">GLA Sq Ft</div></div>
       <div class="cover-stat"><div class="cover-stat-value">{d.subject_year_built}</div><div class="cover-stat-label">Year Built</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{lot_display}</div><div class="cover-stat-label">Lot</div></div>
-      {stories_html}
+      <div class="cover-stat"><div class="cover-stat-value">{self._lot_display()}</div><div class="cover-stat-label">Lot</div></div>
+      {stories_stat}
     </div>
 
     <div class="cover-summary-cards">
       <div class="cover-value-card">
-        <div class="cover-value-label">Market Value (As-Is)</div>
+        <div class="cover-value-label">Opinion of Market Value</div>
         <div class="cover-value-amount">{_fmt_money(d.market_value)}</div>
-        <div class="cover-value-range">Range: {_fmt_money(d.range_low)} — {_fmt_money(d.range_high)}</div>
+        <div class="cover-value-range">Range: {_fmt_money(d.range_low)} &mdash; {_fmt_money(d.range_high)}</div>
       </div>
       <div class="cover-value-card cover-value-card-arv">
         <div class="cover-value-label">After Repair Value (ARV)</div>
@@ -213,23 +238,34 @@ class AppraisalReportPDFExporter:
       </div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <h3 class="card-title">Subject Property</h3>
-      {self._detail_row("Address", d.subject_address)}
-      {self._detail_row("Property Type", ptype)}
-      {self._detail_row("Beds / Baths", f"{d.subject_beds} / {d.subject_baths}")}
-      {self._detail_row("GLA (Above Grade)", f"{_fmt(d.subject_sqft)} sqft")}
-      {self._detail_row("Year Built", str(d.subject_year_built))}
-      {self._detail_row("Lot Size", lot_display)}
-      {self._detail_row("List Price", _fmt_money(d.list_price) if d.list_price else "Not listed")}
-      {self._detail_row("Rehab Estimate", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
-      {self._detail_row("Assignment Type", "Investment Analysis")}
-      {self._detail_row("Property Rights", "Fee Simple")}
+    <div class="grid-2" style="margin-top:12px;">
+      <div class="card">
+        <h3 class="card-title">Subject Property</h3>
+        {self._detail_row("Property Address", d.subject_address)}
+        {self._detail_row("Property Type", self._prop_type())}
+        {self._detail_row("Bedrooms / Bathrooms", f"{d.subject_beds} / {d.subject_baths}")}
+        {self._detail_row("Gross Living Area", f"{_fmt(d.subject_sqft)} sq ft")}
+        {self._detail_row("Year Built / Age", f"{d.subject_year_built} / {self._age() or 'N/A'} yrs")}
+        {self._detail_row("Site Area", self._lot_display())}
+        {self._detail_row("List / Contract Price", _fmt_money(d.list_price) if d.list_price else "Not currently listed")}
+        {self._detail_row("Est. Rehab Cost", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
+      </div>
+      <div class="card">
+        <h3 class="card-title">Assignment</h3>
+        {self._detail_row("Property Rights Appraised", "Fee Simple")}
+        {self._detail_row("Assignment Type", "Investment Analysis")}
+        {self._detail_row("Intended Use", "Investment decision support")}
+        {self._detail_row("Intended User", "Investor / Client")}
+        {self._detail_row("Effective Date", self.now.strftime("%B %d, %Y"))}
+        {self._detail_row("Report Date", self.now.strftime("%B %d, %Y"))}
+        {self._detail_row("Report Type", "Desktop &mdash; Exterior Only")}
+        {self._detail_row("Data Sources", "MLS, Public Records, RentCast, Zillow, Redfin")}
+      </div>
     </div>
   </div>
   <div class="cover-footer">
-    <div><span class="cover-footer-label">Report Date</span><span class="cover-footer-value">{self.now.strftime("%B %d, %Y")}</span></div>
-    <div><span class="cover-footer-label">Data Sources</span><span class="cover-footer-value">RentCast, Zillow, Redfin, Public Records</span></div>
+    <div><span class="cover-footer-label">Effective Date</span><span class="cover-footer-value">{self.now.strftime("%B %d, %Y")}</span></div>
+    <div><span class="cover-footer-label">Form</span><span class="cover-footer-value">URAR / Freddie Mac Form 70 / Fannie Mae Form 1004</span></div>
   </div>
 </div>"""
 
@@ -243,138 +279,235 @@ class AppraisalReportPDFExporter:
         n = d.narratives
 
         narrative_text = n.neighborhood if n and n.neighborhood else ""
+        temp = (ms.market_temperature or "stable") if ms else "stable"
+        trend = "Increasing" if temp == "hot" else "Stable" if temp in ("warm", "stable") else "Declining"
 
         market_cards = ""
         if ms:
             market_cards = f"""
-    <div class="grid-3" style="margin-top:20px;">
-      <div class="info-card">
-        <div class="info-card-label">Median Price</div>
-        <div class="info-card-value">{_fmt_money(ms.median_price)}</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Median DOM</div>
-        <div class="info-card-value">{ms.median_days_on_market or "N/A"} days</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Active Listings</div>
-        <div class="info-card-value">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div>
-      </div>
+    <div class="grid-3" style="margin-top:16px;">
+      <div class="info-card"><div class="info-card-label">Median Sale Price</div><div class="info-card-value">{_fmt_money(ms.median_price)}</div></div>
+      <div class="info-card"><div class="info-card-label">Median DOM</div><div class="info-card-value">{ms.median_days_on_market or "N/A"} days</div></div>
+      <div class="info-card"><div class="info-card-label">Active Listings</div><div class="info-card-value">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div></div>
     </div>
-    <div class="grid-3" style="margin-top:12px;">
-      <div class="info-card">
-        <div class="info-card-label">New Listings</div>
-        <div class="info-card-value">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Avg $/SqFt</div>
-        <div class="info-card-value">{_fmt_money(ms.avg_price_per_sqft)}</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Market Temp</div>
-        <div class="info-card-value">{(ms.market_temperature or "N/A").title()}</div>
-      </div>
+    <div class="grid-3" style="margin-top:10px;">
+      <div class="info-card"><div class="info-card-label">New Listings</div><div class="info-card-value">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div></div>
+      <div class="info-card"><div class="info-card-label">Avg Price/Sq Ft</div><div class="info-card-value">{_fmt_money(ms.avg_price_per_sqft)}</div></div>
+      <div class="info-card"><div class="info-card-label">Market Temperature</div><div class="info-card-value">{temp.title()}</div></div>
     </div>"""
 
         return f"""
 <div class="page">
-  {self._page_header("2", "Neighborhood")}
-  {self._section_header("NEIGHBORHOOD ANALYSIS", "Market Conditions & Housing Trends")}
+  {self._page_header("Neighborhood")}
+  {self._section_header("NEIGHBORHOOD", "Area Description &amp; Market Conditions")}
 
   {self._narrative_block(narrative_text)}
   {market_cards}
 
-  <div class="card" style="margin-top:20px;">
-    <h3 class="card-title">Market Indicators</h3>
-    {self._detail_row("Location Type", "Residential")}
-    {self._detail_row("Property Values", (ms.market_temperature or "Stable").title() if ms else "Stable")}
-    {self._detail_row("Demand/Supply", "Balanced" if not ms or not ms.market_temperature else ("High demand" if ms.market_temperature == "hot" else "Balanced" if ms.market_temperature == "warm" else "Soft demand"))}
-    {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days (median)" if ms and ms.median_days_on_market else "Typical for area")}
-    {self._detail_row("Price Range", f"{_fmt_money(ms.median_price)} median" if ms and ms.median_price else "See comps")}
-    {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3 class="card-title">Neighborhood Characteristics</h3>
+      {self._detail_row("Location", "Urban / Suburban / Rural")}
+      {self._detail_row("Built-Up", "Over 75% / 25&ndash;75% / Under 25%")}
+      {self._detail_row("Growth Rate", trend)}
+      {self._detail_row("Property Values", trend)}
+      {self._detail_row("Demand/Supply", "Shortage" if temp == "hot" else "In Balance" if temp in ("warm", "stable") else "Over Supply")}
+      {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days" if ms and ms.median_days_on_market else "Under 3 mos")}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Market Conditions (Form 1004MC)</h3>
+      {self._detail_row("Predominant Price Range", f"{_fmt_money(ms.median_price)} (median)" if ms and ms.median_price else "See comparable sales")}
+      {self._detail_row("Predominant Age Range", f"{self._age() or 'N/A'} yrs (subject)")}
+      {self._detail_row("Present Land Use", "Residential &mdash; Single Family")}
+      {self._detail_row("Land Use Change", "Not Likely")}
+      {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
+      {self._detail_row("Neighborhood Boundaries", "See comparable proximity data")}
+    </div>
   </div>
 
   {self._page_footer()}
 </div>"""
 
     # ------------------------------------------------------------------
-    # Page 3: Site & Improvements
+    # Page 3: Site
     # ------------------------------------------------------------------
 
-    def _page_site_improvements(self) -> str:
+    def _page_site(self) -> str:
         d = self.data
-        pd = d.property_details
         n = d.narratives
-        lot = d.subject_lot_size
-        lot_acres = lot / 43560 if lot and lot >= 1000 else None
+        sd = d.site_data
 
         site_narrative = n.site if n and n.site else ""
-        imp_narrative = n.improvements if n and n.improvements else ""
 
-        imp_rows = ""
-        if pd:
-            if pd.heating_type:
-                imp_rows += self._detail_row("Heating", pd.heating_type)
-            if pd.cooling_type:
-                imp_rows += self._detail_row("Cooling", pd.cooling_type)
-            if pd.exterior_type:
-                imp_rows += self._detail_row("Exterior", pd.exterior_type)
-            if pd.roof_type:
-                imp_rows += self._detail_row("Roof", pd.roof_type)
-            if pd.foundation_type:
-                imp_rows += self._detail_row("Foundation", pd.foundation_type)
-            if pd.has_garage is not None:
-                gs = f" ({pd.garage_spaces}-car)" if pd.garage_spaces else ""
-                imp_rows += self._detail_row("Garage", f"Yes{gs}" if pd.has_garage else "No")
-            if pd.has_pool is not None:
-                imp_rows += self._detail_row("Pool", "Yes" if pd.has_pool else "No")
-            if pd.has_fireplace is not None:
-                imp_rows += self._detail_row("Fireplace", "Yes" if pd.has_fireplace else "No")
-
-        current_year = 2026
-        age = current_year - d.subject_year_built if d.subject_year_built else None
+        zoning = sd.zoning_classification if sd and sd.zoning_classification else "Verify &mdash; local records"
+        compliance = sd.zoning_compliance if sd and sd.zoning_compliance else "Assumed legal conforming"
+        flood = sd.flood_zone if sd and sd.flood_zone else "Verify &mdash; FEMA map"
+        fema_map = sd.fema_map_number if sd and sd.fema_map_number else "Not available"
+        fema_date = f" ({sd.fema_map_date})" if sd and sd.fema_map_date else ""
+        elec = sd.electricity if sd and sd.electricity else "Public (assumed)"
+        gas = sd.gas if sd and sd.gas else "Public (assumed)"
+        water = sd.water if sd and sd.water else "Public (assumed)"
+        sewer = sd.sewer if sd and sd.sewer else "Public (assumed)"
+        topo = sd.topography if sd and sd.topography else "Assumed level &mdash; verify inspection"
+        shape = sd.lot_shape if sd and sd.lot_shape else "Assumed typical &mdash; verify survey"
+        view = sd.view if sd and sd.view else "Residential"
+        easements = sd.easements if sd and sd.easements else "None apparent &mdash; verify title report"
+        encroachments = sd.encroachments if sd and sd.encroachments else "None apparent &mdash; verify survey"
 
         return f"""
 <div class="page">
-  {self._page_header("3", "Site & Improvements")}
+  {self._page_header("Site")}
+  {self._section_header("SITE", "Site Description")}
 
-  {self._section_header("SITE DESCRIPTION", "Site")}
-  <div class="card">
-    {self._detail_row("Lot Size", f"{_fmt(lot)} sqft" + (f" ({lot_acres:.2f} acres)" if lot_acres else ""))}
-    {self._detail_row("Zoning", "Not available — verify with local records")}
-    {self._detail_row("Flood Zone", "Not available — verify FEMA maps")}
-    {self._detail_row("Utilities", "Assumed public — verify with municipality")}
-    {self._detail_row("Highest & Best Use", "Residential — as improved")}
-  </div>
   {self._narrative_block(site_narrative)}
 
-  {self._section_header("IMPROVEMENTS", "Description of Improvements")}
-  <div class="grid-2" style="margin-top:12px;">
+  <div class="grid-2" style="margin-top:16px;">
     <div class="card">
-      <h3 class="card-title">General</h3>
-      {self._detail_row("Property Type", (d.subject_property_type or "Single Family").replace("_", " ").title())}
-      {self._detail_row("Stories", str(pd.stories) if pd and pd.stories else "N/A")}
-      {self._detail_row("Year Built", str(d.subject_year_built))}
-      {self._detail_row("Actual Age", f"{age} years" if age else "N/A")}
-      {self._detail_row("Bedrooms", str(d.subject_beds))}
-      {self._detail_row("Bathrooms", str(d.subject_baths))}
-      {self._detail_row("GLA", f"{_fmt(d.subject_sqft)} sqft")}
+      <h3 class="card-title">Site Characteristics</h3>
+      {self._detail_row("Dimensions", "See plat/survey")}
+      {self._detail_row("Site Area", self._lot_display())}
+      {self._detail_row("Shape", shape)}
+      {self._detail_row("View", view)}
+      {self._detail_row("Topography", topo)}
+      {self._detail_row("Drainage", "Assumed adequate")}
+      {self._detail_row("Landscaping", "Typical for area")}
+      {self._detail_row("Driveway Surface", "Verify inspection")}
     </div>
     <div class="card">
-      <h3 class="card-title">Features & Systems</h3>
-      {imp_rows if imp_rows else self._detail_row("Features", "Data not available — physical inspection needed")}
+      <h3 class="card-title">Zoning, Utilities &amp; Compliance</h3>
+      {self._detail_row("Zoning Classification", zoning)}
+      {self._detail_row("Zoning Compliance", compliance)}
+      {self._detail_row("Highest &amp; Best Use", "Present use &mdash; residential")}
+      {self._detail_row("Flood Zone", flood)}
+      {self._detail_row("FEMA Map #", f"{fema_map}{fema_date}")}
+      {self._detail_row("Electricity", elec)}
+      {self._detail_row("Gas", gas)}
+      {self._detail_row("Water", water)}
+      {self._detail_row("Sewer", sewer)}
     </div>
   </div>
-  {self._narrative_block(imp_narrative)}
+
+  <div class="card" style="margin-top:16px;">
+    <h3 class="card-title">Adverse Conditions</h3>
+    {self._detail_row("Easements", easements)}
+    {self._detail_row("Encroachments", encroachments)}
+    {self._detail_row("Special Assessments", "None known")}
+    {self._detail_row("Environmental", "No adverse conditions observed from desktop review")}
+  </div>
+
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>Note:</strong> Site data is based on available public records and assumptions.
+    Zoning, flood zone, utilities, easements, and topography should be verified through
+    local municipal records, a current survey, and FEMA flood maps.
+  </div>
 
   {self._page_footer()}
 </div>"""
 
     # ------------------------------------------------------------------
-    # Page 4(-5): Sales Comparison Adjustment Grid
+    # Page 4: Description of Improvements
     # ------------------------------------------------------------------
 
-    def _page_adjustments(self) -> str:
+    def _page_improvements(self) -> str:
+        d = self.data
+        pd = d.property_details
+        n = d.narratives
+        age = self._age()
+        effective_age = max(1, int(age * 0.75)) if age else None
+
+        imp_narrative = n.improvements if n and n.improvements else ""
+
+        ht = pd.heating_type if pd and pd.heating_type else "Verify"
+        ct = pd.cooling_type if pd and pd.cooling_type else "Verify"
+        ext = pd.exterior_type if pd and pd.exterior_type else "Verify"
+        roof = pd.roof_type if pd and pd.roof_type else "Verify"
+        fdn = pd.foundation_type if pd and pd.foundation_type else "Verify"
+
+        garage_desc = "None"
+        if pd and pd.has_garage:
+            garage_desc = f"Attached &mdash; {pd.garage_spaces}-car" if pd.garage_spaces else "Yes"
+        elif pd and pd.has_garage is not None:
+            garage_desc = "None"
+        parking = pd.parking_type if pd and pd.parking_type else None
+
+        pool = "Yes" if pd and pd.has_pool else "No" if pd and pd.has_pool is not None else "Verify"
+        fp = "Yes" if pd and pd.has_fireplace else "No" if pd and pd.has_fireplace is not None else "Verify"
+        hoa = f"${pd.hoa_fees_monthly:,.0f}/mo" if pd and pd.hoa_fees_monthly else "None reported"
+
+        return f"""
+<div class="page">
+  {self._page_header("Description of Improvements")}
+  {self._section_header("IMPROVEMENTS", "Description of Improvements")}
+
+  {self._narrative_block(imp_narrative)}
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3 class="card-title">General Description</h3>
+      {self._detail_row("Units", "One")}
+      {self._detail_row("Stories", str(pd.stories) if pd and pd.stories else "Verify")}
+      {self._detail_row("Type (Det./Att.)", "Detached" if "single" in self._prop_type().lower() else self._prop_type())}
+      {self._detail_row("Design (Style)", self._prop_type())}
+      {self._detail_row("Existing / Proposed", "Existing")}
+      {self._detail_row("Year Built", str(d.subject_year_built))}
+      {self._detail_row("Actual Age", f"{age} years" if age else "N/A")}
+      {self._detail_row("Effective Age", f"{effective_age} years (est.)" if effective_age else "N/A")}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Exterior Description</h3>
+      {self._detail_row("Foundation", fdn)}
+      {self._detail_row("Exterior Walls", ext)}
+      {self._detail_row("Roof Surface", roof)}
+      {self._detail_row("Gutters &amp; Downspouts", "Verify")}
+      {self._detail_row("Window Type", "Verify")}
+      {self._detail_row("Storm Sash / Insulated", "Verify")}
+      {self._detail_row("Screens", "Verify")}
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:12px;">
+    <div class="card">
+      <h3 class="card-title">Interior &amp; Systems</h3>
+      {self._detail_row("Floors", "Verify &mdash; inspection needed")}
+      {self._detail_row("Walls", "Verify &mdash; inspection needed")}
+      {self._detail_row("Trim/Finish", "Verify &mdash; inspection needed")}
+      {self._detail_row("Heating Type", ht)}
+      {self._detail_row("Cooling Type", ct)}
+      {self._detail_row("Fuel", "Verify")}
+      {self._detail_row("Fireplace(s)", fp)}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Room Count &amp; Amenities</h3>
+      {self._detail_row("Total Rooms", "Verify")}
+      {self._detail_row("Bedrooms", str(d.subject_beds))}
+      {self._detail_row("Bathrooms", str(d.subject_baths))}
+      {self._detail_row("GLA (Above Grade)", f"{_fmt(d.subject_sqft)} sq ft")}
+      {self._detail_row("Basement", "Verify")}
+      {self._detail_row("Car Storage", garage_desc)}
+      {self._detail_row("Parking", parking if parking else garage_desc)}
+      {self._detail_row("Pool", pool)}
+      {self._detail_row("Patio / Deck", "Verify")}
+      {self._detail_row("HOA", hoa)}
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3 class="card-title">Condition &amp; Quality</h3>
+    {self._detail_row("Overall Condition", "Average (assumed) &mdash; inspection required")}
+    {self._detail_row("Overall Quality", "Average (assumed) &mdash; inspection required")}
+    {self._detail_row("Physical Deficiencies", "None observed from desktop review")}
+    {self._detail_row("Functional Adequacy", "Assumed adequate for market area")}
+    {self._detail_row("Neighborhood Conformity", "Appears conforming based on comparable data")}
+  </div>
+
+  {self._page_footer()}
+</div>"""
+
+    # ------------------------------------------------------------------
+    # Page 5: Sales Comparison Approach
+    # ------------------------------------------------------------------
+
+    def _page_sales_comparison(self) -> str:
         d = self.data
         p = self.palette
         comps = d.comp_adjustments
@@ -382,230 +515,299 @@ class AppraisalReportPDFExporter:
         if not comps:
             return ""
 
-        comp_headers = "".join(f"<th>Comp {i + 1}</th>" for i in range(len(comps)))
+        n_comps = len(comps)
+        comp_headers = "".join(f"<th>Comp {i + 1}</th>" for i in range(n_comps))
 
         def _adj_cell(val: float) -> str:
             color = p["positive"] if val >= 0 else p["negative"]
             return f'<td class="money" style="color:{color}">{_sign_money(val)}</td>'
 
-        subj_parts = d.subject_address.split(",")
-        subj_street = subj_parts[0].strip()
+        def _text_cell(val: str) -> str:
+            return f"<td>{val}</td>"
 
-        addr_row = f"<tr><td class='row-label'>Address</td><td>{subj_street}</td>"
+        subj_street = self._subject_parts()[0]
+
+        rows: list[str] = []
+
+        # --- Property Data ---
+        r = f"<tr><td class='row-label'>Address</td><td>{subj_street}</td>"
         for c in comps:
-            addr_row += f"<td>{c.comp_address.split(',')[0].strip()}</td>"
-        addr_row += "</tr>"
+            r += f"<td>{c.comp_address.split(',')[0].strip()}</td>"
+        rows.append(r + "</tr>")
 
-        price_row = f"<tr><td class='row-label'>Sale Price</td><td>—</td>"
+        r = f"<tr><td class='row-label'>Proximity</td><td>&mdash;</td>"
         for c in comps:
-            price_row += f'<td class="money">{_fmt_money(c.base_price)}</td>'
-        price_row += "</tr>"
+            r += f"<td>{c.distance_miles:.2f} mi</td>" if c.distance_miles is not None else "<td>&mdash;</td>"
+        rows.append(r + "</tr>")
 
-        beds_row = f"<tr><td class='row-label'>Bedrooms</td><td>{d.subject_beds}</td>"
+        r = f"<tr><td class='row-label'>Sale Price</td><td>&mdash;</td>"
         for c in comps:
-            beds_row += f"<td>{c.beds}</td>"
-        beds_row += "</tr>"
+            r += f'<td class="money">{_fmt_money(c.base_price)}</td>'
+        rows.append(r + "</tr>")
 
-        baths_row = f"<tr><td class='row-label'>Bathrooms</td><td>{d.subject_baths}</td>"
+        r = f"<tr><td class='row-label'>Price/GLA</td><td>&mdash;</td>"
         for c in comps:
-            baths_row += f"<td>{c.baths}</td>"
-        baths_row += "</tr>"
+            r += f'<td class="money">${c.price_per_sqft:,.0f}</td>'
+        rows.append(r + "</tr>")
 
-        sqft_row = f"<tr><td class='row-label'>GLA (SqFt)</td><td>{_fmt(d.subject_sqft)}</td>"
+        r = f"<tr><td class='row-label'>Data Source</td><td>MLS / Public Rec.</td>"
         for c in comps:
-            sqft_row += f"<td>{_fmt(c.sqft)}</td>"
-        sqft_row += "</tr>"
+            r += _text_cell("MLS / Public Rec.")
+        rows.append(r + "</tr>")
 
-        year_row = f"<tr><td class='row-label'>Year Built</td><td>{d.subject_year_built}</td>"
+        r = f"<tr><td class='row-label'>Verification Source</td><td>&mdash;</td>"
         for c in comps:
-            year_row += f"<td>{c.year_built}</td>"
-        year_row += "</tr>"
+            r += _text_cell("Public Records")
+        rows.append(r + "</tr>")
 
-        date_row = f"<tr><td class='row-label'>Sale Date</td><td>—</td>"
+        # --- Sale/Financing ---
+        sale_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Sale &amp; Financing</td></tr>'
+        rows.append(sale_section)
+
+        r = f"<tr><td class='row-label adj-label'>Sale Date</td><td>&mdash;</td>"
         for c in comps:
-            date_row += f"<td>{c.sale_date or '—'}</td>"
-        date_row += "</tr>"
+            r += f"<td>{c.sale_date or '&mdash;'}</td>"
+        rows.append(r + "</tr>")
 
-        dist_row = f"<tr><td class='row-label'>Proximity</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Financing Type</td><td>&mdash;</td>"
         for c in comps:
-            dist_row += f"<td>{c.distance_miles:.1f} mi</td>" if c.distance_miles is not None else "<td>—</td>"
-        dist_row += "</tr>"
+            r += _text_cell("Conv.")
+        rows.append(r + "</tr>")
 
-        ppsf_row = f"<tr><td class='row-label'>$/SqFt</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Concessions</td><td>&mdash;</td>"
         for c in comps:
-            ppsf_row += f'<td class="money">${c.price_per_sqft:,.0f}</td>'
-        ppsf_row += "</tr>"
+            r += _text_cell("None reported")
+        rows.append(r + "</tr>")
 
-        adj_section = f'<tr class="adj-header"><td class="row-label" colspan="{len(comps) + 2}">Adjustments</td></tr>'
+        # --- Description ---
+        desc_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Description</td></tr>'
+        rows.append(desc_section)
 
-        size_row = f"<tr><td class='row-label adj-label'>Size (GLA)</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Property Type</td><td>{self._prop_type()}</td>"
         for c in comps:
-            size_row += _adj_cell(c.size_adjustment)
-        size_row += "</tr>"
+            r += _text_cell("SFR")
+        rows.append(r + "</tr>")
 
-        bed_row = f"<tr><td class='row-label adj-label'>Bedroom</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Condition</td><td>Average</td>"
         for c in comps:
-            bed_row += _adj_cell(c.bedroom_adjustment)
-        bed_row += "</tr>"
+            r += _text_cell("Average")
+        rows.append(r + "</tr>")
 
-        bath_row = f"<tr><td class='row-label adj-label'>Bathroom</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Year Built</td><td>{d.subject_year_built}</td>"
         for c in comps:
-            bath_row += _adj_cell(c.bathroom_adjustment)
-        bath_row += "</tr>"
+            r += f"<td>{c.year_built}</td>"
+        rows.append(r + "</tr>")
 
-        age_row = f"<tr><td class='row-label adj-label'>Age</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Bedrooms</td><td>{d.subject_beds}</td>"
         for c in comps:
-            age_row += _adj_cell(c.age_adjustment)
-        age_row += "</tr>"
+            r += f"<td>{c.beds}</td>"
+        rows.append(r + "</tr>")
 
-        lot_row = f"<tr><td class='row-label adj-label'>Lot Size</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Bathrooms</td><td>{d.subject_baths}</td>"
         for c in comps:
-            lot_row += _adj_cell(c.lot_adjustment)
-        lot_row += "</tr>"
+            r += f"<td>{c.baths}</td>"
+        rows.append(r + "</tr>")
 
-        total_row = f'<tr class="total-row"><td class="row-label">Net Adjustment</td><td>—</td>'
+        r = f"<tr><td class='row-label adj-label'>GLA (Sq Ft)</td><td>{_fmt(d.subject_sqft)}</td>"
         for c in comps:
-            total_row += _adj_cell(c.total_adjustment)
-        total_row += "</tr>"
+            r += f"<td>{_fmt(c.sqft)}</td>"
+        rows.append(r + "</tr>")
 
-        gross_row = f"<tr><td class='row-label'>Gross Adj %</td><td>—</td>"
+        r = f"<tr><td class='row-label adj-label'>Lot Size</td><td>{self._lot_display()}</td>"
         for c in comps:
-            gpct = c.gross_adjustment_pct
-            gross_row += f"<td>{_fmt_pct(gpct)}</td>" if gpct is not None else "<td>—</td>"
-        gross_row += "</tr>"
+            r += _text_cell("See records")
+        rows.append(r + "</tr>")
 
-        net_row = f"<tr><td class='row-label'>Net Adj %</td><td>—</td>"
+        # --- Adjustments ---
+        adj_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Adjustments</td></tr>'
+        rows.append(adj_section)
+
+        for label, attr in [("Size (GLA)", "size_adjustment"), ("Bedroom", "bedroom_adjustment"), ("Bathroom", "bathroom_adjustment"), ("Age/Condition", "age_adjustment"), ("Lot Size", "lot_adjustment")]:
+            r = f"<tr><td class='row-label adj-label'>{label}</td><td>&mdash;</td>"
+            for c in comps:
+                r += _adj_cell(getattr(c, attr))
+            rows.append(r + "</tr>")
+
+        r = f"<tr><td class='row-label adj-label'>Financing/Conc.</td><td>&mdash;</td>"
+        for c in comps:
+            r += _text_cell("$0")
+        rows.append(r + "</tr>")
+
+        # --- Totals ---
+        total_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Results</td></tr>'
+        rows.append(total_section)
+
+        r = f'<tr class="total-row"><td class="row-label">Net Adjustment</td><td>&mdash;</td>'
+        for c in comps:
+            r += _adj_cell(c.total_adjustment)
+        rows.append(r + "</tr>")
+
+        r = f"<tr><td class='row-label'>Net Adj. %</td><td>&mdash;</td>"
         for c in comps:
             npct = c.net_adjustment_pct
-            net_row += f"<td>{_fmt_pct(npct)}</td>" if npct is not None else "<td>—</td>"
-        net_row += "</tr>"
+            flag = ""
+            if npct is not None and abs(npct) > 15:
+                flag = f' style="color:{p["negative"]};font-weight:700;"'
+            r += f"<td{flag}>{_fmt_pct(npct)}</td>" if npct is not None else "<td>&mdash;</td>"
+        rows.append(r + "</tr>")
 
-        adjusted_row = f'<tr class="total-row"><td class="row-label">Adjusted Price</td><td>—</td>'
+        r = f"<tr><td class='row-label'>Gross Adj. %</td><td>&mdash;</td>"
         for c in comps:
-            adjusted_row += f'<td class="money" style="font-weight:700;">{_fmt_money(c.adjusted_price)}</td>'
-        adjusted_row += "</tr>"
+            gpct = c.gross_adjustment_pct
+            flag = ""
+            if gpct is not None and gpct > 25:
+                flag = f' style="color:{p["negative"]};font-weight:700;"'
+            r += f"<td{flag}>{_fmt_pct(gpct)}</td>" if gpct is not None else "<td>&mdash;</td>"
+        rows.append(r + "</tr>")
 
-        sim_row = f"<tr><td class='row-label'>Similarity</td><td>—</td>"
+        r = f'<tr class="total-row"><td class="row-label">Adjusted Sale Price</td><td>&mdash;</td>'
+        for c in comps:
+            r += f'<td class="money" style="font-weight:700;">{_fmt_money(c.adjusted_price)}</td>'
+        rows.append(r + "</tr>")
+
+        r = f"<tr><td class='row-label'>Similarity Score</td><td>&mdash;</td>"
         for c in comps:
             color = p["positive"] if c.similarity_score >= 80 else (p["warning"] if c.similarity_score >= 60 else p["negative"])
-            sim_row += f'<td style="color:{color};font-weight:600;">{c.similarity_score:.0f}%</td>'
-        sim_row += "</tr>"
+            r += f'<td style="color:{color};font-weight:600;">{c.similarity_score:.0f}%</td>'
+        rows.append(r + "</tr>")
 
-        wt_row = f"<tr><td class='row-label'>Weight</td><td>—</td>"
+        r = f"<tr><td class='row-label'>Weight</td><td>&mdash;</td>"
         for c in comps:
-            wt_row += f'<td style="font-weight:600;">{c.weight * 100:.1f}%</td>'
-        wt_row += "</tr>"
+            r += f'<td style="font-weight:600;">{c.weight * 100:.1f}%</td>'
+        rows.append(r + "</tr>")
+
+        all_rows = "\n      ".join(rows)
 
         return f"""
 <div class="page">
-  {self._page_header("5", "Sales Comparison Approach")}
-  {self._section_header("SALES COMPARISON", "Comparable Sales Adjustment Grid")}
+  {self._page_header("Sales Comparison Approach")}
+  {self._section_header("SALES COMPARISON APPROACH", "Comparable Sales Grid")}
 
   <p class="narrative">
-    The Sales Comparison Approach compares the subject to recent comparable sales,
-    adjusting for differences in physical characteristics. Positive adjustments indicate
-    the comparable is inferior; negative adjustments indicate superiority.
+    The Sales Comparison Approach compares the subject to recent comparable sales and
+    adjusts for differences in characteristics. Positive adjustments indicate the comparable
+    is inferior to the subject; negative adjustments indicate superiority. Net adjustments
+    exceeding 15% or gross adjustments exceeding 25% of sale price are flagged.
   </p>
 
   <table class="adj-table">
     <thead>
-      <tr>
-        <th class="row-label-header">Feature</th>
-        <th>Subject</th>
-        {comp_headers}
-      </tr>
+      <tr><th class="row-label-header">Feature</th><th>Subject</th>{comp_headers}</tr>
     </thead>
     <tbody>
-      {addr_row}
-      {price_row}
-      {beds_row}
-      {baths_row}
-      {sqft_row}
-      {year_row}
-      {date_row}
-      {dist_row}
-      {ppsf_row}
-      {adj_section}
-      {size_row}
-      {bed_row}
-      {bath_row}
-      {age_row}
-      {lot_row}
-      {total_row}
-      {gross_row}
-      {net_row}
-      {adjusted_row}
-      {sim_row}
-      {wt_row}
+      {all_rows}
     </tbody>
   </table>
+
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>Indicated Value by Sales Comparison:</strong> {_fmt_money(d.market_value)}
+    &nbsp;&mdash;&nbsp; Based on {n_comps} comparable sales with weighted hybrid methodology
+    (40% adjusted price, 40% price/sq ft, 20% blended).
+  </div>
 
   {self._page_footer()}
 </div>"""
 
     # ------------------------------------------------------------------
-    # Page 6: Reconciliation
+    # Page 6: Reconciliation / Final Opinion of Value
     # ------------------------------------------------------------------
 
     def _page_reconciliation(self) -> str:
         d = self.data
         p = self.palette
         n = d.narratives
+        rd = d.rental_data
+        age = self._age()
 
         narrative_text = n.reconciliation if n and n.reconciliation else ""
-
         conf_color = p["positive"] if d.confidence >= 80 else (p["warning"] if d.confidence >= 60 else p["negative"])
+
+        income_indicated = None
+        if rd and rd.monthly_rent and rd.grm:
+            income_indicated = rd.monthly_rent * rd.grm
+
+        cd = d.cost_data
+        if cd and cd.site_value is not None:
+            land_value = cd.site_value
+        else:
+            land_value = d.market_value * 0.20 if d.market_value else None
+        if cd and cd.replacement_cost_per_sqft is not None:
+            total_cost_new = cd.total_cost_new or (cd.replacement_cost_per_sqft * d.subject_sqft if d.subject_sqft else None)
+        else:
+            total_cost_new = d.market_value * 0.80 if d.market_value else None
+        if cd and cd.physical_depreciation_pct is not None:
+            dep_pct = cd.physical_depreciation_pct / 100
+        else:
+            dep_pct = min(age / 50.0, 0.80) if age else 0
+        func_dep = cd.functional_depreciation if cd and cd.functional_depreciation else 0
+        ext_dep = cd.external_depreciation if cd and cd.external_depreciation else 0
+        phys_dep = (total_cost_new or 0) * dep_pct
+        dep_value = (total_cost_new or 0) - phys_dep - func_dep - ext_dep
+        cost_indicated = (land_value or 0) + max(dep_value, 0)
 
         return f"""
 <div class="page">
-  {self._page_header("6", "Reconciliation")}
-  {self._section_header("RECONCILIATION", "Final Opinion of Value")}
+  {self._page_header("Reconciliation")}
+  {self._section_header("RECONCILIATION", "Final Opinion of Market Value")}
 
   {self._narrative_block(narrative_text)}
 
-  <div class="grid-2" style="margin-top:24px;">
-    <div>
-      <div class="card">
-        <h3 class="card-title">Indicated Values by Approach</h3>
-        {self._detail_row("Sales Comparison (40% adj price)", _fmt_money(d.adjusted_price_value))}
-        {self._detail_row("Sales Comparison (40% $/sqft)", _fmt_money(d.price_per_sqft_value))}
-        {self._detail_row("Blended Average (20%)", _fmt_money((d.adjusted_price_value + d.price_per_sqft_value) / 2))}
-        {self._detail_row("Weighted Avg $/SqFt", f"${d.weighted_average_ppsf:,.0f}/sqft")}
-      </div>
+  <div class="card" style="margin-top:16px;">
+    <h3 class="card-title">Indicated Value by Each Approach</h3>
+    {self._detail_row("Sales Comparison Approach", _fmt_money(d.market_value), bold=True)}
+    {self._detail_row("  Adjusted Price Method (40%)", _fmt_money(d.adjusted_price_value))}
+    {self._detail_row("  Price/Sq Ft Method (40%)", _fmt_money(d.price_per_sqft_value))}
+    {self._detail_row("  Blended Average (20%)", _fmt_money((d.adjusted_price_value + d.price_per_sqft_value) / 2))}
+    {self._detail_row("  Weighted Avg $/Sq Ft", f"${d.weighted_average_ppsf:,.0f}")}
+    {self._detail_row("Income Approach", _fmt_money(income_indicated) if income_indicated else "Not developed")}
+    {self._detail_row("Cost Approach", _fmt_money(cost_indicated) if cost_indicated else "Not developed")}
+  </div>
 
-      <div class="card" style="margin-top:16px;">
-        <h3 class="card-title">Confidence Assessment</h3>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div class="conf-ring" style="border-color:{conf_color};">
-            <span class="conf-ring-value" style="color:{conf_color};">{d.confidence:.0f}%</span>
-          </div>
-          <div>
-            <div style="font-weight:700;color:{conf_color};font-size:13px;">{"HIGH" if d.confidence >= 80 else "MODERATE" if d.confidence >= 60 else "LOW"} CONFIDENCE</div>
-            <div style="font-size:10px;color:{p["text_secondary"]};">Based on {len(d.comp_adjustments)} comps</div>
-          </div>
-        </div>
-        {self._detail_row("Comps Used", str(len(d.comp_adjustments)))}
-        {self._detail_row("Avg Similarity", f"{sum(c.similarity_score for c in d.comp_adjustments) / max(len(d.comp_adjustments), 1):.0f}%")}
-      </div>
-    </div>
-
+  <div class="grid-2" style="margin-top:16px;">
     <div>
       <div class="hero-card">
         <div class="hero-card-label">Opinion of Market Value</div>
         <div class="hero-card-value">{_fmt_money(d.market_value)}</div>
-        <div class="hero-card-sub">Range: {_fmt_money(d.range_low)} — {_fmt_money(d.range_high)}</div>
+        <div class="hero-card-sub">as of {self.now.strftime("%B %d, %Y")}</div>
       </div>
 
-      <div class="card" style="margin-top:16px;">
-        <h3 class="card-title">After Repair Value</h3>
-        {self._detail_row("Market Value (As-Is)", _fmt_money(d.market_value))}
-        {self._detail_row("Rehab Cost" if d.rehab_cost and d.rehab_cost > 0 else "Premium", _fmt_money(d.rehab_cost) if d.rehab_cost and d.rehab_cost > 0 else _fmt_money(d.arv - d.market_value))}
-        <div class="detail-row" style="border-top:2px solid {p["border"]};padding-top:10px;font-weight:700;">
-          <span>ARV</span>
-          <span class="detail-value" style="color:{p["brand"]};font-size:16px;">{_fmt_money(d.arv)}</span>
-        </div>
+      <div class="card" style="margin-top:12px;">
+        <h3 class="card-title">Value Range</h3>
+        {self._detail_row("Low", _fmt_money(d.range_low))}
+        {self._detail_row("High", _fmt_money(d.range_high))}
+        {self._detail_row("Spread", _fmt_money(d.range_high - d.range_low))}
       </div>
     </div>
+    <div>
+      <div class="card">
+        <h3 class="card-title">Confidence Assessment</h3>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div class="conf-ring" style="border-color:{conf_color};"><span class="conf-ring-value" style="color:{conf_color};">{d.confidence:.0f}%</span></div>
+          <div>
+            <div style="font-weight:700;color:{conf_color};font-size:13px;">{"HIGH" if d.confidence >= 80 else "MODERATE" if d.confidence >= 60 else "LOW"}</div>
+            <div style="font-size:10px;color:{p["text_secondary"]};">{len(d.comp_adjustments)} comps analyzed</div>
+          </div>
+        </div>
+        {self._detail_row("Avg Similarity", f"{sum(c.similarity_score for c in d.comp_adjustments) / max(len(d.comp_adjustments), 1):.0f}%")}
+        {self._detail_row("Approach Weight", "Sales Comparison &mdash; Primary")}
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <h3 class="card-title">After Repair Value (ARV)</h3>
+        {self._detail_row("As-Is Market Value", _fmt_money(d.market_value))}
+        {self._detail_row("Rehab Cost" if d.rehab_cost and d.rehab_cost > 0 else "Appreciation Premium", _fmt_money(d.rehab_cost) if d.rehab_cost and d.rehab_cost > 0 else _fmt_money(d.arv - d.market_value))}
+        {self._detail_row("ARV", _fmt_money(d.arv), bold=True)}
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>Opinion of Value Statement:</strong> Based on the data, research, and analysis
+    in this report, the opinion of market value of the subject property, as defined, as of
+    {self.now.strftime("%B %d, %Y")} is <strong>{_fmt_money(d.market_value)}</strong>.
+    The Sales Comparison Approach is given primary weight as it most directly reflects
+    current market behavior for this property type. The Income and Cost Approaches provide
+    secondary support.
   </div>
 
   {self._page_footer()}
@@ -622,40 +824,49 @@ class AppraisalReportPDFExporter:
 
         narrative_text = n.income_approach if n and n.income_approach else ""
 
-        if not rd:
+        if not rd or not rd.monthly_rent:
             return f"""
 <div class="page">
-  {self._page_header("7", "Income Approach")}
-  {self._section_header("INCOME APPROACH", "Rental Income Analysis")}
-  <p class="narrative">The Income Approach was not developed due to insufficient rental data for the subject property.</p>
+  {self._page_header("Income Approach")}
+  {self._section_header("INCOME APPROACH", "Income Capitalization Analysis")}
+  <p class="narrative">The Income Approach was not developed due to insufficient rental market data for the subject property. This approach is typically given limited weight for owner-occupied single-family residential properties.</p>
   {self._page_footer()}
 </div>"""
 
-        annual_rent = rd.monthly_rent * 12 if rd.monthly_rent else None
-        income_value = annual_rent * rd.grm / 12 if annual_rent and rd.grm else None
+        annual_rent = rd.monthly_rent * 12
+        income_value = annual_rent * rd.grm / 12 if rd.grm else None
+        egi = annual_rent * (1 - (rd.vacancy_rate or 5) / 100)
 
         return f"""
 <div class="page">
-  {self._page_header("7", "Income Approach")}
-  {self._section_header("INCOME APPROACH", "Rental Income Analysis")}
+  {self._page_header("Income Approach")}
+  {self._section_header("INCOME APPROACH", "Income Capitalization Analysis")}
 
   {self._narrative_block(narrative_text)}
 
-  <div class="grid-2" style="margin-top:20px;">
+  <div class="grid-2" style="margin-top:16px;">
     <div class="card">
-      <h3 class="card-title">Rental Data</h3>
-      {self._detail_row("Monthly Rent Estimate", _fmt_money(rd.monthly_rent))}
-      {self._detail_row("Rent Range", f"{_fmt_money(rd.rent_range_low)} — {_fmt_money(rd.rent_range_high)}" if rd.rent_range_low and rd.rent_range_high else "N/A")}
+      <h3 class="card-title">Rental Market Data</h3>
+      {self._detail_row("Estimated Market Rent", f"{_fmt_money(rd.monthly_rent)}/mo")}
+      {self._detail_row("Rent Range", f"{_fmt_money(rd.rent_range_low)} &mdash; {_fmt_money(rd.rent_range_high)}" if rd.rent_range_low and rd.rent_range_high else "N/A")}
       {self._detail_row("Annual Gross Rent", _fmt_money(annual_rent))}
-      {self._detail_row("Vacancy Rate", _fmt_pct(rd.vacancy_rate) if rd.vacancy_rate else "N/A")}
+      {self._detail_row("Vacancy &amp; Collection Loss", _fmt_pct(rd.vacancy_rate) if rd.vacancy_rate else "5.0%")}
+      {self._detail_row("Effective Gross Income", _fmt_money(egi))}
+      {self._detail_row("Data Source", "RentCast, Zillow Rent Zestimate, Redfin")}
     </div>
     <div class="card">
       <h3 class="card-title">Income Valuation</h3>
-      {self._detail_row("Gross Rent Multiplier", f"{rd.grm:.1f}" if rd.grm else "N/A")}
-      {self._detail_row("Cap Rate", _fmt_pct(rd.cap_rate) if rd.cap_rate else "N/A")}
-      {self._detail_row("NOI", _fmt_money(rd.noi) if rd.noi else "N/A")}
-      {self._detail_row("Indicated Value (Income)", _fmt_money(income_value) if income_value else "N/A")}
+      {self._detail_row("Gross Rent Multiplier (GRM)", f"{rd.grm:.1f}" if rd.grm else "N/A")}
+      {self._detail_row("Capitalization Rate", _fmt_pct(rd.cap_rate) if rd.cap_rate else "N/A")}
+      {self._detail_row("Net Operating Income", _fmt_money(rd.noi) if rd.noi else "N/A")}
+      {self._detail_row("Indicated Value (GRM)", _fmt_money(income_value) if income_value else "N/A")}
+      {self._detail_row("Applicability", "Secondary &mdash; owner-occupied market")}
     </div>
+  </div>
+
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>Indicated Value by Income Approach:</strong> {_fmt_money(income_value) if income_value else "Not developed"}.
+    This approach is given secondary weight as the subject neighborhood is predominantly owner-occupied.
   </div>
 
   {self._page_footer()}
@@ -668,79 +879,116 @@ class AppraisalReportPDFExporter:
     def _page_cost(self) -> str:
         d = self.data
         n = d.narratives
+        cd = d.cost_data
+        age = self._age()
 
         narrative_text = n.cost_approach if n and n.cost_approach else ""
 
-        age = 2026 - d.subject_year_built if d.subject_year_built else None
-        land_pct = 0.20
-        land_value = d.market_value * land_pct if d.market_value else None
-        improvement_value = d.market_value * (1 - land_pct) if d.market_value else None
-        depreciation_pct = min(age / 50.0, 0.80) if age else 0
-        depreciated_value = improvement_value * (1 - depreciation_pct) if improvement_value else None
-        cost_indicated = (land_value or 0) + (depreciated_value or 0)
+        has_cost_service = cd is not None and cd.replacement_cost_per_sqft is not None
+
+        if cd and cd.site_value is not None:
+            land_value = cd.site_value
+            land_source = cd.site_value_source or "Comparable land sales"
+        else:
+            land_pct = 0.20
+            land_value = d.market_value * land_pct if d.market_value else None
+            land_source = f"{int(land_pct*100)}% of sales comparison value"
+
+        if has_cost_service and cd:
+            cost_per_sqft = cd.replacement_cost_per_sqft
+            total_cost_new = cd.total_cost_new or (cost_per_sqft * d.subject_sqft if cost_per_sqft and d.subject_sqft else None)
+            cost_sqft_display = f"${cost_per_sqft:,.0f}" if cost_per_sqft else "N/A"
+            cost_source = "Cost service data"
+        else:
+            total_cost_new = d.market_value * 0.80 if d.market_value else None
+            cost_sqft_display = "N/A &mdash; cost service needed"
+            cost_source = "Not available"
+
+        if cd and cd.physical_depreciation_pct is not None:
+            dep_pct = cd.physical_depreciation_pct / 100
+        else:
+            dep_pct = min(age / 50.0, 0.80) if age else 0
+
+        func_dep = cd.functional_depreciation if cd and cd.functional_depreciation else 0
+        ext_dep = cd.external_depreciation if cd and cd.external_depreciation else 0
+
+        phys_dep_amt = total_cost_new * dep_pct if total_cost_new else 0
+        dep_value = (total_cost_new or 0) - phys_dep_amt - func_dep - ext_dep
+        cost_indicated = (land_value or 0) + max(dep_value, 0)
+
+        effective_age = max(1, int(age * 0.75)) if age else None
+
+        limitation = ""
+        if not has_cost_service:
+            limitation = f"""
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>Limitation:</strong> Reproduction/replacement cost new data and comparable
+    land sales were not available for this desktop analysis. The Cost Approach is presented
+    with limited reliability and is given secondary weight in the reconciliation.
+    Integration of a cost service (e.g., Marshall &amp; Swift) and comparable land
+    sales would improve this approach.
+  </div>"""
 
         return f"""
 <div class="page">
-  {self._page_header("8", "Cost Approach")}
-  {self._section_header("COST APPROACH", "Cost to Reproduce/Replace")}
+  {self._page_header("Cost Approach")}
+  {self._section_header("COST APPROACH", "Cost to Reproduce / Replace")}
 
   {self._narrative_block(narrative_text)}
 
-  <div class="grid-2" style="margin-top:20px;">
-    <div class="card">
-      <h3 class="card-title">Site Value</h3>
-      {self._detail_row("Land Value Estimate", _fmt_money(land_value))}
-      {self._detail_row("Basis", f"{land_pct*100:.0f}% of market value")}
-      {self._detail_row("Lot Size", f"{_fmt(d.subject_lot_size)} sqft")}
-    </div>
-    <div class="card">
-      <h3 class="card-title">Depreciation</h3>
-      {self._detail_row("Actual Age", f"{age} years" if age else "N/A")}
-      {self._detail_row("Depreciation", _fmt_pct(depreciation_pct * 100, 0))}
-      {self._detail_row("Improvement Value", _fmt_money(improvement_value))}
-      {self._detail_row("Depreciated Value", _fmt_money(depreciated_value))}
-    </div>
-  </div>
-
   <div class="card" style="margin-top:16px;">
-    <h3 class="card-title">Cost Approach Summary</h3>
+    <h3 class="card-title">Cost Approach Calculation</h3>
     {self._detail_row("Estimated Site Value", _fmt_money(land_value))}
-    {self._detail_row("+ Depreciated Improvements", _fmt_money(depreciated_value))}
-    <div class="detail-row" style="border-top:2px solid {self.palette["border"]};padding-top:10px;font-weight:700;">
-      <span>Indicated Value (Cost)</span>
-      <span class="detail-value">{_fmt_money(cost_indicated)}</span>
-    </div>
+    {self._detail_row("  Source of Site Value", land_source)}
+    {self._detail_row("Dwelling Cost New", cost_source)}
+    {self._detail_row("  Sq Ft of GLA", f"{_fmt(d.subject_sqft)}")}
+    {self._detail_row("  Cost/Sq Ft", cost_sqft_display)}
+    {self._detail_row("Garage / Carport", "Included in dwelling estimate")}
+    {self._detail_row("Total Est. Cost New", _fmt_money(total_cost_new))}
+    {self._detail_row("Less: Physical Depreciation", f"{_fmt_pct(dep_pct * 100, 0)} ({_fmt_money(phys_dep_amt)})")}
+    {self._detail_row("  Actual Age", f"{age} years" if age else "N/A")}
+    {self._detail_row("  Effective Age", f"{effective_age} years (est.)" if effective_age else "N/A")}
+    {self._detail_row("  Economic Life", "50 years (est.)")}
+    {self._detail_row("Less: Functional Depreciation", _fmt_money(func_dep))}
+    {self._detail_row("Less: External Depreciation", _fmt_money(ext_dep))}
+    {self._detail_row("Depreciated Value of Improvements", _fmt_money(dep_value))}
+    {self._detail_row("+ Site Value", _fmt_money(land_value))}
+    {self._detail_row("Indicated Value by Cost Approach", _fmt_money(cost_indicated), bold=True)}
   </div>
-
-  <div class="callout-box" style="margin-top:16px;">
-    <strong>Limitation:</strong> Reproduction/replacement cost data and comparable
-    land sales were not available. The Cost Approach is presented with limited
-    reliability and should be given secondary weight.
-  </div>
+  {limitation}
 
   {self._page_footer()}
 </div>"""
 
     # ------------------------------------------------------------------
-    # Page 9: Scope of Work & Disclaimer
+    # Page 9: Data Sources, Verification & Addendum
     # ------------------------------------------------------------------
 
-    def _page_scope_disclaimer(self) -> str:
+    def _page_addendum(self) -> str:
         d = self.data
-        n = d.narratives
         comps = d.comp_adjustments
-
-        scope_text = n.scope_of_work if n and n.scope_of_work else ""
+        p = self.palette
 
         comp_rows = ""
         for i, c in enumerate(comps):
             short_addr = c.comp_address.split(",")[0].strip()
+            net_flag = ""
+            if c.net_adjustment_pct is not None and abs(c.net_adjustment_pct) > 15:
+                net_flag = f' style="color:{p["negative"]};font-weight:700;"'
+            gross_flag = ""
+            if c.gross_adjustment_pct is not None and c.gross_adjustment_pct > 25:
+                gross_flag = f' style="color:{p["negative"]};font-weight:700;"'
+            dist_cell = f"<td>{c.distance_miles:.2f} mi</td>" if c.distance_miles is not None else "<td>&mdash;</td>"
+
             comp_rows += (
                 f"<tr>"
                 f'<td style="font-weight:600;">Comp {i + 1}</td>'
                 f"<td>{short_addr}</td>"
                 f'<td class="money">{_fmt_money(c.base_price)}</td>'
                 f'<td class="money">{_fmt_money(c.adjusted_price)}</td>'
+                f"<td{net_flag}>{_fmt_pct(c.net_adjustment_pct)}</td>"
+                f"<td{gross_flag}>{_fmt_pct(c.gross_adjustment_pct)}</td>"
+                f"{dist_cell}"
                 f"<td>{c.similarity_score:.0f}%</td>"
                 f"<td>{c.weight * 100:.1f}%</td>"
                 f"</tr>"
@@ -748,59 +996,136 @@ class AppraisalReportPDFExporter:
 
         return f"""
 <div class="page">
-  {self._page_header("9", "Scope of Work & Disclaimer")}
-  {self._section_header("SCOPE OF WORK", "Limiting Conditions & Assumptions")}
+  {self._page_header("Data Sources &amp; Addendum")}
+  {self._section_header("ADDENDUM", "Comparable Sales Summary &amp; Data Verification")}
 
-  {self._narrative_block(scope_text)}
-
-  <div class="card" style="margin-top:16px;">
-    <h3 class="card-title">Comparable Sales Summary</h3>
+  <div class="card">
+    <h3 class="card-title">Comparable Sales Detail</h3>
     <table class="summary-table">
       <thead>
-        <tr><th></th><th>Address</th><th>Sale Price</th><th>Adj. Price</th><th>Similarity</th><th>Weight</th></tr>
+        <tr><th></th><th>Address</th><th>Sale Price</th><th>Adj. Price</th><th>Net Adj%</th><th>Gross Adj%</th><th>Dist.</th><th>Similarity</th><th>Weight</th></tr>
       </thead>
       <tbody>{comp_rows}</tbody>
     </table>
   </div>
 
-  <div class="grid-2" style="margin-top:20px;">
+  <div class="grid-2" style="margin-top:16px;">
     <div class="card">
-      <h3 class="card-title">Adjustment Factors</h3>
-      {self._detail_row("Size (per sqft)", "$100")}
-      {self._detail_row("Bedroom (per unit)", "$15,000")}
-      {self._detail_row("Bathroom (per unit)", "$10,000")}
-      {self._detail_row("Age (per year)", "$1,500")}
-      {self._detail_row("Lot (per acre)", "$25,000")}
+      <h3 class="card-title">Adjustment Factors Applied</h3>
+      {self._detail_row("GLA Size", "$100 per sq ft difference")}
+      {self._detail_row("Bedroom Count", "$15,000 per bedroom")}
+      {self._detail_row("Bathroom Count", "$10,000 per bathroom")}
+      {self._detail_row("Age / Condition", "$1,500 per year difference")}
+      {self._detail_row("Lot Size", "$25,000 per acre difference")}
+      {self._detail_row("Financing / Concessions", "None applied (all conv.)")}
     </div>
     <div class="card">
-      <h3 class="card-title">Methodology</h3>
+      <h3 class="card-title">Methodology &amp; Weighting</h3>
+      {self._detail_row("Valuation Method", "Weighted Hybrid")}
       {self._detail_row("Adjusted Price Weight", "40%")}
-      {self._detail_row("Price/SqFt Weight", "40%")}
+      {self._detail_row("Price/Sq Ft Weight", "40%")}
       {self._detail_row("Hybrid Blend Weight", "20%")}
-      {self._detail_row("Similarity Scoring", "Weighted")}
-      <p style="font-size:9px;color:{self.palette["text_tertiary"]};margin-top:8px;">
-        Location 25% &middot; Size 25% &middot; Bed/Bath 20% &middot; Age 15% &middot; Lot 15%
+      {self._detail_row("Similarity Scoring", "Weighted composite")}
+      <p style="font-size:8px;color:{p["text_tertiary"]};margin-top:6px;">
+        Components: Location 25% &middot; Size 25% &middot; Bed/Bath 20% &middot; Age 15% &middot; Lot 15%
       </p>
     </div>
   </div>
 
+  <div class="card" style="margin-top:16px;">
+    <h3 class="card-title">Data Sources &amp; Verification</h3>
+    {self._detail_row("Property Data", "RentCast property records, public assessor data")}
+    {self._detail_row("Value Estimates", "RentCast AVM, Zillow Zestimate, Redfin Estimate")}
+    {self._detail_row("Comparable Sales", "MLS via Zillow/AXESSO API, verified against public records")}
+    {self._detail_row("Rental Estimates", "RentCast, Zillow Rent Zestimate, Redfin Rental Estimate")}
+    {self._detail_row("Market Statistics", "RentCast market data (zip-code level)")}
+    {self._detail_row("Mortgage Rates", "Zillow mortgage rate data")}
+    {self._detail_row("Tax Data", "County assessor via RentCast, Zillow")}
+    {self._detail_row("Verification Level", "Desktop &mdash; no physical inspection performed")}
+  </div>
+
+  <div class="callout-box" style="margin-top:12px;">
+    <strong>URAR Guideline Note:</strong> Net adjustments exceeding &plusmn;15% or gross
+    adjustments exceeding 25% of sale price require additional support. Flagged values
+    are shown in red above. All adjustments reflect standardized factors and have not
+    been individually verified through paired-sales analysis.
+  </div>
+
+  {self._page_footer()}
+</div>"""
+
+    # ------------------------------------------------------------------
+    # Page 10: Scope of Work, Limiting Conditions & Disclaimer
+    # ------------------------------------------------------------------
+
+    def _page_scope_disclaimer(self) -> str:
+        d = self.data
+        n = d.narratives
+        p = self.palette
+
+        scope_text = n.scope_of_work if n and n.scope_of_work else ""
+
+        return f"""
+<div class="page">
+  {self._page_header("Scope of Work &amp; Limiting Conditions")}
+  {self._section_header("SCOPE OF WORK", "Limiting Conditions, Assumptions &amp; Certifications")}
+
+  {self._narrative_block(scope_text)}
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3 class="card-title">Scope of Work Performed</h3>
+      {self._detail_row("Type of Inspection", "Desktop &mdash; Exterior-Only")}
+      {self._detail_row("Interior Inspection", "Not performed")}
+      {self._detail_row("Comparable Inspection", "Not performed")}
+      {self._detail_row("Analysis Type", "Sales Comparison (primary)")}
+      {self._detail_row("Income Approach", "Developed" if d.rental_data and d.rental_data.monthly_rent else "Not developed")}
+      {self._detail_row("Cost Approach", "Developed (limited)")}
+      {self._detail_row("Market Analysis", "Desktop research")}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Extraordinary Assumptions</h3>
+      {self._detail_row("Condition", "Assumed average &mdash; no inspection")}
+      {self._detail_row("Zoning", "Assumed legal conforming")}
+      {self._detail_row("Flood Zone", "Not independently verified")}
+      {self._detail_row("Environmental", "No adverse conditions assumed")}
+      {self._detail_row("Title", "Assumed clear &amp; marketable")}
+      {self._detail_row("Encumbrances", "None assumed")}
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3 class="card-title">Limiting Conditions</h3>
+    <ol style="font-size:9px;color:{p["text_secondary"]};padding-left:16px;line-height:1.7;">
+      <li>This report is for investment analysis purposes only and is not a licensed appraisal, BPO, or CMA prepared by a state-certified or licensed appraiser.</li>
+      <li>No physical inspection of the subject property or comparable sales was performed. All observations are based on publicly available data.</li>
+      <li>The appraiser has no present or prospective interest in the subject property and has not performed services regarding the subject within the prior three years.</li>
+      <li>The value opinion is contingent upon the extraordinary assumptions stated herein. If any assumption is found to be false, the value opinion may be affected.</li>
+      <li>This report assumes responsible ownership and competent property management.</li>
+      <li>Information furnished by others is believed to be reliable, but no warranty is given for its accuracy.</li>
+      <li>Zoning, flood zone, environmental conditions, easements, and encumbrances have not been independently verified and should be confirmed through appropriate sources.</li>
+    </ol>
+  </div>
+
   <div class="disclaimer">
     <strong>Important Disclaimer:</strong> This report is generated by DealGapIQ for
-    investment analysis purposes only. It is <strong>not</strong> a licensed appraisal,
-    BPO, or CMA prepared by a licensed appraiser. Values are estimates based on
-    available comparable sales data and standardized adjustment factors. Actual property
-    values may differ based on condition, features, market conditions, and other factors.
-    This report should not be used as a substitute for a professional appraisal.
+    investment analysis purposes only. It is <strong>not</strong> a licensed appraisal
+    prepared in conformance with USPAP (Uniform Standards of Professional Appraisal Practice).
+    Values presented are estimates based on available data and standardized adjustment factors.
+    Actual property values may differ based on condition, features, market conditions, and
+    factors not captured in this desktop analysis. This report should not be used as a
+    substitute for a professional appraisal performed by a state-certified appraiser.
   </div>
 
   <div class="final-footer">
     <div class="logo" style="font-size:18px;">DealGap<span class="logo-iq">IQ</span></div>
+    <div style="font-size:9px;color:{p["text_tertiary"]};margin-top:4px;">Uniform Residential Appraisal Report &mdash; Form 1004 Format</div>
     <div class="footer-date">Report generated {self.now.strftime("%B %d, %Y at %I:%M %p")}</div>
   </div>
 </div>"""
 
     # ------------------------------------------------------------------
-    # CSS (reuses palette from property_report_pdf.py)
+    # CSS
     # ------------------------------------------------------------------
 
     def _build_css(self) -> str:
@@ -821,104 +1146,91 @@ class AppraisalReportPDFExporter:
 @font-face {{ font-family: 'Inter'; src: url('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf') format('truetype'); font-weight: 700; }}
 
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; line-height: 1.5; color: {p["text_primary"]}; background: {p["bg"]}; }}
-.page {{ width: 8.5in; min-height: 11in; padding: 0.6in 0.65in; page-break-after: always; position: relative; background: {p["bg"]}; }}
+body {{ font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10px; line-height: 1.5; color: {p["text_primary"]}; background: {p["bg"]}; }}
+.page {{ width: 8.5in; min-height: 11in; padding: 0.55in 0.6in; page-break-after: always; position: relative; background: {p["bg"]}; }}
 .page:last-child {{ page-break-after: auto; }}
 
-/* Cover */
 .cover-page {{ display: flex; flex-direction: column; padding: 0; }}
-.cover-top-band {{ height: 8px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
-.cover-content {{ flex: 1; padding: 40px 60px 20px; display: flex; flex-direction: column; }}
-.cover-logo {{ font-size: 28px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 24px; }}
-.cover-badge {{ display: inline-block; padding: 5px 16px; border-radius: 100px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; margin-bottom: 12px; align-self: flex-start; }}
-.cover-address {{ font-size: 28px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.1; margin-bottom: 4px; }}
-.cover-city {{ font-size: 14px; color: {p["text_secondary"]}; margin-bottom: 20px; }}
-.cover-stats {{ display: flex; gap: 20px; margin-bottom: 20px; padding: 16px 0; border-top: 1px solid {p["border"]}; border-bottom: 1px solid {p["border"]}; flex-wrap: wrap; }}
+.cover-top-band {{ height: 6px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
+.cover-content {{ flex: 1; padding: 36px 56px 16px; display: flex; flex-direction: column; }}
+.cover-logo {{ font-size: 26px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 20px; }}
+.cover-badge {{ display: inline-block; padding: 4px 14px; border-radius: 100px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; margin-bottom: 10px; align-self: flex-start; }}
+.cover-address {{ font-size: 26px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.1; margin-bottom: 4px; }}
+.cover-city {{ font-size: 13px; color: {p["text_secondary"]}; margin-bottom: 16px; }}
+.cover-stats {{ display: flex; gap: 16px; margin-bottom: 16px; padding: 14px 0; border-top: 1px solid {p["border"]}; border-bottom: 1px solid {p["border"]}; flex-wrap: wrap; }}
 .cover-stat {{ text-align: center; }}
-.cover-stat-value {{ font-size: 16px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
-.cover-stat-label {{ font-size: 8px; font-weight: 600; color: {p["text_tertiary"]}; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }}
-.cover-summary-cards {{ display: flex; gap: 16px; margin-bottom: 16px; }}
-.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 10px; padding: 14px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
+.cover-stat-value {{ font-size: 14px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
+.cover-stat-label {{ font-size: 7px; font-weight: 600; color: {p["text_tertiary"]}; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }}
+.cover-summary-cards {{ display: flex; gap: 14px; margin-bottom: 12px; }}
+.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 12px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
 .cover-value-card-arv {{ border-top-color: {p["brand"]}; }}
-.cover-value-label {{ font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 4px; }}
-.cover-value-amount {{ font-size: 22px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 4px; }}
-.cover-value-range {{ font-size: 9px; color: {p["text_tertiary"]}; }}
-.cover-footer {{ display: flex; justify-content: space-between; padding: 16px 60px; border-top: 1px solid {p["border"]}; }}
-.cover-footer-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 2px; }}
-.cover-footer-value {{ font-size: 10px; font-weight: 600; color: {p["text_secondary"]}; }}
+.cover-value-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 3px; }}
+.cover-value-amount {{ font-size: 20px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 3px; }}
+.cover-value-range {{ font-size: 8px; color: {p["text_tertiary"]}; }}
+.cover-footer {{ display: flex; justify-content: space-between; padding: 14px 56px; border-top: 1px solid {p["border"]}; }}
+.cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 2px; }}
+.cover-footer-value {{ font-size: 9px; font-weight: 600; color: {p["text_secondary"]}; }}
 
-/* Page header/footer */
-.page-header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 2px solid {p["brand"]}; margin-bottom: 20px; }}
-.page-header-title {{ font-size: 11px; font-weight: 700; color: {p["text_secondary"]}; text-transform: uppercase; letter-spacing: 0.06em; }}
-.page-header-meta {{ font-size: 10px; color: {p["text_tertiary"]}; }}
-.logo {{ font-size: 16px; font-weight: 700; color: {p["text_primary"]}; }}
+.page-header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid {p["brand"]}; margin-bottom: 16px; }}
+.page-header-title {{ font-size: 10px; font-weight: 700; color: {p["text_secondary"]}; text-transform: uppercase; letter-spacing: 0.06em; }}
+.page-header-meta {{ font-size: 9px; color: {p["text_tertiary"]}; }}
+.logo {{ font-size: 14px; font-weight: 700; color: {p["text_primary"]}; }}
 .logo-iq {{ color: {p["brand"]}; }}
-.page-footer {{ position: absolute; bottom: 0.5in; left: 0.65in; right: 0.65in; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid {p["border"]}; }}
-.footer-brand {{ font-size: 9px; font-weight: 600; color: {p["text_tertiary"]}; }}
-.footer-date {{ font-size: 9px; color: {p["text_tertiary"]}; }}
+.page-footer {{ position: absolute; bottom: 0.45in; left: 0.6in; right: 0.6in; display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid {p["border"]}; }}
+.footer-brand {{ font-size: 8px; font-weight: 600; color: {p["text_tertiary"]}; }}
+.footer-date {{ font-size: 8px; color: {p["text_tertiary"]}; }}
 
-/* Section header */
-.section-header {{ margin-bottom: 16px; }}
-.section-label {{ font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: {p["brand"]}; margin-bottom: 4px; }}
-.section-title {{ font-size: 18px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 6px; }}
-.section-rule {{ width: 48px; height: 3px; background: {p["brand"]}; border-radius: 2px; }}
+.section-header {{ margin-bottom: 12px; }}
+.section-label {{ font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: {p["brand"]}; margin-bottom: 3px; }}
+.section-title {{ font-size: 16px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 5px; }}
+.section-rule {{ width: 40px; height: 3px; background: {p["brand"]}; border-radius: 2px; }}
 
-/* Grids */
-.grid-2 {{ display: flex; gap: 16px; }}
+.grid-2 {{ display: flex; gap: 14px; }}
 .grid-2 > * {{ flex: 1; }}
-.grid-3 {{ display: flex; gap: 12px; }}
+.grid-3 {{ display: flex; gap: 10px; }}
 .grid-3 > * {{ flex: 1; }}
 
-/* Cards */
-.card {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 10px; padding: 16px; }}
-.card-title {{ font-size: 11px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 10px; }}
-.info-card {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 10px; padding: 14px; text-align: center; border-top: 3px solid {p["brand"]}; }}
-.info-card-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 4px; }}
-.info-card-value {{ font-size: 16px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
+.card {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 14px; }}
+.card-title {{ font-size: 10px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 8px; }}
+.info-card {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 12px; text-align: center; border-top: 3px solid {p["brand"]}; }}
+.info-card-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 3px; }}
+.info-card-value {{ font-size: 14px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
 
-/* Detail rows */
-.detail-row {{ display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid {p["border"]}; font-size: 10px; color: {p["text_secondary"]}; }}
+.detail-row {{ display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid {p["border"]}; font-size: 9px; color: {p["text_secondary"]}; }}
 .detail-row:last-child {{ border-bottom: none; }}
 .detail-value {{ font-weight: 600; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
 
-/* Hero card */
-.hero-card {{ background: {hero_gradient}; border: {hero_border}; border-radius: 12px; padding: 20px; text-align: center; }}
-.hero-card-label {{ font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {"rgba(255,255,255,0.8)" if not is_dark else p["text_tertiary"]}; margin-bottom: 6px; }}
-.hero-card-value {{ font-size: 28px; font-weight: 700; color: {"white" if not is_dark else p["brand"]}; font-variant-numeric: tabular-nums; margin-bottom: 6px; }}
-.hero-card-sub {{ font-size: 10px; color: {"rgba(255,255,255,0.7)" if not is_dark else p["text_secondary"]}; }}
+.hero-card {{ background: {hero_gradient}; border: {hero_border}; border-radius: 10px; padding: 18px; text-align: center; }}
+.hero-card-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {"rgba(255,255,255,0.8)" if not is_dark else p["text_tertiary"]}; margin-bottom: 5px; }}
+.hero-card-value {{ font-size: 26px; font-weight: 700; color: {"white" if not is_dark else p["brand"]}; font-variant-numeric: tabular-nums; margin-bottom: 5px; }}
+.hero-card-sub {{ font-size: 9px; color: {"rgba(255,255,255,0.7)" if not is_dark else p["text_secondary"]}; }}
 
-/* Narrative */
-.narrative {{ font-size: 10px; line-height: 1.65; color: {p["text_secondary"]}; margin-bottom: 8px; }}
+.narrative {{ font-size: 9px; line-height: 1.65; color: {p["text_secondary"]}; margin-bottom: 6px; }}
 
-/* Callout */
-.callout-box {{ background: {p["brand"]}10; border: 1px solid {p["brand"]}30; border-left: 3px solid {p["brand"]}; border-radius: 8px; padding: 12px 14px; font-size: 10px; color: {p["text_secondary"]}; line-height: 1.55; }}
+.callout-box {{ background: {p["brand"]}10; border: 1px solid {p["brand"]}30; border-left: 3px solid {p["brand"]}; border-radius: 6px; padding: 10px 12px; font-size: 9px; color: {p["text_secondary"]}; line-height: 1.55; }}
 .callout-box strong {{ color: {p["text_primary"]}; }}
 
-/* Confidence ring */
-.conf-ring {{ width: 52px; height: 52px; border-radius: 50%; border: 4px solid {p["brand"]}; display: flex; align-items: center; justify-content: center; background: {p["bg"]}; }}
-.conf-ring-value {{ font-size: 13px; font-weight: 700; color: {p["brand"]}; }}
+.conf-ring {{ width: 48px; height: 48px; border-radius: 50%; border: 4px solid {p["brand"]}; display: flex; align-items: center; justify-content: center; background: {p["bg"]}; }}
+.conf-ring-value {{ font-size: 12px; font-weight: 700; color: {p["brand"]}; }}
 
-/* Adjustment table */
-.adj-table {{ width: 100%; border-collapse: collapse; font-size: {"8px" if len(self.data.comp_adjustments) > 5 else "9px"}; margin-top: 12px; }}
-.adj-table th {{ background: {p["brand_dark"] if not is_dark else "#101828"}; color: {"white" if not is_dark else p["text_secondary"]}; padding: 6px 4px; text-align: center; font-size: {"7px" if len(self.data.comp_adjustments) > 5 else "8px"}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }}
-.adj-table th:first-child, .row-label-header {{ text-align: left; min-width: 65px; }}
-.adj-table td {{ padding: 4px; border-bottom: 1px solid {p["border"]}; font-variant-numeric: tabular-nums; color: {p["text_primary"]}; text-align: center; }}
+.adj-table {{ width: 100%; border-collapse: collapse; font-size: {"7px" if len(self.data.comp_adjustments) > 5 else "8px"}; margin-top: 10px; }}
+.adj-table th {{ background: {p["brand_dark"] if not is_dark else "#101828"}; color: {"white" if not is_dark else p["text_secondary"]}; padding: 5px 3px; text-align: center; font-size: {"6px" if len(self.data.comp_adjustments) > 5 else "7px"}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }}
+.adj-table th:first-child, .row-label-header {{ text-align: left; min-width: 60px; }}
+.adj-table td {{ padding: 3px; border-bottom: 1px solid {p["border"]}; font-variant-numeric: tabular-nums; color: {p["text_primary"]}; text-align: center; }}
 .adj-table tr:nth-child(even) {{ background: {p["card_bg"]}; }}
 .row-label {{ text-align: left !important; font-weight: 600; color: {p["text_secondary"]}; white-space: nowrap; }}
-.adj-label {{ padding-left: 10px !important; font-weight: 500 !important; }}
-.adj-header td {{ background: {p["brand"]}10; font-weight: 700 !important; color: {p["brand"]} !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 8px; padding: 5px 4px; border-top: 2px solid {p["brand"]}40; }}
+.adj-label {{ padding-left: 8px !important; font-weight: 500 !important; }}
+.adj-header td {{ background: {p["brand"]}10; font-weight: 700 !important; color: {p["brand"]} !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 7px; padding: 4px 3px; border-top: 2px solid {p["brand"]}40; }}
 .total-row td {{ border-top: 2px solid {p["border"]}; font-weight: 700; }}
 td.money {{ font-weight: 600; font-variant-numeric: tabular-nums; }}
 
-/* Summary table */
-.summary-table {{ width: 100%; border-collapse: collapse; font-size: 9px; }}
-.summary-table th {{ background: {p["brand_dark"] if not is_dark else "#101828"}; color: {"white" if not is_dark else p["text_secondary"]}; padding: 7px 5px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }}
-.summary-table td {{ padding: 5px; border-bottom: 1px solid {p["border"]}; font-variant-numeric: tabular-nums; color: {p["text_primary"]}; }}
+.summary-table {{ width: 100%; border-collapse: collapse; font-size: 8px; }}
+.summary-table th {{ background: {p["brand_dark"] if not is_dark else "#101828"}; color: {"white" if not is_dark else p["text_secondary"]}; padding: 6px 4px; text-align: left; font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }}
+.summary-table td {{ padding: 4px; border-bottom: 1px solid {p["border"]}; font-variant-numeric: tabular-nums; color: {p["text_primary"]}; }}
 .summary-table tr:nth-child(even) {{ background: {p["card_bg"]}; }}
 
-/* Disclaimer */
-.disclaimer {{ margin-top: 20px; padding: 14px; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; font-size: 9px; color: {p["text_tertiary"]}; line-height: 1.6; }}
+.disclaimer {{ margin-top: 16px; padding: 12px; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 6px; font-size: 8px; color: {p["text_tertiary"]}; line-height: 1.6; }}
 .disclaimer strong {{ color: {p["text_secondary"]}; }}
-.final-footer {{ margin-top: 20px; text-align: center; }}
-.final-footer .footer-date {{ margin-top: 6px; }}
+.final-footer {{ margin-top: 16px; text-align: center; }}
+.final-footer .footer-date {{ margin-top: 4px; font-size: 8px; color: {p["text_tertiary"]}; }}
 """
