@@ -919,16 +919,28 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
           <div className="mx-4 mt-3">
             <div className={`bg-black rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
-              <button
-                type="button"
-                onClick={() => setShowProximityMap(!showProximityMap)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#38bdf8]" />
+              <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setShowProximityMap(!showProximityMap)}
+                  className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                >
+                  <MapPin className="w-4 h-4 text-[#38bdf8] flex-shrink-0" />
                   <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
-                </div>
-                <div className="flex items-center gap-3">
+                </button>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {isSale && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDownloadReport(); }}
+                      disabled={saleSelected.size === 0 || downloadingReport}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-black border border-[rgba(14,165,233,0.4)] hover:border-[#38bdf8] text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
+                      title="Download appraisal report as PDF"
+                    >
+                      {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
+                      Download report
+                    </button>
+                  )}
                   <div className="flex items-center gap-3 text-[10px] text-[#F1F5F9]">
                     <span className="flex items-center gap-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#EA4335] inline-block" />
@@ -942,9 +954,16 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
                     </span>
                   </div>
-                  {showProximityMap ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
+                  <button
+                    type="button"
+                    onClick={() => setShowProximityMap(!showProximityMap)}
+                    className="p-0.5 text-[#F1F5F9]"
+                    aria-label={showProximityMap ? 'Collapse map' : 'Expand map'}
+                  >
+                    {showProximityMap ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
                 </div>
-              </button>
+              </div>
               {showProximityMap && (
                 <div className="border-t border-[rgba(14,165,233,0.25)]">
                   <CompsProximityMap
