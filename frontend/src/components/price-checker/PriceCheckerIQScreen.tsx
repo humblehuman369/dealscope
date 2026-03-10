@@ -462,7 +462,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [refreshingCompId, setRefreshingCompId] = useState<string | number | null>(null)
   const [photoModalComp, setPhotoModalComp] = useState<SaleComp | RentComp | null>(null)
   const [showAdjGrid, setShowAdjGrid] = useState(true)
-  const [showProximityMap, setShowProximityMap] = useState(true)
+  const [showProximityMap, setShowProximityMap] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [downloadingReport, setDownloadingReport] = useState(false)
 
@@ -926,7 +926,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         </div>
 
-        {/* Proximity Map (accordion, loads open) */}
+        {/* Proximity Map (accordion, loads closed; legend in header) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
           <div className="mx-4 mt-3">
             <div className={`bg-black rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
@@ -939,7 +939,22 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <MapPin className="w-4 h-4 text-[#38bdf8]" />
                   <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
                 </div>
-                {showProximityMap ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 text-[10px] text-[#F1F5F9]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#EA4335] inline-block" />
+                      Subject
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full inline-block"
+                        style={{ backgroundColor: isSale ? '#0EA5E9' : '#38bdf8' }}
+                      />
+                      {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
+                    </span>
+                  </div>
+                  {showProximityMap ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
+                </div>
               </button>
               {showProximityMap && (
                 <div className="border-t border-[rgba(14,165,233,0.25)]">
@@ -947,6 +962,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
                     comps={mapComps}
                     activeView={activeView}
+                    hideHeader
                   />
                 </div>
               )}
