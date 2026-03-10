@@ -622,10 +622,15 @@ async def generate_appraisal_report_pdf(
             detail="PDF export is temporarily unavailable. The server is missing required system libraries.",
         )
     except Exception as exc:
-        logger.error(f"Appraisal PDF generation error: {exc}", exc_info=True)
+        # Reliability-first behavior: if PDF rendering fails for any runtime reason
+        # (font engine, WeasyPrint internals, etc.), trigger frontend HTML fallback.
+        logger.error("Appraisal PDF generation error: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating appraisal PDF: {exc!s}",
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail=(
+                "PDF generation temporarily unavailable for this report. "
+                "Falling back to HTML print view."
+            ),
         )
 
     safe_address = "".join(c if c.isalnum() or c in " -" else "" for c in request.subject_address).strip().replace(" ", "-")[:60]
