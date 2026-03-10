@@ -301,7 +301,13 @@ export function CompactHeader({
                 <span className="text-[10px] text-[#64748B] uppercase tracking-wide mt-0.5 font-medium">Est. Rent</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#0A1628]">
+                <span
+                  className={`text-sm font-bold ${
+                    property.status === 'LISTED' || property.status === 'OFF-MARKET'
+                      ? 'text-red-600'
+                      : 'text-[#0A1628]'
+                  }`}
+                >
                   {property.status === 'OFF-MARKET' ? 'Off-Market' : property.status || 'Active'}
                 </span>
                 <span className="text-[10px] text-[#64748B] uppercase tracking-wide mt-0.5 font-medium">Status</span>
