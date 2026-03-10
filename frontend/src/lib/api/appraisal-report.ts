@@ -73,6 +73,37 @@ export interface AppraisalReportPayload {
     foundation_type?: string | null
     has_fireplace?: boolean | null
     has_pool?: boolean | null
+    parking_type?: string | null
+    hoa_fees_monthly?: number | null
+  } | null
+
+  // Site data (Form 1004 Site section — populated when external sources available)
+  site_data?: {
+    zoning_classification?: string | null
+    zoning_compliance?: string | null
+    flood_zone?: string | null
+    fema_map_number?: string | null
+    fema_map_date?: string | null
+    water?: string | null
+    sewer?: string | null
+    gas?: string | null
+    electricity?: string | null
+    topography?: string | null
+    lot_shape?: string | null
+    view?: string | null
+    easements?: string | null
+    encroachments?: string | null
+  } | null
+
+  // Cost approach data (Form 1004 Cost section — populated when cost service available)
+  cost_data?: {
+    replacement_cost_per_sqft?: number | null
+    total_cost_new?: number | null
+    site_value?: number | null
+    site_value_source?: string | null
+    physical_depreciation_pct?: number | null
+    functional_depreciation?: number | null
+    external_depreciation?: number | null
   } | null
 
   // Market stats (Form 1004 Neighborhood section)
@@ -205,7 +236,12 @@ export function buildAppraisalPayload(opts: {
       foundation_type: details.foundation_type ?? null,
       has_fireplace: details.has_fireplace ?? null,
       has_pool: details.has_pool ?? null,
+      parking_type: details.parking_type ?? null,
+      hoa_fees_monthly: details.hoa_fees_monthly ?? null,
     } : null,
+
+    site_data: null,
+    cost_data: null,
 
     market_stats: market?.market_stats ? {
       median_days_on_market: market.market_stats.median_days_on_market ?? null,
