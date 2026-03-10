@@ -282,6 +282,7 @@ class AppraisalReportPDFExporter:
         <div class="section-rule"></div>
       </div>
 
+      {self._narrative_block(n.neighborhood if n and n.neighborhood else "")}
       {market_cards}
 
       <div class="grid-2" style="margin-top:12px;">
