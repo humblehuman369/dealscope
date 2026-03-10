@@ -6,16 +6,15 @@ Uniform Residential Appraisal Report (URAR) structure. Uses WeasyPrint
 (HTML -> PDF) with the same architecture as property_report_pdf.py.
 
 Report pages:
-  1. Cover + Subject / Assignment
-  2. Neighborhood Analysis
-  3. Site Description
-  4. Description of Improvements
-  5. Sales Comparison Adjustment Grid
-  6. Reconciliation / Final Opinion of Value
-  7. Income Approach
-  8. Cost Approach
-  9. Data Sources, Verification & Addendum
-  10. Scope of Work, Limiting Conditions & Disclaimer
+  1. Cover + Subject / Assignment + Neighborhood (combined)
+  2. Site Description
+  3. Description of Improvements
+  4. Sales Comparison Adjustment Grid
+  5. Reconciliation / Final Opinion of Value
+  6. Income Approach
+  7. Cost Approach
+  8. Data Sources, Verification & Addendum
+  9. Scope of Work, Limiting Conditions & Disclaimer
 """
 
 import logging
@@ -105,8 +104,7 @@ class AppraisalReportPDFExporter:
 
     def _build_body(self) -> str:
         pages = [
-            self._page_cover(),
-            self._page_neighborhood(),
+            self._page_cover_and_neighborhood(),
             self._page_site(),
             self._page_improvements(),
             self._page_sales_comparison(),
@@ -196,34 +194,40 @@ class AppraisalReportPDFExporter:
         return 2026 - self.data.subject_year_built if self.data.subject_year_built else None
 
     # ------------------------------------------------------------------
-    # Page 1: Cover + Subject / Assignment
+    # Page 1: Cover + Subject / Assignment + Neighborhood (combined)
     # ------------------------------------------------------------------
 
-    def _page_cover(self) -> str:
+    def _page_cover_and_neighborhood(self) -> str:
         d = self.data
+        p = self.palette
         street, city_state = self._subject_parts()
-        pd = d.property_details
+        ms = d.market_stats
+        n = d.narratives
+        temp = (ms.market_temperature or "stable") if ms else "stable"
+        trend = "Increasing" if temp == "hot" else "Stable" if temp in ("warm", "stable") else "Declining"
 
-        stories_stat = f'<div class="cover-stat"><div class="cover-stat-value">{pd.stories}</div><div class="cover-stat-label">Stories</div></div>' if pd and pd.stories else ""
+        market_cards = ""
+        if ms:
+            market_cards = f"""
+    <div class="grid-3 compact-grid" style="margin-top:6px;">
+      <div class="info-card-sm"><div class="info-card-label">Median Price</div><div class="info-card-value-sm">{_fmt_money(ms.median_price)}</div></div>
+      <div class="info-card-sm"><div class="info-card-label">Median DOM</div><div class="info-card-value-sm">{ms.median_days_on_market or "N/A"} days</div></div>
+      <div class="info-card-sm"><div class="info-card-label">Listings</div><div class="info-card-value-sm">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div></div>
+      <div class="info-card-sm"><div class="info-card-label">New Listings</div><div class="info-card-value-sm">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div></div>
+      <div class="info-card-sm"><div class="info-card-label">Avg $/Sq Ft</div><div class="info-card-value-sm">{_fmt_money(ms.avg_price_per_sqft)}</div></div>
+      <div class="info-card-sm"><div class="info-card-label">Temperature</div><div class="info-card-value-sm">{temp.title()}</div></div>
+    </div>"""
 
         return f"""
 <div class="page cover-page">
   <div class="cover-top-band"></div>
   <div class="cover-content">
-    <div class="cover-logo">DealGap<span class="logo-iq">IQ</span></div>
-    <div class="cover-badge">Uniform Residential Appraisal Report</div>
-    <h1 class="cover-address">{street}</h1>
-    <div class="cover-city">{city_state}</div>
-
-    <div class="cover-stats">
-      <div class="cover-stat"><div class="cover-stat-value">{self._prop_type()}</div><div class="cover-stat-label">Type</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{d.subject_beds}</div><div class="cover-stat-label">Beds</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{d.subject_baths}</div><div class="cover-stat-label">Baths</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{_fmt(d.subject_sqft)}</div><div class="cover-stat-label">GLA Sq Ft</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{d.subject_year_built}</div><div class="cover-stat-label">Year Built</div></div>
-      <div class="cover-stat"><div class="cover-stat-value">{self._lot_display()}</div><div class="cover-stat-label">Lot</div></div>
-      {stories_stat}
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="cover-logo">DealGap<span class="logo-iq">IQ</span></div>
+      <div class="cover-badge">Uniform Residential Appraisal Report</div>
     </div>
+    <h1 class="cover-address">{street}</h1>
+    <div class="cover-city">{city_state} &nbsp;&middot;&nbsp; {self._prop_type()} &nbsp;&middot;&nbsp; {d.subject_beds}bd/{d.subject_baths}ba &nbsp;&middot;&nbsp; {_fmt(d.subject_sqft)} sf &nbsp;&middot;&nbsp; Built {d.subject_year_built} &nbsp;&middot;&nbsp; {self._lot_display()}</div>
 
     <div class="cover-summary-cards">
       <div class="cover-value-card">
@@ -238,94 +242,60 @@ class AppraisalReportPDFExporter:
       </div>
     </div>
 
-    <div class="grid-2" style="margin-top:12px;">
-      <div class="card">
+    <div class="grid-2" style="margin-top:8px;">
+      <div class="card card-compact">
         <h3 class="card-title">Subject Property</h3>
         {self._detail_row("Property Address", d.subject_address)}
-        {self._detail_row("Property Type", self._prop_type())}
-        {self._detail_row("Bedrooms / Bathrooms", f"{d.subject_beds} / {d.subject_baths}")}
-        {self._detail_row("Gross Living Area", f"{_fmt(d.subject_sqft)} sq ft")}
+        {self._detail_row("Type / Beds / Baths", f"{self._prop_type()} &mdash; {d.subject_beds}bd / {d.subject_baths}ba")}
+        {self._detail_row("GLA / Lot", f"{_fmt(d.subject_sqft)} sf &nbsp;/&nbsp; {self._lot_display()}")}
         {self._detail_row("Year Built / Age", f"{d.subject_year_built} / {self._age() or 'N/A'} yrs")}
-        {self._detail_row("Site Area", self._lot_display())}
-        {self._detail_row("List / Contract Price", _fmt_money(d.list_price) if d.list_price else "Not currently listed")}
-        {self._detail_row("Est. Rehab Cost", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
+        {self._detail_row("List Price", _fmt_money(d.list_price) if d.list_price else "Not listed")}
+        {self._detail_row("Est. Rehab", _fmt_money(d.rehab_cost) if d.rehab_cost else "None")}
       </div>
-      <div class="card">
+      <div class="card card-compact">
         <h3 class="card-title">Assignment</h3>
-        {self._detail_row("Property Rights Appraised", "Fee Simple")}
+        {self._detail_row("Property Rights", "Fee Simple")}
         {self._detail_row("Assignment Type", "Investment Analysis")}
-        {self._detail_row("Intended Use", "Investment decision support")}
-        {self._detail_row("Intended User", "Investor / Client")}
-        {self._detail_row("Effective Date", self.now.strftime("%B %d, %Y"))}
-        {self._detail_row("Report Date", self.now.strftime("%B %d, %Y"))}
+        {self._detail_row("Intended Use / User", "Investment decision &mdash; Investor")}
+        {self._detail_row("Effective / Report Date", self.now.strftime("%B %d, %Y"))}
         {self._detail_row("Report Type", "Desktop &mdash; Exterior Only")}
-        {self._detail_row("Data Sources", "MLS, Public Records, RentCast, Zillow, Redfin")}
+        {self._detail_row("Data Sources", "MLS, RentCast, Zillow, Redfin")}
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="section-header section-header-compact">
+      <div class="section-label">NEIGHBORHOOD</div>
+      <h2 class="section-title" style="font-size:13px;">Market Conditions &amp; Neighborhood Analysis</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    {market_cards}
+
+    <div class="grid-2" style="margin-top:6px;">
+      <div class="card card-compact">
+        <h3 class="card-title">Neighborhood Characteristics</h3>
+        {self._detail_row("Growth / Values", f"{trend} / {trend}")}
+        {self._detail_row("Demand/Supply", "Shortage" if temp == "hot" else "In Balance" if temp in ("warm", "stable") else "Over Supply")}
+        {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days" if ms and ms.median_days_on_market else "Under 3 mos")}
+        {self._detail_row("Present Land Use", "SFR Residential")}
+        {self._detail_row("Land Use Change", "Not Likely")}
+      </div>
+      <div class="card card-compact">
+        <h3 class="card-title">Market Conditions (1004MC)</h3>
+        {self._detail_row("Predominant Price", f"{_fmt_money(ms.median_price)} (median)" if ms and ms.median_price else "See comps")}
+        {self._detail_row("Predominant Age", f"{self._age() or 'N/A'} yrs (subject)")}
+        {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
+        {self._detail_row("Boundaries", "See comparable proximity data")}
+        {self._detail_row("Form", "Fannie Mae 1004 / Freddie Mac 70")}
       </div>
     </div>
   </div>
   <div class="cover-footer">
     <div><span class="cover-footer-label">Effective Date</span><span class="cover-footer-value">{self.now.strftime("%B %d, %Y")}</span></div>
-    <div><span class="cover-footer-label">Form</span><span class="cover-footer-value">URAR / Freddie Mac Form 70 / Fannie Mae Form 1004</span></div>
+    <div><span class="cover-footer-label">Data Sources</span><span class="cover-footer-value">MLS, Public Records, RentCast, Zillow, Redfin</span></div>
   </div>
-</div>"""
-
-    # ------------------------------------------------------------------
-    # Page 2: Neighborhood
-    # ------------------------------------------------------------------
-
-    def _page_neighborhood(self) -> str:
-        d = self.data
-        ms = d.market_stats
-        n = d.narratives
-
-        narrative_text = n.neighborhood if n and n.neighborhood else ""
-        temp = (ms.market_temperature or "stable") if ms else "stable"
-        trend = "Increasing" if temp == "hot" else "Stable" if temp in ("warm", "stable") else "Declining"
-
-        market_cards = ""
-        if ms:
-            market_cards = f"""
-    <div class="grid-3" style="margin-top:16px;">
-      <div class="info-card"><div class="info-card-label">Median Sale Price</div><div class="info-card-value">{_fmt_money(ms.median_price)}</div></div>
-      <div class="info-card"><div class="info-card-label">Median DOM</div><div class="info-card-value">{ms.median_days_on_market or "N/A"} days</div></div>
-      <div class="info-card"><div class="info-card-label">Active Listings</div><div class="info-card-value">{_fmt(ms.total_listings) if ms.total_listings else "N/A"}</div></div>
-    </div>
-    <div class="grid-3" style="margin-top:10px;">
-      <div class="info-card"><div class="info-card-label">New Listings</div><div class="info-card-value">{_fmt(ms.new_listings) if ms.new_listings else "N/A"}</div></div>
-      <div class="info-card"><div class="info-card-label">Avg Price/Sq Ft</div><div class="info-card-value">{_fmt_money(ms.avg_price_per_sqft)}</div></div>
-      <div class="info-card"><div class="info-card-label">Market Temperature</div><div class="info-card-value">{temp.title()}</div></div>
-    </div>"""
-
-        return f"""
-<div class="page">
-  {self._page_header("Neighborhood")}
-  {self._section_header("NEIGHBORHOOD", "Area Description &amp; Market Conditions")}
-
-  {self._narrative_block(narrative_text)}
-  {market_cards}
-
-  <div class="grid-2" style="margin-top:16px;">
-    <div class="card">
-      <h3 class="card-title">Neighborhood Characteristics</h3>
-      {self._detail_row("Location", "Urban / Suburban / Rural")}
-      {self._detail_row("Built-Up", "Over 75% / 25&ndash;75% / Under 25%")}
-      {self._detail_row("Growth Rate", trend)}
-      {self._detail_row("Property Values", trend)}
-      {self._detail_row("Demand/Supply", "Shortage" if temp == "hot" else "In Balance" if temp in ("warm", "stable") else "Over Supply")}
-      {self._detail_row("Marketing Time", f"{ms.median_days_on_market} days" if ms and ms.median_days_on_market else "Under 3 mos")}
-    </div>
-    <div class="card">
-      <h3 class="card-title">Market Conditions (Form 1004MC)</h3>
-      {self._detail_row("Predominant Price Range", f"{_fmt_money(ms.median_price)} (median)" if ms and ms.median_price else "See comparable sales")}
-      {self._detail_row("Predominant Age Range", f"{self._age() or 'N/A'} yrs (subject)")}
-      {self._detail_row("Present Land Use", "Residential &mdash; Single Family")}
-      {self._detail_row("Land Use Change", "Not Likely")}
-      {self._detail_row("Comps Analyzed", str(len(d.comp_adjustments)))}
-      {self._detail_row("Neighborhood Boundaries", "See comparable proximity data")}
-    </div>
-  </div>
-
-  {self._page_footer()}
 </div>"""
 
     # ------------------------------------------------------------------
@@ -1151,25 +1121,34 @@ body {{ font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10
 .page:last-child {{ page-break-after: auto; }}
 
 .cover-page {{ display: flex; flex-direction: column; padding: 0; }}
-.cover-top-band {{ height: 6px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
-.cover-content {{ flex: 1; padding: 36px 56px 16px; display: flex; flex-direction: column; }}
-.cover-logo {{ font-size: 26px; font-weight: 700; color: {p["text_primary"]}; margin-bottom: 20px; }}
-.cover-badge {{ display: inline-block; padding: 4px 14px; border-radius: 100px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; margin-bottom: 10px; align-self: flex-start; }}
-.cover-address {{ font-size: 26px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.1; margin-bottom: 4px; }}
-.cover-city {{ font-size: 13px; color: {p["text_secondary"]}; margin-bottom: 16px; }}
-.cover-stats {{ display: flex; gap: 16px; margin-bottom: 16px; padding: 14px 0; border-top: 1px solid {p["border"]}; border-bottom: 1px solid {p["border"]}; flex-wrap: wrap; }}
-.cover-stat {{ text-align: center; }}
-.cover-stat-value {{ font-size: 14px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
-.cover-stat-label {{ font-size: 7px; font-weight: 600; color: {p["text_tertiary"]}; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }}
-.cover-summary-cards {{ display: flex; gap: 14px; margin-bottom: 12px; }}
-.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 12px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
+.cover-top-band {{ height: 5px; background: linear-gradient(90deg, {p["brand"]}, {"#0284c7" if not is_dark else "#2DD4BF"}); }}
+.cover-content {{ flex: 1; padding: 20px 48px 10px; display: flex; flex-direction: column; }}
+.cover-logo {{ font-size: 22px; font-weight: 700; color: {p["text_primary"]}; }}
+.cover-badge {{ display: inline-block; padding: 3px 12px; border-radius: 100px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: {p["brand"]}; background: {p["brand"]}15; border: 1px solid {p["brand"]}30; }}
+.cover-address {{ font-size: 22px; font-weight: 700; color: {p["text_primary"]}; line-height: 1.1; margin-bottom: 2px; margin-top: 6px; }}
+.cover-city {{ font-size: 9px; color: {p["text_secondary"]}; margin-bottom: 8px; }}
+.cover-summary-cards {{ display: flex; gap: 10px; margin-bottom: 8px; }}
+.cover-value-card {{ flex: 1; background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 8px; padding: 8px; text-align: center; border-top: 3px solid {p["text_secondary"]}; }}
 .cover-value-card-arv {{ border-top-color: {p["brand"]}; }}
-.cover-value-label {{ font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 3px; }}
-.cover-value-amount {{ font-size: 20px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 3px; }}
-.cover-value-range {{ font-size: 8px; color: {p["text_tertiary"]}; }}
-.cover-footer {{ display: flex; justify-content: space-between; padding: 14px 56px; border-top: 1px solid {p["border"]}; }}
-.cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 2px; }}
-.cover-footer-value {{ font-size: 9px; font-weight: 600; color: {p["text_secondary"]}; }}
+.cover-value-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; margin-bottom: 2px; }}
+.cover-value-amount {{ font-size: 18px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; margin-bottom: 2px; }}
+.cover-value-range {{ font-size: 7px; color: {p["text_tertiary"]}; }}
+.cover-footer {{ display: flex; justify-content: space-between; padding: 10px 48px; border-top: 1px solid {p["border"]}; }}
+.cover-footer-label {{ font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: {p["text_tertiary"]}; display: block; margin-bottom: 1px; }}
+.cover-footer-value {{ font-size: 8px; font-weight: 600; color: {p["text_secondary"]}; }}
+
+.section-divider {{ margin: 10px 0; border-top: 2px solid {p["brand"]}40; }}
+.section-header-compact {{ margin-bottom: 6px; }}
+.section-header-compact .section-title {{ font-size: 13px; margin-bottom: 3px; }}
+.section-header-compact .section-rule {{ width: 30px; height: 2px; }}
+
+.card-compact {{ padding: 8px 10px; }}
+.card-compact .card-title {{ margin-bottom: 4px; font-size: 9px; }}
+.card-compact .detail-row {{ padding: 3px 0; font-size: 8px; }}
+
+.compact-grid {{ flex-wrap: wrap; gap: 6px; }}
+.info-card-sm {{ background: {p["card_bg"]}; border: 1px solid {p["border"]}; border-radius: 6px; padding: 6px 8px; text-align: center; border-top: 2px solid {p["brand"]}; flex: 1 1 30%; min-width: 0; }}
+.info-card-value-sm {{ font-size: 11px; font-weight: 700; color: {p["text_primary"]}; font-variant-numeric: tabular-nums; }}
 
 .page-header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid {p["brand"]}; margin-bottom: 16px; }}
 .page-header-title {{ font-size: 10px; font-weight: 700; color: {p["text_secondary"]}; text-transform: uppercase; letter-spacing: 0.06em; }}
