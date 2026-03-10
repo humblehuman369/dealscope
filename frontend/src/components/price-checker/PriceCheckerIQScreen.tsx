@@ -846,7 +846,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
-                <div className="-mt-2 flex justify-end">
+                <div className="-mt-2 flex flex-col items-end gap-1">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
@@ -854,6 +854,17 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   >
                     Apply to Deal
                   </button>
+                  {isSale && (
+                    <button
+                      onClick={handleDownloadReport}
+                      disabled={saleSelected.size === 0 || downloadingReport}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-black border border-[rgba(14,165,233,0.4)] hover:border-[#38bdf8] text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
+                      title="Download appraisal report as PDF"
+                    >
+                      {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
+                      Download PDF
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -897,7 +908,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
             </div>
 
-            {/* Methodology + $/sqft + PDF */}
+            {/* Methodology + $/sqft */}
             <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-1 px-0.5">
               <div className="flex items-center gap-1">
                 <Info className="w-3 h-3" />
@@ -907,17 +918,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 <span className="tabular-nums font-medium text-[#F1F5F9]">
                   ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
                 </span>
-                {isSale && (
-                  <button
-                    onClick={handleDownloadReport}
-                    disabled={saleSelected.size === 0 || downloadingReport}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.08] border border-[rgba(14,165,233,0.25)] hover:border-[rgba(14,165,233,0.55)] text-[#F1F5F9] hover:text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
-                    title="Download appraisal report as PDF"
-                  >
-                    {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
-                    PDF
-                  </button>
-                )}
               </div>
             </div>
 
