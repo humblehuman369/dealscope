@@ -15,6 +15,8 @@ interface CompsProximityMapProps {
   subject: { latitude?: number; longitude?: number; address: string }
   comps: CompsMapPoint[]
   activeView: 'sale' | 'rent'
+  /** When true, omit the "Proximity Map" title and legend (e.g. when used inside an accordion that provides its own header). */
+  hideHeader?: boolean
 }
 
 function isFiniteCoord(lat: unknown, lng: unknown): boolean {
@@ -127,27 +129,31 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
 const cardBorderGlow =
   'border border-[rgba(14,165,233,0.25)] shadow-[0_0_30px_rgba(14,165,233,0.08),0_0_60px_rgba(14,165,233,0.04)]'
 
-export function CompsProximityMap({ subject, comps, activeView }: CompsProximityMapProps) {
+export function CompsProximityMap({ subject, comps, activeView, hideHeader = false }: CompsProximityMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
   const validComps = comps.filter(c => isFiniteCoord(c.latitude, c.longitude))
   const hasAnyPoints = hasSubject || validComps.length > 0
 
   if (!apiKey || !hasAnyPoints) {
+    const placeholder = (
+      <div className="h-48 rounded-lg bg-white/[0.05] flex items-center justify-center">
+        <div className="text-center">
+          <MapPin className="mx-auto mb-2 w-6 h-6 text-[#F1F5F9]" />
+          <p className="text-xs text-[#F1F5F9]">
+            {!apiKey ? 'Map unavailable' : 'No coordinates available'}
+          </p>
+        </div>
+      </div>
+    )
+    if (hideHeader) return <div className="p-4">{placeholder}</div>
     return (
       <div className={`rounded-xl bg-black ${cardBorderGlow} p-4`}>
         <div className="flex items-center gap-2 mb-3">
           <MapPin className="w-4 h-4 text-[#38bdf8]" />
           <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
         </div>
-        <div className="h-48 rounded-lg bg-white/[0.05] flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="mx-auto mb-2 w-6 h-6 text-[#F1F5F9]" />
-            <p className="text-xs text-[#F1F5F9]">
-              {!apiKey ? 'Map unavailable' : 'No coordinates available'}
-            </p>
-          </div>
-        </div>
+        {placeholder}
       </div>
     )
   }
@@ -155,6 +161,27 @@ export function CompsProximityMap({ subject, comps, activeView }: CompsProximity
   const center = hasSubject
     ? { lat: subject.latitude!, lng: subject.longitude! }
     : { lat: validComps[0].latitude, lng: validComps[0].longitude }
+
+  const mapContent = (
+    <div className="h-56">
+      <APIProvider apiKey={apiKey}>
+        <Map
+          defaultCenter={center}
+          defaultZoom={14}
+          gestureHandling="cooperative"
+          disableDefaultUI={false}
+          mapTypeControl={false}
+          streetViewControl={false}
+          fullscreenControl={false}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <MapContent subject={subject} comps={comps} activeView={activeView} />
+        </Map>
+      </APIProvider>
+    </div>
+  )
+
+  if (hideHeader) return mapContent
 
   return (
     <div className={`rounded-xl bg-black ${cardBorderGlow} overflow-hidden`}>
@@ -179,22 +206,7 @@ export function CompsProximityMap({ subject, comps, activeView }: CompsProximity
           </span>
         </div>
       </div>
-      <div className="h-56">
-        <APIProvider apiKey={apiKey}>
-          <Map
-            defaultCenter={center}
-            defaultZoom={14}
-            gestureHandling="cooperative"
-            disableDefaultUI={false}
-            mapTypeControl={false}
-            streetViewControl={false}
-            fullscreenControl={false}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <MapContent subject={subject} comps={comps} activeView={activeView} />
-          </Map>
-        </APIProvider>
-      </div>
+      {mapContent}
     </div>
   )
 }
