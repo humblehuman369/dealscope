@@ -48,7 +48,7 @@ export function DataBoundary({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--accent-sky)]" />
       </div>
     )
   }
@@ -57,14 +57,14 @@ export function DataBoundary({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-        <div className="w-14 h-14 rounded-2xl bg-red-400/10 border border-red-400/20 flex items-center justify-center mb-4">
-          <AlertCircle className="w-7 h-7 text-red-400" />
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--status-negative)]/20 bg-[var(--status-negative)]/10">
+          <AlertCircle className="h-7 w-7 text-[var(--status-negative)]" />
         </div>
-        <p className="text-sm text-red-400 mb-4 max-w-sm">{error}</p>
+        <p className="mb-4 max-w-sm text-sm text-[var(--status-negative)]">{error}</p>
         {onRetry && (
           <button
             onClick={onRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.07] hover:border-white/[0.14] text-slate-300 font-semibold rounded-lg text-sm transition-all"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-2 text-sm font-semibold text-[var(--text-body)] transition-all hover:border-[var(--border-focus)]"
           >
             <RefreshCw className="w-4 h-4" />
             Try Again
@@ -79,15 +79,15 @@ export function DataBoundary({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center px-4">
         {emptyIcon && (
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-5">
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)]">
             {emptyIcon}
           </div>
         )}
-        <h4 className="text-lg font-semibold text-slate-100 mb-2">
+        <h4 className="mb-2 text-lg font-semibold text-[var(--text-heading)]">
           {emptyTitle}
         </h4>
         {emptyDescription && (
-          <p className="text-slate-400 mb-6 max-w-sm">{emptyDescription}</p>
+          <p className="mb-6 max-w-sm text-[var(--text-secondary)]">{emptyDescription}</p>
         )}
         {emptyAction}
       </div>

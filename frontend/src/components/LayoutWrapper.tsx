@@ -29,7 +29,7 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
       {/* Skip to main content — visible on focus for keyboard users */}
       <a
         href="#main-content"
-        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:px-4 focus:py-2.5 focus:bg-teal-500 focus:text-white focus:rounded-lg focus:font-medium focus:w-auto focus:h-auto focus:m-0 focus:overflow-visible focus:[clip:auto]"
+        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:font-medium focus:w-auto focus:h-auto focus:m-0 focus:overflow-visible focus:[clip:auto] focus:bg-[var(--accent-sky)] focus:text-[var(--text-inverse)]"
       >
         Skip to main content
       </a>

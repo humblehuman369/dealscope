@@ -401,36 +401,36 @@ export function getMarketTempColor(temp: string): string {
  */
 export const tw = {
   // Cards — glow system (pure black + teal borders)
-  card: 'rounded-[14px] border border-[rgba(14,165,233,0.25)]',
-  cardBg: 'bg-black',
-  cardHover: 'hover:border-[rgba(14,165,233,0.55)] transition-all',
+  card: 'rounded-[14px] border border-[var(--border-subtle)]',
+  cardBg: 'bg-[var(--surface-base)]',
+  cardHover: 'hover:border-[var(--border-focus)] transition-all',
 
   // Section headers
-  sectionHeader: 'text-xs font-bold text-sky-400 uppercase tracking-[0.12em]',
+  sectionHeader: 'text-xs font-bold text-[var(--text-link)] uppercase tracking-[0.12em]',
 
   // Labels
-  label: 'text-[11px] font-bold text-[#F1F5F9] uppercase tracking-[0.04em]',
+  label: 'text-[11px] font-bold text-[var(--text-heading)] uppercase tracking-[0.04em]',
 
   // Values
-  valueLg: 'text-2xl font-bold text-[#F1F5F9] tabular-nums',
-  valueMd: 'text-lg font-semibold text-[#F1F5F9] tabular-nums',
+  valueLg: 'text-2xl font-bold text-[var(--text-heading)] tabular-nums',
+  valueMd: 'text-lg font-semibold text-[var(--text-heading)] tabular-nums',
 
   // Buttons
-  buttonPrimary: 'h-12 px-6 bg-[#0EA5E9] hover:bg-sky-400 text-white font-bold rounded-full transition-all shadow-[0_4px_24px_rgba(14,165,233,0.3)]',
-  buttonSecondary: 'h-10 px-4 border border-[#F1F5F9] hover:border-teal-400 hover:text-teal-400 text-[#CBD5E1] font-semibold rounded-full transition-all',
-  buttonGhost: 'text-[#F1F5F9] hover:text-teal-400 font-medium transition-colors',
+  buttonPrimary: 'h-12 px-6 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] font-bold rounded-full transition-all shadow-[var(--shadow-card)]',
+  buttonSecondary: 'h-10 px-4 border border-[var(--text-heading)] hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)] text-[var(--text-body)] font-semibold rounded-full transition-all',
+  buttonGhost: 'text-[var(--text-heading)] hover:text-[var(--accent-sky)] font-medium transition-colors',
 
   // Dividers
-  divider: 'border-t border-white/[0.07]',
+  divider: 'border-t border-[var(--border-subtle)]',
 
   // VerdictIQ Visual Polish — glow system
-  investmentCard: 'bg-black rounded-[14px] border border-[rgba(14,165,233,0.3)] p-5',
-  metricCard: 'bg-black rounded-xl border border-[rgba(14,165,233,0.25)] p-4 text-center',
+  investmentCard: 'bg-[var(--surface-base)] rounded-[14px] border border-[var(--border-subtle)] p-5',
+  metricCard: 'bg-[var(--surface-base)] rounded-xl border border-[var(--border-subtle)] p-4 text-center',
   pillBadge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.03em]',
-  glowRing: 'drop-shadow-[0_0_12px_rgba(56,189,248,0.25)]',
+  glowRing: 'drop-shadow-[0_0_12px_rgba(14,165,233,0.25)]',
 
   // Layout
-  pageContainer: 'min-h-screen w-full bg-black',
+  pageContainer: 'min-h-screen w-full bg-[var(--surface-base)]',
   container: 'w-full',
   section: 'px-5 py-8',
 
@@ -457,27 +457,27 @@ export const priceCardStyles: Record<PriceCardVariant, {
   tagLabel: string
 }> = {
   breakeven: {
-    bgClass: 'bg-[#0C1220]',
-    borderClass: 'border-white/[0.07]',
-    labelClass: 'text-[#F1F5F9]',
-    valueClass: 'text-[#F1F5F9]',
-    tagClass: 'bg-white/[0.06] text-[#F1F5F9]',
+    bgClass: 'bg-[var(--surface-card)]',
+    borderClass: 'border-[var(--border-subtle)]',
+    labelClass: 'text-[var(--text-heading)]',
+    valueClass: 'text-[var(--text-heading)]',
+    tagClass: 'bg-[var(--surface-elevated)] text-[var(--text-heading)]',
     tagLabel: 'No profit',
   },
   target: {
-    bgClass: 'bg-[#101828]',
-    borderClass: 'border-sky-400/35',
-    labelClass: 'text-sky-400',
-    valueClass: 'text-sky-400',
-    tagClass: 'bg-sky-400/10 text-sky-400',
+    bgClass: 'bg-[var(--surface-elevated)]',
+    borderClass: 'border-[var(--accent-sky)]',
+    labelClass: 'text-[var(--accent-sky)]',
+    valueClass: 'text-[var(--accent-sky)]',
+    tagClass: 'bg-[var(--color-sky-dim)] text-[var(--accent-sky)]',
     tagLabel: 'Best target',
   },
   wholesale: {
-    bgClass: 'bg-[#0C1220]',
-    borderClass: 'border-white/[0.07]',
-    labelClass: 'text-[#F1F5F9]',
-    valueClass: 'text-[#F1F5F9]',
-    tagClass: 'bg-teal-400/10 text-teal-400',
+    bgClass: 'bg-[var(--surface-card)]',
+    borderClass: 'border-[var(--border-subtle)]',
+    labelClass: 'text-[var(--text-heading)]',
+    valueClass: 'text-[var(--text-heading)]',
+    tagClass: 'bg-[var(--color-teal-dim)] text-[var(--accent-sky)]',
     tagLabel: 'Deep value',
   },
 }
