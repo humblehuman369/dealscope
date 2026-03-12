@@ -35,21 +35,21 @@ import { SummarySnapshot } from './SummarySnapshot'
 // BRAND COLORS - From design files (synced with verdict-design-tokens.ts)
 // =============================================================================
 const COLORS = {
-  navy: '#0A1628',
-  teal: '#0EA5E9',
-  tealLight: '#0EA5E9', // Synced with design tokens - was #06B6D4
-  cyan: '#00D4FF',
-  rose: '#EF4444',      // Red - Unified with verdict-design-tokens
-  warning: '#D97706',   // Amber - Unified with verdict-design-tokens
-  green: '#10B981',
-  surface50: '#F8FAFC',
-  surface100: '#F1F5F9',
-  surface200: '#E2E8F0',
-  surface300: '#CBD5E1',
-  surface400: '#F1F5F9',
-  surface500: '#F1F5F9',
-  surface600: '#475569',
-  surface700: '#334155',
+  navy: 'var(--text-heading)',
+  teal: 'var(--accent-sky)',
+  tealLight: 'var(--accent-sky-light)',
+  cyan: 'var(--accent-sky-light)',
+  rose: 'var(--status-negative)',
+  warning: 'var(--status-warning)',
+  green: 'var(--status-positive)',
+  surface50: 'var(--surface-section)',
+  surface100: 'var(--surface-elevated)',
+  surface200: 'var(--border-subtle)',
+  surface300: 'var(--text-body)',
+  surface400: 'var(--text-heading)',
+  surface500: 'var(--text-heading)',
+  surface600: 'var(--text-secondary)',
+  surface700: 'var(--text-body)',
 }
 
 // =============================================================================
@@ -337,34 +337,34 @@ export function IQVerdictScreen({
   const PriceCard = ({ label, value, desc, recommended = false }: { label: string; value: number; desc: string; recommended?: boolean }) => (
     <div className={`rounded-lg p-3 text-center border ${
       recommended 
-        ? 'bg-white border-2 border-[#0EA5E9]' 
-        : 'bg-[#F8FAFC] border-[#E2E8F0]'
+        ? 'bg-[var(--surface-card)] border-2 border-[var(--accent-sky)]' 
+        : 'bg-[var(--surface-section)] border-[var(--border-subtle)]'
     }`}>
       <div className={`text-[9px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        recommended ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'
+        recommended ? 'text-[var(--accent-sky)]' : 'text-[var(--text-secondary)]'
       }`}>
         {label}
-        <HelpCircle className="w-3 h-3 text-[#CBD5E1]" />
+        <HelpCircle className="w-3 h-3 text-[var(--text-body)]" />
       </div>
-      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0EA5E9]' : 'text-[#0A1628]'}`}>
+      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[var(--accent-sky)]' : 'text-[var(--text-heading)]'}`}>
         {formatPrice(value)}
       </div>
-      <div className="text-[9px] text-[#F1F5F9] leading-tight">{desc}</div>
+      <div className="text-[9px] text-[var(--text-secondary)] leading-tight">{desc}</div>
     </div>
   )
 
   // Factor Row Component
   const FactorRow = ({ icon, label, value, positive }: { icon: 'clock' | 'alert'; label: string; value: string; positive?: boolean }) => (
     <div className="flex justify-between items-center py-2">
-      <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
+      <div className="flex items-center gap-2.5 text-[13px] text-[var(--text-secondary)]">
         {icon === 'clock' ? (
-          <Clock className="w-4 h-4 text-[#F1F5F9]" />
+          <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
         ) : (
-          <AlertTriangle className="w-4 h-4 text-[#F1F5F9]" />
+          <AlertTriangle className="w-4 h-4 text-[var(--text-secondary)]" />
         )}
         {label}
       </div>
-      <span className={`text-[13px] font-semibold ${positive ? 'text-[#0EA5E9]' : 'text-[#F1F5F9]'}`}>
+      <span className={`text-[13px] font-semibold ${positive ? 'text-[var(--accent-sky)]' : 'text-[var(--text-secondary)]'}`}>
         {value}
       </span>
     </div>
@@ -374,7 +374,7 @@ export function IQVerdictScreen({
     <div 
       className="min-h-screen flex flex-col max-w-[480px] mx-auto"
       style={{ 
-        background: '#E8ECF0',
+        background: 'var(--surface-section)',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
@@ -394,28 +394,28 @@ export function IQVerdictScreen({
       <main className="flex-1 overflow-y-auto pb-36">
         
         {/* VERDICT HERO */}
-        <div className="bg-white p-5 px-6 border-b border-[#E2E8F0] flex items-center gap-4">
+        <div className="bg-[var(--surface-card)] p-5 px-6 border-b border-[var(--border-subtle)] flex items-center gap-4">
           <div 
-            className="w-[72px] h-[72px] rounded-full border-4 border-[#0EA5E9] flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%)' }}
+            className="w-[72px] h-[72px] rounded-full border-4 border-[var(--accent-sky)] flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface-card) 100%)' }}
           >
-            <span className="text-[28px] font-extrabold text-[#0EA5E9]">{analysis.dealScore}</span>
+            <span className="text-[28px] font-extrabold text-[var(--accent-sky)]">{analysis.dealScore}</span>
           </div>
           <div className="flex-1">
-            <div className="text-lg font-bold text-[#0EA5E9] mb-0.5">{verdictInfo.label}</div>
-            <div className="text-[13px] text-[#F1F5F9] mb-2">{verdictInfo.sublabel}</div>
+            <div className="text-lg font-bold text-[var(--accent-sky)] mb-0.5">{verdictInfo.label}</div>
+            <div className="text-[13px] text-[var(--text-secondary)] mb-2">{verdictInfo.sublabel}</div>
             <div className="flex gap-3 flex-wrap">
-              <span className="flex items-center gap-1 text-[11px] text-[#F1F5F9]">
-                <TrendingDown className="w-3 h-3 text-[#F1F5F9]" />
-                Gap: <span className="font-semibold text-[#0EA5E9]">{opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%</span>
+              <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                <TrendingDown className="w-3 h-3 text-[var(--text-secondary)]" />
+                Gap: <span className="font-semibold text-[var(--accent-sky)]">{opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%</span>
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-[#F1F5F9]">
-                <Settings2 className="w-3 h-3 text-[#F1F5F9]" />
-                Motivation: <span className="font-semibold text-[#0EA5E9]">{sellerMotivation.level}</span>
+              <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                <Settings2 className="w-3 h-3 text-[var(--text-secondary)]" />
+                Motivation: <span className="font-semibold text-[var(--accent-sky)]">{sellerMotivation.level}</span>
               </span>
             </div>
             <button 
-              className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0"
+              className="flex items-center gap-1 text-[var(--accent-sky)] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0"
               onClick={() => setShowMethodology(true)}
             >
               <Info className="w-3.5 h-3.5" />
@@ -425,41 +425,41 @@ export function IQVerdictScreen({
         </div>
 
         {/* Your Investment Analysis */}
-        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
+        <div className="bg-[var(--surface-card)] p-4 px-6 border-b border-[var(--border-subtle)]">
           <div className="flex justify-between items-start mb-1">
             <div>
-              <div className="text-[15px] font-bold text-[#0A1628]">YOUR INVESTMENT ANALYSIS</div>
-              <div className="text-xs text-[#F1F5F9]">
+              <div className="text-[15px] font-bold text-[var(--text-heading)]">YOUR INVESTMENT ANALYSIS</div>
+              <div className="text-xs text-[var(--text-secondary)]">
                 Based on YOUR financing terms ({((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}% down, {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%)
               </div>
             </div>
             <button 
-              className="text-[#0EA5E9] text-[13px] font-medium bg-transparent border-none cursor-pointer"
+              className="text-[var(--accent-sky)] text-[13px] font-medium bg-transparent border-none cursor-pointer"
               onClick={() => setShowAssumptions(!showAssumptions)}
             >
               Change terms
             </button>
           </div>
 
-          <div className="text-xs font-semibold text-[#0EA5E9] mt-2 mb-3">
+          <div className="text-xs font-semibold text-[var(--accent-sky)] mt-2 mb-3">
             WHAT PRICE MAKES THIS DEAL WORK?
           </div>
 
           {/* Info Banner for Off-Market */}
           {isOffMarket && (
-            <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0EA5E9]">
-              <AlertCircle className="w-[18px] h-[18px] text-[#0EA5E9] flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-[#475569] leading-relaxed">
-                <strong className="text-[#0EA5E9]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
+            <div className="flex items-start gap-2.5 p-3 bg-[var(--surface-elevated)] rounded-lg mb-4 border-l-[3px] border-l-[var(--accent-sky)]">
+              <AlertCircle className="w-[18px] h-[18px] text-[var(--accent-sky)] flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                <strong className="text-[var(--accent-sky)]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
               </div>
             </div>
           )}
 
           {/* Price Cards */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[13px] text-[#F1F5F9]">Three ways to approach this deal:</span>
+            <span className="text-[13px] text-[var(--text-secondary)]">Three ways to approach this deal:</span>
             <button 
-              className="flex items-center gap-1.5 text-[#0EA5E9] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1.5 text-[var(--accent-sky)] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setShowCalculation(!showCalculation)}
             >
               <ChevronDown 
@@ -490,9 +490,9 @@ export function IQVerdictScreen({
 
           {/* Expandable Assumptions Panel */}
           {showAssumptions && (
-            <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
+            <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-[#475569]">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
                   YOUR ASSUMPTIONS
                 </span>
                 <button 
@@ -503,7 +503,7 @@ export function IQVerdictScreen({
                       : `/deal-maker/${encodeURIComponent(fullAddr)}`
                     router.push(dealMakerUrl)
                   }}
-                  className="flex items-center gap-1 text-[10px] font-medium text-[#0EA5E9] hover:opacity-80"
+                  className="flex items-center gap-1 text-[10px] font-medium text-[var(--accent-sky)] hover:opacity-80"
                 >
                   <Settings2 className="w-3 h-3" />
                   Edit in Deal Maker
@@ -512,36 +512,36 @@ export function IQVerdictScreen({
               
               <div className="grid grid-cols-2 gap-4 text-[11px]">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#F1F5F9] mb-2">FINANCING</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)] mb-2">FINANCING</div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Down Payment</span>
-                      <span className="font-medium text-[#0A1628]">{((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%</span>
+                      <span className="text-[var(--text-secondary)]">Down Payment</span>
+                      <span className="font-medium text-[var(--text-heading)]">{((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Interest Rate</span>
-                      <span className="font-medium text-[#0A1628]">{((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%</span>
+                      <span className="text-[var(--text-secondary)]">Interest Rate</span>
+                      <span className="font-medium text-[var(--text-heading)]">{((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Loan Term</span>
-                      <span className="font-medium text-[#0A1628]">{defaults?.financing?.loan_term_years ?? 30} years</span>
+                      <span className="text-[var(--text-secondary)]">Loan Term</span>
+                      <span className="font-medium text-[var(--text-heading)]">{defaults?.financing?.loan_term_years ?? 30} years</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[#F1F5F9] mb-2">EXPENSES</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)] mb-2">EXPENSES</div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Vacancy</span>
-                      <span className="font-medium text-[#0A1628]">{((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%</span>
+                      <span className="text-[var(--text-secondary)]">Vacancy</span>
+                      <span className="font-medium text-[var(--text-heading)]">{((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Management</span>
-                      <span className="font-medium text-[#0A1628]">{((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}%</span>
+                      <span className="text-[var(--text-secondary)]">Management</span>
+                      <span className="font-medium text-[var(--text-heading)]">{((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#F1F5F9]">Maintenance</span>
-                      <span className="font-medium text-[#0A1628]">{((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%</span>
+                      <span className="text-[var(--text-secondary)]">Maintenance</span>
+                      <span className="font-medium text-[var(--text-heading)]">{((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
                 </div>
@@ -563,82 +563,82 @@ export function IQVerdictScreen({
         />
 
         {/* How Likely Section */}
-        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-          <div className="text-xs font-semibold text-[#0EA5E9] mb-3">
+        <div className="bg-[var(--surface-card)] p-4 px-6 border-b border-[var(--border-subtle)]">
+          <div className="text-xs font-semibold text-[var(--accent-sky)] mb-3">
             HOW LIKELY CAN YOU GET THIS PRICE?
           </div>
 
           {/* Deal Gap */}
           <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <TrendingDown className="w-[18px] h-[18px] text-[#F1F5F9]" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-heading)]">
+              <TrendingDown className="w-[18px] h-[18px] text-[var(--text-secondary)]" />
               Deal Gap
             </div>
-            <div className="text-lg font-bold text-[#0EA5E9]">
+            <div className="text-lg font-bold text-[var(--accent-sky)]">
               {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
             </div>
           </div>
 
-          <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
+          <div className="bg-[var(--surface-section)] rounded-lg p-3 mb-4">
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#F1F5F9]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
-              <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
+              <span className="text-[13px] text-[var(--text-secondary)]">{isOffMarket ? 'Zestimate' : 'Asking Price'}</span>
+              <span className="text-[13px] font-semibold text-[var(--text-heading)]">{formatPrice(estValue)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#F1F5F9]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(userTargetPrice)}</span>
+              <span className="text-[13px] text-[var(--text-secondary)]">Your Target</span>
+              <span className="text-[13px] font-semibold text-[var(--accent-sky)]">{formatPrice(userTargetPrice)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#F1F5F9]">Discount needed</span>
-              <span className="text-[13px] font-semibold text-[#0EA5E9]">{formatPrice(Math.abs(discountNeeded))}</span>
+              <span className="text-[13px] text-[var(--text-secondary)]">Discount needed</span>
+              <span className="text-[13px] font-semibold text-[var(--accent-sky)]">{formatPrice(Math.abs(discountNeeded))}</span>
             </div>
           </div>
 
           {/* Seller Motivation */}
           <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <Target className="w-[18px] h-[18px] text-[#F1F5F9]" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-heading)]">
+              <Target className="w-[18px] h-[18px] text-[var(--text-secondary)]" />
               Seller Motivation
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
                 {sellerMotivation.level}
               </span>
-              <span className="text-xs text-[#F1F5F9]">{sellerMotivation.score}</span>
+              <span className="text-xs text-[var(--text-secondary)]">{sellerMotivation.score}</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center py-2">
-            <span className="text-[13px] text-[#F1F5F9]">Max achievable discount</span>
-            <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
+            <span className="text-[13px] text-[var(--text-secondary)]">Max achievable discount</span>
+            <span className="text-[13px] font-semibold text-[var(--text-heading)]">{sellerMotivation.maxDiscount}</span>
           </div>
 
           {/* Suggested Offer */}
           <div 
-            className="relative rounded-[10px] p-4 mt-3 border border-[#0EA5E9]"
-            style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
+            className="relative rounded-[10px] p-4 mt-3 border border-[var(--accent-sky)]"
+            style={{ background: 'linear-gradient(135deg, var(--surface-section) 0%, var(--surface-elevated) 100%)' }}
           >
-            <span className="absolute -top-2 left-4 bg-[#0EA5E9] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+            <span className="absolute -top-2 left-4 bg-[var(--accent-sky)] text-[var(--text-inverse)] text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
               Recommended
             </span>
             <div className="flex justify-between items-center">
-              <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
-              <span className="text-base font-bold text-[#0EA5E9]">{sellerMotivation.suggestedOffer}</span>
+              <span className="text-[13px] text-[var(--text-heading)] font-medium">Suggested opening offer</span>
+              <span className="text-base font-bold text-[var(--accent-sky)]">{sellerMotivation.suggestedOffer}</span>
             </div>
           </div>
         </div>
 
         {/* Additional Opportunity Factors */}
-        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
+        <div className="bg-[var(--surface-card)] p-4 px-6 border-b border-[var(--border-subtle)]">
           <div className="flex justify-between items-center">
-            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#F1F5F9]">
+            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--text-secondary)]">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
               </svg>
               Additional Opportunity Factors
             </span>
             <button 
-              className="flex items-center gap-1 text-[#0EA5E9] text-xs font-medium bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-1 text-[var(--accent-sky)] text-xs font-medium bg-transparent border-none cursor-pointer"
               onClick={() => setShowFactors(!showFactors)}
             >
               {showFactors ? 'Hide' : 'Show'}
@@ -651,7 +651,7 @@ export function IQVerdictScreen({
           </div>
 
           {showFactors && (
-            <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
+            <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
               {factors.map((factor, index) => (
                 <FactorRow key={index} {...factor} />
               ))}
@@ -661,16 +661,16 @@ export function IQVerdictScreen({
       </main>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-6">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[var(--surface-card)] border-t border-[var(--border-subtle)] p-4 px-6">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0EA5E9] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0284c7] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[var(--accent-sky-light)] transition-colors"
           onClick={() => onViewStrategy(topStrategy)}
         >
           Continue to Analysis
           <ArrowRight className="w-[18px] h-[18px]" />
         </button>
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#F1F5F9] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-transparent text-[var(--text-secondary)] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[var(--text-heading)] transition-colors"
         >
           <Download className="w-4 h-4" />
           Export PDF Report

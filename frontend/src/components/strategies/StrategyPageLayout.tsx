@@ -88,7 +88,7 @@ function PropertyContextCard({
       <h3 style={{ fontWeight: 700, fontSize: '1.25rem', color: '#F1F5F9', margin: '0 0 0.25rem' }}>
         How {address.split(',')[0]} performs as a {strategyName}
       </h3>
-      <p style={{ color: '#94A3B8', fontSize: '0.9rem', margin: '0 0 1.25rem' }}>
+      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 1.25rem' }}>
         {details ? `${details} · ` : ''}Listed at {price}
       </p>
       <Link
@@ -99,7 +99,7 @@ function PropertyContextCard({
           gap: '0.5rem',
           padding: '0.75rem 1.5rem',
           background: accentColor,
-          color: '#000',
+          color: 'var(--text-inverse)',
           fontWeight: 700,
           fontSize: '0.875rem',
           borderRadius: 10,
@@ -165,7 +165,7 @@ export function Callout({
           {title}
         </h3>
       )}
-      <div style={{ color: '#CBD5E1', fontSize: '1.0625rem', lineHeight: 1.7 }}>
+      <div style={{ color: 'var(--text-body)', fontSize: '1.0625rem', lineHeight: 1.7 }}>
         {children}
       </div>
     </div>
@@ -176,7 +176,7 @@ export function Prose({ children }: { children: React.ReactNode }) {
   return (
     <p
       style={{
-        color: '#CBD5E1',
+        color: 'var(--text-body)',
         fontSize: '1.0625rem',
         lineHeight: 1.75,
         margin: '0 0 1rem',
@@ -232,13 +232,13 @@ export function StepItem({
           style={{
             fontWeight: 700,
             fontSize: '1.0625rem',
-            color: '#F1F5F9',
+            color: 'var(--text-heading)',
             margin: '0 0 0.25rem',
           }}
         >
           {title}
         </h4>
-        <p style={{ color: '#94A3B8', fontSize: '0.9375rem', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', margin: 0, lineHeight: 1.5 }}>
           {description}
         </p>
       </div>
@@ -267,9 +267,9 @@ export function StrategyPageLayout({
     <div
       style={{
         fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-        background: '#000',
+        background: 'var(--surface-base)',
         minHeight: '100vh',
-        color: '#CBD5E1',
+        color: 'var(--text-body)',
       }}
     >
       {/* Font: Inter is self-hosted via next/font in layout.tsx */}
@@ -277,7 +277,7 @@ export function StrategyPageLayout({
       {/* ── Header ── */}
       <header
         style={{
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--border-subtle)',
           padding: '1rem 0',
         }}
       >
@@ -303,11 +303,11 @@ export function StrategyPageLayout({
               style={{
                 fontSize: '1.375rem',
                 fontWeight: 700,
-                color: '#F1F5F9',
+                color: 'var(--text-heading)',
                 letterSpacing: '-0.02em',
               }}
             >
-              DealGap<span style={{ color: '#0EA5E9' }}>IQ</span>
+              DealGap<span style={{ color: 'var(--accent-sky)' }}>IQ</span>
             </span>
           </Link>
           <nav className={styles.stratNavActions}>
@@ -317,8 +317,8 @@ export function StrategyPageLayout({
                   href="/search"
                   style={{
                     padding: '0.5rem 1.25rem',
-                    background: '#38bdf8',
-                    color: '#000',
+                    background: 'var(--accent-sky-light)',
+                    color: 'var(--text-inverse)',
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     borderRadius: 8,
@@ -332,10 +332,10 @@ export function StrategyPageLayout({
                   style={{
                     padding: '0.5rem 1.25rem',
                     background: 'transparent',
-                    color: '#94A3B8',
+                    color: 'var(--text-secondary)',
                     fontWeight: 500,
                     fontSize: '0.875rem',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    border: '1px solid var(--border-subtle)',
                     borderRadius: 8,
                     cursor: 'pointer',
                   }}
@@ -350,7 +350,7 @@ export function StrategyPageLayout({
                   style={{
                     padding: '0.5rem 1.25rem',
                     background: 'transparent',
-                    color: '#94A3B8',
+                    color: 'var(--text-secondary)',
                     fontWeight: 500,
                     fontSize: '0.875rem',
                     border: 'none',
@@ -363,8 +363,8 @@ export function StrategyPageLayout({
                   onClick={() => openAuthModal('register')}
                   style={{
                     padding: '0.5rem 1.25rem',
-                    background: '#38bdf8',
-                    color: '#000',
+                    background: 'var(--accent-sky-light)',
+                    color: 'var(--text-inverse)',
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     border: 'none',
@@ -388,7 +388,7 @@ export function StrategyPageLayout({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            color: '#64748B',
+            color: 'var(--text-label)',
             textDecoration: 'none',
             fontSize: '0.875rem',
             fontWeight: 500,
@@ -428,7 +428,7 @@ export function StrategyPageLayout({
             style={{
               fontWeight: 700,
               fontSize: '2.5rem',
-              color: '#F1F5F9',
+              color: 'var(--text-heading)',
               letterSpacing: '-0.025em',
               margin: '0 0 0.5rem',
               lineHeight: 1.2,
@@ -436,7 +436,7 @@ export function StrategyPageLayout({
           >
             {name}
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: '1.125rem', margin: 0 }}>{tagline}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', margin: 0 }}>{tagline}</p>
         </div>
       </div>
 
@@ -446,8 +446,8 @@ export function StrategyPageLayout({
         <div
           className={styles.stratContentCard}
           style={{
-            background: '#0C1220',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: 16,
             padding: '2.5rem',
             marginBottom: '1.5rem',
@@ -457,7 +457,7 @@ export function StrategyPageLayout({
             style={{
               fontWeight: 700,
               fontSize: '1.75rem',
-              color: '#F1F5F9',
+              color: 'var(--text-heading)',
               letterSpacing: '-0.02em',
               margin: '0 0 1rem',
             }}
@@ -474,8 +474,8 @@ export function StrategyPageLayout({
               display: 'block',
               textAlign: 'center',
               padding: '1rem 2rem',
-              background: '#38bdf8',
-              color: '#000',
+              background: 'var(--accent-sky-light)',
+              color: 'var(--text-inverse)',
               fontWeight: 700,
               fontSize: '1rem',
               borderRadius: 10,
@@ -496,8 +496,8 @@ export function StrategyPageLayout({
         <div
           className={styles.stratContentCard}
           style={{
-            background: '#0C1220',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: 16,
             padding: '2.5rem',
           }}
@@ -506,7 +506,7 @@ export function StrategyPageLayout({
             style={{
               fontWeight: 700,
               fontSize: '1.75rem',
-              color: '#F1F5F9',
+              color: 'var(--text-heading)',
               letterSpacing: '-0.02em',
               margin: '0 0 2rem',
               textAlign: 'center',
@@ -536,13 +536,13 @@ export function StrategyPageLayout({
                   style={{
                     fontWeight: 700,
                     fontSize: '1rem',
-                    color: '#F1F5F9',
+                    color: 'var(--text-heading)',
                     margin: '0 0 0.375rem',
                   }}
                 >
                   {b.title}
                 </h4>
-                <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
                   {b.description}
                 </p>
               </div>
@@ -554,7 +554,7 @@ export function StrategyPageLayout({
       {/* ── Footer ── */}
       <footer
         style={{
-          borderTop: '1px solid rgba(255,255,255,0.07)',
+          borderTop: '1px solid var(--border-subtle)',
           padding: '2rem 0',
         }}
       >
@@ -572,13 +572,13 @@ export function StrategyPageLayout({
             style={{
               fontSize: '1.125rem',
               fontWeight: 700,
-              color: '#F1F5F9',
+              color: 'var(--text-heading)',
               letterSpacing: '-0.02em',
             }}
           >
-            DealGap<span style={{ color: '#0EA5E9' }}>IQ</span>
+            DealGap<span style={{ color: 'var(--accent-sky)' }}>IQ</span>
           </span>
-          <p style={{ color: '#64748B', fontSize: '0.8125rem', margin: 0 }}>
+          <p style={{ color: 'var(--text-label)', fontSize: '0.8125rem', margin: 0 }}>
             &copy; 2026 DealGapIQ. All rights reserved.
           </p>
         </div>
