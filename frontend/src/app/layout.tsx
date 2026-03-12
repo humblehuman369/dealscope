@@ -6,6 +6,7 @@ import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
 import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
+import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -79,8 +80,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark antialiased ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}>
-      <body className="font-sans bg-black text-slate-body transition-colors duration-300">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`antialiased ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}
+    >
+      <head>
+        <ThemeHydrationScript />
+      </head>
+      <body className="font-sans bg-[var(--surface-base)] text-[var(--text-body)] transition-colors duration-300">
         <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}

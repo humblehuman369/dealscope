@@ -42,7 +42,7 @@ export const colors = {
     300: '#7dd3fc',  // Sky blue highlight
     400: '#38bdf8',
     500: '#0EA5E9',  // Dark mode accent — unified sky blue
-    light: '#0EA5E9', // Light mode accent — unified sky blue
+    light: '#0284C7', // Light mode accent — deeper sky for WCAG contrast
     600: '#0284c7',
     700: '#0369a1',
     800: '#075985',
@@ -204,7 +204,7 @@ export const gradients = {
   /** CTA buttons, hero elements - dark mode */
   brandDark: 'linear-gradient(135deg, #0465f2 0%, #0EA5E9 100%)',
   /** CTA buttons, hero elements - light mode */
-  brandLight: 'linear-gradient(135deg, #0465f2 0%, #0EA5E9 100%)',
+  brandLight: 'linear-gradient(135deg, #0455d1 0%, #0284C7 100%)',
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds */

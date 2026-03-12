@@ -30,7 +30,6 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
-import { api } from '@/lib/api-client'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -38,22 +37,22 @@ import { api } from '@/lib/api-client'
 
 const colors = {
   background: {
-    deepNavy: '#0f1031',
-    surface: '#0F172A',
-    elevated: '#1E293B',
+    deepNavy: 'var(--surface-base)',
+    surface: 'var(--surface-card)',
+    elevated: 'var(--surface-elevated)',
   },
   brand: {
-    teal: '#0EA5E9',
-    tealBright: '#0EA5E9',
+    teal: 'var(--accent-sky)',
+    tealBright: 'var(--accent-sky-light)',
   },
   text: {
-    white: '#FFFFFF',
-    primary: '#F1F5F9',
-    secondary: '#94A3B8',
-    tertiary: '#64748B',
+    white: 'var(--text-heading)',
+    primary: 'var(--text-heading)',
+    secondary: 'var(--text-secondary)',
+    tertiary: 'var(--text-label)',
   },
   ui: {
-    border: '#1E293B',
+    border: 'var(--border-subtle)',
   },
 }
 
@@ -325,7 +324,7 @@ export function AppHeader({
     }
   }, [resolvedProperty, displayAddress])
 
-  const { isSaved, savedPropertyId, isSaving, toggle: handleSaveToggle } = useSaveProperty({
+  const { isSaved, toggle: handleSaveToggle } = useSaveProperty({
     displayAddress: displayAddress || '',
     propertySnapshot: savePropertySnapshot,
   })
@@ -451,12 +450,6 @@ export function AppHeader({
     }
   }
 
-  const handlePropertyClick = () => {
-    if (resolvedProperty?.zpid && displayAddress) {
-      router.push(`/property/${resolvedProperty.zpid}?address=${encodeURIComponent(displayAddress)}`)
-    }
-  }
-
   // Determine if header should be hidden
   // Moved here to ensure all hooks (useCallback) are called before return
   const isHiddenRoute = HIDDEN_ROUTES.includes(pathname || '')
@@ -464,8 +457,8 @@ export function AppHeader({
     return null
   }
 
-  // Header and toolbar: pure black background
-  const headerBg = '#000000'
+  // Header and toolbar theme-aware background
+  const headerBg = 'var(--surface-base)'
 
   return (
     <>
@@ -500,7 +493,7 @@ export function AppHeader({
               href="/about"
               className="text-sm font-medium transition-opacity hover:opacity-80"
               style={{
-                color: '#FFFFFF',
+                color: 'var(--text-heading)',
                 borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                 paddingBottom: 2,
               }}
@@ -511,7 +504,7 @@ export function AppHeader({
               href="/pricing"
               className="text-sm font-medium transition-opacity hover:opacity-80"
               style={{
-                color: '#FFFFFF',
+                color: 'var(--text-heading)',
                 borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                 paddingBottom: 2,
               }}
@@ -525,7 +518,7 @@ export function AppHeader({
             >
               <Search 
                 className="w-5 h-5" 
-                style={{ color: '#FFFFFF' }}
+                style={{ color: 'var(--text-heading)' }}
               />
             </button>
             {isAuthenticated ? (
@@ -539,7 +532,7 @@ export function AppHeader({
                 >
                   <Menu 
                     className="w-5 h-5" 
-                    style={{ color: '#FFFFFF' }}
+                    style={{ color: 'var(--text-heading)' }}
                   />
                 </button>
 
@@ -553,7 +546,7 @@ export function AppHeader({
                             className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
                             style={{
                               background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
-                              color: isPro ? '#0ea5e9' : '#64748b',
+                              color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
                             }}
                           >
                             {isPro ? 'Pro' : 'Starter'}
@@ -623,9 +616,9 @@ export function AppHeader({
           <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
-              backgroundColor: '#000000',
-              borderTop: '1px solid rgba(14, 165, 233, 0.25)',
-              borderBottom: '1px solid rgba(14, 165, 233, 0.25)',
+              backgroundColor: 'var(--surface-base)',
+              borderTop: '1px solid var(--border-subtle)',
+              borderBottom: '1px solid var(--border-subtle)',
               WebkitOverflowScrolling: 'touch',
             }}
           >
@@ -642,7 +635,7 @@ export function AppHeader({
                   style={{
                     backgroundColor: 'transparent',
                     fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-                    color: colors.brand.teal,
+                    color: 'var(--text-link)',
                     borderColor: colors.ui.border,
                     borderBottom: isActive ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
                   }}
@@ -664,7 +657,7 @@ export function AppHeader({
         return (
           <div
             className="sticky top-0 z-50"
-            style={{ backgroundColor: '#000000' }}
+            style={{ backgroundColor: 'var(--surface-base)' }}
           >
             <PropertyAddressBar
               address={p?.address ?? addrParts.streetAddress}

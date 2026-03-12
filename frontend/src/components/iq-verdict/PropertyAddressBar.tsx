@@ -11,6 +11,17 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 
+const barTokens = {
+  surface: 'var(--surface-base)',
+  border: 'var(--border-subtle)',
+  heading: 'var(--text-heading)',
+  label: 'var(--text-label)',
+  accent: 'var(--accent-sky)',
+  negative: 'var(--status-negative)',
+  dot: 'rgba(255,255,255,0.15)',
+  hoverAccent: 'rgba(14,165,233,0.08)',
+} as const
+
 interface PropertyAddressBarProps {
   address: string
   city?: string
@@ -61,7 +72,7 @@ function StatusText({ status }: { status: string }) {
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
-        color: isListedOrOffMarket ? '#EF4444' : '#0EA5E9',
+        color: isListedOrOffMarket ? barTokens.negative : barTokens.accent,
         whiteSpace: 'nowrap',
       }}
     >
@@ -88,7 +99,7 @@ function DetailItem({
             fontSize: 10,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
-            color: '#71717A',
+            color: barTokens.label,
           }}
         >
           {label}
@@ -99,7 +110,7 @@ function DetailItem({
           fontFamily: "'DM Sans', sans-serif",
           fontSize: 13,
           fontWeight: 600,
-          color: accent ? '#0EA5E9' : '#FFFFFF',
+          color: accent ? barTokens.accent : barTokens.heading,
         }}
       >
         {value}
@@ -115,7 +126,7 @@ function Dot() {
         width: 3,
         height: 3,
         borderRadius: '50%',
-        background: 'rgba(255,255,255,0.15)',
+        background: barTokens.dot,
         flexShrink: 0,
       }}
     />
@@ -160,7 +171,7 @@ export function PropertyAddressBar({
   return (
     <div
       style={{
-        background: '#000000',
+        background: barTokens.surface,
         fontFamily: "'DM Sans', sans-serif",
         padding: '0 24px',
         width: '100%',
@@ -172,7 +183,7 @@ export function PropertyAddressBar({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 16px',
-          borderBottom: '1px solid rgba(14,165,233,0.12)',
+          borderBottom: `1px solid ${barTokens.border}`,
           gap: 16,
           flexWrap: 'wrap',
         }}
@@ -196,7 +207,7 @@ export function PropertyAddressBar({
           >
             <path
               d="M2 7.5L8 2.5L14 7.5V13.5C14 14.05 13.55 14.5 13 14.5H3C2.45 14.5 2 14.05 2 13.5V7.5Z"
-              stroke="#0EA5E9"
+              stroke={barTokens.accent}
               strokeWidth="1.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -204,7 +215,7 @@ export function PropertyAddressBar({
             />
             <path
               d="M6 14.5V8.5H10V14.5"
-              stroke="#0EA5E9"
+              stroke={barTokens.accent}
               strokeWidth="1.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -216,7 +227,7 @@ export function PropertyAddressBar({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: '#FFFFFF',
+              color: barTokens.heading,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -267,7 +278,7 @@ export function PropertyAddressBar({
             transition: 'background 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(14,165,233,0.08)'
+            e.currentTarget.style.background = barTokens.hoverAccent
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'none'
@@ -275,10 +286,10 @@ export function PropertyAddressBar({
           title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
           aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? '#0EA5E9' : 'none'}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? barTokens.accent : 'none'}>
             <path
               d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
-              stroke="#0EA5E9"
+              stroke={barTokens.accent}
               strokeWidth="1.2"
               strokeLinecap="round"
               strokeLinejoin="round"

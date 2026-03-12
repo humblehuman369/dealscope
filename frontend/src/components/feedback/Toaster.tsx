@@ -45,16 +45,16 @@ export function Toaster() {
       toastOptions={{
         duration: 4000,
         classNames: {
-          toast: 'group toast bg-white dark:bg-navy-800 border-slate-200 dark:border-navy-700',
-          title: 'text-slate-900 dark:text-white font-medium',
-          description: 'text-slate-600 dark:text-slate-400',
-          actionButton: 'bg-teal-500 text-white hover:bg-teal-600',
-          cancelButton: 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-          closeButton: 'bg-slate-100 dark:bg-navy-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300',
-          success: 'border-green-200 dark:border-green-800',
-          error: 'border-red-200 dark:border-red-800',
-          warning: 'border-amber-200 dark:border-amber-800',
-          info: 'border-blue-200 dark:border-blue-800',
+          toast: 'group toast border border-[var(--border-default)] bg-[var(--surface-card)]',
+          title: 'font-medium text-[var(--text-heading)]',
+          description: 'text-[var(--text-secondary)]',
+          actionButton: 'bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)]',
+          cancelButton: 'bg-[var(--surface-elevated)] text-[var(--text-body)] hover:bg-[var(--surface-card-hover)]',
+          closeButton: 'bg-[var(--surface-elevated)] text-[var(--text-label)] hover:text-[var(--text-heading)]',
+          success: 'border-[var(--status-positive)]',
+          error: 'border-[var(--status-negative)]',
+          warning: 'border-[var(--status-warning)]',
+          info: 'border-[var(--status-info)]',
         },
       }}
     />

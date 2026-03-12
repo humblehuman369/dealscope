@@ -38,28 +38,28 @@ const STATE_STYLES: Record<BarState, {
   ctaColor: string
 }> = {
   normal: {
-    border: 'rgba(14,165,233,0.25)',
-    glow: '0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04)',
-    fill: '#0EA5E9',
+    border: 'var(--border-subtle)',
+    glow: 'var(--shadow-card)',
+    fill: 'var(--accent-sky)',
     ctaBg: 'rgba(14,165,233,0.1)',
     ctaBorder: 'rgba(14,165,233,0.25)',
-    ctaColor: '#0EA5E9',
+    ctaColor: 'var(--accent-sky)',
   },
   warning: {
     border: 'rgba(251,191,36,0.3)',
     glow: '0 0 30px rgba(251,191,36,0.06), 0 0 60px rgba(251,191,36,0.03)',
-    fill: '#FBBF24',
+    fill: 'var(--status-warning)',
     ctaBg: 'rgba(251,191,36,0.1)',
     ctaBorder: 'rgba(251,191,36,0.25)',
-    ctaColor: '#FBBF24',
+    ctaColor: 'var(--status-warning)',
   },
   critical: {
     border: 'rgba(249,112,102,0.3)',
     glow: '0 0 30px rgba(249,112,102,0.08), 0 0 60px rgba(249,112,102,0.04)',
-    fill: '#F97066',
-    ctaBg: '#F97066',
-    ctaBorder: '#F97066',
-    ctaColor: '#000',
+    fill: 'var(--status-negative)',
+    ctaBg: 'var(--status-negative)',
+    ctaBorder: 'var(--status-negative)',
+    ctaColor: 'var(--text-inverse)',
   },
 }
 
@@ -111,7 +111,7 @@ export function UsageBar() {
       className="flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-7 mx-4 md:mx-6 mt-3 py-4 px-5 md:py-3.5 md:px-6"
       style={{
         fontFamily: FONT_DM,
-        background: '#000',
+        background: 'var(--surface-base)',
         border: `1px solid ${s.border}`,
         borderRadius: 12,
         boxShadow: s.glow,
@@ -119,7 +119,7 @@ export function UsageBar() {
     >
       {/* Plan badge */}
       <div className="flex items-center gap-2 w-full md:w-auto pr-0 md:pr-7 flex-shrink-0 border-r-0 md:border-r border-white/10">
-        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#F1F5F9' }}>Starter</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-heading)' }}>Starter</span>
         <span
           style={{
             fontSize: '0.55rem',
@@ -128,7 +128,7 @@ export function UsageBar() {
             textTransform: 'uppercase',
             padding: '0.15rem 0.45rem',
             borderRadius: 3,
-            color: '#FBBF24',
+            color: 'var(--status-warning)',
             background: 'rgba(251,191,36,0.1)',
             border: '1px solid rgba(251,191,36,0.2)',
           }}
@@ -195,7 +195,7 @@ function Meter({
 }) {
   return (
     <div className="flex items-center" style={{ gap: '0.6rem' }}>
-      <span style={{ fontSize: '0.72rem', color: '#F1F5F9', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: '0.72rem', color: 'var(--text-heading)', whiteSpace: 'nowrap' }}>
         {label}
       </span>
       <div
@@ -203,7 +203,7 @@ function Meter({
           width: 80,
           height: 4,
           borderRadius: 2,
-          background: 'rgba(255,255,255,0.08)',
+            background: 'var(--border-subtle)',
           overflow: 'hidden',
         }}
       >
@@ -227,7 +227,7 @@ function Meter({
         }}
       >
         {used}
-        <span style={{ color: '#F1F5F9', fontWeight: 400 }}>/{limit}</span>
+        <span style={{ color: 'var(--text-heading)', fontWeight: 400 }}>/{limit}</span>
       </span>
     </div>
   )
