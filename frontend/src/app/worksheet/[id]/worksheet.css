@@ -8,46 +8,46 @@
    ========================================== */
 :root {
   /* DealGapIQ Brand Colors - Pacific Teal */
-  --iq-teal: #0EA5E9;
-  --iq-teal-dark: #0284c7;
-  --iq-teal-light: #38bdf8;
-  --iq-navy: #0f172a;
-  --iq-navy-light: #1e293b;
+  --iq-teal: var(--accent-sky);
+  --iq-teal-dark: var(--accent-sky);
+  --iq-teal-light: var(--accent-sky-light);
+  --iq-navy: var(--text-heading);
+  --iq-navy-light: var(--text-body);
   
   /* Background Colors - White */
-  --ws-bg: #ffffff;
-  --ws-bg-alt: #f8fafc;
-  --ws-card: #ffffff;
-  --ws-card-hover: #fafafa;
+  --ws-bg: var(--surface-base);
+  --ws-bg-alt: var(--surface-section);
+  --ws-card: var(--surface-card);
+  --ws-card-hover: var(--surface-card-hover);
   
   /* Border Colors */
-  --ws-border: #e2e8f0;
-  --ws-border-light: #f1f5f9;
+  --ws-border: var(--border-default);
+  --ws-border-light: var(--border-subtle);
   --ws-border-focus: var(--iq-teal);
   
   /* Text Colors */
-  --ws-text-primary: #1e293b;
-  --ws-text-secondary: #64748b;
-  --ws-text-muted: #94a3b8;
-  --ws-text-label: #475569;
+  --ws-text-primary: var(--text-heading);
+  --ws-text-secondary: var(--text-secondary);
+  --ws-text-muted: var(--text-label);
+  --ws-text-label: var(--text-body);
   
   /* Brand Colors */
   --ws-accent: var(--iq-teal);
   --ws-accent-hover: var(--iq-teal-dark);
-  --ws-accent-light: rgba(0, 126, 167, 0.2);
-  --ws-accent-bg: rgba(0, 126, 167, 0.15);
+  --ws-accent-light: var(--accent-sky-light);
+  --ws-accent-bg: var(--color-teal-dim);
   
   /* Status Colors - Pacific Teal for positive */
-  --ws-positive: #0EA5E9;
-  --ws-positive-light: rgba(0, 126, 167, 0.15);
-  --ws-negative: #dc2626;
-  --ws-negative-light: #fee2e2;
-  --ws-warning: #d97706;
-  --ws-warning-light: #fef3c7;
+  --ws-positive: var(--status-positive);
+  --ws-positive-light: rgba(52,211,153,0.12);
+  --ws-negative: var(--status-negative);
+  --ws-negative-light: rgba(220,38,38,0.12);
+  --ws-warning: var(--status-warning);
+  --ws-warning-light: rgba(217,119,6,0.12);
   
   /* Section Colors */
-  --ws-section-header: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
-  --ws-section-header-text: #334155;
+  --ws-section-header: linear-gradient(135deg, var(--color-teal-dim) 0%, var(--surface-section) 100%);
+  --ws-section-header-text: var(--text-body);
   
   /* Shadows */
   --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -68,7 +68,7 @@
 
 .worksheet-container-v2 {
   min-height: 100vh;
-  background: #ffffff;
+  background: var(--surface-base);
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
@@ -93,7 +93,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: var(--ws-spacing-sm) var(--ws-spacing-md);
-  background: white;
+  background: var(--surface-card);
   border-bottom: 1px solid var(--ws-border);
   box-shadow: var(--ws-shadow-sm);
   width: 100%;
@@ -302,14 +302,14 @@ html, body {
 
 .worksheet-tabs-fade.left {
   left: 0;
-  background: linear-gradient(to right, white 0%, white 40%, transparent 100%);
+  background: linear-gradient(to right, var(--surface-card) 0%, var(--surface-card) 40%, transparent 100%);
   justify-content: flex-start;
   padding-left: 4px;
 }
 
 .worksheet-tabs-fade.right {
   right: 0;
-  background: linear-gradient(to left, white 0%, white 40%, transparent 100%);
+  background: linear-gradient(to left, var(--surface-card) 0%, var(--surface-card) 40%, transparent 100%);
   justify-content: flex-end;
   padding-right: 4px;
 }
@@ -321,7 +321,7 @@ html, body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface-card);
   border: 1px solid var(--ws-border);
   color: var(--ws-text-secondary);
   cursor: pointer;
@@ -480,7 +480,7 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: var(--surface-card);
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: var(--ws-shadow-md);
@@ -569,8 +569,8 @@ html, body {
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background: linear-gradient(135deg, var(--iq-teal) 0%, var(--iq-teal-dark) 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%);
+  color: var(--text-inverse);
   border: none;
   border-radius: 8px;
   font-size: 12px;
@@ -602,7 +602,7 @@ html, body {
   top: calc(100% + 8px);
   left: 0;
   min-width: 200px;
-  background: white;
+  background: var(--surface-card);
   border: 1px solid var(--ws-border);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
@@ -769,7 +769,7 @@ html, body {
 }
 
 .summary-card {
-  background: white;
+  background: var(--surface-card);
   border: 1px solid var(--ws-border);
   border-radius: 10px;
   padding: 10px 8px;
@@ -1482,7 +1482,7 @@ html, body {
   padding: 4px 6px;
   border: 1px solid var(--ws-border);
   border-radius: 6px;
-  background: white;
+  background: var(--surface-card);
   min-width: 70px;
   max-width: 100px;
 }
@@ -1538,7 +1538,7 @@ html, body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface-card);
   border: 2px solid var(--iq-teal);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1581,7 +1581,7 @@ html, body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface-card);
   border: 2px solid var(--iq-teal);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1626,7 +1626,7 @@ html, body {
    ========================================== */
 
 .chart-card {
-  background: white;
+  background: var(--surface-card);
   border: 1px solid var(--ws-border);
   border-radius: 10px;
   overflow: hidden;

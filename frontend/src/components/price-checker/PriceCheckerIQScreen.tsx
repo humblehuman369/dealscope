@@ -99,8 +99,8 @@ const getDaysAgoNum = (dateString: string): number => {
 const getFreshnessBadge = (dateString: string, isSale: boolean) => {
   const daysAgo = getDaysAgoNum(dateString)
   if (daysAgo < 0) return null
-  if (daysAgo <= 30) return { label: 'Recent', color: '#34d399', bgColor: 'rgba(52,211,153,0.12)' }
-  if (daysAgo > 90) return { label: isSale ? 'Older sale' : 'Older listing', color: '#fbbf24', bgColor: 'rgba(251,191,36,0.12)' }
+  if (daysAgo <= 30) return { label: 'Recent', color: 'var(--status-positive)', bgColor: 'rgba(52,211,153,0.12)' }
+  if (daysAgo > 90) return { label: isSale ? 'Older sale' : 'Older listing', color: 'var(--status-warning)', bgColor: 'rgba(251,191,36,0.12)' }
   return null
 }
 
@@ -130,18 +130,18 @@ function toCompProperty(c: SaleComp | RentComp): CompProperty {
 // SUB-COMPONENTS
 // ============================================
 // Card border/glow from color system: small card default
-const cardBorderGlow = 'border border-[rgba(14,165,233,0.25)] shadow-[0_0_30px_rgba(14,165,233,0.08),0_0_60px_rgba(14,165,233,0.04)]'
-const cardBorderGlowHover = 'hover:border-[rgba(14,165,233,0.55)] hover:shadow-[0_0_50px_rgba(14,165,233,0.15),0_0_100px_rgba(14,165,233,0.07)]'
-const largeCardBorderGlow = 'border border-[rgba(14,165,233,0.3)] shadow-[0_0_40px_rgba(14,165,233,0.1),0_0_80px_rgba(14,165,233,0.05)]'
+const cardBorderGlow = 'border border-[var(--border-subtle)] shadow-[var(--shadow-card)]'
+const cardBorderGlowHover = 'hover:border-[var(--border-focus)] hover:shadow-[var(--shadow-card-hover)]'
+const largeCardBorderGlow = 'border border-[var(--border-subtle)] shadow-[var(--shadow-card)]'
 
 const CompCardSkeleton = () => (
-  <div className={`bg-black rounded-xl p-4 animate-pulse ${cardBorderGlow}`}>
+  <div className={`bg-[var(--surface-base)] rounded-xl p-4 animate-pulse ${cardBorderGlow}`}>
     <div className="flex gap-4">
-      <div className="w-[100px] h-[80px] bg-white/[0.07] rounded-lg flex-shrink-0" />
+      <div className="w-[100px] h-[80px] bg-[var(--surface-elevated)] rounded-lg flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-white/[0.07] rounded w-3/4" />
-        <div className="h-3 bg-white/[0.07] rounded w-1/2" />
-        <div className="h-3 bg-white/[0.07] rounded w-1/3" />
+        <div className="h-4 bg-[var(--surface-elevated)] rounded w-3/4" />
+        <div className="h-3 bg-[var(--surface-elevated)] rounded w-1/2" />
+        <div className="h-3 bg-[var(--surface-elevated)] rounded w-1/3" />
       </div>
     </div>
   </div>
@@ -152,13 +152,13 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
   const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value))
   return (
     <div className="flex items-center gap-2">
-      <Icon className="w-3 h-3 text-[#F1F5F9] flex-shrink-0" />
-      <span className="text-xs text-[#F1F5F9] w-14">{label}</span>
-      <div className="flex-1 h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
+      <Icon className="w-3 h-3 text-[var(--text-heading)] flex-shrink-0" />
+      <span className="text-xs text-[var(--text-heading)] w-14">{label}</span>
+      <div className="flex-1 h-1.5 bg-[var(--surface-elevated)] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#38bdf8' : safeValue >= 75 ? '#0EA5E9' : '#fbbf24' }} />
+          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? 'var(--accent-sky-light)' : safeValue >= 75 ? 'var(--accent-sky)' : 'var(--status-warning)' }} />
       </div>
-      <span className="text-xs font-semibold text-[#CBD5E1] w-8 text-right tabular-nums">{safeValue}%</span>
+      <span className="text-xs font-semibold text-[var(--text-body)] w-8 text-right tabular-nums">{safeValue}%</span>
     </div>
   )
 }
@@ -177,26 +177,26 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
   const freshness = getFreshnessBadge(compDate, isSale)
 
   return (
-    <div className={`relative rounded-xl transition-all overflow-hidden bg-black ${
+    <div className={`relative rounded-xl transition-all overflow-hidden bg-[var(--surface-base)] ${
       isSelected
-        ? 'border border-[rgba(14,165,233,0.55)] shadow-[0_0_50px_rgba(14,165,233,0.15),0_0_100px_rgba(14,165,233,0.07)]'
+        ? 'border border-[var(--border-focus)] shadow-[var(--shadow-card-hover)]'
         : `${cardBorderGlow} ${cardBorderGlowHover}`
     }`}>
       {/* Selection checkbox — 44px tap target for mobile */}
       <button onClick={onToggle}
         className={`absolute top-2 left-2 z-10 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-all ${
-          isSelected ? 'bg-[#38bdf8]/20 border-2 border-[#38bdf8]' : 'bg-black border-2 border-[#F1F5F9] hover:border-[#38bdf8]'
+          isSelected ? 'bg-[var(--color-sky-dim)] border-2 border-[var(--accent-sky-light)]' : 'bg-[var(--surface-base)] border-2 border-[var(--text-heading)] hover:border-[var(--accent-sky-light)]'
         }`}
         aria-label={isSelected ? 'Deselect comp' : 'Select comp'}>
-        <span className={`rounded-full flex items-center justify-center w-5 h-5 ${isSelected ? 'bg-[#38bdf8]' : ''}`}>
-          {isSelected && <Check className="w-3 h-3 text-black" />}
+        <span className={`rounded-full flex items-center justify-center w-5 h-5 ${isSelected ? 'bg-[var(--accent-sky-light)]' : ''}`}>
+          {isSelected && <Check className="w-3 h-3 text-[var(--text-inverse)]" />}
         </span>
       </button>
 
       {/* Refresh button on unselected */}
       {!isSelected && (
         <button onClick={onRefreshComp} disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black border border-[rgba(14,165,233,0.25)] text-[#F1F5F9] hover:text-[#38bdf8] hover:border-[rgba(14,165,233,0.55)] transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[var(--text-heading)] hover:text-[var(--accent-sky-light)] hover:border-[var(--border-focus)] transition-colors disabled:opacity-50"
           title="Replace this comp">
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -212,23 +212,23 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
       >
         {/* Image + distance badge + View Photos */}
         <div className="flex flex-col w-[100px] flex-shrink-0">
-          <div className="relative h-[80px] bg-white/[0.05] rounded-tl-xl overflow-hidden">
+          <div className="relative h-[80px] bg-[var(--surface-elevated)] rounded-tl-xl overflow-hidden">
             {comp.imageUrl ? (
               <img src={comp.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white/[0.05]">
-                {isSale ? <Building2 className="w-5 h-5 text-[#F1F5F9]" /> : <Home className="w-5 h-5 text-[#F1F5F9]" />}
+              <div className="w-full h-full flex items-center justify-center bg-[var(--surface-elevated)]">
+                {isSale ? <Building2 className="w-5 h-5 text-[var(--text-heading)]" /> : <Home className="w-5 h-5 text-[var(--text-heading)]" />}
               </div>
             )}
             <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
-              <span className="text-[10px] font-semibold text-[#38bdf8] tabular-nums">{comp.distanceMiles.toFixed(2)} mi</span>
+              <span className="text-[10px] font-semibold text-[var(--accent-sky-light)] tabular-nums">{comp.distanceMiles.toFixed(2)} mi</span>
             </div>
           </div>
           {comp.zpid && onViewPhotos && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onViewPhotos(); }}
-              className="flex items-center justify-center gap-1 py-1.5 w-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-white text-[10px] font-medium transition-colors"
+              className="flex items-center justify-center gap-1 py-1.5 w-full bg-[var(--accent-sky-light)] hover:opacity-90 text-[var(--text-inverse)] text-[10px] font-medium transition-colors"
             >
               <Camera className="w-3 h-3" />
               Photos
@@ -240,21 +240,21 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
         <div className="flex-1 p-3 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0 pl-4">
-              <h4 className="text-sm font-semibold text-[#F1F5F9] truncate">{comp.address}</h4>
-              <p className="text-xs text-[#F1F5F9] truncate">{comp.city}, {comp.state}</p>
+              <h4 className="text-sm font-semibold text-[var(--text-heading)] truncate">{comp.address}</h4>
+              <p className="text-xs text-[var(--text-heading)] truncate">{comp.city}, {comp.state}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <p className="text-sm font-bold text-[var(--text-heading)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {formatCurrency(isSale ? (comp as SaleComp).salePrice : (comp as RentComp).monthlyRent)}
-                {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
+                {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
               </p>
               <div className="flex items-center justify-end gap-2 flex-wrap">
-                <p className="text-[13px] font-semibold text-[#38bdf8] tabular-nums">
+                <p className="text-[13px] font-semibold text-[var(--accent-sky-light)] tabular-nums">
                   ${Number(isSale ? (comp as SaleComp).pricePerSqft : (comp as RentComp).rentPerSqft).toFixed(2)}/sf{!isSale && '/mo'}
                 </p>
                 {comp.yearBuilt > 0 && (
-                  <span className="flex items-center gap-0.5 text-[13px] text-[#F1F5F9] tabular-nums">
-                    <Calendar className="w-3 h-3 text-[#F1F5F9]" aria-hidden />
+                  <span className="flex items-center gap-0.5 text-[13px] text-[var(--text-heading)] tabular-nums">
+                    <Calendar className="w-3 h-3 text-[var(--text-heading)]" aria-hidden />
                     Yr Built {comp.yearBuilt}
                   </span>
                 )}
@@ -262,7 +262,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[13px] text-[#F1F5F9] mb-1.5 pl-4">
+          <div className="flex items-center gap-2 text-[13px] text-[var(--text-heading)] mb-1.5 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
             <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()} sq ft</span>
@@ -272,15 +272,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
           </div>
 
           <div className="flex items-center gap-1.5 pl-4">
-            <span className="text-[12px] text-[#F1F5F9]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
-            <span className="text-[12px] px-1 py-0.5 rounded bg-white/[0.07] text-[#F1F5F9]">{getDaysAgo(compDate)}</span>
+            <span className="text-[12px] text-[var(--text-heading)]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
+            <span className="text-[12px] px-1 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-heading)]">{getDaysAgo(compDate)}</span>
             {freshness && (
               <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium"
                 style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
                 {freshness.label}
               </span>
             )}
-            <button type="button" onClick={(e) => { e.stopPropagation(); onExpand(); }} className="ml-auto text-[14px] text-[#38bdf8] hover:text-[#38bdf8]/80 font-medium flex items-center gap-0.5">
+            <button type="button" onClick={(e) => { e.stopPropagation(); onExpand(); }} className="ml-auto text-[14px] text-[var(--accent-sky-light)] hover:opacity-80 font-medium flex items-center gap-0.5">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
@@ -289,17 +289,17 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
 
       {/* Expandable Details: match score, similarity, adjustments */}
       {isExpanded && (
-        <div className="border-t border-[rgba(14,165,233,0.25)] p-3 bg-black/50">
+        <div className="border-t border-[var(--border-subtle)] p-3 bg-[var(--surface-elevated)]/50">
           {/* Match Score header */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-[#F1F5F9] uppercase">Match Score:</span>
+            <span className="text-xs font-semibold text-[var(--text-heading)] uppercase">Match Score:</span>
             <span className="text-lg font-bold tabular-nums" style={{
-              color: similarity.overall >= 90 ? '#38bdf8' : similarity.overall >= 75 ? '#0EA5E9' : '#fbbf24'
+              color: similarity.overall >= 90 ? 'var(--accent-sky-light)' : similarity.overall >= 75 ? 'var(--accent-sky)' : 'var(--status-warning)'
             }}>{similarity.overall}%</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h5 className="text-[10px] font-semibold text-[#38bdf8] uppercase tracking-wide mb-2">Similarity</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide mb-2">Similarity</h5>
               <div className="space-y-1.5">
                 <SimilarityBar label="Location" value={similarity.location} icon={MapPin} />
                 <SimilarityBar label="Size" value={similarity.size} icon={Square} />
@@ -308,7 +308,7 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
               </div>
             </div>
             <div>
-              <h5 className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wide mb-2">Adjustments</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--text-body)] uppercase tracking-wide mb-2">Adjustments</h5>
               <div className="space-y-1">
                 {isSale && saleAdj && [
                   { label: 'Size', value: saleAdj.size },
@@ -318,8 +318,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Lot', value: saleAdj.lot },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-[#F1F5F9]">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                    <span className="text-[var(--text-heading)]">{adj.label}</span>
+                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}
                     </span>
                   </div>
@@ -330,15 +330,15 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
                   { label: 'Bathroom', value: rentAdj.bathroom },
                 ].map(adj => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-[#F1F5F9]">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                    <span className="text-[var(--text-heading)]">{adj.label}</span>
+                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(Math.round(adj.value))}/mo
                     </span>
                   </div>
                 ))}
-                <div className="flex justify-between text-xs pt-1 border-t border-[rgba(14,165,233,0.25)]">
-                  <span className="font-semibold text-[#CBD5E1]">Adjusted</span>
-                  <span className="font-bold text-[#38bdf8] tabular-nums">
+                <div className="flex justify-between text-xs pt-1 border-t border-[var(--border-subtle)]">
+                  <span className="font-semibold text-[var(--text-body)]">Adjusted</span>
+                  <span className="font-bold text-[var(--accent-sky-light)] tabular-nums">
                     {formatCurrency((isSale ? (comp as SaleComp).salePrice : (comp as RentComp).monthlyRent) + Math.round(isSale ? (saleAdj?.total || 0) : (rentAdj?.total || 0)))}
                     {!isSale && '/mo'}
                   </span>
@@ -358,55 +358,55 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
 }) {
   if (compAdjustments.length === 0) return null
   return (
-    <div className={`bg-black rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
-      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
+    <div className={`bg-[var(--surface-base)] rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
+      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--surface-elevated)] transition-colors">
         <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-[#38bdf8]" />
-          <span className="text-sm font-semibold text-[#F1F5F9]">Adjustment Breakdown</span>
-          <span className="text-xs text-[#F1F5F9]">({compAdjustments.length})</span>
+          <DollarSign className="w-4 h-4 text-[var(--accent-sky-light)]" />
+          <span className="text-sm font-semibold text-[var(--text-heading)]">Adjustment Breakdown</span>
+          <span className="text-xs text-[var(--text-heading)]">({compAdjustments.length})</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-[#F1F5F9]" /> : <ChevronDown className="w-4 h-4 text-[#F1F5F9]" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-heading)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-heading)]" />}
       </button>
       {isExpanded && (
-        <div className="border-t border-[rgba(14,165,233,0.25)] overflow-x-auto">
+        <div className="border-t border-[var(--border-subtle)] overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-black/50">
+            <thead className="bg-[var(--surface-elevated)]/50">
               <tr>
-                <th className="px-3 py-2 text-left font-semibold text-[#F1F5F9]">Address</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">{isSale ? 'Base' : 'Rent'}</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Size</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Bed</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Bath</th>
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Age</th>}
-                {isSale && <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Lot</th>}
-                <th className="px-3 py-2 text-right font-semibold text-[#38bdf8]">Adjusted</th>
-                <th className="px-3 py-2 text-right font-semibold text-[#F1F5F9]">Weight</th>
+                <th className="px-3 py-2 text-left font-semibold text-[var(--text-heading)]">Address</th>
+                <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">{isSale ? 'Base' : 'Rent'}</th>
+                <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Size</th>
+                <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Bed</th>
+                <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Bath</th>
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Age</th>}
+                {isSale && <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Lot</th>}
+                <th className="px-3 py-2 text-right font-semibold text-[var(--accent-sky-light)]">Adjusted</th>
+                <th className="px-3 py-2 text-right font-semibold text-[var(--text-heading)]">Weight</th>
               </tr>
             </thead>
             <tbody>
               {compAdjustments.map((ca, idx) => (
-                <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-transparent' : 'bg-black/30'}>
-                  <td className="px-3 py-2 text-[#CBD5E1] truncate max-w-[140px]" title={ca.compAddress}>{ca.compAddress}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-[#CBD5E1]">{isSale ? formatCompactCurrency(ca.basePrice) : `$${ca.basePrice}`}</td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--surface-elevated)]/30'}>
+                  <td className="px-3 py-2 text-[var(--text-body)] truncate max-w-[140px]" title={ca.compAddress}>{ca.compAddress}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-[var(--text-body)]">{isSale ? formatCompactCurrency(ca.basePrice) : `$${ca.basePrice}`}</td>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                     {ca.sizeAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.sizeAdjustment) : `$${ca.sizeAdjustment}`}
                   </td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                     {ca.bedroomAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.bedroomAdjustment) : `$${ca.bedroomAdjustment}`}
                   </td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                  <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                     {ca.bathroomAdjustment >= 0 ? '+' : ''}{isSale ? formatCompactCurrency(ca.bathroomAdjustment) : `$${ca.bathroomAdjustment}`}
                   </td>
-                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                     {ca.ageAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.ageAdjustment)}
                   </td>}
-                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+                  {isSale && <td className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                     {ca.lotAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.lotAdjustment)}
                   </td>}
-                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-[#38bdf8]">
+                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-[var(--accent-sky-light)]">
                     {isSale ? formatCompactCurrency(ca.adjustedPrice) : `$${ca.adjustedPrice}/mo`}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-[#F1F5F9]">{(ca.weight * 100).toFixed(1)}%</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-[var(--text-heading)]">{(ca.weight * 100).toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>
