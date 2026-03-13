@@ -82,13 +82,6 @@ const getSuggestedOffer = (motivation: number): { min: number; max: number } => 
   return { min: 3, max: 8 }
 }
 
-// Unified color system across all VerdictIQ pages
-const getScoreColor = (score: number): string => {
-  if (score >= 80) return COLORS.teal   // Strong/Good (A+/A)
-  if (score >= 50) return COLORS.warning // Average/Marginal (B/C)
-  return COLORS.rose                     // Unlikely/Pass (D/F)
-}
-
 // =============================================================================
 // PROPS
 // =============================================================================
@@ -129,8 +122,8 @@ export function IQVerdictScreen({
   property,
   analysis,
   onViewStrategy,
-  onCompareAll,
-  isDark = false,
+  onCompareAll: _onCompareAll,
+  isDark: _isDark = false,
   savedPropertyId,
 }: IQVerdictScreenProps) {
   const router = useRouter()
@@ -142,7 +135,7 @@ export function IQVerdictScreen({
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
   // Get assumptions from dealMakerStore (for saved properties) or use analysis inputs
-  const { record, isLoading: storeLoading } = useDealMakerStore()
+  const { record, isLoading: _storeLoading } = useDealMakerStore()
   const { hasRecord } = useDealMakerReady()
   
   // Determine if we're using store data or analysis data for assumptions display
@@ -182,9 +175,9 @@ export function IQVerdictScreen({
         property_management_pct: used.operating?.property_management_pct ?? 0.00,
       },
     }
-  }, [isSavedPropertyMode, record])
+  }, [isSavedPropertyMode, record, analysis.defaults_used])
   
-  const hasUserCustomizations = isSavedPropertyMode && !!record?.initial_assumptions
+  const _hasUserCustomizations = isSavedPropertyMode && !!record?.initial_assumptions
   
   // Get verdict label and sublabel
   const verdictInfo = getVerdictLabel(analysis.dealScore)

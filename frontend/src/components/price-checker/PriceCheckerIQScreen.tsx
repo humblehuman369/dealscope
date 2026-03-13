@@ -34,8 +34,6 @@ import {
   calculateRentAdjustments,
   type SubjectProperty,
   type CompProperty,
-  type AppraisalResult,
-  type RentAppraisalResult,
   type CompAdjustment,
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
@@ -684,7 +682,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     const setter = isSale ? setSaleSelected : setRentSelected
     setter(prev => {
       const n = new Set(prev)
-      n.has(id) ? n.delete(id) : n.add(id)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
       return n
     })
   }
@@ -702,12 +701,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
       if (rent > 0) params.append('rent', String(rent))
     }
     router.push(`/verdict?${params.toString()}`)
-  }
-
-  // Share handler (used by toast messages)
-  const handleShare = async () => {
-    if (navigator.share) { try { await navigator.share({ title: `PriceCheckerIQ - ${property.address}`, url: window.location.href }) } catch { /* cancelled */ } }
-    else { await navigator.clipboard.writeText(window.location.href); setSaveMessage('Link copied!'); setTimeout(() => setSaveMessage(null), 2000) }
   }
 
   const handleDownloadReport = async () => {
@@ -758,10 +751,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     address: c.address,
   })), [filteredComps])
 
-  // Current appraisal result
-  const appraisal = isSale ? saleAppraisal : null
-  const rentResult = !isSale ? rentAppraisal : null
-
   // Display values with override
   const displayMarketValue = saleOverrideMarket ?? saleAppraisal.marketValue
   const displayArv = saleOverrideArv ?? saleAppraisal.arv
@@ -769,79 +758,84 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const displayImprovedRent = rentOverrideImproved ?? rentAppraisal.improvedRent
 
   return (
-    <div className="min-h-screen bg-black font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-[var(--surface-base)] font-['Inter',sans-serif]">
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6">
         {/* Dual Valuation Panel: header scrolls away; cards row freezes at top */}
         <div className="mx-4 mt-4">
           {/* Header — scrolls up and out of view */}
-          <div className={`relative rounded-t-xl p-4 overflow-hidden bg-black ${largeCardBorderGlow}`}
-            style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
+          <div className={`relative rounded-t-xl p-4 overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}
+            style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-black border border-[rgba(14,165,233,0.3)] flex items-center justify-center">
-                  <Target className="w-4.5 h-4.5 text-[#38bdf8]" />
+                <div className="w-9 h-9 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-center justify-center">
+                  <Target className="w-4.5 h-4.5 text-[var(--accent-sky-light)]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#F1F5F9]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
-                  <p className="text-xs text-[#F1F5F9]">From {selectedIds.size} selected</p>
+                  <h3 className="text-sm font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
+                  <p className="text-xs text-[var(--text-heading)]">From {selectedIds.size} selected</p>
                 </div>
               </div>
-              <div className="flex rounded-xl bg-black/50 border border-[rgba(14,165,233,0.2)] p-1 justify-self-center">
+              <div className="flex rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center">
                 <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                    isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                    isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
                   Sale Comps
                 </button>
                 <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                    !isSale ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)] shadow-[0_0_20px_rgba(14,165,233,0.08)]' : 'text-[#F1F5F9] hover:text-[#CBD5E1]'
+                    !isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
                   Rent Comps
                 </button>
               </div>
-              <div className="text-center px-2 py-1 rounded-lg bg-black border border-[rgba(14,165,233,0.25)]">
+              <div className="text-center px-2 py-1 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)]">
                 <div className="text-base font-bold tabular-nums" style={{
-                  color: (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 85 ? '#38bdf8'
-                    : (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 70 ? '#fbbf24' : '#f87171'
+                  color: (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 85 ? 'var(--accent-sky-light)'
+                    : (isSale ? saleAppraisal.confidence : rentAppraisal.confidence) >= 70 ? 'var(--status-warning)' : 'var(--status-negative)'
                 }}>
                   {loading ? '...' : `${isSale ? saleAppraisal.confidence : rentAppraisal.confidence}%`}
                 </div>
-                <div className="text-[9px] text-[#F1F5F9] uppercase">Confidence</div>
+                <div className="text-[9px] text-[var(--text-heading)] uppercase">Confidence</div>
               </div>
             </div>
           </div>
 
           {/* Comp Appraisal + Est. After Repair row — sticky: stops here and freezes */}
           <div className="sticky top-[152px] z-40 overflow-hidden rounded-b-xl">
-            <div className={`relative rounded-b-xl px-3 py-2 overflow-hidden bg-black ${largeCardBorderGlow}`}
-              style={{ background: 'radial-gradient(ellipse at 30% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.06) 0%, transparent 50%), #000000' }}>
+            <div className={`relative rounded-b-xl px-3 py-2 overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}
+              style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
             <div className="grid grid-cols-2 gap-2.5 mb-2">
               {/* Left: Comp Appraisal / RentCast Estimate */}
-              <div className="bg-black rounded-lg px-2.5 py-2 border border-[rgba(14,165,233,0.25)]">
+              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-semibold text-[#F1F5F9] uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[var(--text-heading)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)
                     else setRentOverrideMarket(rentOverrideMarket !== null ? null : rentAppraisal.marketRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? (
                   <input type="text" value={formatCurrency(isSale ? saleOverrideMarket! : rentOverrideMarket!)}
-                    onChange={(e) => { const v = parseInt(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) isSale ? setSaleOverrideMarket(v) : setRentOverrideMarket(v) }}
-                    className="text-lg font-bold text-[#F1F5F9] tabular-nums bg-[#fbbf24]/10 border border-[#fbbf24]/30 rounded px-1.5 py-0.5 w-full" />
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value.replace(/[^0-9]/g, ''))
+                      if (isNaN(v)) return
+                      if (isSale) setSaleOverrideMarket(v)
+                      else setRentOverrideMarket(v)
+                    }}
+                    className="text-lg font-bold text-[var(--text-heading)] tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
                 ) : (
-                  <div className="text-lg font-bold text-[#F1F5F9] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  <div className="text-lg font-bold text-[var(--text-heading)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
-                    {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-[#F1F5F9] mt-0.5">As-Is Condition</div>
-                <div className="text-[10px] text-[#F1F5F9]">
+                <div className="text-[10px] text-[var(--text-heading)] mt-0.5">As-Is Condition</div>
+                <div className="text-[10px] text-[var(--text-heading)]">
                   Range: {isSale 
                     ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
@@ -851,7 +845,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
-                    className="px-2.5 py-[2.5px] rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/80 text-[#38bdf8] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                    className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
                   </button>
@@ -859,38 +853,43 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
 
               {/* Right: ARV / Improved Rent */}
-              <div className="bg-black rounded-lg px-2.5 py-2 border border-[rgba(14,165,233,0.3)]">
+              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-semibold text-[#38bdf8] uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
                   </span>
                   <button onClick={() => {
                     if (isSale) setSaleOverrideArv(saleOverrideArv !== null ? null : saleAppraisal.arv)
                     else setRentOverrideImproved(rentOverrideImproved !== null ? null : rentAppraisal.improvedRent)
-                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'}`}>
+                  }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'}`}>
                     <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? (
                   <input type="text" value={formatCurrency(isSale ? saleOverrideArv! : rentOverrideImproved!)}
-                    onChange={(e) => { const v = parseInt(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) isSale ? setSaleOverrideArv(v) : setRentOverrideImproved(v) }}
-                    className="text-lg font-bold text-[#38bdf8] tabular-nums bg-[#fbbf24]/10 border border-[#fbbf24]/30 rounded px-1.5 py-0.5 w-full" />
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value.replace(/[^0-9]/g, ''))
+                      if (isNaN(v)) return
+                      if (isSale) setSaleOverrideArv(v)
+                      else setRentOverrideImproved(v)
+                    }}
+                    className="text-lg font-bold text-[var(--accent-sky-light)] tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
                 ) : (
-                  <div className="text-lg font-bold text-[#38bdf8] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  <div className="text-lg font-bold text-[var(--accent-sky-light)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
-                    {!isSale && <span className="text-xs font-normal text-[#F1F5F9]">/mo</span>}
+                    {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[10px] text-[#F1F5F9] mt-0.5">Post-Rehab</div>
+                <div className="text-[10px] text-[var(--text-heading)] mt-0.5">Post-Rehab</div>
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-[#34d399]" />
-                  <span className="text-[10px] font-medium text-[#34d399]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
+                  <TrendingUp className="w-3 h-3 text-[var(--status-positive)]" />
+                  <span className="text-[10px] font-medium text-[var(--status-positive)]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
                 <div className="-mt-2 flex justify-end">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayArv : displayImprovedRent) === 0}
-                    className="px-2.5 py-[2.5px] rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/80 text-[#38bdf8] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                    className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
                   </button>
@@ -899,7 +898,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
 
             {/* Methodology + Download button + $/sqft */}
-            <div className="flex items-center justify-between text-[10px] text-[#F1F5F9] mb-1 px-0.5 gap-3">
+            <div className="flex items-center justify-between text-[10px] text-[var(--text-heading)] mb-1 px-0.5 gap-3">
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Info className="w-3 h-3" />
                 <span>Weighted hybrid methodology</span>
@@ -909,7 +908,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   type="button"
                   onClick={handleDownloadReport}
                   disabled={saleSelected.size === 0 || downloadingReport}
-                  className="flex items-center justify-center gap-1.5 py-2 px-5 rounded-full bg-black border border-[#38bdf8] hover:border-[#38bdf8]/90 text-[#38bdf8] text-[14px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center gap-1.5 py-2 px-5 rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[14px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
                   title="Download appraisal report as PDF"
                 >
                   {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
@@ -917,7 +916,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </button>
               )}
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="tabular-nums font-medium text-[#F1F5F9]">
+                <span className="tabular-nums font-medium text-[var(--text-heading)]">
                   ${isSale ? saleAppraisal.weightedAveragePpsf : rentAppraisal.rentPerSqft}/sqft avg
                 </span>
               </div>
@@ -930,15 +929,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Proximity Map (accordion, loads closed; legend in header) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
           <div className="mx-4 mt-3">
-            <div className={`bg-black rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
+            <div className={`bg-[var(--surface-base)] rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
               <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
                 <button
                   type="button"
                   onClick={() => setShowProximityMap(!showProximityMap)}
                   className="flex items-center gap-2 flex-1 min-w-0 text-left"
                 >
-                  <MapPin className="w-4 h-4 text-[#38bdf8] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
+                  <MapPin className="w-4 h-4 text-[var(--accent-sky-light)] flex-shrink-0" />
+                  <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
                 </button>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {isSale && (
@@ -946,22 +945,22 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDownloadReport(); }}
                       disabled={saleSelected.size === 0 || downloadingReport}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-black border border-[rgba(14,165,233,0.4)] hover:border-[#38bdf8] text-[#38bdf8] text-[10px] font-medium disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] hover:border-[var(--accent-sky-light)] text-[var(--accent-sky-light)] text-[10px] font-medium disabled:opacity-50 transition-colors"
                       title="Download appraisal report as PDF"
                     >
                       {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
                       Download report
                     </button>
                   )}
-                  <div className="flex items-center gap-3 text-[10px] text-[#F1F5F9]">
+                  <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
                     <span className="flex items-center gap-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#EA4335] inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
                       Subject
                     </span>
                     <span className="flex items-center gap-1">
                       <span
                         className="w-2.5 h-2.5 rounded-full inline-block"
-                        style={{ backgroundColor: isSale ? '#0EA5E9' : '#38bdf8' }}
+                        style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
                       />
                       {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
                     </span>
@@ -969,7 +968,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <button
                     type="button"
                     onClick={() => setShowProximityMap(!showProximityMap)}
-                    className="p-0.5 text-[#F1F5F9]"
+                    className="p-0.5 text-[var(--text-heading)]"
                     aria-label={showProximityMap ? 'Collapse map' : 'Expand map'}
                   >
                     {showProximityMap ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -977,7 +976,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
               </div>
               {showProximityMap && (
-                <div className="border-t border-[rgba(14,165,233,0.25)]">
+                <div className="border-t border-[var(--border-subtle)]">
                   <CompsProximityMap
                     subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
                     comps={mapComps}
@@ -1003,48 +1002,48 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {/* Controls + Filters */}
         <div className="px-4 mt-3 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-[#F1F5F9] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
+            <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
             {/* New / All / Reset */}
             <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
               title="Replace unselected comps with new ones">
               <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
             </button>
             <button onClick={handleRefreshAll} disabled={loading}
-              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-black border border-[rgba(14,165,233,0.25)] text-[11px] font-medium text-[#CBD5E1] hover:border-[rgba(14,165,233,0.55)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
               title="Fetch all new comps from API">
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
             </button>
             {hasChangedFromOriginal && (
               <button onClick={handleResetToOriginal} disabled={loading}
-                className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[11px] font-medium text-[#fbbf24] hover:bg-[#fbbf24]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
                 title="Restore original system-selected comps">
                 <RotateCcw className="w-3 h-3" />Reset
               </button>
             )}
 
             {/* Divider */}
-            <div className="w-px h-5 bg-[rgba(14,165,233,0.2)] flex-shrink-0" />
+            <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
 
             {/* Recency filter */}
-            <div className="flex rounded-lg bg-black/50 border border-[rgba(14,165,233,0.2)] p-0.5 flex-shrink-0">
+            <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
               {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
                 <button key={val} onClick={() => setRecencyFilter(val)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
-                    recencyFilter === val ? 'bg-black text-[#38bdf8] border border-[rgba(14,165,233,0.3)]' : 'text-[#F1F5F9] hover:text-[#F1F5F9]'
+                    recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
                   }`}>{label}</button>
               ))}
             </div>
 
-            <div className="w-px h-5 bg-[rgba(14,165,233,0.2)] flex-shrink-0" />
+            <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
 
             <div className="flex items-center gap-2">
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg whitespace-nowrap">Select All</button>
+                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
               <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[#CBD5E1] hover:bg-white/[0.05] rounded-lg whitespace-nowrap">Clear</button>
+                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
             </div>
             </div>
           </div>
@@ -1052,16 +1051,16 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* No property (landed without address or zpid) */}
         {!hasValidSubject && (
-          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-black ${cardBorderGlow}`}>
-            <MapPin className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
-            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">Enter a property to view comps</h3>
-            <p className="text-xs text-[#F1F5F9] mb-4 max-w-md mx-auto">
+          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
+            <MapPin className="mx-auto mb-3 text-[var(--text-heading)] w-10 h-10" aria-hidden />
+            <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">Enter a property to view comps</h3>
+            <p className="text-xs text-[var(--text-heading)] mb-4 max-w-md mx-auto">
               Open a property from Verdict or search, then use the Comps tab to see comparable sales and rentals.
             </p>
             <button
               type="button"
               onClick={() => router.push('/search')}
-              className="px-4 py-2 text-sm font-medium text-[#CBD5E1] bg-black border border-[rgba(14,165,233,0.3)] rounded-lg hover:border-[rgba(14,165,233,0.55)]"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-body)] bg-[var(--surface-base)] border border-[var(--border-subtle)] rounded-lg hover:border-[var(--border-focus)]"
             >
               Search for a property
             </button>
@@ -1072,7 +1071,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         {hasValidSubject && loading && comps.length === 0 && !loadFailed && (
           <div className="px-4 mt-3 space-y-3">
             {[1, 2, 3].map(i => <CompCardSkeleton key={i} />)}
-            <p className="text-xs text-[#F1F5F9] text-center">
+            <p className="text-xs text-[var(--text-heading)] text-center">
               Loading comparable {isSale ? 'sales' : 'rentals'}...
             </p>
           </div>
@@ -1080,18 +1079,18 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Unavailable (friendly fallback — no raw errors) */}
         {hasValidSubject && loadFailed && !loading && (
-          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-black ${cardBorderGlow}`}>
-            <Info className="mx-auto mb-3 text-[#F1F5F9] w-10 h-10" aria-hidden />
-            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">
+          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
+            <Info className="mx-auto mb-3 text-[var(--text-heading)] w-10 h-10" aria-hidden />
+            <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">
               Comparable {isSale ? 'sales' : 'rentals'} temporarily unavailable
             </h3>
-            <p className="text-xs text-[#F1F5F9] mb-4 max-w-md mx-auto">
+            <p className="text-xs text-[var(--text-heading)] mb-4 max-w-md mx-auto">
               Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
             </p>
             <button
               type="button"
               onClick={handleRefreshAll}
-              className="px-4 py-2 text-sm font-medium text-[#CBD5E1] bg-black border border-[rgba(14,165,233,0.3)] rounded-lg hover:border-[rgba(14,165,233,0.55)]"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-body)] bg-[var(--surface-base)] border border-[var(--border-subtle)] rounded-lg hover:border-[var(--border-focus)]"
             >
               Retry
             </button>
@@ -1100,10 +1099,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Empty (success but no comps found) */}
         {hasValidSubject && !loading && !loadFailed && comps.length === 0 && (
-          <div className={`mx-4 mt-3 bg-black rounded-xl p-6 text-center ${cardBorderGlow}`}>
-            {isSale ? <Building2 className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[#F1F5F9] w-8 h-8" />}
-            <h3 className="text-sm font-semibold text-[#CBD5E1] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
-            <p className="text-xs text-[#F1F5F9]">Try refreshing or check the property address</p>
+          <div className={`mx-4 mt-3 bg-[var(--surface-base)] rounded-xl p-6 text-center ${cardBorderGlow}`}>
+            {isSale ? <Building2 className="mx-auto mb-2 text-[var(--text-heading)] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[var(--text-heading)] w-8 h-8" />}
+            <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
+            <p className="text-xs text-[var(--text-heading)]">Try refreshing or check the property address</p>
           </div>
         )}
 
@@ -1130,11 +1129,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Location Quality */}
         {!loading && !loadFailed && comps.length > 0 && (
-          <div className={`mx-4 mt-4 p-3 rounded-lg bg-black ${cardBorderGlow}`}>
+          <div className={`mx-4 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#F1F5F9]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
+              <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
               <span className={`text-xs font-semibold ${
-                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[#34d399]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[#fbbf24]' : 'text-[#F1F5F9]'
+                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
               }`}>
                 Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
               </span>
@@ -1145,7 +1144,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
       {/* Toast */}
       {saveMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-[#F1F5F9] text-black text-sm font-medium rounded-lg shadow-lg shadow-black/40 z-50">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--surface-card)] text-[var(--text-heading)] text-sm font-medium rounded-lg shadow-lg shadow-black/40 z-50">
           {saveMessage}
         </div>
       )}
