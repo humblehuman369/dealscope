@@ -1482,8 +1482,8 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--color-border);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-left: 3px solid var(--strategy-color);
   border-radius: 16px;
   cursor: pointer;
@@ -1494,14 +1494,14 @@ input[type="range"]::-moz-range-thumb {
 
 .strategy-card-premium:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--color-border-light);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--strategy-glow);
+  background: var(--surface-card-hover);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .strategy-card-premium.active {
-  border-color: var(--color-sky);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2), 0 12px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-sky);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .strategy-number-premium {
@@ -1597,7 +1597,7 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
   gap: 8px;
   background: var(--color-sky-dim);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid var(--border-subtle);
   padding: 8px 16px;
   border-radius: 24px;
   margin-bottom: 16px;
@@ -1605,14 +1605,14 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-sky);
+  color: var(--accent-sky);
 }
 
 .strategy-badge-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-sky);
+  background: var(--accent-sky);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 

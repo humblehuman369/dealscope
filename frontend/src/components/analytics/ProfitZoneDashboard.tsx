@@ -8,8 +8,8 @@
  * [LEFT: Stacked Metrics] [CENTER: Profit Zone Gradient] [RIGHT: Tips & Actions]
  */
 
-import React, { useMemo } from 'react'
-import { formatCurrency, formatCompactCurrency, formatPercent } from '@/utils/formatters'
+import React from 'react'
+import { formatCompactCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
 // TYPES
@@ -54,15 +54,15 @@ const getDealScoreLabel = (score: number): string => {
 }
 
 const getDealScoreColor = (score: number): string => {
-  if (score >= 70) return 'text-green-500'
-  if (score >= 50) return 'text-amber-500'
-  return 'text-red-500'
+  if (score >= 70) return 'text-[var(--status-positive)]'
+  if (score >= 50) return 'text-[var(--status-warning)]'
+  return 'text-[var(--status-negative)]'
 }
 
 const getValueColor = (value: number, goodThreshold: number, okThreshold: number): string => {
-  if (value >= goodThreshold) return 'text-green-500'
-  if (value >= okThreshold) return 'text-amber-500'
-  return 'text-red-500'
+  if (value >= goodThreshold) return 'text-[var(--status-positive)]'
+  if (value >= okThreshold) return 'text-[var(--status-warning)]'
+  return 'text-[var(--status-negative)]'
 }
 
 // ============================================
@@ -76,16 +76,16 @@ interface MetricBoxProps {
   valueColorClass?: string
 }
 
-function MetricBox({ label, value, sublabel, valueColorClass = 'text-green-500' }: MetricBoxProps) {
+function MetricBox({ label, value, sublabel, valueColorClass = 'text-[var(--status-positive)]' }: MetricBoxProps) {
   return (
-    <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-2 text-center shadow-sm">
-      <div className="text-[8px] font-semibold tracking-wider text-slate-400 dark:text-white/50 uppercase">
+    <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-center shadow-sm">
+      <div className="text-[8px] font-semibold tracking-wider text-[var(--text-label)] uppercase">
         {label}
       </div>
       <div className={`text-base font-bold ${valueColorClass} leading-tight`}>
         {value}
       </div>
-      <div className="text-[8px] text-slate-400 dark:text-white/40">
+      <div className="text-[8px] text-[var(--text-label)]">
         {sublabel}
       </div>
     </div>
@@ -107,24 +107,21 @@ function ProfitZoneVisualizer({ projectedProfit, incomeValue, listPrice }: Profi
   const maxProfit = listPrice * 0.5
   const profitPosition = Math.min(Math.max((projectedProfit / maxProfit) * 100, 15), 85)
   
-  // Income Value position on the scale (closer to bottom)
-  const incomeValuePosition = 25
-  
   const isProfit = projectedProfit > 0
   
   return (
     <div className="flex flex-col items-center">
       {/* Header */}
-      <div className="text-[9px] font-semibold tracking-wider text-slate-400 dark:text-white/60 uppercase mb-1">
+      <div className="text-[9px] font-semibold tracking-wider text-[var(--text-label)] uppercase mb-1">
         PROJECTED OUTCOME
       </div>
       
       {/* Profit Zone Badge */}
       <div className="flex items-center gap-1 mb-2">
-        <span className={`text-sm ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+        <span className={`text-sm ${isProfit ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
           {isProfit ? '↗' : '↘'}
         </span>
-        <span className={`text-[11px] font-bold tracking-wide ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+        <span className={`text-[11px] font-bold tracking-wide ${isProfit ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
           {isProfit ? 'PROFIT ZONE' : 'LOSS ZONE'}
         </span>
       </div>
@@ -134,17 +131,17 @@ function ProfitZoneVisualizer({ projectedProfit, incomeValue, listPrice }: Profi
         <div 
           className="absolute inset-0 rounded-xl shadow-inner"
           style={{
-            background: 'linear-gradient(to bottom, #22c55e 0%, #4ade80 20%, #86efac 40%, #bbf7d0 60%, #dcfce7 80%, #f0fdf4 100%)'
+            background: 'linear-gradient(to bottom, var(--status-positive) 0%, var(--color-green-dim) 100%)'
           }}
         >
           {/* Profit Value Badge */}
           <div 
             className={`absolute left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md shadow-md z-10 ${
-              isProfit ? 'bg-green-500' : 'bg-red-500'
+              isProfit ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'
             }`}
             style={{ top: `${Math.max(10, 100 - profitPosition)}%`, transform: 'translate(-50%, -50%)' }}
           >
-            <span className="text-white text-xs font-bold whitespace-nowrap">
+            <span className="text-[var(--text-inverse)] text-xs font-bold whitespace-nowrap">
               {formatCompactCurrency(projectedProfit)}
             </span>
           </div>
@@ -152,10 +149,10 @@ function ProfitZoneVisualizer({ projectedProfit, incomeValue, listPrice }: Profi
         
         {/* Income Value Line - Below the bar */}
         <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1">
-          <div className="w-20 border-t-2 border-dashed border-slate-300 dark:border-slate-500" />
+          <div className="w-20 border-t-2 border-dashed border-[var(--border-default)]" />
         </div>
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-          <span className="text-[8px] font-medium text-slate-400 dark:text-white/50">
+          <span className="text-[8px] font-medium text-[var(--text-label)]">
             INCOME VALUE {formatCompactCurrency(incomeValue)}
           </span>
         </div>
@@ -173,17 +170,17 @@ interface TipsSectionProps {
 }
 
 const TIP_COLORS: Record<string, { border: string; text: string }> = {
-  success: { border: 'border-l-green-500', text: 'text-green-600 dark:text-green-400' },
-  warning: { border: 'border-l-amber-500', text: 'text-amber-600 dark:text-amber-400' },
-  danger: { border: 'border-l-red-500', text: 'text-red-600 dark:text-red-400' },
-  tip: { border: 'border-l-cyan-500', text: 'text-cyan-600 dark:text-cyan-400' },
-  action: { border: 'border-l-blue-500', text: 'text-blue-600 dark:text-blue-400' },
+  success: { border: 'border-l-[var(--status-positive)]', text: 'text-[var(--status-positive)]' },
+  warning: { border: 'border-l-[var(--status-warning)]', text: 'text-[var(--status-warning)]' },
+  danger: { border: 'border-l-[var(--status-negative)]', text: 'text-[var(--status-negative)]' },
+  tip: { border: 'border-l-[var(--status-info)]', text: 'text-[var(--status-info)]' },
+  action: { border: 'border-l-[var(--accent-brand-blue)]', text: 'text-[var(--accent-brand-blue)]' },
 }
 
 function TipsSection({ tips }: TipsSectionProps) {
   return (
     <div className="flex flex-col">
-      <div className="text-[9px] font-semibold tracking-wider text-slate-400 dark:text-white/60 uppercase mb-2">
+      <div className="text-[9px] font-semibold tracking-wider text-[var(--text-label)] uppercase mb-2">
         HELPFUL TIPS
       </div>
       
@@ -193,7 +190,7 @@ function TipsSection({ tips }: TipsSectionProps) {
           return (
             <div 
               key={index} 
-              className={`flex items-start gap-2 p-2 rounded-md bg-white dark:bg-white/[0.03] border-l-[3px] shadow-sm ${colors.border}`}
+              className={`flex items-start gap-2 p-2 rounded-md bg-[var(--surface-card)] border border-[var(--border-subtle)] border-l-[3px] shadow-sm ${colors.border}`}
             >
               <span className="text-xs">{tip.icon}</span>
               <div className="flex-1 min-w-0">
@@ -201,7 +198,7 @@ function TipsSection({ tips }: TipsSectionProps) {
                   {tip.title}
                 </div>
                 {tip.description && (
-                  <div className="text-[9px] text-slate-500 dark:text-white/60 leading-snug">
+                  <div className="text-[9px] text-[var(--text-secondary)] leading-snug">
                     {tip.description}
                   </div>
                 )}
@@ -212,11 +209,11 @@ function TipsSection({ tips }: TipsSectionProps) {
       </div>
       
       {/* What's Next Section */}
-      <div className="mt-2 p-2 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20">
-        <div className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 mb-0.5">
+      <div className="mt-2 p-2 rounded-lg bg-[var(--surface-section)] border border-[var(--border-subtle)]">
+        <div className="text-[10px] font-bold text-[var(--status-info)] mb-0.5">
           📋 What&apos;s Next
         </div>
-        <div className="text-[9px] text-slate-600 dark:text-white/70 leading-snug">
+        <div className="text-[9px] text-[var(--text-body)] leading-snug">
           Review the metrics and adjust assumptions to see how they impact your returns.
         </div>
       </div>
@@ -240,7 +237,7 @@ export function ProfitZoneDashboard({
   const scoreColorClass = getDealScoreColor(dealScore)
   
   return (
-    <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 shadow-sm">
+    <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl p-4 shadow-sm">
       {/* Three Column Horizontal Layout */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-start min-h-[280px]">
         
@@ -260,7 +257,7 @@ export function ProfitZoneDashboard({
             label="CASH FLOW" 
             value={formatCompactCurrency(monthlyCashFlow)} 
             sublabel="Est. Monthly" 
-            valueColorClass={monthlyCashFlow >= 0 ? 'text-green-500' : 'text-red-500'}
+            valueColorClass={monthlyCashFlow >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}
           />
           <MetricBox 
             label="CASH ON CASH" 
