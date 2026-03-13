@@ -14,6 +14,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { formatPrice, formatNumber } from '@/utils/formatters'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
@@ -168,7 +169,7 @@ export function SalesCompsScreen({
   const router = useRouter()
   
   // State
-  const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
+  const [_currentStrategy] = useState(initialStrategy || 'Long-term')
   const [selectedComps, setSelectedComps] = useState<number[]>([0, 2, 3])
   const [expandedComp, setExpandedComp] = useState<number | null>(null)
   const [arvEstimate, setArvEstimate] = useState(initialArv || Math.round((arvRangeLow + arvRangeHigh) / 2))
@@ -180,10 +181,6 @@ export function SalesCompsScreen({
   const [shareMessage, setShareMessage] = useState<string | null>(null)
 
   // Note: Header is now handled by global AppHeader
-
-  const handleStrategyChange = (strategy: string) => {
-    setCurrentStrategy(strategy)
-  }
 
   const handleArvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '')
@@ -224,7 +221,7 @@ export function SalesCompsScreen({
 
   const handleRefresh = () => {
     // Refresh comps data
-    console.log('Refreshing comps...')
+    console.warn('Refreshing comps...')
   }
 
   // Handle share
@@ -252,24 +249,24 @@ export function SalesCompsScreen({
   }
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return '#0EA5E9'
-    return '#64748B'
+    if (score >= 90) return 'var(--accent-sky)'
+    return 'var(--text-secondary)'
   }
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-[var(--surface-section)] max-w-[480px] mx-auto font-['Inter',sans-serif]">
       {/* Header is now handled by global AppHeader in layout */}
 
       {/* Main Content */}
       <main className="pb-[100px]">
         {/* Section Header */}
-        <div className="flex justify-between items-start p-4 bg-white border-b border-[#CBD5E1]">
+        <div className="flex justify-between items-start p-4 bg-[var(--surface-card)] border-b border-[var(--border-default)]">
           <div>
-            <h2 className="text-lg font-bold text-[#0A1628]">Sales Comps & ARV</h2>
-            <p className="text-xs text-[#64748B] mt-0.5">Comparable sales for {property.address}</p>
+            <h2 className="text-lg font-bold text-[var(--text-heading)]">Sales Comps & ARV</h2>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">Comparable sales for {property.address}</p>
           </div>
           <button 
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] text-[13px] font-medium hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-secondary)] text-[13px] font-medium hover:bg-[var(--surface-section)] hover:border-[var(--border-default)] transition-colors"
             onClick={handleRefresh}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,22 +277,22 @@ export function SalesCompsScreen({
         </div>
 
         {/* ARV Card */}
-        <div className="bg-white p-4 border-b border-[#CBD5E1]">
+        <div className="bg-[var(--surface-card)] p-4 border-b border-[var(--border-default)]">
           <div className="flex items-center gap-3">
             {/* Icon */}
-            <div className="w-12 h-12 bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-gradient-to-br from-[var(--surface-base)] to-[var(--surface-elevated)] rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-[var(--accent-sky-light)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
               </svg>
             </div>
 
             {/* ARV Details */}
             <div className="flex-1">
-              <div className="text-[10px] font-semibold text-[#0EA5E9] uppercase tracking-wider mb-0.5">IQ ARV Estimate</div>
+              <div className="text-[10px] font-semibold text-[var(--accent-sky)] uppercase tracking-wider mb-0.5">IQ ARV Estimate</div>
               {isEditingArv ? (
                 <input
                   type="text"
-                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums border-2 border-[#0EA5E9] rounded-lg px-2 py-1 w-40 outline-none focus:ring-2 focus:ring-[#0EA5E9]/20 font-inherit"
+                  className="text-[26px] font-extrabold text-[var(--text-heading)] tabular-nums border-2 border-[var(--accent-sky)] rounded-lg px-2 py-1 w-40 outline-none focus:ring-2 focus:ring-[var(--accent-sky)]/20 font-inherit"
                   value={arvEstimate}
                   onChange={handleArvChange}
                   onBlur={handleArvBlur}
@@ -304,17 +301,17 @@ export function SalesCompsScreen({
                 />
               ) : (
                 <div
-                  className="text-[26px] font-extrabold text-[#0A1628] tabular-nums flex items-center gap-2 cursor-pointer hover:text-[#0EA5E9] transition-colors"
+                  className="text-[26px] font-extrabold text-[var(--text-heading)] tabular-nums flex items-center gap-2 cursor-pointer hover:text-[var(--accent-sky)] transition-colors"
                   onClick={() => setIsEditingArv(true)}
                   title="Click to edit"
                 >
                   {formatPrice(arvEstimate)}
-                  <svg className="w-4 h-4 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                   </svg>
                 </div>
               )}
-              <div className="text-[11px] text-[#64748B] mt-0.5">
+              <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">
                 Range: {formatPrice(arvRangeLow)} — {formatPrice(arvRangeHigh)}
               </div>
             </div>
@@ -322,11 +319,11 @@ export function SalesCompsScreen({
             {/* Confidence & Apply */}
             <div className="flex flex-col items-end gap-2">
               <div className="text-center">
-                <div className="text-[28px] font-bold text-[#0EA5E9] leading-none">{arvConfidence}</div>
-                <div className="text-[9px] font-medium text-[#94A3B8] uppercase tracking-wide">Confidence</div>
+                <div className="text-[28px] font-bold text-[var(--accent-sky)] leading-none">{arvConfidence}</div>
+                <div className="text-[9px] font-medium text-[var(--text-label)] uppercase tracking-wide">Confidence</div>
               </div>
               <button 
-                className="px-4 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-[13px] font-semibold hover:bg-[#0E7490] transition-colors"
+                className="px-4 py-2.5 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-lg text-[13px] font-semibold hover:bg-[var(--accent-sky-light)] transition-colors"
                 onClick={handleApplyArv}
               >
                 Apply ARV
@@ -336,15 +333,15 @@ export function SalesCompsScreen({
         </div>
 
         {/* Selection Bar */}
-        <div className="flex justify-between items-center px-4 py-3 bg-white border-b border-[#CBD5E1]">
-          <div className="text-[13px] text-[#64748B]">
-            <strong className="text-[#0A1628]">{selectedComps.length}</strong> of <strong className="text-[#0A1628]">{comps.length}</strong> comps selected
+        <div className="flex justify-between items-center px-4 py-3 bg-[var(--surface-card)] border-b border-[var(--border-default)]">
+          <div className="text-[13px] text-[var(--text-secondary)]">
+            <strong className="text-[var(--text-heading)]">{selectedComps.length}</strong> of <strong className="text-[var(--text-heading)]">{comps.length}</strong> comps selected
           </div>
           <div className="flex gap-4">
-            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={selectAllComps}>
+            <button className="text-[var(--accent-sky)] text-[13px] font-medium hover:text-[var(--accent-sky-light)]" onClick={selectAllComps}>
               Select All
             </button>
-            <button className="text-[#0EA5E9] text-[13px] font-medium hover:text-[#0E7490]" onClick={clearComps}>
+            <button className="text-[var(--accent-sky)] text-[13px] font-medium hover:text-[var(--accent-sky-light)]" onClick={clearComps}>
               Clear
             </button>
           </div>
@@ -354,86 +351,89 @@ export function SalesCompsScreen({
         {comps.map((comp) => (
           <div
             key={comp.id}
-            className={`bg-white border-b border-[#CBD5E1] border-l-[3px] overflow-hidden transition-all ${
-              selectedComps.includes(comp.id) ? 'border-l-[#0EA5E9] bg-[#F0FDFA]' : 'border-l-transparent'
+            className={`bg-[var(--surface-card)] border-b border-[var(--border-default)] border-l-[3px] overflow-hidden transition-all ${
+              selectedComps.includes(comp.id) ? 'border-l-[var(--accent-sky)] bg-[var(--surface-section)]' : 'border-l-transparent'
             }`}
           >
             <div className="flex p-4 gap-3">
               {/* Image Container */}
               <div className="relative w-[120px] h-[90px] flex-shrink-0">
-                <img 
+                <Image
                   className="w-full h-full object-cover rounded-lg" 
                   src={comp.image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop'} 
                   alt={comp.address} 
+                  width={120}
+                  height={90}
+                  unoptimized
                 />
                 {/* Checkbox */}
                 <div
                   className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-all ${
                     selectedComps.includes(comp.id) 
-                      ? 'bg-[#0EA5E9] border-[#0EA5E9]' 
-                      : 'bg-white border-2 border-[#CBD5E1]'
+                      ? 'bg-[var(--accent-sky)] border-[var(--accent-sky)]' 
+                      : 'bg-[var(--surface-card)] border-2 border-[var(--border-default)]'
                   }`}
                   onClick={() => toggleCompSelection(comp.id)}
                 >
-                  <svg className={`w-3 h-3 text-white ${selectedComps.includes(comp.id) ? 'opacity-100' : 'opacity-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-3 h-3 text-[var(--text-inverse)] ${selectedComps.includes(comp.id) ? 'opacity-100' : 'opacity-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/>
                   </svg>
                 </div>
                 {/* Distance Badge */}
-                <div className="absolute bottom-1 left-1 bg-[#0EA5E9] text-white px-1.5 py-0.5 rounded text-[9px] font-semibold">
+                <div className="absolute bottom-1 left-1 bg-[var(--accent-sky)] text-[var(--text-inverse)] px-1.5 py-0.5 rounded text-[9px] font-semibold">
                   {comp.distance.toFixed(2)} mi
                 </div>
               </div>
 
               {/* Details */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-[#0A1628] truncate">{comp.address}</div>
-                <div className="text-[11px] text-[#64748B] mb-1.5">{comp.city}, {comp.state}</div>
+                <div className="text-sm font-semibold text-[var(--text-heading)] truncate">{comp.address}</div>
+                <div className="text-[11px] text-[var(--text-secondary)] mb-1.5">{comp.city}, {comp.state}</div>
                 <div className="flex gap-2 flex-wrap mb-1">
-                  <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                    <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                    <svg className="w-3 h-3 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21"/>
                     </svg>
                     {comp.beds}
                   </span>
-                  <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                    <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                    <svg className="w-3 h-3 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     {comp.baths}
                   </span>
-                  <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                    <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                    <svg className="w-3 h-3 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/>
                     </svg>
                     {formatNumber(comp.sqft)}
                   </span>
                   {comp.yearBuilt != null && comp.yearBuilt > 0 && (
-                    <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                      <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                      <svg className="w-3 h-3 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
                       </svg>
                       {comp.yearBuilt}
                     </span>
                   )}
                   {comp.lotSize !== undefined && (
-                    <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                      <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                      <svg className="w-3 h-3 text-[var(--text-label)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25"/>
                       </svg>
                       {comp.lotSize}
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-[#94A3B8]">
-                  Sold {comp.soldDate} · <span className="text-[#0EA5E9]">{comp.timeAgo}</span>
+                <div className="text-[10px] text-[var(--text-label)]">
+                  Sold {comp.soldDate} · <span className="text-[var(--accent-sky)]">{comp.timeAgo}</span>
                 </div>
               </div>
 
               {/* Pricing */}
               <div className="flex flex-col items-end gap-0.5">
-                <div className="text-base font-bold text-[#0A1628] tabular-nums">{formatPrice(comp.price)}</div>
-                <div className="text-[11px] text-[#64748B]">${comp.pricePerSqft}/sf</div>
+                <div className="text-base font-bold text-[var(--text-heading)] tabular-nums">{formatPrice(comp.price)}</div>
+                <div className="text-[11px] text-[var(--text-secondary)]">${comp.pricePerSqft}/sf</div>
                 <div className="text-right mt-1">
                   <div 
                     className="text-[22px] font-bold tabular-nums leading-none"
@@ -441,14 +441,14 @@ export function SalesCompsScreen({
                   >
                     {comp.matchScore}
                   </div>
-                  <div className="text-[9px] text-[#94A3B8] uppercase">% Match</div>
+                  <div className="text-[9px] text-[var(--text-label)] uppercase">% Match</div>
                 </div>
               </div>
             </div>
 
             {/* Expand Button */}
             <button
-              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[#F1F5F9] text-[#0EA5E9] text-xs font-medium hover:bg-[#F8FAFC] transition-colors`}
+              className={`flex items-center justify-center gap-1 py-2 w-full border-t border-[var(--border-subtle)] text-[var(--accent-sky)] text-xs font-medium hover:bg-[var(--surface-section)] transition-colors`}
               onClick={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
             >
               Details
@@ -465,16 +465,16 @@ export function SalesCompsScreen({
 
       {/* Toast Message */}
       {shareMessage && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--surface-base)] text-[var(--text-heading)] text-sm font-medium rounded-lg shadow-[var(--shadow-dropdown)] z-50 border border-[var(--border-default)]">
           {shareMessage}
         </div>
       )}
 
       {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[#E2E8F0] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[var(--surface-card)] px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[var(--border-subtle)] shadow-[var(--shadow-dropdown)]">
         {/* Search Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[var(--text-secondary)] hover:text-[var(--accent-sky)] transition-colors"
           onClick={() => router.push('/search')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,7 +485,7 @@ export function SalesCompsScreen({
 
         {/* Analyze Property Button - Primary CTA */}
         <button 
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0EA5E9] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[var(--accent-sky)] text-[var(--text-inverse)] border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[var(--accent-sky-light)] transition-colors"
           onClick={handleAnalyze}
         >
           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -496,7 +496,7 @@ export function SalesCompsScreen({
 
         {/* Share Button */}
         <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0EA5E9] transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[var(--text-secondary)] hover:text-[var(--accent-sky)] transition-colors"
           onClick={handleShare}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
