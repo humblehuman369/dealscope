@@ -45,7 +45,7 @@ function scoreColor(score: number): string {
   if (score >= 80) return colors.status.positive   // green
   if (score >= 65) return colors.brand.teal         // teal
   if (score >= 50) return colors.brand.gold         // gold
-  if (score >= 30) return '#f97316'                 // orange
+  if (score >= 30) return colors.status.warning      // warning tier
   return colors.status.negative                     // red
 }
 
@@ -53,9 +53,9 @@ function scoreColor(score: number): string {
 function dealGapColor(gapPct: number): string {
   if (gapPct <= 0)  return colors.status.positive
   if (gapPct <= 5)  return colors.brand.teal
-  if (gapPct <= 15) return '#38bdf8'
+  if (gapPct <= 15) return colors.brand.blue
   if (gapPct <= 25) return colors.brand.gold
-  if (gapPct <= 35) return '#f97316'
+  if (gapPct <= 35) return colors.status.warning
   return colors.status.negative
 }
 
@@ -66,12 +66,12 @@ function factorStyle(type: DealFactor['type']): { color: string; icon: React.Rea
     icon: <svg width="14" height="14" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>,
   }
   if (type === 'warning') return {
-    color: '#f97316',
-    icon: <svg width="14" height="14" fill="none" stroke="#f97316" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>,
+    color: colors.status.warning,
+    icon: <svg width="14" height="14" fill="none" stroke={colors.status.warning} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>,
   }
   return {
-    color: '#38bdf8',
-    icon: <svg width="14" height="14" fill="none" stroke="#38bdf8" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>,
+    color: colors.brand.blue,
+    icon: <svg width="14" height="14" fill="none" stroke={colors.brand.blue} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>,
   }
 }
 
@@ -263,7 +263,7 @@ export function VerdictNarrative({ narrative, onHowItWorks }: VerdictNarrativePr
       >
         <p
           className="text-[0.9rem] leading-[1.65] text-left"
-          style={{ color: '#ffffff' }}
+          style={{ color: colors.text.primary }}
         >
           {narrative}
         </p>

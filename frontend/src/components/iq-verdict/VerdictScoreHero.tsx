@@ -33,37 +33,37 @@ interface VerdictScoreHeroProps {
 // Get score color based on tier
 // Unified color system across all VerdictIQ pages
 function getScoreColor(score: number): string {
-  if (score >= 80) return '#0EA5E9' // Teal - Strong/Good (A+/A)
-  if (score >= 50) return '#D97706' // Amber - Average/Marginal (B/C)
-  return '#EF4444'                  // Red - Unlikely/Pass (D/F)
+  if (score >= 80) return 'var(--accent-sky)' // Teal - Strong/Good (A+/A)
+  if (score >= 50) return 'var(--status-warning)' // Amber - Average/Marginal (B/C)
+  return 'var(--status-negative)'                  // Red - Unlikely/Pass (D/F)
 }
 
 // Get urgency color
 function getUrgencyColor(urgency: string): string {
   switch (urgency.toLowerCase()) {
-    case 'high': return '#10B981'
-    case 'medium': return '#D97706'
-    case 'low': return '#F1F5F9'
-    default: return '#F1F5F9'
+    case 'high': return 'var(--status-positive)'
+    case 'medium': return 'var(--status-warning)'
+    case 'low': return 'var(--text-heading)'
+    default: return 'var(--text-heading)'
   }
 }
 
 // Get market temp color
 function getMarketTempColor(temp: string): string {
   switch (temp.toLowerCase()) {
-    case 'cold': return '#0EA5E9'
-    case 'warm': return '#D97706'
-    case 'hot': return '#E11D48'
-    default: return '#F1F5F9'
+    case 'cold': return 'var(--accent-sky)'
+    case 'warm': return 'var(--status-warning)'
+    case 'hot': return 'var(--status-negative)'
+    default: return 'var(--text-heading)'
   }
 }
 
 // Get bar color for confidence metrics
 function getBarColor(value: number): string {
-  if (value >= 80) return '#10B981'
-  if (value >= 60) return '#0EA5E9'
-  if (value >= 40) return '#F59E0B'
-  return '#E11D48'
+  if (value >= 80) return 'var(--status-positive)'
+  if (value >= 60) return 'var(--accent-sky)'
+  if (value >= 40) return 'var(--status-warning)'
+  return 'var(--status-negative)'
 }
 
 export function VerdictScoreHero({
@@ -86,7 +86,7 @@ export function VerdictScoreHero({
   const strokeDashoffset = circumference - (score / 100) * circumference
 
   return (
-    <div className="border-b" style={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}>
+    <div className="border-b" style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-default)' }}>
       {/* Score Circle Section - Centered */}
       <div className="flex flex-col items-center py-8 px-5">
         {/* Score Circle with Progress Ring */}
@@ -98,7 +98,7 @@ export function VerdictScoreHero({
               cy="60"
               r="54"
               fill="none"
-              stroke="rgba(148,163,184,0.2)"
+              stroke="var(--border-subtle)"
               strokeWidth="8"
             />
             {/* Progress circle */}
@@ -120,24 +120,24 @@ export function VerdictScoreHero({
             <span className="text-4xl font-bold" style={{ color: scoreColor }}>
               {score}
             </span>
-            <span className="text-xs font-medium" style={{ color: '#F1F5F9' }}>/100</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--text-heading)' }}>/100</span>
           </div>
         </div>
 
         {/* Verdict Label */}
-        <h2 className="text-xl font-bold mb-1" style={{ color: '#F1F5F9' }}>
+        <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
           {verdictLabel}
         </h2>
         
         {/* Verdict Subtitle */}
-        <p className="text-sm text-center mb-3" style={{ color: '#F1F5F9' }}>
+        <p className="text-sm text-center mb-3" style={{ color: 'var(--text-heading)' }}>
           {verdictSubtitle}
         </p>
 
         {/* How it works link */}
         <button 
           className="flex items-center gap-1.5 text-xs font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
-          style={{ color: '#0EA5E9' }}
+          style={{ color: 'var(--accent-sky)' }}
           onClick={onShowMethodology}
         >
           <Info className="w-3.5 h-3.5" />
@@ -146,71 +146,71 @@ export function VerdictScoreHero({
       </div>
 
       {/* Quick Stats Row - 4 columns */}
-      <div className="grid grid-cols-4 border-t" style={{ borderColor: '#1E293B' }}>
+      <div className="grid grid-cols-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
         {/* Deal Gap */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
-          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#F1F5F9' }}>
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: 'var(--border-default)' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: 'var(--text-heading)' }}>
             Deal Gap
           </span>
-          <span className={`text-base font-bold ${dealGap <= 0 ? 'text-[#10B981]' : 'text-[#D97706]'}`}>
+          <span className={`text-base font-bold ${dealGap <= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-warning)]'}`}>
             {dealGap > 0 ? '-' : '+'}{Math.abs(dealGap).toFixed(1)}%
           </span>
-          <span className="text-[10px]" style={{ color: '#475569' }}>
+          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
             {dealGap <= 10 ? 'Achievable' : dealGap <= 20 ? 'Stretch' : 'Difficult'}
           </span>
         </div>
 
         {/* Seller Urgency */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
-          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#F1F5F9' }}>
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: 'var(--border-default)' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: 'var(--text-heading)' }}>
             Seller Urgency
           </span>
           <span className="text-base font-bold" style={{ color: getUrgencyColor(sellerUrgency) }}>
             {sellerUrgency}
           </span>
-          <span className="text-[10px]" style={{ color: '#475569' }}>
+          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
             {sellerUrgencyScore}/100
           </span>
         </div>
 
         {/* Market Temp */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: '#1E293B' }}>
-          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#F1F5F9' }}>
+        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: 'var(--border-default)' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: 'var(--text-heading)' }}>
             Market Temp
           </span>
           <span className="text-base font-bold" style={{ color: getMarketTempColor(marketTemp) }}>
             {marketTemp}
           </span>
-          <span className="text-[10px]" style={{ color: '#475569' }}>
+          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
             {marketTemp === 'Cold' ? "Buyer's" : marketTemp === 'Hot' ? "Seller's" : 'Balanced'}
           </span>
         </div>
 
         {/* Vacancy */}
         <div className="flex flex-col items-center py-4">
-          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: '#F1F5F9' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: 'var(--text-heading)' }}>
             Vacancy
           </span>
-          <span className={`text-base font-bold ${vacancy <= 5 ? 'text-[#10B981]' : vacancy <= 10 ? 'text-[#D97706]' : 'text-[#E11D48]'}`}>
+          <span className={`text-base font-bold ${vacancy <= 5 ? 'text-[var(--status-positive)]' : vacancy <= 10 ? 'text-[var(--status-warning)]' : 'text-[var(--status-negative)]'}`}>
             {'<'}{vacancy}%
           </span>
-          <span className="text-[10px]" style={{ color: '#475569' }}>
+          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
             {vacancy <= 5 ? 'Healthy' : vacancy <= 10 ? 'Moderate' : 'High'}
           </span>
         </div>
       </div>
 
       {/* Confidence Metrics Section */}
-      <div className="px-5 py-4 border-t" style={{ borderColor: '#1E293B' }}>
-        <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#F1F5F9' }}>
+      <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-heading)' }}>
           Confidence Metrics
         </h3>
         
         <div className="space-y-3">
           {/* Deal Probability */}
           <div className="flex items-center gap-3">
-            <span className="text-sm w-32" style={{ color: '#F1F5F9' }}>Deal Probability</span>
-            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
+            <span className="text-sm w-32" style={{ color: 'var(--text-heading)' }}>Deal Probability</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
@@ -226,8 +226,8 @@ export function VerdictScoreHero({
 
           {/* Market Alignment */}
           <div className="flex items-center gap-3">
-            <span className="text-sm w-32" style={{ color: '#F1F5F9' }}>Market Alignment</span>
-            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
+            <span className="text-sm w-32" style={{ color: 'var(--text-heading)' }}>Market Alignment</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
@@ -243,8 +243,8 @@ export function VerdictScoreHero({
 
           {/* Price Confidence */}
           <div className="flex items-center gap-3">
-            <span className="text-sm w-32" style={{ color: '#F1F5F9' }}>Price Confidence</span>
-            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(148,163,184,0.15)' }}>
+            <span className="text-sm w-32" style={{ color: 'var(--text-heading)' }}>Price Confidence</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
