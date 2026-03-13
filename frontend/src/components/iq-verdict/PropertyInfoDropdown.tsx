@@ -9,7 +9,8 @@
  * - 2x3 stat grid when expanded (Beds/Baths/Sqft on top, Value/Rent/Status on bottom)
  */
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { ChevronUp, Home } from 'lucide-react'
 
 interface PropertyInfoDropdownProps {
@@ -52,35 +53,40 @@ export function PropertyInfoDropdown({
   defaultOpen = false,
 }: PropertyInfoDropdownProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [imageFailed, setImageFailed] = useState(false)
+
+  useEffect(() => {
+    setImageFailed(false)
+  }, [imageUrl])
   
   const fullAddress = `${address}, ${city}, ${state} ${zip}`
   const displayStatus = status === 'OFF_MARKET' || status === 'OFF-MARKET' ? 'Off-Market' : status
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0]">
+    <div className="bg-[var(--surface-card)] border-b border-[var(--border-subtle)]">
       {/* Clickable Header */}
       <button 
-        className="w-full flex items-center justify-between px-5 py-3 bg-transparent border-none cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3 bg-transparent border-none cursor-pointer hover:bg-[var(--surface-section)] transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
           {/* Pin Icon */}
-          <div className="w-6 h-6 rounded-full border-2 border-[#0EA5E9] flex items-center justify-center flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-[#0EA5E9]" />
+          <div className="w-6 h-6 rounded-full border-2 border-[var(--accent-sky)] flex items-center justify-center flex-shrink-0">
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-sky)]" />
           </div>
           
           <div className="flex flex-col items-start">
-            <span className="text-[10px] text-[#0EA5E9] uppercase tracking-wide font-semibold">
+            <span className="text-[10px] text-[var(--accent-sky)] uppercase tracking-wide font-semibold">
               Property
             </span>
-            <span className="text-sm text-[#0A1628] font-medium">
+            <span className="text-sm text-[var(--text-heading)] font-medium">
               {fullAddress}
             </span>
           </div>
         </div>
         
         <ChevronUp 
-          className={`w-5 h-5 text-[#F1F5F9] transition-transform duration-200 ${isOpen ? '' : 'rotate-180'}`}
+          className={`w-5 h-5 text-[var(--text-label)] transition-transform duration-200 ${isOpen ? '' : 'rotate-180'}`}
         />
       </button>
 
@@ -89,16 +95,20 @@ export function PropertyInfoDropdown({
         <div className="px-5 pb-4">
           <div className="flex gap-4">
             {/* Property Image */}
-            <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#F1F5F9]">
-              {imageUrl ? (
-                <img 
-                  src={imageUrl} 
-                  alt="Property" 
+            <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--surface-elevated)]">
+              {imageUrl && !imageFailed ? (
+                <Image
+                  src={imageUrl}
+                  alt="Property"
                   className="w-full h-full object-cover"
+                  width={64}
+                  height={64}
+                  unoptimized
+                  onError={() => setImageFailed(true)}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Home className="w-6 h-6 text-[#F1F5F9]" />
+                  <Home className="w-6 h-6 text-[var(--text-label)]" />
                 </div>
               )}
             </div>
@@ -107,30 +117,30 @@ export function PropertyInfoDropdown({
             <div className="flex-1 grid grid-cols-3 gap-x-4 gap-y-2">
               {/* Top Row: Beds, Baths, Sqft */}
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0A1628]">{beds}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Beds</span>
+                <span className="text-lg font-bold text-[var(--text-heading)]">{beds}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Beds</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0A1628]">{baths}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Baths</span>
+                <span className="text-lg font-bold text-[var(--text-heading)]">{baths}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Baths</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0A1628]">{formatNumber(sqft)}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Sqft</span>
+                <span className="text-lg font-bold text-[var(--text-heading)]">{formatNumber(sqft)}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Sqft</span>
               </div>
 
               {/* Bottom Row: Est. Value, Est. Rent, Status */}
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedValue)}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Est. Value</span>
+                <span className="text-lg font-bold text-[var(--accent-sky)]">{formatCurrency(estimatedValue)}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Est. Value</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0EA5E9]">{formatCurrency(estimatedRent)}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Est. Rent</span>
+                <span className="text-lg font-bold text-[var(--accent-sky)]">{formatCurrency(estimatedRent)}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Est. Rent</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-[#0A1628]">{displayStatus}</span>
-                <span className="text-[10px] text-[#F1F5F9] uppercase tracking-wide">Status</span>
+                <span className="text-lg font-bold text-[var(--text-heading)]">{displayStatus}</span>
+                <span className="text-[10px] text-[var(--text-label)] uppercase tracking-wide">Status</span>
               </div>
             </div>
           </div>
