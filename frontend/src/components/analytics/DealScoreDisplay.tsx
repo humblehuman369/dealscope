@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Target, Award, TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react'
-import { ScoreItem, DealScoreData, GradeLevel, OpportunityGrade } from './types'
+import { Award, CheckCircle, AlertTriangle } from 'lucide-react'
+import { DealScoreData, OpportunityGrade } from './types'
 import { formatCurrency } from '@/utils/formatters'
 
 /**
@@ -33,20 +33,20 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
         
         {/* Label (Strong Opportunity, etc.) */}
         <div className={`mt-3 px-4 py-2 rounded-lg text-center ${getVerdictClasses(data.overall)}`}>
-          <div className="text-[0.78rem] font-semibold text-white">{data.label}</div>
+          <div className="text-[0.78rem] font-semibold text-[var(--text-heading)]">{data.label}</div>
         </div>
         
         {/* Discount Info */}
         {data.discountPercent !== undefined && (
           <div className="mt-2 text-center">
-            <div className="text-[0.72rem] text-white/60">
+            <div className="text-[0.72rem] text-[var(--text-secondary)]">
               {data.discountPercent <= 5 
                 ? 'Profitable near list price'
                 : `${data.discountPercent.toFixed(1)}% discount needed`
               }
             </div>
             {data.incomeValue > 0 && (
-              <div className="text-[0.65rem] text-white/40 mt-1">
+              <div className="text-[0.65rem] text-[var(--text-label)] mt-1">
                 Income Value: {formatCurrency(data.incomeValue)}
               </div>
             )}
@@ -55,11 +55,11 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
       </div>
 
       {/* Verdict */}
-      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3.5">
-        <h4 className="text-[0.68rem] font-bold text-white/60 uppercase tracking-wide mb-2">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl p-3.5">
+        <h4 className="text-[0.68rem] font-bold text-[var(--text-secondary)] uppercase tracking-wide mb-2">
           Assessment
         </h4>
-        <div className="text-[0.78rem] text-white/90">
+        <div className="text-[0.78rem] text-[var(--text-heading)]">
           {data.verdict}
         </div>
       </div>
@@ -68,41 +68,41 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
       {(strengths.length > 0 || weaknesses.length > 0) && (
         <div className="grid grid-cols-2 gap-3">
           {/* Strengths */}
-          <div className="bg-green-500/[0.08] border border-green-500/20 rounded-xl p-3">
+          <div className="bg-[var(--color-green-dim)] border border-[var(--status-positive)] rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-              <h4 className="text-[0.65rem] font-bold text-green-500 uppercase">Strengths</h4>
+              <CheckCircle className="w-3.5 h-3.5 text-[var(--status-positive)]" />
+              <h4 className="text-[0.65rem] font-bold text-[var(--status-positive)] uppercase">Strengths</h4>
             </div>
             <div className="space-y-1.5">
               {strengths.length > 0 ? (
                 strengths.slice(0, 3).map((s, i) => (
-                  <div key={i} className="flex items-start gap-1.5 text-[0.68rem] text-green-500/80">
-                    <span className="text-green-500 mt-0.5">✓</span>
+                  <div key={i} className="flex items-start gap-1.5 text-[0.68rem] text-[var(--status-positive)]">
+                    <span className="text-[var(--status-positive)] mt-0.5">✓</span>
                     {s}
                   </div>
                 ))
               ) : (
-                <span className="text-[0.65rem] text-green-500/50">No notable strengths</span>
+                <span className="text-[0.65rem] text-[var(--status-positive)]">No notable strengths</span>
               )}
             </div>
           </div>
 
           {/* Weaknesses */}
-          <div className="bg-yellow-500/[0.08] border border-yellow-500/20 rounded-xl p-3">
+          <div className="bg-[var(--color-gold-dim)] border border-[var(--status-warning)] rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />
-              <h4 className="text-[0.65rem] font-bold text-yellow-500 uppercase">Concerns</h4>
+              <AlertTriangle className="w-3.5 h-3.5 text-[var(--status-warning)]" />
+              <h4 className="text-[0.65rem] font-bold text-[var(--status-warning)] uppercase">Concerns</h4>
             </div>
             <div className="space-y-1.5">
               {weaknesses.length > 0 ? (
                 weaknesses.slice(0, 3).map((w, i) => (
-                  <div key={i} className="flex items-start gap-1.5 text-[0.68rem] text-yellow-500/80">
-                    <span className="text-yellow-500 mt-0.5">!</span>
+                  <div key={i} className="flex items-start gap-1.5 text-[0.68rem] text-[var(--status-warning)]">
+                    <span className="text-[var(--status-warning)] mt-0.5">!</span>
                     {w}
                   </div>
                 ))
               ) : (
-                <span className="text-[0.65rem] text-yellow-500/50">No major concerns</span>
+                <span className="text-[0.65rem] text-[var(--status-warning)]">No major concerns</span>
               )}
             </div>
           </div>
@@ -113,10 +113,10 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
 }
 
 function getVerdictClasses(score: number): string {
-  if (score >= 80) return 'bg-green-500/20 border border-green-500/30'
-  if (score >= 60) return 'bg-blue-500/20 border border-blue-500/30'
-  if (score >= 40) return 'bg-yellow-500/20 border border-yellow-500/30'
-  return 'bg-red-500/20 border border-red-500/30'
+  if (score >= 80) return 'bg-[var(--color-green-dim)] border border-[var(--status-positive)]'
+  if (score >= 60) return 'bg-[var(--color-sky-dim)] border border-[var(--status-info)]'
+  if (score >= 40) return 'bg-[var(--color-gold-dim)] border border-[var(--status-warning)]'
+  return 'bg-[var(--color-red-dim)] border border-[var(--status-negative)]'
 }
 
 interface ScoreRingProps {
@@ -131,10 +131,10 @@ function ScoreRing({ score, grade, size = 140 }: ScoreRingProps) {
   const progress = (score / 100) * circumference
 
   const getColors = () => {
-    if (score >= 80) return { stroke: '#22c55e', text: 'text-green-500', glow: 'rgba(34,197,94,0.3)' }
-    if (score >= 60) return { stroke: '#3b82f6', text: 'text-blue-500', glow: 'rgba(59,130,246,0.3)' }
-    if (score >= 40) return { stroke: '#eab308', text: 'text-yellow-500', glow: 'rgba(234,179,8,0.3)' }
-    return { stroke: '#ef4444', text: 'text-red-500', glow: 'rgba(239,68,68,0.3)' }
+    if (score >= 80) return { stroke: 'var(--status-positive)', text: 'text-[var(--status-positive)]', glow: 'var(--status-positive)' }
+    if (score >= 60) return { stroke: 'var(--status-info)', text: 'text-[var(--status-info)]', glow: 'var(--status-info)' }
+    if (score >= 40) return { stroke: 'var(--status-warning)', text: 'text-[var(--status-warning)]', glow: 'var(--status-warning)' }
+    return { stroke: 'var(--status-negative)', text: 'text-[var(--status-negative)]', glow: 'var(--status-negative)' }
   }
 
   const colors = getColors()
@@ -148,7 +148,7 @@ function ScoreRing({ score, grade, size = 140 }: ScoreRingProps) {
           cy={size / 2}
           r={radius}
           fill="none"
-          className="stroke-white/10"
+          className="stroke-[var(--border-subtle)]"
           strokeWidth="8"
         />
         {/* Progress circle */}
@@ -178,29 +178,29 @@ function ScoreRing({ score, grade, size = 140 }: ScoreRingProps) {
   )
 }
 
-interface ScoreBarProps {
-  item: ScoreItem
+interface _ScoreBarProps {
+  item: { label: string; score: number; maxScore: number; fillPercent: number }
 }
 
-function ScoreBar({ item }: ScoreBarProps) {
+function _ScoreBar({ item }: _ScoreBarProps) {
   const percentage = (item.score / item.maxScore) * 100
   
   const getBarColor = () => {
-    if (percentage >= 80) return 'bg-green-500'
-    if (percentage >= 60) return 'bg-blue-500'
-    if (percentage >= 40) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (percentage >= 80) return 'bg-[var(--status-positive)]'
+    if (percentage >= 60) return 'bg-[var(--status-info)]'
+    if (percentage >= 40) return 'bg-[var(--status-warning)]'
+    return 'bg-[var(--status-negative)]'
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-[0.72rem] text-white/70">{item.label}</span>
-        <span className="text-[0.72rem] font-semibold text-white">
+        <span className="text-[0.72rem] text-[var(--text-secondary)]">{item.label}</span>
+        <span className="text-[0.72rem] font-semibold text-[var(--text-heading)]">
           {item.score}/{item.maxScore}
         </span>
       </div>
-      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[var(--border-subtle)] rounded-full overflow-hidden">
         <div 
           className={`h-full rounded-full transition-all duration-500 ${getBarColor()}`}
           style={{ width: `${item.fillPercent}%` }}
@@ -301,10 +301,10 @@ interface DealScoreCompactProps {
 
 export function DealScoreCompact({ score, grade }: DealScoreCompactProps) {
   const getColorClasses = () => {
-    if (score >= 80) return 'text-green-500 bg-green-500/20 border-green-500/30'
-    if (score >= 60) return 'text-blue-500 bg-blue-500/20 border-blue-500/30'
-    if (score >= 40) return 'text-yellow-500 bg-yellow-500/20 border-yellow-500/30'
-    return 'text-red-500 bg-red-500/20 border-red-500/30'
+    if (score >= 80) return 'text-[var(--status-positive)] bg-[var(--color-green-dim)] border-[var(--status-positive)]'
+    if (score >= 60) return 'text-[var(--status-info)] bg-[var(--color-sky-dim)] border-[var(--status-info)]'
+    if (score >= 40) return 'text-[var(--status-warning)] bg-[var(--color-gold-dim)] border-[var(--status-warning)]'
+    return 'text-[var(--status-negative)] bg-[var(--color-red-dim)] border-[var(--status-negative)]'
   }
 
   return (
