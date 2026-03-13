@@ -20,6 +20,7 @@ interface Strategy {
   statValue: string
   statLabel: string
   color: string
+  iconBg: string
   icon: React.ElementType
 }
 
@@ -31,7 +32,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Steady income & build equity',
     statValue: '8-12%',
     statLabel: 'Cash-on-Cash',
-    color: '#0465f2',
+    color: 'var(--strategy-ltr)',
+    iconBg: 'var(--color-sky-dim)',
     icon: Home
   },
   { 
@@ -41,7 +43,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Vacation & business rental income',
     statValue: '15-25%',
     statLabel: 'Cash-on-Cash',
-    color: '#8b5cf6',
+    color: 'var(--strategy-str)',
+    iconBg: 'var(--surface-elevated)',
     icon: Palmtree
   },
   { 
@@ -51,7 +54,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Buy-Rehab-Rent-Refi-Repeat',
     statValue: '∞',
     statLabel: 'Scale',
-    color: '#f97316',
+    color: 'var(--strategy-brrrr)',
+    iconBg: 'var(--color-gold-dim)',
     icon: RefreshCw
   },
   { 
@@ -61,7 +65,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Buy low, fix up, sell high',
     statValue: '$50K+',
     statLabel: 'Profit',
-    color: '#ec4899',
+    color: 'var(--strategy-flip)',
+    iconBg: 'var(--surface-elevated)',
     icon: Hammer
   },
   { 
@@ -71,7 +76,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Cut your housing costs up to 100%',
     statValue: '75%',
     statLabel: 'Cost Savings',
-    color: '#0EA5E9',
+    color: 'var(--strategy-house-hack)',
+    iconBg: 'var(--color-teal-dim)',
     icon: Users
   },
   { 
@@ -81,7 +87,8 @@ const STRATEGIES: Strategy[] = [
     tagline: 'Find deals, assign contracts, profit',
     statValue: '$10K+',
     statLabel: 'Per Deal',
-    color: '#84cc16',
+    color: 'var(--strategy-wholesale)',
+    iconBg: 'var(--color-green-dim)',
     icon: FileSignature
   },
 ]
@@ -115,7 +122,7 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
             className={`strategy-card-premium ${isActive ? 'active' : ''}`}
             style={{
               '--strategy-color': strategy.color,
-              '--strategy-glow': `${strategy.color}30`,
+              '--strategy-glow': 'var(--shadow-card)',
             } as React.CSSProperties}
           >
             {/* Number Badge */}
@@ -140,7 +147,7 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
               <span className="strategy-name-premium" style={{ color: strategy.color }}>
                 {strategy.name}
               </span>
-              <div className="strategy-icon-premium" style={{ backgroundColor: `${strategy.color}20` }}>
+              <div className="strategy-icon-premium" style={{ backgroundColor: strategy.iconBg }}>
                 <Icon className="w-4 h-4" style={{ color: strategy.color }} />
               </div>
             </div>
