@@ -15,6 +15,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from '@/hooks/useSession';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { getToolbarRoute, isValidNavContext, type ToolbarNavId, type NavContext } from '@/lib/navigation';
@@ -138,6 +139,7 @@ export function CompactHeader({
   const { openAuthModal } = useAuthModal();
   const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
   const [hasAutoClosedOnce, setHasAutoClosedOnce] = useState(false);
+  const [propertyImageFailed, setPropertyImageFailed] = useState(false);
 
   // Auto-close property panel after 3 seconds on initial load
   useEffect(() => {
@@ -150,6 +152,10 @@ export function CompactHeader({
       return () => clearTimeout(timer);
     }
   }, [defaultPropertyOpen, hasAutoClosedOnce, onPropertyClick]);
+
+  useEffect(() => {
+    setPropertyImageFailed(false);
+  }, [property.image]);
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
   
@@ -266,11 +272,15 @@ export function CompactHeader({
           }`}
         >
           <div className="flex gap-3 items-stretch">
-            {property.image ? (
-              <img 
-                className="w-[80px] h-[60px] rounded-lg object-cover flex-shrink-0 bg-[var(--surface-elevated)] shadow-sm" 
+            {property.image && !propertyImageFailed ? (
+              <Image
+                className="w-[80px] h-[60px] rounded-lg object-cover flex-shrink-0 bg-[var(--surface-elevated)] shadow-sm"
                 src={property.image}
                 alt="Property"
+                width={80}
+                height={60}
+                unoptimized
+                onError={() => setPropertyImageFailed(true)}
               />
             ) : (
               <div className="w-[80px] h-[60px] rounded-lg flex-shrink-0 bg-[var(--surface-elevated)] flex items-center justify-center shadow-sm">

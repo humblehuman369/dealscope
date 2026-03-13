@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
@@ -126,7 +127,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         onClick={handleBackdropClick}
         style={{
-          background: 'rgba(0, 0, 0, 0.6)',
+          background: 'var(--surface-overlay)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
         }}
@@ -135,15 +136,15 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
         <div 
           className="relative w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-8"
           style={{
-            background: '#000000',
-            border: '1px solid rgba(14, 165, 233, 0.3)',
-            boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)',
+            background: 'var(--surface-base)',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-card-hover)',
           }}
         >
           {/* Close Button */}
           <button 
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-lg text-[var(--text-label)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-elevated)] transition-colors"
             aria-label="Close"
           >
             <X size={24} />
@@ -153,18 +154,16 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-[60px] h-[60px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
-                <img 
-                  src="/images/dealgapiq-icon.png" 
+                <Image
+                  src="/images/dealgapiq-icon.png"
                   alt="DealGap IQ" 
                   className="w-[54px] h-[54px] sm:w-[78px] sm:h-[78px] object-contain"
-                  onError={(e) => {
-                    // Fallback if image doesn't load
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
+                  width={78}
+                  height={78}
                 />
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
+                <h2 className="text-lg sm:text-xl font-bold text-[var(--text-heading)] leading-tight">
                   {showAddressInput ? 'Enter property address' : 'How would you like to search property?'}
                 </h2>
               </div>
@@ -179,29 +178,29 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 onClick={handleScanProperty}
                 className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
-                  background: '#000000',
-                  border: '1px solid rgba(14, 165, 233, 0.25)',
-                  boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+                  background: 'var(--surface-base)',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: 'var(--shadow-card)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.55)';
-                  e.currentTarget.style.boxShadow = '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)';
+                  e.currentTarget.style.border = '1px solid var(--border-focus)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.25)';
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)';
+                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
                 }}
               >
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: '#0EA5E9' }}
+                  style={{ background: 'var(--accent-sky)' }}
                 >
-                  <Camera size={22} className="text-white sm:hidden" />
-                  <Camera size={28} className="text-white hidden sm:block" />
+                  <Camera size={22} className="text-[var(--text-inverse)] sm:hidden" />
+                  <Camera size={28} className="text-[var(--text-inverse)] hidden sm:block" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Scan Property</h3>
-                  <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Scan Property</h3>
+                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Point your phone camera to scan any property for quick lookup
                   </p>
                 </div>
@@ -212,29 +211,29 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 onClick={() => setShowAddressInput(true)}
                 className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
-                  background: '#000000',
-                  border: '1px solid rgba(14, 165, 233, 0.25)',
-                  boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+                  background: 'var(--surface-base)',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: 'var(--shadow-card)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.55)';
-                  e.currentTarget.style.boxShadow = '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)';
+                  e.currentTarget.style.border = '1px solid var(--border-focus)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '1px solid rgba(14, 165, 233, 0.25)';
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)';
+                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
                 }}
               >
                 <div 
                   className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: '#0EA5E9' }}
+                  style={{ background: 'var(--accent-sky)' }}
                 >
-                  <Search size={22} className="text-white sm:hidden" />
-                  <Search size={28} className="text-white hidden sm:block" />
+                  <Search size={22} className="text-[var(--text-inverse)] sm:hidden" />
+                  <Search size={28} className="text-[var(--text-inverse)] hidden sm:block" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: '#FFFFFF' }}>Enter Address</h3>
-                  <p className="text-xs sm:text-sm leading-snug" style={{ color: '#FFFFFF' }}>
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address</h3>
+                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Type or paste any residential address to start
                   </p>
                 </div>
@@ -246,7 +245,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               <div className="relative">
                 <Search 
                   size={20} 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" 
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-label)] pointer-events-none z-10" 
                 />
                 <AddressAutocomplete
                   placeholder="Enter property address..."
@@ -254,47 +253,47 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   onChange={setAddress}
                   onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
                   autoFocus
-                  className="w-full pl-12 pr-12 py-4 rounded-xl text-white placeholder-gray-500 outline-none transition-colors"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl text-[var(--text-heading)] placeholder-[var(--text-label)] outline-none transition-colors"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--surface-input)',
+                    border: '1px solid var(--border-default)',
                   }}
                 />
                 {/* Validation indicator */}
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
                   {validationStatus === 'validating' && (
-                    <Loader2 size={20} className="text-gray-400 animate-spin" />
+                    <Loader2 size={20} className="text-[var(--text-label)] animate-spin" />
                   )}
                   {validationStatus === 'valid' && (
-                    <CheckCircle2 size={20} className="text-emerald-400" aria-hidden />
+                    <CheckCircle2 size={20} className="text-[var(--status-positive)]" aria-hidden />
                   )}
                   {validationStatus === 'issues' && (
-                    <AlertTriangle size={20} className="text-amber-400" aria-hidden />
+                    <AlertTriangle size={20} className="text-[var(--status-warning)]" aria-hidden />
                   )}
                   {validationStatus === 'error' && (
-                    <AlertCircle size={20} className="text-red-400" aria-hidden />
+                    <AlertCircle size={20} className="text-[var(--status-negative)]" aria-hidden />
                   )}
                 </div>
               </div>
 
               {/* Validation messages and actions */}
               {validationStatus === 'error' && (
-                <p className="text-sm text-red-400">
+                <p className="text-sm text-[var(--status-negative)]">
                   Could not validate address. You can try again or use the address as entered.
                 </p>
               )}
               {validationStatus === 'issues' && validationResult && (
-                <div className="rounded-xl p-3 space-y-3" style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div className="rounded-xl p-3 space-y-3" style={{ background: 'var(--surface-input)', border: '1px solid var(--border-default)' }}>
                   {validationResult.issues.length > 0 && (
-                    <ul className="text-xs text-amber-200/90 space-y-1">
+                    <ul className="text-xs text-[var(--status-warning)] space-y-1">
                       {validationResult.issues.slice(0, 3).map((issue, i) => (
                         <li key={i}>{issue.message}</li>
                       ))}
                     </ul>
                   )}
                   {validationResult.formattedAddress && validationResult.formattedAddress.trim() !== address.trim() && (
-                    <p className="text-sm text-gray-300">
-                      Did you mean: <span className="font-medium text-white">{validationResult.formattedAddress}</span>?
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      Did you mean: <span className="font-medium text-[var(--text-heading)]">{validationResult.formattedAddress}</span>?
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2">
@@ -303,7 +302,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                         type="button"
                         onClick={acceptCorrection}
                         className="text-sm py-2 px-3 rounded-lg font-medium transition-colors"
-                        style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
+                        style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
                       >
                         Accept correction
                       </button>
@@ -311,7 +310,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     <button
                       type="button"
                       onClick={useAsEntered}
-                      className="text-sm py-2 px-3 rounded-lg font-medium text-gray-400 hover:text-white transition-colors"
+                      className="text-sm py-2 px-3 rounded-lg font-medium text-[var(--text-label)] hover:text-[var(--text-heading)] transition-colors"
                     >
                       Use as entered
                     </button>
@@ -330,9 +329,9 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   }}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-colors"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: '#e5e7eb',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--surface-input)',
+                    color: 'var(--text-body)',
+                    border: '1px solid var(--border-default)',
                   }}
                 >
                   <ArrowLeft size={18} />
@@ -344,11 +343,11 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: address.trim() && validationStatus !== 'validating'
-                      ? 'linear-gradient(135deg, #0EA5E9 0%, #0e7490 100%)' 
-                      : 'rgba(14, 165, 233, 0.15)',
+                      ? 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)'
+                      : 'var(--surface-elevated)',
                     color: address.trim() && validationStatus !== 'validating'
-                      ? 'white'
-                      : 'rgba(148, 163, 184, 0.6)',
+                      ? 'var(--text-inverse)'
+                      : 'var(--text-label)',
                   }}
                 >
                   {validationStatus === 'validating' ? (

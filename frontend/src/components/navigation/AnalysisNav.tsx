@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 import { SavePropertyButton } from '@/components/SavePropertyButton'
 import type { PropertySnapshot } from '@/hooks/useSaveProperty'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
@@ -96,29 +95,29 @@ export function AnalysisNav() {
     <nav
       className="sticky top-0 z-50 backdrop-blur-xl border-b"
       style={{
-        background: 'rgba(0,0,0,0.85)',
-        borderColor: colors.ui.border,
+        background: 'var(--surface-overlay)',
+        borderColor: 'var(--border-subtle)',
       }}
     >
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
         {/* Logo / home link */}
-        <Link href="/" className="flex items-center gap-0.5 text-sm font-bold shrink-0" style={{ color: colors.text.secondary }}>
-          <span style={{ color: colors.text.body }}>DealGap</span>
-          <span style={{ color: colors.brand.blue }}>IQ</span>
+        <Link href="/" className="flex items-center gap-0.5 text-sm font-bold shrink-0" style={{ color: 'var(--text-heading)' }}>
+          <span style={{ color: 'var(--text-body)' }}>DealGap</span>
+          <span style={{ color: 'var(--accent-sky)' }}>IQ</span>
         </Link>
 
         {/* Center: pill toggle + secondary text links */}
         <div className="flex items-center gap-5">
           {/* Primary pill toggle */}
-          <div className="flex items-center gap-0.5 bg-slate-900/60 rounded-full p-0.5">
+          <div className="flex items-center gap-0.5 rounded-full p-0.5" style={{ background: 'var(--surface-card)' }}>
             {primaryTabs.map((tab) => (
               <Link
                 key={tab.label}
                 href={tab.href}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold transition-all"
                 style={{
-                  background: tab.active ? colors.brand.blueDeep : 'transparent',
-                  color: tab.active ? '#fff' : colors.text.muted,
+                  background: tab.active ? 'var(--accent-sky)' : 'transparent',
+                  color: tab.active ? 'var(--text-inverse)' : 'var(--text-label)',
                 }}
               >
                 {tab.icon}
@@ -130,15 +129,15 @@ export function AnalysisNav() {
           {/* Secondary text links */}
           <Link
             href={propertyHref}
-            className="text-[11px] font-medium transition-colors hover:text-slate-200"
-            style={{ color: colors.text.muted }}
+            className="text-[11px] font-medium transition-colors hover:text-[var(--text-heading)]"
+            style={{ color: 'var(--text-label)' }}
           >
             Property
           </Link>
           <Link
             href={priceHref}
-            className="text-[11px] font-medium transition-colors hover:text-slate-200"
-            style={{ color: colors.text.muted }}
+            className="text-[11px] font-medium transition-colors hover:text-[var(--text-heading)]"
+            style={{ color: 'var(--text-label)' }}
           >
             Comps
           </Link>
@@ -155,8 +154,8 @@ export function AnalysisNav() {
           )}
           <Link
             href="/search"
-            className="p-1.5 rounded-lg transition-colors hover:bg-white/5"
-            style={{ color: colors.text.muted }}
+            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-elevated)]"
+            style={{ color: 'var(--text-label)' }}
             aria-label="Search"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
