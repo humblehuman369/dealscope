@@ -85,7 +85,7 @@ function PropertyContextCard({
       <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: accentColor, margin: '0 0 0.75rem' }}>
         Active Analysis
       </p>
-      <h3 style={{ fontWeight: 700, fontSize: '1.25rem', color: '#F1F5F9', margin: '0 0 0.25rem' }}>
+      <h3 style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-heading)', margin: '0 0 0.25rem' }}>
         How {address.split(',')[0]} performs as a {strategyName}
       </h3>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 1.25rem' }}>
@@ -158,7 +158,7 @@ export function Callout({
           style={{
             fontWeight: 700,
             fontSize: '1.25rem',
-            color: '#F1F5F9',
+            color: 'var(--text-heading)',
             margin: '0 0 0.5rem',
           }}
         >
@@ -216,7 +216,7 @@ export function StepItem({
           height: 40,
           borderRadius: 10,
           background: accentColor,
-          color: '#000',
+          color: 'var(--text-inverse)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
