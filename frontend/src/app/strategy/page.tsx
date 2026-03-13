@@ -22,7 +22,7 @@ import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
-import { colors, typography, tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
+import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
 
@@ -61,6 +61,34 @@ interface BackendAnalysisResponse {
 function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
+
+const colors = {
+  brand: {
+    blue: 'var(--accent-sky)',
+    teal: 'var(--accent-sky)',
+    gold: 'var(--status-warning)',
+  },
+  text: {
+    primary: 'var(--text-heading)',
+    body: 'var(--text-body)',
+  },
+  background: {
+    cardUp: 'var(--surface-card)',
+    card: 'var(--surface-card)',
+  },
+  status: {
+    positive: 'var(--status-positive)',
+    negative: 'var(--status-negative)',
+  },
+  accentBg: {
+    green: 'var(--color-green-dim)',
+    red: 'var(--color-red-dim)',
+    gold: 'var(--color-gold-dim)',
+  },
+  ui: {
+    border: 'var(--border-subtle)',
+  },
+} as const
 
 function StrategyContent() {
   const router = useRouter()
@@ -242,10 +270,10 @@ function StrategyContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#F1F5F9' }}>Loading strategy...</p>
+          <div className="w-10 h-10 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: 'var(--text-heading)' }}>Loading strategy...</p>
         </div>
       </div>
     )
@@ -253,10 +281,10 @@ function StrategyContent() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4 text-center px-4">
           <p className="text-xl font-bold" style={{ color: colors.text.primary }}>{error || 'Unable to load'}</p>
-          <button onClick={handleBack} className="mt-4 px-6 py-2 bg-sky-500 text-white rounded-full font-bold">
+          <button onClick={handleBack} className="mt-4 px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold">
             Back to Verdict
           </button>
         </div>
@@ -502,7 +530,7 @@ function StrategyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
@@ -515,7 +543,7 @@ function StrategyContent() {
             <button
               onClick={handleOpenDealMaker}
               className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
-              style={{ color: '#0EA5E9', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+              style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
             >Change Terms</button>
             {' '}to adjust any assumption and see how the deal shifts in real time.
           </p>
@@ -525,7 +553,7 @@ function StrategyContent() {
             <button
               onClick={handleOpenDealMaker}
               className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
-              style={{ background: colors.brand.teal, color: '#fff' }}
+              style={{ background: colors.brand.teal, color: 'var(--text-inverse)' }}
             >
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
               <span>Change Terms</span>
@@ -609,12 +637,12 @@ function StrategyContent() {
               ].map(([label, value, strike, color], i) => (
                 <div key={i} className="flex justify-between py-1.5">
                   <span className="text-sm" style={{ color: colors.text.body }}>{label as string}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: '#F1F5F9' } : {}) }}>{value as string}</span>
+                  <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: 'var(--text-body)' } : {}) }}>{value as string}</span>
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Cash Needed</span>
-                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Cash Needed</span>
+                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
               </div>
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
@@ -635,8 +663,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Annual Payment</span>
-                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(annualDebt)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Annual Payment</span>
+                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(annualDebt)}</span>
               </div>
 
             </div>
@@ -661,8 +689,8 @@ function StrategyContent() {
                 </div>
               ))}
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.negative}`, borderBottom: `2px solid ${colors.status.negative}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Total Costs</span>
-                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(totalExpenses)}/yr</span>
+                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Total Costs</span>
+                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(totalExpenses)}/yr</span>
               </div>
 
               <hr className="my-5" style={{ borderColor: colors.ui.border }} />
@@ -686,8 +714,8 @@ function StrategyContent() {
                 <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(vacancyLoss)})</span>
               </div>
               <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.positive}`, borderBottom: `2px solid ${colors.status.positive}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>Effective Income</span>
-                <span className="font-bold tabular-nums" style={{ color: '#ffffff', fontSize: '1.14rem' }}>{formatCurrency(effectiveIncome)}</span>
+                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Effective Income</span>
+                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(effectiveIncome)}</span>
               </div>
 
             </div>
@@ -697,14 +725,14 @@ function StrategyContent() {
           {isFlipOrWholesale ? (
             /* Flip & Wholesale: Profit-oriented cards */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-10 pt-4">
-              <div className="rounded-xl p-4" style={{ background: strategyAnnualCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyAnnualCashFlow >= 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }}>
+              <div className="rounded-xl p-4" style={{ background: strategyAnnualCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyAnnualCashFlow >= 0 ? 'var(--status-positive)' : 'var(--status-negative)'}` }}>
                 <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>{activeStrategyId === 'wholesale' ? 'Assignment Fee' : 'Net Profit'}</p>
                 <div className="flex justify-between items-baseline mt-1">
                   <p className="text-xs font-medium" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Estimated</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>{formatCurrency(strategyAnnualCashFlow)}</p>
                 </div>
               </div>
-              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: `1px solid rgba(52,211,153,0.2)` }}>
+              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: '1px solid var(--status-positive)' }}>
                 <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>ROI</p>
                 <div className="flex justify-between items-baseline mt-1">
                   <p className="text-xs font-medium" style={{ color: colors.status.positive }}>Return</p>
@@ -719,12 +747,12 @@ function StrategyContent() {
                 <div
                   className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                   style={{
-                    background: '#000000',
+                    background: 'var(--surface-card)',
                     borderLeft: `3px solid ${colors.status.positive}`,
-                    borderTop: '1px solid rgba(52,211,153,0.2)',
-                    borderRight: '1px solid rgba(52,211,153,0.2)',
-                    borderBottom: '1px solid rgba(52,211,153,0.2)',
-                    boxShadow: '0 0 20px rgba(52,211,153,0.1)',
+                    borderTop: '1px solid var(--status-positive)',
+                    borderRight: '1px solid var(--status-positive)',
+                    borderBottom: '1px solid var(--status-positive)',
+                    boxShadow: 'var(--shadow-card)',
                   }}
                 >
                   <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: colors.status.positive }}>NOI</p>
@@ -733,7 +761,7 @@ function StrategyContent() {
                     <span className="truncate">{formatCurrency(noi)}</span>
                     <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                   </p>
-                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: '1px solid rgba(52,211,153,0.15)' }}>
+                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: '1px solid var(--status-positive)' }}>
                     <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: colors.status.positive }}>
                       {formatCurrency(Math.round(noi / 12))}/mo
                     </p>
@@ -747,12 +775,12 @@ function StrategyContent() {
                     <div
                       className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                       style={{
-                        background: '#000000',
+                        background: 'var(--surface-card)',
                         borderLeft: `3px solid ${netColor}`,
-                        borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
-                        borderRight: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
-                        borderBottom: `1px solid ${netGreen ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
-                        boxShadow: netGreen ? '0 0 20px rgba(52,211,153,0.1)' : '0 0 20px rgba(248,113,113,0.1)',
+                        borderTop: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
+                        borderRight: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
+                        borderBottom: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
+                        boxShadow: 'var(--shadow-card)',
                       }}
                     >
                       <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: netColor }}>Net Cash Flow</p>
@@ -761,7 +789,7 @@ function StrategyContent() {
                         <span className="truncate">{netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}</span>
                         <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
                       </p>
-                      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: `1px solid ${netGreen ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'}` }}>
+                      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}` }}>
                         <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: netColor }}>
                           {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
                         </p>
@@ -775,7 +803,7 @@ function StrategyContent() {
                 {(() => {
                   const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
+                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
                         <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -797,7 +825,7 @@ function StrategyContent() {
                 {(() => {
                   const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.25)', boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)' }}>
+                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
                         <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -821,7 +849,7 @@ function StrategyContent() {
           )}
 
           {/* The Bottom Line */}
-          <div className="mt-7 p-5 rounded-xl border" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
+          <div className="mt-7 p-5 rounded-xl border" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
             <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
               {isFlipOrWholesale ? (
@@ -839,7 +867,7 @@ function StrategyContent() {
           </div>
 
           {/* Try Another Strategy */}
-          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
+          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.gold }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
             </div>
@@ -857,7 +885,7 @@ function StrategyContent() {
                       style={{
                         background: isActive ? colors.brand.teal : colors.background.cardUp,
                         border: `1px solid ${isActive ? colors.brand.teal : colors.ui.border}`,
-                        color: isActive ? '#fff' : colors.text.body,
+                        color: isActive ? 'var(--text-inverse)' : colors.text.body,
                       }}
                     >
                       {s.name}
@@ -872,7 +900,7 @@ function StrategyContent() {
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
         <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
-          <div className="w-full rounded-[14px] p-5" style={{ background: '#000000', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 40px rgba(14, 165, 233, 0.1), 0 0 80px rgba(14, 165, 233, 0.05)' }}>
+          <div className="w-full rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>
@@ -881,9 +909,9 @@ function StrategyContent() {
             <table className="w-full">
               <thead>
                 <tr className="border-b" style={{ borderColor: colors.ui.border }}>
-                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Metric</th>
-                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>This Deal</th>
-                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: '#F1F5F9' }}>Target</th>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: 'var(--text-heading)' }}>Metric</th>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: 'var(--text-heading)' }}>This Deal</th>
+                  <th className="text-left text-xs font-bold uppercase tracking-wide py-3" style={{ color: 'var(--text-heading)' }}>Target</th>
                   <th className="py-3"></th>
                 </tr>
               </thead>
@@ -892,7 +920,7 @@ function StrategyContent() {
                   <tr key={i} className="border-b" style={{ borderColor: colors.ui.border }}>
                     <td className="py-3 text-sm font-medium" style={{ color: colors.text.primary }}>{b.metric}</td>
                     <td className="py-3 text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{b.value}</td>
-                    <td className="py-3 text-sm font-medium tabular-nums" style={{ color: '#F1F5F9' }}>{b.target}</td>
+                    <td className="py-3 text-sm font-medium tabular-nums" style={{ color: 'var(--text-body)' }}>{b.target}</td>
                     <td className="py-3 text-right">
                       <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
                         style={{
@@ -922,7 +950,7 @@ function StrategyContent() {
                 type="button"
                 onClick={() => (isSaved ? toggle() : save()).catch((err) => console.error('Save to DealVault failed:', err))}
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-[var(--text-inverse)] transition-all mb-4 disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{ background: colors.brand.teal }}
               >
                 {isSaving ? 'Saving…' : isSaved ? 'Saved to DealVault ✓' : 'Save to DealVaultIQ'}
@@ -933,12 +961,12 @@ function StrategyContent() {
               <button
                 type="button"
                 onClick={() => openAuthModal('register')}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-4"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-[var(--text-inverse)] transition-all mb-4"
                 style={{ background: colors.brand.teal }}
               >
                 Create Free Account
               </button>
-              <p className="text-xs" style={{ color: '#F1F5F9' }}>No credit card · 3 free scans per month</p>
+              <p className="text-xs" style={{ color: 'var(--text-body)' }}>No credit card · 3 free scans per month</p>
             </>
           )}
         </section>
@@ -951,10 +979,10 @@ function StrategyContent() {
 export default function StrategyPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#F1F5F9' }}>Loading strategy...</p>
+          <div className="w-8 h-8 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: 'var(--text-heading)' }}>Loading strategy...</p>
         </div>
       </div>
     }>

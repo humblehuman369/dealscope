@@ -25,7 +25,7 @@ import {
 } from '@/components/iq-verdict'
 import { getDealVerdict } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
-import { colors, typography, tw, cardGlow } from '@/components/iq-verdict/verdict-design-tokens'
+import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
@@ -114,7 +114,13 @@ function ScoreArc({ score, maxScore = 100, size = 120 }: { score: number; maxSco
   const bg = `M ${s.x} ${s.y} A ${r} ${r} 0 1 1 ${e.x} ${e.y}`
   const fg = `M ${s.x} ${s.y} A ${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${v.x} ${v.y}`
 
-  const color = val >= 80 ? '#34D399' : val >= 60 ? '#FBBF24' : val >= 40 ? '#F97316' : '#F97066'
+  const color = val >= 80
+    ? 'var(--status-positive)'
+    : val >= 60
+      ? 'var(--status-warning)'
+      : val >= 40
+        ? 'var(--accent-brand-orange)'
+        : 'var(--status-negative)'
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -131,13 +137,13 @@ function ScoreArc({ score, maxScore = 100, size = 120 }: { score: number; maxSco
           <stop offset="100%" stopColor={color} stopOpacity="0.5" />
         </linearGradient>
       </defs>
-      <path d={bg} fill="none" stroke="#1E293B" strokeWidth={sw} strokeLinecap="round" />
+      <path d={bg} fill="none" stroke="var(--border-default)" strokeWidth={sw} strokeLinecap="round" />
       <path d={fg} fill="none" stroke={`url(#${gradientId})`} strokeWidth={sw} strokeLinecap="round" filter={`url(#${arcGlowId})`} />
       <text
         x={cx}
         y={cx - 2}
         textAnchor="middle"
-        fill="#FFFFFF"
+        fill="var(--text-heading)"
         fontSize="34"
         fontWeight="700"
         style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
@@ -148,7 +154,7 @@ function ScoreArc({ score, maxScore = 100, size = 120 }: { score: number; maxSco
         x={cx}
         y={cx + 16}
         textAnchor="middle"
-        fill="#FFFFFF"
+        fill="var(--text-heading)"
         fontSize="11"
         style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
@@ -182,20 +188,20 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
           minWidth: 30,
           height: 30,
           borderRadius: '50%',
-          background: 'rgba(14,165,233,0.12)',
-          border: '1px solid rgba(14,165,233,0.3)',
+          background: 'var(--color-sky-dim)',
+          border: '1px solid var(--accent-sky)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 13,
           fontWeight: 700,
-          color: '#0EA5E9',
+          color: 'var(--accent-sky)',
           flexShrink: 0,
         }}
       >
         {num}
       </div>
-      <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: '#FFFFFF', paddingTop: 4 }}>{children}</p>
+      <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
     </div>
   )
 }
@@ -203,19 +209,19 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
 function getBadgeStyle(verdictLabel: string) {
   switch (verdictLabel) {
     case 'Achievable':
-      return { bg: 'rgba(52,211,153,0.1)', color: '#34D399', border: 'rgba(52,211,153,0.2)', icon: '✓' }
+      return { bg: 'var(--color-green-dim)', color: 'var(--status-positive)', border: 'var(--status-positive)', icon: '✓' }
     case 'Negotiable':
-      return { bg: 'rgba(52,211,153,0.1)', color: '#34D399', border: 'rgba(52,211,153,0.2)', icon: '✓' }
+      return { bg: 'var(--color-green-dim)', color: 'var(--status-positive)', border: 'var(--status-positive)', icon: '✓' }
     case 'Challenging':
-      return { bg: 'rgba(251,191,36,0.1)', color: '#FBBF24', border: 'rgba(251,191,36,0.2)', icon: '⚡' }
+      return { bg: 'var(--color-gold-dim)', color: 'var(--status-warning)', border: 'var(--status-warning)', icon: '⚡' }
     case 'More Challenging':
-      return { bg: 'rgba(249,115,22,0.1)', color: '#F97316', border: 'rgba(249,115,22,0.2)', icon: '⚠' }
+      return { bg: 'var(--color-gold-dim)', color: 'var(--accent-brand-orange)', border: 'var(--accent-brand-orange)', icon: '⚠' }
     case 'Very Challenging':
-      return { bg: 'rgba(249,112,102,0.1)', color: '#F97066', border: 'rgba(249,112,102,0.2)', icon: '✕' }
+      return { bg: 'var(--color-red-dim)', color: 'var(--status-negative)', border: 'var(--status-negative)', icon: '✕' }
     case 'Extremely Challenging':
-      return { bg: 'rgba(249,112,102,0.1)', color: '#F97066', border: 'rgba(249,112,102,0.2)', icon: '✕' }
+      return { bg: 'var(--color-red-dim)', color: 'var(--status-negative)', border: 'var(--status-negative)', icon: '✕' }
     default:
-      return { bg: 'rgba(251,191,36,0.1)', color: '#FBBF24', border: 'rgba(251,191,36,0.2)', icon: '⚡' }
+      return { bg: 'var(--color-gold-dim)', color: 'var(--status-warning)', border: 'var(--status-warning)', icon: '⚡' }
   }
 }
 
@@ -1079,10 +1085,10 @@ function VerdictContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#F1F5F9' }}>Analyzing property...</p>
+          <div className="w-10 h-10 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: 'var(--text-heading)' }}>Analyzing property...</p>
         </div>
       </div>
     )
@@ -1091,21 +1097,21 @@ function VerdictContent() {
   // Error state with no property fallback
   if (!property || !analysis) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4 text-center px-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(248,113,113,0.10)' }}>
-            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-red-dim)' }}>
+            <svg className="w-8 h-8 text-[var(--status-negative)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold" style={{ color: '#F1F5F9' }}>
+          <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
             {error || 'Unable to load property'}
           </h2>
-          <p className="max-w-md" style={{ color: '#F1F5F9' }}>
+          <p className="max-w-md" style={{ color: 'var(--text-body)' }}>
             We couldn&apos;t fetch the property data. Please try again or search for a different address.
           </p>
           {error && error !== 'Unable to load property' && (
-            <p className="max-w-md text-sm opacity-80" style={{ color: '#94A3B8' }}>
+            <p className="max-w-md text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
               {error}
               {(error === 'Failed to fetch' ||
                 error.toLowerCase().includes('network request failed') ||
@@ -1116,7 +1122,7 @@ function VerdictContent() {
           )}
           <button
             onClick={handleBack}
-            className="mt-4 px-6 py-2 bg-sky-500 text-white rounded-full font-bold hover:bg-sky-400 transition-colors"
+            className="mt-4 px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
           >
             Go Back
           </button>
@@ -1177,7 +1183,7 @@ function VerdictContent() {
 
   return (
     <>
-      <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+      <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
         {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Centered single-column container */}
@@ -1188,9 +1194,9 @@ function VerdictContent() {
               style={{
                 borderRadius: 16,
                 overflow: 'hidden',
-                background: '#000000',
-                border: '1px solid rgba(14,165,233,0.25)',
-                boxShadow: '0 0 40px rgba(14,165,233,0.08), 0 0 80px rgba(14,165,233,0.04)',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-card-hover)',
               }}
             >
               <div style={{ padding: '28px 28px 24px' }}>
@@ -1221,7 +1227,7 @@ function VerdictContent() {
                         margin: '12px 0 0',
                         fontSize: 22,
                         fontWeight: 700,
-                        color: '#FFFFFF',
+                        color: 'var(--text-heading)',
                         lineHeight: 1.3,
                         letterSpacing: -0.2,
                       }}
@@ -1236,7 +1242,7 @@ function VerdictContent() {
                 style={{
                   height: 1,
                   margin: '0 28px',
-                  background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.25), rgba(14,165,233,0.5), rgba(14,165,233,0.25), transparent)',
+                  background: 'linear-gradient(90deg, transparent, var(--border-default), var(--accent-sky), var(--border-default), transparent)',
                 }}
               />
 
@@ -1245,7 +1251,7 @@ function VerdictContent() {
                   style={{
                     margin: '0 0 20px',
                     fontSize: 12,
-                    color: '#FFFFFF',
+                    color: 'var(--text-heading)',
                     textTransform: 'uppercase',
                     letterSpacing: 2,
                     fontWeight: 600,
@@ -1258,22 +1264,22 @@ function VerdictContent() {
                   <Takeaway num="1" delay={0}>
                     {isOffMarket ? (
                       <span>
-                        This property is <strong style={{ color: '#FBBF24' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                        This property is <strong style={{ color: 'var(--status-warning)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
                       </span>
                     ) : (
                       <span>
-                        This property is <strong style={{ color: '#34D399' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                        This property is <strong style={{ color: 'var(--status-positive)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
                       </span>
                     )}
                   </Takeaway>
                   <Takeaway num="2" delay={140}>
                     <span>
-                      To cash-flow positively, buy at <strong style={{ color: '#0EA5E9' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: '#FBBF24' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
+                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--status-warning)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
                     </span>
                   </Takeaway>
                   <Takeaway num="3" delay={280}>
                     <span>
-                      About <strong style={{ color: '#0EA5E9' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
+                      About <strong style={{ color: 'var(--accent-sky)' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
                     </span>
                   </Takeaway>
                 </div>
@@ -1282,7 +1288,7 @@ function VerdictContent() {
               <div
                 style={{
                   padding: '12px 28px',
-                  borderTop: '1px solid rgba(14,165,233,0.1)',
+                  borderTop: '1px solid var(--border-subtle)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -1295,7 +1301,7 @@ function VerdictContent() {
                   onClick={handleShowMethodology}
                   style={{
                     fontSize: 12,
-                    color: '#FFFFFF',
+                    color: 'var(--text-body)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 5,
@@ -1314,26 +1320,26 @@ function VerdictContent() {
                     alignItems: 'center',
                     gap: 6,
                     fontSize: 12,
-                    color: '#FFFFFF',
+                    color: 'var(--text-body)',
                   }}
                 >
-                  <span style={{ color: '#FBBF24', fontSize: 11 }}>⚡</span>
+                  <span style={{ color: 'var(--status-warning)', fontSize: 11 }}>⚡</span>
                   <span>
-                    Analyzed in <strong style={{ color: '#0EA5E9' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
+                    Analyzed in <strong style={{ color: 'var(--accent-sky)' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
                   </span>
                   <span style={{ margin: '0 2px', opacity: 0.3 }}>·</span>
-                  <strong style={{ color: '#FFFFFF' }}>{dataSourceCount} data sources</strong>
+                  <strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount} data sources</strong>
                 </div>
               </div>
             </div>
           </div>
 
-          <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
+          <section className="px-5 py-8 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
 
-            <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>
+            <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 6 }}>
               {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
             </h2>
-            <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 24, lineHeight: 1.55 }}>
+            <p className={tw.textBody} style={{ color: 'var(--text-body)', marginBottom: 24, lineHeight: 1.55 }}>
               Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
             </p>
 
@@ -1343,15 +1349,15 @@ function VerdictContent() {
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
                 { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center active:border-[rgba(14,165,233,0.55)] active:shadow-[0_0_30px_rgba(14,165,233,0.15)] ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
-                  background: card.active ? cardGlow.active.background : cardGlow.sm.background,
-                  border: card.active ? cardGlow.active.border : cardGlow.sm.border,
-                  boxShadow: card.active ? cardGlow.active.boxShadow : cardGlow.sm.boxShadow,
-                  transition: cardGlow.sm.transition,
+                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
+                  background: card.active ? 'var(--surface-elevated)' : 'var(--surface-card)',
+                  border: `1px solid ${card.active ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
+                  boxShadow: card.active ? 'var(--shadow-card-hover)' : 'var(--shadow-card)',
+                  transition: 'all 0.3s ease',
                 }}>
-                  <p className="text-xs sm:text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? colors.text.primary : '#F1F5F9' }}>{card.label}</p>
-                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? colors.brand.blue : '#F1F5F9' }}>{fmtShort(card.value)}</p>
-                  <p className="text-xs sm:text-[8px] font-medium" style={{ color: card.active ? colors.text.body : colors.text.muted }}>{card.sub}</p>
+                  <p className="text-xs sm:text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? 'var(--text-heading)' : 'var(--text-body)' }}>{card.label}</p>
+                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? 'var(--accent-sky)' : 'var(--text-heading)' }}>{fmtShort(card.value)}</p>
+                  <p className="text-xs sm:text-[8px] font-medium" style={{ color: card.active ? 'var(--text-body)' : 'var(--text-secondary)' }}>{card.sub}</p>
                 </div>
               ))}
             </div>
@@ -1360,9 +1366,9 @@ function VerdictContent() {
             <div className="mt-6 relative pt-8">
               {(() => {
                 const markers = [
-                  { label: 'Target Buy', price: purchasePrice, dotColor: colors.brand.blue },
-                  { label: 'Income Value', price: incomeValue, dotColor: colors.brand.gold },
-                  { label: priceLabel, price: property.price, dotColor: colors.status.negative },
+                  { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
+                  { label: 'Income Value', price: incomeValue, dotColor: 'var(--status-warning)' },
+                  { label: priceLabel, price: property.price, dotColor: 'var(--status-negative)' },
                 ].sort((a, b) => a.price - b.price)
 
                 const allPrices = markers.map(m => m.price).filter(p => p > 0)
@@ -1396,28 +1402,28 @@ function VerdictContent() {
                           top: '0.25rem',
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: colors.brand.blue, flexShrink: 0 }} />
-                        <div style={{ height: 1, background: colors.brand.blue, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
                         <span
                           className="text-xs sm:text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
-                          style={{ color: colors.brand.blue }}
+                          style={{ color: 'var(--accent-sky)' }}
                         >
                           DEAL GAP &nbsp;-{Math.abs(dealGap).toFixed(1)}%
                         </span>
-                        <div style={{ height: 1, background: colors.brand.blue, flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: colors.brand.blue, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
                       </div>
                     )}
 
                     {/* Bar with proportionally-positioned dots */}
-                    <div className="relative h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${colors.brand.blue}30, ${colors.brand.gold}30, ${colors.status.negative}25)` }}>
+                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))' }}>
                       {markers.map((m, i) => (
                         <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
                           style={{
                             left: `${pos(m.price)}%`,
                             transform: 'translateX(-50%)',
                             background: m.dotColor,
-                            borderColor: colors.background.card,
+                            borderColor: 'var(--surface-card)',
                             boxShadow: `0 0 6px ${m.dotColor}60`,
                           }}
                         />
@@ -1432,16 +1438,16 @@ function VerdictContent() {
                           width: `${priceGapRight - priceGapLeft}%`,
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: colors.brand.gold, flexShrink: 0 }} />
-                        <div style={{ height: 1, background: colors.brand.gold, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
                         <span
                           className="text-xs sm:text-[0.65rem] font-bold whitespace-nowrap px-1.5 tabular-nums"
-                          style={{ color: colors.brand.gold }}
+                          style={{ color: 'var(--status-warning)' }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </span>
-                        <div style={{ height: 1, background: colors.brand.gold, flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: colors.brand.gold, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
                       </div>
                     )}
 
@@ -1453,21 +1459,21 @@ function VerdictContent() {
                             <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
                             <span className="text-xs sm:text-[0.7rem] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
                           </div>
-                          <span className="text-xs sm:text-[0.7rem] font-bold tabular-nums" style={{ color: colors.text.body }}>{fmtShort(m.price)}</span>
+                          <span className="text-xs sm:text-[0.7rem] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{fmtShort(m.price)}</span>
                         </div>
                       ))}
                     </div>
                   </>
                 )
               })()}
-              <p className="text-center text-xs sm:text-[0.82rem] mt-3.5" style={{ color: '#F1F5F9' }}>
-                Based on <span className="font-semibold" style={{ color: colors.brand.blue }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
+              <p className="text-center text-xs sm:text-[0.82rem] mt-3.5" style={{ color: 'var(--text-body)' }}>
+                Based on <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
               </p>
               <div className="flex justify-center mt-4">
                 <button
                   onClick={navigateToStrategy}
                   className="px-6 py-2 rounded-full text-sm font-semibold transition-all w-auto"
-                  style={{ color: '#fff', background: colors.brand.blue }}
+                  style={{ color: 'var(--text-inverse)', background: 'var(--accent-sky)' }}
                 >
                   See Breakdown - Edit Assumptions, Terms &amp; Comps - Download Excel &amp; PDFs
                 </button>
@@ -1521,7 +1527,7 @@ function VerdictContent() {
               <button
                 onClick={handleNavigateToDealMaker}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
-                style={{ background: colors.brand.teal, color: '#fff' }}
+                style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
               >
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                 <span>Change Terms</span>
@@ -1530,7 +1536,7 @@ function VerdictContent() {
                 onClick={() => handlePDFDownload('light')}
                 disabled={isExporting === 'pdf'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'pdf' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
@@ -1543,7 +1549,7 @@ function VerdictContent() {
                 onClick={handleExcelDownload}
                 disabled={isExporting === 'excel'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'excel' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
@@ -1556,42 +1562,42 @@ function VerdictContent() {
           </section>
 
           {/* div-e gradient divider */}
-          <div className="mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, #0EA5E9 15%, #34D399 50%, #F97066 85%, transparent)', boxShadow: '0 0 8px rgba(14,165,233,0.4), 0 0 20px rgba(14,165,233,0.15)' }} />
+          <div className="mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)', boxShadow: 'var(--shadow-card)' }} />
 
           {/* CTA → Strategy — copy adapts to verdict score */}
           <section className="px-5 py-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: colors.brand.teal }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--accent-sky)' }}>
               {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
             </p>
-            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: colors.text.primary }}>
+            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: 'var(--text-heading)' }}>
               {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
             </h2>
-            <p className="text-[0.95rem] leading-relaxed mx-auto mb-7" style={{ color: colors.text.body }}>
+            <p className="text-[0.95rem] leading-relaxed mx-auto mb-7" style={{ color: 'var(--text-body)' }}>
               {score >= 65
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
                 : score >= 40
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
-            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-[0.8rem] text-white transition-all hover:shadow-[0_8px_32px_rgba(14,165,233,0.45)]"
-              style={{ background: colors.brand.teal, boxShadow: '0 4px 24px rgba(14,165,233,0.3)' }}>
+            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-[0.8rem] text-[var(--text-inverse)] transition-all"
+              style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}>
               Show Me the Numbers
               <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             <div className="flex justify-center gap-6 mt-5">
               {['Free to use', 'No signup needed', '60 seconds'].map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5">
-                  <svg width="14" height="14" fill="none" stroke={colors.brand.teal} viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span className="text-xs font-medium" style={{ color: '#F1F5F9' }}>{f}</span>
+                  <svg width="14" height="14" fill="none" stroke="var(--accent-sky)" viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-body)' }}>{f}</span>
                 </div>
               ))}
             </div>
           </section>
 
           {/* Trust Strip */}
-          <div className="px-5 py-5 text-center border-t" style={{ borderColor: colors.ui.border }}>
-            <p className="text-xs leading-relaxed" style={{ color: '#F1F5F9' }}>
-              DealGap IQ analyzes <span className="font-semibold" style={{ color: colors.brand.blue }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: colors.brand.blue }}>comparable sales</span> to score every property. No guesswork — just data.
+          <div className="px-5 py-5 text-center border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
+              DealGap IQ analyzes <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>comparable sales</span> to score every property. No guesswork — just data.
             </p>
           </div>
         </div>
@@ -1612,10 +1618,10 @@ function VerdictContent() {
 export default function VerdictPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: '#F1F5F9' }}>Loading verdict...</p>
+          <div className="w-8 h-8 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+          <p style={{ color: 'var(--text-heading)' }}>Loading verdict...</p>
         </div>
       </div>
     }>
