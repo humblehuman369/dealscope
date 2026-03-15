@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react'
 
 const fontBody = "var(--font-dm-sans), 'DM Sans', sans-serif"
 const fontData = "var(--font-space-mono), 'Space Mono', monospace"
-const teal = '#0EA5E9'
-const muted = 'rgba(255,255,255,0.75)'
-const mutedDim = '#71717A'
+const teal = 'var(--accent-sky)'
+const muted = 'var(--text-body)'
+const mutedDim = 'var(--text-label)'
 
 const PROPERTY_VALUES = [
   { source: 'IQ Estimate', value: 858789, isIQ: true },
@@ -76,11 +76,9 @@ function DataColumn({ title, data, visible }: {
                 justifyContent: 'space-between',
                 padding: '10px 14px',
                 borderRadius: 8,
-                background: isIQ
-                  ? 'linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(14,165,233,0.05) 100%)'
-                  : 'transparent',
+                background: isIQ ? 'var(--color-sky-dim)' : 'transparent',
                 border: isIQ
-                  ? '1px solid rgba(14,165,233,0.35)'
+                  ? '1px solid var(--border-focus)'
                   : '1px solid transparent',
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateX(0)' : 'translateX(-12px)',
@@ -94,7 +92,7 @@ function DataColumn({ title, data, visible }: {
                   borderRadius: '50%',
                   border: isIQ
                     ? `2px solid ${teal}`
-                    : '2px solid rgba(255,255,255,0.2)',
+                    : '2px solid var(--border-default)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -112,7 +110,7 @@ function DataColumn({ title, data, visible }: {
                 <span style={{
                   fontFamily: fontBody,
                   fontSize: 14,
-                  color: isIQ ? '#FFFFFF' : muted,
+                  color: isIQ ? 'var(--text-heading)' : muted,
                   fontWeight: isIQ ? 600 : 400,
                 }}>
                   {isIQ ? 'IQ Estimate' : row.source}
@@ -153,7 +151,7 @@ export function DataSourcesSection() {
     <section
       ref={ref}
       style={{
-        background: '#000000',
+        background: 'var(--surface-base)',
         padding: '100px 24px',
         fontFamily: fontBody,
       }}
@@ -184,7 +182,7 @@ export function DataSourcesSection() {
           textAlign: 'center' as const,
           fontSize: 'clamp(28px, 4vw, 42px)',
           fontWeight: 700,
-          color: '#FFFFFF',
+          color: 'var(--text-heading)',
           lineHeight: 1.2,
           margin: '0 0 14px 0',
           opacity: visible ? 1 : 0,
@@ -209,7 +207,7 @@ export function DataSourcesSection() {
           Every analysis cross-references multiple data sources to give you
           one reliable IQ&nbsp;Estimate — not a single source of truth,
           but the{' '}
-          <em style={{ color: '#FFFFFF', fontStyle: 'italic' }}>best</em>{' '}
+          <em style={{ color: 'var(--text-heading)', fontStyle: 'italic' }}>best</em>{' '}
           source of truth.
         </p>
 
@@ -218,13 +216,13 @@ export function DataSourcesSection() {
           onMouseEnter={() => setCardHover(true)}
           onMouseLeave={() => setCardHover(false)}
           style={{
-            background: '#000000',
+            background: 'var(--surface-card)',
             border: cardHover
-              ? '1px solid rgba(14,165,233,0.55)'
-              : '1px solid rgba(14,165,233,0.3)',
+              ? '1px solid var(--border-focus)'
+              : '1px solid var(--border-default)',
             boxShadow: cardHover
-              ? '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)'
-              : '0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05)',
+              ? 'var(--shadow-card-hover)'
+              : 'var(--shadow-card)',
             borderRadius: 16,
             padding: 'clamp(24px, 4vw, 40px)',
             position: 'relative' as const,
@@ -273,7 +271,7 @@ export function DataSourcesSection() {
             marginTop: 28,
             height: 1,
             background:
-              'linear-gradient(90deg, transparent, rgba(14,165,233,0.25), rgba(14,165,233,0.5), rgba(14,165,233,0.25), transparent)',
+              'linear-gradient(90deg, transparent, var(--border-default), var(--accent-sky), var(--border-default), transparent)',
           }} />
 
           {/* Bottom note */}

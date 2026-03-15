@@ -10,12 +10,12 @@
 
 /* Hero stacked search — focus & hover states */
 .hero-search-input:focus {
-  border-color: #00bbff !important;
-  box-shadow: 0 0 0 4px rgba(0,187,255,0.1) !important;
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 4px var(--color-sky-dim) !important;
 }
 .hero-cta-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 28px rgba(0,187,255,0.4) !important;
+  box-shadow: var(--shadow-card-hover) !important;
 }
 
 /* Nav: desktop = links visible, hamburger hidden; mobile = hamburger visible, links in dropdown */
