@@ -97,21 +97,58 @@ function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color:
 
   const sign = dealGapPercent >= 0 ? '-' : '+'
 
+  const gaugeMax = 30
+  const r = 50
+  const cx = 60
+  const cy = 58
+  const sw = 10
+  const arcLen = Math.PI * r
+  const progress = Math.min(Math.abs(dealGapPercent) / gaugeMax, 1)
+  const dashOffset = arcLen * (1 - progress)
+  const needleAngle = Math.PI * (1 - progress)
+  const nx = cx + r * Math.cos(needleAngle)
+  const ny = cy - r * Math.sin(needleAngle)
+
   return (
     <div
-      style={{
-        width: 120,
-        height: 120,
-        borderRadius: '50%',
-        border: `3px solid ${color}`,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: `radial-gradient(circle at 50% 40%, ${color}12, transparent 70%)`,
-        boxShadow: `0 0 20px ${color}18`,
-      }}
+      style={{ width: 120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      role="meter"
+      aria-label={`Deal Gap ${sign}${val.toFixed(1)}%`}
+      aria-valuenow={Math.abs(dealGapPercent)}
+      aria-valuemin={0}
+      aria-valuemax={gaugeMax}
     >
+      <svg viewBox="0 0 120 68" width={120} height={68}>
+        {/* Track */}
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none"
+          stroke="var(--border-subtle)"
+          strokeWidth={sw}
+          strokeLinecap="round"
+        />
+        {/* Progress arc */}
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={sw}
+          strokeLinecap="round"
+          strokeDasharray={arcLen}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)' }}
+        />
+        {/* Needle dot */}
+        <circle
+          cx={nx}
+          cy={ny}
+          r={6}
+          fill={color}
+          stroke="var(--surface-card)"
+          strokeWidth={2.5}
+          style={{ transition: 'cx 1.2s cubic-bezier(0.22,1,0.36,1), cy 1.2s cubic-bezier(0.22,1,0.36,1)' }}
+        />
+      </svg>
       <span
         style={{
           fontSize: 30,
@@ -120,6 +157,7 @@ function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color:
           fontFamily: "'DM Sans', system-ui, sans-serif",
           lineHeight: 1,
           fontVariantNumeric: 'tabular-nums',
+          marginTop: -2,
         }}
       >
         {sign}{val.toFixed(1)}%
