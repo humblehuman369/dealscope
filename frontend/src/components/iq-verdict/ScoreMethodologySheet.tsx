@@ -114,7 +114,7 @@ export function ScoreMethodologySheet({
   const getTitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'How The Verdict Works'
+        return 'How The Deal Gap Works'
       case 'strategy':
         return 'Strategy Score Breakdown'
       default:
@@ -125,7 +125,7 @@ export function ScoreMethodologySheet({
   const getSubtitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'Scored against real U.S. investor transaction data'
+        return 'Measured against real U.S. investor transaction data'
       case 'strategy':
         return 'How each strategy is ranked and scored'
       default:
@@ -162,10 +162,13 @@ export function ScoreMethodologySheet({
               <p className="text-sm mt-1" style={{ color: T.secondary }}>
                 {getSubtitle()}
               </p>
-              {currentScore !== undefined && (
+              {(currentScore !== undefined || currentGrade) && (
                 <p className="text-sm mt-1.5" style={{ color: T.label }}>
-                  Current score: <span className="font-semibold" style={{ color: T.blue, fontVariantNumeric: 'tabular-nums' }}>{currentScore}</span>
-                  {currentGrade && <span className="ml-1" style={{ color: T.secondary }}>({currentGrade})</span>}
+                  {currentScore !== undefined ? (
+                    <>Current score: <span className="font-semibold" style={{ color: T.blue, fontVariantNumeric: 'tabular-nums' }}>{currentScore}</span></>
+                  ) : currentGrade ? (
+                    <span className="font-semibold" style={{ color: T.blue }}>{currentGrade}</span>
+                  ) : null}
                 </p>
               )}
             </div>
@@ -190,10 +193,10 @@ export function ScoreMethodologySheet({
               }}
             >
               <p className="text-sm font-normal text-center" style={{ color: T.body }}>
-                The Verdict Score answers one question:
+                The Deal Gap answers one question:
               </p>
               <p className="text-base font-bold text-center mt-2" style={{ color: T.teal }}>
-                &ldquo;How achievable is this Deal Gap?&rdquo;
+                &ldquo;How far below market price do you need to buy?&rdquo;
               </p>
             </div>
 

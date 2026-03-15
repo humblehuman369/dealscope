@@ -225,6 +225,94 @@ export interface ReturnFactors {
 }
 
 // ===================
+// DEAL GAP TIERS
+// ===================
+
+export type DealGapTierLabel =
+  | 'At Market'
+  | 'Tight Gap'
+  | 'Moderate Gap'
+  | 'Wide Gap'
+  | 'Very Wide Gap'
+  | 'Extreme Gap';
+
+export interface DealGapTier {
+  label: DealGapTierLabel;
+  color: string;
+  bg: string;
+  border: string;
+  icon: string;
+  headline: string;
+}
+
+/**
+ * Map a Deal Gap percentage to a branded tier with styling and copy.
+ * Aligned with backend INVESTOR_DISCOUNT_BRACKETS thresholds.
+ *
+ * @param dealGapPercent - The required discount from list/market price (0 = at asking, 15 = 15% below)
+ */
+export function getDealGapTier(dealGapPercent: number): DealGapTier {
+  if (dealGapPercent <= 0) {
+    return {
+      label: 'At Market',
+      color: 'var(--status-positive)',
+      bg: 'var(--color-green-dim)',
+      border: 'var(--status-positive)',
+      icon: '✓',
+      headline: 'The numbers work. Move fast.',
+    };
+  }
+  if (dealGapPercent <= 5) {
+    return {
+      label: 'Tight Gap',
+      color: 'var(--status-positive)',
+      bg: 'var(--color-green-dim)',
+      border: 'var(--status-positive)',
+      icon: '✓',
+      headline: 'A solid opportunity — worth pursuing.',
+    };
+  }
+  if (dealGapPercent <= 10) {
+    return {
+      label: 'Moderate Gap',
+      color: 'var(--status-warning)',
+      bg: 'var(--color-gold-dim)',
+      border: 'var(--status-warning)',
+      icon: '⚡',
+      headline: "Doable, but you'll need to negotiate hard.",
+    };
+  }
+  if (dealGapPercent <= 20) {
+    return {
+      label: 'Wide Gap',
+      color: 'var(--accent-brand-orange)',
+      bg: 'var(--color-gold-dim)',
+      border: 'var(--accent-brand-orange)',
+      icon: '⚠',
+      headline: 'The math is tight. Proceed with caution.',
+    };
+  }
+  if (dealGapPercent <= 30) {
+    return {
+      label: 'Very Wide Gap',
+      color: 'var(--status-negative)',
+      bg: 'var(--color-red-dim)',
+      border: 'var(--status-negative)',
+      icon: '✕',
+      headline: "The numbers don't work at this price.",
+    };
+  }
+  return {
+    label: 'Extreme Gap',
+    color: 'var(--status-negative)',
+    bg: 'var(--color-red-dim)',
+    border: 'var(--status-negative)',
+    icon: '✕',
+    headline: "The numbers don't work at this price.",
+  };
+}
+
+// ===================
 // BRAND COLORS
 // ===================
 
