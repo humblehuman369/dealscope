@@ -66,6 +66,70 @@ function getBarColor(value: number): string {
   return 'var(--status-negative)'
 }
 
+// ── DealGap Gauge ────────────────────────────────────────────
+const GAUGE_MAX = 30
+const GAUGE_R = 36
+const GAUGE_CX = 50
+const GAUGE_CY = 44
+const GAUGE_SW = 7
+const ARC_LEN = Math.PI * GAUGE_R
+
+function getDealGapTier(gap: number): { color: string; label: string } {
+  if (gap <= 10) return { color: 'var(--status-positive)', label: 'Achievable' }
+  if (gap <= 20) return { color: 'var(--status-warning)', label: 'Stretch' }
+  return { color: 'var(--status-negative)', label: 'Difficult' }
+}
+
+function DealGapGauge({ dealGap }: { dealGap: number }) {
+  const absGap = Math.abs(dealGap)
+  const progress = Math.min(absGap / GAUGE_MAX, 1)
+  const tier = getDealGapTier(absGap)
+
+  const arcD = `M ${GAUGE_CX - GAUGE_R} ${GAUGE_CY} A ${GAUGE_R} ${GAUGE_R} 0 0 1 ${GAUGE_CX + GAUGE_R} ${GAUGE_CY}`
+  const dashOffset = ARC_LEN * (1 - progress)
+
+  const needleAngle = Math.PI * (1 - progress)
+  const nx = GAUGE_CX + GAUGE_R * Math.cos(needleAngle)
+  const ny = GAUGE_CY - GAUGE_R * Math.sin(needleAngle)
+
+  const gapText = `${dealGap > 0 ? '-' : '+'}${absGap.toFixed(1)}%`
+
+  return (
+    <div
+      className="flex flex-col items-center"
+      role="meter"
+      aria-label={`Deal Gap ${gapText}, ${tier.label}`}
+      aria-valuenow={absGap}
+      aria-valuemin={0}
+      aria-valuemax={GAUGE_MAX}
+    >
+      <svg viewBox="0 0 100 52" className="w-[68px] h-[36px]">
+        {/* Track */}
+        <path d={arcD} fill="none" stroke="var(--border-subtle)" strokeWidth={GAUGE_SW} strokeLinecap="round" />
+        {/* Progress */}
+        <path
+          d={arcD}
+          fill="none"
+          stroke={tier.color}
+          strokeWidth={GAUGE_SW}
+          strokeLinecap="round"
+          strokeDasharray={ARC_LEN}
+          strokeDashoffset={dashOffset}
+          className="transition-all duration-500"
+        />
+        {/* Needle */}
+        <circle cx={nx} cy={ny} r={4.5} fill={tier.color} stroke="var(--surface-card)" strokeWidth={2} className="transition-all duration-500" />
+      </svg>
+      <span className="text-sm font-bold leading-tight" style={{ color: tier.color }}>
+        {gapText}
+      </span>
+      <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
+        {tier.label}
+      </span>
+    </div>
+  )
+}
+
 export function VerdictScoreHero({
   score,
   verdictLabel,
@@ -147,17 +211,12 @@ export function VerdictScoreHero({
 
       {/* Quick Stats Row - 4 columns */}
       <div className="grid grid-cols-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
-        {/* Deal Gap */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: 'var(--border-default)' }}>
-          <span className="text-[10px] uppercase tracking-wide font-medium mb-1" style={{ color: 'var(--text-heading)' }}>
+        {/* Deal Gap — semicircle gauge */}
+        <div className="flex flex-col items-center justify-center py-3 border-r" style={{ borderColor: 'var(--border-default)' }}>
+          <span className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: 'var(--text-heading)' }}>
             Deal Gap
           </span>
-          <span className={`text-base font-bold ${dealGap <= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-warning)]'}`}>
-            {dealGap > 0 ? '-' : '+'}{Math.abs(dealGap).toFixed(1)}%
-          </span>
-          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-            {dealGap <= 10 ? 'Achievable' : dealGap <= 20 ? 'Stretch' : 'Difficult'}
-          </span>
+          <DealGapGauge dealGap={dealGap} />
         </div>
 
         {/* Seller Urgency */}
