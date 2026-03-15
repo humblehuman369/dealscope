@@ -2,7 +2,6 @@
 
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps'
 import { MapPin } from 'lucide-react'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface LocationMapProps {
   latitude?: number
@@ -15,26 +14,26 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
   const hasCoordinates = latitude != null && longitude != null
 
   const cardStyle = {
-    backgroundColor: colors.background.card,
-    border: `1px solid ${colors.ui.border}`,
-    boxShadow: colors.shadow.card,
+    backgroundColor: 'var(--surface-card)',
+    border: `1px solid var(--border-subtle)`,
+    boxShadow: 'var(--shadow-card)',
   }
 
   if (!hasCoordinates || !apiKey) {
     return (
       <div className="rounded-[14px] p-5" style={cardStyle}>
-        <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
+        <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
           Location
         </div>
         <div
           className="h-48 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: colors.background.cardUp, border: `1px solid ${colors.ui.border}` }}
+          style={{ backgroundColor: 'var(--surface-elevated)', border: `1px solid var(--border-subtle)` }}
         >
           <div className="text-center">
-            <MapPin size={24} className="mx-auto mb-2" style={{ color: '#F1F5F9' }} />
-            <p className="text-sm" style={{ color: '#F1F5F9' }}>{address}</p>
+            <MapPin size={24} className="mx-auto mb-2" style={{ color: 'var(--text-secondary)' }} />
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{address}</p>
             {hasCoordinates && (
-              <p className="text-xs mt-1" style={{ color: '#F1F5F9', fontVariantNumeric: 'tabular-nums' }}>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
                 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
             )}
@@ -46,7 +45,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
 
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: colors.brand.blue }}>
+      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
         Location
       </div>
       <div className="h-48 rounded-xl overflow-hidden">
@@ -62,7 +61,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
           </Map>
         </APIProvider>
       </div>
-      <p className="text-xs mt-2 text-center" style={{ color: '#F1F5F9' }}>
+      <p className="text-xs mt-2 text-center" style={{ color: 'var(--text-secondary)' }}>
         {address}
       </p>
     </div>
@@ -77,10 +76,10 @@ export function LocationMapSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-16 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
-      <div className="h-48 rounded-xl animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+      <div className="h-3 w-16 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+      <div className="h-48 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
     </div>
   )
 }

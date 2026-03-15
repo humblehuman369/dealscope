@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Home } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 const GALLERY_HEIGHT_PX = 400
 
@@ -71,10 +70,10 @@ export function PropertyPhotoGallery({
       <div className="space-y-3">
         <div
           className="relative rounded-[14px] overflow-hidden flex flex-col items-center justify-center gap-3"
-          style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
+          style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
         >
-          <Home size={48} style={{ color: '#F1F5F9' }} />
-          <span className="text-sm" style={{ color: '#F1F5F9' }}>
+          <Home size={48} style={{ color: 'var(--text-secondary)' }} />
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Photos not available
           </span>
           <a
@@ -82,7 +81,7 @@ export function PropertyPhotoGallery({
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium hover:underline"
-            style={{ color: colors.brand.blue }}
+            style={{ color: 'var(--accent-sky)' }}
           >
             View on Zillow →
           </a>

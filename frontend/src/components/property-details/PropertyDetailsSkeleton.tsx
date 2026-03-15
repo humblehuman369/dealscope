@@ -10,7 +10,6 @@ import { NearbySchoolsSkeleton } from './NearbySchools'
 import { ListingInfoSkeleton } from './ListingInfo'
 import { LocationMapSkeleton } from './LocationMap'
 import { PriceHistorySkeleton } from './PriceHistory'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 /**
  * PropertyDetailsSkeleton
@@ -22,16 +21,16 @@ export function PropertyDetailsSkeleton() {
   return (
     <div
       className="min-h-screen pb-24 font-['Inter',sans-serif]"
-      style={{ backgroundColor: colors.background.base }}
+      style={{ backgroundColor: 'var(--surface-base)' }}
     >
       <style>{`.num { font-variant-numeric: tabular-nums; }`}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Breadcrumb Skeleton */}
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-3 w-24 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
-          <div className="h-3 w-3 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
-          <div className="h-3 w-40 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+          <div className="h-3 w-24 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div className="h-3 w-3 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div className="h-3 w-40 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
         </div>
 
         {/* Full Width Image Gallery */}
@@ -61,8 +60,8 @@ export function PropertyDetailsSkeleton() {
       <div
         className="fixed bottom-0 left-0 right-0 py-4 px-6 z-50 backdrop-blur-xl"
         style={{
-          backgroundColor: 'rgba(12,18,32,0.95)',
-          borderTop: `1px solid ${colors.ui.border}`,
+          backgroundColor: 'var(--surface-overlay)',
+          borderTop: `1px solid var(--border-subtle)`,
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
@@ -70,7 +69,7 @@ export function PropertyDetailsSkeleton() {
             <div 
               key={i} 
               className={`h-12 rounded-full animate-pulse ${i === 2 ? 'w-40' : 'w-24'}`}
-              style={{ backgroundColor: colors.background.cardUp }}
+              style={{ backgroundColor: 'var(--surface-elevated)' }}
             />
           ))}
         </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyDescriptionProps {
   description: string
@@ -22,20 +21,20 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
     <div
       className="rounded-[14px] p-6"
       style={{
-        backgroundColor: colors.background.card,
-        border: `1px solid ${colors.ui.border}`,
-        boxShadow: colors.shadow.card,
+        backgroundColor: 'var(--surface-card)',
+        border: `1px solid var(--border-subtle)`,
+        boxShadow: 'var(--shadow-card)',
       }}
     >
       <div
         className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
-        style={{ color: colors.brand.blue }}
+        style={{ color: 'var(--accent-sky)' }}
       >
         Description
       </div>
       <p
         className="text-base leading-[1.65] whitespace-pre-line"
-        style={{ color: colors.text.body, fontWeight: 400 }}
+        style={{ color: 'var(--text-body)', fontWeight: 400 }}
       >
         {displayText}
       </p>
@@ -43,7 +42,7 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
         <button
           onClick={() => setExpanded(!expanded)}
           className="mt-4 text-base font-semibold transition-colors hover:brightness-125"
-          style={{ color: colors.brand.blue }}
+          style={{ color: 'var(--accent-sky)' }}
         >
           {expanded ? 'Show less' : 'Read more'}
         </button>
@@ -60,15 +59,15 @@ export function PropertyDescriptionSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-20 rounded animate-pulse mb-3" style={{ backgroundColor: colors.background.cardUp }} />
+      <div className="h-3 w-20 rounded animate-pulse mb-3" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="space-y-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div 
             key={i} 
             className={`h-4 rounded animate-pulse ${i === 3 ? 'w-3/4' : 'w-full'}`}
-            style={{ backgroundColor: colors.background.cardUp }}
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
           />
         ))}
       </div>

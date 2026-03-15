@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Check, Waves } from 'lucide-react'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyFeaturesProps {
   interiorFeatures: string[]
@@ -48,14 +47,14 @@ export function PropertyFeatures({
     <div
       className="rounded-[14px] p-6"
       style={{
-        backgroundColor: colors.background.card,
-        border: `1px solid ${colors.ui.border}`,
-        boxShadow: colors.shadow.card,
+        backgroundColor: 'var(--surface-card)',
+        border: `1px solid var(--border-subtle)`,
+        boxShadow: 'var(--shadow-card)',
       }}
     >
       <div
         className="text-xs font-bold uppercase tracking-[0.12em] mb-5"
-        style={{ color: colors.brand.blue }}
+        style={{ color: 'var(--accent-sky)' }}
       >
         Features & Amenities
       </div>
@@ -68,9 +67,9 @@ export function PropertyFeatures({
             onClick={() => setActiveTab(tab.id)}
             className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
             style={{
-              backgroundColor: activeTab === tab.id ? colors.brand.blueDeep : colors.background.cardUp,
-              color: activeTab === tab.id ? '#FFFFFF' : '#F1F5F9',
-              border: activeTab === tab.id ? 'none' : `1px solid ${colors.ui.border}`,
+              backgroundColor: activeTab === tab.id ? 'var(--accent-sky)' : 'var(--surface-elevated)',
+              color: activeTab === tab.id ? 'var(--text-inverse)' : 'var(--text-body)',
+              border: activeTab === tab.id ? 'none' : `1px solid var(--border-subtle)`,
             }}
           >
             {tab.label}
@@ -82,24 +81,24 @@ export function PropertyFeatures({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {currentFeatures.map((feature, i) => (
           <div key={i} className="flex items-center gap-2.5 py-2.5">
-            <Check size={16} className="flex-shrink-0" style={{ color: colors.status.positive }} />
-            <span className="text-[15px]" style={{ color: colors.text.body, fontWeight: 400 }}>{feature}</span>
+            <Check size={16} className="flex-shrink-0" style={{ color: 'var(--status-positive)' }} />
+            <span className="text-[15px]" style={{ color: 'var(--text-body)', fontWeight: 400 }}>{feature}</span>
           </div>
         ))}
       </div>
 
       {currentFeatures.length === 0 && (
-        <p className="text-base text-center py-6" style={{ color: '#F1F5F9' }}>
+        <p className="text-base text-center py-6" style={{ color: 'var(--text-secondary)' }}>
           No {activeTab} features listed
         </p>
       )}
 
       {/* Waterfront Badge */}
       {isWaterfront && waterfrontFeatures && waterfrontFeatures.length > 0 && (
-        <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${colors.ui.border}` }}>
+        <div className="mt-4 pt-4" style={{ borderTop: `1px solid var(--border-subtle)` }}>
           <div className="flex items-center gap-2 mb-2">
-            <Waves size={16} style={{ color: colors.brand.teal }} />
-            <span className="text-sm font-semibold" style={{ color: colors.text.primary }}>
+            <Waves size={16} style={{ color: 'var(--accent-sky)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
               Waterfront Property
             </span>
           </div>
@@ -108,7 +107,7 @@ export function PropertyFeatures({
               <span 
                 key={i} 
                 className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{ backgroundColor: colors.accentBg.teal, color: colors.brand.teal }}
+                style={{ backgroundColor: 'var(--color-sky-dim)', color: 'var(--accent-sky)' }}
               >
                 {feature}
               </span>
@@ -121,17 +120,17 @@ export function PropertyFeatures({
       {(construction?.length > 0 || roof || foundation) && (
         <div
           className="mt-5 pt-5 grid grid-cols-1 sm:grid-cols-3 gap-5"
-          style={{ borderTop: `1px solid ${colors.ui.border}` }}
+          style={{ borderTop: `1px solid var(--border-subtle)` }}
         >
           {construction?.length > 0 && (
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: '#F1F5F9' }}
+                style={{ color: 'var(--text-label)' }}
               >
                 Construction
               </div>
-              <div className="text-base font-medium" style={{ color: colors.text.body }}>
+              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
                 {construction.join(', ')}
               </div>
             </div>
@@ -140,11 +139,11 @@ export function PropertyFeatures({
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: '#F1F5F9' }}
+                style={{ color: 'var(--text-label)' }}
               >
                 Roof
               </div>
-              <div className="text-base font-medium" style={{ color: colors.text.body }}>
+              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
                 {roof}
               </div>
             </div>
@@ -153,11 +152,11 @@ export function PropertyFeatures({
             <div>
               <div
                 className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
-                style={{ color: '#F1F5F9' }}
+                style={{ color: 'var(--text-label)' }}
               >
                 Foundation
               </div>
-              <div className="text-base font-medium" style={{ color: colors.text.body }}>
+              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
                 {foundation}
               </div>
             </div>
@@ -176,17 +175,17 @@ export function PropertyFeaturesSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-32 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
+      <div className="h-3 w-32 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="flex gap-2 mb-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-9 w-20 rounded-full animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+          <div key={i} className="h-9 w-20 rounded-full animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
         ))}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="h-6 rounded animate-pulse" style={{ backgroundColor: colors.background.cardUp }} />
+          <div key={i} className="h-6 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
         ))}
       </div>
     </div>
