@@ -10,7 +10,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { colors, cardGlow } from './verdict-design-tokens'
 
 export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin' | 'realtor'
 
@@ -45,7 +44,7 @@ export interface IQEstimateSelectorProps {
 }
 
 const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
-  iq: { label: 'IQ Estimate', color: colors.brand.teal },
+  iq: { label: 'IQ Estimate', color: 'var(--accent-sky)' },
   zillow: { label: 'Zillow', color: '#4A90D9' },
   rentcast: { label: 'RentCast', color: '#F59E0B' },
   redfin: { label: 'Redfin', color: '#A02B2D' },
@@ -115,13 +114,13 @@ function SourceRow({
 
   const buttonStyle = useMemo(() => ({
     background: isSelected
-      ? 'rgba(14,165,233,0.08)'
-      : showHover ? `${meta.color}0A` : 'transparent',
+      ? 'var(--color-sky-dim)'
+      : showHover ? 'var(--surface-card-hover)' : 'transparent',
     border: `1px solid ${
-      isSelected ? 'rgba(14,165,233,0.25)'
-      : showHover ? `${meta.color}20` : 'transparent'
+      isSelected ? 'var(--border-focus)'
+      : showHover ? 'var(--border-default)' : 'transparent'
     }`,
-    boxShadow: showHover ? `0 0 14px ${meta.color}18` : 'none',
+    boxShadow: showHover ? 'var(--shadow-card)' : 'none',
     cursor: available ? 'pointer' : 'default',
     opacity: available ? 1 : 0.45,
   }), [isSelected, showHover, available, meta.color])
@@ -137,18 +136,18 @@ function SourceRow({
     >
       <div
         className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
-        style={{ borderColor: isSelected ? meta.color : '#0EA5E9' }}
+        style={{ borderColor: isSelected ? meta.color : 'var(--accent-sky)' }}
       >
         {isSelected && (
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: meta.color }} />
         )}
       </div>
-      <span className="text-[12px] font-semibold flex-1" style={{ color: isSelected ? colors.text.primary : colors.text.secondary }}>
+      <span className="text-[12px] font-semibold flex-1" style={{ color: isSelected ? 'var(--text-heading)' : 'var(--text-body)' }}>
         {meta.label}
       </span>
       <span
         className="text-[13px] font-bold tabular-nums"
-        style={{ color: available ? (isSelected ? meta.color : colors.text.body) : colors.text.muted }}
+        style={{ color: available ? (isSelected ? meta.color : 'var(--text-body)') : 'var(--text-label)' }}
       >
         {available ? fmt(sourceValue) : 'Unavailable'}
       </span>
@@ -226,13 +225,18 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: cardGlow.lg.background, border: cardGlow.lg.border, boxShadow: cardGlow.lg.boxShadow, transition: cardGlow.lg.transition }}
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        boxShadow: 'var(--shadow-card)',
+        transition: 'all 0.3s ease',
+      }}
     >
       <div className="flex items-center gap-2 mb-1.5">
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={colors.brand.teal} strokeWidth="2" strokeLinecap="round">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
           <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
         </svg>
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.brand.teal }}>
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
           Data Sources
         </span>
       </div>
@@ -240,7 +244,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
+          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
             Property Value
           </p>
           <div className="flex flex-col gap-0.5">
@@ -259,7 +263,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
 
         {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: colors.text.secondary }}>
+          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
             Monthly Rent
           </p>
           <div className="flex flex-col gap-0.5">
