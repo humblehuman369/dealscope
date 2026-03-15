@@ -22,18 +22,18 @@ import { trackEvent } from '@/lib/eventTracking'
 /* ── Design tokens (DealGapIQ billing design system) ─────────── */
 
 const T = {
-  teal: '#0EA5E9',
-  green: '#34D399',
-  muted: '#71717A',
-  border: 'rgba(255,255,255,0.1)',
-  glowLg: '0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04)',
-  proBorder: 'rgba(14,165,233,0.35)',
-  proGlow: '0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05)',
-  proGlowHover: '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)',
-  proBorderHover: 'rgba(14,165,233,0.55)',
-  featureX: 'rgba(255,255,255,0.15)',
-  lockedText: 'rgba(255,255,255,0.3)',
-  faqBorder: 'rgba(14,165,233,0.25)',
+  teal: 'var(--accent-sky)',
+  green: 'var(--status-positive)',
+  muted: 'var(--text-label)',
+  border: 'var(--border-default)',
+  glowLg: 'var(--shadow-card)',
+  proBorder: 'var(--border-focus)',
+  proGlow: 'var(--shadow-card-hover)',
+  proGlowHover: 'var(--shadow-card-hover)',
+  proBorderHover: 'var(--accent-sky-light)',
+  featureX: 'var(--text-label)',
+  lockedText: 'var(--text-label)',
+  faqBorder: 'var(--border-focus)',
 }
 
 const FONT_DM = "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif"
@@ -201,7 +201,7 @@ function BillingContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <Loader2 className="w-8 h-8 animate-spin" style={{ color: T.teal }} />
       </div>
     )
@@ -211,8 +211,8 @@ function BillingContent() {
 
   return (
     <div
-      className="min-h-screen bg-black"
-      style={{ color: '#fff', fontFamily: FONT_DM, lineHeight: 1.7 }}
+      className="min-h-screen bg-[var(--surface-base)]"
+      style={{ color: 'var(--text-heading)', fontFamily: FONT_DM, lineHeight: 1.7 }}
     >
       <div className="max-w-[960px] mx-auto px-5 md:px-8 pt-8 md:pt-12 pb-12 md:pb-16">
 
@@ -226,7 +226,7 @@ function BillingContent() {
                   ? 'rgba(52,211,153,0.08)' : 'rgba(249,112,102,0.08)',
                 border: `1px solid ${message.type === 'success'
                   ? 'rgba(52,211,153,0.25)' : 'rgba(249,112,102,0.25)'}`,
-                color: message.type === 'success' ? T.green : '#F97066',
+                color: message.type === 'success' ? T.green : 'var(--status-negative)',
               }}
             >
               {message.type === 'success'
@@ -246,7 +246,7 @@ function BillingContent() {
         {/* ── Page Header ── */}
         <div className="text-center" style={{ marginBottom: '3.5rem' }}>
           <h1
-            className="text-white"
+            className="text-[var(--text-heading)]"
             style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
               fontWeight: 700,
@@ -271,8 +271,8 @@ function BillingContent() {
           style={{
             marginBottom: '3rem',
             padding: '2rem',
-            background: 'rgba(14,165,233,0.03)',
-            border: '1px solid rgba(14,165,233,0.12)',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
             borderRadius: 14,
           }}
         >
@@ -299,7 +299,7 @@ function BillingContent() {
         {/* ── Motivating CTA ── */}
         <div className="text-center" style={{ marginBottom: '3rem' }}>
           <h2
-            className="text-white"
+            className="text-[var(--text-heading)]"
             style={{
               fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)',
               fontWeight: 700,
@@ -333,7 +333,7 @@ function BillingContent() {
                 style={{
                   borderRadius: 16,
                   padding: '2.25rem',
-                  background: '#000',
+                  background: 'var(--surface-card)',
                   border: `1px solid ${
                     isPlanPro
                       ? proHovered ? T.proBorderHover : T.proBorder
@@ -341,7 +341,7 @@ function BillingContent() {
                   }`,
                   boxShadow: isPlanPro
                     ? proHovered ? T.proGlowHover : T.proGlow
-                    : '0 0 15px rgba(14,165,233,0.05), 0 0 30px rgba(14,165,233,0.02)',
+                    : 'var(--shadow-card)',
                   transition: 'border-color 0.3s, box-shadow 0.3s',
                 }}
                 onMouseEnter={() => isPlanPro && setProHovered(true)}
@@ -357,7 +357,7 @@ function BillingContent() {
                       fontWeight: 700,
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      color: '#000',
+                      color: 'var(--text-inverse)',
                       background: T.teal,
                       padding: '0.3rem 1rem',
                       borderRadius: 20,
@@ -382,7 +382,7 @@ function BillingContent() {
                       fontFamily: FONT_MONO,
                       fontSize: '2.25rem',
                       fontWeight: 700,
-                      color: isPlanPro ? T.teal : '#fff',
+                      color: isPlanPro ? T.teal : 'var(--text-heading)',
                       lineHeight: 1,
                     }}
                   >
@@ -468,7 +468,7 @@ function BillingContent() {
                         fontWeight: 700,
                         fontSize: '0.95rem',
                         background: T.teal,
-                        color: '#000',
+                        color: 'var(--text-inverse)',
                         border: 'none',
                         cursor: 'pointer',
                         fontFamily: FONT_DM,
@@ -513,8 +513,8 @@ function BillingContent() {
         <div
           style={{
             height: 1,
-            background: `linear-gradient(90deg, transparent, ${T.teal} 20%, ${T.teal} 80%, transparent)`,
-            boxShadow: '0 0 8px rgba(14,165,233,0.5), 0 0 20px rgba(14,165,233,0.25)',
+            background: `linear-gradient(90deg, transparent, var(--accent-sky) 20%, var(--accent-sky) 80%, transparent)`,
+            boxShadow: 'var(--shadow-card)',
             margin: '3rem 0',
           }}
         />
@@ -541,7 +541,7 @@ function BillingContent() {
               <div
                 key={i}
                 style={{
-                  background: '#000',
+                  background: 'var(--surface-card)',
                   border: `1px solid ${T.faqBorder}`,
                   borderRadius: 12,
                   boxShadow: T.glowLg,
@@ -571,7 +571,7 @@ export default function BillingPage() {
     <AuthGuard>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: T.teal }} />
           </div>
         }
