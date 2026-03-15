@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
 
-const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
+const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M5 13l4 4L19 7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
@@ -13,14 +13,14 @@ const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
 
 const DashIcon: React.FC = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M8 12h8" stroke="#3a3a3a" strokeWidth="2" strokeLinecap="round" />
+    <path d="M8 12h8" stroke="var(--text-label)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
 const LockIcon: React.FC = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <rect x="3" y="11" width="18" height="11" rx="2" stroke="#555" strokeWidth="2" />
-    <path d="M7 11V7a5 5 0 0110 0v4" stroke="#555" strokeWidth="2" strokeLinecap="round" />
+    <rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--text-label)" strokeWidth="2" />
+    <path d="M7 11V7a5 5 0 0110 0v4" stroke="var(--text-label)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
@@ -34,16 +34,16 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      style={{ borderBottom: "1px solid #151515", padding: "16px 0", cursor: "pointer" }}
+      style={{ borderBottom: "1px solid var(--border-subtle)", padding: "16px 0", cursor: "pointer" }}
       onClick={() => setOpen(!open)}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <p style={{ fontSize: "14px", fontWeight: 500, margin: 0, color: open ? "#fff" : "#aaa" }}>
+        <p style={{ fontSize: "14px", fontWeight: 500, margin: 0, color: open ? "var(--text-heading)" : "var(--text-secondary)" }}>
           {question}
         </p>
         <span
           style={{
-            color: "#444",
+            color: "var(--text-label)",
             fontSize: "18px",
             transition: "transform 0.2s ease",
             transform: open ? "rotate(45deg)" : "rotate(0deg)",
@@ -54,7 +54,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         </span>
       </div>
       {open && (
-        <p style={{ fontSize: "13px", color: "#666", lineHeight: 1.6, margin: "10px 0 0 0" }}>
+        <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "10px 0 0 0" }}>
           {answer}
         </p>
       )}
@@ -128,9 +128,9 @@ export default function PricingContent() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#000000",
+        background: "var(--surface-base)",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-        color: "#ffffff",
+        color: "var(--text-heading)",
         padding: "0 20px",
       }}
     >
@@ -138,15 +138,15 @@ export default function PricingContent() {
 
       {/* ─── HEADER ─── */}
       <div style={{ textAlign: "center", maxWidth: "600px", margin: "48px auto 0" }}>
-        <p style={{ fontSize: "13px", color: "#0EA5E9", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 16px 0" }}>
+        <p style={{ fontSize: "13px", color: "var(--accent-sky)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 16px 0" }}>
           Pricing
         </p>
         <h1 style={{ fontSize: "clamp(28px, 4.5vw, 42px)", fontWeight: 700, lineHeight: 1.15, margin: "0 0 16px 0", letterSpacing: "-0.5px" }}>
           Know Your Number{" "}
           <br />
-          <span style={{ color: "#0EA5E9" }}>Before You Make the Offer</span>
+          <span style={{ color: "var(--accent-sky)" }}>Before You Make the Offer</span>
         </h1>
-        <p style={{ fontSize: "15px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 32px 0" }}>
+        <p style={{ fontSize: "15px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0" }}>
           DealGapIQ pinpoints the right price that makes a deal work — your Income Value, Target Buy, and Deal Gap across 6 strategies. In 60 seconds.
         </p>
 
@@ -156,10 +156,10 @@ export default function PricingContent() {
             display: "inline-flex",
             alignItems: "center",
             gap: "0",
-            background: "#111",
+            background: "var(--surface-card)",
             borderRadius: "40px",
             padding: "4px",
-            border: "1px solid #1a1a1a",
+            border: "1px solid var(--border-default)",
           }}
         >
           <button
@@ -172,8 +172,8 @@ export default function PricingContent() {
               fontWeight: 600,
               cursor: "pointer",
               transition: "all 0.2s ease",
-              background: !isAnnual ? "#0EA5E9" : "transparent",
-              color: !isAnnual ? "#000" : "#888",
+              background: !isAnnual ? "var(--accent-sky)" : "transparent",
+              color: !isAnnual ? "var(--text-inverse)" : "var(--text-label)",
             }}
           >
             Monthly
@@ -188,8 +188,8 @@ export default function PricingContent() {
               fontWeight: 600,
               cursor: "pointer",
               transition: "all 0.2s ease",
-              background: isAnnual ? "#0EA5E9" : "transparent",
-              color: isAnnual ? "#000" : "#888",
+              background: isAnnual ? "var(--accent-sky)" : "transparent",
+              color: isAnnual ? "var(--text-inverse)" : "var(--text-label)",
               display: "flex",
               alignItems: "center",
               gap: "6px",
@@ -200,8 +200,8 @@ export default function PricingContent() {
               style={{
                 fontSize: "10px",
                 fontWeight: 700,
-                background: isAnnual ? "rgba(0,0,0,0.2)" : "rgba(14,165,233,0.15)",
-                color: isAnnual ? "#000" : "#0EA5E9",
+                background: isAnnual ? "rgba(255,255,255,0.22)" : "var(--color-sky-dim)",
+                color: isAnnual ? "var(--text-inverse)" : "var(--accent-sky)",
                 padding: "2px 6px",
                 borderRadius: "6px",
               }}
@@ -214,7 +214,7 @@ export default function PricingContent() {
 
       {/* ─── TRUST & FIT BLOCK ─── */}
       <div style={{ maxWidth: "960px", margin: "28px auto 0" }}>
-        <p style={{ fontSize: "14px", color: "#ffffff", textAlign: "center", margin: "0 0 18px 0", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "14px", color: "var(--text-body)", textAlign: "center", margin: "0 0 18px 0", lineHeight: 1.6 }}>
           For aspiring investors and small portfolio owners analyzing 1-20 properties a month.
         </p>
         <div
@@ -238,12 +238,12 @@ export default function PricingContent() {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "10px",
-                border: "1px solid rgba(14, 165, 233, 0.2)",
-                background: "rgba(14, 165, 233, 0.04)",
+                border: "1px solid var(--border-default)",
+                background: "var(--surface-elevated)",
               }}
             >
-              <CheckIcon color="#0EA5E9" />
-              <span style={{ fontSize: "12px", color: "#b9b9b9", lineHeight: 1.55 }}>{text}</span>
+              <CheckIcon color="var(--accent-sky)" />
+              <span style={{ fontSize: "12px", color: "var(--text-body)", lineHeight: 1.55 }}>{text}</span>
             </div>
           ))}
         </div>
@@ -264,23 +264,23 @@ export default function PricingContent() {
         {/* FREE CARD */}
         <div
           style={{
-            background: "#0a0a0a",
-            border: "1px solid #1a1a1a",
+            background: "var(--surface-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: "16px",
             padding: "36px 32px",
             position: "relative",
           }}
         >
-          <p style={{ fontSize: "12px", color: "#555", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 8px 0" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-label)", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 8px 0" }}>
             Starter
           </p>
           <div style={{ display: "flex", alignItems: "baseline", gap: "4px", margin: "0 0 6px 0" }}>
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>Free</span>
           </div>
-          <p style={{ fontSize: "13px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 10px 0" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 10px 0" }}>
             Best for learning the numbers and screening your first few deals.
           </p>
-          <p style={{ fontSize: "13px", color: "#555", margin: "0 0 28px 0" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
             Always free. No credit card required.
           </p>
 
@@ -291,9 +291,9 @@ export default function PricingContent() {
               width: "100%",
               padding: "12px",
               borderRadius: "8px",
-              border: "1px solid #333",
+              border: "1px solid var(--border-default)",
               background: "transparent",
-              color: "#ccc",
+              color: "var(--text-body)",
               fontSize: "14px",
               fontWeight: 600,
               cursor: "pointer",
@@ -310,13 +310,13 @@ export default function PricingContent() {
             {starterFeatures.map((f, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
                 {f.free === true ? (
-                  <CheckIcon color="#444" />
+                  <CheckIcon color="var(--text-label)" />
                 ) : f.free === false ? (
                   <DashIcon />
                 ) : (
-                  <CheckIcon color="#444" />
+                  <CheckIcon color="var(--text-label)" />
                 )}
-                <span style={{ color: f.free === false ? "#333" : "#777" }}>
+                <span style={{ color: f.free === false ? "var(--text-label)" : "var(--text-secondary)" }}>
                   {typeof f.free === "string" ? `${f.free} — ${f.name.toLowerCase()}` : f.name}
                 </span>
               </div>
@@ -327,12 +327,12 @@ export default function PricingContent() {
         {/* PRO CARD */}
         <div
           style={{
-            background: "#0a0a0a",
-            border: "1px solid rgba(14, 165, 233, 0.3)",
+            background: "var(--surface-card)",
+            border: "1px solid var(--border-focus)",
             borderRadius: "16px",
             padding: "36px 32px",
             position: "relative",
-            boxShadow: "0 0 40px rgba(14, 165, 233, 0.08), 0 0 80px rgba(14, 165, 233, 0.04)",
+            boxShadow: "var(--shadow-card-hover)",
           }}
         >
           <div
@@ -341,8 +341,8 @@ export default function PricingContent() {
               top: "-12px",
               left: "50%",
               transform: "translateX(-50%)",
-              background: "#0EA5E9",
-              color: "#000",
+              background: "var(--accent-sky)",
+              color: "var(--text-inverse)",
               fontSize: "11px",
               fontWeight: 700,
               padding: "4px 16px",
@@ -354,26 +354,26 @@ export default function PricingContent() {
             Best Value
           </div>
 
-          <p style={{ fontSize: "12px", color: "#0EA5E9", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 8px 0" }}>
+          <p style={{ fontSize: "12px", color: "var(--accent-sky)", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 8px 0" }}>
             Pro Investor
           </p>
           <div style={{ display: "flex", alignItems: "baseline", gap: "4px", margin: "0 0 2px 0" }}>
-            <span style={{ fontSize: "18px", fontWeight: 600, color: "#555" }}>$</span>
+            <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--text-label)" }}>$</span>
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>
               {isAnnual ? "29" : "39"}
             </span>
-            <span style={{ fontSize: "15px", color: "#555", fontWeight: 500 }}>/mo</span>
+            <span style={{ fontSize: "15px", color: "var(--text-label)", fontWeight: 500 }}>/mo</span>
           </div>
-          <p style={{ fontSize: "13px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 10px 0" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 10px 0" }}>
             Best for active small portfolio investors analyzing multiple deals every month.
           </p>
           {isAnnual ? (
-            <p style={{ fontSize: "13px", color: "#555", margin: "0 0 28px 0" }}>
-              $348 billed annually &middot; <span style={{ color: "#0EA5E9" }}>Save $120/yr</span>
+            <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
+              $348 billed annually &middot; <span style={{ color: "var(--accent-sky)" }}>Save $120/yr</span>
             </p>
           ) : (
-            <p style={{ fontSize: "13px", color: "#555", margin: "0 0 28px 0" }}>
-              Billed monthly &middot; <span style={{ color: "#666" }}>Switch to annual &amp; save 26%</span>
+            <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
+              Billed monthly &middot; <span style={{ color: "var(--text-secondary)" }}>Switch to annual &amp; save 26%</span>
             </p>
           )}
 
@@ -386,12 +386,12 @@ export default function PricingContent() {
                 padding: "12px",
                 borderRadius: "8px",
                 border: "none",
-                background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                color: "#000",
+                background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+                color: "var(--text-inverse)",
                 fontSize: "14px",
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                boxShadow: "var(--shadow-card)",
                 marginBottom: "28px",
                 textAlign: "center",
                 textDecoration: "none",
@@ -410,12 +410,12 @@ export default function PricingContent() {
                 padding: "12px",
                 borderRadius: "8px",
                 border: "none",
-                background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                color: "#000",
+                background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+                color: "var(--text-inverse)",
                 fontSize: "14px",
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                boxShadow: "var(--shadow-card)",
                 marginBottom: "28px",
               }}
             >
@@ -426,8 +426,8 @@ export default function PricingContent() {
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {proFeatures.map((feature, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
-                <CheckIcon color="#0EA5E9" />
-                <span style={{ color: "#ccc" }}>{feature}</span>
+                <CheckIcon color="var(--accent-sky)" />
+                <span style={{ color: "var(--text-body)" }}>{feature}</span>
               </div>
             ))}
           </div>
@@ -454,10 +454,10 @@ export default function PricingContent() {
                 alignItems: "center",
                 gap: "6px",
                 fontSize: "12px",
-                color: "#555",
+                color: "var(--text-label)",
               }}
             >
-              <CheckIcon color="#333" />
+              <CheckIcon color="var(--text-label)" />
               {text}
             </div>
           )
@@ -469,13 +469,13 @@ export default function PricingContent() {
         style={{
           maxWidth: "880px",
           margin: "80px auto 0",
-          background: "#0a0a0a",
-          border: "1px solid #1a1a1a",
+          background: "var(--surface-card)",
+          border: "1px solid var(--border-default)",
           borderRadius: "16px",
           padding: "48px 40px",
         }}
       >
-        <p style={{ fontSize: "11px", color: "#0EA5E9", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 10px 0" }}>
+        <p style={{ fontSize: "11px", color: "var(--accent-sky)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 10px 0" }}>
           Why Pro Matters
         </p>
         <h2 style={{ fontSize: "26px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
@@ -483,7 +483,7 @@ export default function PricingContent() {
           <br />
           Pro shows you why it&apos;s right.
         </h2>
-        <p style={{ fontSize: "14px", color: "#ffffff", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: "560px" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: "560px" }}>
           Every DealGapIQ calculation is built on real data: comparables, rents, local vacancy rates, taxes, and market-specific assumptions. Pro lets you see every input, challenge every assumption, and stress test the deal before you write the offer.
         </p>
 
@@ -504,26 +504,26 @@ export default function PricingContent() {
             <div
               key={i}
               style={{
-                background: "#111",
+                background: "var(--surface-elevated)",
                 borderRadius: "10px",
                 padding: "16px",
-                border: "1px solid #1a1a1a",
+                border: "1px solid var(--border-default)",
               }}
             >
-              <p style={{ fontSize: "11px", color: "#ffffff", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <p style={{ fontSize: "11px", color: "var(--text-secondary)", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 {item.label}
               </p>
-              <p style={{ fontSize: "20px", fontWeight: 700, color: "#fff", margin: "0 0 4px 0" }}>
+              <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-heading)", margin: "0 0 4px 0" }}>
                 {item.value}
               </p>
-              <p style={{ fontSize: "11px", color: "#ffffff", margin: 0 }}>{item.sub}</p>
+              <p style={{ fontSize: "11px", color: "var(--text-secondary)", margin: 0 }}>{item.sub}</p>
             </div>
           ))}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "20px" }}>
           <LockIcon />
-          <span style={{ fontSize: "12px", color: "#ffffff" }}>
+          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
             Pro unlocks editable inputs + downloadable Excel proforma
           </span>
         </div>
@@ -542,27 +542,27 @@ export default function PricingContent() {
             width: "56px",
             height: "56px",
             borderRadius: "50%",
-            background: "#111",
-            border: "1px solid #222",
+            background: "var(--surface-elevated)",
+            border: "1px solid var(--border-default)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             margin: "0 auto 16px",
             fontSize: "18px",
             fontWeight: 700,
-            color: "#0EA5E9",
+            color: "var(--accent-sky)",
           }}
         >
           BG
         </div>
         <p style={{ fontSize: "15px", fontWeight: 600, margin: "0 0 2px 0" }}>Brad Geisen</p>
-        <p style={{ fontSize: "12px", color: "#ffffff", margin: "0 0 20px 0" }}>
+        <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 20px 0" }}>
           Founder, DealGapIQ &middot; 35+ years in real estate data &amp; technology
         </p>
         <p
           style={{
             fontSize: "14px",
-            color: "#ffffff",
+            color: "var(--text-body)",
             lineHeight: 1.7,
             fontStyle: "italic",
             margin: "0 0 24px 0",
@@ -588,10 +588,10 @@ export default function PricingContent() {
             { value: "500+", label: "RE Projects Built" },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: "center" }}>
-              <p style={{ fontSize: "22px", fontWeight: 800, color: "#0EA5E9", margin: "0 0 2px 0" }}>
+              <p style={{ fontSize: "22px", fontWeight: 800, color: "var(--accent-sky)", margin: "0 0 2px 0" }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: "10px", color: "#ffffff", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <p style={{ fontSize: "10px", color: "var(--text-secondary)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 {stat.label}
               </p>
             </div>
@@ -621,14 +621,14 @@ export default function PricingContent() {
         <h2 style={{ fontSize: "28px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
           Stop guessing.
           <br />
-          <span style={{ color: "#0EA5E9" }}>Start calculating.</span>
+          <span style={{ color: "var(--accent-sky)" }}>Start calculating.</span>
         </h2>
-        <p style={{ fontSize: "14px", color: "#555", margin: "0 0 24px 0" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-label)", margin: "0 0 24px 0" }}>
           Every property has a Deal Gap. Only DealGapIQ measures it.
         </p>
         <div className="pricing-bottom-options" style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", alignItems: "flex-start" }}>
           <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-            <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>
+            <p style={{ fontSize: "11px", color: "var(--text-label)", margin: 0 }}>
               Already analyzing multiple deals each month?
             </p>
             {proCtaHref ? (
@@ -638,12 +638,12 @@ export default function PricingContent() {
                   padding: "12px 24px",
                   borderRadius: "8px",
                   border: "none",
-                  background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                  color: "#000",
+                  background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+                  color: "var(--text-inverse)",
                   fontSize: "14px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                  boxShadow: "var(--shadow-card)",
                   textDecoration: "none",
                 }}
               >
@@ -657,12 +657,12 @@ export default function PricingContent() {
                   padding: "12px 24px",
                   borderRadius: "8px",
                   border: "none",
-                  background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
-                  color: "#000",
+                  background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+                  color: "var(--text-inverse)",
                   fontSize: "14px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 20px rgba(14, 165, 233, 0.3)",
+                  boxShadow: "var(--shadow-card)",
                 }}
               >
                 Start 7-Day Free Trial &rarr;
@@ -671,7 +671,7 @@ export default function PricingContent() {
           </div>
 
           <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-            <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>
+            <p style={{ fontSize: "11px", color: "var(--text-label)", margin: 0 }}>
               Just starting or learning the numbers?
             </p>
             <Link
@@ -679,9 +679,9 @@ export default function PricingContent() {
               style={{
                 padding: "12px 24px",
                 borderRadius: "8px",
-                border: "1px solid #333",
+                border: "1px solid var(--border-default)",
                 background: "transparent",
-                color: "#ccc",
+                color: "var(--text-body)",
                 fontSize: "14px",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -692,7 +692,7 @@ export default function PricingContent() {
             </Link>
           </div>
         </div>
-        <p style={{ fontSize: "11px", color: "#444", margin: "14px 0 0 0" }}>
+        <p style={{ fontSize: "11px", color: "var(--text-label)", margin: "14px 0 0 0" }}>
           No credit card required for Starter. 7-day free trial on Pro.
         </p>
       </div>
@@ -706,7 +706,7 @@ export default function PricingContent() {
       {/* ─── FOOTER ─── */}
       <div
         style={{
-          borderTop: "1px solid #111",
+          borderTop: "1px solid var(--border-subtle)",
           padding: "20px 0",
           maxWidth: "1100px",
           margin: "0 auto",
@@ -717,13 +717,13 @@ export default function PricingContent() {
           gap: "12px",
         }}
       >
-        <div style={{ fontSize: "11px", color: "#333" }}>
+        <div style={{ fontSize: "11px", color: "var(--text-label)" }}>
           &copy; 2026 DealGapIQ. Professional use only. Not financial advice.
         </div>
         <div style={{ display: "flex", gap: "20px" }}>
-          <Link href="/privacy" style={{ fontSize: "11px", color: "#333", textDecoration: "none" }}>Privacy</Link>
-          <Link href="/terms" style={{ fontSize: "11px", color: "#333", textDecoration: "none" }}>Terms</Link>
-          <Link href="/help" style={{ fontSize: "11px", color: "#333", textDecoration: "none" }}>Support</Link>
+          <Link href="/privacy" style={{ fontSize: "11px", color: "var(--text-label)", textDecoration: "none" }}>Privacy</Link>
+          <Link href="/terms" style={{ fontSize: "11px", color: "var(--text-label)", textDecoration: "none" }}>Terms</Link>
+          <Link href="/help" style={{ fontSize: "11px", color: "var(--text-label)", textDecoration: "none" }}>Support</Link>
         </div>
       </div>
     </div>
