@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Eye, Camera, ImageOff } from 'lucide-react'
 import { formatNumber } from './utils'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface ImageGalleryProps {
   images: string[]
@@ -41,7 +40,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
       {/* Main Image Container */}
       <div
         className="relative rounded-[14px] overflow-hidden"
-        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
+        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
       >
         {currentVisible ? (
           <img
@@ -54,8 +53,8 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-            <ImageOff size={48} style={{ color: '#F1F5F9' }} />
-            <span className="text-sm" style={{ color: '#F1F5F9' }}>Photo unavailable</span>
+            <ImageOff size={48} style={{ color: 'var(--text-secondary)' }} />
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Photo unavailable</span>
           </div>
         )}
 
@@ -64,10 +63,10 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           {views !== undefined && (
             <div
               className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2"
-              style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
+              style={{ backgroundColor: 'var(--surface-overlay)' }}
             >
-              <Eye size={14} style={{ color: '#F1F5F9' }} />
-              <span className="text-sm font-medium" style={{ color: colors.text.body, fontVariantNumeric: 'tabular-nums' }}>
+              <Eye size={14} style={{ color: 'var(--text-secondary)' }} />
+              <span className="text-sm font-medium" style={{ color: 'var(--text-body)', fontVariantNumeric: 'tabular-nums' }}>
                 {formatNumber(views)} views
               </span>
             </div>
@@ -75,10 +74,10 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           {hasImages && (
             <div
               className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2 ml-auto"
-              style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
+              style={{ backgroundColor: 'var(--surface-overlay)' }}
             >
-              <Camera size={14} style={{ color: '#F1F5F9' }} />
-              <span className="text-sm font-medium" style={{ color: colors.text.body, fontVariantNumeric: 'tabular-nums' }}>
+              <Camera size={14} style={{ color: 'var(--text-secondary)' }} />
+              <span className="text-sm font-medium" style={{ color: 'var(--text-body)', fontVariantNumeric: 'tabular-nums' }}>
                 {currentIndex + 1}/{totalPhotos}
               </span>
             </div>
@@ -90,19 +89,19 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-white/10"
-              style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-[var(--surface-card-hover)]"
+              style={{ backgroundColor: 'var(--surface-overlay)' }}
               aria-label="Previous image"
             >
-              <ChevronLeft size={20} style={{ color: colors.text.primary }} />
+              <ChevronLeft size={20} style={{ color: 'var(--text-heading)' }} />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-white/10"
-              style={{ backgroundColor: 'rgba(12,18,32,0.85)' }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-[var(--surface-card-hover)]"
+              style={{ backgroundColor: 'var(--surface-overlay)' }}
               aria-label="Next image"
             >
-              <ChevronRight size={20} style={{ color: colors.text.primary }} />
+              <ChevronRight size={20} style={{ color: 'var(--text-heading)' }} />
             </button>
           </>
         )}
@@ -117,9 +116,9 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
               onClick={() => setCurrentIndex(i)}
               className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all"
               style={{
-                backgroundColor: colors.background.cardUp,
-                borderColor: i === currentIndex ? colors.brand.blue : 'transparent',
-                boxShadow: i === currentIndex ? `0 0 0 2px ${colors.accentBg.blue}` : 'none',
+                backgroundColor: 'var(--surface-elevated)',
+                borderColor: i === currentIndex ? 'var(--accent-sky)' : 'transparent',
+                boxShadow: i === currentIndex ? `0 0 0 2px var(--color-sky-dim)` : 'none',
               }}
             >
               {img && !imageError[i] ? (
@@ -133,15 +132,15 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageOff size={16} style={{ color: '#F1F5F9' }} />
+                  <ImageOff size={16} style={{ color: 'var(--text-secondary)' }} />
                 </div>
               )}
             </button>
           ))}
           {totalPhotos > rawImages.length && (
             <button
-              className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-white/5"
-              style={{ backgroundColor: colors.background.cardUp, color: '#F1F5F9' }}
+              className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-[var(--surface-card-hover)]"
+              style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
             >
               +{totalPhotos - rawImages.length}
             </button>
@@ -163,11 +162,11 @@ export function ImageGallerySkeleton() {
     <div className="space-y-3">
       <div
         className="relative rounded-[14px] overflow-hidden animate-pulse"
-        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: colors.background.cardUp }}
+        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
       >
         <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-          <ImageOff size={48} style={{ color: '#F1F5F9' }} />
-          <span className="text-sm" style={{ color: '#F1F5F9' }}>Loading property photos...</span>
+          <ImageOff size={48} style={{ color: 'var(--text-secondary)' }} />
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading property photos...</span>
         </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -175,7 +174,7 @@ export function ImageGallerySkeleton() {
           <div 
             key={i} 
             className="flex-shrink-0 w-16 h-16 rounded-lg animate-pulse"
-            style={{ backgroundColor: colors.background.cardUp }}
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
           />
         ))}
       </div>

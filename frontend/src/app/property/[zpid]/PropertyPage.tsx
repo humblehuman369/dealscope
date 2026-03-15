@@ -57,10 +57,10 @@ export default function PropertyPage() {
 
   if (error || !property) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center p-4">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-slate-200 mb-2">Property Not Found</h2>
-          <p className="text-slate-400">{error ?? 'Unable to load property details'}</p>
+          <h2 className="text-xl font-bold text-[var(--text-heading)] mb-2">Property Not Found</h2>
+          <p className="text-[var(--text-secondary)]">{error ?? 'Unable to load property details'}</p>
         </div>
       </div>
     )

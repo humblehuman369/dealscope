@@ -15,7 +15,6 @@ import {
   ListingInfo,
   LocationMap,
 } from './index'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
@@ -38,7 +37,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
   return (
     <div
       className="min-h-screen pb-8 font-['Inter',sans-serif]"
-      style={{ backgroundColor: colors.background.base }}
+      style={{ backgroundColor: 'var(--surface-base)' }}
     >
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
 
@@ -47,22 +46,22 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         <nav className="flex items-center gap-3 mb-6" aria-label="Breadcrumb">
           <button
             onClick={() => router.back()}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5"
-            style={{ color: '#F1F5F9' }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-[var(--surface-card-hover)]"
+            style={{ color: 'var(--text-heading)' }}
             aria-label="Go back"
           >
             <ArrowLeft size={18} />
           </button>
           <span
             className="text-[10px] font-bold uppercase tracking-[0.12em]"
-            style={{ color: colors.brand.blue }}
+            style={{ color: 'var(--accent-sky)' }}
           >
             Property Details
           </span>
-          <ChevronRight size={12} style={{ color: '#F1F5F9' }} />
+          <ChevronRight size={12} style={{ color: 'var(--text-secondary)' }} />
           <span
             className="text-[10px] uppercase tracking-wide truncate max-w-[200px] sm:max-w-none"
-            style={{ color: '#F1F5F9' }}
+            style={{ color: 'var(--text-secondary)' }}
           >
             {property.address.streetAddress}
           </span>

@@ -7,7 +7,6 @@ import {
 } from 'lucide-react'
 import { PropertyData } from './types'
 import { formatCurrency, formatNumber, formatPropertyType } from './utils'
-import { colors } from '@/components/iq-verdict/verdict-design-tokens'
 
 interface KeyFactsGridProps {
   property: PropertyData
@@ -101,14 +100,14 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     <div
       className="rounded-[14px] p-6"
       style={{
-        backgroundColor: colors.background.card,
-        border: `1px solid ${colors.ui.border}`,
-        boxShadow: colors.shadow.card,
+        backgroundColor: 'var(--surface-card)',
+        border: `1px solid var(--border-subtle)`,
+        boxShadow: 'var(--shadow-card)',
       }}
     >
       <div
         className="text-xs font-bold uppercase tracking-[0.12em] mb-5"
-        style={{ color: colors.brand.blue }}
+        style={{ color: 'var(--accent-sky)' }}
       >
         Property Facts
       </div>
@@ -118,18 +117,18 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
             key={i} 
             className="p-4 rounded-xl"
             style={{
-              backgroundColor: fact.highlight ? colors.accentBg.blue : colors.background.cardUp,
-              border: fact.highlight ? `1px solid rgba(56,189,248,0.15)` : `1px solid ${colors.ui.border}`,
+              backgroundColor: fact.highlight ? 'var(--color-sky-dim)' : 'var(--surface-elevated)',
+              border: fact.highlight ? `1px solid var(--border-focus)` : `1px solid var(--border-subtle)`,
             }}
           >
             <div className="flex items-center gap-2 mb-2">
               <fact.icon 
                 size={16} 
-                style={{ color: fact.highlight ? colors.brand.blue : '#F1F5F9' }}
+                style={{ color: fact.highlight ? 'var(--accent-sky)' : 'var(--text-secondary)' }}
               />
               <span
                 className="text-[11px] font-bold uppercase tracking-[0.04em]"
-                style={{ color: '#F1F5F9' }}
+                style={{ color: 'var(--text-label)' }}
               >
                 {fact.label}
               </span>
@@ -137,14 +136,14 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
             <div
               className="text-lg font-bold tabular-nums"
               style={{
-                color: fact.highlight ? colors.brand.blue : colors.text.primary,
+                color: fact.highlight ? 'var(--accent-sky)' : 'var(--text-heading)',
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
               {fact.value}
             </div>
             {fact.sublabel && (
-              <div className="text-sm mt-1" style={{ color: '#F1F5F9' }}>
+              <div className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                 {fact.sublabel}
               </div>
             )}
@@ -163,14 +162,14 @@ export function KeyFactsGridSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: colors.background.card, border: `1px solid ${colors.ui.border}` }}
+      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: colors.background.cardUp }} />
+      <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="p-3 rounded-lg" style={{ backgroundColor: colors.background.cardUp }}>
-            <div className="h-3 w-16 rounded animate-pulse mb-2" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
-            <div className="h-5 w-24 rounded animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
+          <div key={i} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+            <div className="h-3 w-16 rounded animate-pulse mb-2" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
+            <div className="h-5 w-24 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
           </div>
         ))}
       </div>
