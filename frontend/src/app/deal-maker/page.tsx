@@ -18,8 +18,8 @@ const DealMakerScreen = dynamic(
   () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
   {
     loading: () => (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400" />
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)]" />
       </div>
     ),
   },
@@ -180,10 +180,10 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0EA5E9] mx-auto mb-4" />
-          <p className="text-[#94A3B8] text-sm">Loading property data...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)] mx-auto mb-4" />
+          <p className="text-[var(--text-secondary)] text-sm">Loading property data...</p>
         </div>
       </div>
     )
@@ -191,17 +191,17 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center px-4 sm:px-6">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center px-4 sm:px-6">
         <div className="text-center w-full max-w-md">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(239,68,68,0.15)' }}>
-            <AlertCircle className="w-7 h-7 text-red-400" />
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'var(--color-red-dim)' }}>
+            <AlertCircle className="w-7 h-7 text-[var(--status-negative)]" />
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-2">Unable to Load Property</h2>
-          <p className="text-[#94A3B8] text-sm sm:text-base mb-6">{error}</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-heading)] mb-2">Unable to Load Property</h2>
+          <p className="text-[var(--text-secondary)] text-sm sm:text-base mb-6">{error}</p>
           <button
             onClick={() => loadProperty(addressParam)}
-            className="px-8 py-3 rounded-lg text-white font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
-            style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)', boxShadow: '0 0 20px rgba(14,165,233,0.3)' }}
+            className="px-8 py-3 rounded-lg text-[var(--text-inverse)] font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
+            style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)', boxShadow: 'var(--shadow-card)' }}
           >
             Retry
           </button>
@@ -225,11 +225,11 @@ export default function DealMakerIndexPage() {
 
   return (
     <AuthGate feature="deal maker" mode="section">
-      <div className="min-h-screen bg-black px-4 sm:px-6 pt-6 sm:pt-10">
+      <div className="min-h-screen bg-[var(--surface-base)] px-4 sm:px-6 pt-6 sm:pt-10">
         <div className="w-full max-w-lg mx-auto">
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Deal Maker IQ</h1>
-            <p className="text-[#94A3B8] text-sm sm:text-base">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">Deal Maker IQ</h1>
+            <p className="text-[var(--text-secondary)] text-sm sm:text-base">
               Search for a property to start building your deal
             </p>
           </div>
@@ -237,16 +237,16 @@ export default function DealMakerIndexPage() {
           <div
             className="rounded-xl p-5 sm:p-6"
             style={{
-              background: 'rgba(14, 165, 233, 0.12)',
-              border: '1px solid rgba(14, 165, 233, 0.4)',
-              boxShadow: '0 0 40px rgba(14, 165, 233, 0.2), 0 0 80px rgba(14, 165, 233, 0.1)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card-hover)',
             }}
           >
             <form onSubmit={handleAddressSubmit} className="space-y-4">
               <div className="relative">
                 <Search
                   size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0EA5E9] pointer-events-none z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--accent-sky)] pointer-events-none z-10"
                 />
                 <AddressAutocomplete
                   placeholder="Enter property address..."
@@ -254,31 +254,31 @@ export default function DealMakerIndexPage() {
                   onChange={setSearchAddress}
                   onPlaceSelect={setSearchAddress}
                   autoFocus
-                  className="w-full pl-12 pr-12 py-4 rounded-xl placeholder-[#ffffff] outline-none transition-colors text-sm sm:text-base"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl placeholder-[var(--text-label)] outline-none transition-colors text-sm sm:text-base"
                   style={{
-                    background: '#000000',
-                    border: '1px solid rgba(14, 165, 233, 0.3)',
-                    color: '#ffffff',
+                    background: 'var(--surface-input)',
+                    border: '1px solid var(--border-default)',
+                    color: 'var(--text-heading)',
                   }}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
                   {validationStatus === 'validating' && (
-                    <Loader2 size={20} className="text-[#64748B] animate-spin" />
+                    <Loader2 size={20} className="text-[var(--text-label)] animate-spin" />
                   )}
                   {validationStatus === 'valid' && (
-                    <CheckCircle2 size={20} className="text-[#34D399]" />
+                    <CheckCircle2 size={20} className="text-[var(--status-positive)]" />
                   )}
                   {validationStatus === 'issues' && (
-                    <AlertTriangle size={20} className="text-[#FBBF24]" />
+                    <AlertTriangle size={20} className="text-[var(--status-warning)]" />
                   )}
                   {validationStatus === 'error' && (
-                    <AlertCircle size={20} className="text-[#F97066]" />
+                    <AlertCircle size={20} className="text-[var(--status-negative)]" />
                   )}
                 </div>
               </div>
 
               {validationStatus === 'error' && (
-                <p className="text-sm text-[#F97066]">
+                <p className="text-sm text-[var(--status-negative)]">
                   Could not validate address. You can try again or use the address as entered.
                 </p>
               )}
@@ -286,12 +286,12 @@ export default function DealMakerIndexPage() {
                 <div
                   className="rounded-xl p-3 sm:p-4 space-y-3"
                   style={{
-                    background: 'rgba(14, 165, 233, 0.1)',
-                    border: '1px solid rgba(14, 165, 233, 0.3)',
+                    background: 'var(--color-sky-dim)',
+                    border: '1px solid var(--border-default)',
                   }}
                 >
                   {validationResult.issues.length > 0 && (
-                    <ul className="text-xs sm:text-sm text-[#FBBF24]/90 space-y-1">
+                    <ul className="text-xs sm:text-sm text-[var(--status-warning)] space-y-1">
                       {validationResult.issues.slice(0, 3).map((issue, i) => (
                         <li key={i}>{issue.message}</li>
                       ))}
@@ -299,9 +299,9 @@ export default function DealMakerIndexPage() {
                   )}
                   {validationResult.formattedAddress &&
                     validationResult.formattedAddress.trim() !== searchAddress.trim() && (
-                      <p className="text-sm text-[#94A3B8]">
+                      <p className="text-sm text-[var(--text-secondary)]">
                         Did you mean:{' '}
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-[var(--text-heading)]">
                           {validationResult.formattedAddress}
                         </span>
                         ?
@@ -314,7 +314,7 @@ export default function DealMakerIndexPage() {
                           type="button"
                           onClick={acceptCorrection}
                           className="text-sm py-2 px-4 rounded-lg font-medium transition-colors"
-                          style={{ background: 'rgba(14, 165, 233, 0.3)', color: '#FFFFFF' }}
+                          style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
                         >
                           Accept correction
                         </button>
@@ -322,7 +322,7 @@ export default function DealMakerIndexPage() {
                     <button
                       type="button"
                       onClick={useAsEntered}
-                      className="text-sm py-2 px-4 rounded-lg font-medium text-[#94A3B8] hover:text-white transition-colors"
+                      className="text-sm py-2 px-4 rounded-lg font-medium text-[var(--text-secondary)] hover:text-[var(--text-heading)] transition-colors"
                     >
                       Use as entered
                     </button>
@@ -335,18 +335,18 @@ export default function DealMakerIndexPage() {
                 disabled={!searchAddress.trim() || validationStatus === 'validating'}
                 className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 style={{
-                  color: '#ffffff',
-                  background: '#000000',
+                  color: 'var(--text-inverse)',
+                  background: 'var(--accent-sky)',
                 }}
               >
                 {validationStatus === 'validating' ? (
                   <>
-                    <Loader2 size={18} className="animate-spin text-[#0EA5E9]" />
+                    <Loader2 size={18} className="animate-spin text-[var(--text-inverse)]" />
                     Validating...
                   </>
                 ) : (
                   <>
-                    <Search size={18} className="text-[#0EA5E9]" />
+                    <Search size={18} className="text-[var(--text-inverse)]" />
                     Search Property
                   </>
                 )}

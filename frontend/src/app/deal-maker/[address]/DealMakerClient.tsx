@@ -12,8 +12,8 @@ const DealMakerScreen = dynamic(
   () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
   {
     loading: () => (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400" />
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)]" />
       </div>
     ),
   },
