@@ -30,8 +30,8 @@ function Toggle({ checked, onChange, label, description }: {
   return (
     <div className="flex items-center justify-between py-3">
       <div className="flex-1 mr-4">
-        <p className="text-sm font-medium text-slate-200">{label}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <p className="text-sm font-medium text-[var(--text-body)]">{label}</p>
+        <p className="text-xs text-[var(--text-label)] mt-0.5">{description}</p>
       </div>
       <button
         role="switch"
@@ -41,11 +41,11 @@ function Toggle({ checked, onChange, label, description }: {
         style={{
           width: 40,
           height: 22,
-          background: checked ? '#0ea5e9' : '#334155',
+          background: checked ? 'var(--accent-sky)' : 'var(--border-strong)',
         }}
       >
         <span
-          className="absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full transition-transform"
+          className="absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-[var(--text-inverse)] rounded-full transition-transform"
           style={{
             width: 18,
             height: 18,
@@ -116,22 +116,22 @@ export function PreferencesTab() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Bell className="w-5 h-5 text-sky-400" />
+        <h3 className="text-lg font-semibold text-[var(--text-heading)] flex items-center gap-2">
+          <Bell className="w-5 h-5 text-[var(--accent-sky)]" />
           Preferences
         </h3>
-        {saving && <span className="text-xs text-slate-500">Saving...</span>}
-        {saved && <span className="text-xs text-teal-400">Saved</span>}
+        {saving && <span className="text-xs text-[var(--text-label)]">Saving...</span>}
+        {saved && <span className="text-xs text-[var(--status-positive)]">Saved</span>}
       </div>
 
       {/* Notifications */}
-      <div className="p-5 bg-white/[0.02] rounded-xl border border-white/[0.07]">
+      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
         <div className="flex items-center gap-2 mb-4">
-          <Bell className="w-4 h-4 text-sky-400" />
-          <p className="text-sm font-semibold text-slate-200 uppercase tracking-wide">Notifications</p>
+          <Bell className="w-4 h-4 text-[var(--accent-sky)]" />
+          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Notifications</p>
         </div>
 
-        <div className="divide-y divide-white/[0.05]">
+        <div className="divide-y divide-[var(--border-subtle)]">
           <Toggle
             checked={prefs.email_deal_alerts}
             onChange={(v) => updatePref('email_deal_alerts', v)}
@@ -166,10 +166,10 @@ export function PreferencesTab() {
       </div>
 
       {/* Appearance */}
-      <div className="p-5 bg-white/[0.02] rounded-xl border border-white/[0.07]">
+      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
         <div className="flex items-center gap-2 mb-4">
-          <Palette className="w-4 h-4 text-teal-400" />
-          <p className="text-sm font-semibold text-slate-200 uppercase tracking-wide">Appearance</p>
+          <Palette className="w-4 h-4 text-[var(--status-positive)]" />
+          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Appearance</p>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
@@ -179,9 +179,9 @@ export function PreferencesTab() {
               onClick={() => updateTheme(opt)}
               className="py-3 px-4 rounded-lg text-sm font-medium transition-all text-center capitalize"
               style={{
-                background: theme === opt ? 'rgba(14,165,233,0.12)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${theme === opt ? 'rgba(14,165,233,0.3)' : 'rgba(255,255,255,0.07)'}`,
-                color: theme === opt ? '#38bdf8' : '#94a3b8',
+                background: theme === opt ? 'var(--color-sky-dim)' : 'var(--surface-card)',
+                border: `1px solid ${theme === opt ? 'var(--border-focus)' : 'var(--border-default)'}`,
+                color: theme === opt ? 'var(--accent-sky)' : 'var(--text-secondary)',
               }}
             >
               {opt}
@@ -191,31 +191,31 @@ export function PreferencesTab() {
       </div>
 
       {/* Security */}
-      <div className="p-5 bg-white/[0.02] rounded-xl border border-white/[0.07]">
+      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
         <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-4 h-4 text-amber-400" />
-          <p className="text-sm font-semibold text-slate-200 uppercase tracking-wide">Security</p>
+          <Shield className="w-4 h-4 text-[var(--status-warning)]" />
+          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Security</p>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium text-slate-200">Password</p>
-              <p className="text-xs text-slate-500">Last changed: Never</p>
+              <p className="text-sm font-medium text-[var(--text-body)]">Password</p>
+              <p className="text-xs text-[var(--text-label)]">Last changed: Never</p>
             </div>
             <a
               href="mailto:support@dealgapiq.com?subject=Password%20Reset%20Request"
-              className="text-xs font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+              className="text-xs font-semibold text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] transition-colors"
             >
               Request Change
             </a>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium text-slate-200">Two-Factor Authentication</p>
-              <p className="text-xs text-slate-500">Add an extra layer of security</p>
+              <p className="text-sm font-medium text-[var(--text-body)]">Two-Factor Authentication</p>
+              <p className="text-xs text-[var(--text-label)]">Add an extra layer of security</p>
             </div>
-            <span className="text-xs font-semibold text-slate-600">Coming Soon</span>
+            <span className="text-xs font-semibold text-[var(--text-label)]">Coming Soon</span>
           </div>
         </div>
       </div>
@@ -226,10 +226,11 @@ export function PreferencesTab() {
           type="button"
           onClick={() => savePrefs(prefs, theme)}
           disabled={saving}
-          className="px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-sky-500 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
+          className="px-6 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-[var(--accent-sky)]"
+          style={{ boxShadow: 'var(--shadow-card)' }}
         >
           {saving ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" />
           ) : (
             <Save className="w-4 h-4" />
           )}
