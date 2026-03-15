@@ -21,24 +21,24 @@ import {
 import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 
 // ===========================================
-// Saved Properties Page — Dark Fintech Theme
+// Saved Properties Page — Semantic Theme
 // ===========================================
 // Typography: Inter 700 headlines, 400 body, 600 financial data
 // Text hierarchy: slate-100 > slate-300 > slate-400 > slate-500
 // Accents: sky-400 (primary), teal-400 (positive), amber-400 (caution),
 //          red-400 (negative), emerald-400 (success/income)
-// Theme: true black base, #0C1220 cards, 7% white borders
+// Theme: semantic surface/text tokens for dark + light modes
 // ===========================================
 
 // Semantic status colors — color carries meaning, not decoration
 const STATUS_CONFIG: Record<PropertyStatus, { label: string; color: string; bg: string }> = {
-  watching:        { label: 'Watching',        color: 'text-sky-400',     bg: 'bg-sky-400/10'     },
-  analyzing:       { label: 'Analyzing',       color: 'text-teal-400',    bg: 'bg-teal-400/10'    },
-  contacted:       { label: 'Contacted',       color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
-  under_contract:  { label: 'Under Contract',  color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
-  owned:           { label: 'Owned',           color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  passed:          { label: 'Passed',          color: 'text-slate-400',   bg: 'bg-slate-400/10'   },
-  archived:        { label: 'Archived',        color: 'text-slate-500',   bg: 'bg-slate-500/10'   },
+  watching:        { label: 'Watching',        color: 'text-[var(--accent-sky)]',      bg: 'bg-[var(--color-sky-dim)]' },
+  analyzing:       { label: 'Analyzing',       color: 'text-[var(--status-info)]',      bg: 'bg-[var(--surface-elevated)]' },
+  contacted:       { label: 'Contacted',       color: 'text-[var(--status-warning)]',   bg: 'bg-[rgba(251,191,36,0.10)]' },
+  under_contract:  { label: 'Under Contract',  color: 'text-[var(--status-warning)]',   bg: 'bg-[rgba(251,191,36,0.10)]' },
+  owned:           { label: 'Owned',           color: 'text-[var(--status-positive)]',  bg: 'bg-[rgba(52,211,153,0.10)]' },
+  passed:          { label: 'Passed',          color: 'text-[var(--text-secondary)]',   bg: 'bg-[var(--surface-elevated)]' },
+  archived:        { label: 'Archived',        color: 'text-[var(--text-label)]',       bg: 'bg-[var(--surface-elevated)]' },
 }
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -163,7 +163,7 @@ function SavedPropertiesContent() {
 
   return (
     <div
-      className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-5xl mx-auto">
@@ -171,12 +171,12 @@ function SavedPropertiesContent() {
         {/* ── Page Header ───────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-              <Bookmark className="w-8 h-8 text-sky-400" />
+            <h1 className="text-3xl font-bold text-[var(--text-heading)] tracking-tight flex items-center gap-3">
+              <Bookmark className="w-8 h-8 text-[var(--accent-sky)]" />
               Saved Properties
             </h1>
-            <p className="mt-2 text-slate-400">
-              <span className="text-slate-100 font-semibold tabular-nums">{totalSaved}</span>{' '}
+            <p className="mt-2 text-[var(--text-secondary)]">
+              <span className="text-[var(--text-heading)] font-semibold tabular-nums">{totalSaved}</span>{' '}
               {totalSaved === 1 ? 'property' : 'properties'} in your portfolio
             </p>
           </div>
@@ -184,7 +184,7 @@ function SavedPropertiesContent() {
             <Link
               href="/compare"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold no-underline transition-all hover:opacity-90"
-              style={{ background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', color: '#38bdf8' }}
+              style={{ background: 'var(--color-sky-dim)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
             >
               <BarChart3 className="w-4 h-4" />
               Compare
@@ -192,7 +192,8 @@ function SavedPropertiesContent() {
           )}
           <button
             onClick={() => setShowSearchModal(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold text-sm transition-all"
+            style={{ boxShadow: 'var(--shadow-card)' }}
           >
             <Search className="w-4 h-4" />
             Search New Property
@@ -203,53 +204,53 @@ function SavedPropertiesContent() {
         {totalSaved > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {/* Total Saved — sky (primary data) */}
-            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
+            <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-sky-400/10 rounded-lg">
-                  <Bookmark className="w-5 h-5 text-sky-400" />
+                <div className="p-2 bg-[var(--color-sky-dim)] rounded-lg">
+                  <Bookmark className="w-5 h-5 text-[var(--accent-sky)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{totalSaved}</p>
-                  <p className="text-xs text-slate-500 font-medium">Total Saved</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{totalSaved}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Total Saved</p>
                 </div>
               </div>
             </div>
 
             {/* Watching — sky (attention) */}
-            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
+            <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-sky-400/10 rounded-lg">
-                  <Eye className="w-5 h-5 text-sky-400" />
+                <div className="p-2 bg-[var(--color-sky-dim)] rounded-lg">
+                  <Eye className="w-5 h-5 text-[var(--accent-sky)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{statusCounts.watching || 0}</p>
-                  <p className="text-xs text-slate-500 font-medium">Watching</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.watching || 0}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Watching</p>
                 </div>
               </div>
             </div>
 
             {/* Analyzing — teal (positive process) */}
-            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
+            <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-teal-400/10 rounded-lg">
-                  <BarChart3 className="w-5 h-5 text-teal-400" />
+                <div className="p-2 bg-[var(--surface-elevated)] rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-[var(--status-info)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{statusCounts.analyzing || 0}</p>
-                  <p className="text-xs text-slate-500 font-medium">Analyzing</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.analyzing || 0}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Analyzing</p>
                 </div>
               </div>
             </div>
 
             {/* Owned — emerald (income/success) */}
-            <div className="bg-[#0C1220] rounded-xl p-4 border border-white/[0.07]">
+            <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-400/10 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <div className="p-2 bg-[rgba(52,211,153,0.10)] rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-[var(--status-positive)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-100 tabular-nums">{statusCounts.owned || 0}</p>
-                  <p className="text-xs text-slate-500 font-medium">Owned</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.owned || 0}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Owned</p>
                 </div>
               </div>
             </div>
@@ -263,9 +264,10 @@ function SavedPropertiesContent() {
             onClick={() => setFilterStatus('all')}
             className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
               filterStatus === 'all'
-                ? 'bg-sky-500 text-white shadow-[0_0_16px_rgba(56,189,248,0.15)]'
-                : 'bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
+                ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)]'
+                : 'bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]'
             }`}
+            style={filterStatus === 'all' ? { boxShadow: 'var(--shadow-card)' } : undefined}
           >
             All
           </button>
@@ -279,9 +281,10 @@ function SavedPropertiesContent() {
                 onClick={() => setFilterStatus(filterStatus === s ? 'all' : s)}
                 className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
                   filterStatus === s
-                    ? 'bg-sky-500 text-white shadow-[0_0_16px_rgba(56,189,248,0.15)]'
-                    : 'bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
+                    ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)]'
+                    : 'bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]'
                 }`}
+                style={filterStatus === s ? { boxShadow: 'var(--shadow-card)' } : undefined}
               >
                 {config.label} {count > 0 && <span className="tabular-nums">({count})</span>}
               </button>
@@ -290,32 +293,33 @@ function SavedPropertiesContent() {
 
           {/* Search input (debounced) */}
           <div className="relative flex-1 min-w-[200px] ml-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-label)]" />
             <input
               type="text"
               placeholder="Search saved properties..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm bg-white/[0.04] text-slate-100 border border-white/[0.07] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm bg-[var(--surface-input)] text-[var(--text-heading)] border border-[var(--border-default)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
             />
           </div>
         </div>
 
         {/* ── Properties List ───────────────────── */}
-        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] overflow-hidden">
+        <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden">
           <DataBoundary
             isLoading={propertiesQuery.isLoading}
             error={propertiesQuery.isError ? 'Failed to load saved properties' : null}
             onRetry={() => propertiesQuery.refetch()}
             isEmpty={properties.length === 0}
-            emptyIcon={<Bookmark className="w-8 h-8 text-slate-600" />}
+            emptyIcon={<Bookmark className="w-8 h-8 text-[var(--text-label)]" />}
             emptyTitle={emptyTitle}
             emptyDescription={emptyDescription}
             emptyAction={
               !hasActiveFilters ? (
                 <button
                   onClick={() => setShowSearchModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] font-semibold rounded-lg transition-all"
+                  style={{ boxShadow: 'var(--shadow-card)' }}
                 >
                   <Search className="w-4 h-4" />
                   Search Properties
@@ -324,13 +328,13 @@ function SavedPropertiesContent() {
             }
           >
             {/* ── Property Items ──────────────────── */}
-            <div className="divide-y divide-white/[0.07]">
+            <div className="divide-y divide-[var(--border-subtle)]">
               {properties.map((property: SavedPropertySummary) => {
                 const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.watching
                 return (
                   <div
                     key={property.id}
-                    className="px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                    className="px-6 py-4 hover:bg-[var(--surface-card-hover)] transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div
@@ -344,11 +348,11 @@ function SavedPropertiesContent() {
                           </div>
                           {/* Address */}
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-slate-100 truncate">
+                            <p className="font-medium text-[var(--text-heading)] truncate">
                               {property.nickname || property.address_street}
                             </p>
                             {(property.address_city || property.address_state) && (
-                              <p className="text-sm text-slate-400 flex items-center gap-1 mt-0.5">
+                              <p className="text-sm text-[var(--text-secondary)] flex items-center gap-1 mt-0.5">
                                 <MapPin className="w-3 h-3 flex-shrink-0" />
                                 {[property.address_city, property.address_state].filter(Boolean).join(', ')}
                                 {property.address_zip && ` ${property.address_zip}`}
@@ -364,20 +368,20 @@ function SavedPropertiesContent() {
                           </span>
 
                           {property.best_strategy && (
-                            <span className="text-slate-300 flex items-center gap-1">
-                              <Star className="w-3 h-3 text-amber-400" />
+                            <span className="text-[var(--text-body)] flex items-center gap-1">
+                              <Star className="w-3 h-3 text-[var(--status-warning)]" />
                               {STRATEGY_LABELS[property.best_strategy] || property.best_strategy}
                             </span>
                           )}
 
                           {property.best_cash_flow !== undefined && property.best_cash_flow !== null && (
-                            <span className={`font-semibold tabular-nums ${property.best_cash_flow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold tabular-nums ${property.best_cash_flow >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                               {formatCurrency(property.best_cash_flow)}/yr
                             </span>
                           )}
 
                           {property.best_coc_return !== undefined && property.best_coc_return !== null && (
-                            <span className={`font-semibold tabular-nums ${property.best_coc_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold tabular-nums ${property.best_coc_return >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
                               {formatPercent(property.best_coc_return)} CoC
                             </span>
                           )}
@@ -385,7 +389,7 @@ function SavedPropertiesContent() {
 
                         {/* Tags */}
                         <div className="mt-2 ml-11 flex items-center gap-2">
-                          <span className="text-xs text-slate-500 flex items-center gap-1 tabular-nums">
+                          <span className="text-xs text-[var(--text-label)] flex items-center gap-1 tabular-nums">
                             <Clock className="w-3 h-3" />
                             Saved {formatDate(property.saved_at)}
                           </span>
@@ -394,13 +398,13 @@ function SavedPropertiesContent() {
                               {property.tags.slice(0, 3).map((tag: string) => (
                                 <span
                                   key={tag}
-                                  className="px-1.5 py-0.5 bg-white/[0.04] border border-white/[0.07] text-xs text-slate-500 rounded"
+                                  className="px-1.5 py-0.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] text-xs text-[var(--text-label)] rounded"
                                 >
                                   {tag}
                                 </span>
                               ))}
                               {property.tags.length > 3 && (
-                                <span className="text-xs text-slate-500 tabular-nums">+{property.tags.length - 3}</span>
+                                <span className="text-xs text-[var(--text-label)] tabular-nums">+{property.tags.length - 3}</span>
                               )}
                             </div>
                           )}
@@ -411,14 +415,14 @@ function SavedPropertiesContent() {
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           onClick={() => goToProperty(property)}
-                          className="p-2 text-sky-400 hover:bg-sky-400/10 rounded-lg transition-colors"
+                          className="p-2 text-[var(--accent-sky)] hover:bg-[var(--color-sky-dim)] rounded-lg transition-colors"
                           title="Analyze property"
                         >
                           <ChevronRight className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(property.id)}
-                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                          className="p-2 text-[var(--text-label)] hover:text-[var(--status-negative)] hover:bg-[rgba(248,113,113,0.10)] rounded-lg transition-colors"
                           title="Remove from saved"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -433,26 +437,26 @@ function SavedPropertiesContent() {
 
           {/* ── Pagination Controls ───────────────── */}
           {totalCount > PAGE_SIZE && !propertiesQuery.isLoading && !propertiesQuery.isError && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07]">
-              <p className="text-sm text-slate-500 tabular-nums">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-default)]">
+              <p className="text-sm text-[var(--text-label)] tabular-nums">
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
               </p>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(0, p - 1))}
                   disabled={!hasPrevPage}
-                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-sm text-slate-400 tabular-nums px-2">
+                <span className="text-sm text-[var(--text-secondary)] tabular-nums px-2">
                   Page {page + 1} of {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => p + 1)}
                   disabled={!hasNextPage}
-                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+                  className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -487,8 +491,8 @@ function SavedPropertiesContent() {
 export default function SavedPropertiesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-sky)]" />
       </div>
     }>
       <AuthGuard>
