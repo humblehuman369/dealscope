@@ -57,15 +57,15 @@ export type { DealMakerPropertyData }
 function getViabilityDisplay(viability: string): { label: string; color: string; icon: string } {
   switch (viability) {
     case 'excellent':
-      return { label: 'Excellent Deal', color: '#22c55e', icon: '🟢' }
+      return { label: 'Excellent Deal', color: 'var(--status-positive)', icon: '🟢' }
     case 'good':
-      return { label: 'Good Deal', color: '#3b82f6', icon: '🔵' }
+      return { label: 'Good Deal', color: 'var(--accent-sky)', icon: '🔵' }
     case 'marginal':
-      return { label: 'Marginal Deal', color: '#f97316', icon: '🟠' }
+      return { label: 'Marginal Deal', color: 'var(--status-warning)', icon: '🟠' }
     case 'poor':
-      return { label: 'Poor Deal', color: '#ef4444', icon: '🔴' }
+      return { label: 'Poor Deal', color: 'var(--status-negative)', icon: '🔴' }
     default:
-      return { label: 'Unknown', color: '#6b7280', icon: '⚪' }
+      return { label: 'Unknown', color: 'var(--text-label)', icon: '⚪' }
   }
 }
 
@@ -163,13 +163,13 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
   return (
     <div className="mt-4">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>{label}</span>
-        <span className="text-base font-bold tabular-nums" style={{ color: '#ffffff' }}>{displayValue}</span>
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>{label}</span>
+        <span className="text-base font-bold tabular-nums" style={{ color: 'var(--text-heading)' }}>{displayValue}</span>
       </div>
       <div className="relative h-8 flex items-center">
-        <div className="w-full h-2 rounded-full relative" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="w-full h-2 rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
           <div 
-            className="absolute left-0 top-0 h-full bg-[#0EA5E9] rounded-full"
+            className="absolute left-0 top-0 h-full bg-[var(--accent-sky)] rounded-full"
             style={{ width: `${fillPercent}%` }}
           />
           <input
@@ -182,12 +182,12 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div 
-            className="absolute w-5 h-5 bg-[#F1F5F9] rounded-full shadow-md -translate-y-1/2 top-1/2 transition-shadow hover:shadow-lg"
-            style={{ left: `calc(${Math.min(100, Math.max(0, fillPercent))}% - 10px)`, border: '3px solid #0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.4)' }}
+            className="absolute w-5 h-5 bg-[var(--surface-card)] rounded-full shadow-md -translate-y-1/2 top-1/2 transition-shadow hover:shadow-lg"
+            style={{ left: `calc(${Math.min(100, Math.max(0, fillPercent))}% - 10px)`, border: '3px solid var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}
           />
         </div>
       </div>
-      <div className="flex justify-between mt-1 text-[11px]" style={{ color: '#ffffff' }}>
+      <div className="flex justify-between mt-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
         <span>{minLabel}</span>
         <span>{maxLabel}</span>
       </div>
@@ -1047,14 +1047,35 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }, [strategyType, metrics, state])
 
   return (
-    <div className="min-h-screen bg-black max-w-[960px] mx-auto font-['Inter',sans-serif]">
+    <div className="deal-maker-theme min-h-screen bg-[var(--surface-base)] max-w-[960px] mx-auto font-['Inter',sans-serif]">
+      <style>{`
+        .deal-maker-theme .text-\\[\\#ffffff\\] { color: var(--text-heading) !important; }
+        .deal-maker-theme .text-white { color: var(--text-heading) !important; }
+        .deal-maker-theme .text-white\\/75,
+        .deal-maker-theme .text-white\\/60 { color: var(--text-secondary) !important; }
+        .deal-maker-theme .hover\\:text-white:hover { color: var(--text-heading) !important; }
+        .deal-maker-theme .border-white\\/10 { border-color: var(--border-subtle) !important; }
+        .deal-maker-theme .border-b.border-white\\/10 { border-color: var(--border-subtle) !important; }
+        .deal-maker-theme .bg-white\\/\\[0\\.06\\] { background-color: var(--surface-elevated) !important; }
+        .deal-maker-theme .hover\\:bg-white\\/10:hover { background-color: var(--surface-card-hover) !important; }
+        .deal-maker-theme .border-\\[rgba\\(14\\,165\\,233\\,0\\.2\\)\\] { border-color: var(--border-default) !important; }
+        .deal-maker-theme .border-\\[rgba\\(14\\,165\\,233\\,0\\.25\\)\\] { border-color: var(--border-default) !important; }
+        .deal-maker-theme .border-\\[rgba\\(14\\,165\\,233\\,0\\.55\\)\\] { border-color: var(--border-focus) !important; }
+        .deal-maker-theme .bg-\\[rgba\\(14\\,165\\,233\\,0\\.05\\)\\] { background-color: var(--surface-elevated) !important; }
+        .deal-maker-theme .bg-\\[\\#0EA5E9\\] { background-color: var(--accent-sky) !important; }
+        .deal-maker-theme .shadow-\\[0_0_12px_rgba\\(14\\,165\\,233\\,0\\.4\\)\\] { box-shadow: var(--shadow-card) !important; }
+        .deal-maker-theme .bg-\\[\\#0EA5E9\\].text-white { color: var(--text-inverse) !important; }
+        .deal-maker-theme [style*="#ffffff"] { color: var(--text-heading) !important; }
+        .deal-maker-theme [style*="background: #000000"],
+        .deal-maker-theme [style*="background:#000000"] { background: var(--surface-card) !important; }
+      `}</style>
 
       {/* Back Navigation + Strategy Selector */}
       <div className="px-4 sm:px-6 pt-3">
         {backTo && (
           <button
             onClick={handleBack}
-            className="flex items-center gap-1.5 text-sm text-white/75 hover:text-white transition-colors mb-3"
+            className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-heading)] transition-colors mb-3"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -1071,8 +1092,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               onClick={() => handleStrategyChange(strategy)}
               className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 currentStrategy === strategy
-                  ? 'bg-[#0EA5E9] text-white shadow-[0_0_12px_rgba(14,165,233,0.4)]'
-                  : 'bg-white/[0.06] text-white/75 hover:text-white hover:bg-white/10'
+                  ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)] shadow-[var(--shadow-card)]'
+                  : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-card-hover)]'
               }`}
             >
               {strategy}
@@ -1085,21 +1106,21 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       <div
         className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3"
         style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(14, 165, 233, 0.25)',
-          boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--border-default)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         {isCalculating && (
-          <div className="flex items-center justify-center gap-2 py-1 text-[10px] text-[#0EA5E9]">
-            <div className="w-2 h-2 bg-[#0EA5E9] rounded-full animate-pulse" />
+          <div className="flex items-center justify-center gap-2 py-1 text-[10px] text-[var(--accent-sky)]">
+            <div className="w-2 h-2 bg-[var(--accent-sky)] rounded-full animate-pulse" />
             Recalculating...
           </div>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-1.5">
           {headerMetrics.map((metric, index) => (
             <div key={index} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
-              <span className="text-xs text-[#ffffff]">{metric.label}</span>
+              <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
               <span 
                 className={`text-[13px] sm:text-base font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
                 style={{ color: getValueColor(metric.color) }}
@@ -1118,13 +1139,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             key={section.id}
             className="rounded-xl mb-3 overflow-hidden transition-all"
             style={activeAccordion === section.id ? {
-              background: '#000000',
-              border: '1px solid rgba(14, 165, 233, 0.55)',
-              boxShadow: '0 0 50px rgba(14, 165, 233, 0.15), 0 0 100px rgba(14, 165, 233, 0.07)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-focus)',
+              boxShadow: 'var(--shadow-card-hover)',
             } : {
-              background: '#000000',
-              border: '1px solid rgba(14, 165, 233, 0.25)',
-              boxShadow: '0 0 30px rgba(14, 165, 233, 0.08), 0 0 60px rgba(14, 165, 233, 0.04)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             {/* Accordion Header */}
@@ -1132,10 +1153,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               className="flex items-center gap-3 p-4 sm:p-5 w-full text-left"
               onClick={() => toggleAccordion(section.id)}
             >
-              <div className="w-6 h-6 text-[#0EA5E9]">{section.icon}</div>
-              <span className="flex-1 text-[15px] sm:text-base font-semibold" style={{ color: '#ffffff' }}>{section.title}</span>
+              <div className="w-6 h-6 text-[var(--accent-sky)]">{section.icon}</div>
+              <span className="flex-1 text-[15px] sm:text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{section.title}</span>
               <svg
-                className={`w-5 h-5 text-white/60 transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
+                className={`w-5 h-5 text-[var(--text-secondary)] transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -1147,7 +1168,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
             {/* Accordion Content */}
             {activeAccordion === section.id && (
-              <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-white/10">
+              <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[var(--border-subtle)]">
                 {/* Buy Price Section */}
                 {section.id === 'buyPrice' && (
                   <>
