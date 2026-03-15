@@ -16,14 +16,14 @@
  * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
-import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
 } from '@/components/iq-verdict'
-import { getDealVerdict } from '@/components/iq-verdict/types'
+import { getDealGapTier } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
@@ -78,89 +78,65 @@ interface BackendAnalysisResponse {
   [key: string]: unknown
 }
 
-function ScoreArc({ score, maxScore = 100, size = 120 }: { score: number; maxScore?: number; size?: number }) {
+function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color: string }) {
   const [val, setVal] = useState(0)
-  const r = 46
-  const sw = 7
-  const cx = size / 2
-  const sa = 135
-  const ea = 405
-  const ta = ea - sa
-  const id = useId().replace(/:/g, '_')
-  const arcGlowId = `arcGlow_${id}`
-  const gradientId = `ag_${id}`
 
   useEffect(() => {
     let f = 0
     const t0 = performance.now()
+    const target = Math.abs(dealGapPercent)
     const run = (now: number) => {
-      const t = Math.min((now - t0) / 1400, 1)
-      setVal(Math.round((1 - Math.pow(1 - t, 3)) * score))
+      const t = Math.min((now - t0) / 1200, 1)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setVal(Math.round(eased * target * 10) / 10)
       if (t < 1) f = requestAnimationFrame(run)
     }
     f = requestAnimationFrame(run)
     return () => cancelAnimationFrame(f)
-  }, [score])
+  }, [dealGapPercent])
 
-  const p = (a: number, rad: number) => ({
-    x: cx + rad * Math.cos((a * Math.PI) / 180),
-    y: cx + rad * Math.sin((a * Math.PI) / 180),
-  })
-
-  const s = p(sa, r)
-  const e = p(ea, r)
-  const sweep = (val / maxScore) * ta
-  const v = p(sa + sweep, r)
-  const bg = `M ${s.x} ${s.y} A ${r} ${r} 0 1 1 ${e.x} ${e.y}`
-  const fg = `M ${s.x} ${s.y} A ${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${v.x} ${v.y}`
-
-  const color = val >= 80
-    ? 'var(--status-positive)'
-    : val >= 60
-      ? 'var(--status-warning)'
-      : val >= 40
-        ? 'var(--accent-brand-orange)'
-        : 'var(--status-negative)'
+  const sign = dealGapPercent >= 0 ? '-' : '+'
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <defs>
-        <filter id={arcGlowId}>
-          <feGaussianBlur stdDeviation="3" result="b" />
-          <feMerge>
-            <feMergeNode in="b" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor={color} stopOpacity="0.5" />
-        </linearGradient>
-      </defs>
-      <path d={bg} fill="none" stroke="var(--border-default)" strokeWidth={sw} strokeLinecap="round" />
-      <path d={fg} fill="none" stroke={`url(#${gradientId})`} strokeWidth={sw} strokeLinecap="round" filter={`url(#${arcGlowId})`} />
-      <text
-        x={cx}
-        y={cx - 2}
-        textAnchor="middle"
-        fill="var(--text-heading)"
-        fontSize="34"
-        fontWeight="700"
-        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+    <div
+      style={{
+        width: 120,
+        height: 120,
+        borderRadius: '50%',
+        border: `3px solid ${color}`,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: `radial-gradient(circle at 50% 40%, ${color}12, transparent 70%)`,
+        boxShadow: `0 0 20px ${color}18`,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 30,
+          fontWeight: 700,
+          color,
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          lineHeight: 1,
+          fontVariantNumeric: 'tabular-nums',
+        }}
       >
-        {val}
-      </text>
-      <text
-        x={cx}
-        y={cx + 16}
-        textAnchor="middle"
-        fill="var(--text-heading)"
-        fontSize="11"
-        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+        {sign}{val.toFixed(1)}%
+      </span>
+      <span
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: 'var(--text-body)',
+          textTransform: 'uppercase',
+          letterSpacing: 1.5,
+          marginTop: 4,
+        }}
       >
-        {`out of ${maxScore}`}
-      </text>
-    </svg>
+        Deal Gap
+      </span>
+    </div>
   )
 }
 
@@ -206,43 +182,7 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
   )
 }
 
-function getBadgeStyle(verdictLabel: string) {
-  switch (verdictLabel) {
-    case 'Achievable':
-      return { bg: 'var(--color-green-dim)', color: 'var(--status-positive)', border: 'var(--status-positive)', icon: '✓' }
-    case 'Negotiable':
-      return { bg: 'var(--color-green-dim)', color: 'var(--status-positive)', border: 'var(--status-positive)', icon: '✓' }
-    case 'Challenging':
-      return { bg: 'var(--color-gold-dim)', color: 'var(--status-warning)', border: 'var(--status-warning)', icon: '⚡' }
-    case 'More Challenging':
-      return { bg: 'var(--color-gold-dim)', color: 'var(--accent-brand-orange)', border: 'var(--accent-brand-orange)', icon: '⚠' }
-    case 'Very Challenging':
-      return { bg: 'var(--color-red-dim)', color: 'var(--status-negative)', border: 'var(--status-negative)', icon: '✕' }
-    case 'Extremely Challenging':
-      return { bg: 'var(--color-red-dim)', color: 'var(--status-negative)', border: 'var(--status-negative)', icon: '✕' }
-    default:
-      return { bg: 'var(--color-gold-dim)', color: 'var(--status-warning)', border: 'var(--status-warning)', icon: '⚡' }
-  }
-}
-
-function getHeadline(verdictLabel: string): string {
-  switch (verdictLabel) {
-    case 'Achievable':
-      return 'The numbers work. Move fast.'
-    case 'Negotiable':
-      return 'A solid opportunity - worth pursuing.'
-    case 'Challenging':
-      return "Doable, but you'll need to negotiate hard."
-    case 'More Challenging':
-      return 'The math is tight. Proceed with caution.'
-    case 'Very Challenging':
-      return "The numbers don't work at this price."
-    case 'Extremely Challenging':
-      return "The numbers don't work at this price."
-    default:
-      return "Here's what the data says."
-  }
-}
+// getBadgeStyle and getHeadline removed — replaced by getDealGapTier() from types.ts
 
 /**
  * Bulletproof component score extraction.
@@ -1132,13 +1072,10 @@ function VerdictContent() {
   }
 
   // Derived values for display
-  const score = analysis.dealScore
-  const verdictLabel = getDealVerdict(score)
   const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
   const monthlyRent = property.monthlyRent || 0
-  const discountPct = analysis.discountPercent || 0
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
@@ -1146,19 +1083,18 @@ function VerdictContent() {
     ? ((property.price - purchasePrice) / property.price) * 100
     : 0
   const dealGap = Math.max(0, rawDealGap)
+  const dealGapPct = analysis.dealGapPercent ?? dealGap
   const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
-  // Backend returns deal_probability_score from investor discount brackets; fallback to deal score when 0 or missing (e.g. old cache)
   const probability = (analysis.componentScores?.dealProbabilityScore != null && analysis.componentScores.dealProbabilityScore > 0)
     ? Math.max(0, Math.min(100, Math.round(analysis.componentScores.dealProbabilityScore)))
-    : Math.max(0, Math.min(100, Math.round(score)))
+    : Math.max(0, Math.min(100, Math.round(analysis.dealScore)))
   const probabilityTail = probability > 50
     ? 'This is well within reach.'
     : probability >= 20
       ? 'Achievable with the right approach.'
       : "You'll need leverage, timing, or a motivated seller."
-  const badgeStyle = getBadgeStyle(verdictLabel)
-  const headline = getHeadline(verdictLabel)
+  const tier = getDealGapTier(dealGapPct)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
   const dataSourceCount = sourceKeys.filter((sourceKey) => {
     const valueHasSource = iqSources.value[sourceKey] != null
@@ -1202,7 +1138,7 @@ function VerdictContent() {
               <div style={{ padding: '28px 28px 24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                   <div style={{ flexShrink: 0 }}>
-                    <ScoreArc score={score} size={120} />
+                    <DealGapHero dealGapPercent={dealGapPct} color={tier.color} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <span
@@ -1210,17 +1146,17 @@ function VerdictContent() {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 6,
-                        background: badgeStyle.bg,
-                        color: badgeStyle.color,
+                        background: tier.bg,
+                        color: tier.color,
                         padding: '5px 14px',
                         borderRadius: 20,
                         fontSize: 13,
                         fontWeight: 600,
-                        border: `1px solid ${badgeStyle.border}`,
+                        border: `1px solid ${tier.border}`,
                       }}
                     >
-                      <span style={{ fontSize: 12 }}>{badgeStyle.icon}</span>
-                      {verdictLabel}
+                      <span style={{ fontSize: 12 }}>{tier.icon}</span>
+                      {tier.label}
                     </span>
                     <h1
                       style={{
@@ -1232,7 +1168,7 @@ function VerdictContent() {
                         letterSpacing: -0.2,
                       }}
                     >
-                      {headline}
+                      {tier.headline}
                     </h1>
                   </div>
                 </div>
@@ -1312,7 +1248,7 @@ function VerdictContent() {
                   }}
                 >
                   <span style={{ fontSize: 13 }}>ⓘ</span>
-                  How we score deals
+                  How the Deal Gap works
                 </button>
                 <div
                   style={{
@@ -1337,7 +1273,7 @@ function VerdictContent() {
           <section className="px-5 py-8 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
 
             <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 6 }}>
-              {score >= 70 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
+              {dealGapPct <= 10 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
             </h2>
             <p className={tw.textBody} style={{ color: 'var(--text-body)', marginBottom: 24, lineHeight: 1.55 }}>
               Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
@@ -1564,18 +1500,18 @@ function VerdictContent() {
           {/* div-e gradient divider */}
           <div className="mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)', boxShadow: 'var(--shadow-card)' }} />
 
-          {/* CTA → Strategy — copy adapts to verdict score */}
+          {/* CTA → Strategy — copy adapts to Deal Gap tier */}
           <section className="px-5 py-10 text-center">
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--accent-sky)' }}>
-              {score >= 65 ? 'This deal passed the screen' : score >= 40 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
+              {dealGapPct <= 10 ? 'This deal passed the screen' : dealGapPct <= 20 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
             </p>
             <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: 'var(--text-heading)' }}>
-              {score >= 65 ? 'Now Prove It.' : score >= 40 ? 'Find the Angle.' : 'See What Would Work.'}
+              {dealGapPct <= 10 ? 'Now Prove It.' : dealGapPct <= 20 ? 'Find the Angle.' : 'See What Would Work.'}
             </h2>
             <p className="text-[0.95rem] leading-relaxed mx-auto mb-7" style={{ color: 'var(--text-body)' }}>
-              {score >= 65
+              {dealGapPct <= 10
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
-                : score >= 40
+                : dealGapPct <= 20
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
@@ -1597,17 +1533,18 @@ function VerdictContent() {
           {/* Trust Strip */}
           <div className="px-5 py-5 text-center border-t" style={{ borderColor: 'var(--border-subtle)' }}>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
-              DealGap IQ analyzes <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>comparable sales</span> to score every property. No guesswork — just data.
+              DealGap IQ analyzes <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>comparable sales</span> to calculate every Deal Gap. No guesswork — just data.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Score Methodology Sheet */}
+      {/* Deal Gap Methodology Sheet */}
       <ScoreMethodologySheet
         isOpen={showMethodologySheet}
         onClose={() => setShowMethodologySheet(false)}
-        currentScore={analysis?.dealScore}
+        currentScore={undefined}
+        currentGrade={`${dealGapPct.toFixed(1)}% Deal Gap — ${tier.label}`}
         scoreType={methodologyScoreType}
       />
 
