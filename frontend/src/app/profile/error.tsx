@@ -15,37 +15,38 @@ export default function ProfileError({ error, reset }: ErrorProps) {
 
   return (
     <div
-      className="min-h-screen bg-black flex items-center justify-center p-4"
+      className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center p-4"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-md w-full">
-        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-400/10 border border-red-400/20 flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-red-400" />
+        <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[rgba(248,113,113,0.10)] border border-[rgba(248,113,113,0.25)] flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-[var(--status-negative)]" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100 mb-2">Profile Unavailable</h1>
-          <p className="text-slate-400 mb-6">
+          <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-2">Profile Unavailable</h1>
+          <p className="text-[var(--text-secondary)] mb-6">
             We couldn&apos;t load your profile. Your data is not affected.
           </p>
           {process.env.NODE_ENV === 'development' && error.message && (
-            <div className="mb-6 p-3 bg-white/[0.04] border border-white/[0.07] rounded-lg text-left">
-              <p className="text-xs text-slate-400 break-all">{error.message}</p>
+            <div className="mb-6 p-3 bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg text-left">
+              <p className="text-xs text-[var(--text-secondary)] break-all">{error.message}</p>
               {error.digest && (
-                <p className="text-xs text-slate-500 mt-1">Error ID: {error.digest}</p>
+                <p className="text-xs text-[var(--text-label)] mt-1">Error ID: {error.digest}</p>
               )}
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-all"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] font-semibold rounded-lg transition-all"
+              style={{ boxShadow: 'var(--shadow-card)' }}
             >
               <RefreshCw className="w-4 h-4" />
               Try Again
             </button>
             <a
               href="/search"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.04] border border-white/[0.07] hover:border-white/[0.14] text-slate-300 font-semibold rounded-lg transition-all"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--text-body)] font-semibold rounded-lg transition-all"
             >
               <Home className="w-4 h-4" />
               Dashboard
@@ -53,7 +54,7 @@ export default function ProfileError({ error, reset }: ErrorProps) {
           </div>
           <button
             onClick={() => window.history.back()}
-            className="mt-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-sky-400 transition-colors"
+            className="mt-6 inline-flex items-center gap-1 text-sm text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Go back

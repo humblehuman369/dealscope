@@ -13,10 +13,10 @@ import { US_STATES } from './types'
 
 // Shared input classes for consistency
 const inputClass =
-  'w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors'
+  'w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
 
 const selectClass =
-  'w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors'
+  'w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
 
 interface BusinessTabProps {
   businessForm: BusinessFormData
@@ -39,18 +39,18 @@ export function BusinessTab({
 }: BusinessTabProps) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-        <Building2 className="w-5 h-5 text-sky-400" />
+      <h3 className="text-lg font-semibold text-[var(--text-heading)] flex items-center gap-2">
+        <Building2 className="w-5 h-5 text-[var(--accent-sky)]" />
         Business Profile
       </h3>
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-[var(--text-secondary)]">
         This information will be used for LOIs, contracts, and professional networking.
       </p>
 
       {/* ── Business Info ───────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
             Business Name
           </label>
           <input
@@ -62,14 +62,14 @@ export function BusinessTab({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
             Business Type
           </label>
           <select
             value={businessForm.business_type}
             onChange={(e) => setBusinessForm(prev => ({ ...prev, business_type: e.target.value }))}
             className={selectClass}
-            style={{ colorScheme: 'dark' }}
+            style={{ colorScheme: 'light' }}
           >
             <option value="">Select type...</option>
             <option value="llc">LLC</option>
@@ -83,8 +83,8 @@ export function BusinessTab({
 
       {/* ── Business Address ────────────────────── */}
       <div>
-        <h4 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-slate-400" />
+        <h4 className="text-sm font-medium text-[var(--text-body)] mb-3 flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-[var(--text-secondary)]" />
           Business Address
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +109,7 @@ export function BusinessTab({
               value={businessForm.business_address_state}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, business_address_state: e.target.value }))}
               className={selectClass}
-              style={{ colorScheme: 'dark' }}
+              style={{ colorScheme: 'light' }}
             >
               <option value="">State</option>
               {US_STATES.map(state => (
@@ -130,13 +130,13 @@ export function BusinessTab({
       {/* ── Phone Numbers ───────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-slate-300 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-slate-400" />
+          <h4 className="text-sm font-medium text-[var(--text-body)] flex items-center gap-2">
+            <Phone className="w-4 h-4 text-[var(--text-secondary)]" />
             Phone Numbers
           </h4>
           <button
             onClick={onAddPhone}
-            className="text-sky-400 hover:text-sky-300 text-sm font-semibold flex items-center gap-1 transition-colors"
+            className="text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] text-sm font-semibold flex items-center gap-1 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Phone
@@ -148,8 +148,8 @@ export function BusinessTab({
               <select
                 value={phone.type}
                 onChange={(e) => onUpdatePhone(index, 'type', e.target.value)}
-                className="w-28 px-3 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400/30 transition-colors"
-                style={{ colorScheme: 'dark' }}
+                className="w-28 px-3 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] transition-colors"
+                style={{ colorScheme: 'light' }}
               >
                 <option value="mobile">Mobile</option>
                 <option value="work">Work</option>
@@ -160,76 +160,76 @@ export function BusinessTab({
                 type="tel"
                 value={phone.number}
                 onChange={(e) => onUpdatePhone(index, 'number', e.target.value)}
-                className="flex-1 px-4 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+                className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
                 placeholder="(555) 555-5555"
               />
-              <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={phone.primary}
                   onChange={(e) => onUpdatePhone(index, 'primary', e.target.checked)}
-                  className="rounded border-white/[0.15] bg-white/[0.04] text-sky-500 focus:ring-sky-400/30 focus:ring-offset-0"
+                  className="rounded border-[var(--border-default)] bg-[var(--surface-input)] text-[var(--accent-sky)] focus:ring-[var(--color-sky-dim)] focus:ring-offset-0"
                 />
                 Primary
               </label>
               <button
                 onClick={() => onRemovePhone(index)}
-                className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+                className="p-2 text-[var(--text-label)] hover:text-[var(--status-negative)] transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
           {businessForm.phone_numbers.length === 0 && (
-            <p className="text-sm text-slate-500 italic">No phone numbers added</p>
+            <p className="text-sm text-[var(--text-label)] italic">No phone numbers added</p>
           )}
         </div>
       </div>
 
       {/* ── Social Links ────────────────────────── */}
       <div>
-        <h4 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-          <Globe className="w-4 h-4 text-slate-400" />
+        <h4 className="text-sm font-medium text-[var(--text-body)] mb-3 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-[var(--text-secondary)]" />
           Social & Marketing Links
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-slate-500 flex-shrink-0" />
+            <Globe className="w-5 h-5 text-[var(--text-label)] flex-shrink-0" />
             <input
               type="url"
               value={businessForm.social_links.website || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, website: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="https://yourwebsite.com"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Linkedin className="w-5 h-5 text-sky-400 flex-shrink-0" />
+            <Linkedin className="w-5 h-5 text-[var(--accent-sky)] flex-shrink-0" />
             <input
               type="url"
               value={businessForm.social_links.linkedin || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, linkedin: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="LinkedIn URL"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Instagram className="w-5 h-5 text-[#e4405f] flex-shrink-0" />
+            <Instagram className="w-5 h-5 text-[var(--status-negative)] flex-shrink-0" />
             <input
               type="url"
               value={businessForm.social_links.instagram || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, instagram: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Instagram URL"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Twitter className="w-5 h-5 text-slate-400 flex-shrink-0" />
+            <Twitter className="w-5 h-5 text-[var(--text-secondary)] flex-shrink-0" />
             <input
               type="url"
               value={businessForm.social_links.twitter || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, twitter: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Twitter/X URL"
             />
           </div>
@@ -239,8 +239,8 @@ export function BusinessTab({
       {/* ── License Info ────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Real Estate License # <span className="text-slate-500">(optional)</span>
+          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
+            Real Estate License # <span className="text-[var(--text-label)]">(optional)</span>
           </label>
           <input
             type="text"
@@ -251,14 +251,14 @@ export function BusinessTab({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
             License State
           </label>
           <select
             value={businessForm.license_state}
             onChange={(e) => setBusinessForm(prev => ({ ...prev, license_state: e.target.value }))}
             className={selectClass}
-            style={{ colorScheme: 'dark' }}
+            style={{ colorScheme: 'light' }}
           >
             <option value="">Select state...</option>
             {US_STATES.map(state => (
@@ -270,14 +270,14 @@ export function BusinessTab({
 
       {/* ── Bio ─────────────────────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
           Professional Bio
         </label>
         <textarea
           value={businessForm.bio}
           onChange={(e) => setBusinessForm(prev => ({ ...prev, bio: e.target.value }))}
           rows={4}
-          className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.07] rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/30 transition-colors resize-none"
+          className="w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors resize-none"
           placeholder="Tell others about your investment experience and expertise..."
         />
       </div>
@@ -287,9 +287,10 @@ export function BusinessTab({
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-sky-500 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)]"
+          className="px-6 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-[var(--accent-sky)]"
+          style={{ boxShadow: 'var(--shadow-card)' }}
         >
-          {isSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
           Save Business Profile
         </button>
       </div>
