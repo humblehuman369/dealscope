@@ -66,9 +66,9 @@ function StatusText({ status }: { status: string }) {
   const isListedOrOffMarket = status === 'Listed' || status === 'Off-Market'
   return (
     <span
+      className="text-[14px] sm:text-[19px]"
       style={{
         fontFamily: "'Space Mono', monospace",
-        fontSize: 14,
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
@@ -94,9 +94,9 @@ function DetailItem({
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
       {label ? (
         <span
+          className="text-[12px] sm:text-[16px]"
           style={{
             fontFamily: "'Space Mono', monospace",
-            fontSize: 12,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
             color: barTokens.label,
@@ -106,9 +106,9 @@ function DetailItem({
         </span>
       ) : null}
       <span
+        className="text-[15px] sm:text-[19px]"
         style={{
           fontFamily: "'DM Sans', sans-serif",
-          fontSize: 15,
           fontWeight: 600,
           color: accent ? barTokens.accent : barTokens.heading,
         }}
@@ -225,7 +225,6 @@ export function PropertyAddressBar({
             href={profileHref}
             title="View property profile"
             style={{
-              fontSize: 16,
               fontWeight: 600,
               color: barTokens.heading,
               whiteSpace: 'nowrap',
@@ -233,7 +232,7 @@ export function PropertyAddressBar({
               textOverflow: 'ellipsis',
               textDecoration: 'none',
             }}
-            className="hover:underline"
+            className="text-[16px] sm:text-[20px] hover:underline"
           >
             {fullAddress}
           </Link>

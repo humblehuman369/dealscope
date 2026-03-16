@@ -474,13 +474,13 @@ export function AppHeader({
             className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
           >
             <span 
-              className="text-[21px] font-bold tracking-tight"
+              className="text-[21px] sm:text-[25px] font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
               DealGap
             </span>
             <span 
-              className="text-[21px] font-bold tracking-tight"
+              className="text-[21px] sm:text-[25px] font-bold tracking-tight"
               style={{ color: colors.brand.teal }}
             >
               IQ
@@ -491,7 +491,7 @@ export function AppHeader({
           <div className="flex items-center gap-5">
             <Link
               href="/about"
-              className="text-sm font-medium transition-opacity hover:opacity-80"
+              className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
               style={{
                 color: 'var(--text-heading)',
                 borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
@@ -502,7 +502,7 @@ export function AppHeader({
             </Link>
             <Link
               href="/pricing"
-              className="text-sm font-medium transition-opacity hover:opacity-80"
+              className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
               style={{
                 color: 'var(--text-heading)',
                 borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
@@ -517,7 +517,7 @@ export function AppHeader({
               aria-label="Search properties"
             >
               <Search 
-                className="w-5 h-5" 
+                className="w-5 h-5 sm:w-6 sm:h-6" 
                 style={{ color: 'var(--text-heading)' }}
               />
             </button>
@@ -531,7 +531,7 @@ export function AppHeader({
                   aria-haspopup="true"
                 >
                   <Menu 
-                    className="w-5 h-5" 
+                    className="w-5 h-5 sm:w-6 sm:h-6" 
                     style={{ color: 'var(--text-heading)' }}
                   />
                 </button>
@@ -541,9 +541,9 @@ export function AppHeader({
                     {user && (
                       <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
+                          <p className="text-[14px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
                           <span
-                            className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
+                            className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
                             style={{
                               background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
                               color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
@@ -552,7 +552,7 @@ export function AppHeader({
                             {isPro ? 'Pro' : 'Starter'}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                        <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">{user.email}</p>
                       </div>
                     )}
                     <button
@@ -602,7 +602,7 @@ export function AppHeader({
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-semibold transition-opacity hover:opacity-80 whitespace-nowrap"
+                className="text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap"
                 style={{ color: colors.brand.teal }}
               >
                 Login / Register
@@ -629,7 +629,7 @@ export function AppHeader({
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`
-                    flex-1 px-4 py-[7px] text-[16px] font-medium 
+                    flex-1 px-4 py-[7px] text-[16px] sm:text-[20px] font-medium 
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
                   style={{
