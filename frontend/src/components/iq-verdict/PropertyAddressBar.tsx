@@ -68,7 +68,7 @@ function StatusText({ status }: { status: string }) {
     <span
       style={{
         fontFamily: "'Space Mono', monospace",
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
@@ -96,7 +96,7 @@ function DetailItem({
         <span
           style={{
             fontFamily: "'Space Mono', monospace",
-            fontSize: 10,
+            fontSize: 12,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
             color: barTokens.label,
@@ -108,7 +108,7 @@ function DetailItem({
       <span
         style={{
           fontFamily: "'DM Sans', sans-serif",
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: 600,
           color: accent ? barTokens.accent : barTokens.heading,
         }}
@@ -225,7 +225,7 @@ export function PropertyAddressBar({
             href={profileHref}
             title="View property profile"
             style={{
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: 600,
               color: barTokens.heading,
               whiteSpace: 'nowrap',
