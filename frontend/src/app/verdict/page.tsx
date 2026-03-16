@@ -123,7 +123,7 @@ function DealGapHero({
       <h1
         style={{
           margin: 0,
-          fontSize: 'clamp(19px, 3.07vw, 31px)',
+          fontSize: 'clamp(23px, 3.79vw, 39px)',
           lineHeight: 1,
           fontWeight: 800,
           color: 'var(--text-heading)',
@@ -135,7 +135,7 @@ function DealGapHero({
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
         <span
           style={{
-            fontSize: 'clamp(16px, 2.95vw, 26px)',
+            fontSize: 'clamp(20px, 3.64vw, 33px)',
             fontWeight: 800,
             color,
             lineHeight: 1,
@@ -154,7 +154,7 @@ function DealGapHero({
             border: `1.5px solid ${color}`,
             padding: '7px 14px',
             borderRadius: 999,
-            fontSize: 'clamp(11px, 1.96vw, 19px)',
+            fontSize: 'clamp(14px, 2.43vw, 23px)',
             fontWeight: 700,
             lineHeight: 1,
             background: 'transparent',
@@ -193,7 +193,7 @@ function DealGapHero({
             marginTop: 8,
             display: 'flex',
             justifyContent: 'space-between',
-            fontSize: 8,
+            fontSize: 10,
             fontWeight: 700,
             letterSpacing: 1.5,
             textTransform: 'uppercase',
@@ -206,7 +206,7 @@ function DealGapHero({
       <p
         style={{
           margin: '18px 0 0',
-          fontSize: 'clamp(17px, 2.89vw, 26px)',
+          fontSize: 'clamp(16px, 2.75vw, 25px)',
           lineHeight: 1.2,
           fontWeight: 700,
           color: 'var(--text-heading)',
@@ -248,7 +248,7 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 8,
+          fontSize: 10,
           fontWeight: 700,
           color: 'var(--accent-sky)',
           flexShrink: 0,
