@@ -1047,7 +1047,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Side-by-side layout on desktop: left = comp list, right = sticky map */}
-        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3' : ''}>
+        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3 md:mx-4' : ''}>
           {/* Left column */}
           <div className="min-w-0">
             {/* Adjustment Grid (accordion, loads open) */}
