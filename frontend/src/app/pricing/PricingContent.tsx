@@ -156,7 +156,7 @@ export default function PricingContent() {
             display: "inline-flex",
             alignItems: "center",
             gap: "0",
-            background: "var(--surface-base)",
+            background: "var(--surface-card)",
             borderRadius: "40px",
             padding: "4px",
             border: "1px solid var(--border-default)",
@@ -239,7 +239,7 @@ export default function PricingContent() {
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: "1px solid var(--border-default)",
-                background: "var(--surface-base)",
+                background: "var(--surface-card)",
               }}
             >
               <CheckIcon color="var(--accent-sky)" />
@@ -264,7 +264,7 @@ export default function PricingContent() {
         {/* FREE CARD */}
         <div
           style={{
-            background: "var(--surface-base)",
+            background: "var(--surface-card)",
             border: "1px solid var(--border-default)",
             borderRadius: "16px",
             padding: "36px 32px",
@@ -327,7 +327,7 @@ export default function PricingContent() {
         {/* PRO CARD */}
         <div
           style={{
-            background: "var(--surface-base)",
+            background: "var(--surface-card)",
             border: "1px solid var(--border-focus)",
             borderRadius: "16px",
             padding: "36px 32px",
@@ -469,7 +469,7 @@ export default function PricingContent() {
         style={{
           maxWidth: "880px",
           margin: "80px auto 0",
-          background: "var(--surface-base)",
+          background: "var(--surface-card)",
           border: "1px solid var(--border-default)",
           borderRadius: "16px",
           padding: "48px 40px",
@@ -504,7 +504,7 @@ export default function PricingContent() {
             <div
               key={i}
               style={{
-                background: "var(--surface-base)",
+                background: "var(--surface-elevated)",
                 borderRadius: "10px",
                 padding: "16px",
                 border: "1px solid var(--border-default)",
@@ -542,7 +542,7 @@ export default function PricingContent() {
             width: "56px",
             height: "56px",
             borderRadius: "50%",
-            background: "var(--surface-base)",
+            background: "var(--surface-card)",
             border: "1px solid var(--border-default)",
             display: "flex",
             alignItems: "center",
