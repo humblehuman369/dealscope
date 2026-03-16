@@ -27,7 +27,7 @@ function getSchoolRatingStyle(rating: number): { bg: string; color: string } {
  */
 export function NearbySchools({ schools }: NearbySchoolsProps) {
   const cardStyle = {
-    backgroundColor: 'var(--surface-card)',
+    backgroundColor: 'var(--surface-base)',
     border: `1px solid var(--border-subtle)`,
     boxShadow: 'var(--shadow-card)',
   }
@@ -76,7 +76,7 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
             >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'var(--surface-card)' }}
+                style={{ backgroundColor: 'var(--surface-elevated)' }}
               >
                 <LevelIcon size={18} style={{ color: 'var(--text-secondary)' }} />
               </div>
@@ -133,7 +133,7 @@ export function NearbySchoolsSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
+      style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
       <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="space-y-3">
