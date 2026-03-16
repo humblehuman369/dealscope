@@ -117,7 +117,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
             key={i} 
             className="p-4 rounded-xl"
             style={{
-              backgroundColor: fact.highlight ? 'var(--color-sky-dim)' : 'var(--surface-base)',
+              backgroundColor: 'var(--surface-base)',
               border: fact.highlight ? `1px solid var(--border-focus)` : `1px solid var(--border-subtle)`,
             }}
           >
