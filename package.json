@@ -14,5 +14,7 @@
     "typecheck:shared": "cd shared && npx tsc --noEmit",
     "install:mobile": "cd mobile && npm install"
   },
-  "dependencies": {}
+  "dependencies": {
+    "baseline-browser-mapping": "^2.10.8"
+  }
 }
