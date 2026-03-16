@@ -226,7 +226,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
     <div
       className="rounded-xl p-4"
       style={{
-        background: 'var(--surface-card)',
+        background: 'var(--surface-base)',
         border: '1px solid var(--border-default)',
         boxShadow: 'var(--shadow-card)',
         transition: 'all 0.3s ease',
