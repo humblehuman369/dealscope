@@ -167,6 +167,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
   onToggle: () => void; isExpanded: boolean; onExpand: () => void
   onRefreshComp: () => void; refreshing: boolean; onViewPhotos?: () => void
 }) {
+  const [imgFailed, setImgFailed] = useState(false)
+  useEffect(() => { setImgFailed(false) }, [comp.imageUrl])
   const compForCalc = toCompProperty(comp)
   const similarity = calculateSimilarityScore(subject, compForCalc)
   const saleAdj = isSale ? calculateSaleAdjustments(subject, compForCalc) : null
@@ -211,8 +213,8 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
         {/* Image + distance badge + View Photos */}
         <div className="flex flex-col w-[100px] flex-shrink-0">
           <div className="relative h-[80px] bg-[var(--surface-elevated)] rounded-tl-xl overflow-hidden">
-            {comp.imageUrl ? (
-              <img src={comp.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            {comp.imageUrl && !imgFailed ? (
+              <img src={comp.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={() => setImgFailed(true)} />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-[var(--surface-elevated)]">
                 {isSale ? <Building2 className="w-5 h-5 text-[var(--text-heading)]" /> : <Home className="w-5 h-5 text-[var(--text-heading)]" />}
