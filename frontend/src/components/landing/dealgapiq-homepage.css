@@ -18,6 +18,22 @@
   box-shadow: var(--shadow-card-hover) !important;
 }
 
+/* Hero pill CTA */
+.hero-pill-form:focus-within {
+  box-shadow: 0 0 24px rgba(14, 165, 233, 0.15), 0 0 48px rgba(14, 165, 233, 0.05) !important;
+}
+.hero-pill-input::placeholder {
+  color: var(--text-label) !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+.hero-pill-arrow:hover:not(:disabled) {
+  transform: scale(1.08) !important;
+}
+.hero-pill-arrow:active:not(:disabled) {
+  transform: scale(0.95) !important;
+}
+
 /* Nav: desktop = links visible, hamburger hidden; mobile = hamburger visible, links in dropdown */
 .dgiq-nav-hamburger { display: none !important; }
 @media (max-width: 639px) {
@@ -40,6 +56,16 @@
   .hero-address-bar { flex-direction: column !important; padding: 10px !important; gap: 8px !important; }
   .hero-address-bar input { width: 100% !important; text-align: center !important; padding: 10px !important; }
   .hero-address-bar button { width: 100% !important; justify-content: center !important; }
+}
+
+/* Mobile pill CTA adjustments */
+@media (max-width: 480px) {
+  .hero-pill-form {
+    padding: 4px 4px 4px 20px !important;
+  }
+  .hero-pill-input {
+    font-size: 14px !important;
+  }
 }
 
 /* Mobile (< 640px): full single-column stacking, 2x2 proof bar, CTA row stacks, hamburger nav */
