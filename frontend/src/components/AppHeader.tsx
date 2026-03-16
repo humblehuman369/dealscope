@@ -629,7 +629,7 @@ export function AppHeader({
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`
-                    flex-1 px-4 py-[7px] text-sm font-medium 
+                    flex-1 px-4 py-[7px] text-[16px] font-medium 
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
                   style={{
