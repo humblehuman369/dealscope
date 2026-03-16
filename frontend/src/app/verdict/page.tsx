@@ -1188,17 +1188,17 @@ function VerdictContent() {
                   <Takeaway num="1" delay={0}>
                     {isOffMarket ? (
                       <span>
-                        This property is <strong style={{ color: 'var(--status-warning)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                        This property is <strong style={{ color: tier.color }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
                       </span>
                     ) : (
                       <span>
-                        This property is <strong style={{ color: 'var(--status-positive)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                        This property is <strong style={{ color: tier.color }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
                       </span>
                     )}
                   </Takeaway>
                   <Takeaway num="2" delay={140}>
                     <span>
-                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--status-warning)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
+                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: tier.color }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
                     </span>
                   </Takeaway>
                   <Takeaway num="3" delay={280}>
@@ -1362,16 +1362,16 @@ function VerdictContent() {
                           width: `${priceGapRight - priceGapLeft}%`,
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
-                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: tier.color, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: tier.color, flex: 1 }} />
                         <span
                           className="text-[0.86rem] sm:text-[16px] font-bold whitespace-nowrap px-1.5 tabular-nums"
-                          style={{ color: 'var(--status-warning)' }}
+                          style={{ color: tier.color }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </span>
-                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        <div style={{ height: 1, background: tier.color, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: tier.color, flexShrink: 0 }} />
                       </div>
                     )}
 
