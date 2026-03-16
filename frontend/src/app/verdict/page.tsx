@@ -1209,7 +1209,7 @@ function VerdictContent() {
               style={{
                 borderRadius: 16,
                 overflow: 'hidden',
-                background: '#000000',
+                background: 'var(--surface-card)',
                 border: '1px solid var(--border-default)',
                 boxShadow: 'var(--shadow-card-hover)',
               }}
@@ -1335,7 +1335,7 @@ function VerdictContent() {
                 { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
-                  background: '#000000',
+                  background: 'var(--surface-card)',
                   border: `1px solid ${card.active ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
                   boxShadow: card.active ? 'var(--shadow-card-hover)' : 'var(--shadow-card)',
                   transition: 'all 0.3s ease',
@@ -1521,7 +1521,7 @@ function VerdictContent() {
                 onClick={() => handlePDFDownload('light')}
                 disabled={isExporting === 'pdf'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: '#000000', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'pdf' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
@@ -1534,7 +1534,7 @@ function VerdictContent() {
                 onClick={handleExcelDownload}
                 disabled={isExporting === 'excel'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: '#000000', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'excel' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
