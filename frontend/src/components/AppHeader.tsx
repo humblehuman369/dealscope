@@ -463,10 +463,10 @@ export function AppHeader({
   return (
     <>
       <header className="relative z-50">
-        {/* Brand Bar - pure black with subtle depth gradient (scrolls away) */}
+        {/* Brand Bar - pure black (scrolls away) */}
         <div 
           className="flex items-center justify-between px-4 py-3"
-          style={{ background: 'radial-gradient(ellipse at 20% 50%, var(--color-teal-dim) 0%, transparent 70%), var(--surface-base)' }}
+          style={{ backgroundColor: 'var(--surface-base)' }}
         >
           {/* Left: Logo */}
           <button 
@@ -657,7 +657,7 @@ export function AppHeader({
         return (
           <div
             className="sticky top-0 z-50"
-            style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}
+            style={{ backgroundColor: 'var(--surface-base)' }}
           >
             <PropertyAddressBar
               address={p?.address ?? addrParts.streetAddress}
