@@ -206,7 +206,7 @@ function DealGapHero({
       <p
         style={{
           margin: '18px 0 0',
-          fontSize: 'clamp(16px, 2.75vw, 25px)',
+          fontSize: 'clamp(14px, 2.34vw, 21px)',
           lineHeight: 1.2,
           fontWeight: 700,
           color: 'var(--text-heading)',
