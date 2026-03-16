@@ -73,7 +73,7 @@ const DivE = () => (
 
 // ── Card wrappers ──
 const cardSmStyle: React.CSSProperties = {
-  background: "var(--surface-card)",
+  background: "var(--surface-base)",
   border: "1px solid var(--border-default)",
   boxShadow: "var(--shadow-card)",
   borderRadius: 12,
@@ -81,7 +81,7 @@ const cardSmStyle: React.CSSProperties = {
 };
 
 const cardLgStyle: React.CSSProperties = {
-  background: "var(--surface-card)",
+  background: "var(--surface-base)",
   border: "1px solid var(--border-default)",
   boxShadow: "var(--shadow-card-hover)",
   borderRadius: 16,
@@ -334,7 +334,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>1</div>
               <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Paste an Address</h3>
               <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Any U.S. property address. No account needed for your first scan.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-elevated)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)" }}>
+              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)" }}>
                 <div style={{ background: "var(--surface-card-hover)", borderRadius: 8, padding: "11px 14px", color: s.muted, fontFamily: s.fontBody, fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: s.teal }}>📍</span> 1451 Sw 10th St, <span style={{ filter: "blur(2px)" }}>Boca Raton, FL</span>
                 </div>
@@ -346,7 +346,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>2</div>
               <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>We Analyze the Market</h3>
               <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Multiple valuation sources cross-referenced. Rents, expenses, and comps modeled through our proprietary IQ engine.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-elevated)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "left" as const }}>
+              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "left" as const }}>
                 {[
                   { label: "IQ Estimate", value: "$869,326", teal: true },
                   { label: "Zillow", value: "$802,600" },
@@ -367,7 +367,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>3</div>
               <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Get Your Investment Screen</h3>
               <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>A Verdict Score that tells you if this property is in the range worth pursuing — plus your Target Buy and Deal Gap.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-elevated)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "center" as const }}>
+              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "center" as const }}>
                 <div style={{ fontFamily: s.fontData, fontSize: 30, fontWeight: 700, color: s.warning }}>53<span style={{ fontSize: 13, color: s.mutedDim }}>/100</span></div>
                 <div style={{ fontFamily: s.fontBody, fontSize: 11, color: s.warning, marginTop: 3, fontWeight: 600 }}>Marginal Opportunity</div>
                 <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginTop: 8 }}>Target Buy: <span style={{ color: s.teal, fontFamily: s.fontData, fontWeight: 700 }}>$669,608</span></div>
@@ -448,7 +448,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   { label: "INCOME VALUE", value: "$708,704", sub: "Price where income covers all costs", highlight: false },
                 ].map((card, i) => (
                   <div key={i} style={{
-                    background: "var(--surface-card)", borderRadius: 10, padding: "12px 10px", textAlign: "center" as const,
+                    background: "var(--surface-base)", borderRadius: 10, padding: "12px 10px", textAlign: "center" as const,
                     border: card.highlight ? "1px solid var(--border-focus)" : "1px solid var(--border-subtle)",
                     boxShadow: card.highlight ? "var(--shadow-card-hover)" : "var(--shadow-card)",
                   }}>
@@ -482,7 +482,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                     <div key={i} style={{
                       position: "absolute" as const, width: 14, height: 14, borderRadius: "50%",
                       top: -3, left: `${dot.pos}%`, transform: "translateX(-50%)",
-                      background: dot.color, border: "2px solid var(--surface-card)",
+                      background: dot.color, border: "2px solid var(--surface-base)",
                       boxShadow: `0 0 6px ${dot.color}60`,
                     }} />
                   ))}
@@ -592,7 +592,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 { name: "House Hack", desc: "Owner-occupy + rent spare units" },
                 { name: "Wholesale", desc: "Contract assignment for quick equity" },
               ].map((item, i) => (
-                <div key={i} style={{ background: "var(--surface-elevated)", border: "1px solid var(--border-subtle)", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 14 }}>
+                <div key={i} style={{ background: "var(--surface-base)", border: "1px solid var(--border-subtle)", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--color-sky-dim)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: s.fontBody, fontSize: 14, fontWeight: 700, color: s.teal }}>{item.name.charAt(0)}</span>
                   </div>
@@ -771,7 +771,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   { num: "500+", label: "RE projects" },
                   { num: "30+", label: "yr GSE partnerships" },
                 ].map((cred, i) => (
-                  <div key={i} style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: "7px 14px", fontFamily: s.fontBody, fontSize: 12, color: s.muted, display: "flex", alignItems: "center", gap: 5, boxShadow: "var(--shadow-card)" }}>
+                  <div key={i} style={{ background: "var(--surface-base)", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: "7px 14px", fontFamily: s.fontBody, fontSize: 12, color: s.muted, display: "flex", alignItems: "center", gap: 5, boxShadow: "var(--shadow-card)" }}>
                     <span style={{ fontFamily: s.fontData, fontWeight: 700, color: "var(--text-heading)", fontSize: 12 }}>{cred.num}</span> {cred.label}
                   </div>
                 ))}
