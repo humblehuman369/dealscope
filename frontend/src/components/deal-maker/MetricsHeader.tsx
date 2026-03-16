@@ -40,7 +40,7 @@ export function MetricsHeader({
   propertyAddress,
 }: MetricsHeaderProps) {
   return (
-    <div className="bg-[var(--surface-card)]" style={{ padding: '16px 20px 20px' }}>
+    <div className="bg-[var(--surface-base)]" style={{ padding: '16px 20px 20px' }}>
       {/* Title Area - centered */}
       <div className="text-center">
         {/* Address */}

@@ -237,7 +237,7 @@ export default function DealMakerIndexPage() {
           <div
             className="rounded-xl p-5 sm:p-6"
             style={{
-              background: 'var(--surface-card)',
+              background: 'var(--surface-base)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card-hover)',
             }}

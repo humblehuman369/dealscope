@@ -1067,7 +1067,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         .deal-maker-theme .bg-\\[\\#0EA5E9\\].text-white { color: var(--text-inverse) !important; }
         .deal-maker-theme [style*="#ffffff"] { color: var(--text-heading) !important; }
         .deal-maker-theme [style*="background: #000000"],
-        .deal-maker-theme [style*="background:#000000"] { background: var(--surface-card) !important; }
+        .deal-maker-theme [style*="background:#000000"] { background: var(--surface-base) !important; }
       `}</style>
 
       {/* Back Navigation + Strategy Selector */}
@@ -1106,7 +1106,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       <div
         className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3"
         style={{
-          background: 'var(--surface-card)',
+          background: 'var(--surface-base)',
           border: '1px solid var(--border-default)',
           boxShadow: 'var(--shadow-card)',
         }}
@@ -1139,11 +1139,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             key={section.id}
             className="rounded-xl mb-3 overflow-hidden transition-all"
             style={activeAccordion === section.id ? {
-              background: 'var(--surface-card)',
+              background: 'var(--surface-base)',
               border: '1px solid var(--border-focus)',
               boxShadow: 'var(--shadow-card-hover)',
             } : {
-              background: 'var(--surface-card)',
+              background: 'var(--surface-base)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card)',
             }}
