@@ -928,7 +928,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Proximity Map accordion (mobile only; desktop uses sticky side panel) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="mx-4 mt-3 lg:hidden">
+          <div className="mx-4 mt-3 md:hidden">
             <div className={`bg-[var(--surface-base)] rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
               <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
                 <button
@@ -1047,11 +1047,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         )}
 
         {/* Side-by-side layout on desktop: left = comp list, right = sticky map */}
-        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:mt-3' : ''}>
+        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3' : ''}>
           {/* Left column */}
           <div className="min-w-0">
             {/* Adjustment Grid (accordion, loads open) */}
-            <div className="mx-4 lg:mx-0 mt-3 lg:mt-0">
+            <div className="mx-4 md:mx-0 mt-3 md:mt-0">
               <AdjustmentGrid
                 compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
                 isExpanded={showAdjGrid}
@@ -1061,7 +1061,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
 
             {/* Controls + Filters */}
-            <div className="px-4 lg:px-0 mt-3 min-w-0">
+            <div className="px-4 md:px-0 mt-3 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
@@ -1112,7 +1112,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
             {/* Comp Cards */}
             {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-              <div className="w-full min-w-0 px-4 lg:px-0 mt-3 space-y-3">
+              <div className="w-full min-w-0 px-4 md:px-0 mt-3 space-y-3">
                 {filteredComps.map(comp => (
                   <CompCard
                     key={comp.id}
@@ -1133,7 +1133,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
             {/* Location Quality */}
             {!loading && !loadFailed && comps.length > 0 && (
-              <div className={`mx-4 lg:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
+              <div className={`mx-4 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
                   <span className={`text-xs font-semibold ${
@@ -1148,7 +1148,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
           {/* Right column: sticky map (desktop only) */}
           {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <div
                 className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
                 style={{ height: 'calc(100vh - 320px)' }}
