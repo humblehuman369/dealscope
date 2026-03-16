@@ -9,8 +9,8 @@
   --ap-accent-dim: var(--color-sky-dim);
   --ap-accent-glow: var(--shadow-card);
   --ap-bg: var(--surface-base);
-  --ap-bg-card: var(--surface-card);
-  --ap-bg-card-alt: var(--surface-elevated);
+  --ap-bg-card: var(--surface-base);
+  --ap-bg-card-alt: var(--surface-base);
   --ap-text: var(--text-heading);
   --ap-text-muted: var(--text-secondary);
   --ap-text-secondary: var(--text-body);
