@@ -216,7 +216,7 @@ export function DataSourcesSection() {
           onMouseEnter={() => setCardHover(true)}
           onMouseLeave={() => setCardHover(false)}
           style={{
-            background: 'var(--surface-card)',
+            background: 'var(--surface-base)',
             border: cardHover
               ? '1px solid var(--border-focus)'
               : '1px solid var(--border-default)',
