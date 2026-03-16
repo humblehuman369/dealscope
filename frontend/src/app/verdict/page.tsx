@@ -78,7 +78,17 @@ interface BackendAnalysisResponse {
   [key: string]: unknown
 }
 
-function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color: string }) {
+function DealGapHero({
+  dealGapPercent,
+  color,
+  tierLabel,
+  headline,
+}: {
+  dealGapPercent: number;
+  color: string;
+  tierLabel: string;
+  headline: string;
+}) {
   const [val, setVal] = useState(0)
 
   useEffect(() => {
@@ -103,40 +113,64 @@ function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color:
 
   return (
     <div
-      style={{ width: 240, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       role="meter"
       aria-label={`Deal Gap ${sign}${val.toFixed(1)}%`}
       aria-valuenow={Math.abs(dealGapPercent)}
       aria-valuemin={0}
       aria-valuemax={gaugeMax}
+      style={{ width: '100%' }}
     >
-      <div style={{ position: 'relative', paddingTop: 22 }}>
-        <div
+      <h1
+        style={{
+          margin: 0,
+          fontSize: 'clamp(36px, 6vw, 64px)',
+          lineHeight: 1,
+          fontWeight: 800,
+          color: 'var(--text-heading)',
+          letterSpacing: -1.2,
+        }}
+      >
+        The DealGap
+      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
+        <span
           style={{
-            position: 'absolute',
-            left: `${rightwardProgress}%`,
-            transform: 'translate(-50%, 0)',
-            top: 0,
-            fontSize: 22,
-            fontWeight: 700,
+            fontSize: 'clamp(32px, 5.5vw, 54px)',
+            fontWeight: 800,
             color,
+            lineHeight: 1,
             fontFamily: "'DM Sans', system-ui, sans-serif",
             fontVariantNumeric: 'tabular-nums',
-            whiteSpace: 'nowrap',
-            transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
           }}
         >
           {sign}{val.toFixed(1)}%
-        </div>
+        </span>
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            color,
+            border: `2px solid ${color}`,
+            padding: '8px 16px',
+            borderRadius: 999,
+            fontSize: 'clamp(22px, 4vw, 36px)',
+            fontWeight: 700,
+            lineHeight: 1,
+            background: 'transparent',
+          }}
+        >
+          {tierLabel}
+        </span>
+      </div>
+      <div style={{ marginTop: 20 }}>
         <div
           style={{
             position: 'relative',
-            height: 12,
-            borderRadius: 999,
-            background: 'linear-gradient(90deg, var(--status-negative) 0%, var(--status-warning) 46%, #b7cc3a 72%, var(--status-positive) 100%)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)',
-            marginTop: 18,
+            height: 28,
+            borderRadius: 10,
+            border: `3px solid ${color}`,
+            background: 'transparent',
           }}
         >
           <div
@@ -144,33 +178,43 @@ function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color:
               position: 'absolute',
               left: `${rightwardProgress}%`,
               top: '50%',
-              width: 14,
-              height: 14,
+              width: 38,
+              height: 38,
               borderRadius: '50%',
               transform: 'translate(-50%, -50%)',
               background: color,
-              border: '2px solid var(--surface-card)',
-              boxShadow: `0 0 0 2px ${color}30, 0 0 10px ${color}70`,
+              border: '3px solid var(--surface-card)',
               transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
             }}
           />
         </div>
         <div
           style={{
+            marginTop: 8,
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: 8,
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: 1.2,
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: 1.5,
             textTransform: 'uppercase',
           }}
         >
-          <span style={{ color: 'var(--status-negative)' }}>Extreme</span>
-          <span style={{ color: 'var(--text-body)' }}>Deal Gap</span>
+          <span style={{ color: '#f87171' }}>Extreme</span>
+          <span style={{ color: 'var(--text-heading)' }}>Deal Gap</span>
         </div>
       </div>
+      <p
+        style={{
+          margin: '22px 0 0',
+          fontSize: 'clamp(24px, 4.5vw, 44px)',
+          lineHeight: 1.2,
+          fontWeight: 700,
+          color: 'var(--text-heading)',
+          maxWidth: 920,
+        }}
+      >
+        {headline}
+      </p>
     </div>
   )
 }
@@ -1171,42 +1215,12 @@ function VerdictContent() {
               }}
             >
               <div style={{ padding: '28px 28px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <DealGapHero dealGapPercent={dealGapPct} color={tier.color} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        background: tier.bg,
-                        color: tier.color,
-                        padding: '5px 14px',
-                        borderRadius: 20,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        border: `1px solid ${tier.border}`,
-                      }}
-                    >
-                      <span style={{ fontSize: 12 }}>{tier.icon}</span>
-                      {tier.label}
-                    </span>
-                    <h1
-                      style={{
-                        margin: '12px 0 0',
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: 'var(--text-heading)',
-                        lineHeight: 1.3,
-                        letterSpacing: -0.2,
-                      }}
-                    >
-                      {tier.headline}
-                    </h1>
-                  </div>
-                </div>
+                <DealGapHero
+                  dealGapPercent={dealGapPct}
+                  color={tier.color}
+                  tierLabel={tier.label}
+                  headline={tier.headline}
+                />
               </div>
 
               <div

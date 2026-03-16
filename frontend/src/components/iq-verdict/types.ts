@@ -289,7 +289,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(217, 166, 87, 0.16)',
       border: '#d9a657',
       icon: '⚠',
-      headline: 'Needs a big discount or creative terms to work.',
+      headline: 'Needs a discount or creative terms to work.',
     };
   }
   if (dealGapPercent <= 30) {
