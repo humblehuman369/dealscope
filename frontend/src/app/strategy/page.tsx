@@ -73,8 +73,8 @@ const colors = {
     body: 'var(--text-body)',
   },
   background: {
-    cardUp: 'var(--surface-card)',
-    card: 'var(--surface-card)',
+    cardUp: '#000000',
+    card: '#000000',
   },
   status: {
     positive: 'var(--status-positive)',
