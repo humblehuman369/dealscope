@@ -473,7 +473,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 </div>
 
                 {/* Gradient bar with positioned dots */}
-                <div style={{ position: "relative" as const, height: 8, borderRadius: 4, background: `${s.teal}30` }}>
+                <div style={{ position: "relative" as const, height: 8, borderRadius: 4, background: `linear-gradient(90deg, ${s.teal}30, ${s.warning}30, ${s.danger}25)` }}>
                   {[
                     { pos: 16, color: s.teal },
                     { pos: 33, color: s.warning },
