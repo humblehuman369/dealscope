@@ -123,7 +123,7 @@ function DealGapHero({
       <h1
         style={{
           margin: 0,
-          fontSize: 'clamp(36px, 6vw, 64px)',
+          fontSize: 'clamp(30px, 5vw, 52px)',
           lineHeight: 1,
           fontWeight: 800,
           color: 'var(--text-heading)',
@@ -135,7 +135,7 @@ function DealGapHero({
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
         <span
           style={{
-            fontSize: 'clamp(32px, 5.5vw, 54px)',
+            fontSize: 'clamp(26px, 4.8vw, 44px)',
             fontWeight: 800,
             color,
             lineHeight: 1,
@@ -151,10 +151,10 @@ function DealGapHero({
             alignItems: 'center',
             gap: 6,
             color,
-            border: `2px solid ${color}`,
-            padding: '8px 16px',
+            border: `1.5px solid ${color}`,
+            padding: '7px 14px',
             borderRadius: 999,
-            fontSize: 'clamp(22px, 4vw, 36px)',
+            fontSize: 'clamp(18px, 3.2vw, 30px)',
             fontWeight: 700,
             lineHeight: 1,
             background: 'transparent',
@@ -167,9 +167,9 @@ function DealGapHero({
         <div
           style={{
             position: 'relative',
-            height: 28,
+            height: 22,
             borderRadius: 10,
-            border: `3px solid ${color}`,
+            border: `2px solid ${color}`,
             background: 'transparent',
           }}
         >
@@ -178,12 +178,12 @@ function DealGapHero({
               position: 'absolute',
               left: `${rightwardProgress}%`,
               top: '50%',
-              width: 38,
-              height: 38,
+              width: 30,
+              height: 30,
               borderRadius: '50%',
               transform: 'translate(-50%, -50%)',
               background: color,
-              border: '3px solid var(--surface-card)',
+              border: '2px solid var(--surface-card)',
               transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
             }}
           />
@@ -205,8 +205,8 @@ function DealGapHero({
       </div>
       <p
         style={{
-          margin: '22px 0 0',
-          fontSize: 'clamp(24px, 4.5vw, 44px)',
+          margin: '18px 0 0',
+          fontSize: 'clamp(22px, 3.8vw, 34px)',
           lineHeight: 1.2,
           fontWeight: 700,
           color: 'var(--text-heading)',
