@@ -1151,7 +1151,7 @@ function VerdictContent() {
               <div style={{ padding: '28px 28px 24px' }}>
                 <DealGapHero
                   dealGapPercent={dealGapPct}
-                  color={tier.color}
+                  color="var(--accent-sky)"
                   tierLabel={tier.label}
                   headline={tier.headline}
                 />
@@ -1183,17 +1183,17 @@ function VerdictContent() {
                   <Takeaway num="1" delay={0}>
                     {isOffMarket ? (
                       <span>
-                        This property is <strong style={{ color: tier.color }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                        This property is <strong style={{ color: 'var(--accent-sky)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
                       </span>
                     ) : (
                       <span>
-                        This property is <strong style={{ color: tier.color }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                        This property is <strong style={{ color: 'var(--accent-sky)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
                       </span>
                     )}
                   </Takeaway>
                   <Takeaway num="2" delay={140}>
                     <span>
-                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: tier.color }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
+                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--accent-sky)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
                     </span>
                   </Takeaway>
                   <Takeaway num="3" delay={280}>
