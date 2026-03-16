@@ -100,7 +100,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     <div
       className="rounded-[14px] p-6"
       style={{
-        backgroundColor: 'var(--surface-card)',
+        backgroundColor: 'var(--surface-base)',
         border: `1px solid var(--border-subtle)`,
         boxShadow: 'var(--shadow-card)',
       }}
@@ -162,7 +162,7 @@ export function KeyFactsGridSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
+      style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
       <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

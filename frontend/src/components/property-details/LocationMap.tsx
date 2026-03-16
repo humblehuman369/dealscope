@@ -14,7 +14,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
   const hasCoordinates = latitude != null && longitude != null
 
   const cardStyle = {
-    backgroundColor: 'var(--surface-card)',
+    backgroundColor: 'var(--surface-base)',
     border: `1px solid var(--border-subtle)`,
     boxShadow: 'var(--shadow-card)',
   }
@@ -76,7 +76,7 @@ export function LocationMapSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
+      style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
       <div className="h-3 w-16 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
       <div className="h-48 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />

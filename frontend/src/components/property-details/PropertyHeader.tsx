@@ -23,7 +23,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
     <div
       className="rounded-[14px] p-5 relative overflow-hidden"
       style={{
-        backgroundColor: 'var(--surface-card)',
+        backgroundColor: 'var(--surface-base)',
         border: `1px solid var(--border-subtle)`,
         boxShadow: 'var(--shadow-card)',
       }}
@@ -111,7 +111,7 @@ export function PropertyHeaderSkeleton() {
   return (
     <div
       className="rounded-[14px] p-5"
-      style={{ backgroundColor: 'var(--surface-card)', border: `1px solid var(--border-subtle)` }}
+      style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div className="flex-1">
