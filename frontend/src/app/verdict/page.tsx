@@ -184,9 +184,9 @@ function DealGapHero({
             marginTop: 8,
             display: 'flex',
             justifyContent: 'space-between',
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 700,
-            letterSpacing: 1.5,
+            letterSpacing: 0.9,
             textTransform: 'uppercase',
           }}
         >
