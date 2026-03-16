@@ -1274,9 +1274,9 @@ function VerdictContent() {
                   boxShadow: card.active ? 'var(--shadow-card-hover)' : 'var(--shadow-card)',
                   transition: 'all 0.3s ease',
                 }}>
-                  <p className="text-xs sm:text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? 'var(--text-heading)' : 'var(--text-body)' }}>{card.label}</p>
-                  <p className={`tabular-nums mb-0.5 font-bold ${card.dominant ? 'text-xl' : 'text-lg'}`} style={{ color: card.active ? 'var(--accent-sky)' : 'var(--text-heading)' }}>{fmtShort(card.value)}</p>
-                  <p className="text-xs sm:text-[8px] font-medium" style={{ color: card.active ? 'var(--text-body)' : 'var(--text-secondary)' }}>{card.sub}</p>
+                  <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? 'var(--text-heading)' : 'var(--text-body)' }}>{card.label}</p>
+                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.active ? 'var(--accent-sky)' : 'var(--text-heading)' }}>{fmtShort(card.value)}</p>
+                  <p className="text-[10px] sm:text-[14px] font-medium" style={{ color: card.active ? 'var(--text-body)' : 'var(--text-secondary)' }}>{card.sub}</p>
                 </div>
               ))}
             </div>
@@ -1324,7 +1324,7 @@ function VerdictContent() {
                         <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
                         <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
                         <span
-                          className="text-[0.86rem] sm:text-[16px] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          className="text-[16px] sm:text-[20px] font-bold whitespace-nowrap px-1.5 tabular-nums"
                           style={{ color: 'var(--accent-sky)' }}
                         >
                           DEAL GAP &nbsp;-{Math.abs(dealGap).toFixed(1)}%
@@ -1360,7 +1360,7 @@ function VerdictContent() {
                         <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
                         <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
                         <span
-                          className="text-[0.86rem] sm:text-[16px] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                          className="text-[16px] sm:text-[20px] font-bold whitespace-nowrap px-1.5 tabular-nums"
                           style={{ color: 'var(--status-warning)' }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
@@ -1376,9 +1376,9 @@ function VerdictContent() {
                         <div key={i} className="flex flex-col items-center gap-0.5 min-w-0">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
-                            <span className="text-[0.86rem] sm:text-[16px] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                            <span className="text-[16px] sm:text-[20px] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
                           </div>
-                          <span className="text-[0.86rem] sm:text-[16px] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{fmtShort(m.price)}</span>
+                          <span className="text-[16px] sm:text-[20px] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{fmtShort(m.price)}</span>
                         </div>
                       ))}
                     </div>

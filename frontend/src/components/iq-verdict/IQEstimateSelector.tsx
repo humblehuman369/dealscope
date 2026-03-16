@@ -142,11 +142,11 @@ function SourceRow({
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: meta.color }} />
         )}
       </div>
-      <span className="text-[12px] font-semibold flex-1" style={{ color: isSelected ? 'var(--text-heading)' : 'var(--text-body)' }}>
+      <span className="text-[12px] sm:text-[16px] font-semibold flex-1" style={{ color: isSelected ? 'var(--text-heading)' : 'var(--text-body)' }}>
         {meta.label}
       </span>
       <span
-        className="text-[13px] font-bold tabular-nums"
+        className="text-[13px] sm:text-[17px] font-bold tabular-nums"
         style={{ color: available ? (isSelected ? meta.color : 'var(--text-body)') : 'var(--text-label)' }}
       >
         {available ? fmt(sourceValue) : 'Unavailable'}
@@ -236,7 +236,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
           <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
         </svg>
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
+        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
           Data Sources
         </span>
       </div>
@@ -244,7 +244,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
             Property Value
           </p>
           <div className="flex flex-col gap-0.5">
@@ -263,7 +263,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
 
         {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
             Monthly Rent
           </p>
           <div className="flex flex-col gap-0.5">
