@@ -114,7 +114,7 @@ function SourceRow({
 
   const buttonStyle = useMemo(() => ({
     background: isSelected
-      ? 'var(--color-sky-dim)'
+      ? 'var(--surface-base)'
       : showHover ? 'var(--surface-card-hover)' : 'transparent',
     border: `1px solid ${
       isSelected ? 'var(--border-focus)'
