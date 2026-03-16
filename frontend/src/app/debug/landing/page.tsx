@@ -15,7 +15,7 @@ export default function LandingPreviewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[var(--surface-base)]">
       <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-3 bg-black/80 backdrop-blur border-b border-white/10">
         <div className="text-xs sm:text-sm text-white/80">
           Landing Preview (temporary)

@@ -5,7 +5,7 @@
 export default function AdminLoading() {
   return (
     <div
-      className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-7xl mx-auto">
@@ -23,7 +23,7 @@ export default function AdminLoading() {
           {[100, 120, 140, 90].map((width, i) => (
             <div
               key={i}
-              className={`h-10 rounded-lg animate-pulse ${i === 0 ? 'bg-sky-500/20' : 'bg-[#0C1220] border border-white/[0.07]'}`}
+              className={`h-10 rounded-lg animate-pulse ${i === 0 ? 'bg-sky-500/20' : 'bg-[var(--surface-card)] border border-white/[0.07]'}`}
               style={{ width }}
             />
           ))}
@@ -39,7 +39,7 @@ export default function AdminLoading() {
           ].map((tint, i) => (
             <div
               key={i}
-              className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-4"
+              className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />

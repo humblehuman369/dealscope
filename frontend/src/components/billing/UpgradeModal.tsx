@@ -100,7 +100,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
       <div
         className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
         style={{
-          backgroundColor: '#0d1424',
+          backgroundColor: 'var(--surface-card)',
           border: '1px solid rgba(14,165,233,0.2)',
         }}
       >

@@ -66,7 +66,7 @@ export function UserManagementSection() {
   )
 
   return (
-    <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] overflow-hidden">
+    <div className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-white/[0.07] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3 className="font-semibold text-slate-100 flex items-center gap-2">

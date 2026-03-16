@@ -1,0 +1,66 @@
+---
+description: Theme surface contract — enforces pure-black dark containers via semantic tokens, forbids hardcoded dark hex backgrounds
+alwaysApply: true
+---
+
+# Theme Surface Contract
+
+## The Rule
+
+Page and container shell backgrounds MUST use `var(--surface-base)`.
+Elevated cards/panels inside those shells use `var(--surface-card)` or `var(--surface-elevated)`.
+
+```
+--surface-base   → #000000 (dark) / #FFFFFF (light)  ← page shells, outermost containers
+--surface-card   → #0C1220 (dark) / #FFFFFF (light)  ← cards, panels, modals
+--surface-elevated → #101828 (dark) / #F1F5F9 (light) ← tooltips, dropdowns, nested panels
+```
+
+## Correct Examples
+
+```tsx
+// Page shell background
+<div style={{ background: 'var(--surface-base)' }}>
+
+// Card inside the shell
+<div style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)' }}>
+
+// Tailwind equivalent
+<main className="bg-[var(--surface-base)]">
+  <section className="bg-[var(--surface-card)]">
+```
+
+## Forbidden Patterns
+
+```tsx
+// NEVER hardcode dark hex backgrounds in components
+background: '#000000'       // use var(--surface-base)
+background: '#000'          // use var(--surface-base)
+background: '#0C1220'       // use var(--surface-card)
+background: '#0A1628'       // use var(--surface-card) or var(--surface-section)
+backgroundColor: '#0d1424'  // use var(--surface-card)
+
+// NEVER use Tailwind arbitrary hex for dark backgrounds
+className="bg-[#0C1220]"   // use bg-[var(--surface-card)]
+className="bg-[#000000]"   // use bg-[var(--surface-base)]
+className="bg-black"        // use bg-[var(--surface-base)]
+className="dark:bg-[#0b1426]" // use bg-[var(--surface-base)]
+
+// NEVER use --surface-card for page-level containers
+<main style={{ background: 'var(--surface-card)' }}>  // use --surface-base
+```
+
+## Allowed Exceptions (must be in exception registry)
+
+- Overlays: `rgba(0,0,0,0.x)` for modal backdrops and image fades
+- Gradients: `linear-gradient(...)` when blending for visual effects (e.g., hero fades)
+- Token definition files: `globals.css`, `semantic-tokens.ts`, `verdict-design-tokens.ts`
+- PDF/report generation: server-side rendering with fixed colors
+- Third-party overrides: `.pac-container` (Google Places) and similar
+
+## When Adding Container Backgrounds
+
+1. Ask: "Is this a page shell or outermost wrapper?" → `var(--surface-base)`
+2. Ask: "Is this a card or panel inside a shell?" → `var(--surface-card)`
+3. Ask: "Is this nested inside a card?" → `var(--surface-elevated)`
+4. Run `npm run theme:check` before committing

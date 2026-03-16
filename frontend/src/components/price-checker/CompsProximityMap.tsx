@@ -150,7 +150,7 @@ export function CompsProximityMap({ subject, comps, activeView, hideHeader = fal
     )
     if (hideHeader) return <div className="p-4">{placeholder}</div>
     return (
-      <div className={`rounded-xl bg-black ${cardBorderGlow} p-4`}>
+      <div className={`rounded-xl bg-[var(--surface-base)] ${cardBorderGlow} p-4`}>
         <div className="flex items-center gap-2 mb-3">
           <MapPin className="w-4 h-4 text-[#38bdf8]" />
           <span className="text-sm font-semibold text-[#F1F5F9]">Proximity Map</span>
@@ -186,7 +186,7 @@ export function CompsProximityMap({ subject, comps, activeView, hideHeader = fal
   if (hideHeader) return mapContent
 
   return (
-    <div className={`rounded-xl bg-black ${cardBorderGlow} overflow-hidden`}>
+    <div className={`rounded-xl bg-[var(--surface-base)] ${cardBorderGlow} overflow-hidden`}>
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-[#38bdf8]" />

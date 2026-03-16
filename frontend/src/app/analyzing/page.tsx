@@ -21,7 +21,7 @@ function AnalyzingContent() {
   }, [router, queryString])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
         <p style={{ color: '#F1F5F9' }}>Analyzing property...</p>
@@ -33,7 +33,7 @@ function AnalyzingContent() {
 export default function AnalyzingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     }>

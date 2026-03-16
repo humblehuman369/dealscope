@@ -102,7 +102,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </button>
 
               {showDetails && (
-                <pre className="mt-2 w-full max-h-48 overflow-auto p-3 rounded-lg bg-black/30 text-[11px] text-gray-500 font-mono text-left">
+                <pre className="mt-2 w-full max-h-48 overflow-auto p-3 rounded-lg bg-[var(--surface-base)]/30 text-[11px] text-gray-500 font-mono text-left">
                   {error?.stack || errorMessage}
                 </pre>
               )}

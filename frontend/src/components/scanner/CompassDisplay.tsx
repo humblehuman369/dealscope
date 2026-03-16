@@ -14,7 +14,7 @@ interface CompassDisplayProps {
 export function CompassDisplay({ heading, accuracy }: CompassDisplayProps) {
   if (heading === null) {
     return (
-      <div className="flex flex-col items-center gap-1 bg-black/40 backdrop-blur-sm rounded-xl px-4 py-3">
+      <div className="flex flex-col items-center gap-1 bg-[var(--surface-base)]/40 backdrop-blur-sm rounded-xl px-4 py-3">
         <div className="text-white/50 text-xs">Compass</div>
         <div className="text-white/70 text-sm">Unavailable</div>
       </div>
@@ -24,7 +24,7 @@ export function CompassDisplay({ heading, accuracy }: CompassDisplayProps) {
   const cardinal = getCardinalDirection(heading);
 
   return (
-    <div className="flex flex-col items-center gap-1 bg-black/40 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px]">
+    <div className="flex flex-col items-center gap-1 bg-[var(--surface-base)]/40 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px]">
       {/* Compass needle */}
       <div className="relative w-12 h-12">
         <div className="absolute inset-0 border-2 border-white/30 rounded-full" />

@@ -600,7 +600,7 @@ export function DealMakerPopup({
   if (sessionLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
-        <div className="w-full max-w-lg bg-black rounded-t-2xl p-8 flex items-center justify-center">
+        <div className="w-full max-w-lg bg-[var(--surface-base)] rounded-t-2xl p-8 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
         </div>
       </div>
@@ -610,7 +610,7 @@ export function DealMakerPopup({
   if (!isAuthenticated) {
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
-        <div className="w-full max-w-lg bg-black rounded-t-2xl p-8 text-center">
+        <div className="w-full max-w-lg bg-[var(--surface-base)] rounded-t-2xl p-8 text-center">
           <div className="mb-4 text-4xl">🔐</div>
           <h3 className="text-xl font-bold text-white mb-2">Sign in to change terms</h3>
           <p className="text-sm text-slate-400 mb-6">
@@ -648,7 +648,7 @@ export function DealMakerPopup({
       }}
     >
       <div 
-        className="w-full max-w-[480px] max-h-[90vh] bg-black rounded-t-[20px] flex flex-col animate-slideUp"
+        className="w-full max-w-[480px] max-h-[90vh] bg-[var(--surface-base)] rounded-t-[20px] flex flex-col animate-slideUp"
       >
         {/* Drag Handle */}
         <div className="flex justify-center py-3 pb-2">
@@ -1740,7 +1740,7 @@ export function DealMakerPopup({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.07] bg-black flex-shrink-0">
+        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.07] bg-[var(--surface-base)] flex-shrink-0">
           <button 
             onClick={handleReset}
             className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-white/[0.04] border border-white/[0.07] rounded-xl text-[#94A3B8] text-[13px] font-medium hover:bg-white/[0.08] hover:text-[#F1F5F9] transition-all"

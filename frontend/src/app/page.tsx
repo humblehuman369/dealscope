@@ -289,7 +289,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 bg-[var(--surface-base)]">
       <video
         ref={videoRef}
         autoPlay

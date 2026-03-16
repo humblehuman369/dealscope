@@ -260,7 +260,7 @@ export function PropertyDetailsPage({
         </div>
 
         {/* Dark Header */}
-        <div className="bg-[#0A1628] px-4 py-3 relative">
+        <div className="bg-[var(--surface-card)] px-4 py-3 relative">
           <div className="flex items-center justify-between mb-1">
             <button 
               className="w-8 h-8 flex items-center justify-center text-white/80 hover:bg-white/10 rounded-md"
@@ -419,7 +419,7 @@ export function PropertyDetailsPage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
-                <div className="absolute top-3 right-3 bg-[#0A1628]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
+                <div className="absolute top-3 right-3 bg-[var(--surface-card)]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
                   <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
                   </svg>

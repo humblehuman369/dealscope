@@ -363,7 +363,7 @@ export function LTRWorksheet({
       
       {/* Dark Header */}
       <header style={{
-        backgroundColor: '#0A1628',
+        backgroundColor: 'var(--surface-card)',
         padding: '16px 20px 16px',
         position: 'sticky',
         top: 0,

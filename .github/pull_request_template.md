@@ -56,6 +56,13 @@
 - [ ] Parity check passes (`scripts/parity-check.sh`)
 - [ ] No linter errors introduced
 
+### If touching container backgrounds or theme tokens:
+
+- [ ] `npm run theme:check:strict` passes (enforced in CI)
+- [ ] Dark mode containers render pure black (not washed-out navy)
+- [ ] Light mode containers render correctly
+- [ ] Page shells use `var(--surface-base)`, cards use `var(--surface-card)`
+
 ## Screenshots / Recordings
 
 <!-- If this change affects UI, include before/after screenshots -->

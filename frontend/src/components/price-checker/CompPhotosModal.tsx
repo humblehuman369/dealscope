@@ -111,7 +111,7 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
           {/* Carousel */}
           {status === 'success' && (
             <>
-              <div className="relative h-72 bg-black">
+              <div className="relative h-72 bg-[var(--surface-base)]">
                 {currentFailed ? (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                     <ImageOff className="w-8 h-8 text-[#F1F5F9]" />

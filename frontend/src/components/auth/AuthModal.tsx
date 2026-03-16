@@ -88,7 +88,7 @@ export default function AuthModal() {
       aria-modal="true"
       aria-label={view === 'login' ? 'Sign in' : view === 'register' ? 'Create account' : 'Reset password'}
     >
-      <div className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: '#0b2236', border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.1)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <h2 className="text-xl font-bold" style={{ color: '#FFFFFF' }}>

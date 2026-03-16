@@ -292,7 +292,7 @@ export default function PhotosPage() {
                   />
                   
                   {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[var(--surface-base)]/0 group-hover:bg-[var(--surface-base)]/20 transition-colors flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
                         <Search className="w-5 h-5 text-neutral-700" />
@@ -329,7 +329,7 @@ export default function PhotosPage() {
       {/* Lightbox */}
       {selectedPhoto !== null && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-[var(--surface-base)]/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
           {/* Close Button */}
