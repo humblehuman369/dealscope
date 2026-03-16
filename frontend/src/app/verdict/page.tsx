@@ -51,9 +51,6 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
-  // Core fields (snake_case from Pydantic field names, camelCase from alias generator)
-  deal_score?: number; dealScore?: number
-  deal_verdict?: string; dealVerdict?: string
   verdict_description?: string; verdictDescription?: string
   discount_percent?: number; discountPercent?: number
   strategies: Array<{
@@ -65,12 +62,6 @@ interface BackendAnalysisResponse {
   purchase_price?: number; purchasePrice?: number
   income_value?: number; incomeValue?: number
   list_price?: number; listPrice?: number
-  // Component scores — deprecated, kept for backward compat
-  deal_gap_score?: number; dealGapScore?: number
-  return_quality_score?: number; returnQualityScore?: number
-  market_alignment_score?: number; marketAlignmentScore?: number
-  deal_probability_score?: number; dealProbabilityScore?: number
-  // New: deal factors + discount bracket
   deal_factors?: Array<{ type: string; text: string }>
   dealFactors?: Array<{ type: string; text: string }>
   discount_bracket_label?: string; discountBracketLabel?: string
@@ -259,48 +250,6 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
       <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
     </div>
   )
-}
-
-// getBadgeStyle and getHeadline removed — replaced by getDealGapTier() from types.ts
-
-/**
- * Bulletproof component score extraction.
- * Handles ALL four backend response shapes:
- *   1. Flat camelCase:  { dealGapScore: 80 }
- *   2. Flat snake_case: { deal_gap_score: 80 }
- *   3. Nested camelCase: { componentScores: { dealGapScore: 80 } }
- *   4. Nested snake_case: { component_scores: { deal_gap_score: 80 } }
- * Returns clean numbers (0 fallback) regardless of backend version.
- */
-function extractComponentScores(data: Record<string, unknown>): {
-  dealGap: number
-  returnQuality: number
-  marketAlignment: number
-  dealProbability: number
-} {
-  const nested = (data.componentScores ?? data.component_scores) as Record<string, unknown> | undefined
-
-  const result = {
-    dealGap: Number(
-      data.dealGapScore ?? data.deal_gap_score
-      ?? nested?.dealGapScore ?? nested?.deal_gap_score ?? 0
-    ),
-    returnQuality: Number(
-      data.returnQualityScore ?? data.return_quality_score
-      ?? nested?.returnQualityScore ?? nested?.return_quality_score ?? 0
-    ),
-    marketAlignment: Number(
-      data.marketAlignmentScore ?? data.market_alignment_score
-      ?? nested?.marketAlignmentScore ?? nested?.market_alignment_score ?? 0
-    ),
-    dealProbability: Number(
-      data.dealProbabilityScore ?? data.deal_probability_score
-      ?? nested?.dealProbabilityScore ?? nested?.deal_probability_score ?? 0
-    ),
-  }
-
-  console.log('[IQ Verdict] extractComponentScores result:', result)
-  return result
 }
 
 // Helper to get strategy icon
@@ -718,7 +667,6 @@ function VerdictContent() {
         // Diagnostic logging — traces exact key formats from backend
         console.log('[IQ Verdict] Raw backend response:', JSON.stringify(analysisData).slice(0, 500))
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
-        console.log('[IQ Verdict] dealScore:', (analysisData as any).dealScore ?? (analysisData as any).deal_score)
           
         try {
           const analysisResult = parseAnalysisResponse(analysisData, data?.property_id || propertyData?.id)
@@ -834,8 +782,8 @@ function VerdictContent() {
     (analysisData: Record<string, any>, propertyId?: string): IQAnalysisResult => ({
       propertyId: propertyId || property?.id,
       analyzedAt: new Date().toISOString(),
-      dealScore: Math.min(95, Math.max(0, analysisData.deal_score ?? analysisData.dealScore ?? 0)),
-      dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
+      dealScore: 0,
+      dealVerdict: 'pass' as IQAnalysisResult['dealVerdict'],
       verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
       discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
       purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
@@ -880,15 +828,6 @@ function VerdictContent() {
       })(),
       returnRating: analysisData.return_rating ?? analysisData.returnRating,
       returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
-      componentScores: (() => {
-        const cs = extractComponentScores(analysisData as Record<string, unknown>)
-        return {
-          dealGapScore: cs.dealGap,
-          returnQualityScore: cs.returnQuality,
-          marketAlignmentScore: cs.marketAlignment,
-          dealProbabilityScore: cs.dealProbability,
-        }
-      })(),
       dealFactors: (analysisData.deal_factors ?? analysisData.dealFactors ?? []).map((f: any) => ({
         type: f.type as 'positive' | 'warning' | 'info',
         text: f.text as string,
@@ -1165,9 +1104,9 @@ function VerdictContent() {
   const dealGapPct = analysis.dealGapPercent ?? dealGap
   const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
-  const probability = (analysis.componentScores?.dealProbabilityScore != null && analysis.componentScores.dealProbabilityScore > 0)
-    ? Math.max(0, Math.min(100, Math.round(analysis.componentScores.dealProbabilityScore)))
-    : Math.max(0, Math.min(100, Math.round(analysis.dealScore)))
+  // Probability of achieving discount derived from Deal Gap %
+  // Based on investor discount bracket distribution: 0% gap → ~95%, 30%+ → ~5%
+  const probability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
   const probabilityTail = probability > 50
     ? 'This is well within reach.'
     : probability >= 20

@@ -344,20 +344,8 @@ export const getStrategyBadge = (rank: number, score: number): IQStrategyBadge |
   return null;
 };
 
-/** DealGapIQ Score Chart thresholds — aligned with backend INVESTOR_DISCOUNT_BRACKETS */
+/** Score thresholds aligned with backend INVESTOR_DISCOUNT_BRACKETS */
 const VERDICT_SCORE_THRESHOLDS = { achievable: 88, negotiable: 75, challenging: 60, moreChallenging: 40, veryChallenging: 22 } as const;
-
-/**
- * Get deal verdict based on overall score
- */
-export const getDealVerdict = (score: number): IQDealVerdict => {
-  if (score >= VERDICT_SCORE_THRESHOLDS.achievable) return 'Achievable';
-  if (score >= VERDICT_SCORE_THRESHOLDS.negotiable) return 'Negotiable';
-  if (score >= VERDICT_SCORE_THRESHOLDS.challenging) return 'Challenging';
-  if (score >= VERDICT_SCORE_THRESHOLDS.moreChallenging) return 'More Challenging';
-  if (score >= VERDICT_SCORE_THRESHOLDS.veryChallenging) return 'Very Challenging';
-  return 'Extremely Challenging';
-};
 
 /**
  * Get verdict description based on score (probability of achieving Deal Gap)
@@ -1146,7 +1134,7 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   return {
     analyzedAt: new Date().toISOString(),
     dealScore,
-    dealVerdict: getDealVerdict(dealScore),
+    dealVerdict: (dealScore >= 88 ? 'Achievable' : dealScore >= 75 ? 'Negotiable' : dealScore >= 60 ? 'Challenging' : dealScore >= 40 ? 'More Challenging' : dealScore >= 22 ? 'Very Challenging' : 'Extremely Challenging') as IQDealVerdict,
     verdictDescription: getVerdictDescription(dealScore, topStrategy),
     strategies,
   };
