@@ -15,7 +15,7 @@ export default function PropertyNotFound() {
   const [showSearchModal, setShowSearchModal] = useState(false)
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
+    <div className="min-h-screen bg-[var(--surface-base)] flex flex-col items-center justify-center p-6 transition-colors">
       <div className="text-center max-w-md">
         {/* Icon */}
         <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">

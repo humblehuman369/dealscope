@@ -25,7 +25,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--surface-base)]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-center justify-around h-16">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeTab
@@ -88,7 +88,7 @@ export function AnalyticsBottomBar({
   isSaved = false 
 }: AnalyticsBottomBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
+    <div className="fixed bottom-0 left-0 right-0 bg-[var(--surface-base)]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-center gap-2 p-3">
         {/* Save Button */}
         <button

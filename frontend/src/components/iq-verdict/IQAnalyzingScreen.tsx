@@ -92,7 +92,7 @@ export function IQAnalyzingScreen({
   const dashOffset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-base)' }}>
       <style>{`
         @keyframes analyzing-glow-pulse {
           0%, 100% { box-shadow: ${LOGO_GLOW_BASE}; opacity: 1; }

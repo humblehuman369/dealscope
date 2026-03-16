@@ -76,7 +76,7 @@ export function PropertyMiniCard({
                   />
                   {/* Photo Counter Badge - only on first photo */}
                   {idx === 0 && (
-                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-sm">
+                    <div className="absolute bottom-2 left-2 bg-[var(--surface-base)]/70 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-sm">
                       <Camera className="w-3.5 h-3.5" />
                       1/{totalPhotos}
                     </div>

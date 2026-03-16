@@ -40,7 +40,7 @@ export function PlatformStatsSection() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {['bg-sky-400/5', 'bg-emerald-400/5', 'bg-teal-400/5', 'bg-amber-400/5'].map((tint, i) => (
-          <div key={i} className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-4">
+          <div key={i} className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4">
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />
               <div>
@@ -64,7 +64,7 @@ export function PlatformStatsSection() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {platformStats.map((stat, index) => (
-        <div key={index} className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-4">
+        <div key={index} className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4">
           <div className="flex items-center gap-3">
             <div className={`p-2 ${stat.iconBg} rounded-lg`}>
               <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />

@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-black text-slate-300">
+    <div className="min-h-screen bg-[var(--surface-base)] text-slate-300">
       <div className="max-w-3xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-12">

@@ -35,7 +35,7 @@ function AdminDashboardContent() {
 
   return (
     <div
-      className="min-h-screen bg-black py-8 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-7xl mx-auto">
@@ -66,7 +66,7 @@ function AdminDashboardContent() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-sky-500 text-white shadow-[0_0_20px_rgba(56,189,248,0.15)]'
-                  : 'bg-[#0C1220] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
+                  : 'bg-[var(--surface-card)] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -94,7 +94,7 @@ function AdminDashboardContent() {
 export default function AdminDashboardPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
       </div>
     }>

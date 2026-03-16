@@ -13,7 +13,7 @@
 
 .premium-property-page {
   min-height: 100vh;
-  background: #0A1628;
+  background: var(--surface-card);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
   overflow-x: hidden;

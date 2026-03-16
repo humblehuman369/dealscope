@@ -170,7 +170,7 @@ function CompareContent() {
   const snap = (p: SavedProperty) => p.property_data_snapshot || {} as PropertySnapshot
 
   return (
-    <div className="min-h-screen bg-black" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       {/* Header */}
       <header className="border-b px-6 py-4" style={{ borderColor: colors.ui.border }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -387,7 +387,7 @@ export default function ComparePage() {
   return (
     <ProGate feature="Deal Comparison" mode="section">
       <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
           <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#38bdf8' }} />
         </div>
       }>

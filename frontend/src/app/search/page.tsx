@@ -21,7 +21,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a12] transition-colors">
+    <div className="min-h-screen bg-[var(--surface-base)] transition-colors">
       <SearchPropertyModal isOpen={showModal} onClose={handleClose} />
     </div>
   )

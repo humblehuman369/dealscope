@@ -15,11 +15,11 @@ export default function PropertyError({ error, reset }: ErrorProps) {
 
   return (
     <div
-      className="min-h-screen bg-black flex items-center justify-center p-4"
+      className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center p-4"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-md w-full">
-        <div className="bg-[#0C1220] rounded-2xl border border-white/[0.07] p-8 text-center">
+        <div className="bg-[var(--surface-card)] rounded-2xl border border-white/[0.07] p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-400/10 border border-red-400/20 flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </div>

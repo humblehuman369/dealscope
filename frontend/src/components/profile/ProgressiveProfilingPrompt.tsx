@@ -184,7 +184,7 @@ export function ProgressiveProfilingPrompt({
       />
 
       {/* Modal — Deep navy card surface */}
-      <div className="relative w-full max-w-md bg-[#0C1220] border border-white/[0.07] rounded-t-2xl sm:rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-slide-up">
+      <div className="relative w-full max-w-md bg-[var(--surface-card)] border border-white/[0.07] rounded-t-2xl sm:rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-slide-up">
         {/* Handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 rounded-full bg-white/10" />

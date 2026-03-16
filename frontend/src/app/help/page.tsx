@@ -101,7 +101,7 @@ export default function HelpCenterPage() {
   const filtered = filter ? FAQ_DATA.filter(f => f.category === filter) : FAQ_DATA
 
   return (
-    <div className="min-h-screen bg-black text-slate-300">
+    <div className="min-h-screen bg-[var(--surface-base)] text-slate-300">
       <div className="max-w-3xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-10">

@@ -63,7 +63,7 @@ export function AuthGuard({
   // ── Loading state ──────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
       </div>
     )
@@ -72,7 +72,7 @@ export function AuthGuard({
   // ── Not authenticated — show skeleton behind the auth modal ────
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
       </div>
     )

@@ -205,7 +205,7 @@ export function WorksheetTabNav({
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100]">
-          <div className="absolute inset-0 bg-black/30" onClick={() => onMobileMenuClose?.()} />
+          <div className="absolute inset-0 bg-[var(--surface-base)]/30" onClick={() => onMobileMenuClose?.()} />
           <div className="absolute top-0 left-0 right-0 bg-white rounded-b-2xl shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-200 font-semibold text-slate-800">
               Navigation

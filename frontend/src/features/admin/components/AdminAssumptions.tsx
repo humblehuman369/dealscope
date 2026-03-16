@@ -262,7 +262,7 @@ export function AdminAssumptionsSection() {
 
   if (isLoading) {
     return (
-      <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-6">
+      <div className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-6">
         <div className="flex justify-center py-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
         </div>
@@ -289,7 +289,7 @@ export function AdminAssumptionsSection() {
   // ── Render ───────────────────────────────────
 
   return (
-    <div className="bg-[#0C1220] rounded-xl border border-white/[0.07] p-6">
+    <div className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
