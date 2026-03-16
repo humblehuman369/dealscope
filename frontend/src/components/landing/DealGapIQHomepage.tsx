@@ -176,81 +176,133 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       </Suspense>
 
       {/* ═══════════ HERO ═══════════ */}
-      <section style={{ padding: "50px 24px 120px", maxWidth: 800, margin: "0 auto", textAlign: "center" as const, position: "relative" as const }}>
-        <div style={{
-          position: "absolute" as const, top: 40, left: "50%", transform: "translateX(-50%)",
-          width: 500, height: 500, background: "radial-gradient(ellipse, var(--color-sky-dim) 0%, transparent 70%)", pointerEvents: "none" as const,
-        }} />
-
-        <Eyebrow style={{ opacity: 0, animation: "fadeUp 0.6s 0.15s forwards" }}>Real Estate Investment Analysis</Eyebrow>
-
-        <h1 style={{
-          fontFamily: s.fontBody, fontSize: "clamp(30px, 4.8vw, 48px)", lineHeight: 1.15,
-          fontWeight: 700, letterSpacing: -1.5, marginBottom: 54,
-          opacity: 0, animation: "fadeUp 0.6s 0.2s forwards",
-        }}>
-          Is That Property a <span style={{ whiteSpace: 'nowrap' }}>Good Deal?</span>
-        </h1>
-
-        <p style={{
-          fontFamily: s.fontBody, fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.25,
-          fontWeight: 700, letterSpacing: -0.8, marginBottom: 77,
-          opacity: 0, animation: "fadeUp 0.6s 0.25s forwards",
-        }}>
-          <span style={{ color: s.teal }}>Know if it Is Worth</span> Your Time<br />
-          <span style={{ color: s.teal }}>Before You Spend Hours on It.</span>
-        </p>
-
-        <p style={{
-          fontFamily: s.fontBody, fontSize: 17, lineHeight: 1.7, color: "var(--text-body)",
-          maxWidth: 540, margin: "0 auto 32px",
-          opacity: 0, animation: "fadeUp 0.6s 0.3s forwards",
-        }}>
-          Get a buy price, a deal score, and a verdict — to help you decide whether to pursue or pass.
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, opacity: 0, animation: "fadeUp 0.6s 0.4s forwards" }}>
-          <form onSubmit={handleAnalyze} style={{
-            display: "flex", flexDirection: "column" as const, gap: 12,
-            width: "100%", maxWidth: 440, margin: "0 auto",
+      <section style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column" as const,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "60px 24px 80px",
+        textAlign: "center" as const,
+        position: "relative" as const,
+      }}>
+        {/* DealGapIQ Logo */}
+        <div style={{ opacity: 0, animation: "fadeUp 0.6s 0.15s forwards", marginBottom: 8 }}>
+          <h1 style={{
+            fontFamily: s.fontLogo,
+            fontSize: "clamp(52px, 9vw, 104px)",
+            fontWeight: 700,
+            letterSpacing: -2,
+            lineHeight: 1,
+            marginBottom: 12,
           }}>
-            <div style={{ position: "relative" as const }}>
-              <svg style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const }} width="16" height="16" fill="none" stroke="var(--text-label)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
+            DealGap<span style={{ color: s.teal }}>IQ</span>
+          </h1>
+          <p style={{
+            fontFamily: s.fontBody,
+            fontSize: "clamp(13px, 1.8vw, 17px)",
+            color: "var(--text-label)",
+            letterSpacing: "0.02em",
+          }}>
+            Advanced real estate deal analysis made simple.
+          </p>
+        </div>
+
+        {/* Main headline */}
+        <h2 style={{
+          fontFamily: s.fontBody,
+          fontSize: "clamp(26px, 4.5vw, 48px)",
+          fontWeight: 700,
+          letterSpacing: -1,
+          lineHeight: 1.2,
+          marginTop: 56,
+          marginBottom: 18,
+          opacity: 0,
+          animation: "fadeUp 0.6s 0.25s forwards",
+        }}>
+          <span style={{ color: s.teal }}>Is That Property a </span>Good Deal?
+        </h2>
+
+        {/* Subtitle */}
+        <p style={{
+          fontFamily: s.fontBody,
+          fontSize: "clamp(15px, 2.2vw, 21px)",
+          fontStyle: "italic" as const,
+          color: "var(--text-label)",
+          marginBottom: 56,
+          opacity: 0,
+          animation: "fadeUp 0.6s 0.3s forwards",
+        }}>
+          Know if it Is Worth Your Time – Before You Spend Hours on It.
+        </p>
+
+        {/* Pill CTA */}
+        <div style={{ opacity: 0, animation: "fadeUp 0.6s 0.4s forwards", width: "100%", maxWidth: 540 }}>
+          <form onSubmit={handleAnalyze} className="hero-pill-form" style={{
+            display: "flex",
+            alignItems: "center",
+            border: "2px solid var(--accent-sky)",
+            borderRadius: 999,
+            padding: "6px 6px 6px 28px",
+            background: "transparent",
+            transition: "box-shadow 0.3s, border-color 0.3s",
+          }}>
+            <AddressAutocomplete
+              value={address}
+              onChange={setAddress}
+              onPlaceSelect={handlePlaceSelect}
+              placeholder="Try it for Free - Enter an address"
+              className="hero-pill-input"
+              style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontSize: "clamp(14px, 2vw, 18px)",
+                fontFamily: s.fontBody,
+                fontWeight: 500,
+                color: "var(--text-heading)",
+                padding: "12px 0",
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!hasValidAddress}
+              className="hero-pill-arrow"
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                border: "none",
+                background: hasValidAddress ? "var(--accent-sky)" : "transparent",
+                cursor: hasValidAddress ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                transition: "background 0.3s, transform 0.15s",
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-heading)" style={{ marginLeft: 2 }}>
+                <polygon points="6,3 20,12 6,21" />
               </svg>
-              <AddressAutocomplete
-                value={address}
-                onChange={setAddress}
-                onPlaceSelect={handlePlaceSelect}
-                placeholder="Enter any property address..."
-                className="hero-search-input"
-                style={{
-                  width: "100%", boxSizing: "border-box" as const,
-                  padding: "12px 14px 12px 38px", fontSize: 14, fontFamily: s.fontBody,
-                  borderRadius: 8, border: "2px solid var(--border-default)",
-                  background: "var(--surface-input)", color: "var(--text-heading)", outline: "none",
-                }}
-              />
-            </div>
-            <button type="submit" className="hero-cta-btn" disabled={!hasValidAddress} style={{
-              width: "100%", padding: "12px 24px",
-              fontSize: 14, fontWeight: 700, fontFamily: s.fontBody,
-              borderRadius: 8, border: "none",
-              background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
-              color: "var(--text-inverse)", cursor: "pointer",
-              boxShadow: "var(--shadow-card)",
-              transition: "transform 0.15s, box-shadow 0.15s",
-            }}>
-              Analyze a Property Free →
             </button>
           </form>
-
-          <div style={{ display: "flex", gap: 24, alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-            <TrustCheck text="No credit card" />
-            <TrustCheck text="5 free analyses / month" />
-          </div>
         </div>
+
+        {/* Trust line */}
+        <p style={{
+          fontFamily: s.fontBody,
+          fontSize: "clamp(13px, 1.6vw, 16px)",
+          fontWeight: 600,
+          marginTop: 48,
+          opacity: 0,
+          animation: "fadeUp 0.6s 0.5s forwards",
+        }}>
+          Built for first-time investors
+          <span style={{ margin: "0 12px", color: "var(--text-label)" }}>–</span>
+          <span style={{ color: s.teal }}>Trusted by experienced buyers</span>
+        </p>
       </section>
 
       <SearchPropertyModal
