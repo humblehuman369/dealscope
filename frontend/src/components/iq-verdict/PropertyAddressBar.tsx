@@ -171,7 +171,7 @@ export function PropertyAddressBar({
   return (
     <div
       style={{
-        background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+        background: 'var(--surface-base)',
         fontFamily: "'DM Sans', sans-serif",
         padding: '0 24px',
         width: '100%',
