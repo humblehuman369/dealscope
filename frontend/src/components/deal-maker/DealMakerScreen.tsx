@@ -1216,7 +1216,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="15%"
                           onChange={(v) => updateState('hardMoneyRate', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 sm:p-4 mt-4 text-right">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 sm:p-4 mt-4 text-right">
                           <div className="text-[10px] sm:text-xs font-semibold text-[#ffffff] uppercase tracking-wider mb-1">PHASE 1 CASH NEEDED</div>
                           <div className="text-2xl font-bold text-white tabular-nums">
                             {formatPrice('cashRequiredPhase1' in metrics ? (metrics as BRRRRMetrics).cashRequiredPhase1 : 0)}
@@ -1257,7 +1257,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="5%"
                           onChange={(v) => updateState('closingCostsPercent', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">CASH AT PURCHASE</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1315,7 +1315,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="$5,000"
                           onChange={(v) => updateState('ownerUnitMarketRent', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">RENTED UNITS</div>
                             <div className="text-xl font-bold text-[#ffffff] tabular-nums">
@@ -1357,7 +1357,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="5,000"
                           onChange={(v) => updateState('squareFootage', Math.round(v))}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">70% RULE MAO</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1408,7 +1408,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               maxLabel="5.00%"
                               onChange={(v) => updateState('closingCostsPercent', v / 100)}
                             />
-                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                               <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">CASH NEEDED</div>
                               <div className="text-2xl font-bold text-white tabular-nums">{formatPrice('cashNeeded' in metrics ? metrics.cashNeeded : 0)}</div>
                             </div>
@@ -1425,7 +1425,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                     {strategyType === 'brrrr' && isBRRRRState(state) ? (
                       // BRRRR: Show refinance loan details preview
                       <>
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-4 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-4 mt-4">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-3">FINANCING OVERVIEW</div>
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
@@ -1461,7 +1461,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                     ) : strategyType === 'flip' && isFlipState(state) ? (
                       // Flip Financing
                       <>
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-4 mt-4 mb-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-4 mt-4 mb-4">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-2">FINANCING TYPE</div>
                           <div className="flex gap-2">
                             {(['cash', 'hardMoney'] as const).map((type) => (
@@ -1514,7 +1514,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             />
                           </>
                         )}
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">LOAN AMOUNT</div>
                             <div className="text-xl font-bold text-[#ffffff] tabular-nums">
@@ -1532,7 +1532,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                     ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
                       // HouseHack Phase 2: Financing
                       <>
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-4 mt-4 mb-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-4 mt-4 mb-4">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-2">LOAN TYPE</div>
                           <div className="flex gap-2">
                             {(['fha', 'conventional', 'va'] as const).map((type) => (
@@ -1591,7 +1591,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="5%"
                           onChange={(v) => updateState('closingCostsPercent', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">CASH TO CLOSE</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1697,7 +1697,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               maxLabel="30 years"
                               onChange={(v) => updateState('loanTermYears', Math.round(v))}
                             />
-                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                               <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
                               <div className="text-2xl font-bold text-white tabular-nums">{formatPrice('monthlyPayment' in ltrStrMetrics ? ltrStrMetrics.monthlyPayment : 0)}</div>
                             </div>
@@ -1764,7 +1764,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel={formatPrice(state.purchasePrice * 2)}
                           onChange={(v) => updateState('arv', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">TOTAL REHAB COST</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1822,7 +1822,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel={formatPrice(state.purchasePrice * 2)}
                           onChange={(v) => updateState('arv', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">TOTAL REHAB COST</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1853,7 +1853,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="$5,000"
                           onChange={(v) => updateState('avgRentPerUnit', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">TOTAL RENTAL INCOME</div>
                             <div className="text-xl font-bold text-[#ffffff] tabular-nums">
@@ -1881,7 +1881,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="$50,000"
                           onChange={(v) => updateState('assignmentFee', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">END BUYER PRICE</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -1935,7 +1935,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                                 onChange={(v) => updateState('furnitureSetupCost', v)}
                               />
                             )}
-                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                               <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">EQUITY CAPTURE</div>
                               <div className="text-2xl font-bold text-white tabular-nums">
                                 {formatPrice('equityCreated' in metrics ? metrics.equityCreated : ('equityPosition' in metrics ? (metrics as BRRRRMetrics).equityPosition : 0))}
@@ -2005,7 +2005,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="10%"
                           onChange={(v) => updateState('refinanceInterestRate', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">REFINANCE LOAN</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -2053,7 +2053,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="10%"
                           onChange={(v) => updateState('sellingCostsPct', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">TOTAL HOLDING COSTS</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -2097,7 +2097,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="$5,000"
                           onChange={(v) => updateState('currentHousingPayment', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">EFFECTIVE RENTAL INCOME</div>
                             <div className="text-xl font-bold text-[#ffffff] tabular-nums">
@@ -2138,7 +2138,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                         />
                         
                         {/* End Buyer Perspective */}
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-4 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-4 mt-4">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-3">END BUYER ANALYSIS</div>
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
@@ -2238,7 +2238,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="30 days"
                           onChange={(v) => updateState('avgLengthOfStayDays', Math.round(v))}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">ANNUAL GROSS REVENUE</div>
                           <div className="text-2xl font-bold text-white tabular-nums">
                             {formatPrice('annualGrossRevenue' in metrics ? (metrics as STRMetrics).annualGrossRevenue : 0)}
@@ -2268,7 +2268,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="20%"
                           onChange={(v) => updateState('vacancyRate', v / 100)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                           <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">ANNUAL INCOME</div>
                           <div className="text-2xl font-bold text-white tabular-nums">
                             {formatPrice('grossMonthlyIncome' in metrics 
@@ -2739,7 +2739,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           maxLabel="$10,000"
                           onChange={(v) => updateState('annualInsurance', v)}
                         />
-                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4">
+                        <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider">TOTAL EXPENSES</div>
                             <div className="text-xl font-bold text-white tabular-nums">
@@ -2790,7 +2790,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               maxLabel="15%"
                               onChange={(v) => updateState('managementRate', v / 100)}
                             />
-                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[rgba(14,165,233,0.05)] p-3 mt-4 text-right">
+                            <div className="rounded-lg border border-[rgba(14,165,233,0.2)] bg-[var(--surface-base)] p-3 mt-4 text-right">
                               <div className="text-[10px] font-semibold text-[#ffffff] uppercase tracking-wider mb-1">TOTAL EXPENSES</div>
                               <div className="text-2xl font-bold text-white tabular-nums">
                                 {formatPrice('totalMonthlyExpenses' in metrics ? (metrics as LTRDealMakerMetrics).totalMonthlyExpenses * 12 : 0)}/yr
