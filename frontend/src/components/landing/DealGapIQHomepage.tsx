@@ -177,7 +177,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ HERO ═══════════ */}
       <section style={{
-        minHeight: "100vh",
+        minHeight: "50vh",
         display: "flex",
         flexDirection: "column" as const,
         alignItems: "center",
