@@ -80,23 +80,15 @@ function DealGapHero({
   tierLabel: string;
   headline: string;
 }) {
-  const [val, setVal] = useState(0)
+  const [showValue, setShowValue] = useState(false)
 
   useEffect(() => {
-    let f = 0
-    const t0 = performance.now()
-    const target = Math.abs(dealGapPercent)
-    const run = (now: number) => {
-      const t = Math.min((now - t0) / 1200, 1)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setVal(Math.round(eased * target * 10) / 10)
-      if (t < 1) f = requestAnimationFrame(run)
-    }
-    f = requestAnimationFrame(run)
-    return () => cancelAnimationFrame(f)
-  }, [dealGapPercent])
+    const t = setTimeout(() => setShowValue(true), 400)
+    return () => clearTimeout(t)
+  }, [])
 
   const sign = dealGapPercent >= 0 ? '-' : '+'
+  const displayVal = Math.abs(dealGapPercent)
   const gaugeMax = 30
   const clampedGap = Math.min(Math.abs(dealGapPercent), gaugeMax)
   // Extreme is left (30%+), Deal Gap end is right (0%)
@@ -105,7 +97,7 @@ function DealGapHero({
   return (
     <div
       role="meter"
-      aria-label={`Deal Gap ${sign}${val.toFixed(1)}%`}
+      aria-label={`Deal Gap ${sign}${displayVal.toFixed(1)}%`}
       aria-valuenow={Math.abs(dealGapPercent)}
       aria-valuemin={0}
       aria-valuemax={gaugeMax}
@@ -132,9 +124,12 @@ function DealGapHero({
             lineHeight: 1,
             fontFamily: "'DM Sans', system-ui, sans-serif",
             fontVariantNumeric: 'tabular-nums',
+            opacity: showValue ? 1 : 0,
+            transform: showValue ? 'translateY(0)' : 'translateY(6px)',
+            transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          {sign}{val.toFixed(1)}%
+          {sign}{displayVal.toFixed(1)}%
         </span>
         <span
           style={{
