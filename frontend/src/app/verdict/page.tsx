@@ -1282,7 +1282,7 @@ function VerdictContent() {
             </div>
 
             {/* Price Scale Bar — proportional positions with legend */}
-            <div className="mt-6 relative pt-8">
+            <div className="mt-6 relative">
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
@@ -1314,11 +1314,10 @@ function VerdictContent() {
                   <>
                     {showBracket && (
                       <div
-                        className="absolute flex items-center"
+                        className="relative flex items-center mb-2"
                         style={{
-                          left: `${bracketLeft}%`,
+                          marginLeft: `${bracketLeft}%`,
                           width: `${bracketRight - bracketLeft}%`,
-                          top: '0.25rem',
                         }}
                       >
                         <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
