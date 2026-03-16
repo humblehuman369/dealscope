@@ -17,6 +17,8 @@ interface CompsProximityMapProps {
   activeView: 'sale' | 'rent'
   /** When true, omit the "Proximity Map" title and legend (e.g. when used inside an accordion that provides its own header). */
   hideHeader?: boolean
+  /** Override the default map container height class (default: "h-56"). */
+  className?: string
 }
 
 function isFiniteCoord(lat: unknown, lng: unknown): boolean {
@@ -129,7 +131,7 @@ function MapContent({ subject, comps, activeView }: CompsProximityMapProps) {
 const cardBorderGlow =
   'border border-[rgba(14,165,233,0.25)] shadow-[0_0_30px_rgba(14,165,233,0.08),0_0_60px_rgba(14,165,233,0.04)]'
 
-export function CompsProximityMap({ subject, comps, activeView, hideHeader = false }: CompsProximityMapProps) {
+export function CompsProximityMap({ subject, comps, activeView, hideHeader = false, className }: CompsProximityMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
   const validComps = comps.filter(c => isFiniteCoord(c.latitude, c.longitude))
@@ -163,7 +165,7 @@ export function CompsProximityMap({ subject, comps, activeView, hideHeader = fal
     : { lat: validComps[0].latitude, lng: validComps[0].longitude }
 
   const mapContent = (
-    <div className="h-56">
+    <div className={className ?? 'h-56'}>
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={center}

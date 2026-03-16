@@ -926,9 +926,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         </div>
 
-        {/* Proximity Map (accordion, loads closed; legend in header) */}
+        {/* Proximity Map accordion (mobile only; desktop uses sticky side panel) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="mx-4 mt-3">
+          <div className="mx-4 mt-3 lg:hidden">
             <div className={`bg-[var(--surface-base)] rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
               <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
                 <button
@@ -989,66 +989,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
 
-        {/* Adjustment Grid (accordion, loads open) */}
-        <div className="mx-4 mt-3">
-          <AdjustmentGrid
-            compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
-            isExpanded={showAdjGrid}
-            onToggle={() => setShowAdjGrid(!showAdjGrid)}
-            isSale={isSale}
-          />
-        </div>
-
-        {/* Controls + Filters */}
-        <div className="px-4 mt-3 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
-
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
-            {/* New / All / Reset */}
-            <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-              title="Replace unselected comps with new ones">
-              <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
-            </button>
-            <button onClick={handleRefreshAll} disabled={loading}
-              className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-              title="Fetch all new comps from API">
-              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
-            </button>
-            {hasChangedFromOriginal && (
-              <button onClick={handleResetToOriginal} disabled={loading}
-                className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                title="Restore original system-selected comps">
-                <RotateCcw className="w-3 h-3" />Reset
-              </button>
-            )}
-
-            {/* Divider */}
-            <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
-
-            {/* Recency filter */}
-            <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
-              {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
-                <button key={val} onClick={() => setRecencyFilter(val)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
-                    recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
-                  }`}>{label}</button>
-              ))}
-            </div>
-
-            <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
-
-            <div className="flex items-center gap-2">
-              <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
-              <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
-            </div>
-            </div>
-          </div>
-        </div>
-
         {/* No property (landed without address or zpid) */}
         {!hasValidSubject && (
           <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
@@ -1106,40 +1046,145 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
 
-        {/* Comp Cards */}
-        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="w-full min-w-0 px-4 mt-3 space-y-3">
-            {filteredComps.map(comp => (
-              <CompCard
-                key={comp.id}
-                comp={comp}
-                subject={subject}
+        {/* Side-by-side layout on desktop: left = comp list, right = sticky map */}
+        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:mt-3' : ''}>
+          {/* Left column */}
+          <div className="min-w-0">
+            {/* Adjustment Grid (accordion, loads open) */}
+            <div className="mx-4 lg:mx-0 mt-3 lg:mt-0">
+              <AdjustmentGrid
+                compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
+                isExpanded={showAdjGrid}
+                onToggle={() => setShowAdjGrid(!showAdjGrid)}
                 isSale={isSale}
-                isSelected={selectedIds.has(comp.id)}
-                onToggle={() => toggleComp(comp.id)}
-                isExpanded={expandedComp === comp.id}
-                onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
-                onRefreshComp={() => handleRefreshComp(comp.id)}
-                refreshing={refreshingCompId === comp.id}
-                onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
               />
-            ))}
-          </div>
-        )}
-
-        {/* Location Quality */}
-        {!loading && !loadFailed && comps.length > 0 && (
-          <div className={`mx-4 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
-              <span className={`text-xs font-semibold ${
-                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
-              }`}>
-                Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
-              </span>
             </div>
+
+            {/* Controls + Filters */}
+            <div className="px-4 lg:px-0 mt-3 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
+
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
+                {/* New / All / Reset */}
+                <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
+                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                  title="Replace unselected comps with new ones">
+                  <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
+                </button>
+                <button onClick={handleRefreshAll} disabled={loading}
+                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                  title="Fetch all new comps from API">
+                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
+                </button>
+                {hasChangedFromOriginal && (
+                  <button onClick={handleResetToOriginal} disabled={loading}
+                    className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                    title="Restore original system-selected comps">
+                    <RotateCcw className="w-3 h-3" />Reset
+                  </button>
+                )}
+
+                {/* Divider */}
+                <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+
+                {/* Recency filter */}
+                <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
+                  {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
+                    <button key={val} onClick={() => setRecencyFilter(val)}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
+                        recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
+                      }`}>{label}</button>
+                  ))}
+                </div>
+
+                <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+
+                <div className="flex items-center gap-2">
+                  <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
+                    className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
+                  <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
+                    className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Comp Cards */}
+            {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+              <div className="w-full min-w-0 px-4 lg:px-0 mt-3 space-y-3">
+                {filteredComps.map(comp => (
+                  <CompCard
+                    key={comp.id}
+                    comp={comp}
+                    subject={subject}
+                    isSale={isSale}
+                    isSelected={selectedIds.has(comp.id)}
+                    onToggle={() => toggleComp(comp.id)}
+                    isExpanded={expandedComp === comp.id}
+                    onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
+                    onRefreshComp={() => handleRefreshComp(comp.id)}
+                    refreshing={refreshingCompId === comp.id}
+                    onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Location Quality */}
+            {!loading && !loadFailed && comps.length > 0 && (
+              <div className={`mx-4 lg:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
+                  <span className={`text-xs font-semibold ${
+                    comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
+                  }`}>
+                    Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Right column: sticky map (desktop only) */}
+          {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+            <div className="hidden lg:block">
+              <div
+                className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
+                style={{ height: 'calc(100vh - 320px)' }}
+              >
+                <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-[var(--accent-sky-light)]" />
+                    <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
+                      Subject
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full inline-block"
+                        style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
+                      />
+                      {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1 min-h-0 border-t border-[var(--border-subtle)]">
+                  <CompsProximityMap
+                    subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+                    comps={mapComps}
+                    activeView={activeView}
+                    hideHeader
+                    className="h-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Toast */}
