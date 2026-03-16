@@ -229,11 +229,11 @@ export interface ReturnFactors {
 // ===================
 
 export type DealGapTierLabel =
-  | 'At Market'
-  | 'Tight Gap'
+  | 'Deal Gap'
+  | 'Minimal Gap'
+  | 'Mild Gap'
   | 'Moderate Gap'
   | 'Wide Gap'
-  | 'Very Wide Gap'
   | 'Extreme Gap';
 
 export interface DealGapTier {
@@ -254,7 +254,7 @@ export interface DealGapTier {
 export function getDealGapTier(dealGapPercent: number): DealGapTier {
   if (dealGapPercent <= 0) {
     return {
-      label: 'At Market',
+      label: 'Deal Gap',
       color: 'var(--status-positive)',
       bg: 'var(--color-green-dim)',
       border: 'var(--status-positive)',
@@ -264,42 +264,42 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
   }
   if (dealGapPercent <= 5) {
     return {
-      label: 'Tight Gap',
-      color: 'var(--status-positive)',
-      bg: 'var(--color-green-dim)',
-      border: 'var(--status-positive)',
+      label: 'Minimal Gap',
+      color: '#b7cc3a',
+      bg: 'rgba(183, 204, 58, 0.16)',
+      border: '#b7cc3a',
       icon: '✓',
-      headline: 'A solid opportunity — worth pursuing.',
+      headline: 'Solid opportunity this deal worth pursuing.',
     };
   }
   if (dealGapPercent <= 10) {
     return {
-      label: 'Moderate Gap',
-      color: 'var(--status-warning)',
-      bg: 'var(--color-gold-dim)',
-      border: 'var(--status-warning)',
+      label: 'Mild Gap',
+      color: '#c7c95b',
+      bg: 'rgba(199, 201, 91, 0.16)',
+      border: '#c7c95b',
       icon: '⚡',
-      headline: "Doable, but you'll need to negotiate hard.",
+      headline: "Doable, but you'll need to negotiate a deal.",
     };
   }
   if (dealGapPercent <= 20) {
     return {
-      label: 'Wide Gap',
-      color: 'var(--accent-brand-orange)',
-      bg: 'var(--color-gold-dim)',
-      border: 'var(--accent-brand-orange)',
+      label: 'Moderate Gap',
+      color: '#d9a657',
+      bg: 'rgba(217, 166, 87, 0.16)',
+      border: '#d9a657',
       icon: '⚠',
-      headline: 'The math is tight. Proceed with caution.',
+      headline: 'Needs a big discount or creative terms to work.',
     };
   }
   if (dealGapPercent <= 30) {
     return {
-      label: 'Very Wide Gap',
-      color: 'var(--status-negative)',
-      bg: 'var(--color-red-dim)',
-      border: 'var(--status-negative)',
+      label: 'Wide Gap',
+      color: '#e48657',
+      bg: 'rgba(228, 134, 87, 0.16)',
+      border: '#e48657',
       icon: '✕',
-      headline: "The numbers don't work at this price.",
+      headline: 'Marginal opportunity, out of typical investment range at these terms.',
     };
   }
   return {
@@ -308,7 +308,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
     bg: 'var(--color-red-dim)',
     border: 'var(--status-negative)',
     icon: '✕',
-    headline: "The numbers don't work at this price.",
+    headline: 'Not within an investment range at these current terms.',
   };
 }
 

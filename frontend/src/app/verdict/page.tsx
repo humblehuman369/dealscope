@@ -96,84 +96,81 @@ function DealGapHero({ dealGapPercent, color }: { dealGapPercent: number; color:
   }, [dealGapPercent])
 
   const sign = dealGapPercent >= 0 ? '-' : '+'
-
   const gaugeMax = 30
-  const r = 50
-  const cx = 60
-  const cy = 58
-  const sw = 10
-  const arcLen = Math.PI * r
-  const progress = Math.min(Math.abs(dealGapPercent) / gaugeMax, 1)
-  const dashOffset = arcLen * (1 - progress)
-  const needleAngle = Math.PI * (1 - progress)
-  const nx = cx + r * Math.cos(needleAngle)
-  const ny = cy - r * Math.sin(needleAngle)
+  const clampedGap = Math.min(Math.abs(dealGapPercent), gaugeMax)
+  // Extreme is left (30%+), Deal Gap end is right (0%)
+  const rightwardProgress = ((gaugeMax - clampedGap) / gaugeMax) * 100
 
   return (
     <div
-      style={{ width: 120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      style={{ width: 240, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       role="meter"
       aria-label={`Deal Gap ${sign}${val.toFixed(1)}%`}
       aria-valuenow={Math.abs(dealGapPercent)}
       aria-valuemin={0}
       aria-valuemax={gaugeMax}
     >
-      <svg viewBox="0 0 120 68" width={120} height={68}>
-        {/* Track */}
-        <path
-          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-          fill="none"
-          stroke="var(--border-subtle)"
-          strokeWidth={sw}
-          strokeLinecap="round"
-        />
-        {/* Progress arc */}
-        <path
-          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={sw}
-          strokeLinecap="round"
-          strokeDasharray={arcLen}
-          strokeDashoffset={dashOffset}
-          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)' }}
-        />
-        {/* Needle dot */}
-        <circle
-          cx={nx}
-          cy={ny}
-          r={6}
-          fill={color}
-          stroke="var(--surface-card)"
-          strokeWidth={2.5}
-          style={{ transition: 'cx 1.2s cubic-bezier(0.22,1,0.36,1), cy 1.2s cubic-bezier(0.22,1,0.36,1)' }}
-        />
-      </svg>
-      <span
-        style={{
-          fontSize: 30,
-          fontWeight: 700,
-          color,
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-          lineHeight: 1,
-          fontVariantNumeric: 'tabular-nums',
-          marginTop: -2,
-        }}
-      >
-        {sign}{val.toFixed(1)}%
-      </span>
-      <span
-        style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: 'var(--text-body)',
-          textTransform: 'uppercase',
-          letterSpacing: 1.5,
-          marginTop: 4,
-        }}
-      >
-        Deal Gap
-      </span>
+      <div style={{ position: 'relative', paddingTop: 22 }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: `${rightwardProgress}%`,
+            transform: 'translate(-50%, 0)',
+            top: 0,
+            fontSize: 22,
+            fontWeight: 700,
+            color,
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontVariantNumeric: 'tabular-nums',
+            whiteSpace: 'nowrap',
+            transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
+          }}
+        >
+          {sign}{val.toFixed(1)}%
+        </div>
+        <div
+          style={{
+            position: 'relative',
+            height: 12,
+            borderRadius: 999,
+            background: 'linear-gradient(90deg, var(--status-negative) 0%, var(--status-warning) 46%, #b7cc3a 72%, var(--status-positive) 100%)',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)',
+            marginTop: 18,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: `${rightwardProgress}%`,
+              top: '50%',
+              width: 14,
+              height: 14,
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: color,
+              border: '2px solid var(--surface-card)',
+              boxShadow: `0 0 0 2px ${color}30, 0 0 10px ${color}70`,
+              transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
+            }}
+          />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 8,
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+          }}
+        >
+          <span style={{ color: 'var(--status-negative)' }}>Extreme</span>
+          <span style={{ color: 'var(--text-body)' }}>Deal Gap</span>
+        </div>
+      </div>
     </div>
   )
 }
