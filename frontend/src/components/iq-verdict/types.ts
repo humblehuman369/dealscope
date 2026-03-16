@@ -229,7 +229,7 @@ export interface ReturnFactors {
 // ===================
 
 export type DealGapTierLabel =
-  | 'Deal Gap'
+  | 'No Gap'
   | 'Minimal Gap'
   | 'Mild Gap'
   | 'Moderate Gap'
@@ -254,12 +254,12 @@ export interface DealGapTier {
 export function getDealGapTier(dealGapPercent: number): DealGapTier {
   if (dealGapPercent <= 0) {
     return {
-      label: 'Deal Gap',
+      label: 'No Gap',
       color: 'var(--status-positive)',
       bg: 'var(--color-green-dim)',
       border: 'var(--status-positive)',
       icon: '✓',
-      headline: 'The numbers work at or below asking — worth pursuing.',
+      headline: 'The numbers work at the market or list price indicated.',
     };
   }
   if (dealGapPercent <= 5) {
@@ -279,7 +279,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(199, 201, 91, 0.16)',
       border: '#c7c95b',
       icon: '⚡',
-      headline: "You can make it work if you negotiate a real discount or better terms — otherwise consider passing.",
+      headline: "You can make it work if you negotiate a discount within the range shown below or be creative and re-structure better terms — otherwise consider passing.",
     };
   }
   if (dealGapPercent <= 20) {
