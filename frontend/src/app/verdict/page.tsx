@@ -1357,16 +1357,16 @@ function VerdictContent() {
                           width: `${priceGapRight - priceGapLeft}%`,
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: tier.color, flexShrink: 0 }} />
-                        <div style={{ height: 1, background: tier.color, flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
                         <span
                           className="text-[0.86rem] sm:text-[16px] font-bold whitespace-nowrap px-1.5 tabular-nums"
-                          style={{ color: tier.color }}
+                          style={{ color: 'var(--status-warning)' }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </span>
-                        <div style={{ height: 1, background: tier.color, flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: tier.color, flexShrink: 0 }} />
+                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
+                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
                       </div>
                     )}
 
