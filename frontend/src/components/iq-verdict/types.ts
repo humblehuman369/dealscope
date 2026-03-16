@@ -259,7 +259,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'var(--color-green-dim)',
       border: 'var(--status-positive)',
       icon: '✓',
-      headline: 'The numbers work. Move fast.',
+      headline: 'The numbers work at or below asking — worth pursuing.',
     };
   }
   if (dealGapPercent <= 5) {
@@ -269,7 +269,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(183, 204, 58, 0.16)',
       border: '#b7cc3a',
       icon: '✓',
-      headline: 'Solid opportunity this deal worth pursuing.',
+      headline: 'Solid opportunity. Worth pursuing if you can get a small discount or favorable terms.',
     };
   }
   if (dealGapPercent <= 10) {
@@ -279,7 +279,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(199, 201, 91, 0.16)',
       border: '#c7c95b',
       icon: '⚡',
-      headline: "Doable, but you'll need to negotiate a deal.",
+      headline: "You can make it work if you negotiate a real discount or better terms — otherwise consider passing.",
     };
   }
   if (dealGapPercent <= 20) {
@@ -289,7 +289,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(217, 166, 87, 0.16)',
       border: '#d9a657',
       icon: '⚠',
-      headline: 'Needs a discount or creative terms to work.',
+      headline: 'Only works with a meaningful discount or creative terms. Decide if you can get there before going further.',
     };
   }
   if (dealGapPercent <= 30) {
@@ -299,7 +299,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'rgba(228, 134, 87, 0.16)',
       border: '#e48657',
       icon: '✕',
-      headline: 'Marginal opportunity, out of typical investment range at these terms.',
+      headline: 'Tough at these terms. Usually needs a big price cut or creative structure — or consider walking away.',
     };
   }
   return {
@@ -308,7 +308,7 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
     bg: 'var(--color-red-dim)',
     border: 'var(--status-negative)',
     icon: '✕',
-    headline: 'Not within an investment range at these current terms.',
+    headline: 'Too far off at current terms. Consider only if the seller will move significantly — otherwise pass.',
   };
 }
 
