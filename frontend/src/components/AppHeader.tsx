@@ -474,13 +474,13 @@ export function AppHeader({
             className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
           >
             <span 
-              className="text-lg font-bold tracking-tight"
+              className="text-[21px] font-bold tracking-tight"
               style={{ color: colors.text.white }}
             >
               DealGap
             </span>
             <span 
-              className="text-lg font-bold tracking-tight"
+              className="text-[21px] font-bold tracking-tight"
               style={{ color: colors.brand.teal }}
             >
               IQ
