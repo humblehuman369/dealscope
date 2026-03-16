@@ -154,10 +154,11 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const [address, setAddress] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const hasValidAddress = isLikelyFullAddress(address);
+  const hasText = address.trim().length >= 3;
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasValidAddress) return;
+    if (!hasText) return;
     const canonicalAddress = canonicalizeAddressForIdentity(address);
     router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
@@ -255,6 +256,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               className="hero-pill-input"
               style={{
                 flex: 1,
+                minWidth: 0,
                 background: "transparent",
                 border: "none",
                 outline: "none",
@@ -267,15 +269,15 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             />
             <button
               type="submit"
-              disabled={!hasValidAddress}
+              disabled={!hasText}
               className="hero-pill-arrow"
               style={{
                 width: 48,
                 height: 48,
                 borderRadius: "50%",
                 border: "none",
-                background: hasValidAddress ? "var(--accent-sky)" : "transparent",
-                cursor: hasValidAddress ? "pointer" : "default",
+                background: hasText ? "var(--accent-sky)" : "rgba(255,255,255,0.08)",
+                cursor: hasText ? "pointer" : "default",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -283,7 +285,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 transition: "background 0.3s, transform 0.15s",
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-heading)" style={{ marginLeft: 2 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={hasText ? "var(--text-inverse)" : "var(--text-label)"} style={{ marginLeft: 2 }}>
                 <polygon points="6,3 20,12 6,21" />
               </svg>
             </button>
@@ -866,7 +868,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   }}
                 />
               </div>
-            <button type="submit" className="hero-cta-btn" disabled={!hasValidAddress} style={{
+            <button type="submit" className="hero-cta-btn" disabled={!hasText} style={{
                 width: "100%", padding: "12px 24px",
                 fontSize: 14, fontWeight: 700, fontFamily: s.fontBody,
                 borderRadius: 8, border: "none",
