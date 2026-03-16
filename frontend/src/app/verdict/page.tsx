@@ -200,7 +200,7 @@ function DealGapHero({
           }}
         >
           <span style={{ color: '#f87171' }}>Extreme</span>
-          <span style={{ color: 'var(--text-heading)' }}>Deal Gap</span>
+          <span style={{ color: 'var(--accent-sky)' }}>Deal Gap</span>
         </div>
       </div>
       <p
