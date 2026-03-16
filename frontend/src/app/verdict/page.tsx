@@ -160,7 +160,7 @@ function DealGapHero({
             position: 'relative',
             height: 22,
             borderRadius: 10,
-            border: '2px solid var(--accent-sky)',
+            border: `2px solid ${color}`,
             background: 'transparent',
           }}
         >
@@ -190,8 +190,8 @@ function DealGapHero({
             textTransform: 'uppercase',
           }}
         >
-          <span style={{ color: 'var(--accent-sky)' }}>Extreme</span>
-          <span style={{ color: 'var(--accent-sky)' }}>Deal Gap</span>
+          <span style={{ color }}>Extreme</span>
+          <span style={{ color }}>Deal Gap</span>
         </div>
       </div>
       <p
