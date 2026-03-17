@@ -656,7 +656,7 @@ export function AppHeader({
         const p = resolvedProperty
         return (
           <div
-            className="sticky top-0 z-50"
+            className="sticky top-0 z-40"
             style={{ backgroundColor: 'var(--surface-base)' }}
           >
             <PropertyAddressBar
