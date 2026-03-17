@@ -1524,16 +1524,16 @@ function VerdictContent() {
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
-            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-[0.8rem] text-[var(--text-inverse)] transition-all"
+            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
               style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}>
               Show Me the Numbers
-              <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <svg className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             <div className="flex justify-center gap-6 mt-5">
-              {['Free to use', 'No signup needed', '60 seconds'].map((f, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <svg width="14" height="14" fill="none" stroke="var(--accent-sky)" viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span className="text-xs font-medium" style={{ color: 'var(--text-body)' }}>{f}</span>
+              {['Try it Free', 'No signup needed', '60 seconds'].map((f, i) => (
+                <div key={i} className="flex items-center gap-1.5 sm:gap-2">
+                  <svg className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" fill="none" stroke="var(--accent-sky)" viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span className="text-xs sm:text-[0.94rem] font-medium" style={{ color: 'var(--text-body)' }}>{f}</span>
                 </div>
               ))}
             </div>
