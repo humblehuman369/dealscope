@@ -1122,7 +1122,7 @@ function VerdictContent() {
   const analysisTimeSeconds = 4.2
   const isOffMarket = !isListed
 
-  const fmtShort = (v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v).toLocaleString()}`
+  const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
 
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
