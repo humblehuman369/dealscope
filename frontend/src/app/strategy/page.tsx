@@ -550,33 +550,6 @@ function StrategyContent() {
 
         </section>
 
-        {/* IQ Estimate Source Selector */}
-        {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
-          iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
-          <section className="px-5 pt-2 pb-4">
-            <IQEstimateSelector
-              sources={iqSources}
-              onSourceChange={(type, _sourceId, _value) => {
-                if (_value == null) return
-                if (type === 'value') {
-                  setSourceOverrides((prev) => ({ ...prev, price: _value }))
-                  // Keep property bar header in sync with selected data source value
-                  try {
-                    writeDealMakerOverrides(resolvedAddress, {
-                      price: _value,
-                      listPrice: _value,
-                    })
-                  } catch {
-                    // Ignore storage errors
-                  }
-                } else {
-                  setSourceOverrides((prev) => ({ ...prev, monthlyRent: _value }))
-                }
-              }}
-            />
-          </section>
-        )}
-
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
@@ -808,6 +781,32 @@ function StrategyContent() {
                   )
                 })()}
               </div>
+
+              {/* IQ Estimate Source Selector */}
+              {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
+                iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
+                <div className="mt-5">
+                  <IQEstimateSelector
+                    sources={iqSources}
+                    onSourceChange={(type, _sourceId, _value) => {
+                      if (_value == null) return
+                      if (type === 'value') {
+                        setSourceOverrides((prev) => ({ ...prev, price: _value }))
+                        try {
+                          writeDealMakerOverrides(resolvedAddress, {
+                            price: _value,
+                            listPrice: _value,
+                          })
+                        } catch {
+                          // Ignore storage errors
+                        }
+                      } else {
+                        setSourceOverrides((prev) => ({ ...prev, monthlyRent: _value }))
+                      }
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Action Buttons — always 3 across */}
               <div className="grid grid-cols-3 gap-2 mt-5">
