@@ -1142,7 +1142,7 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-          {/* Verdict Hero Card */}
+          {/* Verdict Hero Card — Deal Gap score */}
           <div className="mx-5 mt-6">
             <div
               style={{
@@ -1161,15 +1161,20 @@ function VerdictContent() {
                   headline={tier.headline}
                 />
               </div>
+            </div>
+          </div>
 
-              <div
-                style={{
-                  height: 1,
-                  margin: '0 28px',
-                  background: 'linear-gradient(90deg, transparent, var(--border-default), var(--accent-sky), var(--border-default), transparent)',
-                }}
-              />
-
+          {/* What You Need to Know card */}
+          <div className="mx-5 mt-4">
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: 'hidden',
+                background: 'var(--surface-base)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-card-hover)',
+              }}
+            >
               <div style={{ padding: '24px 28px 28px' }}>
                 <h3
                   style={{
