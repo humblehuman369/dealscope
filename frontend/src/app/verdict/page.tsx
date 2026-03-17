@@ -1315,7 +1315,10 @@ function VerdictContent() {
                 const marketPos = pos(property.price)
                 const bracketLeft = Math.min(targetBuyPos, marketPos)
                 const bracketRight = Math.max(targetBuyPos, marketPos)
-                const showBracket = dealGap > 0 && (bracketRight - bracketLeft) >= 3
+                const bracketDealGapPct = property.price > 0
+                  ? ((property.price - purchasePrice) / property.price) * 100
+                  : 0
+                const showBracket = bracketDealGapPct > 0.1 && (bracketRight - bracketLeft) >= 3
 
                 const incomePos = pos(incomeValue)
                 const priceGapLeft = Math.min(incomePos, marketPos)
@@ -1329,22 +1332,23 @@ function VerdictContent() {
                   <>
                     {showBracket && (
                       <div
-                        className="relative flex items-center mb-2"
+                        className="relative mb-1"
                         style={{
                           marginLeft: `${bracketLeft}%`,
                           width: `${bracketRight - bracketLeft}%`,
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
-                        <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
-                        <span
-                          className="text-[16px] sm:text-[20px] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: 'var(--accent-sky)' }}
                         >
-                          DEAL GAP &nbsp;-{Math.abs(dealGap).toFixed(1)}%
-                        </span>
-                        <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          DEAL GAP &nbsp;-{bracketDealGapPct.toFixed(1)}%
+                        </p>
+                        <div className="flex items-start">
+                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
+                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                        </div>
                       </div>
                     )}
 
@@ -1365,22 +1369,23 @@ function VerdictContent() {
 
                     {showPriceGap && (
                       <div
-                        className="relative flex items-center mt-2"
+                        className="relative mt-1"
                         style={{
                           marginLeft: `${priceGapLeft}%`,
                           width: `${priceGapRight - priceGapLeft}%`,
                         }}
                       >
-                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
-                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                        <span
-                          className="text-[16px] sm:text-[20px] font-bold whitespace-nowrap px-1.5 tabular-nums"
+                        <div className="flex items-end">
+                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
+                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        </div>
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
                           style={{ color: 'var(--status-warning)' }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
-                        </span>
-                        <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                        <div style={{ width: 1, height: 12, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        </p>
                       </div>
                     )}
 
