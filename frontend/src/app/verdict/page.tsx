@@ -1305,7 +1305,7 @@ function VerdictContent() {
                   </>
                 )
               })()}
-              <div className="flex justify-center" style={{ marginTop: 30 }}>
+              <div className="flex justify-center" style={{ marginTop: 60 }}>
                 <button
                   onClick={navigateToStrategy}
                   className="px-6 py-2 rounded-full text-sm font-semibold transition-all w-auto"
