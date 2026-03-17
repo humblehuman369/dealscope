@@ -13,7 +13,7 @@ Elevated cards/panels inside those shells use `var(--surface-card)` or `var(--su
 ```
 --surface-base   → #000000 (dark) / #FFFFFF (light)  ← page shells, outermost containers
 --surface-card   → #000000 (dark) / #FFFFFF (light)  ← cards, panels, modals
---surface-elevated → #101828 (dark) / #F1F5F9 (light) ← tooltips, dropdowns, nested panels
+--surface-elevated → #0C1220 (dark) / #F1F5F9 (light) ← tooltips, dropdowns, nested panels
 ```
 
 ## Correct Examples
