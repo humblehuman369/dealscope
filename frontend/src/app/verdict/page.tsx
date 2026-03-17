@@ -1309,9 +1309,9 @@ function VerdictContent() {
                 <button
                   onClick={navigateToStrategy}
                   className="px-6 py-2 rounded-full text-sm font-semibold transition-all w-auto"
-                  style={{ color: 'var(--text-inverse)', background: 'var(--accent-sky)' }}
+                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: '1.5px solid var(--accent-sky)' }}
                 >
-                  See Breakdown - Edit Assumptions, Terms &amp; Comps - Download Excel &amp; PDFs
+                  See Breakdown - Adjust Values - Download Excel &amp; PDFs
                 </button>
               </div>
             </div>
