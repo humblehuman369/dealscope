@@ -1204,6 +1204,16 @@ function VerdictContent() {
                       About <strong style={{ color: 'var(--accent-sky)' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
                     </span>
                   </Takeaway>
+                  <Takeaway num="4" delay={420}>
+                    <span>
+                      The initial analysis does not include repairs. To include repairs click <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong> and create a budget in the <strong style={{ color: 'var(--accent-sky)' }}>Rehab tab</strong>.
+                    </span>
+                  </Takeaway>
+                  <Takeaway num="5" delay={560}>
+                    <span>
+                      The valuation is based on assumptions you can edit in <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong>. Initial analysis set at <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term</strong> at the Target Buy price.
+                    </span>
+                  </Takeaway>
                 </div>
               </div>
 
