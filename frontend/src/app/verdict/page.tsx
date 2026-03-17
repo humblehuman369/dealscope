@@ -1313,36 +1313,49 @@ function VerdictContent() {
 
                 const targetBuyPos = pos(purchasePrice)
                 const marketPos = pos(property.price)
-                const bracketLeft = Math.min(targetBuyPos, marketPos)
-                const bracketRight = Math.max(targetBuyPos, marketPos)
-                const bracketDealGapPct = property.price > 0
-                  ? ((property.price - purchasePrice) / property.price) * 100
-                  : 0
-                const showBracket = bracketDealGapPct > 0.1 && (bracketRight - bracketLeft) >= 3
-
                 const incomePos = pos(incomeValue)
+                const positiveDeal = incomeValue > property.price
+
+                // Deal Gap bracket (above bar):
+                //   Positive deal (income > market): spans Market → Income Value
+                //   Normal deal  (income < market): spans Target Buy → Market
+                const dealBracketLeft = positiveDeal
+                  ? Math.min(marketPos, incomePos)
+                  : Math.min(targetBuyPos, marketPos)
+                const dealBracketRight = positiveDeal
+                  ? Math.max(marketPos, incomePos)
+                  : Math.max(targetBuyPos, marketPos)
+                const dealBracketPct = property.price > 0
+                  ? positiveDeal
+                    ? ((incomeValue - property.price) / property.price) * 100
+                    : ((property.price - purchasePrice) / property.price) * 100
+                  : 0
+                const showDealBracket = dealBracketPct > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+
+                // Price Gap bracket (below bar):
+                //   Only show when income < market (adds info separate from deal gap)
                 const priceGapLeft = Math.min(incomePos, marketPos)
                 const priceGapRight = Math.max(incomePos, marketPos)
                 const priceGap = property.price > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = !positiveDeal && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
                 return (
                   <>
-                    {showBracket && (
+                    {showDealBracket && (
                       <div
                         className="relative mb-1"
                         style={{
-                          marginLeft: `${bracketLeft}%`,
-                          width: `${bracketRight - bracketLeft}%`,
+                          marginLeft: `${dealBracketLeft}%`,
+                          width: `${dealBracketRight - dealBracketLeft}%`,
                         }}
                       >
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: 'var(--accent-sky)' }}
                         >
-                          DEAL GAP &nbsp;-{bracketDealGapPct.toFixed(1)}%
+                          DEAL GAP &nbsp;{positiveDeal ? '+' : '-'}{dealBracketPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
