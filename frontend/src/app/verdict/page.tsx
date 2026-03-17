@@ -1338,13 +1338,13 @@ function VerdictContent() {
                 const showDealBracket = dealBracketPct > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
 
                 // Price Gap bracket (below bar):
-                //   Only show when income < market (adds info separate from deal gap)
+                //   Shows gap between Income Value and Market price
                 const priceGapLeft = Math.min(incomePos, marketPos)
                 const priceGapRight = Math.max(incomePos, marketPos)
                 const priceGap = property.price > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = !positiveDeal && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
                 return (
                   <>
