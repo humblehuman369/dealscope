@@ -1254,7 +1254,7 @@ function VerdictContent() {
                     )}
 
                     {/* Bar with proportionally-positioned dots */}
-                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))' }}>
+                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))', boxShadow: 'inset 0 0 6px rgba(56,189,248,0.25), inset 0 0 6px rgba(234,179,8,0.2), 0 0 10px rgba(56,189,248,0.15), 0 0 10px rgba(234,179,8,0.12)' }}>
                       {markers.map((m, i) => (
                         <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
                           style={{
