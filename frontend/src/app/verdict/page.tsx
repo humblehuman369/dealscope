@@ -1148,7 +1148,7 @@ function VerdictContent() {
               style={{
                 borderRadius: 16,
                 overflow: 'hidden',
-                background: 'var(--surface-base)',
+                background: 'var(--surface-card)',
                 border: '1px solid var(--border-default)',
                 boxShadow: 'var(--shadow-card-hover)',
               }}
@@ -1170,7 +1170,7 @@ function VerdictContent() {
               style={{
                 borderRadius: 16,
                 overflow: 'hidden',
-                background: 'var(--surface-base)',
+                background: 'var(--surface-card)',
                 border: '1px solid var(--border-default)',
                 boxShadow: 'var(--shadow-card-hover)',
               }}
