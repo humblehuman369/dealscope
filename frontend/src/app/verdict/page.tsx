@@ -1164,116 +1164,7 @@ function VerdictContent() {
             </div>
           </div>
 
-          {/* What You Need to Know card */}
-          <div className="mx-5 mt-4">
-            <div
-              style={{
-                borderRadius: 16,
-                overflow: 'hidden',
-                background: 'var(--surface-card)',
-                border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-card-hover)',
-              }}
-            >
-              <div style={{ padding: '24px 28px 28px' }}>
-                <h3
-                  style={{
-                    margin: '0 0 20px',
-                    fontSize: 12,
-                    color: 'var(--text-heading)',
-                    textTransform: 'uppercase',
-                    letterSpacing: 2,
-                    fontWeight: 600,
-                  }}
-                >
-                  What You Need to Know
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                  <Takeaway num="1" delay={0}>
-                    {isOffMarket ? (
-                      <span>
-                        This property is <strong style={{ color: 'var(--accent-sky)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
-                      </span>
-                    ) : (
-                      <span>
-                        This property is <strong style={{ color: 'var(--accent-sky)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
-                      </span>
-                    )}
-                  </Takeaway>
-                  <Takeaway num="2" delay={140}>
-                    <span>
-                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--accent-sky)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="3" delay={280}>
-                    <span>
-                      About <strong style={{ color: 'var(--accent-sky)' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="4" delay={420}>
-                    <span>
-                      The initial analysis does not include repairs. To include repairs click <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong> and create a budget in the <strong style={{ color: 'var(--accent-sky)' }}>Rehab tab</strong>.
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="5" delay={560}>
-                    <span>
-                      The valuation is based on assumptions you can edit in <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong>. Initial analysis set at <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term</strong> at the Target Buy price.
-                    </span>
-                  </Takeaway>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: '12px 28px',
-                  borderTop: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleShowMethodology}
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--text-body)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    cursor: 'pointer',
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                  }}
-                >
-                  <span style={{ fontSize: 13 }}>ⓘ</span>
-                  How the Deal Gap works
-                </button>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 12,
-                    color: 'var(--text-body)',
-                  }}
-                >
-                  <span style={{ color: 'var(--status-warning)', fontSize: 11 }}>⚡</span>
-                  <span>
-                    Analyzed in <strong style={{ color: 'var(--accent-sky)' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
-                  </span>
-                  <span style={{ margin: '0 2px', opacity: 0.3 }}>·</span>
-                  <strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount} data sources</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <section className="px-5 py-8 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <section className="mx-5 mt-4 px-5 py-8 rounded-2xl" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
 
             <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 6 }}>
               {dealGapPct <= 10 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
@@ -1428,6 +1319,115 @@ function VerdictContent() {
               </div>
             </div>
           </section>
+
+          {/* What You Need to Know card */}
+          <div className="mx-5 mt-4">
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: 'hidden',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-card-hover)',
+              }}
+            >
+              <div style={{ padding: '24px 28px 28px' }}>
+                <h3
+                  style={{
+                    margin: '0 0 20px',
+                    fontSize: 12,
+                    color: 'var(--text-heading)',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
+                    fontWeight: 600,
+                  }}
+                >
+                  What You Need to Know
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                  <Takeaway num="1" delay={0}>
+                    {isOffMarket ? (
+                      <span>
+                        This property is <strong style={{ color: 'var(--accent-sky)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                      </span>
+                    ) : (
+                      <span>
+                        This property is <strong style={{ color: 'var(--accent-sky)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                      </span>
+                    )}
+                  </Takeaway>
+                  <Takeaway num="2" delay={140}>
+                    <span>
+                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--accent-sky)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
+                    </span>
+                  </Takeaway>
+                  <Takeaway num="3" delay={280}>
+                    <span>
+                      About <strong style={{ color: 'var(--accent-sky)' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
+                    </span>
+                  </Takeaway>
+                  <Takeaway num="4" delay={420}>
+                    <span>
+                      The initial analysis does not include repairs. To include repairs click <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong> and create a budget in the <strong style={{ color: 'var(--accent-sky)' }}>Rehab tab</strong>.
+                    </span>
+                  </Takeaway>
+                  <Takeaway num="5" delay={560}>
+                    <span>
+                      The valuation is based on assumptions you can edit in <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong>. Initial analysis set at <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term</strong> at the Target Buy price.
+                    </span>
+                  </Takeaway>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '12px 28px',
+                  borderTop: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleShowMethodology}
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text-body)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>ⓘ</span>
+                  How the Deal Gap works
+                </button>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 12,
+                    color: 'var(--text-body)',
+                  }}
+                >
+                  <span style={{ color: 'var(--status-warning)', fontSize: 11 }}>⚡</span>
+                  <span>
+                    Analyzed in <strong style={{ color: 'var(--accent-sky)' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
+                  </span>
+                  <span style={{ margin: '0 2px', opacity: 0.3 }}>·</span>
+                  <strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount} data sources</strong>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
           {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
