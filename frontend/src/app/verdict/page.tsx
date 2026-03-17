@@ -839,10 +839,9 @@ function VerdictContent() {
       const base = analysisInputsRef.current
       if (!base) return
       try {
-        const body = { ...base, ...overrides }
         // Drop stale purchase_price so the backend computes a fresh Target Buy
         // from the updated list_price / monthly_rent via calculate_buy_price().
-        delete body.purchase_price
+        const { purchase_price: _drop, ...body } = { ...base, ...overrides }
         const result = await api.post<Record<string, any>>('/api/v1/analysis/verdict', body)
         setAnalysis(parseAnalysisResponse(result))
       } catch (err) {
