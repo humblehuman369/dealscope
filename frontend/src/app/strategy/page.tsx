@@ -547,31 +547,31 @@ function StrategyContent() {
                   { label: 'Target Buy', price: targetPrice, dotColor: 'var(--accent-sky)' },
                   { label: 'Income Value', price: incomeVal, dotColor: 'var(--status-warning)' },
                   { label: pLabel, price: listPrice, dotColor: 'var(--status-negative)' },
-                ].sort((a, b) => a.price - b.price)
+                ].filter(m => m.price > 0).sort((a, b) => a.price - b.price)
 
-                const allPrices = markers.map(m => m.price).filter(p => p > 0)
+                const allPrices = markers.map(m => m.price)
                 const scaleMin = Math.min(...allPrices) * 0.95
                 const scaleMax = Math.max(...allPrices) * 1.05
                 const range = scaleMax - scaleMin
                 const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
 
-                const targetBuyPos = pos(targetPrice)
-                const marketPos = pos(listPrice)
-                const incomePos = pos(incomeVal)
+                const targetBuyPos = targetPrice > 0 ? pos(targetPrice) : null
+                const marketPos = listPrice > 0 ? pos(listPrice) : null
+                const incomePos = incomeVal > 0 ? pos(incomeVal) : null
 
-                const dealBracketLeft = Math.min(targetBuyPos, marketPos)
-                const dealBracketRight = Math.max(targetBuyPos, marketPos)
-                const dealBracketPct = listPrice > 0
+                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
+                const dealBracketPct = listPrice > 0 && targetPrice > 0
                   ? ((listPrice - targetPrice) / listPrice) * 100
                   : 0
-                const showDealBracket = Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+                const showDealBracket = targetBuyPos != null && marketPos != null && Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
 
-                const priceGapLeft = Math.min(incomePos, marketPos)
-                const priceGapRight = Math.max(incomePos, marketPos)
-                const priceGap = listPrice > 0
+                const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
+                const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
+                const priceGap = listPrice > 0 && incomeVal > 0
                   ? ((incomeVal - listPrice) / listPrice) * 100
                   : 0
-                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
                 return (
                   <>
