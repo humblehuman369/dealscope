@@ -1096,10 +1096,10 @@ function VerdictContent() {
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
-  // Deal Gap: distance between market/asking and Income Value (breakeven).
-  // Positive = discount needed, negative = already profitable (good deal).
-  const rawDealGap = property.price > 0 && incomeValue > 0
-    ? ((property.price - incomeValue) / property.price) * 100
+  // Deal Gap: discount from market/asking to Target Buy price.
+  // Positive = discount needed, zero = deal works at market price.
+  const rawDealGap = property.price > 0 && purchasePrice > 0
+    ? ((property.price - purchasePrice) / property.price) * 100
     : 0
   const dealGapPct = analysis.dealGapPercent ?? rawDealGap
   const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
@@ -1319,23 +1319,15 @@ function VerdictContent() {
                 const targetBuyPos = pos(purchasePrice)
                 const marketPos = pos(property.price)
                 const incomePos = pos(incomeValue)
-                const positiveDeal = incomeValue > property.price
 
                 // Deal Gap bracket (above bar):
-                //   Positive deal (income > market): spans Market → Income Value
-                //   Normal deal  (income < market): spans Target Buy → Market
-                const dealBracketLeft = positiveDeal
-                  ? Math.min(marketPos, incomePos)
-                  : Math.min(targetBuyPos, marketPos)
-                const dealBracketRight = positiveDeal
-                  ? Math.max(marketPos, incomePos)
-                  : Math.max(targetBuyPos, marketPos)
+                //   Always spans Target Buy → Market (discount from market to target buy)
+                const dealBracketLeft = Math.min(targetBuyPos, marketPos)
+                const dealBracketRight = Math.max(targetBuyPos, marketPos)
                 const dealBracketPct = property.price > 0
-                  ? positiveDeal
-                    ? ((incomeValue - property.price) / property.price) * 100
-                    : ((property.price - purchasePrice) / property.price) * 100
+                  ? ((property.price - purchasePrice) / property.price) * 100
                   : 0
-                const showDealBracket = dealBracketPct > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+                const showDealBracket = Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
 
                 // Price Gap bracket (below bar):
                 //   Shows gap between Income Value and Market price
@@ -1360,7 +1352,7 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: 'var(--accent-sky)' }}
                         >
-                          DEAL GAP &nbsp;{positiveDeal ? '+' : '-'}{dealBracketPct.toFixed(1)}%
+                          DEAL GAP &nbsp;-{dealBracketPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
