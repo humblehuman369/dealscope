@@ -243,7 +243,7 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
       >
         {num}
       </div>
-      <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
+      <p style={{ margin: 0, fontSize: 16.5, fontWeight: 500, lineHeight: 1.3, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
     </div>
   )
 }
@@ -1332,11 +1332,11 @@ function VerdictContent() {
                 <h3
                   style={{
                     margin: '0 0 20px',
-                    fontSize: 12,
+                    fontSize: 20,
                     color: 'var(--text-heading)',
                     textTransform: 'uppercase',
                     letterSpacing: 2,
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
                   What You Need to Know
