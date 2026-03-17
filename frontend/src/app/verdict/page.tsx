@@ -1193,7 +1193,7 @@ function VerdictContent() {
             </div>
 
             {/* Price Scale Bar — proportional positions with legend */}
-            <div className="mt-6 relative" style={{ paddingTop: 40, paddingBottom: 40 }}>
+            <div className="mt-6 relative" style={{ paddingTop: 40 }}>
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
@@ -1283,7 +1283,7 @@ function VerdictContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)' }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 40 }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </p>
