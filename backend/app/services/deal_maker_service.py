@@ -184,6 +184,9 @@ class DealMakerService:
             vacancy_rate=record.vacancy_rate,
             maintenance_pct=record.maintenance_pct,
             management_pct=record.management_pct,
+            capex_pct=record.capex_pct,
+            utilities_annual=record.monthly_utilities * 12,
+            other_annual_expenses=record.monthly_hoa * 12,
         )
 
         return CachedMetrics(
