@@ -550,6 +550,122 @@ function StrategyContent() {
 
         </section>
 
+        {/* Deal Gap Price Scale Bar — synced with Verdict page */}
+        {listPrice > 0 && targetPrice > 0 && (
+          <section className="px-5 pt-2 pb-4">
+            <div className="relative" style={{ paddingTop: 40 }}>
+              {(() => {
+                const incomeVal = data?.income_value || listPrice
+                const isListedProp = propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
+                const pLabel = isListedProp ? 'Asking' : 'Market'
+                const markers = [
+                  { label: 'Target Buy', price: targetPrice, dotColor: 'var(--accent-sky)' },
+                  { label: 'Income Value', price: incomeVal, dotColor: 'var(--status-warning)' },
+                  { label: pLabel, price: listPrice, dotColor: 'var(--status-negative)' },
+                ].sort((a, b) => a.price - b.price)
+
+                const allPrices = markers.map(m => m.price).filter(p => p > 0)
+                const scaleMin = Math.min(...allPrices) * 0.95
+                const scaleMax = Math.max(...allPrices) * 1.05
+                const range = scaleMax - scaleMin
+                const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
+
+                const targetBuyPos = pos(targetPrice)
+                const marketPos = pos(listPrice)
+                const incomePos = pos(incomeVal)
+
+                const dealBracketLeft = Math.min(targetBuyPos, marketPos)
+                const dealBracketRight = Math.max(targetBuyPos, marketPos)
+                const dealBracketPct = listPrice > 0
+                  ? ((listPrice - targetPrice) / listPrice) * 100
+                  : 0
+                const showDealBracket = Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+
+                const priceGapLeft = Math.min(incomePos, marketPos)
+                const priceGapRight = Math.max(incomePos, marketPos)
+                const priceGap = listPrice > 0
+                  ? ((incomeVal - listPrice) / listPrice) * 100
+                  : 0
+                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+
+                return (
+                  <>
+                    {showDealBracket && (
+                      <div
+                        className="relative mb-1"
+                        style={{
+                          marginLeft: `${dealBracketLeft}%`,
+                          width: `${dealBracketRight - dealBracketLeft}%`,
+                        }}
+                      >
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
+                          style={{ color: 'var(--accent-sky)' }}
+                        >
+                          DEAL GAP &nbsp;-{dealBracketPct.toFixed(1)}%
+                        </p>
+                        <div className="flex items-start">
+                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
+                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))', boxShadow: 'inset 0 0 6px rgba(56,189,248,0.25), inset 0 0 6px rgba(234,179,8,0.2), 0 0 10px rgba(56,189,248,0.15), 0 0 10px rgba(234,179,8,0.12)' }}>
+                      {markers.map((m, i) => (
+                        <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
+                          style={{
+                            left: `${pos(m.price)}%`,
+                            transform: 'translateX(-50%)',
+                            background: m.dotColor,
+                            borderColor: 'var(--surface-card)',
+                            boxShadow: `0 0 6px ${m.dotColor}60`,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {showPriceGap && (
+                      <div
+                        className="relative mt-1"
+                        style={{
+                          marginLeft: `${priceGapLeft}%`,
+                          width: `${priceGapRight - priceGapLeft}%`,
+                        }}
+                      >
+                        <div className="flex items-end">
+                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
+                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                        </div>
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
+                          style={{ color: 'var(--status-warning)', marginBottom: 40 }}
+                        >
+                          PRICE GAP &nbsp;{priceGap.toFixed(1)}%
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap justify-between gap-y-2 mt-3 gap-x-2">
+                      {markers.map((m, i) => (
+                        <div key={i} className="flex flex-col items-center gap-0.5 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
+                            <span className="text-[16px] sm:text-[20px] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
+                          </div>
+                          <span className="text-[16px] sm:text-[20px] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{formatCurrency(m.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </section>
+        )}
+
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
