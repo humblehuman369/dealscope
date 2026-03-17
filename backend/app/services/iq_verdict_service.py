@@ -888,6 +888,12 @@ def compute_iq_verdict(
         other_annual_expenses=other_annual,
     )
 
+    # Target Buy must never exceed Income Value (breakeven price).
+    # purchase_price overrides from DealMaker / session storage can bypass
+    # calculate_buy_price's min(buy_price, market_price) cap, so enforce here.
+    if income_value > 0 and buy_price > income_value:
+        buy_price = income_value
+
     strategies = [
         _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, a),
         _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance, a),
