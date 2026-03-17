@@ -540,7 +540,7 @@ function StrategyContent() {
           <section className="px-5 pt-6 pb-2">
             <div className="relative" style={{ paddingTop: 40 }}>
               {(() => {
-                const incomeVal = data?.income_value ?? listPrice
+                const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? listPrice
                 const isListedProp = propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
                 const pLabel = isListedProp ? 'Asking' : 'Market'
                 const markers = [
@@ -651,20 +651,26 @@ function StrategyContent() {
           </section>
         )}
 
-        {/* Page Header + Actions */}
+        {/* Next Steps */}
         <section className="px-5 pt-8 pb-0">
-          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-            This {verdictScore} assumes an annual rental at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
-            <button
-              onClick={handleOpenDealMaker}
-              className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
-              style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
-            >Change Terms</button>
-            {' '}to adjust any assumption and see how the deal shifts in real time.
+          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6, fontStyle: 'italic' }}>Next Steps</h2>
+          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 16, lineHeight: 1.55 }}>
+            Follow these steps to move forward with your property deal:
           </p>
-
+          <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
+              <strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.
+            </li>
+            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
+              <strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.
+            </li>
+            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
+              <strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.
+            </li>
+            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
+              <strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.
+            </li>
+          </ol>
         </section>
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
