@@ -90,8 +90,9 @@ function DealGapHero({
   const sign = dealGapPercent >= 0 ? '-' : '+'
   const displayVal = Math.abs(dealGapPercent)
   const gaugeMax = 30
-  const clampedGap = Math.min(Math.abs(dealGapPercent), gaugeMax)
-  // Extreme is left (30%+), Deal Gap end is right (0%)
+  // Negative gap = deal already profitable → pin slider at far right (100%)
+  const clampedGap = Math.max(0, Math.min(dealGapPercent, gaugeMax))
+  // Extreme is left (30%+), Deal Gap end is right (0% or better)
   const rightwardProgress = ((gaugeMax - clampedGap) / gaugeMax) * 100
 
   return (
@@ -1095,11 +1096,12 @@ function VerdictContent() {
   const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
-  const rawDealGap = property.price > 0
-    ? ((property.price - purchasePrice) / property.price) * 100
+  // Deal Gap: distance between market/asking and Income Value (breakeven).
+  // Positive = discount needed, negative = already profitable (good deal).
+  const rawDealGap = property.price > 0 && incomeValue > 0
+    ? ((property.price - incomeValue) / property.price) * 100
     : 0
-  const dealGap = Math.max(0, rawDealGap)
-  const dealGapPct = analysis.dealGapPercent ?? dealGap
+  const dealGapPct = analysis.dealGapPercent ?? rawDealGap
   const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Probability of achieving discount derived from Deal Gap %

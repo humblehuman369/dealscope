@@ -930,8 +930,10 @@ def compute_iq_verdict(
     income_gap_amount = list_price - income_value if list_price > 0 else 0
     income_gap_pct = max(0, (income_gap_amount / list_price) * 100) if list_price > 0 else 0
 
-    deal_gap_amount = list_price - buy_price if list_price > 0 else 0
-    deal_gap_pct = max(0, (deal_gap_amount / list_price) * 100) if list_price > 0 else 0
+    # Deal Gap measures distance between market price and Income Value.
+    # Positive = discount needed (list > income), negative = already profitable.
+    deal_gap_amount = list_price - income_value if list_price > 0 else 0
+    deal_gap_pct = (deal_gap_amount / list_price) * 100 if list_price > 0 else 0
 
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
