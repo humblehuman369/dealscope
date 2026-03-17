@@ -253,7 +253,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               value={address}
               onChange={setAddress}
               onPlaceSelect={handlePlaceSelect}
-              placeholder="Try it for Free - Enter an address"
+              placeholder="Enter an address"
               className="hero-pill-input"
               style={{
                 flex: 1,
