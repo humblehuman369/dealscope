@@ -1193,7 +1193,7 @@ function VerdictContent() {
             </div>
 
             {/* Price Scale Bar — proportional positions with legend */}
-            <div className="mt-6 relative">
+            <div className="mt-6 relative" style={{ paddingTop: 40, paddingBottom: 40 }}>
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
