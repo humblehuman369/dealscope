@@ -46,9 +46,9 @@
   /* ---- Semantic Tokens (dark defaults) ---- */
   --surface-base: #000000;
   --surface-section: #060B14;
-  --surface-card: #0C1220;
-  --surface-card-hover: #101828;
-  --surface-elevated: #101828;
+  --surface-card: #000000;
+  --surface-card-hover: #0C1220;
+  --surface-elevated: #0C1220;
   --surface-input: #0C1220;
   --surface-overlay: rgba(0,0,0,0.8);
 
@@ -165,9 +165,9 @@
 [data-theme='dark'] {
   --surface-base: #000000;
   --surface-section: #060B14;
-  --surface-card: #0C1220;
-  --surface-card-hover: #101828;
-  --surface-elevated: #101828;
+  --surface-card: #000000;
+  --surface-card-hover: #0C1220;
+  --surface-elevated: #0C1220;
   --surface-input: #0C1220;
   --surface-overlay: rgba(0,0,0,0.8);
 
