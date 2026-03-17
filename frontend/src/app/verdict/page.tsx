@@ -1305,9 +1305,6 @@ function VerdictContent() {
                   </>
                 )
               })()}
-              <p className="text-center text-[0.86rem] sm:text-[0.94rem] mt-3.5" style={{ color: 'var(--text-body)' }}>
-                Based on <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term at the Target Buy price</span>
-              </p>
               <div className="flex justify-center mt-4">
                 <button
                   onClick={navigateToStrategy}
