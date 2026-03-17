@@ -1199,35 +1199,31 @@ function VerdictContent() {
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
                   { label: 'Income Value', price: incomeValue, dotColor: 'var(--status-warning)' },
                   { label: priceLabel, price: property.price, dotColor: 'var(--status-negative)' },
-                ].sort((a, b) => a.price - b.price)
+                ].filter(m => m.price > 0).sort((a, b) => a.price - b.price)
 
-                const allPrices = markers.map(m => m.price).filter(p => p > 0)
+                const allPrices = markers.map(m => m.price)
                 const scaleMin = Math.min(...allPrices) * 0.95
                 const scaleMax = Math.max(...allPrices) * 1.05
                 const range = scaleMax - scaleMin
                 const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
 
-                const targetBuyPos = pos(purchasePrice)
-                const marketPos = pos(property.price)
-                const incomePos = pos(incomeValue)
+                const targetBuyPos = purchasePrice > 0 ? pos(purchasePrice) : null
+                const marketPos = property.price > 0 ? pos(property.price) : null
+                const incomePos = incomeValue > 0 ? pos(incomeValue) : null
 
-                // Deal Gap bracket (above bar):
-                //   Always spans Target Buy → Market (discount from market to target buy)
-                const dealBracketLeft = Math.min(targetBuyPos, marketPos)
-                const dealBracketRight = Math.max(targetBuyPos, marketPos)
-                const dealBracketPct = property.price > 0
+                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
+                const dealBracketPct = property.price > 0 && purchasePrice > 0
                   ? ((property.price - purchasePrice) / property.price) * 100
                   : 0
-                const showDealBracket = Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+                const showDealBracket = targetBuyPos != null && marketPos != null && Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
 
-                // Price Gap bracket (below bar):
-                //   Shows gap between Income Value and Market price
-                const priceGapLeft = Math.min(incomePos, marketPos)
-                const priceGapRight = Math.max(incomePos, marketPos)
-                const priceGap = property.price > 0
+                const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
+                const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
+                const priceGap = property.price > 0 && incomeValue > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
                 return (
                   <>
