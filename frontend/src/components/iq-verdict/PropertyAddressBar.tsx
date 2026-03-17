@@ -41,9 +41,7 @@ interface PropertyAddressBarProps {
 }
 
 function formatShortPrice(price: number): string {
-  if (price >= 1_000_000) return `$${(price / 1_000_000).toFixed(1)}M`
-  if (price >= 1_000) return `$${Math.round(price / 1_000)}K`
-  return `$${price.toLocaleString()}`
+  return `$${Math.round(price).toLocaleString()}`
 }
 
 /** Safely decode a string that might be URL-encoded (single or double). */
@@ -251,7 +249,7 @@ export function PropertyAddressBar({
         >
           <DetailItem label="Beds" value={beds} />
           <Dot />
-          <DetailItem label="Ba" value={baths} />
+          <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
           <Dot />
           <DetailItem label="Sqft" value={sqft.toLocaleString()} />
           <Dot />
