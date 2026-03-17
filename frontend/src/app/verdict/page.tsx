@@ -841,7 +841,8 @@ function VerdictContent() {
       try {
         // Drop stale purchase_price so the backend computes a fresh Target Buy
         // from the updated list_price / monthly_rent via calculate_buy_price().
-        const { purchase_price: _drop, ...body } = { ...base, ...overrides }
+        const merged: Record<string, any> = { ...base, ...overrides }
+        const { purchase_price: _drop, ...body } = merged
         const result = await api.post<Record<string, any>>('/api/v1/analysis/verdict', body)
         setAnalysis(parseAnalysisResponse(result))
       } catch (err) {
