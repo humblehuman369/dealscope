@@ -534,28 +534,13 @@ function StrategyContent() {
       {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-        {/* Page Header + Actions */}
-        <section className="px-5 pt-8 pb-0">
-          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
-            This {verdictScore} assumes an annual rental at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
-            <button
-              onClick={handleOpenDealMaker}
-              className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
-              style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
-            >Change Terms</button>
-            {' '}to adjust any assumption and see how the deal shifts in real time.
-          </p>
-
-        </section>
 
         {/* Deal Gap Price Scale Bar — synced with Verdict page */}
         {listPrice > 0 && targetPrice > 0 && (
-          <section className="px-5 pt-2 pb-4">
+          <section className="px-5 pt-6 pb-2">
             <div className="relative" style={{ paddingTop: 40 }}>
               {(() => {
-                const incomeVal = data?.income_value || listPrice
+                const incomeVal = data?.income_value ?? listPrice
                 const isListedProp = propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
                 const pLabel = isListedProp ? 'Asking' : 'Market'
                 const markers = [
@@ -665,6 +650,22 @@ function StrategyContent() {
             </div>
           </section>
         )}
+
+        {/* Page Header + Actions */}
+        <section className="px-5 pt-8 pb-0">
+          <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>The Deep Dive</p>
+          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>The math behind the score.</h2>
+          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 0, lineHeight: 1.55 }}>
+            This {verdictScore} assumes an annual rental at the Target Buy price — {Math.round(downPaymentPct * 100)}% down, {(rate * 100).toFixed(1)}% rate, {loanTermYears}-year term. These are starting points. Hit{' '}
+            <button
+              onClick={handleOpenDealMaker}
+              className="font-bold cursor-pointer hover:underline underline-offset-2 transition-colors"
+              style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+            >Change Terms</button>
+            {' '}to adjust any assumption and see how the deal shifts in real time.
+          </p>
+
+        </section>
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
