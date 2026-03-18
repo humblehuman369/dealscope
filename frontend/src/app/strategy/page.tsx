@@ -75,8 +75,8 @@ const colors = {
     body: 'var(--text-body)',
   },
   background: {
-    cardUp: 'var(--surface-base)',
-    card: 'var(--surface-base)',
+    cardUp: 'var(--surface-card)',
+    card: 'var(--surface-card)',
   },
   status: {
     positive: 'var(--status-positive)',
@@ -585,7 +585,7 @@ function StrategyContent() {
                 { label: 'Market', value: listPrice, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
-                  background: 'var(--surface-base)',
+                  background: 'var(--surface-card)',
                   border: `1px solid ${card.color}`,
                   boxShadow: `0 0 24px ${card.color}40, 0 0 8px ${card.color}25`,
                   transition: 'all 0.3s ease',
@@ -754,7 +754,7 @@ function StrategyContent() {
           <div
             className="rounded-[14px] p-5 sm:p-6"
             style={{
-              background: 'var(--surface-base)',
+              background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card-hover)',
             }}
@@ -786,7 +786,7 @@ function StrategyContent() {
           <div
             className="rounded-xl px-4 sm:px-5 py-3 mb-6"
             style={{
-              background: 'var(--surface-base)',
+              background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card)',
             }}
@@ -881,7 +881,7 @@ function StrategyContent() {
                 <div
                   className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                   style={{
-                    background: 'var(--surface-base)',
+                    background: 'var(--surface-card)',
                     borderLeft: `3px solid ${colors.status.positive}`,
                     borderTop: '1px solid var(--status-positive)',
                     borderRight: '1px solid var(--status-positive)',
@@ -909,7 +909,7 @@ function StrategyContent() {
                     <div
                       className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
                       style={{
-                        background: 'var(--surface-base)',
+                        background: 'var(--surface-card)',
                         borderLeft: `3px solid ${netColor}`,
                         borderTop: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
                         borderRight: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
@@ -937,7 +937,7 @@ function StrategyContent() {
                 {(() => {
                   const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
+                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
                         <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -959,7 +959,7 @@ function StrategyContent() {
                 {(() => {
                   const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
                   return (
-                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
+                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
                       <div className="flex items-center justify-between">
                         <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
                         <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
@@ -1051,7 +1051,7 @@ function StrategyContent() {
           )}
 
           {/* The Bottom Line */}
-          <div className="mt-7 p-5 rounded-xl border" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
+          <div className="mt-7 p-5 rounded-xl border" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.brand.blue }}>The Bottom Line</p>
             <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
               {isFlipOrWholesale ? (
@@ -1069,7 +1069,7 @@ function StrategyContent() {
           </div>
 
           {/* Try Another Strategy */}
-          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
+          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.gold }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
             </div>
@@ -1102,7 +1102,7 @@ function StrategyContent() {
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
         <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
-          <div className="w-full rounded-[14px] p-5" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
+          <div className="w-full rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
             <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}>

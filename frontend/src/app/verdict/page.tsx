@@ -1205,7 +1205,7 @@ function VerdictContent() {
                 { label: 'Market', value: property.price, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
-                  background: 'var(--surface-base)',
+                  background: 'var(--surface-card)',
                   border: `1px solid ${card.color}`,
                   boxShadow: 'var(--shadow-card)',
                   transition: 'all 0.3s ease',
@@ -1497,7 +1497,7 @@ function VerdictContent() {
                 onClick={() => handlePDFDownload('light')}
                 disabled={isExporting === 'pdf'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: 'var(--surface-base)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'pdf' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
@@ -1510,7 +1510,7 @@ function VerdictContent() {
                 onClick={handleExcelDownload}
                 disabled={isExporting === 'excel'}
                 className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: 'var(--surface-base)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
               >
                 {isExporting === 'excel' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
