@@ -1112,7 +1112,8 @@ function VerdictContent() {
     : probability >= 20
       ? 'Achievable with the right approach.'
       : "You'll need leverage, timing, or a motivated seller."
-  const tier = getDealGapTier(dealGapPct)
+  const dealGapPriceLabel = isOffMarket ? 'Market price' : 'List price'
+  const tier = getDealGapTier(dealGapPct, dealGapPriceLabel)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
   const dataSourceCount = sourceKeys.filter((sourceKey) => {
     const valueHasSource = iqSources.value[sourceKey] != null
