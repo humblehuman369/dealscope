@@ -221,8 +221,8 @@ export function DealMakerSlider({
         ) : (
           <button
             onClick={handleValueClick}
-            className="tabular-nums hover:bg-slate-100 rounded px-2 py-1 transition-colors cursor-pointer"
-            style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', background: 'transparent', border: 'none' }}
+            className="tabular-nums rounded px-2 py-1 transition-colors cursor-pointer"
+            style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', background: 'transparent', border: '1px solid var(--border-default)', borderRadius: '6px' }}
             title="Click to edit value directly"
           >
             {formattedValue}
