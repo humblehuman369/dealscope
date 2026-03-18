@@ -7,8 +7,8 @@ type ThemeValue<T extends string = string> = {
 
 export const semanticTokens = {
   surface: {
-    base: { dark: '#000000', light: '#FFFFFF' },
-    section: { dark: '#060B14', light: '#F8FAFC' },
+    base: { dark: '#000000', light: '#F0FBFF' },
+    section: { dark: '#060B14', light: '#F0F9FE' },
     card: { dark: '#0C1220', light: '#FFFFFF' },
     cardHover: { dark: '#101828', light: '#F1F5F9' },
     elevated: { dark: '#101828', light: '#F1F5F9' },
