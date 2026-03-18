@@ -213,8 +213,8 @@
 }
 
 [data-theme='light'] {
-  --surface-base: #FFFFFF;
-  --surface-section: #F8FAFC;
+  --surface-base: #F0FBFF;
+  --surface-section: #F0F9FE;
   --surface-card: #FFFFFF;
   --surface-card-hover: #F1F5F9;
   --surface-elevated: #F1F5F9;
@@ -338,6 +338,12 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text-body);
     @apply transition-colors duration-300;
     -webkit-font-smoothing: antialiased;
+  }
+
+  [data-theme='light'] body {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(14, 165, 233, 0.07) 0%, transparent 100%),
+      var(--color-base);
   }
 
   /* Heading styles — Inter at 700 weight */
