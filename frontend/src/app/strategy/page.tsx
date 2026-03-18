@@ -689,7 +689,7 @@ function StrategyContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)', marginBottom: 34 }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 16 }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </p>
@@ -705,7 +705,7 @@ function StrategyContent() {
         })()}
 
         {/* Next Steps — accordion, closed by default */}
-        <section className="px-5" style={{ paddingTop: 18, paddingBottom: 18 }}>
+        <section className="px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
           <details>
             <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 <span style={{ color: 'var(--accent-sky)', margin: 0, fontSize: '0.85rem', fontWeight: 500, fontFamily: 'Inter, sans-serif', letterSpacing: '0.02em' }}>Next Steps?</span>
@@ -750,7 +750,7 @@ function StrategyContent() {
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
-        <section className="px-5 py-6">
+        <section className="px-5 pt-2 pb-6">
           <div
             className="rounded-[14px] p-5 sm:p-6"
             style={{
