@@ -134,7 +134,7 @@ function DealGapHero({
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
-            color,
+            color: '#ffffff',
             border: `1.5px solid ${color}`,
             padding: '7px 14px',
             borderRadius: 999,
