@@ -540,7 +540,7 @@ function StrategyContent() {
           <section className="px-5 pt-6 pb-2">
             <div className="relative" style={{ paddingTop: 40 }}>
               {(() => {
-                const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? listPrice
+                const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? (data as any)?.incomeValue ?? listPrice
                 const isListedProp = propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
                 const pLabel = isListedProp ? 'Asking' : 'Market'
                 const markers = [
