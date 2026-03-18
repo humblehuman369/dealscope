@@ -782,6 +782,37 @@ function StrategyContent() {
             </button>
           </div>
 
+          {/* Key Metrics Bar */}
+          <div
+            className="rounded-xl px-4 sm:px-5 py-3 mb-6"
+            style={{
+              background: 'var(--surface-base)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
+              {[
+                { label: 'Buy Price', value: formatCurrency(targetPrice) },
+                { label: 'Cash Needed', value: formatCurrency(totalCashNeeded) },
+                { label: 'Deal Gap', value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`, highlight: true },
+                { label: 'Annual Profit', value: formatCurrency(strategyAnnualCashFlow), highlight: true },
+                { label: 'CAP Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—' },
+                { label: 'COC Return', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—' },
+              ].map((m, i) => (
+                <div key={i} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
+                  <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>{m.label}</span>
+                  <span
+                    className="text-[13px] sm:text-base font-semibold tabular-nums"
+                    style={{ color: m.highlight ? 'var(--accent-sky)' : 'var(--text-heading)' }}
+                  >
+                    {m.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {(() => {
             const breakdownProps = {
               listPrice, targetPrice, loanAmount, downPayment, downPaymentPct,
