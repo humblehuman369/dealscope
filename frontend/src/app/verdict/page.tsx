@@ -1112,6 +1112,7 @@ function VerdictContent() {
     : probability >= 20
       ? 'Achievable with the right approach.'
       : "You'll need leverage, timing, or a motivated seller."
+  const isOffMarket = !isListed
   const dealGapPriceLabel = isOffMarket ? 'Market price' : 'List price'
   const tier = getDealGapTier(dealGapPct, dealGapPriceLabel)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
@@ -1121,7 +1122,6 @@ function VerdictContent() {
     return valueHasSource || rentHasSource
   }).length
   const analysisTimeSeconds = 4.2
-  const isOffMarket = !isListed
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
 
