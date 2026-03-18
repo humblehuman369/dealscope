@@ -795,16 +795,16 @@ function StrategyContent() {
               {[
                 { label: 'Buy Price', value: formatCurrency(targetPrice) },
                 { label: 'Cash Needed', value: formatCurrency(totalCashNeeded) },
-                { label: 'Deal Gap', value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`, highlight: true },
-                { label: 'Annual Profit', value: formatCurrency(strategyAnnualCashFlow), highlight: true },
-                { label: 'CAP Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—' },
-                { label: 'COC Return', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—' },
+                { label: 'Deal Gap', value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`, highlight: true, negative: dealGapPct > 0 },
+                { label: 'Annual Profit', value: formatCurrency(strategyAnnualCashFlow), highlight: true, negative: strategyAnnualCashFlow < 0 },
+                { label: 'CAP Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—', negative: capRateVal !== null && capRateVal < 0 },
+                { label: 'COC Return', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', negative: cocVal !== null && cocVal < 0 },
               ].map((m, i) => (
                 <div key={i} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
                   <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>{m.label}</span>
                   <span
                     className="text-[13px] sm:text-base font-semibold tabular-nums"
-                    style={{ color: m.highlight ? 'var(--accent-sky)' : 'var(--text-heading)' }}
+                    style={{ color: m.negative ? 'var(--status-negative)' : m.highlight ? 'var(--accent-sky)' : 'var(--text-heading)' }}
                   >
                     {m.value}
                   </span>
