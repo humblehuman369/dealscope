@@ -1254,23 +1254,30 @@ function VerdictContent() {
                           DEAL GAP &nbsp;-{dealBracketPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
-                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
                           <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
-                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
                         </div>
                       </div>
                     )}
 
                     {/* Bar with proportionally-positioned dots */}
-                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, rgba(14,36,64,0.9), rgba(20,50,80,0.95), rgba(14,36,64,0.9))', boxShadow: 'inset 0 0 8px rgba(56,189,248,0.3), 0 0 12px rgba(56,189,248,0.2), 0 0 4px rgba(56,189,248,0.15)' }}>
+                    <div className="relative rounded-full" style={{
+                      height: 22,
+                      background: 'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
+                      border: '1.5px solid rgba(56,189,248,0.5)',
+                      boxShadow: 'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
+                    }}>
                       {markers.map((m, i) => (
-                        <div key={i} className="absolute w-4.5 h-4.5 rounded-full border-2 -top-[5px]"
+                        <div key={i} className="absolute rounded-full"
                           style={{
+                            width: 18,
+                            height: 18,
+                            top: '50%',
                             left: `${pos(m.price)}%`,
-                            transform: 'translateX(-50%)',
+                            transform: 'translate(-50%, -50%)',
                             background: m.dotColor,
-                            borderColor: 'var(--surface-card)',
-                            boxShadow: `0 0 8px ${m.dotColor}80`,
+                            boxShadow: `0 0 8px ${m.dotColor}90`,
                           }}
                         />
                       ))}
@@ -1285,9 +1292,9 @@ function VerdictContent() {
                         }}
                       >
                         <div className="flex items-end">
-                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
                           <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
