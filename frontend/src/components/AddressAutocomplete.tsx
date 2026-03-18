@@ -21,6 +21,8 @@ interface AddressAutocompleteProps {
   style?: React.CSSProperties
   autoFocus?: boolean
   id?: string
+  name?: string
+  'aria-label'?: string
 }
 
 function getComponent(place: google.maps.places.PlaceResult, type: string): string {
@@ -48,6 +50,8 @@ export function AddressAutocomplete({
   style,
   autoFocus = false,
   id,
+  name,
+  'aria-label': ariaLabel,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
@@ -191,6 +195,7 @@ export function AddressAutocomplete({
     <input
       ref={inputRef}
       id={id}
+      name={name}
       type="text"
       defaultValue={value}
       onChange={handleInputChange}
@@ -199,6 +204,7 @@ export function AddressAutocomplete({
       style={style}
       autoFocus={autoFocus}
       autoComplete="off"
+      aria-label={ariaLabel}
     />
   )
 }

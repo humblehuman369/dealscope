@@ -253,6 +253,8 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   onChange={setAddress}
                   onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
                   autoFocus
+                  name="address"
+                  aria-label="Property address"
                   className="w-full pl-12 pr-12 py-4 rounded-xl text-[var(--text-heading)] placeholder-[var(--text-label)] outline-none transition-colors"
                   style={{
                     background: 'var(--surface-input)',

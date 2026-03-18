@@ -254,6 +254,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               onChange={setAddress}
               onPlaceSelect={handlePlaceSelect}
               placeholder="Enter an address"
+              name="address"
+              aria-label="Property address"
               className="hero-pill-input"
               style={{
                 flex: 1,
@@ -907,6 +909,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   onChange={setAddress}
                   onPlaceSelect={handlePlaceSelect}
                   placeholder="Enter any property address..."
+                  name="address"
+                  aria-label="Property address"
                   className="hero-search-input"
                   style={{
                     width: "100%", boxSizing: "border-box" as const,
