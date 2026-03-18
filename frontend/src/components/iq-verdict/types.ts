@@ -248,7 +248,12 @@ export interface DealGapTier {
   border: string;
   icon: string;
   headline: string;
+  subHeadline: string;
 }
+
+const SUB_HEADLINE_POSITIVE = 'A positive DealGap indicates the asking price is below supported market value, creating measurable investor opportunity. Larger positive percentages generally indicate stronger pricing advantage.'
+const SUB_HEADLINE_NEUTRAL = 'A neutral DealGap means price and value are in balance — the deal may still work, but advantage must come from execution, financing, or future upside.'
+const SUB_HEADLINE_NEGATIVE = 'A negative DealGap indicates the asking price is above supported market value, where stronger negotiation, improved structure, or revised assumptions may be required to make the deal work. Larger negative percentages generally indicate reduced pricing advantage.'
 
 /**
  * Map a Deal Gap percentage to a branded tier with styling and copy.
@@ -258,10 +263,12 @@ export interface DealGapTier {
  * Negative gap  = discount needed from Market/List price (challenging)
  *
  * @param dealGapPercent - Gap from list/market price. Positive = discount needed, negative = Income Value above list.
- * @param priceLabel     - "Market price" (off-market) or "List price" (on-market). Inserted into headlines.
+ * @param isListed       - true when the property is actively listed (uses "List Price"); false for off-market (uses "Estimated Market Value" / "Estimated Value").
  */
-export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'List price'): DealGapTier {
+export function getDealGapTier(dealGapPercent: number, isListed: boolean = true): DealGapTier {
   const absGap = `${Math.abs(dealGapPercent).toFixed(1)}%`
+  const positivePriceLabel = isListed ? 'List Price' : 'Estimated Market Value'
+  const negativePriceLabel = isListed ? 'List Price' : 'Estimated Value'
 
   // --- Positive Gap tiers (Income Value exceeds Market/List price) ---
   if (dealGapPercent < -30) {
@@ -271,7 +278,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(0, 200, 83, 0.16)',
       border: '#00c853',
       icon: '✓',
-      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+      headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_POSITIVE,
     };
   }
   if (dealGapPercent < -20) {
@@ -281,7 +289,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(34, 197, 94, 0.16)',
       border: '#22c55e',
       icon: '✓',
-      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+      headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_POSITIVE,
     };
   }
   if (dealGapPercent < -10) {
@@ -291,7 +300,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(74, 222, 128, 0.16)',
       border: '#4ade80',
       icon: '✓',
-      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+      headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_POSITIVE,
     };
   }
   if (dealGapPercent < -5) {
@@ -301,7 +311,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(134, 239, 172, 0.16)',
       border: '#86efac',
       icon: '✓',
-      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+      headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_POSITIVE,
     };
   }
   if (dealGapPercent < 0) {
@@ -311,7 +322,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(183, 204, 58, 0.16)',
       border: '#b7cc3a',
       icon: '✓',
-      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+      headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_POSITIVE,
     };
   }
 
@@ -323,7 +335,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'var(--color-green-dim)',
       border: 'var(--status-positive)',
       icon: '✓',
-      headline: `The TARGET BUY works at ${priceLabel}.`,
+      headline: `The TARGET BUY works at ${negativePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_NEUTRAL,
     };
   }
 
@@ -335,7 +348,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(183, 204, 58, 0.16)',
       border: '#b7cc3a',
       icon: '✓',
-      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
+      headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_NEGATIVE,
     };
   }
   if (dealGapPercent <= 10) {
@@ -345,7 +359,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(199, 201, 91, 0.16)',
       border: '#c7c95b',
       icon: '⚡',
-      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
+      headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_NEGATIVE,
     };
   }
   if (dealGapPercent <= 20) {
@@ -355,7 +370,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(217, 166, 87, 0.16)',
       border: '#d9a657',
       icon: '⚠',
-      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
+      headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_NEGATIVE,
     };
   }
   if (dealGapPercent <= 30) {
@@ -365,7 +381,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
       bg: 'rgba(228, 134, 87, 0.16)',
       border: '#e48657',
       icon: '✕',
-      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
+      headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
+      subHeadline: SUB_HEADLINE_NEGATIVE,
     };
   }
   return {
@@ -374,7 +391,8 @@ export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'Lis
     bg: 'var(--color-red-dim)',
     border: 'var(--status-negative)',
     icon: '✕',
-    headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
+    headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
+    subHeadline: SUB_HEADLINE_NEGATIVE,
   };
 }
 

@@ -74,11 +74,13 @@ function DealGapHero({
   color,
   tierLabel,
   headline,
+  subHeadline,
 }: {
   dealGapPercent: number;
   color: string;
   tierLabel: string;
   headline: string;
+  subHeadline: string;
 }) {
   const [showValue, setShowValue] = useState(false)
 
@@ -215,6 +217,18 @@ function DealGapHero({
         }}
       >
         {headline}
+      </p>
+      <p
+        style={{
+          margin: '10px 0 0',
+          fontSize: 'clamp(12px, 1.8vw, 15px)',
+          lineHeight: 1.5,
+          fontWeight: 400,
+          color: 'var(--text-secondary)',
+          maxWidth: 920,
+        }}
+      >
+        {subHeadline}
       </p>
     </div>
   )
@@ -1127,8 +1141,7 @@ function VerdictContent() {
       ? 'Achievable with the right approach.'
       : "You'll need leverage, timing, or a motivated seller."
   const isOffMarket = !isListed
-  const dealGapPriceLabel = isOffMarket ? 'Market price' : 'List price'
-  const tier = getDealGapTier(dealGapPct, dealGapPriceLabel)
+  const tier = getDealGapTier(dealGapPct, isListed)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
   const dataSourceCount = sourceKeys.filter((sourceKey) => {
     const valueHasSource = iqSources.value[sourceKey] != null
@@ -1174,6 +1187,7 @@ function VerdictContent() {
                   color="var(--accent-sky)"
                   tierLabel={tier.label}
                   headline={tier.headline}
+                  subHeadline={tier.subHeadline}
                 />
               </div>
             </div>
