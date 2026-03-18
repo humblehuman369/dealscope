@@ -751,6 +751,14 @@ function StrategyContent() {
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
+          <div
+            className="rounded-[14px] p-5 sm:p-6"
+            style={{
+              background: 'var(--surface-base)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card-hover)',
+            }}
+          >
 
           {/* Toggle header */}
           <div className="flex items-center justify-between mb-5">
@@ -813,6 +821,8 @@ function StrategyContent() {
               </div>
             )
           })()}
+
+          </div>{/* end container box */}
 
           {/* Summary Cards — use per-strategy metrics when available */}
           {isFlipOrWholesale ? (
