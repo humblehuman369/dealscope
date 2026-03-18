@@ -121,7 +121,7 @@ function DealGapHero({
           style={{
             fontSize: 'clamp(20px, 3.64vw, 33px)',
             fontWeight: 800,
-            color,
+            color: '#ffffff',
             lineHeight: 1,
             fontFamily: "'DM Sans', system-ui, sans-serif",
             fontVariantNumeric: 'tabular-nums',
@@ -160,6 +160,20 @@ function DealGapHero({
             background: 'transparent',
           }}
         >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: `${rightwardProgress}%`,
+              borderRadius: 8,
+              background: color,
+              boxShadow: `0 0 12px ${color}, 0 0 4px ${color}`,
+              opacity: 0.45,
+              transition: 'width 1.2s cubic-bezier(0.22,1,0.36,1)',
+            }}
+          />
           <div
             style={{
               position: 'absolute',
