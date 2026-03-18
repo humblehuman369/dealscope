@@ -1121,7 +1121,7 @@ function VerdictContent() {
   const incomeValue = analysis.incomeValue || property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
   const monthlyRent = property.monthlyRent || 0
-  const isListed = property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
+  const isListed = !!property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
   // Deal Gap: discount from market/asking to Target Buy price.
