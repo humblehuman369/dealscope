@@ -746,6 +746,28 @@ function StrategyContent() {
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
 
+          {/* Toggle header */}
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-[1rem] font-bold uppercase tracking-wider" style={{ color: colors.text.primary }}>
+              Financial Breakdown
+            </h3>
+            <button
+              onClick={() => setShowDealMaker((v) => !v)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold transition-all"
+              style={{
+                background: showDealMaker ? 'transparent' : colors.brand.teal,
+                color: showDealMaker ? colors.brand.teal : 'var(--text-inverse)',
+                border: `1px solid ${colors.brand.teal}`,
+              }}
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+              </svg>
+              {showDealMaker ? 'Hide DealMaker' : 'Adjust Terms'}
+            </button>
+          </div>
+
           {(() => {
             const breakdownProps = {
               listPrice, targetPrice, loanAmount, downPayment, downPaymentPct,
