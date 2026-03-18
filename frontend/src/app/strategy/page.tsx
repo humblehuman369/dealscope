@@ -669,34 +669,47 @@ function StrategyContent() {
           )
         })()}
 
-        {/* Next Steps */}
-        <section className="px-5 py-10">
-          <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6, fontStyle: 'italic' }}>Next Steps</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 20, lineHeight: 1.55 }}>
-            Follow these steps to move forward with your property deal:
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {[
-              { num: '1', text: <><strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.</> },
-              { num: '2', text: <><strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.</> },
-              { num: '3', text: <><strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.</> },
-              { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.</> },
-            ].map((step) => (
-              <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <div style={{
-                  minWidth: 30, height: 30, borderRadius: '50%',
-                  background: 'var(--color-sky-dim)', border: '1px solid var(--accent-sky)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700, color: 'var(--accent-sky)', flexShrink: 0,
-                }}>
-                  {step.num}
-                </div>
-                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--text-body)', paddingTop: 4 }}>
-                  {step.text}
-                </p>
+        {/* Next Steps — accordion, closed by default */}
+        <section className="px-5 py-6">
+          <details>
+            <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <h2 className={tw.textHeading} style={{ color: colors.text.primary, margin: 0, fontStyle: 'italic' }}>Next Steps</h2>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, transition: 'transform 0.3s ease' }} className="details-chevron">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </summary>
+            <div style={{ paddingTop: 12 }}>
+              <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 20, lineHeight: 1.55 }}>
+                Follow these steps to move forward with your property deal:
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { num: '1', text: <><strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.</> },
+                  { num: '2', text: <><strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.</> },
+                  { num: '3', text: <><strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.</> },
+                  { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.</> },
+                ].map((step) => (
+                  <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                    <div style={{
+                      minWidth: 30, height: 30, borderRadius: '50%',
+                      background: 'var(--color-sky-dim)', border: '1px solid var(--accent-sky)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 700, color: 'var(--accent-sky)', flexShrink: 0,
+                    }}>
+                      {step.num}
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--text-body)', paddingTop: 4 }}>
+                      {step.text}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </details>
+          <style>{`
+            details summary::-webkit-details-marker { display: none; }
+            details[open] .details-chevron { transform: rotate(180deg); }
+          `}</style>
         </section>
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
