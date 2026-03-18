@@ -587,7 +587,7 @@ function StrategyContent() {
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: 'var(--surface-card)',
                   border: `1px solid ${card.color}`,
-                  boxShadow: `0 0 24px ${card.color}40, 0 0 8px ${card.color}25`,
+                  boxShadow: `0 0 30px ${card.color}70, 0 0 60px ${card.color}35, inset 0 0 20px ${card.color}15`,
                   transition: 'all 0.3s ease',
                 }}>
                   <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
