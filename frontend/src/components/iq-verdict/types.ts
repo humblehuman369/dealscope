@@ -230,11 +230,16 @@ export interface ReturnFactors {
 
 export type DealGapTierLabel =
   | 'No Gap'
-  | 'Minimal Gap'
-  | 'Mild Gap'
-  | 'Moderate Gap'
-  | 'Wide Gap'
-  | 'Extreme Gap';
+  | 'Minimal Positive Gap'
+  | 'Mild Positive Gap'
+  | 'Moderate Positive Gap'
+  | 'Wide Positive Gap'
+  | 'Extreme Positive Gap'
+  | 'Minimal Negative Gap'
+  | 'Mild Negative Gap'
+  | 'Moderate Negative Gap'
+  | 'Wide Negative Gap'
+  | 'Extreme Negative Gap';
 
 export interface DealGapTier {
   label: DealGapTierLabel;
@@ -249,9 +254,68 @@ export interface DealGapTier {
  * Map a Deal Gap percentage to a branded tier with styling and copy.
  * Aligned with backend INVESTOR_DISCOUNT_BRACKETS thresholds.
  *
- * @param dealGapPercent - The required discount from list/market price (0 = at asking, 15 = 15% below)
+ * Positive gap  = Income Value exceeds Market/List price (good for investor)
+ * Negative gap  = discount needed from Market/List price (challenging)
+ *
+ * @param dealGapPercent - Gap from list/market price. Positive = discount needed, negative = Income Value above list.
+ * @param priceLabel     - "Market price" (off-market) or "List price" (on-market). Inserted into headlines.
  */
-export function getDealGapTier(dealGapPercent: number): DealGapTier {
+export function getDealGapTier(dealGapPercent: number, priceLabel: string = 'List price'): DealGapTier {
+  const absGap = `${Math.abs(dealGapPercent).toFixed(1)}%`
+
+  // --- Positive Gap tiers (Income Value exceeds Market/List price) ---
+  if (dealGapPercent < -30) {
+    return {
+      label: 'Extreme Positive Gap',
+      color: '#00c853',
+      bg: 'rgba(0, 200, 83, 0.16)',
+      border: '#00c853',
+      icon: '✓',
+      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+    };
+  }
+  if (dealGapPercent < -20) {
+    return {
+      label: 'Wide Positive Gap',
+      color: '#22c55e',
+      bg: 'rgba(34, 197, 94, 0.16)',
+      border: '#22c55e',
+      icon: '✓',
+      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+    };
+  }
+  if (dealGapPercent < -10) {
+    return {
+      label: 'Moderate Positive Gap',
+      color: '#4ade80',
+      bg: 'rgba(74, 222, 128, 0.16)',
+      border: '#4ade80',
+      icon: '✓',
+      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+    };
+  }
+  if (dealGapPercent < -5) {
+    return {
+      label: 'Mild Positive Gap',
+      color: '#86efac',
+      bg: 'rgba(134, 239, 172, 0.16)',
+      border: '#86efac',
+      icon: '✓',
+      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+    };
+  }
+  if (dealGapPercent < 0) {
+    return {
+      label: 'Minimal Positive Gap',
+      color: '#b7cc3a',
+      bg: 'rgba(183, 204, 58, 0.16)',
+      border: '#b7cc3a',
+      icon: '✓',
+      headline: `The INCOME VALUE is ${absGap} above ${priceLabel}.`,
+    };
+  }
+
+  // --- No Gap ---
   if (dealGapPercent <= 0) {
     return {
       label: 'No Gap',
@@ -259,56 +323,58 @@ export function getDealGapTier(dealGapPercent: number): DealGapTier {
       bg: 'var(--color-green-dim)',
       border: 'var(--status-positive)',
       icon: '✓',
-      headline: 'The numbers work at the market or list price indicated.',
+      headline: `The TARGET BUY works at ${priceLabel}.`,
     };
   }
+
+  // --- Negative Gap tiers (discount needed from Market/List price) ---
   if (dealGapPercent <= 5) {
     return {
-      label: 'Minimal Gap',
+      label: 'Minimal Negative Gap',
       color: '#b7cc3a',
       bg: 'rgba(183, 204, 58, 0.16)',
       border: '#b7cc3a',
       icon: '✓',
-      headline: 'Solid opportunity. Worth pursuing if you can get a small discount or favorable terms.',
+      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
     };
   }
   if (dealGapPercent <= 10) {
     return {
-      label: 'Mild Gap',
+      label: 'Mild Negative Gap',
       color: '#c7c95b',
       bg: 'rgba(199, 201, 91, 0.16)',
       border: '#c7c95b',
       icon: '⚡',
-      headline: "You can make it work if you negotiate a discount within the range shown below or be creative and re-structure better terms — otherwise consider passing.",
+      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
     };
   }
   if (dealGapPercent <= 20) {
     return {
-      label: 'Moderate Gap',
+      label: 'Moderate Negative Gap',
       color: '#d9a657',
       bg: 'rgba(217, 166, 87, 0.16)',
       border: '#d9a657',
       icon: '⚠',
-      headline: 'Only works with a meaningful discount or creative terms. Decide if you can get there before going further.',
+      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
     };
   }
   if (dealGapPercent <= 30) {
     return {
-      label: 'Wide Gap',
+      label: 'Wide Negative Gap',
       color: '#e48657',
       bg: 'rgba(228, 134, 87, 0.16)',
       border: '#e48657',
       icon: '✕',
-      headline: 'Tough at these terms. Usually needs a big price cut or creative structure — or consider walking away.',
+      headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
     };
   }
   return {
-    label: 'Extreme Gap',
+    label: 'Extreme Negative Gap',
     color: 'var(--status-negative)',
     bg: 'var(--color-red-dim)',
     border: 'var(--status-negative)',
     icon: '✕',
-    headline: 'Too far off at current terms. Consider only if the seller will move significantly — otherwise pass.',
+    headline: `The TARGET BUY is ${absGap} below ${priceLabel}.`,
   };
 }
 
