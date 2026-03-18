@@ -10,7 +10,7 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import { useCallback, useEffect, useState, useMemo, Suspense } from 'react'
+import { useCallback, useEffect, useState, useMemo, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -25,6 +25,8 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { StrategyBreakdown } from '@/components/strategy/StrategyBreakdown'
+import { InlineDealMakerPanel, type InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 
 // Types from existing verdict system
 interface BackendAnalysisResponse {
@@ -113,6 +115,8 @@ function StrategyContent() {
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
+  const [showDealMaker, setShowDealMaker] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
   // key uses canonical address so it matches when navigating Verdict → Strategy).
@@ -258,15 +262,32 @@ function StrategyContent() {
     router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
   }, [router, resolvedAddress])
 
-  const handleOpenDealMaker = useCallback(() => {
-    const params = new URLSearchParams({
-      address: resolvedAddress,
-      from: 'strategy',
+  const handleInlineSliderChange = useCallback((field: keyof InlineDealMakerValues, value: number) => {
+    const FIELD_MAP: Record<keyof InlineDealMakerValues, { key: string; toOverride?: (v: number) => number }> = {
+      buyPrice: { key: 'purchasePrice' },
+      downPayment: { key: 'downPayment', toOverride: (v) => v * 100 },
+      closingCosts: { key: 'closingCosts', toOverride: (v) => v * 100 },
+      interestRate: { key: 'interestRate' },
+      loanTerm: { key: 'loanTerm' },
+      rehabBudget: { key: 'rehabBudget' },
+      arv: { key: 'arv' },
+      monthlyRent: { key: 'monthlyRent' },
+      vacancyRate: { key: 'vacancyRate', toOverride: (v) => v * 100 },
+      propertyTaxes: { key: 'propertyTaxes' },
+      insurance: { key: 'insurance' },
+      managementRate: { key: 'managementRate', toOverride: (v) => v * 100 },
+    }
+    const mapping = FIELD_MAP[field]
+    const overrideValue = mapping.toOverride ? mapping.toOverride(value) : value
+    setDealMakerOverrides((prev) => {
+      const next = { ...(prev ?? {}), [mapping.key]: overrideValue }
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        try { writeDealMakerOverrides(resolvedAddress, next) } catch { /* ignore */ }
+      }, 300)
+      return next
     })
-    if (selectedStrategyId) params.set('strategy', selectedStrategyId)
-    router.push(`/deal-maker?${params.toString()}`)
-  }, [router, resolvedAddress, selectedStrategyId])
-
+  }, [resolvedAddress])
 
   if (isLoading) {
     return (
@@ -717,108 +738,45 @@ function StrategyContent() {
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-5 py-6">
 
-          {/* Two columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-            {/* Left: Pay */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>What You'd Pay</span>
-                </div>
-              </div>
-              {[
-                ['Market Price', formatCurrency(listPrice), true],
-                ['Target Buy', formatCurrency(targetPrice), false, colors.brand.blue],
-                ['Loan Amount', formatCurrency(loanAmount), false],
-                [`Down Payment (${Math.round(downPaymentPct * 100)}%)`, formatCurrency(downPayment)],
-                [`Closing Costs (${Math.round(closingCostsPct * 100)}%)`, formatCurrency(closingCosts)],
-                ...(rehabCost > 0 ? [['Rehab Budget', formatCurrency(rehabCost), false, colors.status.negative]] : []),
-              ].map(([label, value, strike, color], i) => (
-                <div key={i} className="flex justify-between py-1.5">
-                  <span className="text-sm" style={{ color: colors.text.body }}>{label as string}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: (color as string) || colors.text.primary, textDecoration: strike ? 'line-through' : undefined, ...(strike ? { color: 'var(--text-body)' } : {}) }}>{value as string}</span>
-                </div>
-              ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Cash Needed</span>
-                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(downPayment + closingCosts + rehabCost)}</span>
-              </div>
+          {(() => {
+            const breakdownProps = {
+              listPrice, targetPrice, loanAmount, downPayment, downPaymentPct,
+              closingCosts, closingCostsPct, rehabCost, rate, loanTermYears,
+              monthlyPI, annualDebt, propertyTaxes, insurance, mgmt, mgmtPct,
+              maint, maintPct, reserves, reservesPct, totalExpenses,
+              monthlyRent, annualRent, vacancyLoss, vacancyPct, effectiveIncome,
+            }
 
-              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
+            const sliderValues: InlineDealMakerValues = {
+              buyPrice: targetPrice,
+              downPayment: downPaymentPct,
+              closingCosts: closingCostsPct,
+              interestRate: rate,
+              loanTerm: loanTermYears,
+              rehabBudget: rehabCost,
+              arv: listPrice,
+              monthlyRent,
+              vacancyRate: vacancyPct,
+              propertyTaxes,
+              insurance,
+              managementRate: mgmtPct,
+            }
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.brand.blue }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.brand.blue }}>Your Loan Payment</span>
-                </div>
-              </div>
-              {[
-                ['Interest Rate', `${(rate * 100).toFixed(1)}%`],
-                ['Loan Term', `${loanTermYears} years`],
-                ['Monthly Payment', formatCurrency(monthlyPI)],
-              ].map(([label, value], i) => (
-                <div key={i} className="flex justify-between py-1.5">
-                  <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
-                </div>
-              ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.brand.blue}`, borderBottom: `2px solid ${colors.brand.blue}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Annual Payment</span>
-                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(annualDebt)}</span>
-              </div>
+            if (!showDealMaker) {
+              return <StrategyBreakdown {...breakdownProps} />
+            }
 
-            </div>
-
-            {/* Right: Costs + Earn */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.negative }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.negative }}>What It Costs</span>
-                </div>
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_380px] gap-6 md:gap-8 transition-all duration-300">
+                <StrategyBreakdown {...breakdownProps} isCompact />
+                <InlineDealMakerPanel
+                  values={sliderValues}
+                  onChange={handleInlineSliderChange}
+                  listPrice={listPrice}
+                />
               </div>
-              {[
-                ['Property Tax', `${formatCurrency(propertyTaxes)}/yr`],
-                ['Insurance', `${formatCurrency(insurance)}/yr`],
-                [`Management (${Math.round(mgmtPct * 100)}%)`, `${formatCurrency(mgmt)}/yr`],
-                [`Maintenance (${Math.round(maintPct * 100)}%)`, `${formatCurrency(maint)}/yr`],
-                [`Reserves (${Math.round(reservesPct * 100)}%)`, `${formatCurrency(reserves)}/yr`],
-              ].map(([label, value], i) => (
-                <div key={i} className="flex justify-between py-1.5">
-                  <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
-                </div>
-              ))}
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.negative}`, borderBottom: `2px solid ${colors.status.negative}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Total Costs</span>
-                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(totalExpenses)}/yr</span>
-              </div>
-
-              <hr className="my-5" style={{ borderColor: colors.ui.border }} />
-
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: colors.status.positive }}>
-                  <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color: colors.status.positive }}>What You'd Earn</span>
-                </div>
-              </div>
-              {[
-                ['Monthly Rent', formatCurrency(monthlyRent)],
-                ['Annual Gross', formatCurrency(annualRent)],
-              ].map(([label, value], i) => (
-                <div key={i} className="flex justify-between py-1.5">
-                  <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: colors.text.primary }}>{value}</span>
-                </div>
-              ))}
-              <div className="flex justify-between py-1.5">
-                <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(vacancyPct * 100)}%)</span>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(vacancyLoss)})</span>
-              </div>
-              <div className="flex justify-between pt-2.5 pb-2.5 mt-1.5" style={{ borderTop: `2px solid ${colors.status.positive}`, borderBottom: `2px solid ${colors.status.positive}` }}>
-                <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>Effective Income</span>
-                <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{formatCurrency(effectiveIncome)}</span>
-              </div>
-
-            </div>
-          </div>
+            )
+          })()}
 
           {/* Summary Cards — use per-strategy metrics when available */}
           {isFlipOrWholesale ? (
@@ -974,12 +932,16 @@ function StrategyContent() {
               {/* Action Buttons — always 3 across */}
               <div className="grid grid-cols-3 gap-2 mt-5">
                 <button
-                  onClick={handleOpenDealMaker}
+                  onClick={() => setShowDealMaker((v) => !v)}
                   className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
-                  style={{ background: colors.brand.teal, color: 'var(--text-inverse)' }}
+                  style={{
+                    background: showDealMaker ? 'transparent' : colors.brand.teal,
+                    color: showDealMaker ? colors.brand.teal : 'var(--text-inverse)',
+                    border: showDealMaker ? `1px solid ${colors.brand.teal}` : '1px solid transparent',
+                  }}
                 >
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                  <span>Change Terms</span>
+                  <span>{showDealMaker ? 'Hide DealMaker' : 'Adjust Terms'}</span>
                 </button>
                 <button
                   onClick={() => handlePDFDownload('light')}
