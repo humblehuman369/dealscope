@@ -673,13 +673,11 @@ function StrategyContent() {
         <section className="px-5" style={{ paddingTop: 18, paddingBottom: 18 }}>
           <details>
             <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <h2 className={tw.textHeading} style={{ color: colors.text.primary, margin: 0, fontStyle: 'italic' }}>Next Steps?</h2>
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0, transition: 'transform 0.3s ease' }} className="details-chevron">
                   <circle cx="11" cy="11" r="10" stroke="var(--accent-sky)" strokeWidth="1.5" />
                   <path d="M7.5 9.5L11 13L14.5 9.5" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </div>
             </summary>
             <div style={{ paddingTop: 12 }}>
               <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 20, lineHeight: 1.55 }}>
