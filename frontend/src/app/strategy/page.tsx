@@ -119,9 +119,16 @@ function StrategyContent() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedAddressRef = useRef(addressParam)
 
-  // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
-  // key uses canonical address so it matches when navigating Verdict → Strategy).
-  const [dealMakerOverrides, setDealMakerOverrides] = useState<Record<string, any> | null>(null)
+  // Overrides from sessionStorage (Verdict / DealMaker page) — drives initial API fetch.
+  const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
+  // Inline slider overrides — local-only, never re-triggers API fetch.
+  const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
+  // Merged view used by all downstream calculations.
+  const dealMakerOverrides = useMemo(() => {
+    if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
+    return { ...(initialOverrides ?? {}), ...inlineOverrides }
+  }, [initialOverrides, inlineOverrides])
+
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
     try {
@@ -132,8 +139,7 @@ function StrategyContent() {
         const parsed = JSON.parse(stored)
         if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
           console.log('[StrategyIQ] Loaded DealMaker overrides from sessionStorage:', parsed)
-          setDealMakerOverrides(parsed)
-          // If sessionStorage has a strategy and no URL param, use it
+          setInitialOverrides(parsed)
           if (!strategyParam && parsed.strategy) {
             setSelectedStrategyId(parsed.strategy)
           }
@@ -263,8 +269,8 @@ function StrategyContent() {
       }
     }
     fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- api.post is a stable module-level reference
-  }, [addressParam, conditionParam, locationParam, dealMakerOverrides])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- api.post is a stable module-level reference; initialOverrides only (not inline slider changes)
+  }, [addressParam, conditionParam, locationParam, initialOverrides])
 
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
@@ -287,8 +293,8 @@ function StrategyContent() {
     }
     const mapping = FIELD_MAP[field]
     const overrideValue = mapping.toOverride ? mapping.toOverride(value) : value
-    setDealMakerOverrides((prev) => {
-      const next = { ...(prev ?? {}), [mapping.key]: overrideValue }
+    setInlineOverrides((prev) => {
+      const next = { ...prev, [mapping.key]: overrideValue }
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         try { writeDealMakerOverrides(resolvedAddressRef.current, next) } catch { /* ignore */ }
