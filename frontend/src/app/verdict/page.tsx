@@ -110,30 +110,25 @@ function DealGapHero({
         style={{
           margin: 0,
           fontSize: 'clamp(23px, 3.79vw, 39px)',
-          lineHeight: 1,
+          lineHeight: 1.15,
           fontWeight: 800,
           color: 'var(--text-heading)',
           letterSpacing: -1.2,
         }}
       >
-        <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
-      </h1>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
+        <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap{' '}
         <span
           style={{
-            fontSize: 'clamp(20px, 3.64vw, 33px)',
-            fontWeight: 800,
-            color: '#ffffff',
-            lineHeight: 1,
-            fontFamily: "'DM Sans', system-ui, sans-serif",
+            color: 'var(--accent-sky)',
             fontVariantNumeric: 'tabular-nums',
             opacity: showValue ? 1 : 0,
-            transform: showValue ? 'translateY(0)' : 'translateY(6px)',
-            transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
           {sign}{displayVal.toFixed(1)}%
         </span>
+      </h1>
+      <div style={{ marginTop: 14 }}>
         <span
           style={{
             display: 'inline-flex',
@@ -208,7 +203,7 @@ function DealGapHero({
       </div>
       <p
         style={{
-          margin: '18px 0 0',
+          margin: '28px 0 0',
           fontSize: 'clamp(14px, 2.34vw, 21px)',
           lineHeight: 1.2,
           fontWeight: 700,
@@ -220,7 +215,7 @@ function DealGapHero({
       </p>
       <p
         style={{
-          margin: '10px 0 0',
+          margin: '10px 0 16px',
           fontSize: 'clamp(15px, 2.1vw, 18px)',
           lineHeight: 1.5,
           fontWeight: 500,
