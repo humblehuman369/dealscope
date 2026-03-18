@@ -20,7 +20,7 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
-import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, writeDealMakerOverrides } from '@/utils/addressIdentity'
+import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, isLikelyFullAddress, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
@@ -188,9 +188,24 @@ function StrategyContent() {
   useEffect(() => {
     async function fetchData() {
       if (!addressParam) { setError('No address'); setIsLoading(false); return }
+
+      // URL param may be truncated (missing state/zip). Try sessionStorage
+      // for the full address that the Verdict page stored earlier.
+      let fetchAddr = addressParam
+      if (!isLikelyFullAddress(fetchAddr) && typeof window !== 'undefined') {
+        const activeAddr = sessionStorage.getItem('dealMaker_activeAddress')
+        if (
+          activeAddr &&
+          isLikelyFullAddress(activeAddr) &&
+          activeAddr.toLowerCase().startsWith(fetchAddr.split(',')[0].trim().toLowerCase())
+        ) {
+          fetchAddr = activeAddr
+        }
+      }
+
       try {
         setIsLoading(true)
-        const propData = await fetchProperty(addressParam)
+        const propData = await fetchProperty(fetchAddr)
         const v = propData.valuations || {}
         // Zestimate is primary source for off-market; sequential fallbacks prevent crashes
         let price = v.market_price

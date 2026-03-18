@@ -39,6 +39,7 @@ import { fetchPropertyPhotos } from '@/services/photoService'
 import {
   buildDealMakerSessionKey,
   canonicalizeAddressForIdentity,
+  isLikelyFullAddress,
   readDealMakerOverrides,
   writeDealMakerOverrides,
 } from '@/utils/addressIdentity'
@@ -368,6 +369,7 @@ function VerdictContent() {
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const backendFullAddressRef = useRef('')
   
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
@@ -506,6 +508,7 @@ function VerdictContent() {
 
         // Prefer backend-resolved full address to avoid URL/address drift in UI.
         const backendFullAddress = data.address?.full_address || ''
+        backendFullAddressRef.current = backendFullAddress
         const parsedAddress = parseAddressString(backendFullAddress || addressParam)
 
         // Build IQProperty from API data with enriched data for dynamic scoring
@@ -1154,7 +1157,13 @@ function VerdictContent() {
   const navigateToStrategy = () => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const parts = [property.address, property.city, stateZip].filter(Boolean)
-    const fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+    let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+
+    // Fall back to backend-resolved address when property parts are incomplete
+    if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+      fullAddress = backendFullAddressRef.current
+    }
+
     const params = new URLSearchParams({ address: fullAddress })
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
