@@ -754,7 +754,7 @@ function StrategyContent() {
           <div
             className="rounded-[14px] p-5 sm:p-6"
             style={{
-              background: 'var(--surface-base)',
+              background: 'var(--surface-elevated)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card-hover)',
             }}
