@@ -225,7 +225,7 @@ function DealGapHero({
           lineHeight: 1.5,
           fontWeight: 500,
           fontFamily: "'Inter', system-ui, sans-serif",
-          color: 'var(--text-heading)',
+          color: 'var(--text-secondary)',
           maxWidth: 920,
         }}
       >
