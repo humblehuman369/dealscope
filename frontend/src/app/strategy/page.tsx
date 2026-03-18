@@ -587,7 +587,7 @@ function StrategyContent() {
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: 'var(--surface-base)',
                   border: `1px solid ${card.color}`,
-                  boxShadow: 'var(--shadow-card)',
+                  boxShadow: `0 0 24px ${card.color}40, 0 0 8px ${card.color}25`,
                   transition: 'all 0.3s ease',
                 }}>
                   <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
@@ -689,7 +689,7 @@ function StrategyContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)', marginBottom: 40 }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 34 }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </p>
