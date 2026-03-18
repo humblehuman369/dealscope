@@ -345,8 +345,11 @@ function VerdictContent() {
   // Get session data (only on client)
   const sessionData = isClient ? getSessionData() : null
   
-  // Use URL params if available, otherwise fall back to sessionStorage
-  const overridePurchasePrice = urlPurchasePrice || (sessionData?.purchasePrice ? String(sessionData.purchasePrice) : null)
+  // Use URL params only for purchasePrice — sessionStorage purchasePrice is auto-written
+  // by this page's own analysis output, so reading it back creates a feedback loop where
+  // the previous Target Buy becomes the next analysis's purchase_price override.
+  // DealMaker always navigates here with URL params; saved-property mode uses dealMakerStore directly.
+  const overridePurchasePrice = urlPurchasePrice || null
   const overrideMonthlyRent = urlMonthlyRent || (sessionData?.monthlyRent ? String(sessionData.monthlyRent) : null)
   const overridePropertyTaxes = urlPropertyTaxes || (sessionData?.propertyTaxes ? String(sessionData.propertyTaxes) : null)
   const overrideInsurance = urlInsurance || (sessionData?.insurance ? String(sessionData.insurance) : null)
