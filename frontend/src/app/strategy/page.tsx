@@ -117,6 +117,7 @@ function StrategyContent() {
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
   const [showDealMaker, setShowDealMaker] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const resolvedAddressRef = useRef(addressParam)
 
   // Read DealMaker/verdict snapshot from sessionStorage (Verdict writes listPrice, incomeValue, purchasePrice;
   // key uses canonical address so it matches when navigating Verdict → Strategy).
@@ -160,6 +161,13 @@ function StrategyContent() {
   }, [addressParam, propertyInfo])
 
   const resolvedAddress = (propertyInfo?.address?.full_address || addressParam).trim()
+  resolvedAddressRef.current = resolvedAddress
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [resolvedAddress])
 
   const { isSaved, isSaving, save, toggle } = useSaveProperty({
     displayAddress: resolvedAddress,
@@ -283,11 +291,11 @@ function StrategyContent() {
       const next = { ...(prev ?? {}), [mapping.key]: overrideValue }
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
-        try { writeDealMakerOverrides(resolvedAddress, next) } catch { /* ignore */ }
+        try { writeDealMakerOverrides(resolvedAddressRef.current, next) } catch { /* ignore */ }
       }, 300)
       return next
     })
-  }, [resolvedAddress])
+  }, [])
 
   if (isLoading) {
     return (
