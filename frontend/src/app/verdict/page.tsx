@@ -1187,19 +1187,19 @@ function VerdictContent() {
 
             <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
               {[
-                { label: 'Income Value', value: incomeValue, sub: 'Breakeven', active: false, dominant: false },
-                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
-                { label: 'Market', value: property.price, sub: 'Market Value or List Price', active: false, dominant: false },
+                { label: 'Income Value', value: incomeValue, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
+                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', color: 'var(--accent-sky)', dominant: true },
+                { label: 'Market', value: property.price, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: 'var(--surface-base)',
-                  border: `1px solid ${card.active ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
-                  boxShadow: card.active ? 'var(--shadow-card-hover)' : 'var(--shadow-card)',
+                  border: `1px solid ${card.color}`,
+                  boxShadow: 'var(--shadow-card)',
                   transition: 'all 0.3s ease',
                 }}>
-                  <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wide mb-1" style={{ color: card.active ? 'var(--text-heading)' : 'var(--text-body)' }}>{card.label}</p>
-                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.active ? 'var(--accent-sky)' : 'var(--text-heading)' }}>{fmtShort(card.value)}</p>
-                  <p className="text-[10px] sm:text-[14px] font-medium" style={{ color: card.active ? 'var(--text-body)' : 'var(--text-secondary)' }}>{card.sub}</p>
+                  <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
+                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.color }}>{fmtShort(card.value)}</p>
+                  <p className="text-[10px] sm:text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{card.sub}</p>
                 </div>
               ))}
             </div>
@@ -1262,15 +1262,15 @@ function VerdictContent() {
                     )}
 
                     {/* Bar with proportionally-positioned dots */}
-                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))', boxShadow: 'inset 0 0 6px rgba(56,189,248,0.25), inset 0 0 6px rgba(234,179,8,0.2), 0 0 10px rgba(56,189,248,0.15), 0 0 10px rgba(234,179,8,0.12)' }}>
+                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, rgba(14,36,64,0.9), rgba(20,50,80,0.95), rgba(14,36,64,0.9))', boxShadow: 'inset 0 0 8px rgba(56,189,248,0.3), 0 0 12px rgba(56,189,248,0.2), 0 0 4px rgba(56,189,248,0.15)' }}>
                       {markers.map((m, i) => (
-                        <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
+                        <div key={i} className="absolute w-4.5 h-4.5 rounded-full border-2 -top-[5px]"
                           style={{
                             left: `${pos(m.price)}%`,
                             transform: 'translateX(-50%)',
                             background: m.dotColor,
                             borderColor: 'var(--surface-card)',
-                            boxShadow: `0 0 6px ${m.dotColor}60`,
+                            boxShadow: `0 0 8px ${m.dotColor}80`,
                           }}
                         />
                       ))}
