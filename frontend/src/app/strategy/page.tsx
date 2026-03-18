@@ -670,25 +670,33 @@ function StrategyContent() {
         })()}
 
         {/* Next Steps */}
-        <section className="px-5 pt-8 pb-0">
+        <section className="px-5 py-10">
           <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6, fontStyle: 'italic' }}>Next Steps</h2>
-          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 16, lineHeight: 1.55 }}>
+          <p className={tw.textBody} style={{ color: colors.text.body, marginBottom: 20, lineHeight: 1.55 }}>
             Follow these steps to move forward with your property deal:
           </p>
-          <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
-              <strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.
-            </li>
-            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
-              <strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.
-            </li>
-            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
-              <strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.
-            </li>
-            <li style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.55 }}>
-              <strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.
-            </li>
-          </ol>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { num: '1', text: <><strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.</> },
+              { num: '2', text: <><strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.</> },
+              { num: '3', text: <><strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.</> },
+              { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.</> },
+            ].map((step) => (
+              <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <div style={{
+                  minWidth: 30, height: 30, borderRadius: '50%',
+                  background: 'var(--color-sky-dim)', border: '1px solid var(--accent-sky)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, fontWeight: 700, color: 'var(--accent-sky)', flexShrink: 0,
+                }}>
+                  {step.num}
+                </div>
+                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.55, color: 'var(--text-body)', paddingTop: 4 }}>
+                  {step.text}
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
