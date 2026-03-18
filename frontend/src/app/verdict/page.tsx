@@ -257,7 +257,7 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
       >
         {num}
       </div>
-      <p style={{ margin: 0, fontSize: 16.5, fontWeight: 500, lineHeight: 1.3, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
+      <p style={{ margin: 0, fontSize: 18, fontWeight: 500, lineHeight: 1.4, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
     </div>
   )
 }
@@ -1181,18 +1181,15 @@ function VerdictContent() {
 
           <section className="mx-5 mt-4 px-5 py-8 rounded-2xl" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
 
-            <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 6 }}>
+            <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 24 }}>
               {dealGapPct <= 10 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
             </h2>
-            <p className={tw.textBody} style={{ color: 'var(--text-body)', marginBottom: 24, lineHeight: 1.55 }}>
-              Every investment property has three price levels. The gap between is what makes or breaks this deal. Change Terms to improve the deal and close the gap.
-            </p>
 
             <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
               {[
-                { label: 'Wholesale', value: wholesalePrice, sub: '30% net discount', active: false, dominant: false },
+                { label: 'Income Value', value: incomeValue, sub: 'Breakeven', active: false, dominant: false },
                 { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', active: true, dominant: true },
-                { label: 'Income Value', value: incomeValue, sub: 'Price where income covers all costs', active: false, dominant: false },
+                { label: 'Market', value: property.price, sub: 'Market Value or List Price', active: false, dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: 'var(--surface-base)',
@@ -1301,18 +1298,8 @@ function VerdictContent() {
                       </div>
                     )}
 
-                    {/* Legend — sorted by price (matches left-to-right dot order); wrap on narrow screens */}
-                    <div className="flex flex-wrap justify-between gap-y-2 mt-3 gap-x-2">
-                      {markers.map((m, i) => (
-                        <div key={i} className="flex flex-col items-center gap-0.5 min-w-0">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
-                            <span className="text-[16px] sm:text-[20px] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
-                          </div>
-                          <span className="text-[16px] sm:text-[20px] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{fmtShort(m.price)}</span>
-                        </div>
-                      ))}
-                    </div>
+
+
                   </>
                 )
               })()}
@@ -1343,17 +1330,15 @@ function VerdictContent() {
                 <h3
                   style={{
                     margin: '0 0 20px',
-                    fontSize: 20,
+                    fontSize: 24,
                     color: 'var(--text-heading)',
-                    textTransform: 'uppercase',
-                    letterSpacing: 2,
                     fontWeight: 700,
                   }}
                 >
-                  What You Need to Know
+                  What You Need to Know?
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
                   <Takeaway num="1" delay={0}>
                     {isOffMarket ? (
                       <span>
