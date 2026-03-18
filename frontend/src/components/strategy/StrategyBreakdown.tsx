@@ -9,7 +9,6 @@ function formatCurrency(v: number): string {
 const colors = {
   brand: { blue: 'var(--accent-sky)' },
   text: { primary: 'var(--text-heading)', body: 'var(--text-body)' },
-  status: { positive: 'var(--status-positive)', negative: 'var(--status-negative)' },
   ui: { border: 'var(--border-subtle)' },
 } as const
 
@@ -92,7 +91,7 @@ function WhatYoudPay(props: StrategyBreakdownProps) {
       <Row label={`Down Payment (${Math.round(props.downPaymentPct * 100)}%)`} value={formatCurrency(props.downPayment)} />
       <Row label={`Closing Costs (${Math.round(props.closingCostsPct * 100)}%)`} value={formatCurrency(props.closingCosts)} />
       {props.rehabCost > 0 && (
-        <Row label="Rehab Budget" value={formatCurrency(props.rehabCost)} color={colors.status.negative} />
+        <Row label="Rehab Budget" value={formatCurrency(props.rehabCost)} color={colors.brand.blue} />
       )}
       <TotalRow label="Cash Needed" value={formatCurrency(props.downPayment + props.closingCosts + props.rehabCost)} color={colors.brand.blue} />
     </div>
@@ -114,13 +113,13 @@ function YourLoanPayment(props: StrategyBreakdownProps) {
 function WhatItCosts(props: StrategyBreakdownProps) {
   return (
     <div>
-      <SectionHeader title="What It Costs" color={colors.status.negative} />
+      <SectionHeader title="What It Costs" color={colors.brand.blue} />
       <Row label="Property Tax" value={`${formatCurrency(props.propertyTaxes)}/yr`} />
       <Row label="Insurance" value={`${formatCurrency(props.insurance)}/yr`} />
       <Row label={`Management (${Math.round(props.mgmtPct * 100)}%)`} value={`${formatCurrency(props.mgmt)}/yr`} />
       <Row label={`Maintenance (${Math.round(props.maintPct * 100)}%)`} value={`${formatCurrency(props.maint)}/yr`} />
       <Row label={`Reserves (${Math.round(props.reservesPct * 100)}%)`} value={`${formatCurrency(props.reserves)}/yr`} />
-      <TotalRow label="Total Costs" value={`${formatCurrency(props.totalExpenses)}/yr`} color={colors.status.negative} />
+      <TotalRow label="Total Costs" value={`${formatCurrency(props.totalExpenses)}/yr`} color={colors.brand.blue} />
     </div>
   )
 }
@@ -128,14 +127,14 @@ function WhatItCosts(props: StrategyBreakdownProps) {
 function WhatYoudEarn(props: StrategyBreakdownProps) {
   return (
     <div>
-      <SectionHeader title="What You'd Earn" color={colors.status.positive} />
+      <SectionHeader title="What You'd Earn" color={colors.brand.blue} />
       <Row label="Monthly Rent" value={formatCurrency(props.monthlyRent)} />
       <Row label="Annual Gross" value={formatCurrency(props.annualRent)} />
       <div className="flex justify-between py-1.5">
         <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(props.vacancyPct * 100)}%)</span>
-        <span className="text-sm font-semibold tabular-nums" style={{ color: colors.status.negative }}>({formatCurrency(props.vacancyLoss)})</span>
+        <span className="text-sm font-semibold tabular-nums" style={{ color: colors.brand.blue }}>({formatCurrency(props.vacancyLoss)})</span>
       </div>
-      <TotalRow label="Effective Income" value={formatCurrency(props.effectiveIncome)} color={colors.status.positive} />
+      <TotalRow label="Effective Income" value={formatCurrency(props.effectiveIncome)} color={colors.brand.blue} />
     </div>
   )
 }
