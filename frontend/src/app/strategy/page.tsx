@@ -535,14 +535,35 @@ function StrategyContent() {
 
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
 
-        {/* Deal Gap Price Scale Bar — synced with Verdict page */}
-        {listPrice > 0 && targetPrice > 0 && (
+        {/* Deal Gap Price Cards + Scale Bar — synced with Verdict page */}
+        {listPrice > 0 && targetPrice > 0 && (() => {
+          const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? (data as any)?.incomeValue ?? listPrice
+          const isListedProp = !!propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
+          const pLabel = isListedProp ? 'Asking' : 'Market'
+          return (
           <section className="px-5 pt-6 pb-2">
+            {/* Three price metric cards */}
+            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch mb-6">
+              {[
+                { label: 'Income Value', value: incomeVal, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
+                { label: 'Target Buy', value: targetPrice, sub: 'Positive Cashflow', color: 'var(--accent-sky)', dominant: true },
+                { label: 'Market', value: listPrice, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
+              ].map((card, i) => (
+                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
+                  background: 'var(--surface-base)',
+                  border: `1px solid ${card.color}`,
+                  boxShadow: 'var(--shadow-card)',
+                  transition: 'all 0.3s ease',
+                }}>
+                  <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
+                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.color }}>{formatCurrency(card.value)}</p>
+                  <p className="text-[10px] sm:text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{card.sub}</p>
+                </div>
+              ))}
+            </div>
+
             <div className="relative" style={{ paddingTop: 40 }}>
               {(() => {
-                const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? (data as any)?.incomeValue ?? listPrice
-                const isListedProp = propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
-                const pLabel = isListedProp ? 'Asking' : 'Market'
                 const markers = [
                   { label: 'Target Buy', price: targetPrice, dotColor: 'var(--accent-sky)' },
                   { label: 'Income Value', price: incomeVal, dotColor: 'var(--status-warning)' },
@@ -590,22 +611,29 @@ function StrategyContent() {
                           DEAL GAP &nbsp;-{dealBracketPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
-                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
                           <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
-                          <div style={{ width: 1, height: 10, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
                         </div>
                       </div>
                     )}
 
-                    <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-sky-dim), var(--color-gold-dim), var(--color-red-dim))', boxShadow: 'inset 0 0 6px rgba(56,189,248,0.25), inset 0 0 6px rgba(234,179,8,0.2), 0 0 10px rgba(56,189,248,0.15), 0 0 10px rgba(234,179,8,0.12)' }}>
+                    <div className="relative rounded-full" style={{
+                      height: 22,
+                      background: 'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
+                      border: '1.5px solid rgba(56,189,248,0.5)',
+                      boxShadow: 'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
+                    }}>
                       {markers.map((m, i) => (
-                        <div key={i} className="absolute w-3.5 h-3.5 rounded-full border-2 -top-[3px]"
+                        <div key={i} className="absolute rounded-full"
                           style={{
+                            width: 18,
+                            height: 18,
+                            top: '50%',
                             left: `${pos(m.price)}%`,
-                            transform: 'translateX(-50%)',
+                            transform: 'translate(-50%, -50%)',
                             background: m.dotColor,
-                            borderColor: 'var(--surface-card)',
-                            boxShadow: `0 0 6px ${m.dotColor}60`,
+                            boxShadow: `0 0 8px ${m.dotColor}90`,
                           }}
                         />
                       ))}
@@ -620,9 +648,9 @@ function StrategyContent() {
                         }}
                       >
                         <div className="flex items-end">
-                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
                           <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                          <div style={{ width: 1, height: 10, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
@@ -633,23 +661,13 @@ function StrategyContent() {
                       </div>
                     )}
 
-                    <div className="flex flex-wrap justify-between gap-y-2 mt-3 gap-x-2">
-                      {markers.map((m, i) => (
-                        <div key={i} className="flex flex-col items-center gap-0.5 min-w-0">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.dotColor }} />
-                            <span className="text-[16px] sm:text-[20px] font-medium" style={{ color: m.dotColor }}>{m.label}</span>
-                          </div>
-                          <span className="text-[16px] sm:text-[20px] font-bold tabular-nums" style={{ color: 'var(--text-body)' }}>{formatCurrency(m.price)}</span>
-                        </div>
-                      ))}
-                    </div>
                   </>
                 )
               })()}
             </div>
           </section>
-        )}
+          )
+        })()}
 
         {/* Next Steps */}
         <section className="px-5 pt-8 pb-0">
