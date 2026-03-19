@@ -52,8 +52,8 @@ export const semanticTokens = {
     focus: { dark: '#0EA5E9', light: '#0284C7' },
   },
   shadow: {
-    card: { dark: '0 0 20px rgba(14,165,233,0.15)', light: '0 2px 8px rgba(0,0,0,0.08)' },
-    cardHover: { dark: '0 0 30px rgba(14,165,233,0.25)', light: '0 4px 16px rgba(0,0,0,0.12)' },
+    card: { dark: '0 0 20px rgba(14,165,233,0.15)', light: '0 0 20px rgba(14,165,233,0.15)' },
+    cardHover: { dark: '0 0 30px rgba(14,165,233,0.25)', light: '0 0 30px rgba(14,165,233,0.25)' },
     dropdown: { dark: '0 4px 12px rgba(0,0,0,0.5)', light: '0 4px 12px rgba(0,0,0,0.15)' },
   },
   chart: {

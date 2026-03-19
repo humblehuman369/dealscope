@@ -252,8 +252,8 @@
   --border-strong: #94A3B8;
   --border-focus: #0284C7;
 
-  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-card: 0 0 20px rgba(14,165,233,0.15);
+  --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.15);
 
   --chart-grid: #E2E8F0;
