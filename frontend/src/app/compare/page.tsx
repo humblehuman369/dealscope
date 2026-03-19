@@ -367,7 +367,7 @@ function CompareContent() {
               {properties.map(p => (
                 <div key={p.id} className="px-4 text-center">
                   <Link
-                    href={`/verdict?address=${encodeURIComponent(p.address_street + (p.address_city ? ', ' + p.address_city : '') + (p.address_state ? ', ' + p.address_state : ''))}`}
+                    href={`/verdict?address=${encodeURIComponent([p.address_street, p.address_city, [p.address_state, p.address_zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}`}
                     className="inline-block px-4 py-2 rounded-lg text-xs font-semibold no-underline transition-all"
                     style={{ background: colors.brand.blueDeep, color: '#fff' }}
                   >
