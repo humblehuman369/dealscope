@@ -141,12 +141,10 @@ function SavedPropertiesContent() {
   }
 
   const goToProperty = (property: SavedPropertySummary) => {
-    const fullAddress = [
-      property.address_street,
-      property.address_city,
-      property.address_state,
-      property.address_zip,
-    ].filter(Boolean).join(', ')
+    const stateZip = [property.address_state, property.address_zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address_street, property.address_city, stateZip]
+      .filter(Boolean)
+      .join(', ')
     router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
   }
 

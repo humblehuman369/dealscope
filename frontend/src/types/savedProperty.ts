@@ -116,14 +116,9 @@ export function getDisplayAddress(property: SavedProperty): string {
   if (property.full_address) {
     return property.full_address
   }
-  
-  const parts = [
-    property.address_street,
-    property.address_city,
-    property.address_state,
-    property.address_zip
-  ].filter(Boolean)
-  
+
+  const stateZip = [property.address_state, property.address_zip].filter(Boolean).join(' ')
+  const parts = [property.address_street, property.address_city, stateZip].filter(Boolean)
   return parts.join(', ').trim() || property.address_street
 }
 
@@ -138,11 +133,6 @@ export function getShortAddress(property: SavedProperty): string {
  * Helper to get city/state/zip line
  */
 export function getCityStateZip(property: SavedProperty): string {
-  const parts = [
-    property.address_city,
-    property.address_state,
-    property.address_zip
-  ].filter(Boolean)
-  
-  return parts.join(', ').trim()
+  const stateZip = [property.address_state, property.address_zip].filter(Boolean).join(' ')
+  return [property.address_city, stateZip].filter(Boolean).join(', ').trim()
 }
