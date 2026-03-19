@@ -213,7 +213,7 @@
 }
 
 [data-theme='light'] {
-  --surface-base: #F0FBFF;
+  --surface-base: #FFFFFF;
   --surface-section: #F8FAFC;
   --surface-card: #FFFFFF;
   --surface-card-hover: #F1F5F9;
