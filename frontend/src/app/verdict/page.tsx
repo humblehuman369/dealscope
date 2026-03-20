@@ -1062,7 +1062,7 @@ function VerdictContent() {
                 <p
                   style={{
                     margin: '14px 0 0',
-                    fontSize: 'clamp(11px, 0.9vw, 14px)',
+                    fontSize: 'clamp(15px, 1.25vw, 20px)',
                     lineHeight: 1.5,
                     fontWeight: 600,
                     color: 'var(--text-secondary)',
@@ -1266,7 +1266,7 @@ function VerdictContent() {
                     >
                       <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                       <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                      <p className="text-sm leading-snug text-left" style={{ color: 'var(--text-body)' }}>{card.copy}</p>
+                      <p className="leading-snug text-left" style={{ color: 'var(--text-body)', fontSize: 'clamp(15px, 1.25vw, 20px)' }}>{card.copy}</p>
                     </div>
                   ))}
                 </div>
