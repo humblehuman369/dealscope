@@ -1039,7 +1039,7 @@ function VerdictContent() {
                 >
                   <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
                   <br />
-                  <span style={{ color: 'var(--accent-sky)', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ color: 'var(--accent-sky)', fontVariantNumeric: 'tabular-nums', display: 'inline-block', marginTop: 10 }}>
                     {dealGapDisplay}
                   </span>
                 </h1>
@@ -1061,7 +1061,7 @@ function VerdictContent() {
                 </div>
                 <p
                   style={{
-                    margin: '14px 0 0',
+                    margin: '10px 0 0',
                     fontSize: 'clamp(15px, 1.25vw, 20px)',
                     lineHeight: 1.5,
                     fontWeight: 600,
