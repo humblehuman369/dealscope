@@ -1074,9 +1074,9 @@ function VerdictContent() {
                   <p
                     style={{
                       margin: '10px 0 0',
-                      fontSize: 'clamp(9px, 0.85vw, 10px)',
+                      fontSize: 'clamp(11px, 0.857vw, 14px)',
                       lineHeight: 1.5,
-                      fontWeight: 500,
+                      fontWeight: 600,
                       color: 'var(--text-secondary)',
                       maxWidth: 560,
                     }}
