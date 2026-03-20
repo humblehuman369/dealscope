@@ -1066,7 +1066,7 @@ function VerdictContent() {
                     lineHeight: 1.5,
                     fontWeight: 600,
                     color: 'var(--text-secondary)',
-                    textAlign: 'left',
+                    textAlign: 'justify',
                     maxWidth: 480,
                   }}
                 >
