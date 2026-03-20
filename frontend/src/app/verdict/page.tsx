@@ -1043,7 +1043,7 @@ function VerdictContent() {
                     {dealGapDisplay}
                   </span>
                 </h1>
-                <div style={{ marginTop: 10 }}>
+                <div style={{ marginTop: 20 }}>
                   <span
                     style={{
                       display: 'inline-flex',
@@ -1061,7 +1061,7 @@ function VerdictContent() {
                 </div>
                 <p
                   style={{
-                    margin: '10px 0 0',
+                    margin: '20px 0 0',
                     fontSize: 'clamp(15px, 1.25vw, 20px)',
                     lineHeight: 1.5,
                     fontWeight: 600,
