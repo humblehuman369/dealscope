@@ -1089,7 +1089,7 @@ function VerdictContent() {
                 </div>
               </div>
 
-              <div className="lg:w-[52%] lg:ml-auto">
+              <div className="lg:w-[52%] lg:ml-auto lg:-mt-6 lg:-mr-5">
                 <div
                   className="w-full h-full"
                   style={{

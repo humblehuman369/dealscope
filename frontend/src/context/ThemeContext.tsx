@@ -17,7 +17,7 @@ interface ThemeContextType {
 }
 
 const MEDIA_QUERY = '(prefers-color-scheme: dark)'
-const SYSTEM_DEFAULT: ThemePreference = 'system'
+const SYSTEM_DEFAULT: ThemePreference = 'dark'
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
