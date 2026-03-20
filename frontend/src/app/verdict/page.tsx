@@ -1231,7 +1231,14 @@ function VerdictContent() {
                 )
               })()}
               <div className="mt-6">
-                <h2 className="text-[30px] font-bold italic leading-tight" style={{ color: 'var(--accent-sky)', marginBottom: 16 }}>
+                <h2
+                  className="w-full sm:max-w-[32%] font-bold italic leading-tight"
+                  style={{
+                    color: 'var(--accent-sky)',
+                    marginBottom: 16,
+                    fontSize: 'clamp(20px, 2.2vw, 40px)',
+                  }}
+                >
                   What Would Make This Deal Work?
                 </h2>
                 <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
