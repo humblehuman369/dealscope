@@ -25,7 +25,6 @@ import {
 } from '@/components/iq-verdict'
 import { getDealGapTier } from '@/components/iq-verdict/types'
 import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
-import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
@@ -45,6 +44,7 @@ import {
 } from '@/utils/addressIdentity'
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
+import { InfoPopover } from '@/components/ui/InfoPopover'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { ProGate } from '@/components/ProGate'
 import { trackEvent } from '@/lib/eventTracking'
@@ -68,167 +68,6 @@ interface BackendAnalysisResponse {
   discount_bracket_label?: string; discountBracketLabel?: string
   // Allow additional camelCase fields from alias generator
   [key: string]: unknown
-}
-
-function DealGapHero({
-  dealGapPercent,
-  color,
-  tierLabel,
-  headline,
-  subHeadline,
-}: {
-  dealGapPercent: number;
-  color: string;
-  tierLabel: string;
-  headline: string;
-  subHeadline: string;
-}) {
-  const [showValue, setShowValue] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowValue(true), 400)
-    return () => clearTimeout(t)
-  }, [])
-
-  const sign = dealGapPercent >= 0 ? '-' : '+'
-  const displayVal = Math.abs(dealGapPercent)
-  const gaugeMax = 30
-  // Negative gap = deal already profitable → pin slider at far right (100%)
-  const clampedGap = Math.max(0, Math.min(dealGapPercent, gaugeMax))
-  // Extreme is left (30%+), Deal Gap end is right (0% or better)
-  const rightwardProgress = ((gaugeMax - clampedGap) / gaugeMax) * 100
-
-  return (
-    <div
-      role="meter"
-      aria-label={`Deal Gap ${sign}${displayVal.toFixed(1)}%`}
-      aria-valuenow={Math.abs(dealGapPercent)}
-      aria-valuemin={0}
-      aria-valuemax={gaugeMax}
-      style={{ width: '100%' }}
-    >
-      <h1
-        style={{
-          margin: 0,
-          fontSize: 'clamp(23px, 3.79vw, 39px)',
-          lineHeight: 1.15,
-          fontWeight: 800,
-          color: 'var(--text-heading)',
-          letterSpacing: -1.2,
-        }}
-      >
-        <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap{' '}
-        <span
-          style={{
-            color: 'var(--accent-sky)',
-            fontVariantNumeric: 'tabular-nums',
-            opacity: showValue ? 1 : 0,
-            transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
-        >
-          {sign}{displayVal.toFixed(1)}%
-        </span>
-      </h1>
-      <div style={{ marginTop: 14 }}>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            color: '#ffffff',
-            border: `1.5px solid ${color}`,
-            padding: '7px 14px',
-            borderRadius: 999,
-            fontSize: 'clamp(14px, 2.43vw, 23px)',
-            fontWeight: 700,
-            lineHeight: 1,
-            background: 'transparent',
-          }}
-        >
-          {tierLabel}
-        </span>
-      </div>
-      <div style={{ marginTop: 20 }}>
-        <div
-          style={{
-            position: 'relative',
-            height: 22,
-            borderRadius: 10,
-            border: `2px solid ${color}`,
-            background: 'transparent',
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: `${rightwardProgress}%`,
-              borderRadius: 8,
-              background: color,
-              boxShadow: `0 0 12px ${color}, 0 0 4px ${color}`,
-              opacity: 0.45,
-              transition: 'width 1.2s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              left: `${rightwardProgress}%`,
-              top: '50%',
-              width: 30,
-              height: 30,
-              borderRadius: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: color,
-              border: '2px solid var(--surface-card)',
-              transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          />
-        </div>
-        <div
-          style={{
-            marginTop: 8,
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.9,
-            textTransform: 'uppercase',
-          }}
-        >
-          <span style={{ color }}>Extreme</span>
-          <span style={{ color }}>Deal Gap</span>
-        </div>
-      </div>
-      <p
-        style={{
-          margin: '28px 0 0',
-          fontSize: 'clamp(14px, 2.34vw, 21px)',
-          lineHeight: 1.2,
-          fontWeight: 700,
-          color: 'var(--text-heading)',
-          maxWidth: 920,
-        }}
-      >
-        {headline}
-      </p>
-      <p
-        style={{
-          margin: '10px 0 16px',
-          fontSize: 'clamp(13px, 1.9vw, 16px)',
-          lineHeight: 1.5,
-          fontWeight: 500,
-          fontFamily: "'Inter', system-ui, sans-serif",
-          color: 'var(--text-secondary)',
-          maxWidth: 920,
-        }}
-      >
-        {subHeadline}
-      </p>
-    </div>
-  )
 }
 
 function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNode; delay?: number }) {
@@ -1178,56 +1017,89 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-          {/* Verdict Hero Card — Deal Gap score */}
-          <div className="mx-5 mt-6">
-            <div
-              style={{
-                borderRadius: 16,
-                overflow: 'hidden',
-                background: 'var(--surface-card)',
-                border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-card-hover)',
-              }}
-            >
-              <div style={{ padding: '28px 28px 24px' }}>
-                <DealGapHero
-                  dealGapPercent={dealGapPct}
-                  color="var(--accent-sky)"
-                  tierLabel={tier.label}
-                  headline={tier.headline}
-                  subHeadline={tier.subHeadline}
-                />
+          {/* Redesigned Verdict top section */}
+          <section
+            className="mx-5 mt-6 px-5 py-6 rounded-2xl"
+            style={{
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card-hover)',
+            }}
+          >
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
+              <div className="lg:w-[44%]">
+                <h1
+                  style={{
+                    margin: 0,
+                    lineHeight: 1.1,
+                    fontSize: 'clamp(38px, 5vw, 56px)',
+                    fontWeight: 800,
+                    color: 'var(--text-heading)',
+                  }}
+                >
+                  <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
+                  <br />
+                  <span style={{ color: 'var(--accent-sky)', fontVariantNumeric: 'tabular-nums' }}>
+                    {dealGapDisplay}
+                  </span>
+                </h1>
+                <div style={{ marginTop: 10 }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      borderRadius: 999,
+                      border: '1px solid var(--border-focus)',
+                      padding: '4px 10px',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: 'var(--text-heading)',
+                      background: 'var(--surface-elevated)',
+                    }}
+                  >
+                    {tier.label}
+                  </span>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <InfoPopover
+                    ariaLabel="What is DealGap"
+                    label="What is DealGap?"
+                    className="text-sm font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
+                    panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
+                    content={
+                      <p style={{ margin: 0 }}>
+                        {tier.headline} {tier.subHeadline}
+                      </p>
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="lg:w-[56%]">
+                <div
+                  style={{
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    border: '1px solid var(--border-default)',
+                    minHeight: 210,
+                    background: 'var(--surface-elevated)',
+                  }}
+                >
+                  {property.imageUrl ? (
+                    <img
+                      src={property.imageUrl}
+                      alt={`Property at ${property.address}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full min-h-[210px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Property photo loading...
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <section className="mx-5 mt-4 px-5 py-8 rounded-2xl" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
-
-            <h2 className={tw.textHeading} style={{ color: 'var(--text-heading)', marginBottom: 24 }}>
-              {dealGapPct <= 10 ? 'What Should You Pay?' : 'What Would Make This Deal Work?'}
-            </h2>
-
-            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
-              {[
-                { label: 'Income Value', value: incomeValue, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
-                { label: 'Target Buy', value: purchasePrice, sub: 'Positive Cashflow', color: 'var(--accent-sky)', dominant: true },
-                { label: 'Market', value: property.price, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
-              ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
-                  background: 'var(--surface-card)',
-                  border: `1px solid ${card.color}`,
-                  boxShadow: 'var(--shadow-card)',
-                  transition: 'all 0.3s ease',
-                }}>
-                  <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
-                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.color }}>{fmtShort(card.value)}</p>
-                  <p className="text-[10px] sm:text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{card.sub}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Price Scale Bar — proportional positions with legend */}
-            <div className="mt-6 relative" style={{ paddingTop: 40 }}>
+            <div className="mt-7 relative" style={{ paddingTop: 40 }}>
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
@@ -1332,13 +1204,62 @@ function VerdictContent() {
                   </>
                 )
               })()}
-              <div className="flex justify-center" style={{ marginTop: 60 }}>
+              <div className="mt-6">
+                <h2 className="text-[30px] font-bold italic leading-tight" style={{ color: 'var(--accent-sky)', marginBottom: 16 }}>
+                  What Would Make This Deal Work?
+                </h2>
+                <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
+                  {[
+                    {
+                      label: 'Target Buy',
+                      value: purchasePrice,
+                      color: 'var(--accent-sky)',
+                      copy: 'Your recommended offer price - set below Income Value so the deal cash flows positively from day one.',
+                    },
+                    {
+                      label: 'Income Value',
+                      value: incomeValue,
+                      color: 'var(--status-warning)',
+                      copy: 'The maximum price you can pay and still break even - the point where rental income exactly covers all expenses and payments.',
+                    },
+                    {
+                      label: 'Market Price',
+                      value: property.price,
+                      color: 'var(--status-negative)',
+                      copy: isOffMarket ? 'The current estimated market value based on comparable sales.' : 'The current list price in the market.',
+                    },
+                  ].map((card) => (
+                    <div
+                      key={card.label}
+                      className="rounded-xl py-4 px-4 text-left sm:flex-1"
+                      style={{
+                        background: 'var(--surface-card)',
+                        border: `1px solid ${card.color}`,
+                        boxShadow: 'var(--shadow-card)',
+                      }}
+                    >
+                      <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
+                      <p className="tabular-nums mb-2 font-bold text-[36px] leading-none" style={{ color: card.color }}>{fmtShort(card.value)}</p>
+                      <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>{card.copy}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3" style={{ marginTop: 22 }}>
                 <button
                   onClick={navigateToStrategy}
-                  className="px-6 py-2 rounded-full text-sm font-semibold transition-all w-auto"
+                  className="text-sm font-bold tracking-wide"
+                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none' }}
+                >
+                  SEE BREAKDOWN - ADJUST TERMS - DOWNLOAD PDF &amp; EXCEL
+                </button>
+                <button
+                  onClick={navigateToStrategy}
+                  className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
                   style={{ color: 'var(--accent-sky)', background: 'transparent', border: '1.5px solid var(--accent-sky)' }}
                 >
-                  See Breakdown - Adjust Values - Download Excel &amp; PDFs
+                  NEXT
                 </button>
               </div>
             </div>
