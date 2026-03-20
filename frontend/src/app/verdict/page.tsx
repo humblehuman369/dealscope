@@ -1032,7 +1032,7 @@ function VerdictContent() {
                   style={{
                     margin: 0,
                     lineHeight: 1.1,
-                    fontSize: 'clamp(38px, 5vw, 56px)',
+                    fontSize: 'clamp(34px, 4.5vw, 50px)',
                     fontWeight: 800,
                     color: 'var(--text-heading)',
                   }}
@@ -1059,30 +1059,31 @@ function VerdictContent() {
                     {tier.label}
                   </span>
                 </div>
-                <p
-                  style={{
-                    margin: '12px 0 0',
-                    fontSize: 'clamp(22px, 2.4vw, 36px)',
-                    lineHeight: 1.15,
-                    fontWeight: 700,
-                    color: 'var(--text-heading)',
-                    maxWidth: 620,
-                  }}
-                >
-                  {tier.headline}
-                </p>
-                <p
-                  style={{
-                    margin: '10px 0 0',
-                    fontSize: 'clamp(13px, 1.35vw, 16px)',
-                    lineHeight: 1.5,
-                    fontWeight: 500,
-                    color: 'var(--text-secondary)',
-                    maxWidth: 560,
-                  }}
-                >
-                  {tier.subHeadline}
-                </p>
+                <div style={{ width: '100%', maxWidth: 620, textAlign: 'left' }}>
+                  <p
+                    style={{
+                      margin: '12px 0 0',
+                      fontSize: 'clamp(22px, 2.4vw, 36px)',
+                      lineHeight: 1.15,
+                      fontWeight: 700,
+                      color: 'var(--text-heading)',
+                    }}
+                  >
+                    {tier.headline}
+                  </p>
+                  <p
+                    style={{
+                      margin: '10px 0 0',
+                      fontSize: 'clamp(9px, 0.85vw, 10px)',
+                      lineHeight: 1.5,
+                      fontWeight: 500,
+                      color: 'var(--text-secondary)',
+                      maxWidth: 560,
+                    }}
+                  >
+                    {tier.subHeadline}
+                  </p>
+                </div>
                 <div style={{ marginTop: 12 }}>
                   <InfoPopover
                     ariaLabel="What is DealGap"
