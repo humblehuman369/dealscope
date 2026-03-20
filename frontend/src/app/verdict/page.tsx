@@ -1059,6 +1059,21 @@ function VerdictContent() {
                     {tier.label}
                   </span>
                 </div>
+                <p
+                  style={{
+                    margin: '14px 0 0',
+                    fontSize: 'clamp(11px, 0.9vw, 14px)',
+                    lineHeight: 1.5,
+                    fontWeight: 600,
+                    color: 'var(--text-secondary)',
+                    textAlign: 'left',
+                    maxWidth: 480,
+                  }}
+                >
+                  {dealGapPct > 0
+                    ? 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'
+                    : 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'}
+                </p>
                 <div style={{ marginTop: 12 }}>
                   <InfoPopover
                     ariaLabel="What is DealGap"
