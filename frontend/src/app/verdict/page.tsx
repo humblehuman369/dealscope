@@ -1059,31 +1059,6 @@ function VerdictContent() {
                     {tier.label}
                   </span>
                 </div>
-                <div style={{ width: '100%', maxWidth: 620, textAlign: 'left' }}>
-                  <p
-                    style={{
-                      margin: '12px 0 0',
-                      fontSize: 'clamp(10px, 1.15vw, 16px)',
-                      lineHeight: 1.15,
-                      fontWeight: 600,
-                      color: 'var(--text-heading)',
-                    }}
-                  >
-                    {tier.headline}
-                  </p>
-                  <p
-                    style={{
-                      margin: '10px 0 0',
-                      fontSize: 'clamp(11px, 0.857vw, 14px)',
-                      lineHeight: 1.5,
-                      fontWeight: 600,
-                      color: 'var(--text-secondary)',
-                      maxWidth: 560,
-                    }}
-                  >
-                    {tier.subHeadline}
-                  </p>
-                </div>
                 <div style={{ marginTop: 12 }}>
                   <InfoPopover
                     ariaLabel="What is DealGap"
@@ -1218,7 +1193,7 @@ function VerdictContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)', marginBottom: 40 }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 8 }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </p>
@@ -1232,11 +1207,12 @@ function VerdictContent() {
               })()}
               <div className="mt-6">
                 <h2
-                  className="w-full sm:max-w-[32%] font-bold italic leading-tight whitespace-nowrap"
+                  className="w-full font-bold italic leading-tight"
                   style={{
                     color: 'var(--accent-sky)',
-                    marginBottom: 16,
-                    fontSize: 'clamp(16px, 1.75vw, 30px)',
+                    marginBottom: 12,
+                    fontSize: 'clamp(14px, 1.53vw, 22px)',
+                    maxWidth: 'calc(33.33% - 4px)',
                   }}
                 >
                   What Would Make This Deal Work?
@@ -1274,7 +1250,7 @@ function VerdictContent() {
                       }}
                     >
                       <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
-                      <p className="tabular-nums mb-2 font-bold text-[36px] leading-none" style={{ color: card.color }}>{fmtShort(card.value)}</p>
+                      <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
                       <p className="text-sm leading-snug text-left" style={{ color: 'var(--text-body)' }}>{card.copy}</p>
                     </div>
                   ))}
