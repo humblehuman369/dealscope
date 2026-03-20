@@ -1076,12 +1076,11 @@ function VerdictContent() {
 
               <div className="lg:w-[52%]">
                 <div
-                  className="mx-auto w-full max-w-[560px]"
+                  className="w-full h-full"
                   style={{
                     borderRadius: 12,
                     overflow: 'hidden',
                     border: '1px solid var(--border-default)',
-                    minHeight: 180,
                     background: 'var(--surface-elevated)',
                   }}
                 >
@@ -1089,10 +1088,11 @@ function VerdictContent() {
                     <img
                       src={property.imageUrl}
                       alt={`Property at ${property.address}`}
-                      className="h-[170px] sm:h-[200px] w-full object-cover"
+                      className="w-full object-cover"
+                      style={{ height: 'clamp(200px, 22vw, 320px)' }}
                     />
                   ) : (
-                    <div className="h-[170px] sm:h-[200px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(200px, 22vw, 320px)', color: 'var(--text-secondary)' }}>
                       Property photo loading...
                     </div>
                   )}
