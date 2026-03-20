@@ -1026,7 +1026,7 @@ function VerdictContent() {
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
               <div className="lg:w-[48%] flex flex-col items-center text-center">
                 <h1
                   style={{
@@ -1062,11 +1062,11 @@ function VerdictContent() {
                 <p
                   style={{
                     margin: '12px 0 0',
-                    fontSize: 'clamp(22px, 2.8vw, 34px)',
-                    lineHeight: 1.2,
+                    fontSize: 'clamp(22px, 2.4vw, 36px)',
+                    lineHeight: 1.15,
                     fontWeight: 700,
                     color: 'var(--text-heading)',
-                    maxWidth: 560,
+                    maxWidth: 620,
                   }}
                 >
                   {tier.headline}
@@ -1074,11 +1074,11 @@ function VerdictContent() {
                 <p
                   style={{
                     margin: '10px 0 0',
-                    fontSize: 'clamp(14px, 1.9vw, 20px)',
-                    lineHeight: 1.45,
+                    fontSize: 'clamp(13px, 1.35vw, 16px)',
+                    lineHeight: 1.5,
                     fontWeight: 500,
                     color: 'var(--text-secondary)',
-                    maxWidth: 640,
+                    maxWidth: 560,
                   }}
                 >
                   {tier.subHeadline}
@@ -1087,7 +1087,7 @@ function VerdictContent() {
                   <InfoPopover
                     ariaLabel="What is DealGap"
                     label="What is DealGap?"
-                    className="text-sm font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
+                    className="text-base font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
                     panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
                     content={
                       <p style={{ margin: 0 }}>
@@ -1113,10 +1113,10 @@ function VerdictContent() {
                     <img
                       src={property.imageUrl}
                       alt={`Property at ${property.address}`}
-                      className="h-[180px] sm:h-[210px] w-full object-cover"
+                      className="h-[170px] sm:h-[200px] w-full object-cover"
                     />
                   ) : (
-                    <div className="h-[180px] sm:h-[210px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <div className="h-[170px] sm:h-[200px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
                       Property photo loading...
                     </div>
                   )}
