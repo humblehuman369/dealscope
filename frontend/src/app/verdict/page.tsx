@@ -1026,8 +1026,8 @@ function VerdictContent() {
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
-              <div className="lg:w-[44%]">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+              <div className="lg:w-[48%] flex flex-col items-center text-center">
                 <h1
                   style={{
                     margin: 0,
@@ -1059,6 +1059,30 @@ function VerdictContent() {
                     {tier.label}
                   </span>
                 </div>
+                <p
+                  style={{
+                    margin: '12px 0 0',
+                    fontSize: 'clamp(22px, 2.8vw, 34px)',
+                    lineHeight: 1.2,
+                    fontWeight: 700,
+                    color: 'var(--text-heading)',
+                    maxWidth: 560,
+                  }}
+                >
+                  {tier.headline}
+                </p>
+                <p
+                  style={{
+                    margin: '10px 0 0',
+                    fontSize: 'clamp(14px, 1.9vw, 20px)',
+                    lineHeight: 1.45,
+                    fontWeight: 500,
+                    color: 'var(--text-secondary)',
+                    maxWidth: 640,
+                  }}
+                >
+                  {tier.subHeadline}
+                </p>
                 <div style={{ marginTop: 12 }}>
                   <InfoPopover
                     ariaLabel="What is DealGap"
@@ -1074,13 +1098,14 @@ function VerdictContent() {
                 </div>
               </div>
 
-              <div className="lg:w-[56%]">
+              <div className="lg:w-[52%]">
                 <div
+                  className="mx-auto w-full max-w-[560px]"
                   style={{
                     borderRadius: 12,
                     overflow: 'hidden',
                     border: '1px solid var(--border-default)',
-                    minHeight: 210,
+                    minHeight: 180,
                     background: 'var(--surface-elevated)',
                   }}
                 >
@@ -1088,10 +1113,10 @@ function VerdictContent() {
                     <img
                       src={property.imageUrl}
                       alt={`Property at ${property.address}`}
-                      className="h-full w-full object-cover"
+                      className="h-[180px] sm:h-[210px] w-full object-cover"
                     />
                   ) : (
-                    <div className="h-full min-h-[210px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <div className="h-[180px] sm:h-[210px] w-full flex items-center justify-center text-sm" style={{ color: 'var(--text-secondary)' }}>
                       Property photo loading...
                     </div>
                   )}
@@ -1214,24 +1239,26 @@ function VerdictContent() {
                       label: 'Target Buy',
                       value: purchasePrice,
                       color: 'var(--accent-sky)',
-                      copy: 'Your recommended offer price - set below Income Value so the deal cash flows positively from day one.',
+                      copy: 'Your recommended offer price - set below Income Value so the deal cash flows positively from day one. Set your own terms and customize the Target Buy in DealMaker.',
                     },
                     {
                       label: 'Income Value',
                       value: incomeValue,
                       color: 'var(--status-warning)',
-                      copy: 'The maximum price you can pay and still break even - the point where rental income exactly covers all expenses and payments.',
+                      copy: 'The maximum price you can pay and still break even - the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow. Adjust expenses and financing in DealMaker to push Income Value higher.',
                     },
                     {
                       label: 'Market Price',
                       value: property.price,
                       color: 'var(--status-negative)',
-                      copy: isOffMarket ? 'The current estimated market value based on comparable sales.' : 'The current list price in the market.',
+                      copy: isOffMarket
+                        ? 'The current estimated market value based on comparable sales. Use the Comps tab to review, add, or remove comps and dial in your number.'
+                        : 'The current list price in the market. Use the Comps tab to review, add, or remove comps and dial in your number.',
                     },
                   ].map((card) => (
                     <div
                       key={card.label}
-                      className="rounded-xl py-4 px-4 text-left sm:flex-1"
+                      className="rounded-xl py-4 px-4 text-center sm:flex-1"
                       style={{
                         background: 'var(--surface-card)',
                         border: `1px solid ${card.color}`,
