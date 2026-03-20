@@ -7,7 +7,7 @@ export function ThemeHydrationScript() {
   const valid = new Set(['light', 'dark', 'system']);
   const root = document.documentElement;
 
-  let preference = 'system';
+  let preference = 'dark';
   try {
     const raw = window.localStorage.getItem(key);
     if (raw && valid.has(raw)) preference = raw;

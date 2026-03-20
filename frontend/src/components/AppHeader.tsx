@@ -23,13 +23,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
+import { useTheme } from '@/context/ThemeContext'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -200,6 +201,7 @@ export function AppHeader({
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
   const logoutMutation = useLogout()
+  const { theme, toggleTheme, mounted } = useTheme()
 
   // Close profile menu on outside click
   useEffect(() => {
@@ -520,6 +522,17 @@ export function AppHeader({
                 className="w-5 h-5 sm:w-6 sm:h-6" 
                 style={{ color: 'var(--text-heading)' }}
               />
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+              aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {mounted && theme === 'dark' ? (
+                <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+              ) : (
+                <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+              )}
             </button>
             {isAuthenticated ? (
               <div className="relative" ref={profileMenuRef}>
