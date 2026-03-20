@@ -1099,18 +1099,26 @@ function VerdictContent() {
                     background: 'var(--surface-elevated)',
                   }}
                 >
-                  {property.imageUrl ? (
-                    <img
-                      src={property.imageUrl}
-                      alt={`Property at ${property.address}`}
-                      className="w-full object-cover"
-                      style={{ height: 'clamp(250px, 25vw, 360px)' }}
-                    />
-                  ) : (
-                    <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(250px, 25vw, 360px)', color: 'var(--text-secondary)' }}>
-                      Property photo loading...
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handlePropertyClick}
+                    className="w-full text-left"
+                    style={{ display: 'block', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }}
+                    aria-label="Open property details page"
+                  >
+                    {property.imageUrl ? (
+                      <img
+                        src={property.imageUrl}
+                        alt={`Property at ${property.address}`}
+                        className="w-full object-cover"
+                        style={{ height: 'clamp(250px, 25vw, 360px)' }}
+                      />
+                    ) : (
+                      <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(250px, 25vw, 360px)', color: 'var(--text-secondary)' }}>
+                        Property photo loading...
+                      </div>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
