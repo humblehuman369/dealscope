@@ -1104,10 +1104,10 @@ function VerdictContent() {
                       src={property.imageUrl}
                       alt={`Property at ${property.address}`}
                       className="w-full object-cover"
-                      style={{ height: 'clamp(200px, 22vw, 320px)' }}
+                      style={{ height: 'clamp(250px, 25vw, 360px)' }}
                     />
                   ) : (
-                    <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(200px, 22vw, 320px)', color: 'var(--text-secondary)' }}>
+                    <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(250px, 25vw, 360px)', color: 'var(--text-secondary)' }}>
                       Property photo loading...
                     </div>
                   )}
