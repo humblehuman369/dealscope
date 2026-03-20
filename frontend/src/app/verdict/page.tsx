@@ -1232,11 +1232,11 @@ function VerdictContent() {
               })()}
               <div className="mt-6">
                 <h2
-                  className="w-full sm:max-w-[32%] font-bold italic leading-tight"
+                  className="w-full sm:max-w-[32%] font-bold italic leading-tight whitespace-nowrap"
                   style={{
                     color: 'var(--accent-sky)',
                     marginBottom: 16,
-                    fontSize: 'clamp(20px, 2.2vw, 40px)',
+                    fontSize: 'clamp(16px, 1.75vw, 30px)',
                   }}
                 >
                   What Would Make This Deal Work?
