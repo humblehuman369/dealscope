@@ -1026,7 +1026,7 @@ function VerdictContent() {
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
               <div className="lg:w-[48%] flex flex-col items-center text-center">
                 <h1
                   style={{
@@ -1089,7 +1089,7 @@ function VerdictContent() {
                 </div>
               </div>
 
-              <div className="lg:w-[52%]">
+              <div className="lg:w-[52%] lg:ml-auto">
                 <div
                   className="w-full h-full"
                   style={{
@@ -1111,10 +1111,10 @@ function VerdictContent() {
                         src={property.imageUrl}
                         alt={`Property at ${property.address}`}
                         className="w-full object-cover"
-                        style={{ height: 'clamp(250px, 25vw, 360px)' }}
+                        style={{ height: 'clamp(280px, 28vw, 400px)' }}
                       />
                     ) : (
-                      <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(250px, 25vw, 360px)', color: 'var(--text-secondary)' }}>
+                      <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(280px, 28vw, 400px)', color: 'var(--text-secondary)' }}>
                         Property photo loading...
                       </div>
                     )}
