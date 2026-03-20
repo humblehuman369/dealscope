@@ -1268,7 +1268,7 @@ function VerdictContent() {
                     >
                       <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                       <p className="tabular-nums mb-2 font-bold text-[36px] leading-none" style={{ color: card.color }}>{fmtShort(card.value)}</p>
-                      <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>{card.copy}</p>
+                      <p className="text-sm leading-snug text-left" style={{ color: 'var(--text-body)' }}>{card.copy}</p>
                     </div>
                   ))}
                 </div>
