@@ -18,6 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.saved_property import SavedProperty
+from app.models.subscription import Subscription
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -121,7 +122,9 @@ class AdminService:
         result = await db.execute(query)
         users = result.scalars().all()
 
-        counts_map = await self._get_user_property_counts(db, [user.id for user in users])
+        user_ids = [user.id for user in users]
+        counts_map = await self._get_user_property_counts(db, user_ids)
+        sub_map = await self._get_user_subscriptions(db, user_ids)
 
         items = [
             {
@@ -135,6 +138,8 @@ class AdminService:
                 "created_at": user.created_at,
                 "last_login": user.last_login,
                 "saved_properties_count": counts_map.get(user.id, 0),
+                "subscription_tier": sub_map[user.id]["tier"] if user.id in sub_map else None,
+                "subscription_status": sub_map[user.id]["status"] if user.id in sub_map else None,
             }
             for user in users
         ]
@@ -153,6 +158,23 @@ class AdminService:
 
         counts_result = await db.execute(counts_query)
         return {row.user_id: row.count for row in counts_result}
+
+    async def _get_user_subscriptions(
+        self, db: AsyncSession, user_ids: list[UUID]
+    ) -> dict[UUID, dict[str, str]]:
+        """Batch-fetch subscription tier and status for multiple users."""
+        if not user_ids:
+            return {}
+
+        result = await db.execute(
+            select(Subscription.user_id, Subscription.tier, Subscription.status).where(
+                Subscription.user_id.in_(user_ids)
+            )
+        )
+        return {
+            row.user_id: {"tier": row.tier.value, "status": row.status.value}
+            for row in result
+        }
 
     async def get_user_by_id(self, db: AsyncSession, user_id: UUID) -> User | None:
         """Get a user by ID."""

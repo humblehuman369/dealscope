@@ -15,8 +15,10 @@ from app.core.deps import DbSession, require_permission
 from app.models.audit_log import AuditAction
 from app.models.user import User
 from app.repositories.audit_repository import audit_repo
+from app.models.subscription import SubscriptionTier
 from app.schemas.admin import (
     AdminAssumptionsResponse,
+    AdminSubscriptionUpdate,
     AdminUserResponse,
     AdminUserUpdate,
     MetricsGlossaryResponse,
@@ -29,6 +31,7 @@ from app.services.assumptions_service import (
     get_default_assumptions,
     upsert_default_assumptions,
 )
+from app.services.billing_service import billing_service
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +220,8 @@ async def get_user(
     counts = await admin_service._get_user_property_counts(db, [user.id])
     saved_count = counts.get(user.id, 0)
 
+    subscription = await billing_service.get_subscription(db, user.id)
+
     return AdminUserResponse(
         id=str(user.id),
         email=user.email,
@@ -228,6 +233,8 @@ async def get_user(
         created_at=user.created_at,
         last_login=user.last_login,
         saved_properties_count=saved_count,
+        subscription_tier=subscription.tier.value if subscription else None,
+        subscription_status=subscription.status.value if subscription else None,
     )
 
 
@@ -279,6 +286,8 @@ async def update_user(
     counts = await admin_service._get_user_property_counts(db, [user.id])
     saved_count = counts.get(user.id, 0)
 
+    subscription = await billing_service.get_subscription(db, user.id)
+
     return AdminUserResponse(
         id=str(updated_user.id),
         email=updated_user.email,
@@ -290,6 +299,8 @@ async def update_user(
         created_at=updated_user.created_at,
         last_login=updated_user.last_login,
         saved_properties_count=saved_count,
+        subscription_tier=subscription.tier.value if subscription else None,
+        subscription_status=subscription.status.value if subscription else None,
     )
 
 
@@ -329,6 +340,70 @@ async def delete_user(
     )
 
     await admin_service.delete_user(db, user.id)
+
+
+# ===========================================
+# Subscription Management
+# ===========================================
+
+
+@router.patch(
+    "/users/{user_id}/subscription",
+    response_model=AdminUserResponse,
+    summary="Grant or revoke a subscription",
+)
+async def update_user_subscription(
+    user_id: str,
+    data: AdminSubscriptionUpdate,
+    request: Request,
+    db: DbSession,
+    admin_user: User = Depends(require_permission("admin:users")),
+):
+    """Grant Pro or revoke back to Free for a user, without Stripe."""
+    from uuid import UUID as _UUID
+
+    target_user = await admin_service.get_user_by_id(db, _UUID(user_id))
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    tier = SubscriptionTier(data.tier.value)
+
+    if tier == SubscriptionTier.PRO:
+        subscription = await billing_service.grant_subscription(db, target_user.id, tier)
+    else:
+        subscription = await billing_service.revoke_subscription(db, target_user.id)
+
+    await audit_repo.log(
+        db,
+        action=AuditAction.ADMIN_GRANT_SUBSCRIPTION,
+        user_id=admin_user.id,
+        ip_address=request.client.host if request.client else None,
+        metadata={
+            "target_user_id": str(target_user.id),
+            "target_email": target_user.email,
+            "new_tier": tier.value,
+        },
+    )
+
+    logger.info("Admin %s set user %s subscription to %s", admin_user.email, target_user.email, tier.value)
+
+    counts = await admin_service._get_user_property_counts(db, [target_user.id])
+    saved_count = counts.get(target_user.id, 0)
+
+    return AdminUserResponse(
+        id=str(target_user.id),
+        email=target_user.email,
+        full_name=target_user.full_name,
+        avatar_url=target_user.avatar_url,
+        is_active=target_user.is_active,
+        is_verified=target_user.is_verified,
+        is_superuser=target_user.is_superuser,
+        created_at=target_user.created_at,
+        last_login=target_user.last_login,
+        saved_properties_count=saved_count,
+        subscription_tier=subscription.tier.value,
+        subscription_status=subscription.status.value,
+    )
 
 
 # ===========================================
