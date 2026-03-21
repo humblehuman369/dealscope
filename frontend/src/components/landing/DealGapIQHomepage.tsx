@@ -433,96 +433,13 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <section style={{ padding: "96px 24px" }}>
           <div className="comps-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
 
-            {/* Mockup Card */}
-            <div style={{ ...cardLgStyle, padding: 0, position: "relative" as const, overflow: "hidden" }}>
-              <div style={{ position: "absolute" as const, top: -1, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${s.teal}, ${s.success})`, borderRadius: "16px 16px 0 0" }} />
-
-              {/* Appraisal Header */}
-              <div style={{ padding: "24px 24px 18px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={s.teal} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                    </div>
-                    <span style={{ fontFamily: s.fontBody, fontSize: 12, fontWeight: 600, color: s.muted }}>Appraisal Values · From 3 selected</span>
-                  </div>
-                  <div style={{ fontFamily: s.fontBody, fontSize: 10, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase" as const, color: s.muted, marginBottom: 4 }}>COMP APPRAISAL</div>
-                  <div style={{ fontFamily: s.fontData, fontSize: 30, fontWeight: 700, color: "var(--text-heading)", lineHeight: 1 }}>$826,031</div>
-                  <div style={{ fontFamily: s.fontBody, fontSize: 11, color: s.muted, marginTop: 4 }}>As-Is Condition</div>
-                  <div style={{ fontFamily: s.fontBody, fontSize: 10, color: s.mutedDim }}>Range: $686K — $886K</div>
-                </div>
-                <div style={{ background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 10, padding: "8px 14px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: s.fontData, fontSize: 22, fontWeight: 700, color: s.success, lineHeight: 1 }}>97%</div>
-                  <div style={{ fontFamily: s.fontBody, fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: s.success, marginTop: 3 }}>CONFIDENCE</div>
-                </div>
-              </div>
-
-              {/* Adjustment Grid */}
-              <div style={{ padding: "0 24px 18px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <span style={{ fontFamily: s.fontData, fontSize: 13, fontWeight: 700, color: s.teal }}>$</span>
-                  <span style={{ fontFamily: s.fontBody, fontSize: 13, fontWeight: 600, color: "var(--text-heading)" }}>Adjustment Breakdown</span>
-                  <span style={{ fontFamily: s.fontBody, fontSize: 11, color: s.mutedDim }}>(3)</span>
-                </div>
-
-                <div style={{ fontSize: 0 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1.6fr 0.7fr 0.7fr 0.5fr 0.5fr 0.7fr 0.6fr", gap: 0, borderBottom: "1px solid rgba(14,165,233,0.12)", paddingBottom: 7, marginBottom: 6 }}>
-                    {["Address", "Base", "Size", "Bed", "Age", "Adjusted", "Weight"].map((h, i) => (
-                      <span key={i} style={{ fontFamily: s.fontBody, fontSize: 10, fontWeight: 600, color: s.mutedDim, letterSpacing: "0.03em", textAlign: (i === 0 ? "left" : "right") as React.CSSProperties["textAlign"] }}>{h}</span>
-                    ))}
-                  </div>
-                  {[
-                    { addr: "11332 Edgewater Cir", base: "$873K", size: "+$16K", bed: "+$0", age: "+$0", adjusted: "$886K", weight: "33.8%", sizeClr: s.success },
-                    { addr: "4034 Bahia Isle Circle", base: "$790K", size: "+$49K", bed: "+$0", age: "+$0", adjusted: "$840K", weight: "33.1%", sizeClr: s.success },
-                    { addr: "11071 Laurel Walk Rd", base: "$685K", size: "-$800", bed: "+$0", age: "+$0", adjusted: "$686K", weight: "33.1%", sizeClr: s.danger },
-                  ].map((row, i) => (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1.6fr 0.7fr 0.7fr 0.5fr 0.5fr 0.7fr 0.6fr", gap: 0, padding: "5px 0", borderBottom: i < 2 ? "1px solid rgba(14,165,233,0.05)" : "none" }}>
-                      <span style={{ fontFamily: s.fontBody, fontSize: 11, color: "var(--text-heading)", whiteSpace: "nowrap" as const, overflow: "hidden" as const, textOverflow: "ellipsis" as const }}>{row.addr}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 600, color: s.muted, textAlign: "right" as const }}>{row.base}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 600, color: row.sizeClr, textAlign: "right" as const }}>{row.size}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 600, color: s.muted, textAlign: "right" as const }}>{row.bed}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 600, color: s.muted, textAlign: "right" as const }}>{row.age}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 700, color: s.teal, textAlign: "right" as const }}>{row.adjusted}</span>
-                      <span style={{ fontFamily: s.fontData, fontSize: 10, fontWeight: 500, color: s.mutedDim, textAlign: "right" as const }}>{row.weight}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Match Score */}
-              <div style={{ padding: "0 24px 18px" }}>
-                <div style={{ background: "rgba(14,165,233,0.03)", border: "1px solid rgba(14,165,233,0.08)", borderRadius: 10, padding: "12px 14px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <span style={{ fontFamily: s.fontBody, fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: s.muted }}>MATCH SCORE</span>
-                    <span style={{ fontFamily: s.fontData, fontSize: 16, fontWeight: 700, color: s.teal }}>94%</span>
-                  </div>
-                  {[
-                    { label: "Location", pct: 96 },
-                    { label: "Size", pct: 95 },
-                    { label: "Bed/Bath", pct: 100 },
-                    { label: "Age", pct: 100 },
-                  ].map((bar, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < 3 ? 5 : 0 }}>
-                      <span style={{ fontFamily: s.fontBody, fontSize: 10, color: s.muted, width: 48, flexShrink: 0 }}>{bar.label}</span>
-                      <div style={{ flex: 1, height: 4, borderRadius: 2, background: "rgba(14,165,233,0.08)" }}>
-                        <div style={{ width: `${bar.pct}%`, height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${s.teal}, ${s.teal}cc)`, boxShadow: `0 0 6px ${s.teal}30` }} />
-                      </div>
-                      <span style={{ fontFamily: s.fontData, fontSize: 9, fontWeight: 600, color: s.muted, width: 26, textAlign: "right" as const, flexShrink: 0 }}>{bar.pct}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* URAR Report Footer */}
-              <div style={{ borderTop: "1px solid rgba(14,165,233,0.08)", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(14,165,233,0.02)" }}>
-                <span style={{ fontFamily: s.fontBody, fontSize: 11, color: s.mutedDim, display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ color: s.teal, fontSize: 8 }}>&#x25C6;</span> Weighted hybrid methodology
-                </span>
-                <span style={{ fontFamily: s.fontBody, fontSize: 11, fontWeight: 600, color: s.teal }}>
-                  Download URAR Report
-                </span>
-              </div>
-            </div>
+            {/* Comps Preview Image */}
+            <img
+              src="/images/comps-appraisal-preview.png"
+              alt="Comp-Based Appraisal — Adjustment breakdown, match scores, comp details, and proximity map"
+              style={{ width: "100%", height: "auto", borderRadius: 12 }}
+              draggable={false}
+            />
 
             {/* Text */}
             <div>
