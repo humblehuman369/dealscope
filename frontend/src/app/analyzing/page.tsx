@@ -4,12 +4,13 @@
  * IQ Analyzing Page
  * Route: /analyzing?address=...
  *
- * Redirects to verdict with the same params. Verdict shows "Analyzing property..."
+ * Redirects to verdict with the same params. Verdict shows the pulsating IQ logo
  * until data is loaded. Kept for backwards compatibility (deep links, app-site-association).
  */
 
 import { useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 function AnalyzingContent() {
   const router = useRouter()
@@ -20,23 +21,12 @@ function AnalyzingContent() {
     router.replace(queryString ? `/verdict?${queryString}` : '/verdict')
   }, [router, queryString])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin" />
-        <p style={{ color: '#F1F5F9' }}>Analyzing property...</p>
-      </div>
-    </div>
-  )
+  return <IQLoadingLogo />
 }
 
 export default function AnalyzingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<IQLoadingLogo />}>
       <AnalyzingContent />
     </Suspense>
   )
