@@ -46,23 +46,7 @@ const FadeIn = ({ children, className = "" }: { children: React.ReactNode; class
   );
 };
 
-// ── Dividers ──
-const DivB = () => (
-  <div style={{
-    width: "100%", height: 1,
-    background: "linear-gradient(90deg, transparent, var(--border-default), var(--accent-sky), var(--border-default), transparent)",
-    boxShadow: "var(--shadow-card)",
-  }} />
-);
-
-const DivC = () => (
-  <div style={{
-    width: "100%", height: 1,
-    background: "linear-gradient(90deg, var(--accent-sky), var(--border-default) 40%, transparent 80%)",
-    boxShadow: "var(--shadow-card)",
-  }} />
-);
-
+// ── Divider ──
 const DivE = () => (
   <div style={{
     width: "100%", height: 1,
@@ -420,9 +404,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         onScanProperty={onPointAndScan}
       />
 
-      <DivC />
-
-      <DivB />
+      <DivE />
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
       <FadeIn>
@@ -511,7 +493,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </section>
       </FadeIn>
 
-      <DivB />
+      <DivE />
 
       {/* ═══════════ COMPS & APPRAISAL ═══════════ */}
       <FadeIn>
@@ -563,12 +545,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </section>
       </FadeIn>
 
-      <DivC />
+      <DivE />
 
       {/* ═══════════ DATA SOURCES ═══════════ */}
       <DataSourcesSection />
 
-      <DivC />
+      <DivE />
 
       {/* ═══════════ FOUNDER ═══════════ */}
       <FadeIn>
@@ -630,7 +612,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </section>
       </FadeIn>
 
-      <DivC />
+      <DivE />
 
       {/* ═══════════ INVESTOR FIT ═══════════ */}
       <FadeIn>
@@ -678,7 +660,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         </section>
       </FadeIn>
 
-      <DivC />
+      <DivE />
 
       {/* ═══════════ FINAL CTA ═══════════ */}
       <FadeIn>
