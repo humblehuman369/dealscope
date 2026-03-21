@@ -58,6 +58,15 @@
   .hero-address-bar button { width: 100% !important; justify-content: center !important; }
 }
 
+/* Hero video play button hover */
+.hero-video-play-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1) !important;
+  box-shadow: 0 6px 32px rgba(14,165,233,0.55) !important;
+}
+.hero-video-play-btn:active {
+  transform: translate(-50%, -50%) scale(0.95) !important;
+}
+
 /* Mobile pill CTA adjustments */
 @media (max-width: 480px) {
   .hero-pill-form {
@@ -65,6 +74,22 @@
   }
   .hero-pill-input {
     font-size: 14px !important;
+  }
+}
+
+/* Hero video responsive */
+@media (max-width: 639px) {
+  .hero-video-wrapper {
+    max-width: 100% !important;
+    margin-top: 28px !important;
+    border-radius: 8px !important;
+  }
+  .hero-video-wrapper video {
+    border-radius: 8px !important;
+  }
+  .hero-video-play-btn {
+    width: 56px !important;
+    height: 56px !important;
   }
 }
 
