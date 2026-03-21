@@ -387,15 +387,24 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             {/* Step 3 */}
             <div style={{ ...cardSmStyle, padding: "28px 22px 24px", textAlign: "center" as const }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>3</div>
-              <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Get Your Investment Screen</h3>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>A Verdict Score that tells you if this property is in the range worth pursuing — plus your Target Buy and Deal Gap.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "center" as const }}>
-                <div style={{ fontFamily: s.fontData, fontSize: 30, fontWeight: 700, color: s.warning }}>53<span style={{ fontSize: 13, color: s.mutedDim }}>/100</span></div>
-                <div style={{ fontFamily: s.fontBody, fontSize: 11, color: s.warning, marginTop: 3, fontWeight: 600 }}>Marginal Opportunity</div>
-                <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginTop: 8 }}>Target Buy: <span style={{ color: s.teal, fontFamily: s.fontData, fontWeight: 700 }}>$669,608</span></div>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
-                  <Link href="/about" style={{ fontFamily: s.fontBody, fontSize: 13, fontWeight: 600, color: s.teal, textDecoration: "none" }}>See how to make it work →</Link>
+              <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>See Your DealGap</h3>
+              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Instantly know if the deal pencils — and what it takes to make it work.</p>
+              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: "18px 14px", border: "1px solid var(--border-subtle)", textAlign: "center" as const }}>
+                <div style={{ fontFamily: s.fontBody, fontSize: 18, fontWeight: 300, marginBottom: 4 }}>
+                  <span style={{ fontStyle: "italic" }}>The</span>{" "}
+                  <span style={{ fontWeight: 700, color: s.teal }}>DealGap</span>
                 </div>
+                <div style={{ fontFamily: s.fontData, fontSize: 32, fontWeight: 700, color: s.teal, lineHeight: 1.2 }}>-17.2%</div>
+                <div style={{
+                  display: "inline-block", marginTop: 10, padding: "5px 14px",
+                  border: "1px solid var(--border-default)", borderRadius: 20,
+                  fontFamily: s.fontBody, fontSize: 11, fontWeight: 600, color: "var(--text-heading)",
+                }}>
+                  Moderate Negative Gap
+                </div>
+                <p style={{ fontFamily: s.fontBody, fontSize: 11, color: s.muted, lineHeight: 1.6, marginTop: 12, textAlign: "justify" as const }}>
+                  A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.
+                </p>
               </div>
             </div>
           </div>
