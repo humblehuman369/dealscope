@@ -497,7 +497,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ COMPS & APPRAISAL ═══════════ */}
-      <FadeIn>
+      <FadeIn style={{ background: "var(--surface-section)" }}>
         <section style={{ padding: "116px 24px" }}>
           <div className="comps-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
 
@@ -554,7 +554,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ FOUNDER ═══════════ */}
-      <FadeIn>
+      <FadeIn style={{ background: "var(--surface-section)" }}>
         <section style={{ padding: "116px 24px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" as const }}>
             <Eyebrow>Built by an Industry Expert</Eyebrow>
@@ -664,7 +664,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ FINAL CTA ═══════════ */}
-      <FadeIn>
+      <FadeIn style={{ background: "var(--surface-section)" }}>
         <section style={{ padding: "132px 24px 120px", textAlign: "center" as const, position: "relative" as const }}>
           <div style={{ position: "absolute" as const, bottom: 0, left: "50%", transform: "translateX(-50%)", width: 480, height: 380, background: "radial-gradient(ellipse, var(--color-sky-dim) 0%, transparent 70%)", pointerEvents: "none" as const }} />
 
