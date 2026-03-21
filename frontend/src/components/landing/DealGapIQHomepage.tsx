@@ -233,6 +233,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             maxWidth: isVideoPlaying ? "none" : 640,
             marginLeft: isVideoPlaying ? "calc(-50vw + 50%)" : undefined,
             marginTop: 40,
+            paddingTop: 15,
+            paddingBottom: 15,
             opacity: 0,
             animation: "fadeUp 0.6s 0.2s forwards",
             position: "relative" as const,
