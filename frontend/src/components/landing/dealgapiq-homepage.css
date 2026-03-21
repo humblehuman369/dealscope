@@ -43,6 +43,10 @@
 
 /* Tablet and below: 2-col proof bar, stacked sections */
 @media (max-width: 768px) {
+  .hiw-phases { flex-direction: column !important; align-items: center !important; }
+  .hiw-phase { max-width: 100% !important; border-radius: 20px !important; padding: 32px 24px !important; }
+  .hiw-connector { width: 100% !important; height: 80px !important; padding: 12px 0 !important; }
+  .hiw-connector svg { transform: rotate(0deg); }
   .steps-grid { grid-template-columns: 1fr !important; }
   .verdict-inner { grid-template-columns: 1fr !important; }
   .comps-inner { grid-template-columns: 1fr !important; }
