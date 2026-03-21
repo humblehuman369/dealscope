@@ -5,6 +5,7 @@ Moved from app/routers/admin.py as part of Phase 2 Architecture Cleanup.
 """
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, EmailStr
@@ -25,6 +26,8 @@ class AdminUserResponse(BaseModel):
     created_at: datetime
     last_login: datetime | None
     saved_properties_count: int = 0
+    subscription_tier: str | None = None
+    subscription_status: str | None = None
 
     class Config:
         from_attributes = True
@@ -37,6 +40,17 @@ class AdminUserUpdate(BaseModel):
     is_active: bool | None = None
     is_verified: bool | None = None
     is_superuser: bool | None = None
+
+
+class AdminTier(StrEnum):
+    FREE = "free"
+    PRO = "pro"
+
+
+class AdminSubscriptionUpdate(BaseModel):
+    """Schema for admin granting or revoking a subscription."""
+
+    tier: AdminTier
 
 
 class PlatformStats(BaseModel):

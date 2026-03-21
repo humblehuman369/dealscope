@@ -50,6 +50,7 @@ class AuditAction(enum.StrEnum):
     ADMIN_UPDATE_USER = "admin:update_user"
     ADMIN_DELETE_USER = "admin:delete_user"
     ADMIN_UPDATE_ASSUMPTIONS = "admin:update_assumptions"
+    ADMIN_GRANT_SUBSCRIPTION = "admin:grant_subscription"
 
 
 class AuditLog(Base):

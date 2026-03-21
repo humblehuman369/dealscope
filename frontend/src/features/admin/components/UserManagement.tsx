@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { UserCog, Search, CheckCircle, XCircle } from 'lucide-react'
+import { UserCog, Search, CheckCircle, XCircle, Crown } from 'lucide-react'
 import { api } from '@/lib/api-client'
 
 // ===========================================
 // User Management — Dark Fintech Theme
 // ===========================================
 // Emerald=active, red=disabled, amber=admin, slate=user
+// Sky=pro, slate=free
 // Table rows use white/2% hover, white/7% dividers
 // ===========================================
 
@@ -19,6 +20,8 @@ interface AdminUser {
   is_verified: boolean
   is_superuser: boolean
   created_at: string
+  subscription_tier?: string | null
+  subscription_status?: string | null
 }
 
 const formatDate = (dateString: string) => {
@@ -60,6 +63,18 @@ export function UserManagementSection() {
     }
   }
 
+  const handleToggleSubscription = async (userId: string, currentTier: string | null | undefined) => {
+    const newTier = currentTier === 'pro' ? 'free' : 'pro'
+    try {
+      await api.patch(`/api/v1/admin/users/${userId}/subscription`, { tier: newTier })
+      setUsers(prev => prev.map(u =>
+        u.id === userId ? { ...u, subscription_tier: newTier, subscription_status: 'active' } : u
+      ))
+    } catch (err) {
+      console.error('Failed to update subscription:', err)
+    }
+  }
+
   const filteredUsers = users.filter(u =>
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -97,55 +112,79 @@ export function UserManagementSection() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">User</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Plan</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Joined</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.07]">
-              {filteredUsers.map((u) => (
-                <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-slate-100">{u.full_name || 'No name'}</p>
-                      <p className="text-xs text-slate-500">{u.email}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
-                      u.is_active
-                        ? 'bg-emerald-400/10 text-emerald-400'
-                        : 'bg-red-400/10 text-red-400'
-                    }`}>
-                      {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      {u.is_active ? 'Active' : 'Disabled'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      u.is_superuser
-                        ? 'bg-amber-400/10 text-amber-400'
-                        : 'bg-white/[0.06] text-slate-300'
-                    }`}>
-                      {u.is_superuser ? 'Admin' : 'User'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-400 tabular-nums">
-                    {formatDate(u.created_at)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleToggleActive(u.id, u.is_active)}
-                      className={`text-xs font-semibold transition-colors ${
+              {filteredUsers.map((u) => {
+                const isPro = u.subscription_tier === 'pro'
+                return (
+                  <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-slate-100">{u.full_name || 'No name'}</p>
+                        <p className="text-xs text-slate-500">{u.email}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
                         u.is_active
-                          ? 'text-red-400 hover:text-red-300'
-                          : 'text-emerald-400 hover:text-emerald-300'
-                      }`}
-                    >
-                      {u.is_active ? 'Disable' : 'Enable'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                          ? 'bg-emerald-400/10 text-emerald-400'
+                          : 'bg-red-400/10 text-red-400'
+                      }`}>
+                        {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        {u.is_active ? 'Active' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        u.is_superuser
+                          ? 'bg-amber-400/10 text-amber-400'
+                          : 'bg-white/[0.06] text-slate-300'
+                      }`}>
+                        {u.is_superuser ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
+                        isPro
+                          ? 'bg-sky-400/10 text-sky-400'
+                          : 'bg-white/[0.06] text-slate-300'
+                      }`}>
+                        {isPro && <Crown className="w-3 h-3" />}
+                        {isPro ? 'Pro' : 'Free'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-400 tabular-nums">
+                      {formatDate(u.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-3">
+                      <button
+                        onClick={() => handleToggleSubscription(u.id, u.subscription_tier)}
+                        className={`text-xs font-semibold transition-colors ${
+                          isPro
+                            ? 'text-amber-400 hover:text-amber-300'
+                            : 'text-sky-400 hover:text-sky-300'
+                        }`}
+                      >
+                        {isPro ? 'Revoke' : 'Grant Pro'}
+                      </button>
+                      <button
+                        onClick={() => handleToggleActive(u.id, u.is_active)}
+                        className={`text-xs font-semibold transition-colors ${
+                          u.is_active
+                            ? 'text-red-400 hover:text-red-300'
+                            : 'text-emerald-400 hover:text-emerald-300'
+                        }`}
+                      >
+                        {u.is_active ? 'Disable' : 'Enable'}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
