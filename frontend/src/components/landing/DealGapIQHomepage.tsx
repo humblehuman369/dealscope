@@ -243,6 +243,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           <video
             ref={videoRef}
             src="/videos/intro-to-dealgapiq.mp4"
+            poster="/images/intro-video-poster.png"
             controls={isVideoPlaying}
             playsInline
             preload="metadata"
