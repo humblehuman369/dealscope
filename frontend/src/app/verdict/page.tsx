@@ -1228,7 +1228,7 @@ function VerdictContent() {
                   </>
                 )
               })()}
-              <div style={{ marginTop: 48 }}>
+              <div style={{ marginTop: 58 }}>
                 <h2
                   className="w-full font-bold italic leading-tight"
                   style={{
