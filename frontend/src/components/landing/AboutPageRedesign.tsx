@@ -358,7 +358,7 @@ export function AboutPageRedesign() {
           <Reveal>
             <div className="founder-grid">
               <div className="founder-portrait">
-                <span className="initials">BG</span>
+                <img src="/images/brad-geisen-headshot.png" alt="Brad Geisen" />
               </div>
               <div className="founder-info">
                 <h3>Brad Geisen</h3>
