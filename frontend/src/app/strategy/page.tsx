@@ -595,9 +595,9 @@ function StrategyContent() {
             {/* Three price metric cards */}
             <div className="flex flex-col sm:flex-row gap-2.5 items-stretch mb-6">
               {[
-                { label: 'Income Value', value: incomeVal, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
                 { label: 'Target Buy', value: targetPrice, sub: 'Positive Cashflow', color: 'var(--accent-sky)', dominant: true },
-                { label: 'Market', value: listPrice, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
+                { label: 'Income Value', value: incomeVal, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
+                { label: 'Market Price', value: listPrice, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
                   background: 'var(--surface-card)',
