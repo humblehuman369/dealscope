@@ -573,6 +573,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       {/* ═══════════ THREE PRICE THRESHOLDS & THE GAPS ═══════════ */}
       <FadeIn>
         <section style={{ padding: "96px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
+          <Eyebrow style={{ marginBottom: 24 }}>Your Three Price Thresholds &amp; the Gaps</Eyebrow>
           <img
             src="/images/three-price-thresholds-and-gaps.png"
             alt="Your Three Price Thresholds and the Gaps — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
