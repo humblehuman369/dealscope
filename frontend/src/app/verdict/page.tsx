@@ -1123,7 +1123,7 @@ function VerdictContent() {
               </div>
             </div>
 
-            <div className="mt-7 relative" style={{ paddingTop: 40 }}>
+            <div className="mt-7 relative px-4 sm:px-8" style={{ paddingTop: 40 }}>
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
