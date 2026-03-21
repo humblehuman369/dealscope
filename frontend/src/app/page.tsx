@@ -29,6 +29,14 @@ import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/add
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('scan') === 'true') {
+      setMode('camera');
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
   // Show camera scanner view
   if (mode === 'camera') {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;

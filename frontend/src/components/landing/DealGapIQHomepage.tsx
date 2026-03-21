@@ -184,7 +184,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         flexDirection: "column" as const,
         alignItems: "center",
         justifyContent: "center",
-        padding: "80px 24px 130px",
+        padding: "105px 24px 155px",
         textAlign: "center" as const,
         position: "relative" as const,
       }}>
