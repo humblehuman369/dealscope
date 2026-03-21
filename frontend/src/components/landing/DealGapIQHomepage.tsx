@@ -233,15 +233,15 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             maxWidth: isVideoPlaying ? "none" : 640,
             marginLeft: isVideoPlaying ? "calc(-50vw + 50%)" : undefined,
             marginTop: 40,
-            paddingTop: 15,
-            paddingBottom: 15,
+            paddingTop: isVideoPlaying ? 0 : 15,
+            paddingBottom: isVideoPlaying ? 0 : 15,
             opacity: 0,
             animation: "fadeUp 0.6s 0.2s forwards",
             position: "relative" as const,
             borderRadius: isVideoPlaying ? 0 : 12,
             overflow: "hidden",
             boxShadow: isVideoPlaying ? "none" : "0 8px 32px rgba(0,0,0,0.4)",
-            transition: "max-width 0.4s ease, width 0.4s ease, margin-left 0.4s ease, border-radius 0.4s ease, box-shadow 0.4s ease",
+            transition: "max-width 0.4s ease, width 0.4s ease, margin-left 0.4s ease, border-radius 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease",
           }}
         >
           <video
