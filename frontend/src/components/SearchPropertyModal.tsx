@@ -35,6 +35,19 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       handleClose();
       return;
     }
+
+    const isMobile = typeof window !== 'undefined' && (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      ('ontouchstart' in window && window.innerWidth < 1024)
+    );
+    const hasCamera = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
+
+    if (isMobile && hasCamera) {
+      handleClose();
+      router.push('/?scan=true');
+      return;
+    }
+
     setShowScanInfo(true);
   };
 
