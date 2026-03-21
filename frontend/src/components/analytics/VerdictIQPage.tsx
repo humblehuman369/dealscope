@@ -127,7 +127,7 @@ export function VerdictIQPage({
       score,
       label: score >= 80 ? 'Good Buy' : score >= 60 ? 'Fair Deal' : 'Needs Work',
       subtitle: score >= 80 ? 'Deal Gap likely achievable' : score >= 60 ? 'Moderate negotiation needed' : 'Significant discount required',
-      dealGap: `${dealGapPercent.toFixed(1)}%`,
+      dealGap: `${dealGapPercent >= 0 ? '+' : ''}${dealGapPercent.toFixed(1)}%`,
       dealGapPercent,
       motivation: 'Medium',
       motivationScore: 50,
