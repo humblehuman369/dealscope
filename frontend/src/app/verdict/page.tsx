@@ -1274,7 +1274,7 @@ function VerdictContent() {
                     >
                       <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                       <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                      <p className="leading-snug text-justify" style={{ color: 'var(--text-body)', fontSize: 'clamp(15px, 1.25vw, 20px)' }}>{card.copy}</p>
+                      <p className="leading-snug text-left" style={{ color: 'var(--text-body)', fontSize: 'clamp(15px, 1.25vw, 20px)' }}>{card.copy}</p>
                     </div>
                   ))}
                 </div>
