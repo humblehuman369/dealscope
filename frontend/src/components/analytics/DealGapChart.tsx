@@ -175,7 +175,7 @@ export function DealGapChart({
   // Deal gap text
   const dealGapText = useMemo(() => {
     const pct = data.dealGapPercent
-    return `${pct >= 0 ? '-' : '+'}${Math.abs(pct).toFixed(1)}%`
+    return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`
   }, [data.dealGapPercent])
 
   // Bracket positioning helper
@@ -357,7 +357,7 @@ export function DealGapChartCompact({
     buyPrice,
   })
 
-  const dealGapText = `${data.dealGapPercent >= 0 ? '-' : '+'}${Math.abs(data.dealGapPercent).toFixed(1)}%`
+  const dealGapText = `${data.dealGapPercent >= 0 ? '+' : ''}${data.dealGapPercent.toFixed(1)}%`
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5">
