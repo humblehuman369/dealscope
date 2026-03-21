@@ -49,6 +49,7 @@ import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { ProGate } from '@/components/ProGate'
 import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
@@ -908,16 +909,9 @@ function VerdictContent() {
     }
   }, [property, router])
 
-  // Loading state
+  // Loading state — pulsating IQ logo until data arrives
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: 'var(--text-heading)' }}>Analyzing property...</p>
-        </div>
-      </div>
-    )
+    return <IQLoadingLogo />
   }
 
   // Error state with no property fallback
@@ -1543,14 +1537,7 @@ function VerdictContent() {
 
 export default function VerdictPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: 'var(--text-heading)' }}>Loading verdict...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<IQLoadingLogo />}>
       <VerdictContent />
     </Suspense>
   )
