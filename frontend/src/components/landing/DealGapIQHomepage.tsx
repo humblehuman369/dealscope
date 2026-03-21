@@ -426,7 +426,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "96px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
+        <section style={{ padding: "116px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
           <Eyebrow>How It Works</Eyebrow>
           <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
             Three Steps. One Decision.
@@ -500,7 +500,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ THREE PRICE THRESHOLDS & THE GAPS ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "96px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
+        <section style={{ padding: "116px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
           <Eyebrow style={{ marginBottom: 24 }}>Your Three Price Thresholds &amp; the Gaps</Eyebrow>
           <img
             src="/images/three-price-thresholds-and-gaps.png"
@@ -515,7 +515,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ COMPS & APPRAISAL ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "96px 24px" }}>
+        <section style={{ padding: "116px 24px" }}>
           <div className="comps-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
 
             {/* Comps Preview Image */}
@@ -572,7 +572,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ FOUNDER ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "96px 24px" }}>
+        <section style={{ padding: "116px 24px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" as const }}>
             <Eyebrow>Built by an Industry Expert</Eyebrow>
             <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
@@ -634,7 +634,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ INVESTOR FIT ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "96px 24px" }}>
+        <section style={{ padding: "116px 24px" }}>
           <div className="investor-fit-inner" style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
             <div style={{ ...cardLgStyle, padding: "28px 24px" }}>
               <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 18 }}>
@@ -682,7 +682,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ FINAL CTA ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "112px 24px 100px", textAlign: "center" as const, position: "relative" as const }}>
+        <section style={{ padding: "132px 24px 120px", textAlign: "center" as const, position: "relative" as const }}>
           <div style={{ position: "absolute" as const, bottom: 0, left: "50%", transform: "translateX(-50%)", width: 480, height: 380, background: "radial-gradient(ellipse, var(--color-sky-dim) 0%, transparent 70%)", pointerEvents: "none" as const }} />
 
           <Eyebrow>Stop Guessing. Start Calculating.</Eyebrow>
