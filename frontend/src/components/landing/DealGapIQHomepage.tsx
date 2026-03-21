@@ -9,6 +9,7 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
+import { HowItWorksSection } from './HowItWorksSection';
 
 // ── Check icon SVG ──
 const CheckIcon = () => (
@@ -408,76 +409,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
-      <FadeIn style={{ background: "var(--surface-section)" }}>
-        <section style={{ padding: "116px 24px 141px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
-          <Eyebrow>How It Works</Eyebrow>
-          <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
-            Three Steps. One Decision.
-          </h2>
-          <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "var(--text-body)", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
-            Multiple valuation sources cross-referenced. Rents, expenses, and comps.
-          </p>
-
-          <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginTop: 52 }}>
-            {/* Step 1 */}
-            <div style={{ ...cardSmStyle, padding: "28px 22px 24px", textAlign: "center" as const }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>1</div>
-              <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Paste an Address</h3>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Any U.S. property address. No account needed for your first scan.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)" }}>
-                <div style={{ background: "var(--surface-card-hover)", borderRadius: 8, padding: "11px 14px", color: s.muted, fontFamily: s.fontBody, fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: s.teal }}>📍</span> 1451 Sw 10th St, <span style={{ filter: "blur(2px)" }}>Boca Raton, FL</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div style={{ ...cardSmStyle, padding: "28px 22px 24px", textAlign: "center" as const }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>2</div>
-              <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>We Analyze the Market</h3>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Multiple valuation sources cross-referenced. Rents, expenses, and comps modeled through our proprietary IQ engine.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", textAlign: "left" as const }}>
-                {[
-                  { label: "IQ Estimate", value: "$869,326", teal: true },
-                  { label: "Zillow", value: "$802,600" },
-                  { label: "RentCast", value: "$963,000" },
-                  { label: "Redfin", value: "$789,378" },
-                  { label: "Realtor.com", value: "$805,600" },
-                ].map((row, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: i < 4 ? "1px solid var(--border-subtle)" : "none", fontSize: 13 }}>
-                    <span style={{ fontFamily: s.fontBody, color: s.muted }}>{row.label}</span>
-                    <span style={{ fontFamily: s.fontData, fontWeight: 700, fontSize: 12, color: row.teal ? s.teal : "var(--text-heading)" }}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div style={{ ...cardSmStyle, padding: "28px 22px 24px", textAlign: "center" as const }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: s.teal, color: "var(--text-inverse)", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>3</div>
-              <h3 style={{ fontFamily: s.fontBody, fontSize: 17, fontWeight: 600, marginBottom: 8 }}>See Your DealGap</h3>
-              <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>Instantly know if the deal pencils — and what it takes to make it work.</p>
-              <div style={{ marginTop: 18, background: "var(--surface-base)", borderRadius: 10, padding: "18px 14px", border: "1px solid var(--border-subtle)", textAlign: "center" as const }}>
-                <div style={{ fontFamily: s.fontBody, fontSize: 18, fontWeight: 300, marginBottom: 4 }}>
-                  <span style={{ fontStyle: "italic" }}>The</span>{" "}
-                  <span style={{ fontWeight: 700, color: s.teal }}>DealGap</span>
-                </div>
-                <div style={{ fontFamily: s.fontData, fontSize: 32, fontWeight: 700, color: s.teal, lineHeight: 1.2 }}>-17.2%</div>
-                <div style={{
-                  display: "inline-block", marginTop: 10, padding: "5px 14px",
-                  border: "1px solid var(--border-default)", borderRadius: 20,
-                  fontFamily: s.fontBody, fontSize: 11, fontWeight: 600, color: "var(--text-heading)",
-                }}>
-                  Moderate Negative Gap
-                </div>
-                <p style={{ fontFamily: s.fontBody, fontSize: 11, color: s.muted, lineHeight: 1.6, marginTop: 12, textAlign: "justify" as const }}>
-                  A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </FadeIn>
+      <HowItWorksSection />
 
       <DivE />
 
