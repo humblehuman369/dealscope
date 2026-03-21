@@ -400,9 +400,6 @@ class PropertyService:
         if address_obj.longitude is None:
             address_obj.longitude = normalized.get("longitude")
 
-        # #region agent log
-        import json as _json_dbg3; open("/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-23d841.log","a").write(_json_dbg3.dumps({"sessionId":"23d841","hypothesisId":"ALL","location":"property_service.py:_build_response:pre_PropertyDetails","message":"Final cooling_type before PropertyDetails","data":{"cooling_type":repr(normalized.get("cooling_type")),"cooling_type_type":type(normalized.get("cooling_type")).__name__,"heating_type":repr(normalized.get("heating_type")),"heating_type_type":type(normalized.get("heating_type")).__name__},"timestamp":__import__("time").time()})+"\n")
-        # #endregion
         # Build response
         response = PropertyResponse(
             property_id=property_id,

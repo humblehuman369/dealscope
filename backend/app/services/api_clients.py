@@ -815,9 +815,6 @@ class DataNormalizer:
                 normalized["heating_type"] = features.get("heatingType") or features.get("heating")
             if normalized.get("cooling_type") is None:
                 normalized["cooling_type"] = features.get("coolingType") or features.get("cooling")
-            # #region agent log
-            import json as _json_dbg; open("/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-23d841.log","a").write(_json_dbg.dumps({"sessionId":"23d841","hypothesisId":"A","location":"api_clients.py:_extract_property_features:rentcast","message":"RentCast features cooling/heating raw","data":{"coolingType_raw":repr(features.get("coolingType")),"cooling_raw":repr(features.get("cooling")),"cooling_type_result":repr(normalized.get("cooling_type")),"cooling_type_type":type(normalized.get("cooling_type")).__name__,"heatingType_raw":repr(features.get("heatingType")),"heating_raw":repr(features.get("heating")),"heating_type_result":repr(normalized.get("heating_type")),"heating_type_type":type(normalized.get("heating_type")).__name__},"timestamp":__import__("time").time()})+"\n")
-            # #endregion
             if normalized.get("has_heating") is None:
                 ht = normalized.get("heating_type")
                 normalized["has_heating"] = ht is not None and str(ht).lower() not in ("none", "")
@@ -874,9 +871,6 @@ class DataNormalizer:
                 if isinstance(cooling, list) and cooling:
                     normalized["cooling_type"] = ", ".join(str(c) for c in cooling)
                     normalized["has_cooling"] = True
-            # #region agent log
-            import json as _json_dbg2; open("/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-23d841.log","a").write(_json_dbg2.dumps({"sessionId":"23d841","hypothesisId":"C","location":"api_clients.py:_extract_property_features:reso","message":"AXESSO resoFacts cooling after extraction","data":{"reso_cooling_raw":repr(reso.get("cooling")),"reso_cooling_type":type(reso.get("cooling")).__name__,"cooling_type_final":repr(normalized.get("cooling_type")),"cooling_type_final_type":type(normalized.get("cooling_type")).__name__},"timestamp":__import__("time").time()})+"\n")
-            # #endregion
             if normalized.get("roof_type") is None:
                 roof = reso.get("roofType")
                 if roof:
