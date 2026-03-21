@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-function useInView(threshold = 0.2): [React.RefObject<HTMLDivElement | null>, boolean] {
-  const ref = useRef<HTMLDivElement | null>(null);
+function useInView(threshold = 0.2) {
+  const ref = useRef<HTMLElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
@@ -15,7 +15,7 @@ function useInView(threshold = 0.2): [React.RefObject<HTMLDivElement | null>, bo
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-  return [ref, inView];
+  return [ref, inView] as const;
 }
 
 function PhaseBadge({ label, color, delay, visible }: {
