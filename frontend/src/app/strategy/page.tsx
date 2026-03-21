@@ -115,7 +115,7 @@ function StrategyContent() {
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
-  const [showDealMaker, setShowDealMaker] = useState(false)
+  const [showDealMaker, setShowDealMaker] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedAddressRef = useRef(addressParam)
 
