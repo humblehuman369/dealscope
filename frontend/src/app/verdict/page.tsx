@@ -1027,7 +1027,7 @@ function VerdictContent() {
             }}
           >
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-              <div className="lg:w-[48%] flex flex-col items-center text-center">
+              <div className="lg:w-[48%] flex flex-col items-center text-center" style={{ paddingTop: 30 }}>
                 <h1
                   style={{
                     margin: 0,
@@ -1043,7 +1043,7 @@ function VerdictContent() {
                     {dealGapDisplay}
                   </span>
                 </h1>
-                <div style={{ marginTop: 20 }}>
+                <div style={{ marginTop: 10 }}>
                   <span
                     style={{
                       display: 'inline-flex',
@@ -1061,7 +1061,7 @@ function VerdictContent() {
                 </div>
                 <p
                   style={{
-                    margin: '20px 0 0',
+                    margin: '10px 0 0',
                     fontSize: 'clamp(15px, 1.25vw, 20px)',
                     lineHeight: 1.5,
                     fontWeight: 600,
