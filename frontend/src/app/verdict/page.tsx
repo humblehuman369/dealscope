@@ -1043,7 +1043,7 @@ function VerdictContent() {
                     {dealGapDisplay}
                   </span>
                 </h1>
-                <div style={{ marginTop: 15, marginBottom: 15 }}>
+                <div style={{ marginTop: 30, marginBottom: 30 }}>
                   <span
                     style={{
                       display: 'inline-flex',
