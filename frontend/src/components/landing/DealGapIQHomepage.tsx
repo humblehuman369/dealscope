@@ -18,7 +18,7 @@ const CheckIcon = () => (
 );
 
 // ── Fade-in on scroll wrapper ──
-const FadeIn = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+const FadeIn = ({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -39,6 +39,7 @@ const FadeIn = ({ children, className = "" }: { children: React.ReactNode; class
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(20px)",
         transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+        ...style,
       }}
     >
       {children}
@@ -407,7 +408,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
-      <FadeIn>
+      <FadeIn style={{ background: "var(--surface-section)" }}>
         <section style={{ padding: "116px 24px 141px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
           <Eyebrow>How It Works</Eyebrow>
           <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
