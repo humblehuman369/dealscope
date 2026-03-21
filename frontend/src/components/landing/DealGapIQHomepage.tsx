@@ -408,7 +408,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
       <FadeIn>
-        <section style={{ padding: "116px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
+        <section style={{ padding: "116px 24px 141px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
           <Eyebrow>How It Works</Eyebrow>
           <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
             Three Steps. One Decision.
