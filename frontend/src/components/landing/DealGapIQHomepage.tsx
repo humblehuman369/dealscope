@@ -154,6 +154,8 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const [address, setAddress] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [founderImgError, setFounderImgError] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const hasValidAddress = isLikelyFullAddress(address);
   const hasText = address.trim().length >= 3;
 
@@ -169,6 +171,19 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
     setAddress(canonicalAddress);
     router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
   };
+
+  const handleVideoPlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isVideoPlaying) {
+      video.pause();
+    } else {
+      video.play();
+    }
+  };
+
+  const handleVideoPause = () => setIsVideoPlaying(false);
+  const handleVideoPlaying = () => setIsVideoPlaying(true);
 
   return (
     <div style={{ fontFamily: s.fontBody, background: "var(--surface-base)", color: "var(--text-heading)", lineHeight: 1.6, overflowX: "hidden" as const, WebkitFontSmoothing: "antialiased" }}>
@@ -208,6 +223,69 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           }}>
             Advanced real estate deal analysis made simple.
           </p>
+        </div>
+
+        {/* Intro Video */}
+        <div
+          className="hero-video-wrapper"
+          style={{
+            width: "100%",
+            maxWidth: 640,
+            marginTop: 40,
+            opacity: 0,
+            animation: "fadeUp 0.6s 0.2s forwards",
+            position: "relative" as const,
+            borderRadius: 12,
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+          }}
+        >
+          <video
+            ref={videoRef}
+            src="/videos/intro-to-dealgapiq.mp4"
+            controls={isVideoPlaying}
+            playsInline
+            preload="metadata"
+            onPlay={handleVideoPlaying}
+            onPause={handleVideoPause}
+            onEnded={handleVideoPause}
+            style={{
+              width: "100%",
+              display: "block",
+              borderRadius: 12,
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
+              background: "var(--surface-elevated)",
+            }}
+          />
+          {!isVideoPlaying && (
+            <button
+              onClick={handleVideoPlay}
+              aria-label="Play intro video"
+              className="hero-video-play-btn"
+              style={{
+                position: "absolute" as const,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                border: "none",
+                background: "var(--accent-sky)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 24px rgba(14,165,233,0.4)",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--text-inverse)" style={{ marginLeft: 3 }}>
+                <polygon points="6,3 20,12 6,21" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Main headline */}
