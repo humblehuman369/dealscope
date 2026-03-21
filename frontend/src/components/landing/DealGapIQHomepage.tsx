@@ -401,7 +401,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           fontFamily: s.fontBody,
           fontSize: "clamp(13px, 1.6vw, 16px)",
           fontWeight: 600,
-          marginTop: 48,
+          marginTop: 38,
           paddingBottom: 30,
           opacity: 0,
           animation: "fadeUp 0.6s 0.5s forwards",
