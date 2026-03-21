@@ -570,71 +570,15 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
       <DivE />
 
-      {/* ═══════════ THREE NUMBERS ═══════════ */}
+      {/* ═══════════ THREE PRICE THRESHOLDS & THE GAPS ═══════════ */}
       <FadeIn>
         <section style={{ padding: "96px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
-          <Eyebrow>Your Three Price Thresholds</Eyebrow>
-          <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
-            Every Investment Comes Down to Three Numbers
-          </h2>
-          <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "var(--text-body)", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
-            What&apos;s the most I can pay and break even? Where does cash flow start? How far is the market from both? <BrandName /> calculates all three automatically. <strong>Every assumption is editable.</strong>
-          </p>
-
-          <div className="numbers-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginTop: 48 }}>
-            {[
-              { icon: "$", iconBg: "rgba(52,211,153,0.1)", iconBorder: "rgba(52,211,153,0.2)", iconColor: s.success, title: "Income Value", desc: "The maximum price where rental income covers every cost — mortgage, taxes, insurance, vacancy, management. Your breakeven ceiling.", example: "$704,851", exColor: s.success },
-              { icon: "⎯", iconBg: "rgba(14,165,233,0.1)", iconBorder: "rgba(14,165,233,0.2)", iconColor: s.teal, title: "Target Buy", desc: "The price where the deal generates positive cash flow. Your offer anchor — the number you negotiate toward.", example: "$669,608", exColor: s.teal },
-              { icon: "△", iconBg: "rgba(251,191,36,0.1)", iconBorder: "rgba(251,191,36,0.2)", iconColor: s.warning, title: "Deal Gap", desc: "The gap between your Target Buy and market price. The larger it is, the more room to negotiate — or a signal to walk away.", example: "−16.6%", exColor: s.warning },
-            ].map((card, i) => (
-              <div key={i} style={{ ...cardSmStyle, padding: "28px 22px", textAlign: "left" as const }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontFamily: s.fontBody, fontSize: 18, fontWeight: 700, background: card.iconBg, color: card.iconColor, border: `1px solid ${card.iconBorder}` }}>{card.icon}</div>
-                <h3 style={{ fontFamily: s.fontBody, fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{card.title}</h3>
-                <p style={{ fontFamily: s.fontBody, fontSize: 14, color: s.muted, lineHeight: 1.6 }}>{card.desc}</p>
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-subtle)", display: "flex", alignItems: "baseline", gap: 10 }}>
-                  <span style={{ fontFamily: s.fontBody, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase" as const, color: s.muted }}>Example</span>
-                  <span style={{ fontFamily: s.fontData, fontSize: 20, fontWeight: 700, color: card.exColor }}>{card.example}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </FadeIn>
-
-      <DivB />
-
-      {/* ═══════════ STRATEGY ENGINE ═══════════ */}
-      <FadeIn>
-        <section style={{ padding: "96px 24px" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <Eyebrow>Strategy Engine</Eyebrow>
-            <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
-              Every address analyzed six ways — automatically.
-            </h2>
-            <p style={{ fontFamily: s.fontBody, fontSize: 16, color: "var(--text-body)", maxWidth: 640, lineHeight: 1.7, marginBottom: 36 }}>
-              No more one-size-fits-all analysis. <BrandName /> evaluates every property through six distinct investment lenses, each with a fully editable Excel worksheet you can download and make your own.
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-              {[
-                { name: "Long-Term Rental", desc: "Traditional buy-and-hold cashflow" },
-                { name: "Short-Term Rental", desc: "Airbnb / vacation income" },
-                { name: "BRRRR", desc: "Buy, rehab, rent, refinance, repeat" },
-                { name: "Fix & Flip", desc: "Purchase, renovate, sell for profit" },
-                { name: "House Hack", desc: "Owner-occupy + rent spare units" },
-                { name: "Wholesale", desc: "Contract assignment for quick equity" },
-              ].map((item, i) => (
-                <div key={i} style={{ background: "var(--surface-base)", border: "1px solid var(--border-subtle)", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--color-sky-dim)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: s.fontBody, fontSize: 14, fontWeight: 700, color: s.teal }}>{item.name.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: s.fontBody, fontSize: 15, fontWeight: 600 }}>{item.name}</div>
-                    <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.muted, marginTop: 2 }}>{item.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <img
+            src="/images/three-price-thresholds-and-gaps.png"
+            alt="Your Three Price Thresholds and the Gaps — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
+            style={{ width: "100%", height: "auto", borderRadius: 12 }}
+            draggable={false}
+          />
         </section>
       </FadeIn>
 
