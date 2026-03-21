@@ -965,7 +965,7 @@ function VerdictContent() {
     ? ((property.price - purchasePrice) / property.price) * 100
     : 0
   const dealGapPct = analysis.dealGapPercent ?? rawDealGap
-  const dealGapDisplay = `${rawDealGap >= 0 ? '-' : '+'}${Math.abs(rawDealGap).toFixed(1)}%`
+  const dealGapDisplay = `${rawDealGap >= 0 ? '+' : ''}${rawDealGap.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Probability of achieving discount derived from Deal Gap %
   // Based on investor discount bracket distribution: 0% gap → ~95%, 30%+ → ~5%
@@ -1065,8 +1065,8 @@ function VerdictContent() {
                   }}
                 >
                   {dealGapPct > 0
-                    ? 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'
-                    : 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'}
+                    ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
+                    : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                 </p>
                 <div style={{ marginTop: 12 }}>
                   <InfoPopover
@@ -1163,7 +1163,7 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: 'var(--accent-sky)' }}
                         >
-                          DEAL GAP &nbsp;-{dealBracketPct.toFixed(1)}%
+                          DEAL GAP &nbsp;{dealBracketPct >= 0 ? '+' : ''}{dealBracketPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
@@ -1527,7 +1527,7 @@ function VerdictContent() {
         isOpen={showMethodologySheet}
         onClose={() => setShowMethodologySheet(false)}
         currentScore={undefined}
-        currentGrade={`${dealGapPct.toFixed(1)}% Deal Gap — ${tier.label}`}
+        currentGrade={`${dealGapPct >= 0 ? '+' : ''}${dealGapPct.toFixed(1)}% Deal Gap — ${tier.label}`}
         scoreType={methodologyScoreType}
       />
 
