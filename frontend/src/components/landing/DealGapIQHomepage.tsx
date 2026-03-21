@@ -227,17 +227,19 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
 
         {/* Intro Video */}
         <div
-          className="hero-video-wrapper"
+          className={`hero-video-wrapper${isVideoPlaying ? ' hero-video-expanded' : ''}`}
           style={{
-            width: "100%",
-            maxWidth: 640,
+            width: isVideoPlaying ? "100vw" : "100%",
+            maxWidth: isVideoPlaying ? "none" : 640,
+            marginLeft: isVideoPlaying ? "calc(-50vw + 50%)" : undefined,
             marginTop: 40,
             opacity: 0,
             animation: "fadeUp 0.6s 0.2s forwards",
             position: "relative" as const,
-            borderRadius: 12,
+            borderRadius: isVideoPlaying ? 0 : 12,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            boxShadow: isVideoPlaying ? "none" : "0 8px 32px rgba(0,0,0,0.4)",
+            transition: "max-width 0.4s ease, width 0.4s ease, margin-left 0.4s ease, border-radius 0.4s ease, box-shadow 0.4s ease",
           }}
         >
           <video
@@ -253,10 +255,11 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             style={{
               width: "100%",
               display: "block",
-              borderRadius: 12,
+              borderRadius: isVideoPlaying ? 0 : 12,
               aspectRatio: "16 / 9",
-              objectFit: "cover",
-              background: "var(--surface-elevated)",
+              objectFit: isVideoPlaying ? "contain" : "cover",
+              background: isVideoPlaying ? "#000" : "var(--surface-elevated)",
+              transition: "border-radius 0.4s ease, object-fit 0.4s ease",
             }}
           />
           {!isVideoPlaying && (

@@ -77,6 +77,11 @@
   }
 }
 
+/* Hero video expanded state — override scrollbar-caused offset */
+.hero-video-expanded {
+  margin-left: calc(-50vw + 50%) !important;
+}
+
 /* Hero video responsive */
 @media (max-width: 639px) {
   .hero-video-wrapper {
@@ -84,8 +89,16 @@
     margin-top: 28px !important;
     border-radius: 8px !important;
   }
+  .hero-video-wrapper.hero-video-expanded {
+    margin-left: -24px !important;
+    width: calc(100% + 48px) !important;
+    border-radius: 0 !important;
+  }
   .hero-video-wrapper video {
     border-radius: 8px !important;
+  }
+  .hero-video-wrapper.hero-video-expanded video {
+    border-radius: 0 !important;
   }
   .hero-video-play-btn {
     width: 56px !important;
