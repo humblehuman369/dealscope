@@ -10,6 +10,7 @@ interface PropertyData {
   city: string;
   state: string;
   zip: string;
+  formattedAddress: string;
   lat: number;
   lng: number;
   bedrooms?: number;
@@ -51,13 +52,15 @@ async function reverseGeocode(lat: number, lng: number): Promise<PropertyData | 
     if (!streetAddress) return null;
 
     const components = streetAddress.address_components;
-    const getComponent = (type: string) => 
-      components.find((c: { types: string[]; long_name: string }) => c.types.includes(type))?.long_name || '';
+    const getComponent = (type: string, useShort = false) => {
+      const comp = components.find((c: { types: string[]; long_name: string; short_name: string }) => c.types.includes(type));
+      return (useShort ? comp?.short_name : comp?.long_name) || '';
+    };
 
     const streetNumber = getComponent('street_number');
     const route = getComponent('route');
     const city = getComponent('locality') || getComponent('sublocality');
-    const state = getComponent('administrative_area_level_1');
+    const state = getComponent('administrative_area_level_1', true);
     const zip = getComponent('postal_code');
 
     return {
@@ -65,6 +68,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<PropertyData | 
       city,
       state,
       zip,
+      formattedAddress: streetAddress.formatted_address || '',
       lat: streetAddress.geometry.location.lat,
       lng: streetAddress.geometry.location.lng,
     };

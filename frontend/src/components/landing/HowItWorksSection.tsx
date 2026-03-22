@@ -145,7 +145,7 @@ function VerdictMockup({ visible }: { visible: boolean }) {
             flex: 1,
             padding: "10px 8px",
             borderRadius: "8px",
-            background: "var(--surface-elevated)",
+            background: "rgba(128,128,128,0.04)",
             border: `1px solid ${item.color}33`,
             textAlign: "center",
           }}>
@@ -198,7 +198,7 @@ function StrategyMockup({ visible }: { visible: boolean }) {
             display: "flex", alignItems: "center", gap: "12px",
             padding: "12px 14px",
             borderRadius: "10px",
-            background: "var(--surface-elevated)",
+            background: "rgba(128,128,128,0.04)",
             border: "1px solid var(--border-subtle)",
             opacity: visible ? 1 : 0,
             transform: visible ? "translateX(0)" : "translateX(20px)",
