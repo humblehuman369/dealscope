@@ -190,14 +190,12 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
   const handleViewDetails = () => {
     if (scanner.result?.property) {
-      const address = [
-        scanner.result.property.address,
-        scanner.result.property.city,
-        scanner.result.property.state,
-        scanner.result.property.zip
-      ].filter(Boolean).join(', ');
-      
-      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      const { address: street, city, state, zip, formattedAddress } = scanner.result.property;
+      const hasFullAddress = street && city && state && zip;
+      const address = hasFullAddress
+        ? `${street}, ${city}, ${state} ${zip}`
+        : formattedAddress || [street, city, state, zip].filter(Boolean).join(', ');
+
       router.push(`/verdict?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
     }
   };
