@@ -244,17 +244,18 @@ export function DealMakerSlider({
           style={{ 
             height: '6px', 
             width: `${fillPercent}%`,
-            background: '#0EA5E9',
+            background: 'var(--dealmaker-accent, #0EA5E9)',
           }}
         />
         
         {/* Custom thumb */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[#0EA5E9]"
+          className="absolute top-1/2 -translate-y-1/2 rounded-full"
           style={{ 
             left: `calc(${fillPercent}% - 8px)`,
             width: '16px',
             height: '16px',
+            background: 'var(--dealmaker-accent, #0EA5E9)',
             border: '2px solid white',
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
             pointerEvents: 'none',

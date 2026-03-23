@@ -55,14 +55,29 @@ const EXPENSE_SLIDERS: SliderConfig[] = [
 type SliderGroup = {
   label: string
   sliders: SliderConfig[]
+  accent: string
+  border: string
 }
 
 const SLIDER_GROUPS: SliderGroup[] = [
-  { label: 'Purchase', sliders: PURCHASE_SLIDERS },
-  { label: 'Financing', sliders: FINANCING_SLIDERS },
-  { label: 'Rehab & Valuation', sliders: REHAB_SLIDERS },
-  { label: 'Income', sliders: INCOME_SLIDERS },
-  { label: 'Expenses', sliders: EXPENSE_SLIDERS },
+  {
+    label: 'PURCHASE TERMS',
+    sliders: [...PURCHASE_SLIDERS, ...FINANCING_SLIDERS],
+    accent: '#0EA5E9',
+    border: 'rgba(14, 165, 233, 0.7)',
+  },
+  {
+    label: 'REHAB & VALUATION TERMS',
+    sliders: REHAB_SLIDERS,
+    accent: '#FB7185',
+    border: 'rgba(251, 113, 133, 0.7)',
+  },
+  {
+    label: 'INCOME & EXPENSE TERMS',
+    sliders: [...INCOME_SLIDERS, ...EXPENSE_SLIDERS],
+    accent: '#FACC15',
+    border: 'rgba(250, 204, 21, 0.7)',
+  },
 ]
 
 const SLIDER_ID_TO_FIELD: Record<string, keyof InlineDealMakerValues> = {
@@ -129,8 +144,20 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
       {/* Slider groups */}
       <div className="px-5 pb-5 md:overflow-y-auto md:max-h-[calc(100vh-200px)]">
         {SLIDER_GROUPS.map((group) => (
-          <div key={group.label} className="mt-4 first:mt-2">
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-body)' }}>
+          <div
+            key={group.label}
+            className="mt-4 first:mt-2 rounded-xl px-3 pb-3"
+            style={{
+              border: `1px solid ${group.border}`,
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
+              boxShadow: `inset 0 0 0 1px ${group.border.replace('0.7', '0.25')}`,
+              ['--dealmaker-accent' as string]: group.accent,
+            }}
+          >
+            <p
+              className="text-[13px] font-bold uppercase tracking-widest mb-2 pt-2 text-center"
+              style={{ color: group.accent }}
+            >
               {group.label}
             </p>
             {group.sliders.map((slider) => {
