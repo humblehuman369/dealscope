@@ -269,7 +269,7 @@ export function AboutPageRedesign() {
       </section>
 
       {/* STRATEGY ENGINE — six strategy cards */}
-      <section style={{ padding: '120px 24px' }}>
+      <section style={{ padding: '120px 24px', background: 'var(--surface-section)' }}>
         <div className="ap-container">
           <Reveal>
             <div className="section-label">Strategy Engine</div>
@@ -328,7 +328,7 @@ export function AboutPageRedesign() {
       <Divider />
 
       {/* BEFORE / AFTER */}
-      <section style={{ padding: '120px 24px' }}>
+      <section style={{ padding: '120px 24px', background: 'var(--surface-section)' }}>
         <div className="ap-container">
           <Reveal style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
             <div className="section-label" style={{ textAlign: 'center' }}>The Difference</div>
@@ -374,7 +374,7 @@ export function AboutPageRedesign() {
       <Divider />
 
       {/* PRICING */}
-      <section className="pricing-section" style={{ padding: '120px 24px' }}>
+      <section className="pricing-section" style={{ padding: '120px 24px', background: 'var(--surface-section)' }}>
         <div className="ap-container">
           <Reveal style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
             <div className="section-label" style={{ textAlign: 'center' }}>Pricing</div>
