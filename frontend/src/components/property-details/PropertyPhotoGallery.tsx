@@ -14,6 +14,7 @@ interface PropertyPhotoGalleryProps {
   /** Initial images from server (usually empty when photos are fetched client-side) */
   initialImages?: string[]
   views?: number
+  hideThumbnails?: boolean
 }
 
 /**
@@ -24,6 +25,7 @@ export function PropertyPhotoGallery({
   zpid,
   initialImages = [],
   views,
+  hideThumbnails,
 }: PropertyPhotoGalleryProps) {
   const [state, setState] = useState<GalleryState>(
     initialImages.length > 0 ? 'loaded' : 'loading'
@@ -95,6 +97,7 @@ export function PropertyPhotoGallery({
       images={photos}
       totalPhotos={photos.length}
       views={views}
+      hideThumbnails={hideThumbnails}
     />
   )
 }
