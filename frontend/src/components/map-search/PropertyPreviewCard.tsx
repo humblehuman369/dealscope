@@ -26,7 +26,9 @@ function formatSqft(sqft: number | null): string {
 export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardProps) {
   const router = useRouter()
 
-  const handleViewDetails = () => {
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     const params = new URLSearchParams({ address: listing.address })
     if (listing.city) params.set('city', listing.city)
     if (listing.state) params.set('state', listing.state)
@@ -54,7 +56,7 @@ export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardPro
           </div>
         )}
         <button
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose() }}
           className="absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-opacity hover:opacity-80"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff' }}
         >
