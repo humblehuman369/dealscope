@@ -19,7 +19,7 @@ import { GeocodedPrompt } from './GeocodedPrompt'
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 } // center of US
 const DEFAULT_ZOOM = 5
 const MAP_ID = 'DEMO_MAP_ID'
-const MIN_ZOOM_FOR_GEOCODE = 15
+const MIN_ZOOM_FOR_GEOCODE = 13
 
 async function reverseGeocode(
   lat: number,
@@ -233,7 +233,9 @@ export function MapSearchView() {
   const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [dropPin, setDropPin] = useState<{ lat: number; lng: number } | null>(null)
+  const [zoomHint, setZoomHint] = useState(false)
   const currentZoomRef = useRef(DEFAULT_ZOOM)
+  const zoomHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
@@ -246,9 +248,13 @@ export function MapSearchView() {
       if (currentZoomRef.current < MIN_ZOOM_FOR_GEOCODE) {
         setGeocodedAddress(null)
         setDropPin(null)
+        setZoomHint(true)
+        if (zoomHintTimer.current) clearTimeout(zoomHintTimer.current)
+        zoomHintTimer.current = setTimeout(() => setZoomHint(false), 3000)
         return
       }
 
+      setZoomHint(false)
       const lat = Number(latLng.lat)
       const lng = Number(latLng.lng)
       setDropPin({ lat, lng })
@@ -411,6 +417,22 @@ export function MapSearchView() {
             style={{ backgroundColor: '#EF4444', color: '#fff' }}
           >
             {error}
+          </div>
+        </div>
+      )}
+
+      {/* Zoom hint */}
+      {zoomHint && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 transition-opacity">
+          <div
+            className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--text-heading)',
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            Zoom in closer to select a property
           </div>
         </div>
       )}
