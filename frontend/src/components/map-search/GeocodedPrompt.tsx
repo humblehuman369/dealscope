@@ -61,7 +61,7 @@ export function GeocodedPrompt({ address, isGeocoding, onClose }: GeocodedPrompt
         </div>
 
         <button
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose() }}
           className="flex-shrink-0 p-1 rounded hover:opacity-70 transition-opacity"
         >
           <X size={14} style={{ color: 'var(--text-secondary)' }} />
