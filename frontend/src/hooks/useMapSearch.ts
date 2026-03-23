@@ -35,8 +35,11 @@ export function useMapSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBoundsRef = useRef<MapBounds | null>(null)
 
+  const filtersRef = useRef<MapSearchFilters>(DEFAULT_FILTERS)
+
   const fetchListings = useCallback(
-    async (bounds: MapBounds, activePolygon?: number[][] | null) => {
+    async (bounds: MapBounds, activePolygon?: number[][] | null, filterOverride?: MapSearchFilters) => {
+      const activeFilters = filterOverride ?? filtersRef.current
       setIsLoading(true)
       setError(null)
 
@@ -45,12 +48,12 @@ export function useMapSearch() {
         south: bounds.south,
         east: bounds.east,
         west: bounds.west,
-        listing_type: filters.listing_type,
-        property_type: filters.property_type,
-        min_price: filters.min_price,
-        max_price: filters.max_price,
-        bedrooms: filters.bedrooms,
-        bathrooms: filters.bathrooms,
+        listing_type: activeFilters.listing_type,
+        property_type: activeFilters.property_type,
+        min_price: activeFilters.min_price,
+        max_price: activeFilters.max_price,
+        bedrooms: activeFilters.bedrooms,
+        bathrooms: activeFilters.bathrooms,
         limit: 500,
       }
 
@@ -71,8 +74,10 @@ export function useMapSearch() {
         setIsLoading(false)
       }
     },
-    [filters],
+    [],
   )
+
+  const polygonRef = useRef<number[][] | null>(null)
 
   const onBoundsChanged = useCallback(
     (bounds: MapBounds) => {
@@ -81,15 +86,16 @@ export function useMapSearch() {
         clearTimeout(debounceRef.current)
       }
       debounceRef.current = setTimeout(() => {
-        fetchListings(bounds, polygon)
+        fetchListings(bounds, polygonRef.current)
       }, 400)
     },
-    [fetchListings, polygon],
+    [fetchListings],
   )
 
   const onPolygonComplete = useCallback(
     (vertices: number[][]) => {
       setPolygon(vertices)
+      polygonRef.current = vertices
       if (lastBoundsRef.current) {
         fetchListings(lastBoundsRef.current, vertices)
       }
@@ -99,6 +105,7 @@ export function useMapSearch() {
 
   const clearPolygon = useCallback(() => {
     setPolygon(null)
+    polygonRef.current = null
     if (lastBoundsRef.current) {
       fetchListings(lastBoundsRef.current, null)
     }
@@ -108,13 +115,14 @@ export function useMapSearch() {
     (next: Partial<MapSearchFilters>) => {
       setFilters((prev) => {
         const merged = { ...prev, ...next }
+        filtersRef.current = merged
         if (lastBoundsRef.current) {
-          fetchListings(lastBoundsRef.current, polygon)
+          fetchListings(lastBoundsRef.current, polygonRef.current, merged)
         }
         return merged
       })
     },
-    [fetchListings, polygon],
+    [fetchListings],
   )
 
   return {

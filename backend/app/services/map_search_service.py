@@ -1,5 +1,5 @@
 """
-Map search service — fetches listings from RentCast and AXESSO for
+Map search service — fetches listings from RentCast and Zillow for
 viewport-based and polygon-based map search.
 
 Results are cached in Redis (or in-memory fallback) keyed by rounded
@@ -8,6 +8,7 @@ viewport bounds + filter fingerprint with a short TTL to control API costs.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -16,8 +17,9 @@ from typing import Any
 
 from app.core.config import settings
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
-from app.services.api_clients import AXESSOClient, RentCastClient, create_api_clients
+from app.services.api_clients import RentCastClient, create_api_clients
 from app.services.cache_service import get_cache_service
+from app.services.zillow_client import ZillowClient, create_zillow_client
 
 logger = logging.getLogger(__name__)
 
@@ -75,25 +77,38 @@ def _haversine_distance_miles(lat1: float, lng1: float, lat2: float, lng2: float
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
+def _viewport_radius_miles(north: float, south: float, east: float, west: float) -> float:
+    """Approximate the radius that covers the viewport, clamped to 25 miles."""
+    diag = _haversine_distance_miles(south, west, north, east)
+    return min(diag / 2, 25.0)
+
+
 class MapSearchService:
-    """Fetches and merges listings from RentCast + AXESSO for map display."""
+    """Fetches and merges listings from RentCast + Zillow for map display."""
 
     def __init__(self) -> None:
         self.rentcast: RentCastClient
-        self.axesso: AXESSOClient
+        self.zillow: ZillowClient | None = None
         self._initialized = False
 
     def _ensure_clients(self) -> None:
         if self._initialized:
             return
-        rc, ax, _, _, _ = create_api_clients(
+        rc, _, _, _, _ = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
             axesso_url=settings.AXESSO_URL,
         )
         self.rentcast = rc
-        self.axesso = ax
+
+        if settings.AXESSO_API_KEY:
+            self.zillow = create_zillow_client(
+                api_key=settings.AXESSO_API_KEY,
+                base_url=settings.AXESSO_URL,
+                fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
+            )
+
         self._initialized = True
 
     async def search(self, req: MapSearchRequest) -> MapSearchResponse:
@@ -108,23 +123,41 @@ class MapSearchService:
 
         center_lat = (req.north + req.south) / 2
         center_lng = (req.east + req.west) / 2
+        radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
         listings: list[MapListing] = []
         seen_addresses: set[str] = set()
 
+        # Fetch from all sources in parallel
+        tasks: list[asyncio.Task] = []
+
         if req.listing_type in ("sale", "both"):
-            rc_sale = await self._fetch_rentcast(req, "sale", center_lat, center_lng)
-            for item in rc_sale:
-                addr_key = item.address.lower().strip()
-                if addr_key not in seen_addresses:
-                    seen_addresses.add(addr_key)
-                    listings.append(item)
+            tasks.append(asyncio.create_task(
+                self._fetch_rentcast(req, "sale", center_lat, center_lng),
+            ))
+            if self.zillow:
+                tasks.append(asyncio.create_task(
+                    self._fetch_zillow(center_lat, center_lng, radius, "forSale", req),
+                ))
 
         if req.listing_type in ("rental", "both"):
-            rc_rent = await self._fetch_rentcast(req, "rental", center_lat, center_lng)
-            for item in rc_rent:
+            tasks.append(asyncio.create_task(
+                self._fetch_rentcast(req, "rental", center_lat, center_lng),
+            ))
+            if self.zillow:
+                tasks.append(asyncio.create_task(
+                    self._fetch_zillow(center_lat, center_lng, radius, "forRent", req),
+                ))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for result in results:
+            if isinstance(result, Exception):
+                logger.warning("Map search source failed: %s", result)
+                continue
+            for item in result:
                 addr_key = item.address.lower().strip()
-                if addr_key not in seen_addresses:
+                if addr_key and addr_key not in seen_addresses:
                     seen_addresses.add(addr_key)
                     listings.append(item)
 
@@ -142,6 +175,8 @@ class MapSearchService:
         if req.bathrooms is not None:
             listings = [l for l in listings if l.bathrooms is not None and l.bathrooms >= req.bathrooms]
 
+        logger.info("Map search returned %d listings (center=%.4f,%.4f radius=%.1fmi)", len(listings), center_lat, center_lng, radius)
+
         response = MapSearchResponse(
             listings=listings,
             total_count=len(listings),
@@ -150,6 +185,8 @@ class MapSearchService:
 
         await cache.set(cache_key, response.model_dump(mode="json"), ttl_seconds=MAP_CACHE_TTL)
         return response
+
+    # ─── RentCast ───────────────────────────────────
 
     async def _fetch_rentcast(
         self,
@@ -177,17 +214,79 @@ class MapSearchService:
                 )
 
             if not resp.success or not resp.data:
+                logger.info("RentCast %s listings returned no data", listing_type)
                 return []
 
             raw_listings: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
-            return [self._normalize_rentcast_listing(item) for item in raw_listings if self._has_coords(item)]
+            results = [self._normalize_rentcast_listing(item) for item in raw_listings if self._has_coords(item)]
+            logger.info("RentCast %s: %d listings", listing_type, len(results))
+            return results
         except Exception:
-            logger.exception("RentCast listing fetch failed")
+            logger.exception("RentCast %s listing fetch failed", listing_type)
             return []
+
+    # ─── Zillow (AXESSO) ───────────────────────────
+
+    async def _fetch_zillow(
+        self,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+        status: str,
+        req: MapSearchRequest,
+    ) -> list[MapListing]:
+        if not self.zillow:
+            return []
+        try:
+            kwargs: dict[str, Any] = {}
+            if req.property_type:
+                pt = req.property_type.lower()
+                if "single" in pt:
+                    kwargs["isSingleFamily"] = True
+                elif "condo" in pt:
+                    kwargs["isCondo"] = True
+                elif "town" in pt:
+                    kwargs["isTownhouse"] = True
+                elif "multi" in pt:
+                    kwargs["isMultiFamily"] = True
+
+            resp = await self.zillow.search_by_coordinates(
+                lat=center_lat,
+                lng=center_lng,
+                radius_miles=max(radius_miles, 0.5),
+                status=status,
+                **kwargs,
+            )
+
+            if not resp.success or not resp.data:
+                logger.info("Zillow %s returned no data", status)
+                return []
+
+            raw_props = resp.data.get("props") or resp.data.get("searchResults") or resp.data.get("results") or []
+            if isinstance(resp.data, dict) and not raw_props:
+                for val in resp.data.values():
+                    if isinstance(val, list) and len(val) > 0:
+                        raw_props = val
+                        break
+
+            results = [self._normalize_zillow_listing(item) for item in raw_props if self._zillow_has_coords(item)]
+            logger.info("Zillow %s: %d listings", status, len(results))
+            return results
+        except Exception:
+            logger.exception("Zillow %s listing fetch failed", status)
+            return []
+
+    # ─── Normalization helpers ─────────────────────
 
     @staticmethod
     def _has_coords(item: dict) -> bool:
         return item.get("latitude") is not None and item.get("longitude") is not None
+
+    @staticmethod
+    def _zillow_has_coords(item: dict) -> bool:
+        lat = item.get("latitude") or item.get("lat")
+        lng = item.get("longitude") or item.get("lng") or item.get("long")
+        return lat is not None and lng is not None
 
     @staticmethod
     def _normalize_rentcast_listing(item: dict) -> MapListing:
@@ -217,6 +316,43 @@ class MapSearchService:
             photo_url=item.get("photoUrl") or item.get("imgSrc"),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
+            year_built=item.get("yearBuilt"),
+        )
+
+    @staticmethod
+    def _normalize_zillow_listing(item: dict) -> MapListing:
+        address = (
+            item.get("address")
+            or item.get("streetAddress")
+            or item.get("formattedAddress")
+            or ""
+        )
+        if isinstance(address, dict):
+            parts = [address.get("streetAddress", "")]
+            if address.get("city"):
+                parts.append(address["city"])
+            sz = f"{address.get('state', '')} {address.get('zipcode', '')}".strip()
+            if sz:
+                parts.append(sz)
+            address = ", ".join(p for p in parts if p)
+
+        lat = item.get("latitude") or item.get("lat")
+        lng = item.get("longitude") or item.get("lng") or item.get("long")
+
+        return MapListing(
+            id=str(item.get("zpid") or item.get("id") or f"zl-{lat}-{lng}"),
+            address=address,
+            latitude=float(lat),
+            longitude=float(lng),
+            price=item.get("price") or item.get("listPrice") or item.get("zestimate"),
+            bedrooms=item.get("bedrooms") or item.get("beds"),
+            bathrooms=item.get("bathrooms") or item.get("baths"),
+            sqft=item.get("livingArea") or item.get("squareFootage") or item.get("area"),
+            property_type=item.get("propertyType") or item.get("homeType"),
+            listing_status=item.get("homeStatus") or item.get("listingStatus"),
+            photo_url=item.get("imgSrc") or item.get("miniCardPhotos", [{}])[0].get("url") if isinstance(item.get("miniCardPhotos"), list) else item.get("imgSrc"),
+            source="zillow",
+            days_on_market=item.get("daysOnZillow"),
             year_built=item.get("yearBuilt"),
         )
 
