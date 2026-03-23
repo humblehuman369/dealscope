@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import type { AddressComponents, PlaceMetadata } from '@/components/AddressAutocomplete';
 import { SearchPropertyModal } from '@/components/SearchPropertyModal';
-import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress, classifySearchInput, classifyPlaceTypes } from '@/utils/addressIdentity';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 import { HowItWorksSection } from './HowItWorksSection';
@@ -145,17 +146,88 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
   const hasValidAddress = isLikelyFullAddress(address);
   const hasText = address.trim().length >= 3;
 
+  const navigateToMap = useCallback((lat: number, lng: number, zoom: number, label: string) => {
+    const params = new URLSearchParams({
+      lat: lat.toFixed(6),
+      lng: lng.toFixed(6),
+      zoom: String(zoom),
+      label,
+    })
+    router.push(`/map-search?${params.toString()}`)
+    setAddress('')
+  }, [router])
+
+  const handleSmartPlaceSelect = useCallback(
+    (_formatted: string, components?: AddressComponents, meta?: PlaceMetadata) => {
+      if (!meta?.placeTypes?.length) {
+        if (components?.streetNumber || components?.street) {
+          const addr = canonicalizeAddressForIdentity(_formatted)
+          router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+        } else {
+          router.push(`/search`)
+        }
+        setAddress('')
+        return
+      }
+
+      const { category, zoom } = classifyPlaceTypes(meta.placeTypes)
+
+      if (category === 'address') {
+        const addr = canonicalizeAddressForIdentity(_formatted)
+        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+      } else if (meta.location) {
+        navigateToMap(meta.location.lat, meta.location.lng, zoom, _formatted)
+      } else {
+        router.push(`/map-search`)
+      }
+      setAddress('')
+    },
+    [router, navigateToMap],
+  )
+
+  const handleManualSubmit = useCallback(
+    async (text: string) => {
+      const kind = classifySearchInput(text)
+
+      if (kind === 'address') {
+        const addr = canonicalizeAddressForIdentity(text)
+        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+        setAddress('')
+        return
+      }
+
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        router.push('/search')
+        return
+      }
+
+      try {
+        const resp = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&components=country:US&key=${apiKey}`,
+        )
+        const data = await resp.json()
+        if (data.status === 'OK' && data.results?.[0]) {
+          const result = data.results[0]
+          const loc = result.geometry.location
+          const types: string[] = result.types ?? []
+          const { zoom } = classifyPlaceTypes(types)
+          navigateToMap(loc.lat, loc.lng, kind === 'zip' ? 13 : zoom, result.formatted_address)
+        } else {
+          router.push('/search')
+        }
+      } catch {
+        router.push('/search')
+      }
+      setAddress('')
+    },
+    [router, navigateToMap],
+  )
+
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasText) return;
-    const canonicalAddress = canonicalizeAddressForIdentity(address);
-    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
-  };
-
-  const handlePlaceSelect = (selectedAddress: string) => {
-    const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress);
-    setAddress(canonicalAddress);
-    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+    handleManualSubmit(address);
   };
 
   const handleVideoPlay = () => {
@@ -322,10 +394,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             <AddressAutocomplete
               value={address}
               onChange={setAddress}
-              onPlaceSelect={handlePlaceSelect}
-              placeholder="Enter an address"
+              onPlaceSelect={handleSmartPlaceSelect}
+              onManualSubmit={handleManualSubmit}
+              searchMode="location"
+              placeholder="Address, city, state, or zip..."
               name="address"
-              aria-label="Property address"
+              aria-label="Search address, city, state, or zip"
               className="hero-pill-input"
               style={{
                 flex: 1,
@@ -621,10 +695,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 <AddressAutocomplete
                   value={address}
                   onChange={setAddress}
-                  onPlaceSelect={handlePlaceSelect}
-                  placeholder="Enter any property address..."
+                  onPlaceSelect={handleSmartPlaceSelect}
+                  onManualSubmit={handleManualSubmit}
+                  searchMode="location"
+                  placeholder="Address, city, state, or zip..."
                   name="address"
-                  aria-label="Property address"
+                  aria-label="Search address, city, state, or zip"
                   className="hero-search-input"
                   style={{
                     width: "100%", boxSizing: "border-box" as const,
