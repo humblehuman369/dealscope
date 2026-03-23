@@ -124,6 +124,18 @@ function MapContent({
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
+  // Pan map to keep selected pin in lower portion of viewport (room for popup above)
+  useEffect(() => {
+    if (!map || !selectedListing) return
+    const bounds = map.getBounds()
+    if (!bounds) return
+    const latSpan = bounds.getNorthEast().lat() - bounds.getSouthWest().lat()
+    map.panTo({
+      lat: selectedListing.latitude + latSpan * 0.18,
+      lng: selectedListing.longitude,
+    })
+  }, [map, selectedListing])
+
   // Viewport change handler
   useEffect(() => {
     if (!map) return
