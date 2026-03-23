@@ -23,7 +23,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, MapPin } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -126,6 +126,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/admin',
   '/about',
   '/pricing',
+  '/map-search',
 ]
 
 // Map routes to active tabs
@@ -141,6 +142,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/deal-maker')) return 'deal-maker'
   if (pathname.startsWith('/about')) return undefined
   if (pathname.startsWith('/pricing')) return undefined
+  if (pathname.startsWith('/map-search')) return undefined
   return 'analyze'
 }
 
@@ -513,6 +515,18 @@ export function AppHeader({
               }}
             >
               Pricing
+            </Link>
+            <Link
+              href="/map-search"
+              className="flex items-center gap-1 text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+              style={{
+                color: 'var(--text-heading)',
+                borderBottom: pathname === '/map-search' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                paddingBottom: 2,
+              }}
+            >
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+              Map
             </Link>
             <button
               onClick={handleSearchClick}
