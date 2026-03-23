@@ -36,7 +36,7 @@ export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardPro
 
   return (
     <div
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-[340px] rounded-xl shadow-2xl overflow-hidden"
+      className="w-[340px] rounded-xl shadow-2xl overflow-hidden"
       style={{
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-default)',

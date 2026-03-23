@@ -426,6 +426,31 @@ export function MapSearchView() {
               </div>
             </AdvancedMarker>
           )}
+
+          {/* Selected listing popup — anchored above the pin */}
+          {selectedListing && (
+            <AdvancedMarker
+              position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
+              zIndex={9999}
+            >
+              <div style={{ transform: 'translateY(-100%)', paddingBottom: '32px' }}>
+                <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
+              </div>
+            </AdvancedMarker>
+          )}
+
+          {/* Click-to-geocode popup — anchored above the drop pin */}
+          {!selectedListing && (dropPin || isGeocoding) && dropPin && (
+            <AdvancedMarker position={dropPin} zIndex={9999}>
+              <div style={{ transform: 'translateY(-100%)', paddingBottom: '40px' }}>
+                <GeocodedPrompt
+                  address={geocodedAddress}
+                  isGeocoding={isGeocoding}
+                  onClose={clearGeocode}
+                />
+              </div>
+            </AdvancedMarker>
+          )}
         </Map>
       </APIProvider>
 
@@ -548,19 +573,6 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Selected listing preview */}
-      {selectedListing && (
-        <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
-      )}
-
-      {/* Click-to-geocode prompt */}
-      {!selectedListing && (dropPin || isGeocoding) && (
-        <GeocodedPrompt
-          address={geocodedAddress}
-          isGeocoding={isGeocoding}
-          onClose={clearGeocode}
-        />
-      )}
     </div>
   )
 }
