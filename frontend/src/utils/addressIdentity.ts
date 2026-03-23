@@ -42,7 +42,7 @@ export function classifyPlaceTypes(types: string[]): { category: PlaceCategory; 
     if (CITY_PLACE_TYPES.has(t)) return { category: 'city', zoom: 12 }
   }
   for (const t of types) {
-    if (STATE_PLACE_TYPES.has(t)) return { category: 'state', zoom: 6 }
+    if (STATE_PLACE_TYPES.has(t)) return { category: 'state', zoom: 7 }
   }
   return { category: 'unknown', zoom: 12 }
 }
