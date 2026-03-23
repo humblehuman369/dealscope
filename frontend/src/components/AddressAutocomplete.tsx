@@ -11,11 +11,23 @@ export interface AddressComponents {
   county?: string
 }
 
+export interface PlaceMetadata {
+  placeTypes: string[]
+  location?: { lat: number; lng: number }
+}
+
 interface AddressAutocompleteProps {
   value: string
   onChange: (value: string) => void
   /** Called with the full formatted address when a place is selected; optional components for structured data */
-  onPlaceSelect?: (address: string, components?: AddressComponents) => void
+  onPlaceSelect?: (address: string, components?: AddressComponents, meta?: PlaceMetadata) => void
+  /**
+   * 'address' (default) — restrict suggestions to street addresses.
+   * 'location' — allow addresses, cities, states, and zip codes.
+   */
+  searchMode?: 'address' | 'location'
+  /** Called when user presses Enter without selecting a suggestion */
+  onManualSubmit?: (text: string) => void
   placeholder?: string
   className?: string
   style?: React.CSSProperties
@@ -45,6 +57,8 @@ export function AddressAutocomplete({
   value,
   onChange,
   onPlaceSelect,
+  searchMode = 'address',
+  onManualSubmit,
   placeholder = 'Enter a property address...',
   className = '',
   style,
@@ -58,8 +72,10 @@ export function AddressAutocomplete({
   const [isLoaded, setIsLoaded] = useState(false)
   const onChangeRef = useRef(onChange)
   const onPlaceSelectRef = useRef(onPlaceSelect)
+  const onManualSubmitRef = useRef(onManualSubmit)
   onChangeRef.current = onChange
   onPlaceSelectRef.current = onPlaceSelect
+  onManualSubmitRef.current = onManualSubmit
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
@@ -153,12 +169,18 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (!isLoaded || !inputRef.current || autocompleteRef.current) return
 
+    const isLocationMode = searchMode === 'location'
+    const types = isLocationMode ? ['geocode'] : ['address']
+    const fields = isLocationMode
+      ? ['formatted_address', 'address_components', 'geometry', 'types']
+      : ['formatted_address', 'address_components']
+
     let autocomplete: google.maps.places.Autocomplete
     try {
       autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
+        types,
         componentRestrictions: { country: 'us' },
-        fields: ['formatted_address', 'address_components'],
+        fields,
       })
     } catch (err) {
       console.error(
@@ -184,12 +206,30 @@ export function AddressAutocomplete({
           zipCode: getComponent(place, 'postal_code'),
           county: getComponent(place, 'administrative_area_level_2') || undefined,
         }
-        onPlaceSelectRef.current?.(formatted, components)
+
+        const meta: PlaceMetadata = {
+          placeTypes: place.types ?? [],
+          location: place.geometry?.location
+            ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+            : undefined,
+        }
+
+        onPlaceSelectRef.current?.(formatted, components, meta)
       }
     })
 
     autocompleteRef.current = autocomplete
-  }, [isLoaded])
+  }, [isLoaded, searchMode])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const text = inputRef.current?.value?.trim()
+      if (text && onManualSubmitRef.current) {
+        e.preventDefault()
+        onManualSubmitRef.current(text)
+      }
+    }
+  }, [])
 
   return (
     <input
@@ -199,6 +239,7 @@ export function AddressAutocomplete({
       type="text"
       defaultValue={value}
       onChange={handleInputChange}
+      onKeyDown={onManualSubmit ? handleKeyDown : undefined}
       placeholder={placeholder}
       className={className}
       style={style}

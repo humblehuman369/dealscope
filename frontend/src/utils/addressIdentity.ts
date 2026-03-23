@@ -11,6 +11,42 @@ export function isLikelyFullAddress(address: string): boolean {
   return /^\d+[\w\s.#-]*,\s*[^,]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?$/i.test(value)
 }
 
+export function classifySearchInput(text: string): 'address' | 'zip' | 'unknown' {
+  const trimmed = text.trim()
+  if (/^\d{5}(-\d{4})?$/.test(trimmed)) return 'zip'
+  if (isLikelyFullAddress(trimmed)) return 'address'
+  return 'unknown'
+}
+
+const ADDRESS_PLACE_TYPES = new Set([
+  'street_address', 'premise', 'subpremise', 'route',
+  'street_number', 'intersection',
+])
+const CITY_PLACE_TYPES = new Set([
+  'locality', 'sublocality', 'sublocality_level_1',
+  'neighborhood', 'colloquial_area',
+])
+const STATE_PLACE_TYPES = new Set(['administrative_area_level_1'])
+const ZIP_PLACE_TYPES = new Set(['postal_code'])
+
+export type PlaceCategory = 'address' | 'city' | 'state' | 'zip' | 'unknown'
+
+export function classifyPlaceTypes(types: string[]): { category: PlaceCategory; zoom: number } {
+  for (const t of types) {
+    if (ADDRESS_PLACE_TYPES.has(t)) return { category: 'address', zoom: 17 }
+  }
+  for (const t of types) {
+    if (ZIP_PLACE_TYPES.has(t)) return { category: 'zip', zoom: 13 }
+  }
+  for (const t of types) {
+    if (CITY_PLACE_TYPES.has(t)) return { category: 'city', zoom: 12 }
+  }
+  for (const t of types) {
+    if (STATE_PLACE_TYPES.has(t)) return { category: 'state', zoom: 6 }
+  }
+  return { category: 'unknown', zoom: 12 }
+}
+
 export function buildDealMakerSessionKey(address: string): string {
   return `dealMaker_${encodeURIComponent(canonicalizeAddressForIdentity(address))}`
 }

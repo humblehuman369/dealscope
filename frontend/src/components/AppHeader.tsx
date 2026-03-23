@@ -23,13 +23,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, MapPin } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import type { AddressComponents, PlaceMetadata } from '@/components/AddressAutocomplete'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
-import { readDealMakerOverrides } from '@/utils/addressIdentity'
+import { readDealMakerOverrides, classifySearchInput, classifyPlaceTypes, canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import { useTheme } from '@/context/ThemeContext'
 
 // ===================
@@ -361,9 +363,90 @@ export function AppHeader({
     router.push('/')
   }
 
-  const handleSearchClick = () => {
-    router.push('/search')
-  }
+  const [headerSearchValue, setHeaderSearchValue] = useState('')
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+
+  const navigateToMap = useCallback((lat: number, lng: number, zoom: number, label: string) => {
+    const params = new URLSearchParams({
+      lat: lat.toFixed(6),
+      lng: lng.toFixed(6),
+      zoom: String(zoom),
+      label,
+    })
+    router.push(`/map-search?${params.toString()}`)
+    setHeaderSearchValue('')
+    setMobileSearchOpen(false)
+  }, [router])
+
+  const handleSmartPlaceSelect = useCallback(
+    (_formatted: string, components?: AddressComponents, meta?: PlaceMetadata) => {
+      if (!meta?.placeTypes?.length) {
+        if (components?.streetNumber || components?.street) {
+          router.push(`/verdict?address=${encodeURIComponent(_formatted)}`)
+        } else {
+          router.push(`/search`)
+        }
+        setHeaderSearchValue('')
+        setMobileSearchOpen(false)
+        return
+      }
+
+      const { category, zoom } = classifyPlaceTypes(meta.placeTypes)
+
+      if (category === 'address') {
+        const addr = canonicalizeAddressForIdentity(_formatted)
+        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+      } else if (meta.location) {
+        navigateToMap(meta.location.lat, meta.location.lng, zoom, _formatted)
+      } else {
+        router.push(`/map-search`)
+      }
+      setHeaderSearchValue('')
+      setMobileSearchOpen(false)
+    },
+    [router, navigateToMap],
+  )
+
+  const handleManualSubmit = useCallback(
+    async (text: string) => {
+      const kind = classifySearchInput(text)
+
+      if (kind === 'address') {
+        const addr = canonicalizeAddressForIdentity(text)
+        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+        setHeaderSearchValue('')
+        setMobileSearchOpen(false)
+        return
+      }
+
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        router.push('/search')
+        return
+      }
+
+      try {
+        const resp = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&components=country:US&key=${apiKey}`,
+        )
+        const data = await resp.json()
+        if (data.status === 'OK' && data.results?.[0]) {
+          const result = data.results[0]
+          const loc = result.geometry.location
+          const types: string[] = result.types ?? []
+          const { zoom } = classifyPlaceTypes(types)
+          navigateToMap(loc.lat, loc.lng, kind === 'zip' ? 13 : zoom, result.formatted_address)
+        } else {
+          router.push('/search')
+        }
+      } catch {
+        router.push('/search')
+      }
+      setHeaderSearchValue('')
+      setMobileSearchOpen(false)
+    },
+    [router, navigateToMap],
+  )
 
   const handleProfileClick = () => {
     if (!isAuthenticated) {
@@ -516,25 +599,37 @@ export function AppHeader({
             >
               Pricing
             </Link>
-            <Link
-              href="/map-search"
-              className="flex items-center gap-1 text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-              style={{
-                color: 'var(--text-heading)',
-                borderBottom: pathname === '/map-search' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                paddingBottom: 2,
-              }}
-            >
-              <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-              Map
-            </Link>
+            {/* Desktop: inline smart search bar */}
+            <div className="hidden md:flex items-center relative" style={{ width: 280 }}>
+              <Search
+                className="absolute left-3 w-4 h-4 pointer-events-none"
+                style={{ color: 'var(--text-secondary)' }}
+              />
+              <AddressAutocomplete
+                value={headerSearchValue}
+                onChange={setHeaderSearchValue}
+                onPlaceSelect={handleSmartPlaceSelect}
+                onManualSubmit={handleManualSubmit}
+                searchMode="location"
+                placeholder="Address, city, state, or zip..."
+                className="w-full pl-9 pr-3 py-1.5 rounded-full text-sm"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-default)',
+                  outline: 'none',
+                }}
+                aria-label="Search address, city, state, or zip"
+              />
+            </div>
+            {/* Mobile: search icon that expands overlay */}
             <button
-              onClick={handleSearchClick}
-              className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
               aria-label="Search properties"
             >
-              <Search 
-                className="w-5 h-5 sm:w-6 sm:h-6" 
+              <Search
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 style={{ color: 'var(--text-heading)' }}
               />
             </button>
@@ -676,6 +771,47 @@ export function AppHeader({
         )}
 
       </header>
+
+      {/* Mobile search overlay */}
+      {mobileSearchOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-3 px-4 md:hidden"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setMobileSearchOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl p-3 shadow-2xl"
+            style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-default)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
+              <AddressAutocomplete
+                value={headerSearchValue}
+                onChange={setHeaderSearchValue}
+                onPlaceSelect={handleSmartPlaceSelect}
+                onManualSubmit={handleManualSubmit}
+                searchMode="location"
+                placeholder="Address, city, state, or zip..."
+                className="flex-1 py-2 px-1 text-sm bg-transparent"
+                style={{
+                  color: 'var(--text-heading)',
+                  border: 'none',
+                  outline: 'none',
+                }}
+                autoFocus
+                aria-label="Search address, city, state, or zip"
+              />
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="p-1.5 rounded-full hover:bg-white/10"
+              >
+                <X className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Property Address Bar — rendered OUTSIDE <header> so sticky works against the
           viewport/body scroll, not the header's own bounds. */}
