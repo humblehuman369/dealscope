@@ -11,6 +11,7 @@ export interface InlineDealMakerValues {
   interestRate: number
   loanTerm: number
   rehabBudget: number
+  marketValue: number
   arv: number
   monthlyRent: number
   vacancyRate: number
@@ -38,6 +39,7 @@ const FINANCING_SLIDERS: SliderConfig[] = [
 
 const REHAB_SLIDERS: SliderConfig[] = [
   { id: 'rehabBudget' as any, label: 'Rehab Budget', min: 0, max: 100000, step: 1000, format: 'currency' },
+  { id: 'marketValue' as any, label: 'Market Value', min: 50000, max: 2000000, step: 5000, format: 'currency' },
   { id: 'arv' as any, label: 'ARV', min: 50000, max: 2000000, step: 5000, format: 'currency' },
 ]
 
@@ -87,6 +89,7 @@ const SLIDER_ID_TO_FIELD: Record<string, keyof InlineDealMakerValues> = {
   interestRate: 'interestRate',
   loanTermYears: 'loanTerm',
   rehabBudget: 'rehabBudget',
+  marketValue: 'marketValue',
   arv: 'arv',
   monthlyRent: 'monthlyRent',
   vacancyRate: 'vacancyRate',
@@ -103,6 +106,7 @@ function getSliderValue(sliderId: string, values: InlineDealMakerValues): number
 
 function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> {
   if (sliderId === 'buyPrice') return { max: Math.max(2000000, listPrice * 2) }
+  if (sliderId === 'marketValue') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'arv') return { max: Math.max(2000000, listPrice * 2) }
   return {}
 }

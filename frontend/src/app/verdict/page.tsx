@@ -156,6 +156,7 @@ function VerdictContent() {
   const urlPropertyTaxes = searchParams.get('propertyTaxes')
   const urlInsurance = searchParams.get('insurance')
   const urlArv = searchParams.get('arv')
+  const urlMarketValue = searchParams.get('marketValue')
   const urlZpid = searchParams.get('zpid')
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
@@ -460,7 +461,9 @@ function VerdictContent() {
         } else {
           // Legacy mode: use URL param overrides or property data
           // list_price stays as the original market/asking price
-          listPriceForCalc = propertyData.price
+          listPriceForCalc = urlMarketValue
+            ? parseFloat(urlMarketValue)
+            : propertyData.price
           rentForCalc = overrideMonthlyRent 
             ? parseFloat(overrideMonthlyRent) 
             : (propertyData.monthlyRent || 0)
@@ -651,7 +654,7 @@ function VerdictContent() {
     fetchPropertyData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient,
-      overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv])
+      overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv, urlMarketValue])
 
   // Parse backend analysis response into IQAnalysisResult
   const parseAnalysisResponse = useCallback(
