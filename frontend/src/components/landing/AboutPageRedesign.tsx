@@ -213,7 +213,7 @@ export function AboutPageRedesign() {
       <Divider />
 
       {/* THREE NUMBERS */}
-      <section style={{ padding: '120px 24px' }}>
+      <section style={{ padding: '120px 24px', background: 'var(--surface-section)' }}>
         <div className="ap-container">
           <Reveal style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
             <div className="section-label" style={{ textAlign: 'center' }}>Simplified Metrics</div>
