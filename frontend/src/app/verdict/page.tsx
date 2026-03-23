@@ -1086,9 +1086,7 @@ function VerdictContent() {
                     label: 'Market Price',
                     value: property.price,
                     color: 'var(--status-negative)',
-                    copy: isOffMarket
-                      ? 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.'
-                      : 'The current list price in the market.',
+                    copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.',
                     linkLabel: 'MARKET PRICE',
                   },
                 ].map((card) => (
