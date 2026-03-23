@@ -8,6 +8,7 @@ interface ImageGalleryProps {
   images: string[]
   totalPhotos: number
   views?: number
+  hideThumbnails?: boolean
 }
 
 /**
@@ -20,7 +21,7 @@ interface ImageGalleryProps {
  * Zillow CDN hotlink protection. When no photos or all fail to load,
  * shows an empty "Photo unavailable" state (no demo/placeholder images).
  */
-export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGalleryProps) {
+export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbnails }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [imageError, setImageError] = useState<Record<number, boolean>>({})
 
@@ -108,7 +109,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views }: ImageGal
       </div>
 
       {/* Thumbnails */}
-      {rawImages.length > 0 && (
+      {!hideThumbnails && rawImages.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {rawImages.map((img, i) => (
             <button

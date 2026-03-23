@@ -1030,6 +1030,7 @@ function VerdictContent() {
               <PropertyPhotoGallery
                 zpid={String(property.zpid)}
                 initialImages={propertyPhotos}
+                hideThumbnails
               />
             ) : property.imageUrl ? (
               <div className="rounded-[14px] overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
