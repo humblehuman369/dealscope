@@ -153,7 +153,13 @@ class MapSearchService:
         else:
             query_points = [(center_lat, center_lng)]
 
-        sub_radius = min(radius / grid_size, 25.0)
+        # Each sub-query should cover its grid cell; compute from the cell diagonal
+        cell_diag = _haversine_distance_miles(
+            south, west,
+            south + (req.north - req.south) / grid_size,
+            west + (req.east - req.west) / grid_size,
+        )
+        sub_radius = min(cell_diag / 2, 100.0) if grid_size > 1 else min(radius, 25.0)
 
         listings: list[MapListing] = []
         seen_addresses: set[str] = set()
