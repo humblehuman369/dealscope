@@ -1001,3 +1001,56 @@ class ExportResponse(BaseModel):
     export_id: str
     download_url: str
     expires_at: datetime
+
+
+# ============================================
+# MAP SEARCH
+# ============================================
+
+
+class MapSearchRequest(BaseModel):
+    """Bounding-box or polygon search for map listings."""
+
+    north: float = Field(..., description="Northern latitude bound")
+    south: float = Field(..., description="Southern latitude bound")
+    east: float = Field(..., description="Eastern longitude bound")
+    west: float = Field(..., description="Western longitude bound")
+    polygon: list[list[float]] | None = Field(
+        default=None,
+        description="Optional polygon vertices as [[lat, lng], ...] for drawn boundaries",
+    )
+    listing_type: Literal["sale", "rental", "both"] = "sale"
+    property_type: str | None = None
+    min_price: float | None = None
+    max_price: float | None = None
+    bedrooms: int | None = None
+    bathrooms: float | None = None
+    limit: int = Field(default=500, le=500)
+    offset: int = 0
+
+
+class MapListing(BaseModel):
+    """Lightweight listing for map markers — not the full PropertyResponse."""
+
+    id: str
+    address: str
+    latitude: float
+    longitude: float
+    price: float | None = None
+    bedrooms: int | None = None
+    bathrooms: float | None = None
+    sqft: int | None = None
+    property_type: str | None = None
+    listing_status: str | None = None
+    photo_url: str | None = None
+    source: str
+    days_on_market: int | None = None
+    year_built: int | None = None
+
+
+class MapSearchResponse(BaseModel):
+    """Response for map-based listing search."""
+
+    listings: list[MapListing]
+    total_count: int
+    viewport_center: list[float] = Field(description="[lat, lng] center of the searched area")
