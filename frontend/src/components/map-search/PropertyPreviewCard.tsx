@@ -27,8 +27,11 @@ export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardPro
   const router = useRouter()
 
   const handleViewDetails = () => {
-    const encoded = encodeURIComponent(listing.address)
-    router.push(`/verdict?address=${encoded}`)
+    const params = new URLSearchParams({ address: listing.address })
+    if (listing.city) params.set('city', listing.city)
+    if (listing.state) params.set('state', listing.state)
+    if (listing.zip_code) params.set('zip_code', listing.zip_code)
+    router.push(`/verdict?${params.toString()}`)
   }
 
   return (

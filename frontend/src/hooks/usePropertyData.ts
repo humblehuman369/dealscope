@@ -58,18 +58,28 @@ function validatePropertyResponse(data: PropertyResponseCompat): PropertyRespons
  * This eliminates redundant /api/v1/properties/search round-trips when
  * navigating between pages for the same property.
  */
+export interface FetchPropertyOptions {
+  city?: string
+  state?: string
+  zip_code?: string
+}
+
 export function usePropertyData() {
   const queryClient = useQueryClient()
 
   const fetchProperty = useCallback(
-    async (address: string): Promise<PropertyResponseCompat> => {
+    async (address: string, opts?: FetchPropertyOptions): Promise<PropertyResponseCompat> => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
       return queryClient.ensureQueryData({
         queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
+          const body: Record<string, string> = { address: canonicalAddress }
+          if (opts?.city) body.city = opts.city
+          if (opts?.state) body.state = opts.state
+          if (opts?.zip_code) body.zip_code = opts.zip_code
           const raw = await api.post<PropertyResponseCompat>(
             '/api/v1/properties/search',
-            { address: canonicalAddress },
+            body,
           )
           return validatePropertyResponse(raw)
         },
