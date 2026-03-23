@@ -78,9 +78,24 @@ def _haversine_distance_miles(lat1: float, lng1: float, lat2: float, lng2: float
 
 
 def _viewport_radius_miles(north: float, south: float, east: float, west: float) -> float:
-    """Approximate the radius that covers the viewport, clamped to 25 miles."""
+    """Approximate the radius that covers the viewport."""
     diag = _haversine_distance_miles(south, west, north, east)
-    return min(diag / 2, 25.0)
+    return diag / 2
+
+
+def _compute_grid_points(
+    north: float, south: float, east: float, west: float, grid_size: int,
+) -> list[tuple[float, float]]:
+    """Return a list of (lat, lng) center points for a grid_size x grid_size grid."""
+    lat_step = (north - south) / grid_size
+    lng_step = (east - west) / grid_size
+    points: list[tuple[float, float]] = []
+    for r in range(grid_size):
+        lat = south + lat_step * (r + 0.5)
+        for c in range(grid_size):
+            lng = west + lng_step * (c + 0.5)
+            points.append((lat, lng))
+    return points
 
 
 class MapSearchService:
@@ -125,29 +140,46 @@ class MapSearchService:
         center_lng = (req.east + req.west) / 2
         radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
+        # Decide grid size based on viewport radius
+        if radius > 100:
+            grid_size = 3  # 9 query points for state-level views
+        elif radius > 30:
+            grid_size = 2  # 4 query points for metro-level views
+        else:
+            grid_size = 1  # single center point
+
+        if grid_size > 1:
+            query_points = _compute_grid_points(req.north, req.south, req.east, req.west, grid_size)
+        else:
+            query_points = [(center_lat, center_lng)]
+
+        sub_radius = min(radius / grid_size, 25.0)
+
         listings: list[MapListing] = []
         seen_addresses: set[str] = set()
+        raw_source_totals: int = 0
 
-        # Fetch from all sources in parallel
+        # Fetch from all sources at all grid points in parallel
         tasks: list[asyncio.Task] = []
 
-        if req.listing_type in ("sale", "both"):
-            tasks.append(asyncio.create_task(
-                self._fetch_rentcast(req, "sale", center_lat, center_lng),
-            ))
-            if self.zillow:
+        for pt_lat, pt_lng in query_points:
+            if req.listing_type in ("sale", "both"):
                 tasks.append(asyncio.create_task(
-                    self._fetch_zillow(center_lat, center_lng, radius, "forSale", req),
+                    self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
                 ))
+                if self.zillow:
+                    tasks.append(asyncio.create_task(
+                        self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req),
+                    ))
 
-        if req.listing_type in ("rental", "both"):
-            tasks.append(asyncio.create_task(
-                self._fetch_rentcast(req, "rental", center_lat, center_lng),
-            ))
-            if self.zillow:
+            if req.listing_type in ("rental", "both"):
                 tasks.append(asyncio.create_task(
-                    self._fetch_zillow(center_lat, center_lng, radius, "forRent", req),
+                    self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
                 ))
+                if self.zillow:
+                    tasks.append(asyncio.create_task(
+                        self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req),
+                    ))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -155,6 +187,7 @@ class MapSearchService:
             if isinstance(result, Exception):
                 logger.warning("Map search source failed: %s", result)
                 continue
+            raw_source_totals += len(result)
             for item in result:
                 addr_key = item.address.lower().strip()
                 if addr_key and addr_key not in seen_addresses:
@@ -175,11 +208,25 @@ class MapSearchService:
         if req.bathrooms is not None:
             listings = [l for l in listings if l.bathrooms is not None and l.bathrooms >= req.bathrooms]
 
-        logger.info("Map search returned %d listings (center=%.4f,%.4f radius=%.1fmi)", len(listings), center_lat, center_lng, radius)
+        # Estimate total: if every sub-query returned its limit, there are
+        # likely more listings than we fetched. Extrapolate conservatively.
+        estimated_total: int | None = None
+        if grid_size > 1:
+            full_queries = sum(1 for r in results if not isinstance(r, Exception) and len(r) >= req.limit * 0.8)
+            if full_queries > 0:
+                avg_per_query = raw_source_totals / max(len([r for r in results if not isinstance(r, Exception)]), 1)
+                area_multiplier = max(grid_size ** 2, 1)
+                estimated_total = int(avg_per_query * area_multiplier * 1.5)
+
+        logger.info(
+            "Map search returned %d listings from %d grid points (radius=%.1fmi, grid=%dx%d)",
+            len(listings), len(query_points), radius, grid_size, grid_size,
+        )
 
         response = MapSearchResponse(
             listings=listings,
             total_count=len(listings),
+            estimated_total=estimated_total,
             viewport_center=[center_lat, center_lng],
         )
 

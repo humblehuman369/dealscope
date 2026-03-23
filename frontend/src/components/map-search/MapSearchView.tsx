@@ -9,8 +9,8 @@ import {
   AdvancedMarker,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { MarkerClusterer } from '@googlemaps/markerclusterer'
-import { Eraser, Pentagon, Loader2 } from 'lucide-react'
+import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer'
+import { Eraser, Pentagon, Loader2, Home } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import type { MapListing } from '@/lib/api'
 import { FilterPanel } from './FilterPanel'
@@ -56,6 +56,37 @@ function formatCompactPrice(price: number | null): string {
   if (price >= 1_000_000) return `$${(price / 1_000_000).toFixed(1)}M`
   if (price >= 1_000) return `$${Math.round(price / 1_000)}K`
   return `$${price}`
+}
+
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`.replace('.0K', 'K')
+  return String(n)
+}
+
+const clusterRenderer: Renderer = {
+  render({ count, position }) {
+    const size = count >= 100 ? 48 : count >= 10 ? 40 : 34
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" fill="#1E3A5F" opacity="0.9"/>
+        <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 3}" fill="#1E3A5F" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        <text x="50%" y="52%" text-anchor="middle" dominant-baseline="central"
+              fill="white" font-size="${count >= 1000 ? 10 : 12}" font-weight="700" font-family="system-ui, sans-serif">
+          ${formatCount(count)}
+        </text>
+      </svg>`
+
+    return new google.maps.Marker({
+      position,
+      icon: {
+        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+        scaledSize: new google.maps.Size(size, size),
+        anchor: new google.maps.Point(size / 2, size / 2),
+      },
+      zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
+    })
+  },
 }
 
 // ──────────────────────────────────────────────
@@ -106,11 +137,15 @@ function MapContent({
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
 
-  // Initialize marker clusterer
+  // Initialize marker clusterer with custom renderer
   useEffect(() => {
     if (!map) return
     if (!clustererRef.current) {
-      clustererRef.current = new MarkerClusterer({ map, markers: [] })
+      clustererRef.current = new MarkerClusterer({
+        map,
+        markers: [],
+        renderer: clusterRenderer,
+      })
     }
     return () => {
       clustererRef.current?.clearMarkers()
@@ -241,6 +276,7 @@ export function MapSearchView() {
     isLoading,
     error,
     totalCount,
+    estimatedTotal,
     filters,
     onBoundsChanged,
     onPolygonComplete,
@@ -485,6 +521,25 @@ export function MapSearchView() {
             }}
           >
             {locationLabel}
+          </div>
+        </div>
+      )}
+
+      {/* Listing count badge */}
+      {totalCount > 0 && !isLoading && (
+        <div className="absolute bottom-6 left-4 z-10">
+          <div
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold shadow-lg"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--text-heading)',
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            <Home size={15} style={{ color: 'var(--accent-sky)' }} />
+            {estimatedTotal
+              ? `${totalCount.toLocaleString()} of ~${formatCount(estimatedTotal)} homes`
+              : `${totalCount.toLocaleString()} homes`}
           </div>
         </div>
       )}

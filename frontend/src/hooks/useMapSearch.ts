@@ -29,6 +29,7 @@ export function useMapSearch() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
+  const [estimatedTotal, setEstimatedTotal] = useState<number | null>(null)
   const [filters, setFilters] = useState<MapSearchFilters>(DEFAULT_FILTERS)
   const [polygon, setPolygon] = useState<number[][] | null>(null)
 
@@ -65,11 +66,13 @@ export function useMapSearch() {
         const response: MapSearchResponse = await api.mapSearch.searchArea(request)
         setListings(response.listings)
         setTotalCount(response.total_count)
+        setEstimatedTotal(response.estimated_total ?? null)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Search failed'
         setError(msg)
         setListings([])
         setTotalCount(0)
+        setEstimatedTotal(null)
       } finally {
         setIsLoading(false)
       }
@@ -130,6 +133,7 @@ export function useMapSearch() {
     isLoading,
     error,
     totalCount,
+    estimatedTotal,
     filters,
     polygon,
     onBoundsChanged,
