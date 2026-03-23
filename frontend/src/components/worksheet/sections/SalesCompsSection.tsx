@@ -20,6 +20,11 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { fetchSaleComps } from '@/lib/api/sale-comps'
 import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
 import type { SaleComp, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { buildSalesConsensus, type UnderwritingMode } from '@/utils/marketConsensus'
+import { MarketConsensusRail } from '@/components/worksheet/consensus/MarketConsensusRail'
+import type { IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 
 // ============================================
 // UTILITIES
@@ -561,6 +566,14 @@ export function SalesCompsSection() {
   const [manualArv, setManualArv] = useState(0)
   const [downloadingReport, setDownloadingReport] = useState(false)
 
+  // Market consensus state
+  const { fetchProperty } = usePropertyData()
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+  })
+  const [activeUnderwriteMode, setActiveUnderwriteMode] = useState<UnderwritingMode | null>(null)
+
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
   const subject = useMemo(() => ({
@@ -657,6 +670,25 @@ export function SalesCompsSection() {
     doFetch()
   }, [zpid, subject.address, subject.city, subject.state, subject.zip, fetchComps])
 
+  // Load source estimates from shared property cache for consensus rail
+  useEffect(() => {
+    if (!subject.address) return
+    const fullAddr = [subject.address, subject.city, subject.state, subject.zip].filter(Boolean).join(', ')
+    fetchProperty(fullAddr, {
+      city: subject.city || undefined,
+      state: subject.state || undefined,
+      zip_code: subject.zip || undefined,
+    })
+      .then((data) => setIqSources(mapPropertyToIQSources(data)))
+      .catch(() => { /* sources unavailable — consensus rail hides gracefully */ })
+  }, [subject.address, subject.city, subject.state, subject.zip, fetchProperty])
+
+  // Compute consensus from sources + comp appraisal
+  const consensus = useMemo(
+    () => buildSalesConsensus(iqSources, appraisalResult),
+    [iqSources, appraisalResult],
+  )
+
   // Refresh all comps
   const handleRefreshAll = async () => {
     const fetched = await fetchComps()
@@ -730,7 +762,15 @@ export function SalesCompsSection() {
     if (arv > 0) {
       updateAssumption('arv', arv)
     }
-    // Could also update market value if there's a field for it
+  }
+
+  // Apply consensus underwriting mode
+  const handleApplyConsensusMode = (mode: UnderwritingMode, value: number) => {
+    setActiveUnderwriteMode(mode)
+    if (value > 0) {
+      setIsMarketValueOverridden(true)
+      setManualMarketValue(value)
+    }
   }
 
   // Override handlers
@@ -857,6 +897,14 @@ export function SalesCompsSection() {
         downloadingReport={downloadingReport}
         loading={loading}
         selectedCount={selectedCompIds.size}
+      />
+
+      {/* Market Consensus Rail */}
+      <MarketConsensusRail
+        consensus={consensus}
+        mode="value"
+        onApplyMode={handleApplyConsensusMode}
+        activeMode={activeUnderwriteMode}
       />
 
       {/* Adjustment Grid */}
