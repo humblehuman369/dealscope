@@ -32,6 +32,11 @@ interface CompProperty {
   year_built?: number;
 }
 
+interface CompsResponse {
+  success?: boolean;
+  results?: CompProperty[];
+}
+
 function fmtC(v: number | null | undefined): string {
   if (v == null) return 'N/A';
   return '$' + Math.round(v).toLocaleString();
@@ -42,12 +47,13 @@ function useComps(address: string | undefined, view: CompsView) {
     queryKey: ['comps', address, view],
     queryFn: async () => {
       const endpoint = view === 'sale'
-        ? '/api/v1/properties/similar-sold'
-        : '/api/v1/properties/similar-rent';
-      const { data } = await api.get<CompProperty[]>(endpoint, {
+        ? '/api/v1/similar-sold'
+        : '/api/v1/similar-rent';
+      const { data } = await api.get<CompsResponse | CompProperty[]>(endpoint, {
         params: { address },
       });
-      return data;
+      if (Array.isArray(data)) return data;
+      return data.results ?? [];
     },
     enabled: !!address,
     staleTime: 5 * 60_000,
