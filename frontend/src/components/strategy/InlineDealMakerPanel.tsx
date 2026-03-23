@@ -28,7 +28,7 @@ interface InlineDealMakerPanelProps {
 
 const PURCHASE_SLIDERS: SliderConfig[] = [
   { id: 'buyPrice' as any, label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency' },
-  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0.05, max: 0.50, step: 0.05, format: 'percentage' },
+  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0, max: 0.50, step: 0.05, format: 'percentage' },
   { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage' },
 ]
 
@@ -159,7 +159,7 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
             }}
           >
             <p
-              className="text-[13px] font-bold uppercase tracking-widest mb-2 pt-2 text-center"
+              className="text-[15px] font-bold uppercase tracking-widest mb-2 pt-2 text-center"
               style={{ color: group.accent }}
             >
               {group.label}
