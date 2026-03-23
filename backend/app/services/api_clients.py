@@ -875,6 +875,9 @@ class DataNormalizer:
 
         features = rentcast_data.get("features") if rentcast_data else None
         if isinstance(features, dict):
+            # #region agent log
+            import json as _json_dbg; open('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug-094830.log','a').write(_json_dbg.dumps({"sessionId":"094830","hypothesisId":"H1-H2","location":"api_clients.py:879","message":"RentCast features raw heating fields","data":{"heatingType":repr(features.get("heatingType")),"heatingType_type":type(features.get("heatingType")).__name__,"heating":repr(features.get("heating")),"heating_type_of":type(features.get("heating")).__name__,"coolingType":repr(features.get("coolingType")),"cooling":repr(features.get("cooling")),"exteriorType":repr(features.get("exteriorType")),"roofType":repr(features.get("roofType")),"foundationType":repr(features.get("foundationType"))},"timestamp":__import__('time').time()})+'\n')
+            # #endregion
             if normalized.get("heating_type") is None:
                 normalized["heating_type"] = features.get("heatingType") or features.get("heating")
             if normalized.get("cooling_type") is None:
