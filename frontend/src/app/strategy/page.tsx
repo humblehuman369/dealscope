@@ -238,12 +238,12 @@ function StrategyContent() {
         if (dealMakerOverrides) {
           if (dealMakerOverrides.listPrice != null && dealMakerOverrides.listPrice > 0) {
             price = dealMakerOverrides.listPrice
-          } else if (dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice) {
-            price = dealMakerOverrides.buyPrice || dealMakerOverrides.purchasePrice
+          } else if (dealMakerOverrides.buyPrice != null || dealMakerOverrides.purchasePrice != null) {
+            price = dealMakerOverrides.buyPrice ?? dealMakerOverrides.purchasePrice
           }
-          if (dealMakerOverrides.monthlyRent) monthlyRent = dealMakerOverrides.monthlyRent
-          if (dealMakerOverrides.propertyTaxes) propertyTaxes = dealMakerOverrides.propertyTaxes
-          if (dealMakerOverrides.insurance) insuranceVal = dealMakerOverrides.insurance
+          if (dealMakerOverrides.monthlyRent != null) monthlyRent = dealMakerOverrides.monthlyRent
+          if (dealMakerOverrides.propertyTaxes != null) propertyTaxes = dealMakerOverrides.propertyTaxes
+          if (dealMakerOverrides.insurance != null) insuranceVal = dealMakerOverrides.insurance
         }
 
         setPropertyInfo({ ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal })
@@ -384,18 +384,37 @@ function StrategyContent() {
 
   // Condition / location adjustments for display
   const rehabCost = dealMakerOverrides?.rehabBudget
-    || (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
+    ?? (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
 
   // Strategy-specific financial breakdown from backend — each strategy (LTR, BRRRR, STR, etc.)
   // returns its own breakdown with the correct financing terms and expense structure
   const bd = topStrategy?.breakdown as Record<string, number> | undefined
 
   // DealMaker overrides signal the user adjusted assumptions in real-time
-  const hasDealMakerOverrides = !!(
-    dealMakerOverrides?.downPayment || dealMakerOverrides?.closingCosts ||
-    dealMakerOverrides?.interestRate || dealMakerOverrides?.loanTerm ||
-    dealMakerOverrides?.vacancyRate || dealMakerOverrides?.managementRate
+  const hasInlineOverrides = Object.keys(inlineOverrides).length > 0
+  const baselineListPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? null
+  const baselineMonthlyRent = propertyInfo?.monthlyRent ?? null
+  const hasSourceOverrides = (
+    sourceOverrides.price != null && sourceOverrides.price !== baselineListPrice
+  ) || (
+    sourceOverrides.monthlyRent != null && sourceOverrides.monthlyRent !== baselineMonthlyRent
   )
+  const hasDealMakerOverrides = hasInlineOverrides || hasSourceOverrides || [
+    'downPayment',
+    'closingCosts',
+    'interestRate',
+    'loanTerm',
+    'vacancyRate',
+    'managementRate',
+    'purchasePrice',
+    'buyPrice',
+    'monthlyRent',
+    'propertyTaxes',
+    'insurance',
+    'rehabBudget',
+    'arv',
+    'listPrice',
+  ].some((key) => dealMakerOverrides?.[key] != null)
 
   // Input percentages: DealMaker override > backend strategy breakdown > conservative default
   // Interest rate: backend and DealMaker sessionStorage use decimal (0.06 = 6%); Verdict sessionStorage uses percentage (6)
@@ -485,14 +504,14 @@ function StrategyContent() {
         propertyId,
       })
       // Include user adjustments so the report reflects what's on screen
-      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
+      if (dealMakerOverrides?.buyPrice != null || dealMakerOverrides?.purchasePrice != null) {
         params.set('purchase_price', String(targetPrice))
       }
-      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
-      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
-      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
-      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
-      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
+      if (dealMakerOverrides?.monthlyRent != null) params.set('monthly_rent', String(monthlyRent))
+      if (dealMakerOverrides?.interestRate != null) params.set('interest_rate', String(rate * 100))
+      if (dealMakerOverrides?.downPayment != null) params.set('down_payment_pct', String(downPaymentPct * 100))
+      if (dealMakerOverrides?.propertyTaxes != null) params.set('property_taxes', String(propertyTaxes))
+      if (dealMakerOverrides?.insurance != null) params.set('insurance', String(insurance))
       // Open the Vercel-hosted HTML report in a new tab
       // The report auto-triggers window.print() for Save as PDF
       const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
@@ -528,14 +547,14 @@ function StrategyContent() {
         strategy: activeStrategyId,
       })
       // Always pass user-adjusted values so the export matches what's on screen
-      if (dealMakerOverrides?.buyPrice || dealMakerOverrides?.purchasePrice) {
+      if (dealMakerOverrides?.buyPrice != null || dealMakerOverrides?.purchasePrice != null) {
         params.set('purchase_price', String(targetPrice))
       }
-      if (dealMakerOverrides?.monthlyRent) params.set('monthly_rent', String(monthlyRent))
-      if (dealMakerOverrides?.interestRate) params.set('interest_rate', String(rate * 100))
-      if (dealMakerOverrides?.downPayment) params.set('down_payment_pct', String(downPaymentPct * 100))
-      if (dealMakerOverrides?.propertyTaxes) params.set('property_taxes', String(propertyTaxes))
-      if (dealMakerOverrides?.insurance) params.set('insurance', String(insurance))
+      if (dealMakerOverrides?.monthlyRent != null) params.set('monthly_rent', String(monthlyRent))
+      if (dealMakerOverrides?.interestRate != null) params.set('interest_rate', String(rate * 100))
+      if (dealMakerOverrides?.downPayment != null) params.set('down_payment_pct', String(downPaymentPct * 100))
+      if (dealMakerOverrides?.propertyTaxes != null) params.set('property_taxes', String(propertyTaxes))
+      if (dealMakerOverrides?.insurance != null) params.set('insurance', String(insurance))
       // Wholesale-specific: pass AMV and rent for the deal proforma
       if (activeStrategyId === 'wholesale') {
         params.set('amv', String(listPrice))
@@ -855,7 +874,7 @@ function StrategyContent() {
               loanTerm: loanTermYears,
               rehabBudget: rehabCost,
               marketValue: listPrice,
-              arv: listPrice,
+              arv: dealMakerOverrides?.arv ?? listPrice,
               monthlyRent,
               vacancyRate: vacancyPct,
               propertyTaxes,
@@ -1026,6 +1045,13 @@ function StrategyContent() {
                         }
                       } else {
                         setSourceOverrides((prev) => ({ ...prev, monthlyRent: _value }))
+                        try {
+                          writeDealMakerOverrides(resolvedAddress, {
+                            monthlyRent: _value,
+                          })
+                        } catch {
+                          // Ignore storage errors
+                        }
                       }
                     }}
                   />

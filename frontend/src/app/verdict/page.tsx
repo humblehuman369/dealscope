@@ -196,10 +196,10 @@ function VerdictContent() {
   // the previous Target Buy becomes the next analysis's purchase_price override.
   // DealMaker always navigates here with URL params; saved-property mode uses dealMakerStore directly.
   const overridePurchasePrice = urlPurchasePrice || null
-  const overrideMonthlyRent = urlMonthlyRent || (sessionData?.monthlyRent ? String(sessionData.monthlyRent) : null)
-  const overridePropertyTaxes = urlPropertyTaxes || (sessionData?.propertyTaxes ? String(sessionData.propertyTaxes) : null)
-  const overrideInsurance = urlInsurance || (sessionData?.insurance ? String(sessionData.insurance) : null)
-  const overrideArv = urlArv || (sessionData?.arv ? String(sessionData.arv) : null)
+  const overrideMonthlyRent = urlMonthlyRent ?? (sessionData?.monthlyRent != null ? String(sessionData.monthlyRent) : null)
+  const overridePropertyTaxes = urlPropertyTaxes ?? (sessionData?.propertyTaxes != null ? String(sessionData.propertyTaxes) : null)
+  const overrideInsurance = urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
+  const overrideArv = urlArv ?? (sessionData?.arv != null ? String(sessionData.arv) : null)
   const overrideZpid = urlZpid || sessionData?.zpid || null
   
   // Has any overrides (from URL or session)
