@@ -139,6 +139,70 @@ class RentCastClient(BaseAPIClient[APIResponse]):
 
         return await self._make_request("markets", params)
 
+    async def get_sale_listings(
+        self,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        zip_code: str | None = None,
+        city: str | None = None,
+        state: str | None = None,
+        property_type: str | None = None,
+        status: str = "Active",
+        days_old: int | None = None,
+        limit: int = 500,
+        offset: int = 0,
+    ) -> APIResponse:
+        """Search for sale listings in a geographic area."""
+        params: dict[str, Any] = {"limit": limit, "offset": offset, "status": status}
+        if latitude is not None:
+            params["latitude"] = latitude
+        if longitude is not None:
+            params["longitude"] = longitude
+        if zip_code:
+            params["zipCode"] = zip_code
+        if city:
+            params["city"] = city
+        if state:
+            params["state"] = state
+        if property_type:
+            params["propertyType"] = property_type
+        if days_old is not None:
+            params["daysOld"] = days_old
+
+        return await self._make_request("listings/sale", params)
+
+    async def get_rental_listings(
+        self,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        zip_code: str | None = None,
+        city: str | None = None,
+        state: str | None = None,
+        property_type: str | None = None,
+        status: str = "Active",
+        days_old: int | None = None,
+        limit: int = 500,
+        offset: int = 0,
+    ) -> APIResponse:
+        """Search for long-term rental listings in a geographic area."""
+        params: dict[str, Any] = {"limit": limit, "offset": offset, "status": status}
+        if latitude is not None:
+            params["latitude"] = latitude
+        if longitude is not None:
+            params["longitude"] = longitude
+        if zip_code:
+            params["zipCode"] = zip_code
+        if city:
+            params["city"] = city
+        if state:
+            params["state"] = state
+        if property_type:
+            params["propertyType"] = property_type
+        if days_old is not None:
+            params["daysOld"] = days_old
+
+        return await self._make_request("listings/rental/long-term", params)
+
 
 class AXESSOClient(BaseAPIClient[APIResponse]):
     """

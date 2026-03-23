@@ -39,6 +39,7 @@ _ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Sync", "app.routers.sync"),
     ("Defaults", "app.routers.defaults"),
     ("Devices", "app.routers.devices"),
+    ("Map Search", "app.routers.map_search"),
 ]
 
 

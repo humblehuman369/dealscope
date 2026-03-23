@@ -221,6 +221,49 @@ export interface LOIDocument {
 }
 
 // ------------------------------------------------------------------
+// Map Search Types
+// ------------------------------------------------------------------
+
+export interface MapSearchRequest {
+  north: number
+  south: number
+  east: number
+  west: number
+  polygon?: number[][]
+  listing_type?: 'sale' | 'rental' | 'both'
+  property_type?: string
+  min_price?: number
+  max_price?: number
+  bedrooms?: number
+  bathrooms?: number
+  limit?: number
+  offset?: number
+}
+
+export interface MapListing {
+  id: string
+  address: string
+  latitude: number
+  longitude: number
+  price: number | null
+  bedrooms: number | null
+  bathrooms: number | null
+  sqft: number | null
+  property_type: string | null
+  listing_status: string | null
+  photo_url: string | null
+  source: string
+  days_on_market: number | null
+  year_built: number | null
+}
+
+export interface MapSearchResponse {
+  listings: MapListing[]
+  total_count: number
+  viewport_center: number[]
+}
+
+// ------------------------------------------------------------------
 // Domain API methods — all delegate to apiRequest from api-client.ts
 // ------------------------------------------------------------------
 
@@ -276,6 +319,15 @@ export const api = {
   assumptions: {
     defaults: () =>
       apiRequest<{ assumptions: AllAssumptions }>('/api/v1/assumptions/defaults'),
+  },
+
+  // Map Search
+  mapSearch: {
+    searchArea: (data: MapSearchRequest) =>
+      apiRequest<MapSearchResponse>('/api/v1/properties/search-area', {
+        method: 'POST',
+        body: data,
+      }),
   },
 
   // Comparison
