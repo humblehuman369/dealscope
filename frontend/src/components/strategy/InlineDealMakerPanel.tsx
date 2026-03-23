@@ -159,8 +159,8 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
             }}
           >
             <p
-              className="text-[15px] font-bold uppercase tracking-widest mb-2 pt-2 text-center"
-              style={{ color: group.accent }}
+              className="text-[18px] font-semibold uppercase tracking-widest mb-2 pt-2 text-center"
+              style={{ color: group.accent, fontFamily: "'Source Sans 3', sans-serif" }}
             >
               {group.label}
             </p>
