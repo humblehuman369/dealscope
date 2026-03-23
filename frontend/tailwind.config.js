@@ -246,6 +246,7 @@ module.exports = {
         'slide-in-right': 'slide-in-right 0.3s ease-out',
         'target-glow': 'target-glow 3s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+        'pulseSoft': 'pulseSoft 2.4s ease-in-out infinite',
         'pulse-intro': 'pulse-intro 1.5s ease-in-out infinite',
         'score-fill': 'score-fill 1s ease-out forwards',
         'marker-slide': 'marker-slide 0.5s ease-out',
@@ -286,6 +287,10 @@ module.exports = {
         'pulse-soft': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' },
+        },
+        'pulseSoft': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '0.85' },
+          '50%': { transform: 'scale(1.1)', opacity: '1' },
         },
         'pulse-intro': {
           '0%, 100%': { opacity: '1' },
