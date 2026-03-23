@@ -1017,6 +1017,26 @@ function VerdictContent() {
     router.push(`/strategy?${params.toString()}`)
   }
 
+  /** Comps tab in nav — PriceCheckerIQ at /price-intel (same params as AnalysisNav "Comps" link). */
+  const navigateToComps = () => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const parts = [property.address, property.city, stateZip].filter(Boolean)
+    let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+
+    if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+      fullAddress = backendFullAddressRef.current
+    }
+
+    const compsQuery = new URLSearchParams({ address: fullAddress })
+    const zpid = property.zpid
+    if (zpid) compsQuery.set('zpid', String(zpid))
+    if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+    if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+
+    router.push(`/price-intel?${compsQuery.toString()}`)
+  }
+
   return (
     <>
       <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
@@ -1089,6 +1109,7 @@ function VerdictContent() {
                     copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.',
                     linkLabel: 'MARKET PRICE',
                     linkSuffix: 'in Comps',
+                    linkToComps: true,
                   },
                 ].map((card) => (
                   <div
@@ -1104,7 +1125,7 @@ function VerdictContent() {
                     <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
                     <p className="leading-snug text-left flex-1" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
                     <button
-                      onClick={navigateToStrategy}
+                      onClick={card.linkToComps ? navigateToComps : navigateToStrategy}
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
                       style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
                     >
