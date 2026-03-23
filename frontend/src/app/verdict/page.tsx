@@ -1072,26 +1072,29 @@ function VerdictContent() {
                     label: 'Target Buy',
                     value: purchasePrice,
                     color: 'var(--accent-sky)',
-                    copy: 'Your recommended offer price \u2014 set below Income Value so the deal cash flows positively from day one.\n\nSet your own terms and customize the Target Buy in DealMaker.',
+                    copy: 'Your recommended offer price \u2014 set below Income Value so the deal cash flows positively from day one.',
+                    linkLabel: 'TARGET BUY',
                   },
                   {
                     label: 'Income Value',
                     value: incomeValue,
                     color: 'var(--status-warning)',
-                    copy: 'The maximum price you can pay and still break even \u2014 the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow.\n\nAdjust expenses and financing in DealMaker to push Income Value higher.',
+                    copy: 'The maximum price you can pay and still break even \u2014 the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow.',
+                    linkLabel: 'INCOME VALUE',
                   },
                   {
                     label: 'Market Price',
                     value: property.price,
                     color: 'var(--status-negative)',
                     copy: isOffMarket
-                      ? 'The current list price, or, for off-market properties, the estimated value based on comparable sales.\n\nUse the Comps tab to review, add, or remove comps and dial in your number.'
-                      : 'The current list price in the market.\n\nUse the Comps tab to review, add, or remove comps and dial in your number.',
+                      ? 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.'
+                      : 'The current list price in the market.',
+                    linkLabel: 'MARKET PRICE',
                   },
                 ].map((card) => (
                   <div
                     key={card.label}
-                    className="rounded-xl py-4 px-4 text-center sm:flex-1"
+                    className="rounded-xl py-4 px-4 text-center sm:flex-1 flex flex-col"
                     style={{
                       background: 'var(--surface-card)',
                       border: `1px solid ${card.color}`,
@@ -1100,7 +1103,14 @@ function VerdictContent() {
                   >
                     <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                     <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                    <p className="leading-snug text-left whitespace-pre-line" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
+                    <p className="leading-snug text-left flex-1" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
+                    <button
+                      onClick={navigateToStrategy}
+                      className="mt-3 text-left text-sm font-medium cursor-pointer"
+                      style={{ color: card.color, background: 'transparent', border: 'none', padding: 0 }}
+                    >
+                      Improve {card.linkLabel} in Strategy
+                    </button>
                   </div>
                 ))}
               </div>
