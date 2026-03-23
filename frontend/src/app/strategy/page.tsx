@@ -857,7 +857,7 @@ function StrategyContent() {
             }
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 transition-all duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:items-stretch gap-6 md:gap-8 transition-all duration-300">
                 <StrategyBreakdown {...breakdownProps} isCompact />
                 <InlineDealMakerPanel
                   values={sliderValues}

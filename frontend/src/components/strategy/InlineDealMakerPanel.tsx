@@ -117,7 +117,7 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
       }
     `}</style>
     <div
-      className="rounded-xl overflow-hidden flex flex-col"
+      className="rounded-xl overflow-hidden flex flex-col h-full"
       style={{
         background: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
@@ -142,7 +142,7 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
       </div>
 
       {/* Slider groups */}
-      <div className="px-5 pb-5 md:overflow-y-auto md:max-h-[calc(100vh-200px)]">
+      <div className="px-5 pb-5">
         {SLIDER_GROUPS.map((group) => (
           <div
             key={group.label}
