@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   APIProvider,
   Map,
@@ -219,6 +220,22 @@ function MapContent({
 
 export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  const searchParams = useSearchParams()
+
+  const initialCenter = useMemo(() => {
+    const lat = parseFloat(searchParams.get('lat') ?? '')
+    const lng = parseFloat(searchParams.get('lng') ?? '')
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng }
+    return DEFAULT_CENTER
+  }, [searchParams])
+
+  const initialZoom = useMemo(() => {
+    const z = parseInt(searchParams.get('zoom') ?? '', 10)
+    return Number.isFinite(z) ? z : DEFAULT_ZOOM
+  }, [searchParams])
+
+  const locationLabel = searchParams.get('label') ?? null
+
   const {
     listings,
     isLoading,
@@ -234,14 +251,21 @@ export function MapSearchView() {
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
+
+  useEffect(() => {
+    if (!showLabel) return
+    const t = setTimeout(() => setShowLabel(false), 4000)
+    return () => clearTimeout(t)
+  }, [showLabel])
 
   // Click-to-geocode state
   const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [dropPin, setDropPin] = useState<{ lat: number; lng: number } | null>(null)
   const [zoomHint, setZoomHint] = useState(false)
-  const currentZoomRef = useRef(DEFAULT_ZOOM)
+  const currentZoomRef = useRef(initialZoom)
   const zoomHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleMapClick = useCallback(
@@ -314,8 +338,8 @@ export function MapSearchView() {
     <div className="relative w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
-          defaultCenter={DEFAULT_CENTER}
-          defaultZoom={DEFAULT_ZOOM}
+          defaultCenter={initialCenter}
+          defaultZoom={initialZoom}
           mapId={MAP_ID}
           gestureHandling="greedy"
           disableDefaultUI={false}
