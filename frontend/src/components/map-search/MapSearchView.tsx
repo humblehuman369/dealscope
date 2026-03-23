@@ -124,14 +124,11 @@ function MapContent({
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
-  // Pan map to keep selected pin in lower portion of viewport (room for popup above)
+  // Pan map to center the selected listing
   useEffect(() => {
     if (!map || !selectedListing) return
-    const bounds = map.getBounds()
-    if (!bounds) return
-    const latSpan = bounds.getNorthEast().lat() - bounds.getSouthWest().lat()
     map.panTo({
-      lat: selectedListing.latitude + latSpan * 0.18,
+      lat: selectedListing.latitude,
       lng: selectedListing.longitude,
     })
   }, [map, selectedListing])
@@ -439,24 +436,6 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Selected listing popup — anchored above the pin */}
-          {selectedListing && (
-            <AdvancedMarker
-              position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
-              zIndex={9999}
-            >
-              {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-              <div
-                style={{ transform: 'translateY(-100%)', paddingBottom: '32px' }}
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-              >
-                <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
-              </div>
-            </AdvancedMarker>
-          )}
-
           {/* Click-to-geocode popup — anchored above the drop pin */}
           {!selectedListing && (dropPin || isGeocoding) && dropPin && (
             <AdvancedMarker position={dropPin} zIndex={9999}>
@@ -477,6 +456,23 @@ export function MapSearchView() {
           )}
         </Map>
       </APIProvider>
+
+      {/* Selected listing popup — centered on screen */}
+      {selectedListing && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+        >
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+          <div
+            className="pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
+          </div>
+        </div>
+      )}
 
       {/* Filter Panel */}
       <FilterPanel
