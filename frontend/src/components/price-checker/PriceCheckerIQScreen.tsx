@@ -19,7 +19,8 @@ import { useRouter } from 'next/navigation'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, Building2, Home,
-  Pencil, TrendingUp, RotateCcw, Info, Camera, FileDown, Loader2
+  Pencil, TrendingUp, RotateCcw, Info, Camera, FileDown, Loader2,
+  PanelRight, GalleryHorizontalEnd
 } from 'lucide-react'
 import { fetchSaleComps as fetchSaleCompsApi } from '@/lib/api/sale-comps'
 import { fetchRentComps as fetchRentCompsApi } from '@/lib/api/rent-comps'
@@ -468,6 +469,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [photoModalComp, setPhotoModalComp] = useState<SaleComp | RentComp | null>(null)
   const [showAdjGrid, setShowAdjGrid] = useState(true)
   const [showProximityMap, setShowProximityMap] = useState(false)
+  const [mapLayout, setMapLayout] = useState<'side' | 'top'>('side')
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [downloadingReport, setDownloadingReport] = useState(false)
 
@@ -1095,9 +1097,67 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
 
-        {/* Side-by-side layout on desktop: left = comp list, right = sticky map */}
-        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3 md:mx-4' : ''}>
-          {/* Left column */}
+        {/* Top-wide map (desktop only, when mapLayout === 'top') */}
+        {mapLayout === 'top' && hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+          <div className="hidden md:block mx-4 mt-3">
+            <div className={`rounded-xl overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}>
+              <div className="flex items-center justify-between px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[var(--accent-sky-light)]" />
+                  <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
+                      Subject
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }} />
+                      {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
+                    </span>
+                  </div>
+                  <div className="flex rounded-md border border-[var(--border-subtle)] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setMapLayout('top')}
+                      className="p-1.5 transition-colors bg-[var(--accent-sky)]/15 text-[var(--accent-sky-light)]"
+                      title="Wide top view"
+                    >
+                      <GalleryHorizontalEnd className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMapLayout('side')}
+                      className="p-1.5 transition-colors text-[var(--text-label)] hover:text-[var(--text-body)]"
+                      title="Side panel view"
+                    >
+                      <PanelRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-[var(--border-subtle)]" style={{ height: '360px' }}>
+                <CompsProximityMap
+                  subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+                  comps={mapComps}
+                  activeView={activeView}
+                  hideHeader
+                  className="h-full"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Layout wrapper: side-by-side grid when map is 'side', single column when 'top' */}
+        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0
+          ? mapLayout === 'side'
+            ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3 md:mx-4'
+            : 'md:mt-3 md:mx-4'
+          : ''
+        }>
+          {/* Left column (or full width when map is top) */}
           <div className="min-w-0">
             {/* Adjustment Grid (accordion, loads open) */}
             <div className="mx-4 md:mx-0 mt-3 md:mt-0">
@@ -1205,8 +1265,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             )}
           </div>
 
-          {/* Right column: sticky map (desktop only) */}
-          {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+          {/* Right column: sticky map (desktop only, side layout) */}
+          {mapLayout === 'side' && hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
             <div className="hidden md:block">
               <div
                 className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
@@ -1217,18 +1277,38 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     <MapPin className="w-4 h-4 text-[var(--accent-sky-light)]" />
                     <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
-                    <span className="flex items-center gap-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
-                      Subject
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full inline-block"
-                        style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
-                      />
-                      {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
+                      <span className="flex items-center gap-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
+                        Subject
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full inline-block"
+                          style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
+                        />
+                        {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
+                      </span>
+                    </div>
+                    <div className="flex rounded-md border border-[var(--border-subtle)] overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setMapLayout('top')}
+                        className="p-1.5 transition-colors text-[var(--text-label)] hover:text-[var(--text-body)]"
+                        title="Wide top view"
+                      >
+                        <GalleryHorizontalEnd className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMapLayout('side')}
+                        className="p-1.5 transition-colors bg-[var(--accent-sky)]/15 text-[var(--accent-sky-light)]"
+                        title="Side panel view"
+                      >
+                        <PanelRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex-1 min-h-0 border-t border-[var(--border-subtle)]">
