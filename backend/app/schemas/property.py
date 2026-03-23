@@ -1056,4 +1056,5 @@ class MapSearchResponse(BaseModel):
 
     listings: list[MapListing]
     total_count: int
+    estimated_total: int | None = Field(default=None, description="Estimated total listings in the area (for large viewport extrapolation)")
     viewport_center: list[float] = Field(description="[lat, lng] center of the searched area")

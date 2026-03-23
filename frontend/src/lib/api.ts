@@ -263,6 +263,7 @@ export interface MapListing {
 export interface MapSearchResponse {
   listings: MapListing[]
   total_count: number
+  estimated_total?: number | null
   viewport_center: number[]
 }
 
