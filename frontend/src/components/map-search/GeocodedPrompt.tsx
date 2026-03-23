@@ -14,7 +14,9 @@ export function GeocodedPrompt({ address, isGeocoding, onClose }: GeocodedPrompt
 
   if (!isGeocoding && !address) return null
 
-  const handleAnalyze = () => {
+  const handleAnalyze = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
     if (!address) return
     router.push(`/verdict?address=${encodeURIComponent(address)}`)
   }

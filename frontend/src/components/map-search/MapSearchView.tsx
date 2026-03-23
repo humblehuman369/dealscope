@@ -445,7 +445,13 @@ export function MapSearchView() {
               position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
               zIndex={9999}
             >
-              <div style={{ transform: 'translateY(-100%)', paddingBottom: '32px' }}>
+              {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+              <div
+                style={{ transform: 'translateY(-100%)', paddingBottom: '32px' }}
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+              >
                 <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
               </div>
             </AdvancedMarker>
@@ -454,7 +460,13 @@ export function MapSearchView() {
           {/* Click-to-geocode popup — anchored above the drop pin */}
           {!selectedListing && (dropPin || isGeocoding) && dropPin && (
             <AdvancedMarker position={dropPin} zIndex={9999}>
-              <div style={{ transform: 'translateY(-100%)', paddingBottom: '40px' }}>
+              {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+              <div
+                style={{ transform: 'translateY(-100%)', paddingBottom: '40px' }}
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+              >
                 <GeocodedPrompt
                   address={geocodedAddress}
                   isGeocoding={isGeocoding}
