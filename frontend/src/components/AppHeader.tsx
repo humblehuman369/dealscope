@@ -23,7 +23,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import type { AddressComponents, PlaceMetadata } from '@/components/AddressAutocomplete'
@@ -199,6 +199,8 @@ export function AppHeader({
   
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
@@ -219,6 +221,19 @@ export function AppHeader({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showProfileMenu])
+
+  // Close more menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+    if (showMoreMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMoreMenu])
 
   // Helper to fully decode a URL-encoded string (handles double/triple encoding)
   const fullyDecode = (str: string): string => {
@@ -577,28 +592,32 @@ export function AppHeader({
 
           {/* Right: About, Pricing, Search, Profile/Login */}
           <div className="flex items-center gap-5">
-            <Link
-              href="/about"
-              className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-              style={{
-                color: 'var(--text-heading)',
-                borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                paddingBottom: 2,
-              }}
-            >
-              About
-            </Link>
-            <Link
-              href="/pricing"
-              className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-              style={{
-                color: 'var(--text-heading)',
-                borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                paddingBottom: 2,
-              }}
-            >
-              Pricing
-            </Link>
+            {isHomepage && (
+              <>
+                <Link
+                  href="/about"
+                  className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    color: 'var(--text-heading)',
+                    borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                    paddingBottom: 2,
+                  }}
+                >
+                  About
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    color: 'var(--text-heading)',
+                    borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                    paddingBottom: 2,
+                  }}
+                >
+                  Pricing
+                </Link>
+              </>
+            )}
             {/* Desktop: inline smart search bar */}
             <div className="hidden md:flex items-center relative" style={{ width: 280 }}>
               <Search
@@ -633,17 +652,72 @@ export function AppHeader({
                 style={{ color: 'var(--text-heading)' }}
               />
             </button>
-            <button
-              onClick={toggleTheme}
-              className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
-              aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {mounted && theme === 'dark' ? (
-                <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
-              ) : (
-                <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
-              )}
-            </button>
+            {isHomepage ? (
+              <button
+                onClick={toggleTheme}
+                className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {mounted && theme === 'dark' ? (
+                  <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+                ) : (
+                  <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+                )}
+              </button>
+            ) : (
+              <div className="relative" ref={moreMenuRef}>
+                <button
+                  onClick={() => setShowMoreMenu(prev => !prev)}
+                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                  aria-label="More options"
+                  aria-expanded={showMoreMenu}
+                  aria-haspopup="true"
+                >
+                  <MoreVertical
+                    className="w-5 h-5 sm:w-6 sm:h-6"
+                    style={{ color: 'var(--text-heading)' }}
+                  />
+                </button>
+                {showMoreMenu && (
+                  <div
+                    className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
+                    style={{
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--border-default)',
+                    }}
+                  >
+                    <Link
+                      href="/about"
+                      onClick={() => setShowMoreMenu(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
+                      <Info className="w-4 h-4" /> About
+                    </Link>
+                    <Link
+                      href="/pricing"
+                      onClick={() => setShowMoreMenu(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
+                      <DollarSign className="w-4 h-4" /> Pricing
+                    </Link>
+                    <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
+                    <button
+                      onClick={() => { toggleTheme(); setShowMoreMenu(false) }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
+                      {mounted && theme === 'dark' ? (
+                        <><Sun className="w-4 h-4" /> Light Mode</>
+                      ) : (
+                        <><Moon className="w-4 h-4" /> Dark Mode</>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             {isAuthenticated ? (
               <div className="relative" ref={profileMenuRef}>
                 <button
