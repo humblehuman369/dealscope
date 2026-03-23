@@ -1088,6 +1088,7 @@ function VerdictContent() {
                     color: 'var(--status-negative)',
                     copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.',
                     linkLabel: 'MARKET PRICE',
+                    linkSuffix: 'in Comps',
                   },
                 ].map((card) => (
                   <div
@@ -1107,7 +1108,7 @@ function VerdictContent() {
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
                       style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
                     >
-                      Improve {card.linkLabel} in Strategy
+                      Improve {card.linkLabel} {card.linkSuffix ?? 'in Strategy'}
                     </button>
                   </div>
                 ))}
