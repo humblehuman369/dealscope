@@ -13,10 +13,34 @@ import { useMapSearch } from '@/hooks/useMapSearch'
 import type { MapListing } from '@/lib/api'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
+import { GeocodedPrompt } from './GeocodedPrompt'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 } // center of US
 const DEFAULT_ZOOM = 5
 const MAP_ID = 'dealscope-map-search'
+const MIN_ZOOM_FOR_GEOCODE = 15
+
+async function reverseGeocode(
+  lat: number,
+  lng: number,
+  apiKey: string,
+): Promise<string | null> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${apiKey}`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.status !== 'OK' || !data.results?.length) return null
+    const match = data.results.find(
+      (r: { types: string[] }) =>
+        r.types.includes('street_address') ||
+        r.types.includes('premise') ||
+        r.types.includes('subpremise'),
+    )
+    return (match || data.results[0])?.formatted_address ?? null
+  } catch {
+    return null
+  }
+}
 
 function formatCompactPrice(price: number | null): string {
   if (price == null) return '?'
@@ -204,6 +228,45 @@ export function MapSearchView() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
 
+  // Click-to-geocode state
+  const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null)
+  const [isGeocoding, setIsGeocoding] = useState(false)
+  const [dropPin, setDropPin] = useState<{ lat: number; lng: number } | null>(null)
+  const currentZoomRef = useRef(DEFAULT_ZOOM)
+
+  const handleMapClick = useCallback(
+    async (e: google.maps.MapMouseEvent) => {
+      if (isDrawing) return
+      setSelectedListing(null)
+
+      const latLng = e.latLng
+      if (!latLng || !apiKey) return
+
+      if (currentZoomRef.current < MIN_ZOOM_FOR_GEOCODE) {
+        setGeocodedAddress(null)
+        setDropPin(null)
+        return
+      }
+
+      const lat = latLng.lat()
+      const lng = latLng.lng()
+      setDropPin({ lat, lng })
+      setGeocodedAddress(null)
+      setIsGeocoding(true)
+
+      const address = await reverseGeocode(lat, lng, apiKey)
+      setGeocodedAddress(address)
+      setIsGeocoding(false)
+    },
+    [isDrawing, apiKey],
+  )
+
+  const clearGeocode = useCallback(() => {
+    setGeocodedAddress(null)
+    setDropPin(null)
+    setIsGeocoding(false)
+  }, [])
+
   const handleClearPolygon = useCallback(() => {
     if (drawingPolygon) {
       drawingPolygon.setMap(null)
@@ -242,24 +305,43 @@ export function MapSearchView() {
           mapId={MAP_ID}
           gestureHandling="greedy"
           disableDefaultUI={false}
-          mapTypeControl={false}
+          mapTypeControl={true}
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}
           style={{ width: '100%', height: '100%' }}
           clickableIcons={false}
-          onClick={() => setSelectedListing(null)}
+          onClick={(e) => handleMapClick(e as unknown as google.maps.MapMouseEvent)}
+          onZoomChanged={(e) => {
+            if (e.detail?.zoom != null) currentZoomRef.current = e.detail.zoom
+          }}
         >
           <MapContent
             listings={listings}
             selectedListing={selectedListing}
-            onSelectListing={setSelectedListing}
+            onSelectListing={(listing) => {
+              clearGeocode()
+              setSelectedListing(listing)
+            }}
             onBoundsChanged={onBoundsChanged}
             isDrawing={isDrawing}
             onPolygonComplete={onPolygonComplete}
             drawingPolygon={drawingPolygon}
             setDrawingPolygon={setDrawingPolygon}
           />
+          {dropPin && (
+            <AdvancedMarker position={dropPin}>
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg"
+                style={{
+                  backgroundColor: 'var(--accent-sky)',
+                  border: '2px solid #fff',
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-white" />
+              </div>
+            </AdvancedMarker>
+          )}
         </Map>
       </APIProvider>
 
@@ -335,6 +417,15 @@ export function MapSearchView() {
       {/* Selected listing preview */}
       {selectedListing && (
         <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
+      )}
+
+      {/* Click-to-geocode prompt */}
+      {!selectedListing && (dropPin || isGeocoding) && (
+        <GeocodedPrompt
+          address={geocodedAddress}
+          isGeocoding={isGeocoding}
+          onClose={clearGeocode}
+        />
       )}
     </div>
   )
