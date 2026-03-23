@@ -473,6 +473,22 @@ export function MapSearchView() {
         </div>
       )}
 
+      {/* Location label from search */}
+      {showLabel && locationLabel && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
+          <div
+            className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--text-heading)',
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            {locationLabel}
+          </div>
+        </div>
+      )}
+
       {/* Selected listing preview */}
       {selectedListing && (
         <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
