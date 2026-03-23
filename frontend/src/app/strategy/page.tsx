@@ -131,23 +131,29 @@ function StrategyContent() {
 
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
-    try {
-      const canonicalAddress = canonicalizeAddressForIdentity(addressParam)
-      const sessionKey = buildDealMakerSessionKey(canonicalAddress)
-      const stored = sessionStorage.getItem(sessionKey)
-      if (stored) {
+    const loadOverrides = () => {
+      try {
+        const canonicalAddress = canonicalizeAddressForIdentity(addressParam)
+        const sessionKey = buildDealMakerSessionKey(canonicalAddress)
+        const stored = sessionStorage.getItem(sessionKey)
+        if (!stored) return
         const parsed = JSON.parse(stored)
-        if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
-          console.log('[StrategyIQ] Loaded DealMaker overrides from sessionStorage:', parsed)
-          setInitialOverrides(parsed)
-          if (!strategyParam && parsed.strategy) {
-            setSelectedStrategyId(parsed.strategy)
-          }
+        if (!(parsed.timestamp && Date.now() - parsed.timestamp < 3600000)) return
+        console.log('[StrategyIQ] Loaded DealMaker overrides from sessionStorage:', parsed)
+        setInitialOverrides(parsed)
+        if (typeof parsed.listPrice === 'number' && parsed.listPrice > 0) {
+          setSourceOverrides((prev) => ({ ...prev, price: parsed.listPrice }))
         }
+        if (!strategyParam && parsed.strategy) {
+          setSelectedStrategyId(parsed.strategy)
+        }
+      } catch (e) {
+        console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
       }
-    } catch (e) {
-      console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
     }
+    loadOverrides()
+    window.addEventListener('dealMakerOverridesUpdated', loadOverrides)
+    return () => window.removeEventListener('dealMakerOverridesUpdated', loadOverrides)
   }, [addressParam, strategyParam])
 
   const savePropertySnapshot = useMemo(() => {
@@ -299,6 +305,7 @@ function StrategyContent() {
       interestRate: { key: 'interestRate' },
       loanTerm: { key: 'loanTerm' },
       rehabBudget: { key: 'rehabBudget' },
+      marketValue: { key: 'listPrice' },
       arv: { key: 'arv' },
       monthlyRent: { key: 'monthlyRent' },
       vacancyRate: { key: 'vacancyRate', toOverride: (v) => v * 100 },
@@ -308,6 +315,9 @@ function StrategyContent() {
     }
     const mapping = FIELD_MAP[field]
     const overrideValue = mapping.toOverride ? mapping.toOverride(value) : value
+    if (field === 'marketValue') {
+      setSourceOverrides((prev) => ({ ...prev, price: value }))
+    }
     setInlineOverrides((prev) => {
       const next = { ...prev, [mapping.key]: overrideValue }
       if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -844,6 +854,7 @@ function StrategyContent() {
               interestRate: rate,
               loanTerm: loanTermYears,
               rehabBudget: rehabCost,
+              marketValue: listPrice,
               arv: listPrice,
               monthlyRent,
               vacancyRate: vacancyPct,
