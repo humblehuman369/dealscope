@@ -15,6 +15,7 @@ import type { MapListing } from '@/lib/api'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { GeocodedPrompt } from './GeocodedPrompt'
+import { createUSMaskPaths } from './us-boundary'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -104,6 +105,27 @@ function MapContent({
     })
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
+
+  // US boundary mask — covers the world except the US
+  useEffect(() => {
+    if (!map) return
+    const isDark = document.documentElement.classList.contains('dark')
+      || window.matchMedia('(prefers-color-scheme: dark)').matches
+    const fillColor = isDark ? '#000000' : '#FFFFFF'
+
+    const mask = new google.maps.Polygon({
+      paths: createUSMaskPaths(),
+      fillColor,
+      fillOpacity: 1,
+      strokeColor: fillColor,
+      strokeOpacity: 0.6,
+      strokeWeight: 1,
+      clickable: false,
+      zIndex: 0,
+      map,
+    })
+    return () => mask.setMap(null)
+  }, [map])
 
   // Initialize marker clusterer
   useEffect(() => {
