@@ -1104,8 +1104,8 @@ function VerdictContent() {
                     <p className="leading-snug text-left flex-1" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
                     <button
                       onClick={navigateToStrategy}
-                      className="mt-3 text-left text-sm font-medium cursor-pointer"
-                      style={{ color: card.color, background: 'transparent', border: 'none', padding: 0 }}
+                      className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
+                      style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
                     >
                       Improve {card.linkLabel} in Strategy
                     </button>
