@@ -290,21 +290,28 @@ class MapSearchService:
 
     @staticmethod
     def _normalize_rentcast_listing(item: dict) -> MapListing:
-        addr_parts = [
-            item.get("formattedAddress") or item.get("addressLine1", ""),
-        ]
-        city = item.get("city", "")
-        state = item.get("state", "")
-        zipcode = item.get("zipCode", "")
-        if city:
-            addr_parts.append(city)
-        if state or zipcode:
-            addr_parts.append(f"{state} {zipcode}".strip())
-        address = ", ".join(p for p in addr_parts if p)
+        street = item.get("addressLine1") or ""
+        city = item.get("city") or ""
+        state = item.get("state") or ""
+        zipcode = item.get("zipCode") or ""
+        formatted = item.get("formattedAddress") or ""
+
+        if formatted and "," in formatted:
+            address = formatted
+        else:
+            parts = [street or formatted]
+            if city:
+                parts.append(city)
+            if state or zipcode:
+                parts.append(f"{state} {zipcode}".strip())
+            address = ", ".join(p for p in parts if p)
 
         return MapListing(
             id=item.get("id") or f"rc-{item.get('latitude')}-{item.get('longitude')}",
             address=address,
+            city=city or None,
+            state=state or None,
+            zip_code=zipcode or None,
             latitude=item["latitude"],
             longitude=item["longitude"],
             price=item.get("price") or item.get("listPrice"),
@@ -321,27 +328,49 @@ class MapSearchService:
 
     @staticmethod
     def _normalize_zillow_listing(item: dict) -> MapListing:
-        address = (
-            item.get("address")
-            or item.get("streetAddress")
-            or item.get("formattedAddress")
-            or ""
-        )
-        if isinstance(address, dict):
-            parts = [address.get("streetAddress", "")]
-            if address.get("city"):
-                parts.append(address["city"])
-            sz = f"{address.get('state', '')} {address.get('zipcode', '')}".strip()
-            if sz:
-                parts.append(sz)
+        raw_address = item.get("address") or ""
+        city = ""
+        state = ""
+        zipcode = ""
+
+        if isinstance(raw_address, dict):
+            street = raw_address.get("streetAddress") or ""
+            city = raw_address.get("city") or ""
+            state = raw_address.get("state") or ""
+            zipcode = raw_address.get("zipcode") or raw_address.get("zip") or ""
+            parts = [street]
+            if city:
+                parts.append(city)
+            if state or zipcode:
+                parts.append(f"{state} {zipcode}".strip())
+            address = ", ".join(p for p in parts if p)
+        elif "," in raw_address:
+            address = raw_address
+        else:
+            street = raw_address or item.get("streetAddress") or ""
+            city = item.get("city") or ""
+            state = item.get("state") or ""
+            zipcode = item.get("zipcode") or item.get("zip") or ""
+            parts = [street]
+            if city:
+                parts.append(city)
+            if state or zipcode:
+                parts.append(f"{state} {zipcode}".strip())
             address = ", ".join(p for p in parts if p)
 
         lat = item.get("latitude") or item.get("lat")
         lng = item.get("longitude") or item.get("lng") or item.get("long")
 
+        photo_url = item.get("imgSrc")
+        if not photo_url and isinstance(item.get("miniCardPhotos"), list) and item["miniCardPhotos"]:
+            photo_url = item["miniCardPhotos"][0].get("url")
+
         return MapListing(
             id=str(item.get("zpid") or item.get("id") or f"zl-{lat}-{lng}"),
             address=address,
+            city=city or None,
+            state=state or None,
+            zip_code=zipcode or None,
             latitude=float(lat),
             longitude=float(lng),
             price=item.get("price") or item.get("listPrice") or item.get("zestimate"),
@@ -350,7 +379,7 @@ class MapSearchService:
             sqft=item.get("livingArea") or item.get("squareFootage") or item.get("area"),
             property_type=item.get("propertyType") or item.get("homeType"),
             listing_status=item.get("homeStatus") or item.get("listingStatus"),
-            photo_url=item.get("imgSrc") or item.get("miniCardPhotos", [{}])[0].get("url") if isinstance(item.get("miniCardPhotos"), list) else item.get("imgSrc"),
+            photo_url=photo_url,
             source="zillow",
             days_on_market=item.get("daysOnZillow"),
             year_built=item.get("yearBuilt"),

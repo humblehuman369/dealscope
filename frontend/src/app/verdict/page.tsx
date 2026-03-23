@@ -137,6 +137,9 @@ function VerdictContent() {
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')
   const addressParam = searchParams.get('address') || ''
+  const cityParam = searchParams.get('city') || undefined
+  const stateParam = searchParams.get('state') || undefined
+  const zipCodeParam = searchParams.get('zip_code') || undefined
   
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
@@ -302,7 +305,11 @@ function VerdictContent() {
         setError(null)
 
         // Fetch property data (React Query cache — shared with Strategy page)
-        const data = await fetchProperty(addressParam)
+        const data = await fetchProperty(addressParam, {
+          city: cityParam,
+          state: stateParam,
+          zip_code: zipCodeParam,
+        })
 
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
         const monthlyRent = data.rentals?.monthly_rent_ltr || 0

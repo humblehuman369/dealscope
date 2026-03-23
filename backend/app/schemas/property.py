@@ -1034,6 +1034,9 @@ class MapListing(BaseModel):
 
     id: str
     address: str
+    city: str | None = None
+    state: str | None = None
+    zip_code: str | None = None
     latitude: float
     longitude: float
     price: float | None = None

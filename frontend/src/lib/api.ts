@@ -243,6 +243,9 @@ export interface MapSearchRequest {
 export interface MapListing {
   id: string
   address: string
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
   latitude: number
   longitude: number
   price: number | null
