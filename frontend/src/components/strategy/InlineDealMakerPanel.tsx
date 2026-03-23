@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { DealMakerSlider } from '@/components/deal-maker/DealMakerSlider'
 import type { SliderConfig } from '@/components/deal-maker/types'
 
@@ -55,6 +55,7 @@ const EXPENSE_SLIDERS: SliderConfig[] = [
 ]
 
 type SliderGroup = {
+  id: 'purchase' | 'rehab' | 'income'
   label: string
   sliders: SliderConfig[]
   accent: string
@@ -63,18 +64,21 @@ type SliderGroup = {
 
 const SLIDER_GROUPS: SliderGroup[] = [
   {
+    id: 'purchase',
     label: 'PURCHASE TERMS',
     sliders: [...PURCHASE_SLIDERS, ...FINANCING_SLIDERS],
     accent: '#0EA5E9',
     border: 'rgba(14, 165, 233, 0.7)',
   },
   {
+    id: 'rehab',
     label: 'REHAB & VALUATION TERMS',
     sliders: REHAB_SLIDERS,
     accent: '#FB7185',
     border: 'rgba(251, 113, 133, 0.7)',
   },
   {
+    id: 'income',
     label: 'INCOME & EXPENSE TERMS',
     sliders: [...INCOME_SLIDERS, ...EXPENSE_SLIDERS],
     accent: '#FACC15',
@@ -112,6 +116,16 @@ function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> 
 }
 
 export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDealMakerPanelProps) {
+  const [expandedSections, setExpandedSections] = useState<Record<SliderGroup['id'], boolean>>({
+    purchase: true,
+    rehab: true,
+    income: true,
+  })
+
+  const toggleSection = (sectionId: SliderGroup['id']) => {
+    setExpandedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
+  }
+
   return (
     <>
     <style>{`
@@ -149,7 +163,7 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
       <div className="px-5 pb-5">
         {SLIDER_GROUPS.map((group) => (
           <div
-            key={group.label}
+            key={group.id}
             className="mt-4 first:mt-2 rounded-xl px-3 pb-3"
             style={{
               border: `1px solid ${group.border}`,
@@ -158,13 +172,32 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
               ['--dealmaker-accent' as string]: group.accent,
             }}
           >
-            <p
-              className="text-[18px] font-semibold uppercase tracking-widest mb-2 pt-2 text-center"
-              style={{ color: group.accent, fontFamily: "'Source Sans 3', sans-serif" }}
+            <button
+              type="button"
+              onClick={() => toggleSection(group.id)}
+              className="w-full flex items-center justify-between pt-2 mb-2"
+              aria-expanded={expandedSections[group.id]}
             >
-              {group.label}
-            </p>
-            {group.sliders.map((slider) => {
+              <span
+                className="text-[18px] font-semibold uppercase tracking-widest text-left"
+                style={{ color: group.accent, fontFamily: "'Source Sans 3', sans-serif" }}
+              >
+                {group.label}
+              </span>
+              <svg
+                className={`w-5 h-5 transition-transform ${expandedSections[group.id] ? 'rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={group.accent}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {expandedSections[group.id] && group.sliders.map((slider) => {
               const overrides = dynamicMax(slider.id as string, listPrice)
               const config = { ...slider, ...overrides }
               return (
