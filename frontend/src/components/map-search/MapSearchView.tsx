@@ -6,6 +6,7 @@ import {
   Map,
   useMap,
   AdvancedMarker,
+  type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import { Eraser, Pentagon, Loader2 } from 'lucide-react'
@@ -17,7 +18,7 @@ import { GeocodedPrompt } from './GeocodedPrompt'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 } // center of US
 const DEFAULT_ZOOM = 5
-const MAP_ID = 'dealscope-map-search'
+const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 15
 
 async function reverseGeocode(
@@ -235,11 +236,11 @@ export function MapSearchView() {
   const currentZoomRef = useRef(DEFAULT_ZOOM)
 
   const handleMapClick = useCallback(
-    async (e: google.maps.MapMouseEvent) => {
+    async (e: MapMouseEvent) => {
       if (isDrawing) return
       setSelectedListing(null)
 
-      const latLng = e.latLng
+      const latLng = e.detail.latLng
       if (!latLng || !apiKey) return
 
       if (currentZoomRef.current < MIN_ZOOM_FOR_GEOCODE) {
@@ -248,8 +249,8 @@ export function MapSearchView() {
         return
       }
 
-      const lat = latLng.lat()
-      const lng = latLng.lng()
+      const lat = Number(latLng.lat)
+      const lng = Number(latLng.lng)
       setDropPin({ lat, lng })
       setGeocodedAddress(null)
       setIsGeocoding(true)
@@ -311,7 +312,7 @@ export function MapSearchView() {
           zoomControl={true}
           style={{ width: '100%', height: '100%' }}
           clickableIcons={false}
-          onClick={(e) => handleMapClick(e as unknown as google.maps.MapMouseEvent)}
+          onClick={handleMapClick}
           onZoomChanged={(e) => {
             if (e.detail?.zoom != null) currentZoomRef.current = e.detail.zoom
           }}
