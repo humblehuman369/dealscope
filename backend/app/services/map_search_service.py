@@ -155,9 +155,9 @@ class MapSearchService:
 
         # Each sub-query should cover its grid cell; compute from the cell diagonal
         cell_diag = _haversine_distance_miles(
-            south, west,
-            south + (req.north - req.south) / grid_size,
-            west + (req.east - req.west) / grid_size,
+            req.south, req.west,
+            req.south + (req.north - req.south) / grid_size,
+            req.west + (req.east - req.west) / grid_size,
         )
         sub_radius = min(cell_diag / 2, 100.0) if grid_size > 1 else min(radius, 25.0)
 
