@@ -38,6 +38,11 @@ import {
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { buildSalesConsensus, buildRentalConsensus, type UnderwritingMode } from '@/utils/marketConsensus'
+import { MarketConsensusRail } from '@/components/worksheet/consensus/MarketConsensusRail'
+import type { IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 
 // ============================================
 // TYPES
@@ -466,6 +471,14 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [downloadingReport, setDownloadingReport] = useState(false)
 
+  // Market consensus state
+  const { fetchProperty } = usePropertyData()
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+  })
+  const [activeUnderwriteMode, setActiveUnderwriteMode] = useState<UnderwritingMode | null>(null)
+
   // Active state shortcuts
   const comps = isSale ? saleComps : rentComps
   const selectedIds = isSale ? saleSelected : rentSelected
@@ -579,6 +592,40 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     }
     init()
   }, [hasValidSubject, subjectKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load source estimates from shared property cache for consensus rail
+  useEffect(() => {
+    if (!fullAddress || fullAddress.replace(/,|\s/g, '').length < 3) return
+    fetchProperty(fullAddress, {
+      city: property.city || undefined,
+      state: property.state || undefined,
+      zip_code: property.zipCode || undefined,
+    })
+      .then((data) => setIqSources(mapPropertyToIQSources(data)))
+      .catch(() => { /* sources unavailable — consensus rail hides gracefully */ })
+  }, [fullAddress, property.city, property.state, property.zipCode, fetchProperty])
+
+  // Compute consensus from sources + comp appraisal
+  const saleConsensus = useMemo(
+    () => buildSalesConsensus(iqSources, saleAppraisal),
+    [iqSources, saleAppraisal],
+  )
+  const rentConsensus = useMemo(
+    () => buildRentalConsensus(iqSources, rentAppraisal),
+    [iqSources, rentAppraisal],
+  )
+
+  // Apply consensus underwriting mode
+  const handleApplyConsensusMode = useCallback((mode: UnderwritingMode, value: number) => {
+    setActiveUnderwriteMode(mode)
+    if (value > 0) {
+      if (isSale) {
+        setSaleOverrideMarket(value)
+      } else {
+        setRentOverrideMarket(value)
+      }
+    }
+  }, [isSale])
 
   // Refresh all -- fetches brand new comps from the API
   const handleRefreshAll = async () => {
@@ -778,13 +825,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
               </div>
               <div className="flex rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center">
-                <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null) }}
+                <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
                     isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
                   Sale Comps
                 </button>
-                <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null) }}
+                <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
                     !isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
@@ -1059,6 +1106,16 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 isExpanded={showAdjGrid}
                 onToggle={() => setShowAdjGrid(!showAdjGrid)}
                 isSale={isSale}
+              />
+            </div>
+
+            {/* Market Consensus Rail */}
+            <div className="mx-4 md:mx-0 mt-3">
+              <MarketConsensusRail
+                consensus={isSale ? saleConsensus : rentConsensus}
+                mode={isSale ? 'value' : 'rent'}
+                onApplyMode={handleApplyConsensusMode}
+                activeMode={activeUnderwriteMode}
               />
             </div>
 
