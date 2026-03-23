@@ -401,9 +401,6 @@ class PropertyService:
             address_obj.longitude = normalized.get("longitude")
 
         # Build response
-        # #region agent log
-        import json as _json_dbg; open('/app/debug-094830.log','a').write(_json_dbg.dumps({"sessionId":"094830","hypothesisId":"H3","location":"property_service.py:404","message":"normalized heating/cooling before PropertyDetails","data":{"heating_type":repr(normalized.get("heating_type")),"heating_type_type":type(normalized.get("heating_type")).__name__,"cooling_type":repr(normalized.get("cooling_type")),"cooling_type_type":type(normalized.get("cooling_type")).__name__,"exterior_type":repr(normalized.get("exterior_type")),"roof_type":repr(normalized.get("roof_type")),"foundation_type":repr(normalized.get("foundation_type")),"view_type":repr(normalized.get("view_type"))},"timestamp":__import__('time').time()})+'\n')
-        # #endregion
         response = PropertyResponse(
             property_id=property_id,
             zpid=str(zillow_zpid) if zillow_zpid else None,  # Zillow Property ID for photos
