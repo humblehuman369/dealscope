@@ -35,6 +35,7 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
+import { PropertyPhotoGallery } from '@/components/property-details'
 import {
   buildDealMakerSessionKey,
   canonicalizeAddressForIdentity,
@@ -212,6 +213,7 @@ function VerdictContent() {
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const backendFullAddressRef = useRef('')
   
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
@@ -612,7 +614,8 @@ function VerdictContent() {
           // Phase 2: non-blocking photo fetch — do not await; update property when done
           if (propertyData.zpid) {
             fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then((result) => {
-              if (result.status === 'success' && result.photos[0]) {
+              if (result.status === 'success' && result.photos.length > 0) {
+                setPropertyPhotos(result.photos)
                 setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
               }
             })
@@ -1021,112 +1024,88 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-          {/* Redesigned Verdict top section */}
+          {/* Full-width photo gallery */}
+          <section className="mx-5 mt-6">
+            {property.zpid ? (
+              <PropertyPhotoGallery
+                zpid={String(property.zpid)}
+                initialImages={propertyPhotos}
+              />
+            ) : property.imageUrl ? (
+              <div className="rounded-[14px] overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+                <img
+                  src={property.imageUrl}
+                  alt={`Property at ${property.address}`}
+                  className="w-full object-cover"
+                  style={{ height: 400 }}
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            ) : null}
+          </section>
+
+          {/* Main verdict content */}
           <section
-            className="mx-5 mt-6 px-5 py-6 rounded-2xl"
+            className="mx-5 mt-4 px-5 py-6 rounded-2xl"
             style={{
               background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-              <div className="lg:w-[48%] flex flex-col items-center text-center" style={{ paddingTop: 30 }}>
-                <h1
-                  style={{
-                    margin: 0,
-                    lineHeight: 1.1,
-                    fontSize: 'clamp(34px, 4.5vw, 50px)',
-                    fontWeight: 800,
-                    color: 'var(--text-heading)',
-                  }}
-                >
-                  <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
-                  <br />
-                  <span style={{ color: 'var(--accent-sky)', fontVariantNumeric: 'tabular-nums', display: 'inline-block', marginTop: 10 }}>
-                    {dealGapDisplay}
-                  </span>
-                </h1>
-                <div style={{ marginTop: 30, marginBottom: 30 }}>
-                  <span
+            {/* Investment Overview — 3 price cards */}
+            <div>
+              <h2
+                className="w-full font-bold leading-tight"
+                style={{
+                  color: 'var(--text-heading)',
+                  marginBottom: 16,
+                  fontSize: 'clamp(18px, 2vw, 24px)',
+                }}
+              >
+                Investment Overview
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
+                {[
+                  {
+                    label: 'Target Buy',
+                    value: purchasePrice,
+                    color: 'var(--accent-sky)',
+                    copy: 'Your recommended offer price \u2014 set below Income Value so the deal cash flows positively from day one.\n\nSet your own terms and customize the Target Buy in DealMaker.',
+                  },
+                  {
+                    label: 'Income Value',
+                    value: incomeValue,
+                    color: 'var(--status-warning)',
+                    copy: 'The maximum price you can pay and still break even \u2014 the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow.\n\nAdjust expenses and financing in DealMaker to push Income Value higher.',
+                  },
+                  {
+                    label: 'Market Price',
+                    value: property.price,
+                    color: 'var(--status-negative)',
+                    copy: isOffMarket
+                      ? 'The current list price, or, for off-market properties, the estimated value based on comparable sales.\n\nUse the Comps tab to review, add, or remove comps and dial in your number.'
+                      : 'The current list price in the market.\n\nUse the Comps tab to review, add, or remove comps and dial in your number.',
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.label}
+                    className="rounded-xl py-4 px-4 text-center sm:flex-1"
                     style={{
-                      display: 'inline-flex',
-                      borderRadius: 999,
-                      border: '1px solid var(--border-focus)',
-                      padding: '4px 10px',
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: 'var(--text-heading)',
-                      background: 'var(--surface-elevated)',
+                      background: 'var(--surface-card)',
+                      border: `1px solid ${card.color}`,
+                      boxShadow: 'var(--shadow-card)',
                     }}
                   >
-                    {tier.label}
-                  </span>
-                </div>
-                <p
-                  style={{
-                    margin: '0',
-                    fontSize: 'clamp(15px, 1.25vw, 20px)',
-                    lineHeight: 1.5,
-                    fontWeight: 600,
-                    color: 'var(--text-secondary)',
-                    textAlign: 'justify',
-                    maxWidth: 480,
-                  }}
-                >
-                  {displayGapPct > 0
-                    ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
-                    : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
-                </p>
-                <div style={{ marginTop: 12 }}>
-                  <InfoPopover
-                    ariaLabel="What is DealGap"
-                    label="What is DealGap?"
-                    className="text-base font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
-                    panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
-                    content={
-                      <p style={{ margin: 0 }}>
-                        {tier.headline} {tier.subHeadline}
-                      </p>
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="lg:w-[52%] lg:ml-auto lg:-mt-6 lg:-mr-5">
-                <div
-                  className="w-full h-full"
-                  style={{
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                    border: '1px solid var(--border-default)',
-                    background: 'var(--surface-elevated)',
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={handlePropertyClick}
-                    className="w-full text-left"
-                    style={{ display: 'block', cursor: 'pointer', background: 'transparent', border: 'none', padding: 0 }}
-                    aria-label="Open property details page"
-                  >
-                    {property.imageUrl ? (
-                      <img
-                        src={property.imageUrl}
-                        alt={`Property at ${property.address}`}
-                        className="w-full object-cover"
-                        style={{ height: 'clamp(280px, 28vw, 400px)' }}
-                      />
-                    ) : (
-                      <div className="w-full flex items-center justify-center text-sm" style={{ height: 'clamp(280px, 28vw, 400px)', color: 'var(--text-secondary)' }}>
-                        Property photo loading...
-                      </div>
-                    )}
-                  </button>
-                </div>
+                    <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
+                    <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
+                    <p className="leading-snug text-left whitespace-pre-line" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* Price scale bar (Deal Gap / Price Gap) */}
             <div className="mt-7 relative" style={{ paddingTop: 0 }}>
               {(() => {
                 const markers = [
@@ -1226,80 +1205,99 @@ function VerdictContent() {
                         </p>
                       </div>
                     )}
-
-
-
                   </>
                 )
               })()}
-              <div style={{ marginTop: 58 }}>
-                <h2
-                  className="w-full font-bold italic leading-tight"
+            </div>
+
+            {/* "What is DealGap?" link */}
+            <div style={{ marginTop: 20 }}>
+              <InfoPopover
+                ariaLabel="What is DealGap"
+                label="What is DealGap?"
+                className="text-base font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
+                panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
+                content={
+                  <p style={{ margin: 0 }}>
+                    {tier.headline} {tier.subHeadline}
+                  </p>
+                }
+              />
+            </div>
+
+            {/* DealGap hero — headline + percentage + tier label + description */}
+            <div className="flex flex-col items-center text-center" style={{ marginTop: 16 }}>
+              <div className="flex items-baseline gap-4 flex-wrap justify-center">
+                <h1
                   style={{
-                    color: 'var(--accent-sky)',
-                    marginBottom: 12,
-                    fontSize: 'clamp(14px, 1.53vw, 22px)',
-                    maxWidth: 'calc(33.33% - 4px)',
+                    margin: 0,
+                    lineHeight: 1.1,
+                    fontSize: 'clamp(24px, 3vw, 36px)',
+                    fontWeight: 800,
+                    color: 'var(--text-heading)',
                   }}
                 >
-                  What Would Make This Deal Work?
-                </h2>
-                <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
-                  {[
-                    {
-                      label: 'Target Buy',
-                      value: purchasePrice,
-                      color: 'var(--accent-sky)',
-                      copy: 'Your recommended offer price - set below Income Value so the deal cash flows positively from day one. Set your own terms and customize the Target Buy in DealMaker.',
-                    },
-                    {
-                      label: 'Income Value',
-                      value: incomeValue,
-                      color: 'var(--status-warning)',
-                      copy: 'The maximum price you can pay and still break even - the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow. Adjust expenses and financing in DealMaker to push Income Value higher.',
-                    },
-                    {
-                      label: 'Market Price',
-                      value: property.price,
-                      color: 'var(--status-negative)',
-                      copy: isOffMarket
-                        ? 'The current estimated market value based on comparable sales. Use the Comps tab to review, add, or remove comps and dial in your number.'
-                        : 'The current list price in the market. Use the Comps tab to review, add, or remove comps and dial in your number.',
-                    },
-                  ].map((card) => (
-                    <div
-                      key={card.label}
-                      className="rounded-xl py-4 px-4 text-center sm:flex-1"
-                      style={{
-                        background: 'var(--surface-card)',
-                        border: `1px solid ${card.color}`,
-                        boxShadow: 'var(--shadow-card)',
-                      }}
-                    >
-                      <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
-                      <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                      <p className="leading-snug text-left" style={{ color: 'var(--text-body)', fontSize: 'clamp(15px, 1.25vw, 20px)' }}>{card.copy}</p>
-                    </div>
-                  ))}
-                </div>
+                  <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
+                </h1>
+                <span style={{
+                  color: 'var(--accent-sky)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: 'clamp(28px, 3.5vw, 42px)',
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                }}>
+                  {dealGapDisplay}
+                </span>
               </div>
+              <div style={{ marginTop: 14, marginBottom: 14 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    borderRadius: 999,
+                    border: '1px solid var(--border-focus)',
+                    padding: '4px 10px',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: 'var(--text-heading)',
+                    background: 'var(--surface-elevated)',
+                  }}
+                >
+                  {tier.label}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: '0',
+                  fontSize: 'clamp(13px, 1.1vw, 16px)',
+                  lineHeight: 1.5,
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  textAlign: 'justify',
+                  maxWidth: 620,
+                }}
+              >
+                {displayGapPct > 0
+                  ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
+                  : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
+              </p>
+            </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3" style={{ marginTop: 22 }}>
-                <button
-                  onClick={navigateToStrategy}
-                  className="text-sm font-bold tracking-wide"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none' }}
-                >
-                  SEE BREAKDOWN - ADJUST TERMS - DOWNLOAD PDF &amp; EXCEL
-                </button>
-                <button
-                  onClick={navigateToStrategy}
-                  className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: '1.5px solid var(--accent-sky)' }}
-                >
-                  NEXT
-                </button>
-              </div>
+            {/* Action links */}
+            <div className="flex flex-wrap items-center justify-center gap-3" style={{ marginTop: 22 }}>
+              <button
+                onClick={navigateToStrategy}
+                className="text-sm font-bold tracking-wide"
+                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none' }}
+              >
+                SEE BREAKDOWN - ADJUST TERMS - DOWNLOAD PDF &amp; EXCEL
+              </button>
+              <button
+                onClick={navigateToStrategy}
+                className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
+                style={{ color: 'var(--accent-sky)', background: 'transparent', border: '1.5px solid var(--accent-sky)' }}
+              >
+                NEXT
+              </button>
             </div>
           </section>
 
