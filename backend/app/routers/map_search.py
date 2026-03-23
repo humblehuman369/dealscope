@@ -33,10 +33,11 @@ async def search_area(
             detail="north must be greater than south",
         )
     if request.east <= request.west:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="east must be greater than west",
-        )
+        # Viewport crosses the antimeridian (e.g. Alaska) — normalize by
+        # clamping to the western hemisphere so the search still works.
+        request.west = -165.0
+        if request.east < request.west:
+            request.east = -65.0
 
     try:
         return await map_search_service.search(request)

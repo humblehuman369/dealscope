@@ -25,7 +25,7 @@ const US_BOUNDS = {
   north: 72,
   south: 17,
   east: -65,
-  west: -180,
+  west: -165,
 }
 
 async function reverseGeocode(
