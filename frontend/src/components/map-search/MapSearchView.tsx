@@ -16,10 +16,17 @@ import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { GeocodedPrompt } from './GeocodedPrompt'
 
-const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 } // center of US
+const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
+
+const US_BOUNDS = {
+  north: 72,
+  south: 17,
+  east: -65,
+  west: -180,
+}
 
 async function reverseGeocode(
   lat: number,
@@ -316,6 +323,11 @@ export function MapSearchView() {
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}
+          minZoom={3}
+          restriction={{
+            latLngBounds: US_BOUNDS,
+            strictBounds: false,
+          }}
           style={{ width: '100%', height: '100%' }}
           clickableIcons={false}
           onClick={handleMapClick}
