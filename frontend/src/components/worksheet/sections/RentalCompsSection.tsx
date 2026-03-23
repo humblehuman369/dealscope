@@ -19,6 +19,11 @@ import {
 import { formatCurrency } from '@/utils/formatters'
 import { fetchRentComps } from '@/lib/api/rent-comps'
 import type { RentComp, SubjectProperty as CompsSubjectProperty } from '@/lib/api/types'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { buildRentalConsensus, type UnderwritingMode } from '@/utils/marketConsensus'
+import { MarketConsensusRail } from '@/components/worksheet/consensus/MarketConsensusRail'
+import type { IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 
 // ============================================
 // UTILITIES
@@ -567,6 +572,14 @@ export function RentalCompsSection() {
   const [manualMarketRent, setManualMarketRent] = useState(0)
   const [manualImprovedRent, setManualImprovedRent] = useState(0)
 
+  // Market consensus state
+  const { fetchProperty } = usePropertyData()
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+  })
+  const [activeUnderwriteMode, setActiveUnderwriteMode] = useState<UnderwritingMode | null>(null)
+
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
   const subject = useMemo(() => ({
@@ -696,6 +709,25 @@ export function RentalCompsSection() {
     }
   }, [comps.length, compsNeedingPhotos.length])
 
+  // Load source estimates from shared property cache for consensus rail
+  useEffect(() => {
+    if (!subject.address) return
+    const fullAddr = [subject.address, subject.city, subject.state, subject.zip].filter(Boolean).join(', ')
+    fetchProperty(fullAddr, {
+      city: subject.city || undefined,
+      state: subject.state || undefined,
+      zip_code: subject.zip || undefined,
+    })
+      .then((data) => setIqSources(mapPropertyToIQSources(data)))
+      .catch(() => { /* sources unavailable — consensus rail hides gracefully */ })
+  }, [subject.address, subject.city, subject.state, subject.zip, fetchProperty])
+
+  // Compute consensus from sources + comp appraisal
+  const consensus = useMemo(
+    () => buildRentalConsensus(iqSources, appraisalResult),
+    [iqSources, appraisalResult],
+  )
+
   // Refresh all comps
   const handleRefreshAll = async () => {
     const fetched = await fetchComps()
@@ -765,6 +797,15 @@ export function RentalCompsSection() {
     const rent = isMarketRentOverridden ? manualMarketRent : appraisalResult.marketRent
     if (rent > 0) {
       updateAssumption('monthlyRent', rent)
+    }
+  }
+
+  // Apply consensus underwriting mode
+  const handleApplyConsensusMode = (mode: UnderwritingMode, value: number) => {
+    setActiveUnderwriteMode(mode)
+    if (value > 0) {
+      setIsMarketRentOverridden(true)
+      setManualMarketRent(value)
     }
   }
 
@@ -846,6 +887,14 @@ export function RentalCompsSection() {
         loading={loading}
         selectedCount={selectedCompIds.size}
         purchasePrice={subject.price}
+      />
+
+      {/* Market Consensus Rail */}
+      <MarketConsensusRail
+        consensus={consensus}
+        mode="rent"
+        onApplyMode={handleApplyConsensusMode}
+        activeMode={activeUnderwriteMode}
       />
 
       {/* Adjustment Grid */}
