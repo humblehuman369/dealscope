@@ -16,7 +16,7 @@ export const semanticTokens = {
     overlay: { dark: 'rgba(0,0,0,0.8)', light: 'rgba(0,0,0,0.5)' },
   },
   text: {
-    heading: { dark: '#F1F5F9', light: '#07172e' },
+    heading: { dark: '#F1F5F9', light: '#000000' },
     body: { dark: '#CBD5E1', light: '#334155' },
     secondary: { dark: '#94A3B8', light: '#475569' },
     label: { dark: '#7C8CA0', light: '#64748B' },
