@@ -72,11 +72,11 @@ interface BackendAnalysisResponse {
   [key: string]: unknown
 }
 
-function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNode; delay?: number }) {
+function InsightItem({ num, title, detail, delay = 0 }: { num: string; title: ReactNode; detail?: ReactNode; delay?: number }) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(true), 500 + delay)
+    const t = setTimeout(() => setShow(true), 300 + delay)
     return () => clearTimeout(t)
   }, [delay])
 
@@ -84,32 +84,38 @@ function Takeaway({ num, children, delay = 0 }: { num: string; children: ReactNo
     <div
       style={{
         display: 'flex',
-        gap: 14,
+        gap: 12,
         alignItems: 'flex-start',
         opacity: show ? 1 : 0,
-        transform: show ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'all 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: show ? 'translateY(0)' : 'translateY(6px)',
+        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       <div
         style={{
-          minWidth: 30,
-          height: 30,
+          minWidth: 28,
+          height: 28,
           borderRadius: '50%',
           background: 'var(--color-sky-dim)',
           border: '1px solid var(--accent-sky)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 10,
+          fontSize: 12,
           fontWeight: 700,
           color: 'var(--accent-sky)',
           flexShrink: 0,
+          marginTop: 1,
         }}
       >
         {num}
       </div>
-      <p style={{ margin: 0, fontSize: 18, fontWeight: 500, lineHeight: 1.4, color: 'var(--text-heading)', paddingTop: 4 }}>{children}</p>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, lineHeight: 1.35, color: 'var(--text-heading)' }}>{title}</p>
+        {detail && (
+          <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 400, lineHeight: 1.45, color: 'var(--text-secondary)' }}>{detail}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -228,6 +234,8 @@ function VerdictContent() {
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
+  const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
+  const [showAllInsights, setShowAllInsights] = useState(false)
 
   // Stores the static analysis inputs so the verdict can be re-calculated
   // when the user switches data source without re-fetching property data
@@ -1246,200 +1254,223 @@ function VerdictContent() {
               })()}
             </div>
 
-            {/* "What is DealGap?" link */}
-            <div style={{ marginTop: 20 }}>
-              <InfoPopover
-                ariaLabel="What is DealGap"
-                label="What is DealGap?"
-                className="text-base font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
-                panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
-                content={
-                  <p style={{ margin: 0 }}>
-                    {tier.headline} {tier.subHeadline}
+            {/* Deal Gap Summary — compact scannable header */}
+            <div
+              className="mt-6 rounded-xl px-5 py-4"
+              style={{
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              {/* Row 1: headline metric + tier + meta */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-baseline gap-2">
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-label)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Deal Gap
+                    </span>
+                    <span
+                      className="tabular-nums"
+                      style={{
+                        fontSize: 'clamp(26px, 3vw, 36px)',
+                        fontWeight: 800,
+                        color: 'var(--accent-sky)',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {dealGapDisplay}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      borderRadius: 999,
+                      border: '1px solid var(--border-focus)',
+                      padding: '3px 10px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--text-heading)',
+                      background: 'var(--surface-card)',
+                    }}
+                  >
+                    {tier.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-[11px]" style={{ color: 'var(--text-label)' }}>
+                  <span className="tabular-nums"><strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount}</strong> sources</span>
+                  <span className="tabular-nums">{analysisTimeSeconds.toFixed(1)}s</span>
+                </div>
+              </div>
+
+              {/* Row 2: single-line verdict + CTA */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
+                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
+                  {displayGapPct > 0
+                    ? 'This deal cash flows at current terms. Confirm your numbers in Strategy before you move.'
+                    : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
+                </p>
+                <button
+                  onClick={navigateToStrategy}
+                  className="px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap flex-shrink-0"
+                  style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+                >
+                  Continue to Strategy
+                </button>
+              </div>
+
+              {/* Row 3: expandable details toggle */}
+              <button
+                type="button"
+                onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold transition-colors"
+                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+              >
+                {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {isDealGapDetailsOpen && (
+                <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                  <p
+                    style={{
+                      margin: '0 0 12px',
+                      fontSize: 13,
+                      lineHeight: 1.55,
+                      color: 'var(--text-secondary)',
+                      maxWidth: 620,
+                    }}
+                  >
+                    {displayGapPct > 0
+                      ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
+                      : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                   </p>
-                }
-              />
-            </div>
-
-            {/* DealGap hero — headline + percentage + tier label + description */}
-            <div className="flex flex-col items-center text-center" style={{ marginTop: 16 }}>
-              <div className="flex items-baseline gap-4 flex-wrap justify-center">
-                <h1
-                  style={{
-                    margin: 0,
-                    lineHeight: 1.1,
-                    fontSize: 'clamp(24px, 3vw, 36px)',
-                    fontWeight: 800,
-                    color: 'var(--text-heading)',
-                  }}
-                >
-                  <span style={{ color: 'var(--accent-sky)' }}>The</span> DealGap
-                </h1>
-                <span style={{
-                  color: 'var(--accent-sky)',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontSize: 'clamp(28px, 3.5vw, 42px)',
-                  fontWeight: 800,
-                  lineHeight: 1.1,
-                }}>
-                  {dealGapDisplay}
-                </span>
-              </div>
-              <div style={{ marginTop: 14, marginBottom: 14 }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    borderRadius: 999,
-                    border: '1px solid var(--border-focus)',
-                    padding: '4px 10px',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: 'var(--text-heading)',
-                    background: 'var(--surface-elevated)',
-                  }}
-                >
-                  {tier.label}
-                </span>
-              </div>
-              <p
-                style={{
-                  margin: '0',
-                  fontSize: 'clamp(13px, 1.1vw, 16px)',
-                  lineHeight: 1.5,
-                  fontWeight: 600,
-                  color: 'var(--text-secondary)',
-                  textAlign: 'justify',
-                  maxWidth: 620,
-                }}
-              >
-                {displayGapPct > 0
-                  ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
-                  : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
-              </p>
-            </div>
-
-            {/* Action links */}
-            <div className="flex flex-wrap items-center justify-center gap-3" style={{ marginTop: 22 }}>
-              <button
-                onClick={navigateToStrategy}
-                className="text-sm font-bold tracking-wide"
-                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none' }}
-              >
-                SEE BREAKDOWN - ADJUST TERMS - DOWNLOAD PDF &amp; EXCEL
-              </button>
-              <button
-                onClick={navigateToStrategy}
-                className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
-                style={{ color: 'var(--accent-sky)', background: 'transparent', border: '1.5px solid var(--accent-sky)' }}
-              >
-                NEXT
-              </button>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <InfoPopover
+                      ariaLabel="What is DealGap"
+                      label="What is DealGap?"
+                      className="text-xs font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
+                      panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
+                      content={
+                        <p style={{ margin: 0 }}>
+                          {tier.headline} {tier.subHeadline}
+                        </p>
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={handleShowMethodology}
+                      className="text-xs font-semibold flex items-center gap-1"
+                      style={{ color: 'var(--text-body)', background: 'transparent', border: 'none', padding: 0 }}
+                    >
+                      <span style={{ fontSize: 12 }}>ⓘ</span>
+                      How Deal Gap works
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
-          {/* What You Need to Know card */}
+          {/* Key Insights card */}
           <div className="mx-5 mt-4">
             <div
               style={{
-                borderRadius: 16,
+                borderRadius: 14,
                 overflow: 'hidden',
                 background: 'var(--surface-card)',
                 border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-card-hover)',
+                boxShadow: 'var(--shadow-card)',
               }}
             >
-              <div style={{ padding: '24px 28px 28px' }}>
+              <div style={{ padding: '20px 24px 20px' }}>
                 <h3
                   style={{
-                    margin: '0 0 20px',
-                    fontSize: 24,
+                    margin: '0 0 16px',
+                    fontSize: 16,
                     color: 'var(--text-heading)',
                     fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
                   }}
                 >
-                  What You Need to Know?
+                  Key Insights
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
-                  <Takeaway num="1" delay={0}>
-                    {isOffMarket ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <InsightItem
+                    num="1"
+                    delay={0}
+                    title={isOffMarket
+                      ? <span><strong style={{ color: 'var(--accent-sky)' }}>Off-market</strong> — not listed for sale</span>
+                      : <span><strong style={{ color: 'var(--accent-sky)' }}>Actively listed</strong> — competing buyers</span>
+                    }
+                    detail={isOffMarket
+                      ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+                      : 'Speed and terms matter when competing with other buyers.'
+                    }
+                  />
+                  <InsightItem
+                    num="2"
+                    delay={80}
+                    title={
                       <span>
-                        This property is <strong style={{ color: 'var(--accent-sky)' }}>not listed for sale</strong>. You&apos;d need to make an off-market offer - confirm the owner&apos;s interest first.
+                        Target buy: <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> ({dealGapDisplay} gap)
                       </span>
-                    ) : (
+                    }
+                    detail={`A ${fmtShort(discountAmount)} discount below market value for positive cash flow.`}
+                  />
+                  <InsightItem
+                    num="3"
+                    delay={160}
+                    title={
                       <span>
-                        This property is <strong style={{ color: 'var(--accent-sky)' }}>actively listed</strong>. You&apos;re competing with other buyers - speed and terms matter.
+                        <strong style={{ color: 'var(--accent-sky)' }}>{probability}%</strong> of investors land this discount
                       </span>
-                    )}
-                  </Takeaway>
-                  <Takeaway num="2" delay={140}>
-                    <span>
-                      To cash-flow positively, buy at <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> - that&apos;s a <strong style={{ color: 'var(--accent-sky)' }}>{dealGapDisplay} Deal Gap</strong> (a {fmtShort(discountAmount)} discount below market value).
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="3" delay={280}>
-                    <span>
-                      About <strong style={{ color: 'var(--accent-sky)' }}>{probability}% of investors</strong> land discounts this deep. {probabilityTail}
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="4" delay={420}>
-                    <span>
-                      The initial analysis does not include repairs. To include repairs click <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong> and create a budget in the <strong style={{ color: 'var(--accent-sky)' }}>Rehab tab</strong>.
-                    </span>
-                  </Takeaway>
-                  <Takeaway num="5" delay={560}>
-                    <span>
-                      The valuation is based on assumptions you can edit in <strong style={{ color: 'var(--accent-sky)' }}>DealMaker</strong>. Initial analysis set at <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% rate · 30-year term</strong> at the Target Buy price.
-                    </span>
-                  </Takeaway>
-                </div>
-              </div>
+                    }
+                    detail={probabilityTail}
+                  />
 
-              <div
-                style={{
-                  padding: '12px 28px',
-                  borderTop: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                }}
-              >
+                  {showAllInsights && (
+                    <>
+                      <InsightItem
+                        num="4"
+                        delay={0}
+                        title={<span>Repairs <strong style={{ color: 'var(--accent-sky)' }}>not included</strong> in initial analysis</span>}
+                        detail="Use DealMaker to add a rehab budget and see the impact on returns."
+                      />
+                      <InsightItem
+                        num="5"
+                        delay={0}
+                        title={
+                          <span>
+                            Assumes <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% · 30yr</strong>
+                          </span>
+                        }
+                        detail="Edit financing terms in DealMaker to match your actual loan scenario."
+                      />
+                    </>
+                  )}
+                </div>
+
                 <button
                   type="button"
-                  onClick={handleShowMethodology}
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--text-body)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    cursor: 'pointer',
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                  }}
+                  onClick={() => setShowAllInsights((prev) => !prev)}
+                  className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold transition-colors"
+                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
                 >
-                  <span style={{ fontSize: 13 }}>ⓘ</span>
-                  How the Deal Gap works
+                  {showAllInsights ? 'Show less' : 'Show all insights'}
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${showAllInsights ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </button>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 12,
-                    color: 'var(--text-body)',
-                  }}
-                >
-                  <span style={{ color: 'var(--status-warning)', fontSize: 11 }}>⚡</span>
-                  <span>
-                    Analyzed in <strong style={{ color: 'var(--accent-sky)' }}>{analysisTimeSeconds.toFixed(1)}s</strong>
-                  </span>
-                  <span style={{ margin: '0 2px', opacity: 0.3 }}>·</span>
-                  <strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount} data sources</strong>
-                </div>
               </div>
             </div>
           </div>
