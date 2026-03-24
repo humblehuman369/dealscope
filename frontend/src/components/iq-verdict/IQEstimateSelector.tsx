@@ -239,7 +239,7 @@ export function IQEstimateSelector({
     <div
       className={`rounded-xl ${compact ? 'p-3' : 'p-4'}`}
       style={{
-        background: 'var(--surface-base)',
+        background: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
         boxShadow: 'var(--shadow-card)',
         transition: 'all 0.3s ease',
