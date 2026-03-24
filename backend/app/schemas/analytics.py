@@ -87,6 +87,11 @@ class IQVerdictInput(BaseModel):
     management_pct: float | None = Field(
         None, ge=0, le=1, description="Property management as fraction of gross income"
     )
+    closing_costs_pct: float | None = Field(
+        None, ge=0, le=0.20, description="Closing costs fraction (e.g. 0.03 = 3%%)"
+    )
+    rehab_cost: float | None = Field(None, ge=0, le=10_000_000, description="Rehab budget (dollar amount)")
+    capex_pct: float | None = Field(None, ge=0, le=1, description="CapEx / reserves as fraction of gross income")
     buy_discount_pct: float | None = Field(
         None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)"
     )
@@ -110,6 +115,9 @@ class StrategyResult(BaseModel):
     dscr: float | None = None
     annual_cash_flow: float | None = None
     monthly_cash_flow: float | None = None
+    breakdown: dict[str, float | int | None] | None = Field(
+        default=None, description="Detailed financial breakdown for this strategy"
+    )
 
 
 class DealFactor(BaseModel):

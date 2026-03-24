@@ -1204,17 +1204,21 @@ function VerdictContent() {
                             ? { list_price: _value }
                             : { monthly_rent: _value },
                         )
-                        if (type === 'value') {
-                          try {
-                            const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
-                            const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                        try {
+                          const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
+                          const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                          if (type === 'value') {
                             writeDealMakerOverrides(fullAddress || addressParam, {
                               price: _value,
                               listPrice: _value,
                             })
-                          } catch {
-                            // Ignore storage errors
+                          } else {
+                            writeDealMakerOverrides(fullAddress || addressParam, {
+                              monthlyRent: _value,
+                            })
                           }
+                        } catch {
+                          // Ignore storage errors
                         }
                       }}
                     />

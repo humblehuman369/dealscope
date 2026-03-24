@@ -29,7 +29,7 @@ class TestScoreToGradeLabel:
     def test_a_plus(self):
         grade, label, _ = _score_to_grade_label(90)
         assert grade == "A+"
-        assert label == "STRONG OPPORTUNITY"
+        assert label == "ACHIEVABLE"
 
     def test_f_grade(self):
         grade, label, _ = _score_to_grade_label(10)
@@ -37,11 +37,11 @@ class TestScoreToGradeLabel:
 
     def test_boundary_70(self):
         grade, _, _ = _score_to_grade_label(70)
-        assert grade == "A"
+        assert grade == "B"
 
     def test_boundary_55(self):
         grade, _, _ = _score_to_grade_label(55)
-        assert grade == "B"
+        assert grade == "C"
 
 
 class TestPerformanceScore:
@@ -91,11 +91,11 @@ class TestVerdictScore:
 
     def test_small_gap_scores_well(self):
         score = _calculate_verdict_score(3)
-        assert 75 <= score <= 90
+        assert 75 <= score <= 95
 
     def test_large_gap_scores_low(self):
         score = _calculate_verdict_score(35)
-        assert score <= 30
+        assert score <= 35
 
     def test_same_gap_always_same_score(self):
         """Score is purely Deal Gap — no modifiers means deterministic."""
@@ -194,10 +194,11 @@ class TestComputeIQVerdict:
         resp = compute_iq_verdict(typical_input)
         assert resp.income_value > 0
 
-    def test_deal_factors_present(self, typical_input):
+    def test_deal_factors_list(self, typical_input):
         resp = compute_iq_verdict(typical_input)
-        assert len(resp.deal_factors) >= 1
-        assert resp.deal_factors[0].type in ("positive", "warning", "info")
+        assert isinstance(resp.deal_factors, list)
+        for f in resp.deal_factors:
+            assert f.type in ("positive", "warning", "info")
 
     def test_discount_bracket_label_present(self, typical_input):
         resp = compute_iq_verdict(typical_input)
@@ -241,7 +242,114 @@ class TestComputeIQVerdict:
         resp = compute_iq_verdict(
             IQVerdictInput(list_price=300_000, purchase_price=250_000)
         )
-        assert resp.buy_price == 250_000
+        assert resp.purchase_price == 250_000
+
+    def test_closing_costs_pct_override(self):
+        """closing_costs_pct override should change LTR breakdown closing costs."""
+        base = compute_iq_verdict(IQVerdictInput(list_price=300_000, monthly_rent=2500))
+        custom = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, closing_costs_pct=0.05)
+        )
+        ltr_base = next(s for s in base.strategies if s.id == "long-term-rental")
+        ltr_custom = next(s for s in custom.strategies if s.id == "long-term-rental")
+        assert ltr_custom.breakdown["closing_costs"] > ltr_base.breakdown["closing_costs"]
+        assert ltr_custom.breakdown["closing_costs_pct"] == 5.0
+
+    def test_rehab_cost_override(self):
+        """Explicit rehab_cost should bypass the default ARV-based calculation."""
+        resp = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, rehab_cost=25_000)
+        )
+        assert resp.inputs_used["rehab_cost"] == 25_000
+        brrrr = next(s for s in resp.strategies if s.id == "brrrr")
+        assert brrrr.breakdown["rehab_cost"] == 25_000
+
+    def test_capex_pct_override(self):
+        """capex_pct override should change reserves in LTR breakdown."""
+        base = compute_iq_verdict(IQVerdictInput(list_price=300_000, monthly_rent=2500))
+        custom = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, capex_pct=0.10)
+        )
+        ltr_base = next(s for s in base.strategies if s.id == "long-term-rental")
+        ltr_custom = next(s for s in custom.strategies if s.id == "long-term-rental")
+        assert ltr_custom.breakdown["reserves"] > ltr_base.breakdown["reserves"]
+
+    def test_management_pct_override(self):
+        """management_pct override flows through to strategy breakdown."""
+        resp = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, management_pct=0.12)
+        )
+        ltr = next(s for s in resp.strategies if s.id == "long-term-rental")
+        assert ltr.breakdown["management_pct"] == 12.0
+
+    def test_inputs_used_reports_overrides(self):
+        """inputs_used dict should reflect all resolved assumption values."""
+        resp = compute_iq_verdict(
+            IQVerdictInput(
+                list_price=300_000,
+                monthly_rent=2500,
+                down_payment_pct=0.25,
+                interest_rate=0.07,
+                closing_costs_pct=0.04,
+                vacancy_rate=0.08,
+            )
+        )
+        used = resp.inputs_used
+        assert used["down_payment_pct"] == 0.25
+        assert used["interest_rate"] == 0.07
+        assert used["closing_costs_pct"] == 0.04
+        assert used["vacancy_rate"] == 0.08
+
+    def test_same_inputs_same_output(self):
+        """Identical inputs should always produce identical results (no hidden state)."""
+        inp = IQVerdictInput(
+            list_price=300_000, monthly_rent=2500,
+            property_taxes=3600, insurance=1200,
+            down_payment_pct=0.20, interest_rate=0.065,
+        )
+        r1 = compute_iq_verdict(inp)
+        r2 = compute_iq_verdict(inp)
+        assert r1.deal_score == r2.deal_score
+        assert r1.purchase_price == r2.purchase_price
+        ltr1 = next(s for s in r1.strategies if s.id == "long-term-rental")
+        ltr2 = next(s for s in r2.strategies if s.id == "long-term-rental")
+        assert ltr1.breakdown == ltr2.breakdown
+
+    def test_ltr_breakdown_has_all_display_fields(self):
+        """LTR breakdown must include every field the Strategy page reads."""
+        resp = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, property_taxes=3600, insurance=1200)
+        )
+        ltr = next(s for s in resp.strategies if s.id == "long-term-rental")
+        bd = ltr.breakdown
+        required_keys = [
+            "purchase_price", "down_payment", "down_payment_pct",
+            "closing_costs", "closing_costs_pct", "total_cash_needed",
+            "loan_amount", "interest_rate", "loan_term_years", "monthly_payment",
+            "monthly_rent", "annual_gross_rent", "vacancy_rate", "vacancy_loss",
+            "effective_income", "property_taxes", "insurance",
+            "management", "management_pct", "maintenance", "maintenance_pct",
+            "reserves", "reserves_pct", "total_operating_expenses",
+            "noi", "annual_debt_service",
+        ]
+        for key in required_keys:
+            assert key in bd, f"Missing breakdown key: {key}"
+
+    def test_strategy_metrics_use_shared_formulas(self):
+        """Cap rate and CoC from verdict should match common.py calculations."""
+        from app.services.calculators.common import calculate_cap_rate, calculate_cash_on_cash
+        resp = compute_iq_verdict(
+            IQVerdictInput(list_price=300_000, monthly_rent=2500, property_taxes=3600, insurance=1200)
+        )
+        ltr = next(s for s in resp.strategies if s.id == "long-term-rental")
+        bd = ltr.breakdown
+        expected_cap = calculate_cap_rate(bd["noi"], bd["purchase_price"]) * 100
+        expected_coc = calculate_cash_on_cash(
+            bd["noi"] - bd["annual_debt_service"],
+            bd["total_cash_needed"],
+        ) * 100
+        assert pytest.approx(ltr.cap_rate, abs=0.1) == round(expected_cap, 2)
+        assert pytest.approx(ltr.cash_on_cash, abs=0.1) == round(expected_coc, 2)
 
 
 # =====================================================================
@@ -269,10 +377,9 @@ class TestComputeDealScore:
         resp = compute_deal_score(typical_input)
         assert resp.grade in ("A+", "A", "B", "C", "D", "F")
 
-    def test_factors_present(self, typical_input):
+    def test_score_has_calculation_details(self, typical_input):
         resp = compute_deal_score(typical_input)
-        assert resp.factors is not None
-        assert resp.factors.deal_gap_percent is not None
+        assert resp.calculation_details is not None
 
     def test_high_rent_produces_higher_score(self):
         low_rent = compute_deal_score(

@@ -25,6 +25,11 @@ from app.schemas.analytics import (
 )
 from app.schemas.property import AllAssumptions
 from app.services.calculators import calculate_monthly_mortgage
+from app.services.calculators.common import (
+    calculate_cap_rate,
+    calculate_cash_on_cash,
+    calculate_dscr,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +100,10 @@ def _calculate_ltr_strategy(
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
-    coc = annual_cash_flow / total_cash if total_cash > 0 else 0
+    coc = calculate_cash_on_cash(annual_cash_flow, total_cash)
     coc_pct = coc * 100
-    cap_rate = (noi / price * 100) if price > 0 else 0
-    dscr = noi / annual_debt if annual_debt > 0 else 0
+    cap_rate = calculate_cap_rate(noi, price) * 100
+    dscr = calculate_dscr(noi, annual_debt)
     score = _performance_score(coc_pct, 5)
     return {
         "id": "long-term-rental",
@@ -171,10 +176,10 @@ def _calculate_str_strategy(
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
-    coc = annual_cash_flow / total_cash if total_cash > 0 else 0
+    coc = calculate_cash_on_cash(annual_cash_flow, total_cash)
     coc_pct = coc * 100
-    cap_rate = (noi / price * 100) if price > 0 else 0
-    dscr = noi / annual_debt if annual_debt > 0 else 0
+    cap_rate = calculate_cap_rate(noi, price) * 100
+    dscr = calculate_dscr(noi, annual_debt)
     score = _performance_score(coc_pct, 3.33)
     return {
         "id": "short-term-rental",
@@ -257,15 +262,15 @@ def _calculate_brrrr_strategy(
     if cash_left <= 0:
         coc = 999 if annual_cash_flow > 0 else 0
     else:
-        coc = annual_cash_flow / min_cash_for_coc
+        coc = calculate_cash_on_cash(annual_cash_flow, min_cash_for_coc)
     if coc > 100:
         display_coc = "Infinite"
     elif coc < -1:
         display_coc = "<-100%"
     else:
         display_coc = f"{coc * 100:.1f}%"
-    cap_rate = (noi / price * 100) if price > 0 else 0
-    dscr_val = noi / annual_debt if annual_debt > 0 else 0
+    cap_rate = calculate_cap_rate(noi, price) * 100
+    dscr_val = calculate_dscr(noi, annual_debt)
     score = _performance_score(recovery_pct, 1)
     return {
         "id": "brrrr",
@@ -333,7 +338,7 @@ def _calculate_flip_strategy(
     selling_costs = arv * fl.selling_costs_pct
     total_investment = price + purchase_costs + rehab_cost + holding_costs
     net_profit = arv - total_investment - selling_costs
-    roi = net_profit / total_investment if total_investment > 0 else 0
+    roi = calculate_cash_on_cash(net_profit, total_investment)
     roi_pct = roi * 100
     score = _performance_score(roi_pct, 2.5)
     return {
@@ -819,7 +824,7 @@ def compute_iq_verdict(
     property_taxes = input_data.property_taxes or 0
     insurance = input_data.insurance or 0
     arv = input_data.arv or (list_price * 1.15)
-    rehab_cost = arv * a.rehab.renovation_budget_pct
+    rehab_cost = input_data.rehab_cost if input_data.rehab_cost is not None else arv * a.rehab.renovation_budget_pct
     adr = input_data.average_daily_rate or (((monthly_rent / 30) * 1.5) if monthly_rent > 0 else 0)
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
@@ -828,16 +833,29 @@ def compute_iq_verdict(
     down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
     rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
+    closing_pct = (
+        input_data.closing_costs_pct if input_data.closing_costs_pct is not None else a.financing.closing_costs_pct
+    )
     vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
     maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
     mgmt_pct = (
         input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
     )
+    capex_pct = input_data.capex_pct if input_data.capex_pct is not None else a.operating.capex_pct
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
-    capex_pct = a.operating.capex_pct
     utilities_annual = a.operating.utilities_monthly * 12
     other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
+
+    # Apply per-request overrides to the assumptions object so strategy helpers inherit them
+    a.financing.down_payment_pct = down_pct
+    a.financing.interest_rate = rate
+    a.financing.loan_term_years = term
+    a.financing.closing_costs_pct = closing_pct
+    a.operating.vacancy_rate = vacancy
+    a.operating.maintenance_pct = maint_pct
+    a.operating.property_management_pct = mgmt_pct
+    a.operating.capex_pct = capex_pct
 
     income_value = estimate_income_value(
         monthly_rent=monthly_rent,
@@ -869,7 +887,8 @@ def compute_iq_verdict(
         if computed_market is not None:
             list_price = float(computed_market)
             arv = input_data.arv or (list_price * 1.15)
-            rehab_cost = arv * a.rehab.renovation_budget_pct
+            if input_data.rehab_cost is None:
+                rehab_cost = arv * a.rehab.renovation_budget_pct
 
     buy_price = input_data.purchase_price or calculate_buy_price(
         market_price=list_price,
@@ -1013,6 +1032,14 @@ def compute_iq_verdict(
             "provided_rent": input_data.monthly_rent,
             "provided_taxes": input_data.property_taxes,
             "provided_insurance": input_data.insurance,
+            "down_payment_pct": down_pct,
+            "interest_rate": rate,
+            "loan_term_years": term,
+            "closing_costs_pct": closing_pct,
+            "vacancy_rate": vacancy,
+            "maintenance_pct": maint_pct,
+            "management_pct": mgmt_pct,
+            "capex_pct": capex_pct,
         },
         defaults_used=defaults_dict,
         income_gap_amount=round(income_gap_amount, 0),
