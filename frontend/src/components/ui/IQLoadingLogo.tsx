@@ -9,7 +9,7 @@ export function IQLoadingLogo() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
       <img
-        src="/DealGapIQ_Icon_Transparent_1024.png"
+        src="/images/iq-icon-pulse.png"
         alt="DealGapIQ"
         className="w-24 h-24 animate-pulseSoft"
         style={{ marginTop: -200 }}
