@@ -609,7 +609,14 @@ function StrategyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+    <div
+      className="min-h-screen"
+      style={{
+        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+        background:
+          'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+      }}
+    >
       {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
