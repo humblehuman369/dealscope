@@ -23,17 +23,11 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
     <div
       className="rounded-[14px] p-5 relative overflow-hidden"
       style={{
-        backgroundColor: 'var(--surface-base)',
+        backgroundColor: '#000000',
         border: `1px solid var(--border-subtle)`,
         boxShadow: 'var(--shadow-card)',
       }}
     >
-      {/* Subtle radial gradient for hero depth */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 70% 0%, var(--color-sky-dim) 0%, transparent 60%)' }}
-      />
-
       <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
