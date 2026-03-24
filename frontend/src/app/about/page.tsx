@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'About — DealGapIQ',
     description:
-      'The metric no one else calculates. Analyze any property, any strategy, instantly.',
+      'The metric that changes how you evaluate deals. Analyze any property, any strategy, instantly.',
   },
 }
 

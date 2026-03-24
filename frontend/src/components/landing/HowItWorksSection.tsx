@@ -404,7 +404,7 @@ export function HowItWorksSection() {
         }}>
           {[
             { value: "5", label: "Data sources cross-referenced", color: "var(--accent-sky)" },
-            { value: "6", label: "Investment strategies analyzed", color: "var(--status-warning)" },
+            { value: "10K+", label: "Properties analyzed", color: "var(--status-warning)" },
             { value: "Seconds", label: "From address to Verdict", color: "var(--status-positive)" },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: "center", minWidth: "140px" }}>

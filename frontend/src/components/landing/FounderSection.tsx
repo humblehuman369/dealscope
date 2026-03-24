@@ -80,6 +80,10 @@ export function FounderSection({ photoSrc, title, titleStyle }: FounderSectionPr
               <span>1991 HUD Public/Private Partnership</span>
             </div>
           </div>
+          <a href="https://www.linkedin.com/in/bradgeisen" target="_blank" rel="noopener noreferrer" className="founder-linkedin" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 13, color: "var(--accent-sky)", textDecoration: "none" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            View LinkedIn Profile
+          </a>
         </div>
         <div className="founder-stats">
           <div className="founder-stat">
@@ -88,7 +92,7 @@ export function FounderSection({ photoSrc, title, titleStyle }: FounderSectionPr
           </div>
           <div className="founder-stat">
             <div className="founder-stat-num">80+</div>
-            <div className="founder-stat-label">Companies</div>
+            <div className="founder-stat-label">Companies Served</div>
           </div>
           <div className="founder-stat">
             <div className="founder-stat-num">30+</div>

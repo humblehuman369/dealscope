@@ -133,7 +133,7 @@ export interface FounderStat {
 
 export const founderStats: FounderStat[] = [
   { value: '35+', label: 'Years' },
-  { value: '80+', label: 'Companies' },
+  { value: '80+', label: 'Companies Served' },
   { value: '30+', label: 'Years with GSEs' },
   { value: '500+', label: 'Projects' },
 ];
