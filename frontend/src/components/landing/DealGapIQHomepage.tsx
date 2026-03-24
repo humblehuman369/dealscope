@@ -495,6 +495,14 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
             style={{ width: "100%", height: "auto", borderRadius: 12 }}
             draggable={false}
           />
+          <div style={{ marginTop: 16, textAlign: "left" as const, maxWidth: 920, marginInline: "auto" }}>
+            <p style={{ fontFamily: s.fontBody, fontSize: 15, color: "var(--text-body)", margin: "0 0 8px", lineHeight: 1.6 }}>
+              <span style={{ color: "var(--accent-sky)", fontWeight: 700 }}>Deal Gap</span> shows how close the asking price is to the Target Buy, a property&apos;s starting cash-flow price.
+            </p>
+            <p style={{ fontFamily: s.fontBody, fontSize: 15, color: "var(--text-body)", margin: 0, lineHeight: 1.6 }}>
+              <span style={{ color: "var(--status-warning)", fontWeight: 700 }}>Price Gap</span> shows if the asking price is in line with the Income Value, a property&apos;s break-even price.
+            </p>
+          </div>
         </section>
       </FadeIn>
 
