@@ -12,7 +12,7 @@ export function IQLoadingLogo() {
         src="/images/iq-icon-pulse.png"
         alt="DealGapIQ"
         className="w-24 h-24 animate-pulseSoft"
-        style={{ marginTop: -200 }}
+        style={{ marginTop: -400 }}
       />
     </div>
   )
