@@ -558,8 +558,21 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <DivE />
 
       {/* ═══════════ FOUNDER ═══════════ */}
-      <FadeIn style={{ background: "var(--color-teal-dim)" }}>
-        <section style={{ padding: "116px 24px" }}>
+      <FadeIn style={{ background: "var(--surface-base)", position: "relative" as const, overflow: "hidden" as const }}>
+        {/* Grid background */}
+        <div style={{
+          position: "absolute" as const, inset: 0, opacity: 0.03,
+          backgroundImage: "linear-gradient(rgba(14,165,233,1) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,1) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }} />
+        {/* Top glow */}
+        <div style={{
+          position: "absolute" as const, top: "-200px", left: "50%", transform: "translateX(-50%)",
+          width: "800px", height: "400px", borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(14,165,233,0.06) 0%, transparent 70%)",
+          pointerEvents: "none" as const,
+        }} />
+        <section style={{ padding: "116px 24px", position: "relative" as const, zIndex: 1 }}>
           <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" as const }}>
             <Eyebrow>Built by an Industry Expert</Eyebrow>
             <h2 style={{ fontFamily: s.fontBody, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14 }}>
