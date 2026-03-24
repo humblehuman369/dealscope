@@ -1360,7 +1360,7 @@ function VerdictContent() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-baseline gap-2">
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-label)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 12, fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Deal Gap
                     </span>
                     <span
