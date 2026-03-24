@@ -502,7 +502,6 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 position: "absolute" as const,
                 left: "3%",
                 right: "3%",
-                top: "76%",
                 bottom: "2.5%",
                 borderRadius: 10,
                 padding: "clamp(10px, 2vw, 18px) clamp(12px, 2.2vw, 22px)",
@@ -511,6 +510,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 flexDirection: "column" as const,
                 justifyContent: "center",
                 textAlign: "center" as const,
+                boxSizing: "border-box" as const,
               }}
             >
               <p style={{ fontFamily: s.fontBody, fontSize: "clamp(12px, 1.5vw, 29px)", color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.4 }}>
