@@ -500,19 +500,23 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
               aria-hidden="true"
               style={{
                 position: "absolute" as const,
-                left: "4%",
-                right: "4%",
-                bottom: "3%",
+                left: "3%",
+                right: "3%",
+                top: "66%",
+                bottom: "2.5%",
                 borderRadius: 10,
-                padding: "clamp(8px, 1.6vw, 14px) clamp(10px, 1.8vw, 18px)",
-                background: "rgba(0,0,0,0.9)",
-                textAlign: "left" as const,
+                padding: "clamp(10px, 2vw, 18px) clamp(12px, 2.2vw, 22px)",
+                background: "rgba(0,0,0,0.98)",
+                display: "flex",
+                flexDirection: "column" as const,
+                justifyContent: "center",
+                textAlign: "center" as const,
               }}
             >
-              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(10px, 1.25vw, 24px)", color: "#FFFFFF", margin: "0 0 4px", lineHeight: 1.4 }}>
+              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(12px, 1.5vw, 29px)", color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.4 }}>
                 <span style={{ color: "var(--accent-sky)", fontWeight: 700 }}>Deal Gap</span> shows how close the asking price is to the <span style={{ color: "var(--accent-sky)" }}>Target Buy</span>, a property&apos;s starting cash-flow price.
               </p>
-              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(10px, 1.25vw, 24px)", color: "#FFFFFF", margin: 0, lineHeight: 1.4 }}>
+              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(12px, 1.5vw, 29px)", color: "#FFFFFF", margin: 0, lineHeight: 1.4 }}>
                 <span style={{ color: "var(--status-warning)", fontWeight: 700 }}>Price Gap</span> shows if the asking price is in line with the <span style={{ color: "var(--status-warning)" }}>Income Value</span>, a property&apos;s break-even price.
               </p>
             </div>
