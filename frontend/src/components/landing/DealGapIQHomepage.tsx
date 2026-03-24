@@ -11,6 +11,7 @@ import { canonicalizeAddressForIdentity, isLikelyFullAddress, classifySearchInpu
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 import { HowItWorksSection } from './HowItWorksSection';
+import { SocialProof } from './SocialProof';
 
 // ── Check icon SVG ──
 const CheckIcon = () => (
@@ -281,6 +282,57 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
           }}>
             Advanced real estate deal analysis made simple.
           </p>
+          <button
+            onClick={() => {
+              const pill = document.querySelector('.hero-pill-form');
+              if (pill) {
+                pill.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const input = pill.querySelector('input');
+                if (input) setTimeout(() => input.focus(), 600);
+              }
+            }}
+            style={{
+              marginTop: 20,
+              padding: "12px 32px",
+              borderRadius: 999,
+              background: "var(--accent-sky)",
+              color: "var(--text-inverse)",
+              fontFamily: s.fontBody,
+              fontSize: "clamp(14px, 1.6vw, 16px)",
+              fontWeight: 600,
+              border: "none",
+              cursor: "pointer",
+              letterSpacing: "0.01em",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              boxShadow: "0 4px 20px rgba(14,165,233,0.3)",
+            }}
+          >
+            Analyze a Property Free
+          </button>
+          <div style={{
+            marginTop: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            opacity: 0,
+            animation: "fadeUp 0.6s 0.5s forwards",
+          }}>
+            <img
+              src="/brad-geisen.png"
+              alt="Brad Geisen"
+              style={{ width: 28, height: 28, borderRadius: "50%", border: `1.5px solid ${s.teal}`, objectFit: "cover" as const, objectPosition: "50% 38%" }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+            <p style={{
+              fontFamily: s.fontBody,
+              fontSize: "clamp(11px, 1.4vw, 13px)",
+              color: s.muted,
+              letterSpacing: "0.01em",
+            }}>
+              Built by the creator of HomePath.com <span style={{ opacity: 0.5 }}>(Fannie Mae)</span> &amp; HomeSteps.com <span style={{ opacity: 0.5 }}>(Freddie Mac)</span>
+            </p>
+          </div>
         </div>
 
         {/* Intro Video */}
@@ -625,9 +677,27 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                   </div>
                 ))}
               </div>
+              <a
+                href="https://www.linkedin.com/in/bradgeisen"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontFamily: s.fontBody, fontSize: 13, color: s.teal, textDecoration: "none", opacity: 0.85, transition: "opacity 0.2s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.85' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                View Brad&apos;s LinkedIn
+              </a>
             </div>
           </div>
         </section>
+      </FadeIn>
+
+      <DivE />
+
+      {/* ═══════════ SOCIAL PROOF ═══════════ */}
+      <FadeIn>
+        <SocialProof />
       </FadeIn>
 
       <DivE />
@@ -752,7 +822,12 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
         <Link href="/" style={{ textDecoration: "none" }}>
           <div style={{ fontFamily: s.fontLogo, fontSize: 18, fontWeight: 700, color: "var(--text-heading)", marginBottom: 6 }}>DealGap<span style={{ color: s.teal }}>IQ</span></div>
         </Link>
-        <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.mutedDim, opacity: 0.6 }}>© 2025 DealGapIQ. All rights reserved.</div>
+        <div style={{ fontFamily: s.fontBody, fontSize: 12, color: s.mutedDim, opacity: 0.6 }}>© 2026 DealGapIQ. All rights reserved.</div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 10 }}>
+          <Link href="/privacy" style={{ fontFamily: s.fontBody, fontSize: 11, color: s.mutedDim, opacity: 0.6, textDecoration: "none" }}>Privacy Policy</Link>
+          <Link href="/terms" style={{ fontFamily: s.fontBody, fontSize: 11, color: s.mutedDim, opacity: 0.6, textDecoration: "none" }}>Terms of Service</Link>
+          <Link href="/help" style={{ fontFamily: s.fontBody, fontSize: 11, color: s.mutedDim, opacity: 0.6, textDecoration: "none" }}>Help</Link>
+        </div>
       </footer>
     </div>
   );

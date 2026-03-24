@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
+import { SocialProof } from "@/components/landing/SocialProof";
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -363,13 +364,14 @@ export default function PricingContent() {
               {isAnnual ? "29" : "39"}
             </span>
             <span style={{ fontSize: "15px", color: "var(--text-label)", fontWeight: 500 }}>/mo</span>
+            {isAnnual && <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 400, marginLeft: 6 }}>($348/yr)</span>}
           </div>
           <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 10px 0" }}>
             Best for active small portfolio investors analyzing multiple deals every month.
           </p>
           {isAnnual ? (
             <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
-              $348 billed annually &middot; <span style={{ color: "var(--accent-sky)" }}>Save $120/yr</span>
+              Billed annually &middot; <span style={{ color: "var(--accent-sky)" }}>Save $120/yr</span>
             </p>
           ) : (
             <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
@@ -462,6 +464,26 @@ export default function PricingContent() {
             </div>
           )
         )}
+      </div>
+
+      {/* ─── SECURITY SIGNALS ─── */}
+      <div
+        style={{
+          maxWidth: "600px",
+          margin: "20px auto 0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-label)" }}>
+          <LockIcon />
+          <span>Secured by Stripe &middot; PCI compliant</span>
+        </div>
+        <p style={{ fontSize: "11px", color: "var(--text-secondary)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>
+          Your data is encrypted in transit and at rest. We never share or sell your information.
+        </p>
       </div>
 
       {/* ─── WHY PRO SECTION ─── */}
@@ -559,6 +581,15 @@ export default function PricingContent() {
         <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 20px 0" }}>
           Founder, DealGapIQ &middot; 35+ years in real estate data &amp; technology
         </p>
+        <a
+          href="https://www.linkedin.com/in/bradgeisen"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "12px", color: "var(--accent-sky)", textDecoration: "none", marginBottom: 16 }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          LinkedIn Profile
+        </a>
         <p
           style={{
             fontSize: "14px",
@@ -584,7 +615,7 @@ export default function PricingContent() {
           {[
             { value: "35+", label: "Years in RE Data" },
             { value: "30+", label: "Year GSE Partnership" },
-            { value: "80+", label: "Companies Founded" },
+            { value: "80+", label: "Companies Served" },
             { value: "500+", label: "RE Projects Built" },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: "center" }}>
@@ -598,6 +629,9 @@ export default function PricingContent() {
           ))}
         </div>
       </div>
+
+      {/* ─── SOCIAL PROOF ─── */}
+      <SocialProof />
 
       {/* ─── FAQ SECTION ─── */}
       <div style={{ maxWidth: "640px", margin: "80px auto 0" }}>

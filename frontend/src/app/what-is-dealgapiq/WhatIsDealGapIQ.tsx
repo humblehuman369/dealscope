@@ -400,7 +400,7 @@ export default function WhatIsDealGapIQ() {
             </div>
           </div>
           <div className="wii-stats-row" style={{ borderTop: `1px solid ${t.border}` }}>
-            {[{ num: '35+', label: 'Years in RE Data' }, { num: '80+', label: 'Companies' }, { num: '30+', label: 'Year GSE Partnership' }, { num: '500+', label: 'Projects Built' }].map((s, i) => (
+            {[{ num: '35+', label: 'Years in RE Data' }, { num: '80+', label: 'Companies Served' }, { num: '30+', label: 'Year GSE Partnership' }, { num: '500+', label: 'Projects Built' }].map((s, i) => (
               <div key={s.label} style={{ textAlign: 'center', padding: '1.5rem 1rem', borderLeft: i > 0 ? `1px solid ${t.border}` : 'none' }}>
                 <div style={{ fontFamily: t.fontMono, fontSize: '1.5rem', fontWeight: 700, color: t.teal, lineHeight: 1, marginBottom: '0.35rem' }}>{s.num}</div>
                 <div style={{ fontSize: '0.68rem', color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.3 }}>{s.label}</div>

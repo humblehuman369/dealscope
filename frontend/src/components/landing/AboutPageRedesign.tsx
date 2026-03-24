@@ -168,10 +168,10 @@ export function AboutPageRedesign() {
     <div className="about-page">
       {/* HERO */}
       <section className="about-hero" style={{ minHeight: '60vh' }}>
-        <div className="hero-badge"><span className="dot" /> Decision-Grade Intelligence</div>
-        <h1>The metric no one else <em>calculates.</em></h1>
+        <div className="hero-badge"><span className="dot" /> Institutional-Grade Analysis</div>
+        <h1>The metric that changes how you <em>evaluate deals.</em></h1>
         <p className="hero-sub">
-          DealGapIQ reduces complex investment analysis into three simple numbers — powered by real market data, transparent assumptions, and 35 years of institutional real estate intelligence.
+          DealGapIQ reduces complex investment analysis into three simple numbers — powered by real market data, transparent assumptions, and founder Brad Geisen&apos;s 35 years of institutional real estate intelligence.
         </p>
         <div className="hero-actions">
           <Link href="/search" className="btn-primary">Analyze a Property</Link>
@@ -365,6 +365,10 @@ export function AboutPageRedesign() {
                 <div className="founder-title">Founder &amp; CEO, DealGapIQ</div>
                 <p>Brad built the digital infrastructure behind how America finds and values distressed real estate. He founded Foreclosure.com, built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac, and has maintained GSE partnerships spanning three decades.</p>
                 <p>DealGapIQ distills that same institutional-grade analytical rigor — the kind previously available only to large institutions and professional investors — and puts it in the hands of every investor, in a simple, easy to understand platform.</p>
+                <a href="https://www.linkedin.com/in/bradgeisen" target="_blank" rel="noopener noreferrer" className="founder-linkedin">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                  View LinkedIn Profile
+                </a>
               </div>
             </div>
           </Reveal>
@@ -401,8 +405,8 @@ export function AboutPageRedesign() {
                 <ul>
                   <li>Unlimited property analyses</li>
                   <li>Downloadable Excel proforma</li>
-                  <li>AI-generated deal narratives</li>
-                  <li>Priority data access</li>
+                  <li>AI-written deal analysis summaries</li>
+                  <li>Full DealMaker scenario modeling</li>
                 </ul>
                 <Link href="/register" className="price-btn">Start 7-Day Trial</Link>
               </div>
@@ -414,7 +418,7 @@ export function AboutPageRedesign() {
       {/* CTA BAND */}
       <section className="cta-band">
         <Reveal style={{ maxWidth: 760, margin: '0 auto' }}>
-          <h2>Built for Aspiring Investor</h2>
+          <h2>Built for Aspiring Investors</h2>
           <p>Enter any address and know if it&apos;s worth your time.</p>
           <Link href="/search" className="btn-primary" style={{ fontSize: 18, padding: '16px 40px' }}>
             Analyze Your First Property &rarr;
