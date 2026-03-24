@@ -233,7 +233,7 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
-  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
   const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(false)
 
@@ -1191,6 +1191,8 @@ function VerdictContent() {
                     <IQEstimateSelector
                       sources={iqSources}
                       highlightIntro
+                      showHeader={false}
+                      compact
                       onSourceChange={(type, _sourceId, _value) => {
                         if (_value == null) return
                         setProperty((prev) => {
