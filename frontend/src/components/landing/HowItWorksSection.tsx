@@ -1,461 +1,144 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 
-function useInView(threshold = 0.2) {
-  const ref = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setInView(true); },
-      { threshold }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return [ref, inView] as const;
-}
+const STRATEGY_BARS = [
+  { color: '#0465f2' },
+  { color: '#8b5cf6' },
+  { color: '#f97316' },
+  { color: '#ec4899' },
+  { color: '#0EA5E9' },
+  { color: '#84cc16' },
+];
 
-function PhaseBadge({ label, color, delay, visible }: {
-  label: string; color: string; delay: number; visible: boolean;
-}) {
-  return (
-    <span style={{
-      display: "inline-block",
-      padding: "6px 16px",
-      borderRadius: "100px",
-      fontSize: "13px",
-      fontWeight: 700,
-      letterSpacing: "1.5px",
-      textTransform: "uppercase",
-      color,
-      border: `1.5px solid ${color}`,
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(12px)",
-      transition: `all 0.6s cubic-bezier(.22,1,.36,1) ${delay}s`,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-const icons = {
-  bolt: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>),
-  search: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6"/><path d="M11 8v6"/></svg>),
-  dollar: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>),
-  home: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>),
-  target: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>),
-  chart: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>),
-  download: (color: string) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>),
-  barChart: (color: string) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg>),
-};
-
-function FeaturePill({ icon, text, delay, visible }: {
-  icon: React.ReactNode; text: string; delay: number; visible: boolean;
-}) {
-  return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      padding: "10px 16px",
-      background: "rgba(14,165,233,0.06)",
-      border: "1px solid var(--border-subtle)",
-      borderRadius: "10px",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateX(0)" : "translateX(-20px)",
-      transition: `all 0.5s cubic-bezier(.22,1,.36,1) ${delay}s`,
-    }}>
-      <span style={{ lineHeight: 0, flexShrink: 0 }}>{icon}</span>
-      <span style={{ fontSize: "14px", color: "var(--text-body)", fontWeight: 500, letterSpacing: "0.01em" }}>{text}</span>
-    </div>
-  );
-}
-
-function FunnelConnector({ visible }: { visible: boolean }) {
-  return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "0 8px",
-      opacity: visible ? 1 : 0,
-      transition: "opacity 0.8s ease 0.6s",
-    }}>
-      <svg width="60" height="200" viewBox="0 0 60 200" fill="none">
-        <path d="M5 10 L55 10 L38 95 L38 190 L22 190 L22 95 Z"
-          fill="rgba(14,165,233,0.08)" stroke="rgba(14,165,233,0.3)" strokeWidth="1.5" />
-        {[0, 1, 2, 3].map(i => (
-          <circle key={i} cx="30" cy="0" r="3" fill="var(--accent-sky)" opacity="0.8">
-            <animate attributeName="cy" values={`${20 + i * 8};180`} dur="2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.9;0.2" dur="2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
-            <animate attributeName="r" values="3;2" dur="2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
-          </circle>
-        ))}
-        <text x="30" y="6" textAnchor="middle" fill="var(--text-label)" fontSize="9" fontWeight="600" letterSpacing="1">ALL DEALS</text>
-        <text x="30" y="198" textAnchor="middle" fill="var(--status-positive)" fontSize="9" fontWeight="700" letterSpacing="1">WORTH IT</text>
-      </svg>
-    </div>
-  );
-}
-
-function VerdictMockup({ visible }: { visible: boolean }) {
-  return (
-    <div style={{
-      background: "var(--surface-card)",
-      border: "1px solid var(--border-subtle)",
-      borderRadius: "16px",
-      padding: "24px",
-      maxWidth: "340px",
-      width: "100%",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.96)",
-      transition: "all 0.7s cubic-bezier(.22,1,.36,1) 0.4s",
-      boxShadow: "var(--shadow-card)",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-        <span style={{ fontSize: "11px", color: "var(--text-label)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase" }}>Verdict Result</span>
-        <span style={{ fontSize: "11px", color: "var(--accent-sky)", fontWeight: 600 }}>2.4 seconds</span>
-      </div>
-      <div style={{ textAlign: "center", margin: "8px 0 16px" }}>
-        <div style={{ fontSize: "42px", fontWeight: 800, color: "var(--accent-sky)", lineHeight: 1, fontFamily: "'Inter', system-ui, sans-serif" }}>+12.4%</div>
-        <div style={{
-          display: "inline-block",
-          marginTop: "8px",
-          padding: "4px 14px",
-          borderRadius: "100px",
-          background: "rgba(14,165,233,0.12)",
-          border: "1px solid rgba(14,165,233,0.3)",
-          color: "var(--accent-sky)",
-          fontSize: "12px",
-          fontWeight: 700,
-          letterSpacing: "0.5px",
-        }}>Deal Gap — Worth Pursuing</div>
-      </div>
-      <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-        {[
-          { label: "Target\nBuy", value: "$668,999", color: "#0EA5E9", sub: "Positive Cashflow" },
-          { label: "Income Value", value: "$704,209", color: "#FBBF24", sub: "Breakeven" },
-          { label: "Market Price", value: "$807,600", color: "#EF4444", sub: "Market Value or List Price" },
-        ].map((item, i) => (
-          <div key={i} style={{
-            flex: 1,
-            padding: "10px 8px",
-            borderRadius: "8px",
-            background: "rgba(128,128,128,0.04)",
-            border: `1px solid ${item.color}33`,
-            textAlign: "center",
-          }}>
-            <div style={{ fontSize: "10px", color: item.color, fontWeight: 600, letterSpacing: "0.5px", marginBottom: "4px", textTransform: "uppercase", whiteSpace: "pre-line" }}>{item.label}</div>
-            <div style={{ fontSize: "15px", color: "var(--text-heading)", fontWeight: 700 }}>{item.value}</div>
-            <div style={{ fontSize: "9px", color: "var(--text-label)", marginTop: "3px", fontWeight: 500 }}>{item.sub}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StrategyMockup({ visible }: { visible: boolean }) {
-  const tools = [
-    { name: "Rent Comps", icon: icons.barChart("var(--accent-sky)"), desc: "Neighborhood rental analysis" },
-    { name: "DealMaker", icon: icons.target("var(--accent-sky)"), desc: "Negotiate the optimal price" },
-    { name: "Appraisal", icon: icons.home("var(--accent-sky)"), desc: "Professional-grade valuation" },
-    { name: "Excel Export", icon: icons.download("var(--accent-sky)"), desc: "Full proforma download" },
-  ];
-  return (
-    <div style={{
-      background: "var(--surface-card)",
-      border: "1px solid var(--border-subtle)",
-      borderRadius: "16px",
-      padding: "24px",
-      maxWidth: "340px",
-      width: "100%",
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.96)",
-      transition: "all 0.7s cubic-bezier(.22,1,.36,1) 0.8s",
-      boxShadow: "var(--shadow-card)",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-        <span style={{ fontSize: "11px", color: "var(--text-label)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase" }}>Strategy Engine</span>
-        <span style={{ fontSize: "11px", color: "var(--accent-sky)", fontWeight: 600 }}>Pro Tools</span>
-      </div>
-      <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
-        {["#3B82F6", "#A855F7", "#F59E0B", "#EF4444", "#10B981", "#EC4899"].map((c, i) => (
-          <div key={i} style={{
-            flex: 1, height: "4px", borderRadius: "2px", background: c,
-            opacity: visible ? 1 : 0.2,
-            transition: `opacity 0.4s ease ${1.0 + i * 0.1}s`,
-          }} />
-        ))}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {tools.map((tool, i) => (
-          <div key={i} style={{
-            display: "flex", alignItems: "center", gap: "12px",
-            padding: "12px 14px",
-            borderRadius: "10px",
-            background: "rgba(128,128,128,0.04)",
-            border: "1px solid var(--border-subtle)",
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateX(0)" : "translateX(20px)",
-            transition: `all 0.5s cubic-bezier(.22,1,.36,1) ${1.0 + i * 0.12}s`,
-          }}>
-            <span style={{ lineHeight: 0, flexShrink: 0 }}>{tool.icon}</span>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-heading)" }}>{tool.name}</div>
-              <div style={{ fontSize: "12px", color: "var(--text-label)", marginTop: "1px" }}>{tool.desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const STRATEGY_TOOLS = [
+  { color: '#0465f2', name: 'Rent Comps', desc: 'Neighborhood rental analysis' },
+  { color: '#8b5cf6', name: 'DealMaker', desc: 'Negotiate the optimal price' },
+  { color: '#f97316', name: 'Appraisal', desc: 'Professional-grade valuation' },
+  { color: '#ec4899', name: 'Excel Export', desc: 'Full proforma download' },
+];
 
 export function HowItWorksSection() {
-  const [sectionRef, sectionVisible] = useInView(0.1);
-
   return (
-    <section ref={sectionRef} style={{
-      background: "var(--surface-base)",
-      color: "var(--text-heading)",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      padding: "100px 24px",
-      position: "relative",
-      overflow: "hidden",
-    }}>
-      {/* Subtle background grid */}
-      <div style={{
-        position: "absolute", inset: 0, opacity: 0.03,
-        backgroundImage: "linear-gradient(rgba(14,165,233,1) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,1) 1px, transparent 1px)",
-        backgroundSize: "60px 60px",
-      }} />
+    <section className="how">
+      <div className="how-inner">
+        <div className="section-label">How It Works</div>
+        <h2>Two Steps. Zero Wasted Time.</h2>
+        <p className="how-sub">
+          Most investors waste hours on properties that never pencil out.
+          DealGapIQ separates the filter from the toolkit — so you only go deep on deals worth pursuing.
+        </p>
 
-      {/* Top glow */}
-      <div style={{
-        position: "absolute", top: "-200px", left: "50%", transform: "translateX(-50%)",
-        width: "800px", height: "400px", borderRadius: "50%",
-        background: "radial-gradient(ellipse, rgba(14,165,233,0.06) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
-
-      <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-
-        {/* Section header */}
-        <div style={{
-          textAlign: "center", marginBottom: "72px",
-          opacity: sectionVisible ? 1 : 0,
-          transform: sectionVisible ? "translateY(0)" : "translateY(30px)",
-          transition: "all 0.8s cubic-bezier(.22,1,.36,1)",
-        }}>
-          <div style={{
-            fontSize: "12px", fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase",
-            color: "var(--accent-sky)", marginBottom: "20px",
-          }}>
-            How It Works
-          </div>
-          <h2 style={{
-            fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 800, lineHeight: 1.1,
-            margin: "0 0 20px",
-            background: "linear-gradient(135deg, var(--text-heading) 0%, var(--text-secondary) 100%)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          }}>
-            Two Steps. Zero Wasted Time.
-          </h2>
-          <p style={{
-            fontSize: "18px", color: "var(--text-secondary)", maxWidth: "640px", margin: "0 auto", lineHeight: 1.6,
-          }}>
-            Most investors waste hours researching properties that never pencil out.
-            DealGapIQ gives you the answer in seconds — then arms you with
-            everything you need for the deals worth pursuing.
-          </p>
-        </div>
-
-        {/* Two-phase layout */}
-        <div className="hiw-phases" style={{
-          display: "flex",
-          gap: "0",
-          alignItems: "stretch",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}>
-
-          {/* PHASE 1: THE VERDICT */}
-          <div className="hiw-phase" style={{
-            flex: "1 1 420px",
-            maxWidth: "480px",
-            padding: "48px 40px",
-            borderRadius: "20px 0 0 20px",
-            background: "linear-gradient(180deg, rgba(14,165,233,0.04) 0%, var(--surface-card) 100%)",
-            borderTop: "1px solid var(--border-subtle)",
-            borderLeft: "1px solid var(--border-subtle)",
-            borderBottom: "1px solid var(--border-subtle)",
-            boxShadow: "var(--shadow-card)",
-            position: "relative",
-            opacity: sectionVisible ? 1 : 0,
-            transform: sectionVisible ? "translateX(0)" : "translateX(-40px)",
-            transition: "all 0.8s cubic-bezier(.22,1,.36,1) 0.2s",
-          }}>
-            <div style={{
-              position: "absolute", top: "-1px", left: "40px",
-              background: "var(--accent-sky)", color: "#000", fontWeight: 800, fontSize: "12px",
-              padding: "6px 20px", borderRadius: "0 0 10px 10px", letterSpacing: "1px",
-            }}>STEP 1</div>
-
-            <div style={{ marginTop: "16px" }}>
-              <PhaseBadge label="The Verdict" color="var(--accent-sky)" delay={0.3} visible={sectionVisible} />
+        <div className="steps-layout">
+          {/* STEP 1 */}
+          <div className="step-card">
+            <div className="step-badges">
+              <span className="badge-solid badge-sky">STEP 1</span>
+              <span className="badge-outline badge-outline-sky">THE VERDICT</span>
             </div>
-
-            <h3 style={{
-              fontSize: "28px", fontWeight: 800, margin: "20px 0 12px", color: "var(--text-heading)", lineHeight: 1.2,
-            }}>
-              The Smell Test
-            </h3>
-            <p style={{
-              fontSize: "16px", color: "var(--text-secondary)", lineHeight: 1.65, margin: "0 0 28px",
-            }}>
-              Paste any address. In seconds, know if a deal is worth your time — before you spend hours on it. If the numbers don&apos;t work, move on. No account needed for your first scan.
+            <h3>The Smell Test</h3>
+            <p className="step-card-desc">
+              Search or paste any address. In seconds, know if a deal is worth your time — before you spend hours on it.
+              If the numbers don&apos;t work, move on. No account needed for your first scan.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "28px" }}>
-              <FeaturePill icon={icons.bolt("var(--accent-sky)")} text="Instant DealGap score" delay={0.5} visible={sectionVisible} />
-              <FeaturePill icon={icons.search("var(--accent-sky)")} text="Cross-referenced valuations" delay={0.6} visible={sectionVisible} />
-              <FeaturePill icon={icons.dollar("var(--accent-sky)")} text="Income Value + Target Buy" delay={0.7} visible={sectionVisible} />
+            <div className="step-pills">
+              <span className="step-pill"><span className="pill-dot pill-sky" />Instant DealGap score</span>
+              <span className="step-pill"><span className="pill-dot pill-sky" />Cross-referenced valuations</span>
+              <span className="step-pill"><span className="pill-dot pill-sky" />Income Value + Target Buy</span>
             </div>
 
-            <VerdictMockup visible={sectionVisible} />
-          </div>
-
-          {/* CENTER CONNECTOR */}
-          <div className="hiw-connector" style={{
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            padding: "0", width: "60px", flexShrink: 0,
-            borderTop: "1px solid var(--border-subtle)",
-            borderBottom: "1px solid var(--border-subtle)",
-            background: "var(--surface-card)",
-          }}>
-            <FunnelConnector visible={sectionVisible} />
-          </div>
-
-          {/* PHASE 2: THE STRATEGY */}
-          <div className="hiw-phase" style={{
-            flex: "1 1 420px",
-            maxWidth: "480px",
-            padding: "48px 40px",
-            borderRadius: "0 20px 20px 0",
-            background: "linear-gradient(180deg, rgba(52,211,153,0.04) 0%, var(--surface-card) 100%)",
-            borderTop: "1px solid var(--border-subtle)",
-            borderRight: "1px solid var(--border-subtle)",
-            borderBottom: "1px solid var(--border-subtle)",
-            boxShadow: "var(--shadow-card)",
-            position: "relative",
-            opacity: sectionVisible ? 1 : 0,
-            transform: sectionVisible ? "translateX(0)" : "translateX(40px)",
-            transition: "all 0.8s cubic-bezier(.22,1,.36,1) 0.4s",
-          }}>
-            <div style={{
-              position: "absolute", top: "-1px", left: "40px",
-              background: "var(--status-positive)", color: "#000", fontWeight: 800, fontSize: "12px",
-              padding: "6px 20px", borderRadius: "0 0 10px 10px", letterSpacing: "1px",
-            }}>STEP 2</div>
-
-            <div style={{ marginTop: "16px" }}>
-              <PhaseBadge label="The Strategy" color="var(--status-positive)" delay={0.5} visible={sectionVisible} />
+            <div className="verdict-card">
+              <div className="vc-header">
+                <span className="vc-label">VERDICT RESULT</span>
+                <span className="vc-label">2.4 seconds</span>
+              </div>
+              <div className="vc-score">+12.4%</div>
+              <div className="vc-badge">Deal Gap — Worth Pursuing</div>
+              <div className="vc-prices">
+                <div className="vc-price">
+                  <div className="vc-price-label text-green">TARGET BUY</div>
+                  <div className="vc-price-value">$668,999</div>
+                  <div className="vc-price-sub">Positive Cashflow</div>
+                </div>
+                <div className="vc-price">
+                  <div className="vc-price-label text-yellow">INCOME VALUE</div>
+                  <div className="vc-price-value">$704,209</div>
+                  <div className="vc-price-sub">Breakeven</div>
+                </div>
+                <div className="vc-price">
+                  <div className="vc-price-label text-red">MARKET PRICE</div>
+                  <div className="vc-price-value">$807,600</div>
+                  <div className="vc-price-sub">Market Value or List Price</div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <h3 style={{
-              fontSize: "28px", fontWeight: 800, margin: "20px 0 12px", color: "var(--text-heading)", lineHeight: 1.2,
-            }}>
-              The Deep Dive
-            </h3>
-            <p style={{
-              fontSize: "16px", color: "var(--text-secondary)", lineHeight: 1.65, margin: "0 0 28px",
-            }}>
-              For deals worth pursuing, DealGapIQ gives you professional-grade tools to optimize revenue, negotiate the right price, and make the deal a reality. Everything you need — in one place.
+          {/* FUNNEL */}
+          <div className="funnel">
+            <div className="funnel-line" />
+            <div className="funnel-text funnel-text-top">ALL DEALS</div>
+            <div className="funnel-shape">
+              <svg width="36" height="100" viewBox="0 0 36 100">
+                <path
+                  d="M2,0 L34,0 L24,100 L12,100 Z"
+                  fill="rgba(14,165,233,0.06)"
+                  stroke="rgba(14,165,233,0.2)"
+                  strokeWidth="1"
+                />
+              </svg>
+            </div>
+            <div className="funnel-text funnel-text-bottom">WORTH IT</div>
+            <div className="funnel-line" />
+          </div>
+
+          {/* STEP 2 */}
+          <div className="step-card">
+            <div className="step-badges">
+              <span className="badge-solid badge-green">STEP 2</span>
+              <span className="badge-outline badge-outline-green">THE STRATEGY</span>
+            </div>
+            <h3>The Deep Dive</h3>
+            <p className="step-card-desc">
+              For deals worth pursuing, DealGapIQ gives you professional-grade tools to optimize revenue,
+              negotiate the right price, and make the deal a reality. Everything you need — in one place.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "28px" }}>
-              <FeaturePill icon={icons.home("var(--status-positive)")} text="Appraisal-grade comp tools" delay={0.9} visible={sectionVisible} />
-              <FeaturePill icon={icons.target("var(--status-positive)")} text="DealMaker price negotiation" delay={1.0} visible={sectionVisible} />
-              <FeaturePill icon={icons.chart("var(--status-positive)")} text="6 investment strategies analyzed" delay={1.1} visible={sectionVisible} />
-              <FeaturePill icon={icons.download("var(--status-positive)")} text="Downloadable Excel proforma" delay={1.2} visible={sectionVisible} />
+            <div className="step-pills">
+              <span className="step-pill"><span className="pill-dot pill-green" />Appraisal-grade comp tools</span>
+              <span className="step-pill"><span className="pill-dot pill-green" />DealMaker price negotiation</span>
+              <span className="step-pill"><span className="pill-dot pill-green" />6 investment strategies analyzed</span>
+              <span className="step-pill"><span className="pill-dot pill-green" />Downloadable Excel proforma</span>
             </div>
 
-            <StrategyMockup visible={sectionVisible} />
-          </div>
-        </div>
-
-        {/* Bottom stats bar */}
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "clamp(24px, 6vw, 80px)",
-          marginTop: "64px",
-          padding: "32px 0",
-          borderTop: "1px solid var(--border-subtle)",
-          opacity: sectionVisible ? 1 : 0,
-          transform: sectionVisible ? "translateY(0)" : "translateY(20px)",
-          transition: "all 0.8s cubic-bezier(.22,1,.36,1) 1.2s",
-          flexWrap: "wrap",
-        }}>
-          {[
-            { value: "5", label: "Data sources cross-referenced", color: "var(--accent-sky)" },
-            { value: "10K+", label: "Properties analyzed", color: "var(--status-warning)" },
-            { value: "Seconds", label: "From address to Verdict", color: "var(--status-positive)" },
-          ].map((stat, i) => (
-            <div key={i} style={{ textAlign: "center", minWidth: "140px" }}>
-              <div style={{
-                fontSize: "clamp(32px, 4vw, 44px)", fontWeight: 800, color: stat.color,
-                lineHeight: 1, fontFamily: "'Inter', system-ui",
-              }}>{stat.value}</div>
-              <div style={{
-                fontSize: "13px", color: "var(--text-label)", marginTop: "8px", fontWeight: 500, letterSpacing: "0.02em",
-              }}>{stat.label}</div>
+            <div className="se-card">
+              <div className="se-header">
+                <span className="se-header-label">STRATEGY ENGINE</span>
+                <span className="se-header-pro">Pro Tools</span>
+              </div>
+              <div className="se-bars">
+                {STRATEGY_BARS.map((bar, i) => (
+                  <span key={i} className="se-bar" style={{ background: bar.color }} />
+                ))}
+              </div>
+              <div className="se-tools">
+                {STRATEGY_TOOLS.map((tool, i) => (
+                  <div className="se-tool" key={i}>
+                    <span className="se-dot" style={{ background: tool.color }} />
+                    <div>
+                      <div className="se-tool-name">{tool.name}</div>
+                      <div className="se-tool-desc">{tool.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div style={{
-          textAlign: "center", marginTop: "48px",
-          opacity: sectionVisible ? 1 : 0,
-          transition: "opacity 0.8s ease 1.4s",
-        }}>
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            style={{
-              padding: "16px 40px",
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "#000000",
-              background: "linear-gradient(135deg, var(--accent-sky) 0%, var(--accent-sky-light) 100%)",
-              border: "none",
-              borderRadius: "12px",
-              cursor: "pointer",
-              letterSpacing: "0.02em",
-              boxShadow: "var(--shadow-card)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={e => {
-              (e.target as HTMLButtonElement).style.transform = "translateY(-2px)";
-              (e.target as HTMLButtonElement).style.boxShadow = "var(--shadow-card-hover)";
-            }}
-            onMouseLeave={e => {
-              (e.target as HTMLButtonElement).style.transform = "translateY(0)";
-              (e.target as HTMLButtonElement).style.boxShadow = "var(--shadow-card)";
-            }}
-          >
-            Try Your First Property Free →
-          </button>
-          <div style={{ marginTop: "12px", fontSize: "13px", color: "var(--text-label)" }}>
-            No account needed. Results in seconds.
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+export default HowItWorksSection;
