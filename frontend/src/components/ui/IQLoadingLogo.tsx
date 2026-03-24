@@ -11,7 +11,7 @@ export function IQLoadingLogo() {
       <img
         src="/images/iq-icon-pulse.png"
         alt="DealGapIQ"
-        className="w-24 h-24 animate-pulseSoft"
+        className="w-24 h-24 md:w-36 md:h-36 animate-pulseSoft"
         style={{ marginTop: -400 }}
       />
     </div>
