@@ -502,7 +502,7 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 position: "absolute" as const,
                 left: "3%",
                 right: "3%",
-                top: "66%",
+                top: "76%",
                 bottom: "2.5%",
                 borderRadius: 10,
                 padding: "clamp(10px, 2vw, 18px) clamp(12px, 2.2vw, 22px)",
