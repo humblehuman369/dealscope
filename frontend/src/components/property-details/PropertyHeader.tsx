@@ -21,9 +21,8 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
   const priceLabel = useMemo(() => getPriceLabel(property.isOffMarket, property.listingStatus), [property.isOffMarket, property.listingStatus])
   return (
     <div
-      className="rounded-[14px] p-5 relative overflow-hidden"
+      className="rounded-[14px] p-5 relative overflow-hidden bg-white dark:bg-black"
       style={{
-        backgroundColor: '#000000',
         border: `1px solid var(--border-subtle)`,
         boxShadow: 'var(--shadow-card)',
       }}
