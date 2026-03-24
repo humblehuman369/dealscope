@@ -535,31 +535,7 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Click-to-geocode popup — anchored above the drop pin */}
-          {!selectedListing && (dropPin || isGeocoding) && dropPin && (
-            <AdvancedMarker position={dropPin} zIndex={9999}>
-              {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-              <div
-                style={{ transform: 'translateY(-100%)', paddingBottom: '40px' }}
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-              >
-                <GeocodedPrompt
-                  address={geocodeResult?.formatted_address ?? null}
-                  addressComponents={geocodeResult ? {
-                    city: geocodeResult.city,
-                    state: geocodeResult.state,
-                    zip_code: geocodeResult.zip_code,
-                  } : undefined}
-                  isGeocoding={isGeocoding}
-                  onClose={clearGeocode}
-                  propertyPreview={propertyPreview}
-                  isLoadingPreview={isLoadingPreview}
-                />
-              </div>
-            </AdvancedMarker>
-          )}
+          {/* Click-to-geocode popup rendered as centered overlay below */}
         </Map>
       </APIProvider>
 
@@ -576,6 +552,34 @@ export function MapSearchView() {
             onTouchStart={(e) => e.stopPropagation()}
           >
             <PropertyPreviewCard listing={selectedListing} onClose={() => setSelectedListing(null)} />
+          </div>
+        </div>
+      )}
+
+      {/* Off-market geocoded property popup — centered on screen */}
+      {!selectedListing && (dropPin || isGeocoding) && dropPin && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+        >
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+          <div
+            className="pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <GeocodedPrompt
+              address={geocodeResult?.formatted_address ?? null}
+              addressComponents={geocodeResult ? {
+                city: geocodeResult.city,
+                state: geocodeResult.state,
+                zip_code: geocodeResult.zip_code,
+              } : undefined}
+              isGeocoding={isGeocoding}
+              onClose={clearGeocode}
+              propertyPreview={propertyPreview}
+              isLoadingPreview={isLoadingPreview}
+            />
           </div>
         </div>
       )}
