@@ -226,31 +226,31 @@
   --text-secondary: #334155;
   --text-label: #475569;
   --text-inverse: #FFFFFF;
-  --text-link: #0284C7;
+  --text-link: #0369A1;
 
-  --accent-brand-blue: #0455d1;
-  --accent-sky: #0284C7;
-  --accent-sky-light: #0EA5E9;
-  --accent-gradient-from: #0455d1;
-  --accent-gradient-to: #0284C7;
+  --accent-brand-blue: #0344A6;
+  --accent-sky: #0369A1;
+  --accent-sky-light: #0284C7;
+  --accent-gradient-from: #0344A6;
+  --accent-gradient-to: #0369A1;
 
-  --status-positive: #059669;
-  --status-warning: #D97706;
-  --status-negative: #DC2626;
-  --status-info: #0284C7;
-  --status-income-value: #CA8A04;
+  --status-positive: #047857;
+  --status-warning: #B45309;
+  --status-negative: #B91C1C;
+  --status-info: #0369A1;
+  --status-income-value: #A16207;
 
-  --strategy-ltr: #0455d1;
-  --strategy-str: #7C3AED;
-  --strategy-brrrr: #EA580C;
-  --strategy-flip: #DB2777;
-  --strategy-house-hack: #0284C7;
-  --strategy-wholesale: #65A30D;
+  --strategy-ltr: #0344A6;
+  --strategy-str: #6D28D9;
+  --strategy-brrrr: #C2410C;
+  --strategy-flip: #BE185D;
+  --strategy-house-hack: #0369A1;
+  --strategy-wholesale: #4D7C0F;
 
   --border-subtle: #E2E8F0;
   --border-default: #CBD5E1;
   --border-strong: #94A3B8;
-  --border-focus: #0284C7;
+  --border-focus: #0369A1;
 
   --shadow-card: 0 0 20px rgba(14,165,233,0.15);
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
@@ -261,14 +261,14 @@
   --chart-tooltip: #FFFFFF;
   --chart-tooltip-text: #07172e;
 
-  --color-sky-dim: rgba(14,165,233,0.08);
-  --color-teal-dim: rgba(2,132,199,0.10);
-  --color-gold-dim: rgba(217,119,6,0.12);
-  --color-red-dim: rgba(220,38,38,0.10);
-  --color-green-dim: rgba(5,150,105,0.10);
+  --color-sky-dim: rgba(3,105,161,0.10);
+  --color-teal-dim: rgba(3,105,161,0.12);
+  --color-gold-dim: rgba(180,83,9,0.14);
+  --color-red-dim: rgba(185,28,28,0.12);
+  --color-green-dim: rgba(4,120,87,0.12);
   --color-border: var(--border-default);
   --color-border-light: var(--border-subtle);
-  --dg-bg-selected: rgba(2,132,199,0.08);
+  --dg-bg-selected: rgba(3,105,161,0.10);
   --dg-border-medium: var(--border-default);
   --dg-border-light: var(--border-subtle);
 }
