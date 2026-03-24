@@ -227,6 +227,7 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
 
   // Stores the static analysis inputs so the verdict can be re-calculated
   // when the user switches data source without re-fetching property data
@@ -999,6 +1000,7 @@ function VerdictContent() {
     const rentHasSource = iqSources.rent[sourceKey] != null
     return valueHasSource || rentHasSource
   }).length
+  const hasDataSources = dataSourceCount > 0
   const analysisTimeSeconds = 4.2
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -1442,41 +1444,80 @@ function VerdictContent() {
             </div>
           </div>
 
-          {/* IQ Estimate Source Selector — shows all 3 data sources for value & rent */}
-          {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
-            iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
+          {/* Data Sources Accordion */}
+          {hasDataSources && (
             <section className="px-5 pb-5">
-              <IQEstimateSelector
-                sources={iqSources}
-                highlightIntro
-                onSourceChange={(type, _sourceId, _value) => {
-                  if (_value == null) return
-                  setProperty((prev) => {
-                    if (!prev) return prev
-                    if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
-                    if (type === 'value') return { ...prev, price: _value } as IQProperty
-                    return prev
-                  })
-                  recalculateVerdict(
-                    type === 'value'
-                      ? { list_price: _value }
-                      : { monthly_rent: _value },
-                  )
-                  // Keep property bar header in sync with selected data source value
-                  if (type === 'value') {
-                    try {
-                      const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
-                      const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
-                      writeDealMakerOverrides(fullAddress || addressParam, {
-                        price: _value,
-                        listPrice: _value,
-                      })
-                    } catch {
-                      // Ignore storage errors
-                    }
-                  }
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border-default)',
+                  boxShadow: 'var(--shadow-card)',
                 }}
-              />
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsDataSourcesOpen((prev) => !prev)}
+                  className="w-full px-4 py-3 flex items-center justify-between"
+                  style={{ color: 'var(--text-heading)' }}
+                  aria-expanded={isDataSourcesOpen}
+                  aria-controls="verdict-data-sources-panel"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">Data Sources</span>
+                    <span className="text-[10px] sm:text-[12px]" style={{ color: 'var(--text-label)' }}>
+                      {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {isDataSourcesOpen && (
+                  <div id="verdict-data-sources-panel" className="px-3 pb-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <IQEstimateSelector
+                      sources={iqSources}
+                      highlightIntro
+                      onSourceChange={(type, _sourceId, _value) => {
+                        if (_value == null) return
+                        setProperty((prev) => {
+                          if (!prev) return prev
+                          if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                          if (type === 'value') return { ...prev, price: _value } as IQProperty
+                          return prev
+                        })
+                        recalculateVerdict(
+                          type === 'value'
+                            ? { list_price: _value }
+                            : { monthly_rent: _value },
+                        )
+                        // Keep property bar header in sync with selected data source value
+                        if (type === 'value') {
+                          try {
+                            const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
+                            const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                            writeDealMakerOverrides(fullAddress || addressParam, {
+                              price: _value,
+                              listPrice: _value,
+                            })
+                          } catch {
+                            // Ignore storage errors
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </section>
           )}
 
