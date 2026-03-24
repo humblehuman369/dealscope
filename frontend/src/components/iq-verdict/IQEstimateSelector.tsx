@@ -41,6 +41,10 @@ export interface IQEstimateSelectorProps {
   sessionKey?: string
   /** When true, the intro sentence pulses to draw attention (Verdict page only). Stops after first source change. */
   highlightIntro?: boolean
+  /** Hide top "Data Sources" heading when parent already provides one. */
+  showHeader?: boolean
+  /** Use tighter spacing for compact embeds (Verdict accordion). */
+  compact?: boolean
 }
 
 const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
@@ -101,12 +105,14 @@ function SourceRow({
   sourceValue,
   isSelected,
   onSelect,
+  compact = false,
 }: {
   sourceId: DataSourceId
   meta: { label: string; color: string }
   sourceValue: number | null
   isSelected: boolean
   onSelect: () => void
+  compact?: boolean
 }) {
   const available = sourceValue != null
   const [hovered, setHovered] = useState(false)
@@ -131,7 +137,7 @@ function SourceRow({
       disabled={!available}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg transition-all duration-200 text-left"
+      className={`flex items-center gap-2.5 w-full px-3 rounded-lg transition-all duration-200 text-left ${compact ? 'py-1.5' : 'py-2'}`}
       style={buttonStyle}
     >
       <div
@@ -183,7 +189,14 @@ function resolveDefaults(
   }
 }
 
-export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_source_selection', highlightIntro = false }: IQEstimateSelectorProps) {
+export function IQEstimateSelector({
+  sources,
+  onSourceChange,
+  sessionKey = 'iq_source_selection',
+  highlightIntro = false,
+  showHeader = true,
+  compact = false,
+}: IQEstimateSelectorProps) {
   const [selections, setSelections] = useState(() =>
     resolveDefaults(sources, getStoredSelections(sessionKey)),
   )
@@ -224,7 +237,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
 
   return (
     <div
-      className="rounded-xl p-4"
+      className={`rounded-xl ${compact ? 'p-3' : 'p-4'}`}
       style={{
         background: 'var(--surface-base)',
         border: '1px solid var(--border-default)',
@@ -232,22 +245,24 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
         transition: 'all 0.3s ease',
       }}
     >
-      <div className="flex items-center gap-2 mb-1.5">
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
-          <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
-        </svg>
-        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
-          Data Sources
-        </span>
-      </div>
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-1.5">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
+            <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+          </svg>
+          <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
+            Data Sources
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
             Property Value
           </p>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0">
             {valueSourceIds.map((id) => (
               <SourceRow
                 key={`value-${id}`}
@@ -256,6 +271,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
                 sourceValue={sources.value[id]}
                 isSelected={selections.value === id}
                 onSelect={() => handleSelect('value', id)}
+                compact={compact}
               />
             ))}
           </div>
@@ -263,10 +279,10 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
 
         {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wide mb-1.5 pl-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
             Monthly Rent
           </p>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0">
             {rentSourceIds.map((id) => (
               <SourceRow
                 key={`rent-${id}`}
@@ -275,6 +291,7 @@ export function IQEstimateSelector({ sources, onSourceChange, sessionKey = 'iq_s
                 sourceValue={sources.rent[id]}
                 isSelected={selections.rent === id}
                 onSelect={() => handleSelect('rent', id)}
+                compact={compact}
               />
             ))}
           </div>
