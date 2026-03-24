@@ -71,18 +71,18 @@ const SLIDER_GROUPS: SliderGroup[] = [
     border: 'rgba(14, 165, 233, 0.7)',
   },
   {
-    id: 'rehab',
-    label: 'REHAB & VALUATION TERMS',
-    sliders: REHAB_SLIDERS,
-    accent: '#FB7185',
-    border: 'rgba(251, 113, 133, 0.7)',
-  },
-  {
     id: 'income',
     label: 'INCOME & EXPENSE TERMS',
     sliders: [...INCOME_SLIDERS, ...EXPENSE_SLIDERS],
     accent: '#FACC15',
     border: 'rgba(250, 204, 21, 0.7)',
+  },
+  {
+    id: 'rehab',
+    label: 'REHAB & VALUATION TERMS',
+    sliders: REHAB_SLIDERS,
+    accent: '#FB7185',
+    border: 'rgba(251, 113, 133, 0.7)',
   },
 ]
 
