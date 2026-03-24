@@ -810,7 +810,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
   return (
     <div className="min-h-screen bg-[var(--surface-base)] font-['Inter',sans-serif]">
-      <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6 bg-[var(--surface-elevated)]">
+      <main
+        className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto pb-6"
+        style={{
+          background:
+            'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+        }}
+      >
         {/* Dual Valuation Panel: header scrolls away; cards row freezes at top */}
         <div className="mx-4 mt-4">
           {/* Header — scrolls up and out of view */}
