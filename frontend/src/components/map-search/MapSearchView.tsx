@@ -10,17 +10,19 @@ import {
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
 import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer'
-import { Eraser, Pentagon, Loader2, Home } from 'lucide-react'
+import { Eraser, Pentagon, Loader2, Home, MousePointerClick } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
+import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
-import { GeocodedPrompt } from './GeocodedPrompt'
+import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
+const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
 
 const US_BOUNDS = {
   north: 72,
@@ -29,11 +31,18 @@ const US_BOUNDS = {
   west: -165,
 }
 
+interface GeocodeResult {
+  formatted_address: string
+  city?: string
+  state?: string
+  zip_code?: string
+}
+
 async function reverseGeocode(
   lat: number,
   lng: number,
   apiKey: string,
-): Promise<string | null> {
+): Promise<GeocodeResult | null> {
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${apiKey}`
     const res = await fetch(url)
@@ -45,7 +54,22 @@ async function reverseGeocode(
         r.types.includes('premise') ||
         r.types.includes('subpremise'),
     )
-    return (match || data.results[0])?.formatted_address ?? null
+    const result = match || data.results[0]
+    if (!result?.formatted_address) return null
+
+    const components: Array<{ types: string[]; long_name: string; short_name: string }> =
+      result.address_components || []
+    const long = (type: string) =>
+      components.find((c) => c.types.includes(type))?.long_name
+    const short = (type: string) =>
+      components.find((c) => c.types.includes(type))?.short_name
+
+    return {
+      formatted_address: result.formatted_address,
+      city: long('locality') || long('sublocality'),
+      state: short('administrative_area_level_1'),
+      zip_code: long('postal_code'),
+    }
   } catch {
     return null
   }
@@ -304,6 +328,8 @@ export function MapSearchView() {
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
 
+  const { fetchProperty } = usePropertyData()
+
   useEffect(() => {
     if (!showLabel) return
     const t = setTimeout(() => setShowLabel(false), 4000)
@@ -311,23 +337,52 @@ export function MapSearchView() {
   }, [showLabel])
 
   // Click-to-geocode state
-  const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null)
+  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [dropPin, setDropPin] = useState<{ lat: number; lng: number } | null>(null)
   const [zoomHint, setZoomHint] = useState(false)
+  const [isZoomedIn, setIsZoomedIn] = useState(initialZoom >= MIN_ZOOM_FOR_GEOCODE)
   const currentZoomRef = useRef(initialZoom)
   const zoomHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Off-market property preview
+  const [propertyPreview, setPropertyPreview] = useState<OffMarketPreview | null>(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+
+  // "Click any home" hint — shown once per user at street-level zoom
+  const [showClickHint, setShowClickHint] = useState(false)
+  const hintShownRef = useRef(false)
+
+  const dismissClickHint = useCallback(() => {
+    setShowClickHint(false)
+    try { localStorage.setItem(HINT_DISMISSED_KEY, '1') } catch { /* private browsing */ }
+  }, [])
+
+  useEffect(() => {
+    if (!isZoomedIn || hintShownRef.current) {
+      if (!isZoomedIn) setShowClickHint(false)
+      return
+    }
+    try {
+      if (localStorage.getItem(HINT_DISMISSED_KEY)) return
+    } catch { /* private browsing */ }
+    hintShownRef.current = true
+    setShowClickHint(true)
+    const timer = setTimeout(dismissClickHint, 8000)
+    return () => clearTimeout(timer)
+  }, [isZoomedIn, dismissClickHint])
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
       if (isDrawing) return
+      dismissClickHint()
       setSelectedListing(null)
 
       const latLng = e.detail.latLng
       if (!latLng || !apiKey) return
 
       if (currentZoomRef.current < MIN_ZOOM_FOR_GEOCODE) {
-        setGeocodedAddress(null)
+        setGeocodeResult(null)
         setDropPin(null)
         setZoomHint(true)
         if (zoomHintTimer.current) clearTimeout(zoomHintTimer.current)
@@ -339,21 +394,61 @@ export function MapSearchView() {
       const lat = Number(latLng.lat)
       const lng = Number(latLng.lng)
       setDropPin({ lat, lng })
-      setGeocodedAddress(null)
+      setGeocodeResult(null)
+      setPropertyPreview(null)
       setIsGeocoding(true)
 
-      const address = await reverseGeocode(lat, lng, apiKey)
-      setGeocodedAddress(address)
+      const result = await reverseGeocode(lat, lng, apiKey)
+      setGeocodeResult(result)
       setIsGeocoding(false)
     },
-    [isDrawing, apiKey],
+    [isDrawing, apiKey, dismissClickHint],
   )
 
   const clearGeocode = useCallback(() => {
-    setGeocodedAddress(null)
+    setGeocodeResult(null)
     setDropPin(null)
     setIsGeocoding(false)
+    setPropertyPreview(null)
+    setIsLoadingPreview(false)
   }, [])
+
+  // Fetch property details when a geocoded address is resolved
+  useEffect(() => {
+    if (!geocodeResult) return
+    let cancelled = false
+    setIsLoadingPreview(true)
+
+    fetchProperty(geocodeResult.formatted_address, {
+      city: geocodeResult.city,
+      state: geocodeResult.state,
+      zip_code: geocodeResult.zip_code,
+    })
+      .then((data) => {
+        if (cancelled) return
+        setPropertyPreview({
+          bedrooms: data.details?.bedrooms ?? null,
+          bathrooms: data.details?.bathrooms ?? null,
+          sqft: data.details?.square_footage ?? null,
+          year_built: data.details?.year_built ?? null,
+          estimated_value:
+            data.valuations?.value_iq_estimate
+            ?? data.valuations?.zestimate
+            ?? data.valuations?.market_price
+            ?? null,
+          property_type: data.details?.property_type ?? null,
+          is_off_market: data.listing?.is_off_market ?? null,
+          monthly_rent: data.rentals?.monthly_rent_ltr ?? null,
+        })
+        setIsLoadingPreview(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setIsLoadingPreview(false)
+      })
+
+    return () => { cancelled = true }
+  }, [geocodeResult, fetchProperty])
 
   const handleClearPolygon = useCallback(() => {
     if (drawingPolygon) {
@@ -404,9 +499,13 @@ export function MapSearchView() {
           }}
           style={{ width: '100%', height: '100%' }}
           clickableIcons={false}
+          draggableCursor={isZoomedIn && !isDrawing ? 'crosshair' : undefined}
           onClick={handleMapClick}
           onZoomChanged={(e) => {
-            if (e.detail?.zoom != null) currentZoomRef.current = e.detail.zoom
+            if (e.detail?.zoom != null) {
+              currentZoomRef.current = e.detail.zoom
+              setIsZoomedIn(e.detail.zoom >= MIN_ZOOM_FOR_GEOCODE)
+            }
           }}
         >
           <MapContent
@@ -447,9 +546,16 @@ export function MapSearchView() {
                 onTouchStart={(e) => e.stopPropagation()}
               >
                 <GeocodedPrompt
-                  address={geocodedAddress}
+                  address={geocodeResult?.formatted_address ?? null}
+                  addressComponents={geocodeResult ? {
+                    city: geocodeResult.city,
+                    state: geocodeResult.state,
+                    zip_code: geocodeResult.zip_code,
+                  } : undefined}
                   isGeocoding={isGeocoding}
                   onClose={clearGeocode}
+                  propertyPreview={propertyPreview}
+                  isLoadingPreview={isLoadingPreview}
                 />
               </div>
             </AdvancedMarker>
@@ -589,6 +695,23 @@ export function MapSearchView() {
             {estimatedTotal
               ? `${totalCount.toLocaleString()} of ~${formatCount(estimatedTotal)} homes`
               : `${totalCount.toLocaleString()} homes`}
+          </div>
+        </div>
+      )}
+
+      {/* Click-any-home hint — shown once when user first zooms to street level */}
+      {showClickHint && !selectedListing && !dropPin && !isGeocoding && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+          <div
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium shadow-xl"
+            style={{
+              backgroundColor: 'rgba(30, 30, 30, 0.9)',
+              color: '#fff',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+            }}
+          >
+            <MousePointerClick size={16} style={{ color: 'var(--accent-sky)' }} />
+            Click any home to analyze
           </div>
         </div>
       )}
