@@ -168,7 +168,7 @@ export function DealMakerSlider({
     <div style={{ marginTop: '16px' }}>
       {/* Label and Value */}
       <div className="flex justify-between items-center" style={{ marginBottom: '8px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-heading)' }}>
           {config.label}
         </span>
         
@@ -176,14 +176,14 @@ export function DealMakerSlider({
           <div 
             className="flex items-center"
             style={{ 
-              backgroundColor: '#F1F5F9',
+              backgroundColor: 'var(--surface-elevated)',
               borderRadius: '6px',
               padding: '4px 8px',
               border: '1px solid #0EA5E9',
             }}
           >
             {(config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear') && (
-              <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', marginRight: '2px' }}>$</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-heading)', marginRight: '2px' }}>$</span>
             )}
             <input
               ref={inputRef}
@@ -196,7 +196,7 @@ export function DealMakerSlider({
               style={{
                 fontSize: '16px',
                 fontWeight: 700,
-                color: '#ffffff',
+                color: 'var(--text-heading)',
                 width: '80px',
                 textAlign: 'right',
                 background: 'transparent',
@@ -206,23 +206,23 @@ export function DealMakerSlider({
               }}
             />
             {config.format === 'percentage' && (
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>%</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-label)', marginLeft: '2px' }}>%</span>
             )}
             {config.format === 'currencyPerMonth' && (
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>/mo</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-label)', marginLeft: '2px' }}>/mo</span>
             )}
             {config.format === 'currencyPerYear' && (
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>/yr</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-label)', marginLeft: '2px' }}>/yr</span>
             )}
             {config.format === 'years' && (
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>yr</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-label)', marginLeft: '2px' }}>yr</span>
             )}
           </div>
         ) : (
           <button
             onClick={handleValueClick}
             className="tabular-nums rounded px-2 py-1 transition-colors cursor-pointer"
-            style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', background: 'transparent', border: '1px solid var(--border-default)', borderRadius: '6px' }}
+            style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-heading)', background: 'transparent', border: '1px solid var(--border-default)', borderRadius: '6px' }}
             title="Click to edit value directly"
           >
             {formattedValue}
@@ -235,7 +235,7 @@ export function DealMakerSlider({
         {/* Track background */}
         <div 
           className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
-          style={{ height: '6px', background: '#E2E8F0' }}
+          style={{ height: '6px', background: 'var(--border-default)' }}
         />
         
         {/* Filled track */}
@@ -279,10 +279,10 @@ export function DealMakerSlider({
 
       {/* Range Labels */}
       <div className="flex justify-between" style={{ marginTop: '6px' }}>
-        <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
           {formattedMin}
         </span>
-        <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
           {formattedMax}
         </span>
       </div>
@@ -302,7 +302,7 @@ export function DealMakerSlider({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )}
-          <span style={{ fontSize: '10px', color: '#94A3B8' }}>
+          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
             {config.sourceLabel}
           </span>
         </div>

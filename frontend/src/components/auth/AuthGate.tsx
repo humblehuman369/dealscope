@@ -64,7 +64,7 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
         style={{
           background: 'rgba(148,163,184,0.12)',
           border: '1px solid rgba(148,163,184,0.25)',
-          color: '#94A3B8',
+          color: 'var(--text-secondary)',
         }}
       >
         <LogIn size={12} />
@@ -79,7 +79,7 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
         {children}
       </div>
       {/* Gradient fade — reinforces "there's more behind the gate" */}
-      <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #000)' }} />
+      <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, var(--surface-base))' }} />
       {/* CTA — pinned near top so it's immediately visible */}
       <div className="absolute inset-0 flex flex-col items-center pt-10">
         <Link
@@ -94,7 +94,7 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
           <LogIn size={15} />
           {label}
         </Link>
-        <p className="mt-3 text-xs" style={{ color: '#64748B' }}>Free account — no credit card required</p>
+        <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>Free account — no credit card required</p>
       </div>
     </div>
   )

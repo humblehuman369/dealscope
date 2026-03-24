@@ -350,20 +350,20 @@ export function getAssessment(
     return {
       color: colors.status.positive,
       label: 'GOOD',
-      bgClass: 'bg-emerald-400/15 text-emerald-400',
+      bgClass: 'bg-emerald-400/15 text-emerald-600 dark:text-emerald-400',
     }
   }
   if (isFair) {
     return {
       color: colors.brand.gold,
       label: 'FAIR',
-      bgClass: 'bg-amber-400/15 text-amber-400',
+      bgClass: 'bg-amber-400/15 text-amber-600 dark:text-amber-400',
     }
   }
   return {
     color: colors.status.negative,
     label: 'POOR',
-    bgClass: 'bg-red-400/15 text-red-400',
+    bgClass: 'bg-red-400/15 text-red-600 dark:text-red-400',
   }
 }
 
