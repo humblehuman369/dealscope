@@ -37,7 +37,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
   return (
     <div
       className="min-h-screen pb-8 font-['Inter',sans-serif]"
-      style={{ backgroundColor: 'var(--surface-base)' }}
+      style={{
+        background:
+          'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+      }}
     >
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
 
