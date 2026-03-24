@@ -713,7 +713,7 @@ function StrategyContent() {
 
                     <div className="relative rounded-full" style={{
                       height: 22,
-                      background: 'linear-gradient(90deg, var(--color-sky-dim) 0%, rgba(14,165,233,0.25) 50%, var(--color-sky-dim) 100%)',
+                      background: 'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
                       border: '1.5px solid rgba(56,189,248,0.5)',
                       boxShadow: 'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
                     }}>
