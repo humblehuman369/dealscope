@@ -655,7 +655,7 @@ function StrategyContent() {
               ))}
             </div>
 
-            <div className="relative" style={{ paddingTop: 40 }}>
+            <div className="relative" style={{ paddingTop: 20 }}>
               {(() => {
                 const markers = [
                   { label: 'Target Buy', price: targetPrice, dotColor: 'var(--accent-sky)' },
@@ -734,7 +734,7 @@ function StrategyContent() {
 
                     {showPriceGap && (
                       <div
-                        className="relative mt-1"
+                        className="relative mt-0"
                         style={{
                           marginLeft: `${priceGapLeft}%`,
                           width: `${priceGapRight - priceGapLeft}%`,
@@ -747,7 +747,7 @@ function StrategyContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)', marginBottom: 16 }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 0 }}
                         >
                           PRICE GAP &nbsp;{priceGap.toFixed(1)}%
                         </p>
