@@ -489,19 +489,33 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
       <FadeIn>
         <section style={{ padding: "116px 24px", maxWidth: 1060, margin: "0 auto", textAlign: "center" as const }}>
           <Eyebrow style={{ marginBottom: 24 }}>Your Three Price Thresholds &amp; the Gaps</Eyebrow>
-          <img
-            src="/images/three-price-thresholds-and-gaps.png"
-            alt="Your Three Price Thresholds and the Gaps — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
-            style={{ width: "100%", height: "auto", borderRadius: 12 }}
-            draggable={false}
-          />
-          <div style={{ marginTop: 16, textAlign: "left" as const, maxWidth: 920, marginInline: "auto" }}>
-            <p style={{ fontFamily: s.fontBody, fontSize: 15, color: "var(--text-body)", margin: "0 0 8px", lineHeight: 1.6 }}>
-              <span style={{ color: "var(--accent-sky)", fontWeight: 700 }}>Deal Gap</span> shows how close the asking price is to the Target Buy, a property&apos;s starting cash-flow price.
-            </p>
-            <p style={{ fontFamily: s.fontBody, fontSize: 15, color: "var(--text-body)", margin: 0, lineHeight: 1.6 }}>
-              <span style={{ color: "var(--status-warning)", fontWeight: 700 }}>Price Gap</span> shows if the asking price is in line with the Income Value, a property&apos;s break-even price.
-            </p>
+          <div style={{ position: "relative" as const, width: "100%", borderRadius: 12, overflow: "hidden" }}>
+            <img
+              src="/images/three-price-thresholds-and-gaps.png"
+              alt="Your Three Price Thresholds and the Gaps — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
+              style={{ width: "100%", height: "auto", borderRadius: 12, display: "block" }}
+              draggable={false}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute" as const,
+                left: "4%",
+                right: "4%",
+                bottom: "3%",
+                borderRadius: 10,
+                padding: "clamp(8px, 1.6vw, 14px) clamp(10px, 1.8vw, 18px)",
+                background: "rgba(0,0,0,0.9)",
+                textAlign: "left" as const,
+              }}
+            >
+              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(10px, 1.25vw, 24px)", color: "#FFFFFF", margin: "0 0 4px", lineHeight: 1.4 }}>
+                <span style={{ color: "var(--accent-sky)", fontWeight: 700 }}>Deal Gap</span> shows how close the asking price is to the <span style={{ color: "var(--accent-sky)" }}>Target Buy</span>, a property&apos;s starting cash-flow price.
+              </p>
+              <p style={{ fontFamily: s.fontBody, fontSize: "clamp(10px, 1.25vw, 24px)", color: "#FFFFFF", margin: 0, lineHeight: 1.4 }}>
+                <span style={{ color: "var(--status-warning)", fontWeight: 700 }}>Price Gap</span> shows if the asking price is in line with the <span style={{ color: "var(--status-warning)" }}>Income Value</span>, a property&apos;s break-even price.
+              </p>
+            </div>
           </div>
         </section>
       </FadeIn>
