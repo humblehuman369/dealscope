@@ -987,10 +987,15 @@ function VerdictContent() {
     ? ((property.price - purchasePrice) / property.price) * 100
     : 0
   const dealGapPct = analysis.dealGapPercent ?? rawDealGap
-  // User-facing sign: positive = good deal (price below target), negative = discount needed
-  const displayGap = -rawDealGap
-  const displayGapPct = -dealGapPct
-  const dealGapDisplay = `${displayGap >= 0 ? '+' : ''}${displayGap.toFixed(1)}%`
+  // Price Gap: how far income value sits above (positive) or below (negative) market
+  const priceGapPct = property.price > 0 && incomeValue > 0
+    ? ((incomeValue - property.price) / property.price) * 100
+    : 0
+  const isPositiveIncomeCase = incomeValue > property.price && priceGapPct > 0.1
+  // When income exceeds market, display the price gap % as the deal gap (positive).
+  // Otherwise use the target-buy-to-market discount (negated for user-facing sign).
+  const effectiveDisplayPct = isPositiveIncomeCase ? priceGapPct : -dealGapPct
+  const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Probability of achieving discount derived from Deal Gap %
   // Based on investor discount bracket distribution: 0% gap → ~95%, 30%+ → ~5%
@@ -1001,7 +1006,7 @@ function VerdictContent() {
       ? 'Achievable with the right approach.'
       : "You'll need leverage, timing, or a motivated seller."
   const isOffMarket = !isListed
-  const tier = getDealGapTier(dealGapPct, isListed)
+  const tier = getDealGapTier(-effectiveDisplayPct, isListed)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
   const dataSourceCount = sourceKeys.filter((sourceKey) => {
     const valueHasSource = iqSources.value[sourceKey] != null
@@ -1248,12 +1253,21 @@ function VerdictContent() {
                 const marketPos = property.price > 0 ? pos(property.price) : null
                 const incomePos = incomeValue > 0 ? pos(incomeValue) : null
 
-                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
-                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
-                const dealBracketPct = property.price > 0 && purchasePrice > 0
-                  ? ((property.price - purchasePrice) / property.price) * 100
-                  : 0
-                const showDealBracket = targetBuyPos != null && marketPos != null && Math.abs(dealBracketPct) > 0.1 && (dealBracketRight - dealBracketLeft) >= 3
+                // In positive-income case the target-buy-to-market span collapses to ~0.
+                // Use the market-to-income span instead so the bracket stays visible.
+                const useIncomeBracket = isPositiveIncomeCase && incomePos != null && marketPos != null
+                const dealBracketLeft = useIncomeBracket
+                  ? Math.min(marketPos!, incomePos!)
+                  : (targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0)
+                const dealBracketRight = useIncomeBracket
+                  ? Math.max(marketPos!, incomePos!)
+                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
+                const dealBracketPct = useIncomeBracket
+                  ? priceGapPct
+                  : (property.price > 0 && purchasePrice > 0
+                    ? ((property.price - purchasePrice) / property.price) * 100
+                    : 0)
+                const showDealBracket = (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
                 const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
@@ -1276,7 +1290,7 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: 'var(--accent-sky)' }}
                         >
-                          DEAL GAP &nbsp;{-dealBracketPct >= 0 ? '+' : ''}{(-dealBracketPct).toFixed(1)}%
+                          DEAL GAP &nbsp;{effectiveDisplayPct >= 0 ? '+' : ''}{effectiveDisplayPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
@@ -1385,7 +1399,7 @@ function VerdictContent() {
               {/* Row 2: single-line verdict + CTA */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
-                  {displayGapPct > 0
+                  {effectiveDisplayPct > 0
                     ? 'This deal cash flows at current terms. Confirm your numbers in Strategy before you move.'
                     : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
                 </p>
@@ -1425,7 +1439,7 @@ function VerdictContent() {
                       maxWidth: 620,
                     }}
                   >
-                    {displayGapPct > 0
+                    {effectiveDisplayPct > 0
                       ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
                       : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                   </p>
@@ -1644,7 +1658,7 @@ function VerdictContent() {
         isOpen={showMethodologySheet}
         onClose={() => setShowMethodologySheet(false)}
         currentScore={undefined}
-        currentGrade={`${displayGapPct >= 0 ? '+' : ''}${displayGapPct.toFixed(1)}% Deal Gap — ${tier.label}`}
+        currentGrade={`${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}% Deal Gap — ${tier.label}`}
         scoreType={methodologyScoreType}
       />
 
