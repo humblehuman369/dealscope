@@ -502,6 +502,18 @@ export function DealGapIQHomepage({ onPointAndScan }: DealGapIQHomepageProps) {
                 position: "absolute" as const,
                 left: "3%",
                 right: "3%",
+                top: "76%",
+                height: "8%",
+                background: "rgba(0,0,0,0.98)",
+                borderRadius: 8,
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute" as const,
+                left: "3%",
+                right: "3%",
                 bottom: "2.5%",
                 borderRadius: 10,
                 padding: "clamp(10px, 2vw, 18px) clamp(12px, 2.2vw, 22px)",
