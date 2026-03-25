@@ -1021,12 +1021,11 @@ function VerdictContent() {
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
 
-  const navigateToStrategy = () => {
+  const navigateToStrategy = (section?: 'purchase' | 'income' | 'rehab') => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const parts = [property.address, property.city, stateZip].filter(Boolean)
     let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
 
-    // Fall back to backend-resolved address when property parts are incomplete
     if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
       fullAddress = backendFullAddressRef.current
     }
@@ -1034,6 +1033,7 @@ function VerdictContent() {
     const params = new URLSearchParams({ address: fullAddress })
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
+    if (section) params.set('section', section)
     
     router.push(`/strategy?${params.toString()}`)
   }
@@ -1108,13 +1108,14 @@ function VerdictContent() {
                 Investment Overview
               </h2>
               <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
-                {[
+                {([
                   {
                     label: 'Target Buy',
                     value: purchasePrice,
                     color: 'var(--accent-sky)',
                     copy: 'Your recommended offer price \u2014 set below Income Value so the deal cash flows positively from day one.',
                     linkLabel: 'TARGET BUY',
+                    strategySection: 'purchase' as const,
                   },
                   {
                     label: 'Income Value',
@@ -1122,6 +1123,7 @@ function VerdictContent() {
                     color: 'var(--status-warning)',
                     copy: 'The maximum price you can pay and still break even \u2014 the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow.',
                     linkLabel: 'INCOME VALUE',
+                    strategySection: 'income' as const,
                   },
                   {
                     label: 'Market Price',
@@ -1132,7 +1134,7 @@ function VerdictContent() {
                     linkSuffix: 'in Comps',
                     linkToComps: true,
                   },
-                ].map((card) => (
+                ] as const).map((card) => (
                   <div
                     key={card.label}
                     className="rounded-xl py-4 px-4 text-center sm:flex-1 flex flex-col"
@@ -1146,11 +1148,11 @@ function VerdictContent() {
                     <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
                     <p className="leading-snug text-left flex-1" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
                     <button
-                      onClick={card.linkToComps ? navigateToComps : navigateToStrategy}
+                      onClick={'linkToComps' in card ? navigateToComps : () => navigateToStrategy(card.strategySection)}
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
                       style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
                     >
-                      Improve {card.linkLabel} {card.linkSuffix ?? 'in Strategy'}
+                      Improve {card.linkLabel} {'linkSuffix' in card ? card.linkSuffix : 'in Strategy'}
                     </button>
                   </div>
                 ))}

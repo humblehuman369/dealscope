@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { DealMakerSlider } from '@/components/deal-maker/DealMakerSlider'
 import type { SliderConfig } from '@/components/deal-maker/types'
 
@@ -20,10 +20,13 @@ export interface InlineDealMakerValues {
   managementRate: number
 }
 
+export type DealMakerSection = SliderGroup['id']
+
 interface InlineDealMakerPanelProps {
   values: InlineDealMakerValues
   onChange: (field: keyof InlineDealMakerValues, value: number) => void
   listPrice: number
+  initialSection?: DealMakerSection
 }
 
 const PURCHASE_SLIDERS: SliderConfig[] = [
@@ -115,12 +118,31 @@ function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> 
   return {}
 }
 
-export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDealMakerPanelProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<SliderGroup['id'], boolean>>({
-    purchase: true,
-    rehab: true,
-    income: true,
+export function InlineDealMakerPanel({ values, onChange, listPrice, initialSection }: InlineDealMakerPanelProps) {
+  const [expandedSections, setExpandedSections] = useState<Record<SliderGroup['id'], boolean>>(() => {
+    if (initialSection) return { purchase: initialSection === 'purchase', rehab: initialSection === 'rehab', income: initialSection === 'income' }
+    return { purchase: true, rehab: true, income: true }
   })
+
+  const [highlightedSection, setHighlightedSection] = useState<DealMakerSection | null>(initialSection ?? null)
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const setSectionRef = useCallback((id: string) => (el: HTMLDivElement | null) => { sectionRefs.current[id] = el }, [])
+
+  useEffect(() => {
+    if (!initialSection) return
+    const el = sectionRefs.current[initialSection]
+    if (el) {
+      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)
+      return () => clearTimeout(timer)
+    }
+  }, [initialSection])
+
+  useEffect(() => {
+    if (!highlightedSection) return
+    const timer = setTimeout(() => setHighlightedSection(null), 2000)
+    return () => clearTimeout(timer)
+  }, [highlightedSection])
 
   const toggleSection = (sectionId: SliderGroup['id']) => {
     setExpandedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
@@ -132,6 +154,10 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
       @keyframes dealmaker-slide-in {
         from { opacity: 0; transform: translateX(16px); }
         to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes dealmaker-section-pulse {
+        0%, 100% { box-shadow: inset 0 0 0 1px var(--pulse-color, rgba(255,255,255,0.25)); }
+        50% { box-shadow: inset 0 0 0 2px var(--pulse-color, rgba(255,255,255,0.25)), 0 0 16px 2px var(--pulse-color, rgba(255,255,255,0.15)); }
       }
     `}</style>
     <div
@@ -161,59 +187,66 @@ export function InlineDealMakerPanel({ values, onChange, listPrice }: InlineDeal
 
       {/* Slider groups */}
       <div className="px-5 pb-5">
-        {SLIDER_GROUPS.map((group) => (
-          <div
-            key={group.id}
-            className="mt-4 first:mt-2 rounded-xl px-3 pb-3"
-            style={{
-              border: `1px solid ${group.border}`,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
-              boxShadow: `inset 0 0 0 1px ${group.border.replace('0.7', '0.25')}`,
-              ['--dealmaker-accent' as string]: group.accent,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => toggleSection(group.id)}
-              className="w-full flex items-center justify-between pt-2 mb-2"
-              aria-expanded={expandedSections[group.id]}
+        {SLIDER_GROUPS.map((group) => {
+          const isHighlighted = highlightedSection === group.id
+          return (
+            <div
+              key={group.id}
+              ref={setSectionRef(group.id)}
+              className="mt-4 first:mt-2 rounded-xl px-3 pb-3 transition-shadow duration-500"
+              style={{
+                border: `1px solid ${group.border}`,
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
+                ['--dealmaker-accent' as string]: group.accent,
+                ['--pulse-color' as string]: group.border,
+                ...(isHighlighted
+                  ? { animation: 'dealmaker-section-pulse 0.8s ease-in-out 3' }
+                  : { boxShadow: `inset 0 0 0 1px ${group.border.replace('0.7', '0.25')}` }),
+              }}
             >
-              <span
-                className="text-[18px] font-semibold uppercase tracking-widest text-left"
-                style={{ color: group.accent, fontFamily: "'Source Sans 3', sans-serif" }}
+              <button
+                type="button"
+                onClick={() => toggleSection(group.id)}
+                className="w-full flex items-center justify-between pt-2 mb-2"
+                aria-expanded={expandedSections[group.id]}
               >
-                {group.label}
-              </span>
-              <svg
-                className={`w-5 h-5 transition-transform ${expandedSections[group.id] ? 'rotate-180' : ''}`}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={group.accent}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {expandedSections[group.id] && group.sliders.map((slider) => {
-              const overrides = dynamicMax(slider.id as string, listPrice)
-              const config = { ...slider, ...overrides }
-              return (
-                <DealMakerSlider
-                  key={slider.id}
-                  config={config}
-                  value={getSliderValue(slider.id as string, values)}
-                  onChange={(val) => {
-                    const field = SLIDER_ID_TO_FIELD[slider.id as string]
-                    if (field) onChange(field, val)
-                  }}
-                />
-              )
-            })}
-          </div>
-        ))}
+                <span
+                  className="text-[18px] font-semibold uppercase tracking-widest text-left"
+                  style={{ color: group.accent, fontFamily: "'Source Sans 3', sans-serif" }}
+                >
+                  {group.label}
+                </span>
+                <svg
+                  className={`w-5 h-5 transition-transform ${expandedSections[group.id] ? 'rotate-180' : ''}`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={group.accent}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {expandedSections[group.id] && group.sliders.map((slider) => {
+                const overrides = dynamicMax(slider.id as string, listPrice)
+                const config = { ...slider, ...overrides }
+                return (
+                  <DealMakerSlider
+                    key={slider.id}
+                    config={config}
+                    value={getSliderValue(slider.id as string, values)}
+                    onChange={(val) => {
+                      const field = SLIDER_ID_TO_FIELD[slider.id as string]
+                      if (field) onChange(field, val)
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )
+        })}
       </div>
     </div>
     </>

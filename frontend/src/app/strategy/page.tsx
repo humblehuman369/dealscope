@@ -103,6 +103,7 @@ function StrategyContent() {
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
   const strategyParam = searchParams.get('strategy')
+  const sectionParam = searchParams.get('section') as 'purchase' | 'income' | 'rehab' | null
   const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
@@ -917,6 +918,7 @@ function StrategyContent() {
                   values={sliderValues}
                   onChange={handleInlineSliderChange}
                   listPrice={listPrice}
+                  initialSection={sectionParam ?? undefined}
                 />
               </div>
             )
