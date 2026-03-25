@@ -103,13 +103,13 @@ class BillingService:
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
                 properties_limit=10,
-                searches_per_month=5,
+                searches_per_month=3,
                 api_calls_per_month=50,
                 features=[
                     PlanFeature(
-                        name="5 Property Analyses/month",
-                        description="Analyze up to 5 properties per month",
-                        limit="5/month",
+                        name="3 Property Analyses/month",
+                        description="Analyze up to 3 properties per month",
+                        limit="3/month",
                     ),
                     PlanFeature(
                         name="Deal Gap + Income Value + Target Buy",
@@ -290,10 +290,29 @@ class BillingService:
         """
         Record one property analysis for usage limits.
         Only increments for non-Pro (Starter) users. Pro has unlimited analyses.
+        Raises SubscriptionLimitError when the monthly cap is reached.
         Returns updated usage so the client can refresh the usage bar.
         """
+        from app.core.exceptions import SubscriptionLimitError
+
         subscription = await self.get_or_create_subscription(db, user_id)
+
+        # Lazy reset before checking the cap
+        if subscription.usage_reset_date:
+            days_since_reset = (datetime.now(UTC) - subscription.usage_reset_date).days
+            if days_since_reset >= 30:
+                subscription.reset_usage()
+                await db.commit()
+                await db.refresh(subscription)
+
         if subscription.searches_per_month != -1:
+            if not subscription.can_search():
+                raise SubscriptionLimitError(
+                    limit_type="analyses",
+                    current=subscription.searches_used,
+                    limit=subscription.searches_per_month,
+                    tier_required="pro",
+                )
             subscription.increment_search()
             await db.commit()
             await db.refresh(subscription)

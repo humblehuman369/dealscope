@@ -722,7 +722,7 @@ class EmailService:
         <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
             <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Your Starter plan includes:</p>
             <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>5 property analyses per month</li>
+                <li>3 property analyses per month</li>
                 <li>Deal Gap, Income Value, and Target Buy metrics</li>
                 <li>IQ Verdict Score</li>
                 <li>All 6 strategy snapshots</li>

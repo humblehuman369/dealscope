@@ -73,7 +73,7 @@ class Subscription(Base):
 
     # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
     properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
-    searches_per_month: Mapped[int] = mapped_column(Integer, default=5)  # Starter: 5 analyses/mo
+    searches_per_month: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3 analyses/mo
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
 
     # Usage tracking (reset monthly)
@@ -168,7 +168,7 @@ class PaymentHistory(Base):
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
         "properties_limit": 10,
-        "searches_per_month": 5,
+        "searches_per_month": 3,
         "api_calls_per_month": 50,
         "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],
     },
