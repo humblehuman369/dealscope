@@ -177,7 +177,7 @@ function PropertyContextCard({
             className="rounded-lg p-2.5"
             style={{ backgroundColor: 'var(--surface-card)', boxShadow: 'var(--shadow-card)' }}
           >
-            <div className="text-xs mb-0.5" style={{ color: 'var(--text-label)' }}>{item.label}</div>
+            <div className="text-xs mb-0.5" style={{ color: 'var(--text-heading)' }}>{item.label}</div>
             <div className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>{item.value}</div>
           </div>
         ))}
@@ -193,7 +193,7 @@ function PropertyContextCard({
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{estimate.location_market}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: 'var(--text-label)' }}>Labor Factor</span>
+          <span className="text-xs" style={{ color: 'var(--text-heading)' }}>Labor Factor</span>
           <span
             className="px-1.5 py-0.5 rounded text-xs font-semibold"
             style={{
@@ -351,8 +351,8 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         <div className="flex items-center gap-2">
           <span className="text-base font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(breakdown.construction_total)}</span>
           {expanded
-            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
           }
         </div>
       </button>
@@ -394,7 +394,7 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         
         {remainingCategories.length > 0 && !expanded && (
           <div className="text-center mt-2">
-            <span className="text-xs" style={{ color: 'var(--text-label)' }}>
+            <span className="text-xs" style={{ color: 'var(--text-heading)' }}>
               +{remainingCategories.length} more categories
             </span>
           </div>
@@ -463,7 +463,7 @@ function HoldingCostsCard({ estimate }: { estimate: RehabEstimate }) {
             { label: 'Utilities', value: holding.monthly_utilities },
           ].map((item) => (
             <div key={item.label} className="flex justify-between">
-              <span style={{ color: 'var(--text-label)' }}>{item.label}</span>
+              <span style={{ color: 'var(--text-heading)' }}>{item.label}</span>
               <span className="font-medium" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.value)}/mo</span>
             </div>
           ))}
@@ -532,7 +532,7 @@ export default function QuickRehabEstimate({
           </div>
           <div>
             <h3 className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>Quick Estimate</h3>
-            <p className="text-xs" style={{ color: 'var(--text-label)' }}>AI-powered rehab analysis</p>
+            <p className="text-xs" style={{ color: 'var(--text-heading)' }}>AI-powered rehab analysis</p>
           </div>
         </div>
         {onSwitchToDetailed && (

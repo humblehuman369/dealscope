@@ -49,7 +49,7 @@ function PresetCard({
       }}
     >
       <div className="text-base font-semibold mb-1" style={{ color: 'var(--text-heading)' }}>{preset.name}</div>
-      <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-label)' }}>{preset.description}</div>
+      <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-heading)' }}>{preset.description}</div>
       <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(preset.estimatedCost.mid)}</div>
     </button>
   )
@@ -122,7 +122,7 @@ function RehabItemRow({
       {/* Item Name */}
       <div>
         <div className="font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</div>
-        <div className="text-xs" style={{ color: 'var(--text-label)' }}>{formatCurrency(unitCost)}/{item.unit}</div>
+        <div className="text-xs" style={{ color: 'var(--text-heading)' }}>{formatCurrency(unitCost)}/{item.unit}</div>
       </div>
       
       {/* Quality Badges */}
@@ -229,13 +229,13 @@ function CategorySection({
       >
         <div>
           <h3 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
-          <p className="text-base" style={{ color: 'var(--text-label)' }}>{selectedItems.length} items selected</p>
+          <p className="text-base" style={{ color: 'var(--text-heading)' }}>{selectedItems.length} items selected</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(categoryTotal)}</div>
           {expanded
-            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
           }
         </div>
       </button>
@@ -290,7 +290,7 @@ function CategorySection({
                       style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
                       <span className="text-sm font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</span>
-                      <span className="text-xs" style={{ color: 'var(--text-label)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
                     </button>
                   ))}
                 </div>
