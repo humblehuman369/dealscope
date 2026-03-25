@@ -58,18 +58,6 @@ export function AboutPageRedesign() {
   return (
     <div style={{ background: 'var(--surface-base)', color: 'var(--text-body)', lineHeight: 1.6, overflowX: 'hidden' }}>
 
-      {/* NAV */}
-      <nav className="dgiq-nav">
-        <Link href="/" className="dgiq-logo">
-          <span className="logo-deal">Deal</span>
-          <span className="logo-gap">Gap</span>
-          <span className="logo-iq">IQ</span>
-        </Link>
-        <button className="nav-cta" onClick={handleAnalyzeClick}>
-          Analyze a Property Free
-        </button>
-      </nav>
-
       {/* HERO */}
       <section className="about-hero">
         <div className="section-label">About DealGapIQ</div>
