@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useState, useMemo, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -95,6 +96,7 @@ const colors = {
 function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
@@ -194,6 +196,25 @@ function StrategyContent() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  const hasRecordedAnalysisRef = useRef(false)
+
+  useEffect(() => {
+    if (
+      !isLoading &&
+      data &&
+      addressParam &&
+      isAuthenticated &&
+      !isPro &&
+      !hasRecordedAnalysisRef.current
+    ) {
+      hasRecordedAnalysisRef.current = true
+      api
+        .post('/api/v1/billing/usage/record-analysis')
+        .then(() => queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] }))
+        .catch(() => {})
+    }
+  }, [isLoading, data, addressParam, isAuthenticated, isPro, queryClient])
 
   // Build the backend verdict API payload from current property info + overrides.
   // Converts session-stored percentage values (e.g. 20 for 20%) to backend decimal (0.20).
