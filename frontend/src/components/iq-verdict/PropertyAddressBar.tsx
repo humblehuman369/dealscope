@@ -4,8 +4,7 @@
  * PropertyAddressBar — Single-line, always-visible address bar for analysis pages.
  *
  * Shows address + property details (Beds · Baths · Sqft · Price · Status) inline.
- * No dropdown, no toggle. One persistent horizontal bar.
- * Dark theme (#000000) with accent #0EA5E9.
+ * Includes a chevron toggle to expand/collapse a property details dropdown.
  */
 
 import React, { useState } from 'react'
@@ -38,6 +37,10 @@ interface PropertyAddressBarProps {
   /** Optional controlled bookmark (e.g. from AppHeader save-property) */
   bookmarked?: boolean
   onBookmarkClick?: () => void
+  /** Whether the details dropdown is currently open */
+  isDropdownOpen?: boolean
+  /** Toggle the details dropdown */
+  onToggleDropdown?: () => void
 }
 
 function formatShortPrice(price: number): string {
@@ -144,6 +147,8 @@ export function PropertyAddressBar({
   zpid,
   bookmarked: bookmarkedProp,
   onBookmarkClick,
+  isDropdownOpen,
+  onToggleDropdown,
 }: PropertyAddressBarProps) {
   const [internalBookmarked, setInternalBookmarked] = useState(false)
   const isControlled = onBookmarkClick != null
@@ -258,41 +263,88 @@ export function PropertyAddressBar({
           <StatusText status={statusLabel} />
         </div>
 
-        {/* Right: Bookmark */}
-        <button
-          type="button"
-          onClick={handleBookmarkClick}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 6,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            borderRadius: 6,
-            transition: 'background 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = barTokens.hoverAccent
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none'
-          }}
-          title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
-          aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? barTokens.accent : 'none'}>
-            <path
-              d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
-              stroke={barTokens.accent}
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        {/* Right: Bookmark + Chevron */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <button
+            type="button"
+            onClick={handleBookmarkClick}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 6,
+              transition: 'background 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = barTokens.hoverAccent
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none'
+            }}
+            title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+            aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? barTokens.accent : 'none'}>
+              <path
+                d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
+                stroke={barTokens.accent}
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {onToggleDropdown && (
+            <button
+              type="button"
+              onClick={onToggleDropdown}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 6,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 6,
+                transition: 'background 0.2s ease, transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = barTokens.hoverAccent
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none'
+              }}
+              title={isDropdownOpen ? 'Hide property details' : 'Show property details'}
+              aria-label={isDropdownOpen ? 'Hide property details' : 'Show property details'}
+              aria-expanded={isDropdownOpen}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                style={{
+                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              >
+                <path
+                  d="M4 6L8 10L12 6"
+                  stroke={barTokens.accent}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
