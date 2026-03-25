@@ -71,11 +71,11 @@ export function PropertyDetailsDropdown({ property }: PropertyDetailsDropdownPro
     },
     { label: 'Property Type', value: formatPropertyType(property.propertyType) },
     { label: 'Stories', value: property.stories?.toString() || 'N/A' },
-    { label: 'Zestimate\u00AE', value: formatCurrencySafe(property.zestimate), highlight: true },
+    { label: 'Est. Value', value: formatCurrencySafe(property.valueIqEstimate ?? property.zestimate), highlight: true },
     {
-      label: 'Rent Zestimate\u00AE',
-      value: property.rentZestimate
-        ? `${formatCurrencySafe(property.rentZestimate)}/mo`
+      label: 'Est. Rent',
+      value: (property.rentalIqEstimate ?? property.rentZestimate)
+        ? `${formatCurrencySafe(property.rentalIqEstimate ?? property.rentZestimate)}/mo`
         : 'N/A',
       highlight: true,
     },
