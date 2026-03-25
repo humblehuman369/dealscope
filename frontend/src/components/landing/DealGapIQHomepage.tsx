@@ -61,18 +61,6 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
         <AuthParamHandler />
       </Suspense>
 
-      {/* NAV */}
-      <nav className="dgiq-nav">
-        <Link href="/" className="dgiq-logo">
-          <span className="logo-deal">Deal</span>
-          <span className="logo-gap">Gap</span>
-          <span className="logo-iq">IQ</span>
-        </Link>
-        <button className="nav-cta" onClick={handleAnalyzeClick}>
-          Analyze a Property Free
-        </button>
-      </nav>
-
       {/* HERO */}
       <section className="hero">
         <div className="hero-badge">Built for Real Estate Investors</div>
