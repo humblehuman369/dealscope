@@ -177,7 +177,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg sm:text-xl font-bold text-[var(--text-heading)] leading-tight">
-                  {showAddressInput ? 'Enter property address' : 'How would you like to search property?'}
+                  {showAddressInput ? 'Enter info to search' : 'How would you like to search property?'}
                 </h2>
               </div>
             </div>
