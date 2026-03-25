@@ -614,6 +614,16 @@
 .funnel-line {
   width: 1px; height: 50px;
   background: linear-gradient(to bottom, transparent, rgba(14,165,233,0.25), transparent);
+  position: relative;
+  overflow: hidden;
+}
+.funnel-line::after {
+  content: '';
+  position: absolute;
+  top: -100%; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--accent-sky), transparent);
+  animation: funnelFlow 2.4s ease-in-out infinite;
 }
 .funnel-text {
   font-family: var(--font-mono, 'Space Mono', monospace);
@@ -623,10 +633,12 @@
   text-orientation: mixed;
   padding: 0.5rem 0;
 }
-.funnel-text-top { color: var(--text-label); }
-.funnel-text-bottom { color: var(--status-positive); }
+.funnel-text-top { color: var(--text-label); animation: funnelPulseLabel 2.4s ease-in-out infinite; }
+.funnel-text-bottom { color: var(--status-positive); animation: funnelPulseLabel 2.4s ease-in-out 1.2s infinite; }
 .funnel-shape svg {
   display: block;
+  filter: drop-shadow(0 0 6px rgba(14,165,233,0.15));
+  animation: funnelGlow 2.4s ease-in-out infinite;
 }
 
 /* Strategy Engine Card */
@@ -1094,6 +1106,20 @@
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+@keyframes funnelFlow {
+  0% { top: -100%; opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { top: 200%; opacity: 0; }
+}
+@keyframes funnelGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(14,165,233,0.1)); }
+  50% { filter: drop-shadow(0 0 18px rgba(14,165,233,0.35)); }
+}
+@keyframes funnelPulseLabel {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* RESPONSIVE */
