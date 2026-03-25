@@ -889,20 +889,21 @@ function StrategyContent() {
               monthlyRent, annualRent, vacancyLoss, vacancyPct, effectiveIncome,
             }
 
+            const io = inlineOverrides as Record<string, number | undefined>
             const sliderValues: InlineDealMakerValues = {
-              buyPrice: targetPrice,
-              downPayment: downPaymentPct,
-              closingCosts: closingCostsPct,
-              interestRate: rate,
-              loanTerm: loanTermYears,
-              rehabBudget: rehabCost,
-              marketValue: listPrice,
-              arv: bd?.arv ?? data?.inputs_used?.arv ?? dealMakerOverrides?.arv ?? listPrice,
-              monthlyRent,
-              vacancyRate: vacancyPct,
-              propertyTaxes,
-              insurance,
-              managementRate: mgmtPct,
+              buyPrice: io.purchasePrice ?? targetPrice,
+              downPayment: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+              closingCosts: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+              interestRate: io.interestRate ?? rate,
+              loanTerm: io.loanTerm ?? loanTermYears,
+              rehabBudget: io.rehabBudget ?? rehabCost,
+              marketValue: io.listPrice ?? listPrice,
+              arv: io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? dealMakerOverrides?.arv ?? listPrice,
+              monthlyRent: io.monthlyRent ?? monthlyRent,
+              vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
+              propertyTaxes: io.propertyTaxes ?? propertyTaxes,
+              insurance: io.insurance ?? insurance,
+              managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
             }
 
             if (!showDealMaker) {
