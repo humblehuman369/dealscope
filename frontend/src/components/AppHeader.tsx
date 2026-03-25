@@ -25,6 +25,10 @@ import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
+import { PropertyDetailsDropdown, PropertyDetailsDropdownSkeleton } from '@/components/iq-verdict/PropertyDetailsDropdown'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import { normalizePropertyData } from '@/utils/normalizePropertyData'
+import type { PropertyData } from '@/components/property-details/types'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import type { AddressComponents, PlaceMetadata } from '@/components/AddressAutocomplete'
 import { useSession, useLogout } from '@/hooks/useSession'
@@ -63,7 +67,7 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'strategy' | 'details' | 'price-checker' | 'deal-maker' | 'estimator'
+export type AppTab = 'analyze' | 'strategy' | 'price-checker' | 'deal-maker' | 'estimator'
 
 interface PropertyInfo {
   address: string
@@ -100,7 +104,6 @@ interface AppHeaderProps {
 const TABS: { id: AppTab; label: string }[] = [
   { id: 'analyze', label: 'Verdict' },
   { id: 'strategy', label: 'Strategy' },
-  { id: 'details', label: 'Property' },
   { id: 'price-checker', label: 'Comps' },
   { id: 'deal-maker', label: 'DealMaker' },
   { id: 'estimator', label: 'Estimator' },
@@ -138,7 +141,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname === '/' || pathname === '') return undefined
   if (pathname.startsWith('/verdict')) return 'analyze'
   if (pathname.startsWith('/strategy')) return 'strategy'
-  if (pathname.startsWith('/property')) return 'details'
+  if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
@@ -352,6 +355,61 @@ export function AppHeader({
     propertySnapshot: savePropertySnapshot,
   })
 
+  // Property details dropdown state
+  const [detailsDropdownOpen, setDetailsDropdownOpen] = useState(false)
+  const [dropdownPropertyData, setDropdownPropertyData] = useState<PropertyData | null>(null)
+  const [dropdownLoading, setDropdownLoading] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const { fetchProperty } = usePropertyData()
+
+  const handleToggleDetailsDropdown = useCallback(() => {
+    setDetailsDropdownOpen((prev) => {
+      const opening = !prev
+      if (opening && !dropdownPropertyData && displayAddress) {
+        setDropdownLoading(true)
+        fetchProperty(displayAddress)
+          .then((raw) => {
+            const zpid = resolvedProperty?.zpid || String((raw as any)?.zpid || '')
+            const normalized = normalizePropertyData(raw as Record<string, unknown>, zpid)
+            setDropdownPropertyData(normalized)
+          })
+          .catch((err) => {
+            console.error('Failed to load property details for dropdown:', err)
+          })
+          .finally(() => setDropdownLoading(false))
+      }
+      return opening
+    })
+  }, [dropdownPropertyData, displayAddress, fetchProperty, resolvedProperty?.zpid])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!detailsDropdownOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDetailsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [detailsDropdownOpen])
+
+  // Close dropdown on Escape
+  useEffect(() => {
+    if (!detailsDropdownOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDetailsDropdownOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [detailsDropdownOpen])
+
+  // Close dropdown on navigation
+  useEffect(() => {
+    setDetailsDropdownOpen(false)
+    setDropdownPropertyData(null)
+  }, [pathname])
+
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
   // if (HIDDEN_ROUTES.includes(pathname || '')) {
   //   return null
@@ -520,15 +578,6 @@ export function AppHeader({
       case 'strategy':
         if (displayAddress) {
           router.push(`/strategy?address=${encodedAddress}`)
-        } else {
-          router.push('/search')
-        }
-        break
-      case 'details':
-        if (zpid && displayAddress) {
-          router.push(`/property/${zpid}?address=${encodedAddress}`)
-        } else if (displayAddress) {
-          router.push(`/search?q=${encodedAddress}`)
         } else {
           router.push('/search')
         }
@@ -895,13 +944,14 @@ export function AppHeader({
         </div>
       )}
 
-      {/* Property Address Bar — rendered OUTSIDE <header> so sticky works against the
-          viewport/body scroll, not the header's own bounds. */}
+      {/* Property Address Bar + Details Dropdown — rendered OUTSIDE <header> so
+          sticky works against the viewport/body scroll, not the header's own bounds. */}
       {shouldShowPropertyBar && displayAddress && (() => {
         const addrParts = parseDisplayAddress(displayAddress)
         const p = resolvedProperty
         return (
           <div
+            ref={dropdownRef}
             className="sticky top-0 z-40"
             style={{ backgroundColor: 'var(--surface-base)' }}
           >
@@ -920,7 +970,14 @@ export function AppHeader({
               onBookmarkClick={isAuthenticated
                 ? () => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
                 : () => router.push(signInUrl)}
+              isDropdownOpen={detailsDropdownOpen}
+              onToggleDropdown={handleToggleDetailsDropdown}
             />
+            {detailsDropdownOpen && (
+              dropdownLoading
+                ? <PropertyDetailsDropdownSkeleton />
+                : dropdownPropertyData && <PropertyDetailsDropdown property={dropdownPropertyData} />
+            )}
           </div>
         )
       })()}
