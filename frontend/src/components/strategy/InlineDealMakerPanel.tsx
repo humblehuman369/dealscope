@@ -29,6 +29,36 @@ interface InlineDealMakerPanelProps {
   initialSection?: DealMakerSection
 }
 
+const TOUR_STORAGE_KEY = 'dealmaker_tour_completed'
+
+interface TourStep {
+  sliderId: string
+  groupId: DealMakerSection
+  title: string
+  message: string
+}
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    sliderId: 'buyPrice',
+    groupId: 'purchase',
+    title: 'Start with your offer price',
+    message: 'This is the price you\u2019ll offer the seller. It\u2019s the foundation of every return metric \u2014 lower prices improve cash flow and returns.',
+  },
+  {
+    sliderId: 'monthlyRent',
+    groupId: 'income',
+    title: 'Set your rental income',
+    message: 'Your rental income drives cash flow. This is pre-filled from market data \u2014 adjust it if you have better local knowledge.',
+  },
+  {
+    sliderId: 'managementRate',
+    groupId: 'income',
+    title: 'Dial in your expenses',
+    message: 'Expenses eat into returns. Set this to 0% if you\u2019ll self-manage, or 6\u201310% for a professional property manager.',
+  },
+]
+
 const PURCHASE_SLIDERS: SliderConfig[] = [
   { id: 'buyPrice' as any, label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency',
     helpText: 'The price you offer the seller. Lower buy prices improve your cash flow and return metrics.' },
@@ -139,9 +169,57 @@ export function InlineDealMakerPanel({ values, onChange, listPrice, initialSecti
 
   const [highlightedSection, setHighlightedSection] = useState<DealMakerSection | null>(initialSection ?? null)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const sliderRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const setSectionRef = useCallback((id: string) => (el: HTMLDivElement | null) => { sectionRefs.current[id] = el }, [])
+  const setSliderRef = useCallback((id: string) => (el: HTMLDivElement | null) => { sliderRefs.current[id] = el }, [])
 
+  // --- Tour state ---
+  const [tourStep, setTourStep] = useState<number | null>(null)
+  const tourInitialized = useRef(false)
+
+  useEffect(() => {
+    if (tourInitialized.current || initialSection) return
+    tourInitialized.current = true
+    try {
+      if (typeof window !== 'undefined' && !localStorage.getItem(TOUR_STORAGE_KEY)) {
+        const timer = setTimeout(() => setTourStep(0), 800)
+        return () => clearTimeout(timer)
+      }
+    } catch { /* localStorage unavailable */ }
+  }, [initialSection])
+
+  const currentTourStep = tourStep != null ? TOUR_STEPS[tourStep] : null
+
+  useEffect(() => {
+    if (!currentTourStep) return
+    setExpandedSections((prev) => {
+      if (prev[currentTourStep.groupId]) return prev
+      return { ...prev, [currentTourStep.groupId]: true }
+    })
+    const timer = setTimeout(() => {
+      const el = sliderRefs.current[currentTourStep.sliderId]
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [currentTourStep])
+
+  const advanceTour = useCallback(() => {
+    if (tourStep == null) return
+    if (tourStep < TOUR_STEPS.length - 1) {
+      setTourStep(tourStep + 1)
+    } else {
+      setTourStep(null)
+      try { localStorage.setItem(TOUR_STORAGE_KEY, '1') } catch { /* ignore */ }
+    }
+  }, [tourStep])
+
+  const dismissTour = useCallback(() => {
+    setTourStep(null)
+    try { localStorage.setItem(TOUR_STORAGE_KEY, '1') } catch { /* ignore */ }
+  }, [])
+
+  // --- Section deep-link highlight ---
   useEffect(() => {
     if (!initialSection) return
     const el = sectionRefs.current[initialSection]
@@ -161,6 +239,8 @@ export function InlineDealMakerPanel({ values, onChange, listPrice, initialSecti
     setExpandedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
   }
 
+  const isTourActive = tourStep != null
+
   return (
     <>
     <style>{`
@@ -171,6 +251,14 @@ export function InlineDealMakerPanel({ values, onChange, listPrice, initialSecti
       @keyframes dealmaker-section-pulse {
         0%, 100% { box-shadow: inset 0 0 0 1px var(--pulse-color, rgba(255,255,255,0.25)); }
         50% { box-shadow: inset 0 0 0 2px var(--pulse-color, rgba(255,255,255,0.25)), 0 0 16px 2px var(--pulse-color, rgba(255,255,255,0.15)); }
+      }
+      @keyframes tour-spotlight-pulse {
+        0%, 100% { box-shadow: 0 0 0 2px var(--accent-sky), 0 0 12px 2px rgba(14, 165, 233, 0.25); }
+        50% { box-shadow: 0 0 0 3px var(--accent-sky), 0 0 20px 4px rgba(14, 165, 233, 0.35); }
+      }
+      @keyframes tour-card-enter {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     `}</style>
     <div
@@ -245,16 +333,74 @@ export function InlineDealMakerPanel({ values, onChange, listPrice, initialSecti
               {expandedSections[group.id] && group.sliders.map((slider) => {
                 const overrides = dynamicMax(slider.id as string, listPrice)
                 const config = { ...slider, ...overrides }
+                const sliderId = slider.id as string
+                const isSpotlit = currentTourStep?.sliderId === sliderId
+                const isDimmed = isTourActive && !isSpotlit
+
                 return (
-                  <DealMakerSlider
+                  <div
                     key={slider.id}
-                    config={config}
-                    value={getSliderValue(slider.id as string, values)}
-                    onChange={(val) => {
-                      const field = SLIDER_ID_TO_FIELD[slider.id as string]
-                      if (field) onChange(field, val)
+                    ref={setSliderRef(sliderId)}
+                    className="relative rounded-lg transition-opacity duration-300"
+                    style={{
+                      opacity: isDimmed ? 0.35 : 1,
+                      ...(isSpotlit ? {
+                        animation: 'tour-spotlight-pulse 1.5s ease-in-out infinite',
+                        borderRadius: '10px',
+                        padding: '4px 6px',
+                        margin: '-4px -6px',
+                      } : {}),
                     }}
-                  />
+                  >
+                    <DealMakerSlider
+                      config={config}
+                      value={getSliderValue(sliderId, values)}
+                      onChange={(val) => {
+                        const field = SLIDER_ID_TO_FIELD[sliderId]
+                        if (field) onChange(field, val)
+                      }}
+                    />
+                    {isSpotlit && tourStep != null && (
+                      <div
+                        className="mt-2 rounded-lg border px-3 py-2.5"
+                        style={{
+                          animation: 'tour-card-enter 0.3s ease-out',
+                          background: 'var(--chart-tooltip)',
+                          borderColor: 'var(--accent-sky)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
+                            {currentTourStep.title}
+                          </span>
+                          <span className="text-[10px] font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                            {tourStep + 1} of {TOUR_STEPS.length}
+                          </span>
+                        </div>
+                        <p className="text-[12px] leading-relaxed mb-2.5" style={{ color: 'var(--chart-tooltip-text)', margin: 0, marginBottom: '10px' }}>
+                          {currentTourStep.message}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={dismissTour}
+                            className="text-[11px] font-medium transition-opacity hover:opacity-100 cursor-pointer"
+                            style={{ color: 'var(--text-secondary)', opacity: 0.7, background: 'none', border: 'none', padding: 0 }}
+                          >
+                            Skip tour
+                          </button>
+                          <button
+                            type="button"
+                            onClick={advanceTour}
+                            className="px-3.5 py-1 rounded-full text-[11px] font-bold transition-all hover:brightness-110 cursor-pointer"
+                            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', border: 'none' }}
+                          >
+                            {tourStep < TOUR_STEPS.length - 1 ? 'Next' : 'Got it'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
