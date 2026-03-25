@@ -132,7 +132,7 @@ function SourceLegend({ markers }: { markers: SourceMarker[] }) {
           <span className="text-[13px]" style={{ color: m.color }}>
             {m.label}
           </span>
-          <span className="text-[13px] font-semibold tabular-nums" style={{ color: m.color }}>
+          <span className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--text-body)' }}>
             {formatCompactCurrency(m.value)}
           </span>
         </div>
