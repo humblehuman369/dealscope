@@ -8,11 +8,10 @@ import { API_BASE_URL } from '@/lib/env'
 
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { 
   loading: () => (
-    <div className="animate-pulse bg-gray-100 rounded-2xl h-96" />
+    <div className="animate-pulse rounded-2xl h-96" style={{ backgroundColor: 'var(--surface-elevated)' }} />
   )
 })
 
-// Property data interface for Quick Estimate mode
 interface PropertyData {
   square_footage?: number
   year_built?: number
@@ -34,13 +33,10 @@ function RehabPageContent() {
   const address = searchParams.get('address') || ''
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)
   
-  // Property data from URL params for Quick Estimate
   const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
   const [loading, setLoading] = useState(!!address)
   
-  // Extract property data from URL params or fetch if address provided
   useEffect(() => {
-    // Try to get property data from URL params first
     const sqft = searchParams.get('sqft')
     const yearBuilt = searchParams.get('year_built')
     const arv = searchParams.get('arv')
@@ -51,7 +47,6 @@ function RehabPageContent() {
     const stories = searchParams.get('stories')
     
     if (sqft || yearBuilt || arv) {
-      // Use URL params if provided
       setPropertyData({
         square_footage: sqft ? parseInt(sqft, 10) : undefined,
         year_built: yearBuilt ? parseInt(yearBuilt, 10) : undefined,
@@ -64,7 +59,6 @@ function RehabPageContent() {
       })
       setLoading(false)
     } else if (address) {
-      // Fetch property data if address is provided but no params
       const fetchPropertyData = async () => {
         try {
           const response = await fetch(
@@ -101,10 +95,16 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] dark:bg-navy-900 p-2 transition-colors">
+    <div className="min-h-screen p-2 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
       <div className="max-w-[800px] mx-auto">
-        {/* Main Container */}
-        <div className="bg-white dark:bg-navy-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-lg border border-[#0465f2]">
+        <div
+          className="rounded-xl"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-500 to-sky-600 px-4 py-3 rounded-t-xl flex justify-between items-center">
             <div>
@@ -125,7 +125,7 @@ function RehabPageContent() {
           <div className="p-3">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
               </div>
             ) : (
               <RehabEstimator 
@@ -145,8 +145,8 @@ function RehabPageContent() {
 export default function RehabPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f5f7fa] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-base)' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
       </div>
     }>
       <RehabPageContent />

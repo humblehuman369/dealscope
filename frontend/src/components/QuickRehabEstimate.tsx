@@ -67,49 +67,55 @@ function ConditionSelector({
   value: PropertyCondition
   onChange: (condition: PropertyCondition) => void
 }) {
-  const conditions: { id: PropertyCondition; label: string; description: string; color: string }[] = [
+  const conditions: { id: PropertyCondition; label: string; description: string; activeColor: string }[] = [
     { 
       id: 'distressed', 
       label: 'Distressed', 
       description: 'Major issues, full gut needed',
-      color: 'bg-red-100 text-red-700 border-red-300'
+      activeColor: 'var(--status-fail)',
     },
     { 
       id: 'fair', 
       label: 'Fair', 
       description: 'Functional but dated',
-      color: 'bg-amber-100 text-amber-700 border-amber-300'
+      activeColor: 'var(--status-warning)',
     },
     { 
       id: 'good', 
       label: 'Good', 
       description: 'Minor updates needed',
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-300'
+      activeColor: 'var(--status-pass)',
     },
     { 
       id: 'excellent', 
       label: 'Excellent', 
       description: 'Move-in ready',
-      color: 'bg-sky-100 text-sky-700 border-sky-300'
+      activeColor: 'var(--accent-sky)',
     },
   ]
   
   return (
     <div className="grid grid-cols-4 gap-2">
-      {conditions.map((cond) => (
-        <button
-          key={cond.id}
-          onClick={() => onChange(cond.id)}
-          className={`p-2 rounded-lg border-2 text-left transition-all ${
-            value === cond.id
-              ? `${cond.color} border-current dark:bg-opacity-20`
-              : 'bg-white dark:bg-navy-700 text-gray-600 dark:text-gray-300 border-[#0465f2] hover:border-brand-400'
-          }`}
-        >
-          <div className="text-[13px] font-semibold">{cond.label}</div>
-          <div className="text-[11px] opacity-75 leading-tight">{cond.description}</div>
-        </button>
-      ))}
+      {conditions.map((cond) => {
+        const isActive = value === cond.id
+        return (
+          <button
+            key={cond.id}
+            onClick={() => onChange(cond.id)}
+            className="p-2 rounded-lg border-2 text-left transition-all"
+            style={{
+              backgroundColor: isActive ? 'var(--surface-elevated)' : 'var(--surface-card)',
+              borderColor: isActive ? cond.activeColor : 'var(--border-default)',
+              color: isActive ? cond.activeColor : 'var(--text-secondary)',
+            }}
+          >
+            <div className="text-[13px] font-semibold" style={{ color: isActive ? cond.activeColor : 'var(--text-heading)' }}>
+              {cond.label}
+            </div>
+            <div className="text-[11px] opacity-75 leading-tight">{cond.description}</div>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -132,67 +138,77 @@ function PropertyContextCard({
   }
   
   const assetClassColors = {
-    standard: 'bg-gray-100 text-gray-700',
-    luxury: 'bg-purple-100 text-purple-700',
-    ultra_luxury: 'bg-amber-100 text-amber-700'
+    standard: { bg: 'var(--surface-elevated)', color: 'var(--text-secondary)' },
+    luxury: { bg: 'rgba(147, 51, 234, 0.15)', color: '#a855f7' },
+    ultra_luxury: { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' },
   }
   
+  const cls = assetClassColors[estimate.asset_class]
+  
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-navy-700 dark:to-navy-600 rounded-xl p-4 space-y-3 border border-[#0465f2]">
+    <div
+      className="rounded-xl p-4 space-y-3"
+      style={{
+        backgroundColor: 'var(--surface-elevated)',
+        border: '1px solid var(--border-subtle)',
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-brand-500" />
-          <span className="text-sm font-semibold text-navy-900 dark:text-white">Property Analysis</span>
+          <Building2 className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Property Analysis</span>
         </div>
-        <span className={`px-2 py-0.5 rounded-full text-[0.625rem] font-semibold ${assetClassColors[estimate.asset_class]}`}>
+        <span
+          className="px-2 py-0.5 rounded-full text-[0.625rem] font-semibold"
+          style={{ backgroundColor: cls.bg, color: cls.color }}
+        >
           {assetClassLabels[estimate.asset_class]} Class
         </span>
       </div>
       
       <div className="grid grid-cols-3 gap-3">
-        {/* Square Footage */}
-        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Square Feet</div>
-          <div className="text-sm font-bold text-navy-900 dark:text-white">
-            {formatNumber(propertyData.square_footage || 0)}
+        {[
+          { label: 'Square Feet', value: formatNumber(propertyData.square_footage || 0) },
+          { label: 'Year Built', value: propertyData.year_built || 'N/A' },
+          { label: 'Property Age', value: propertyData.year_built ? `${new Date().getFullYear() - propertyData.year_built} years` : 'N/A' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-lg p-2.5"
+            style={{ backgroundColor: 'var(--surface-card)', boxShadow: 'var(--shadow-card)' }}
+          >
+            <div className="text-[0.625rem] mb-0.5" style={{ color: 'var(--text-label)' }}>{item.label}</div>
+            <div className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>{item.value}</div>
           </div>
-        </div>
-        
-        {/* Year Built */}
-        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Year Built</div>
-          <div className="text-sm font-bold text-navy-900 dark:text-white">
-            {propertyData.year_built || 'N/A'}
-          </div>
-        </div>
-        
-        {/* Property Age */}
-        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Property Age</div>
-          <div className="text-sm font-bold text-navy-900 dark:text-white">
-            {propertyData.year_built 
-              ? `${new Date().getFullYear() - propertyData.year_built} years`
-              : 'N/A'
-            }
-          </div>
-        </div>
+        ))}
       </div>
       
       {/* Location Factor */}
-      <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm flex items-center justify-between">
+      <div
+        className="rounded-lg p-2.5 flex items-center justify-between"
+        style={{ backgroundColor: 'var(--surface-card)', boxShadow: 'var(--shadow-card)' }}
+      >
         <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-brand-500" />
-          <span className="text-xs text-gray-600 dark:text-gray-300">{estimate.location_market}</span>
+          <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--accent-sky)' }} />
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{estimate.location_market}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[0.625rem] text-gray-400">Labor Factor</span>
-          <span className={`px-1.5 py-0.5 rounded text-[0.625rem] font-semibold ${
-            estimate.location_factor > 1.3 
-              ? 'bg-red-100 text-red-700' 
-              : estimate.location_factor > 1.15 
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-green-100 text-green-700'
-          }`}>
+          <span className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>Labor Factor</span>
+          <span
+            className="px-1.5 py-0.5 rounded text-[0.625rem] font-semibold"
+            style={{
+              backgroundColor: estimate.location_factor > 1.3 
+                ? 'rgba(239,68,68,0.15)' 
+                : estimate.location_factor > 1.15 
+                  ? 'rgba(245,158,11,0.15)'
+                  : 'rgba(34,197,94,0.15)',
+              color: estimate.location_factor > 1.3 
+                ? '#ef4444' 
+                : estimate.location_factor > 1.15 
+                  ? '#f59e0b'
+                  : '#22c55e',
+            }}
+          >
             {estimate.location_factor > 1 ? '+' : ''}{((estimate.location_factor - 1) * 100).toFixed(0)}%
           </span>
         </div>
@@ -211,14 +227,13 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
   if (warnings.length === 0) return null
   
   const criticalCount = warnings.filter(w => w.priority === 'critical').length
-  const highCount = warnings.filter(w => w.priority === 'high').length
   const totalCost = warnings.reduce((sum, w) => sum + w.estimated_cost, 0)
   
-  const priorityColors = {
-    critical: 'bg-red-50 border-red-200 text-red-700',
-    high: 'bg-amber-50 border-amber-200 text-amber-700',
-    medium: 'bg-yellow-50 border-yellow-200 text-yellow-700',
-    low: 'bg-blue-50 border-blue-200 text-blue-700',
+  const priorityStyles: Record<string, { bg: string; border: string; color: string }> = {
+    critical: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444' },
+    high: { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: '#f59e0b' },
+    medium: { bg: 'rgba(234,179,8,0.1)', border: 'rgba(234,179,8,0.3)', color: '#eab308' },
+    low: { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)', color: '#3b82f6' },
   }
   
   const priorityIcons = {
@@ -229,14 +244,20 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
   }
   
   return (
-    <div className="bg-red-50 dark:bg-red-900/20 border border-[#0465f2] rounded-xl overflow-hidden">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{
+        backgroundColor: 'rgba(239,68,68,0.06)',
+        border: '1px solid rgba(239,68,68,0.25)',
+      }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between hover:bg-red-100/50 dark:hover:bg-red-900/30 transition-colors"
+        className="w-full p-3 flex items-center justify-between transition-colors"
       >
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-semibold text-red-800 dark:text-red-400">
+          <span className="text-sm font-semibold text-red-500">
             CapEx Warnings ({warnings.length})
           </span>
           {criticalCount > 0 && (
@@ -246,28 +267,38 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-red-700 dark:text-red-400">{formatCurrency(totalCost)}</span>
-          {expanded ? <ChevronUp className="w-4 h-4 text-red-400" /> : <ChevronDown className="w-4 h-4 text-red-400" />}
+          <span className="text-sm font-bold text-red-500">{formatCurrency(totalCost)}</span>
+          {expanded
+            ? <ChevronUp className="w-4 h-4 text-red-400" />
+            : <ChevronDown className="w-4 h-4 text-red-400" />
+          }
         </div>
       </button>
       
       {expanded && (
         <div className="px-3 pb-3 space-y-2">
-          {warnings.map((warning, idx) => (
-            <div 
-              key={idx} 
-              className={`p-2.5 rounded-lg border border-[#0465f2] ${priorityColors[warning.priority]} dark:bg-navy-700`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  {priorityIcons[warning.priority]}
-                  <span className="text-xs font-semibold dark:text-white">{warning.item}</span>
+          {warnings.map((warning, idx) => {
+            const ps = priorityStyles[warning.priority] || priorityStyles.medium
+            return (
+              <div 
+                key={idx} 
+                className="p-2.5 rounded-lg"
+                style={{
+                  backgroundColor: ps.bg,
+                  border: `1px solid ${ps.border}`,
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2" style={{ color: ps.color }}>
+                    {priorityIcons[warning.priority as keyof typeof priorityIcons]}
+                    <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>{warning.item}</span>
+                  </div>
+                  <span className="text-xs font-bold" style={{ color: 'var(--text-heading)' }}>{formatCurrency(warning.estimated_cost)}</span>
                 </div>
-                <span className="text-xs font-bold dark:text-white">{formatCurrency(warning.estimated_cost)}</span>
+                <p className="text-[0.625rem] mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{warning.notes}</p>
               </div>
-              <p className="text-[0.625rem] mt-1 leading-relaxed opacity-90 dark:text-gray-300">{warning.notes}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
@@ -298,50 +329,64 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
     { label: 'Permits', value: breakdown.permits, icon: '📋' },
   ].filter(c => c.value > 0).sort((a, b) => b.value - a.value)
   
-  // Top 4 for collapsed view
   const topCategories = categories.slice(0, 4)
   const remainingCategories = categories.slice(4)
   
   return (
-    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl overflow-hidden">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+      }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
+        className="w-full p-3 flex items-center justify-between transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Wrench className="w-4 h-4 text-brand-500" />
-          <span className="text-sm font-semibold text-navy-900 dark:text-white">Cost Breakdown</span>
+          <Wrench className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Cost Breakdown</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-brand-500">{formatCurrency(breakdown.construction_total)}</span>
-          {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          <span className="text-sm font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(breakdown.construction_total)}</span>
+          {expanded
+            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+          }
         </div>
       </button>
       
       <div className="px-3 pb-3">
-        {/* Always show top categories */}
         <div className="grid grid-cols-2 gap-2">
           {topCategories.map((cat, idx) => (
-            <div key={idx} className="bg-gray-50 dark:bg-navy-700 rounded-lg p-2 flex items-center justify-between">
+            <div
+              key={idx}
+              className="rounded-lg p-2 flex items-center justify-between"
+              style={{ backgroundColor: 'var(--surface-elevated)' }}
+            >
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{cat.icon}</span>
-                <span className="text-[0.6875rem] text-gray-600 dark:text-gray-300">{cat.label}</span>
+                <span className="text-[0.6875rem]" style={{ color: 'var(--text-secondary)' }}>{cat.label}</span>
               </div>
-              <span className="text-[0.6875rem] font-semibold text-navy-900 dark:text-white">{formatCurrency(cat.value)}</span>
+              <span className="text-[0.6875rem] font-semibold" style={{ color: 'var(--text-heading)' }}>{formatCurrency(cat.value)}</span>
             </div>
           ))}
         </div>
         
-        {/* Expanded view */}
         {expanded && remainingCategories.length > 0 && (
           <div className="grid grid-cols-2 gap-2 mt-2">
             {remainingCategories.map((cat, idx) => (
-              <div key={idx} className="bg-gray-50 dark:bg-navy-700 rounded-lg p-2 flex items-center justify-between">
+              <div
+                key={idx}
+                className="rounded-lg p-2 flex items-center justify-between"
+                style={{ backgroundColor: 'var(--surface-elevated)' }}
+              >
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">{cat.icon}</span>
-                  <span className="text-[0.6875rem] text-gray-600 dark:text-gray-300">{cat.label}</span>
+                  <span className="text-[0.6875rem]" style={{ color: 'var(--text-secondary)' }}>{cat.label}</span>
                 </div>
-                <span className="text-[0.6875rem] font-semibold text-navy-900 dark:text-white">{formatCurrency(cat.value)}</span>
+                <span className="text-[0.6875rem] font-semibold" style={{ color: 'var(--text-heading)' }}>{formatCurrency(cat.value)}</span>
               </div>
             ))}
           </div>
@@ -349,19 +394,25 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         
         {remainingCategories.length > 0 && !expanded && (
           <div className="text-center mt-2">
-            <span className="text-[0.625rem] text-gray-400">
+            <span className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>
               +{remainingCategories.length} more categories
             </span>
           </div>
         )}
         
         {/* Contingency */}
-        <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-center justify-between">
+        <div
+          className="mt-2 p-2 rounded-lg flex items-center justify-between"
+          style={{
+            backgroundColor: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.3)',
+          }}
+        >
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-[0.6875rem] text-amber-700 dark:text-amber-400">Contingency (10%)</span>
+            <span className="text-[0.6875rem] text-amber-600 dark:text-amber-400">Contingency (10%)</span>
           </div>
-          <span className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-400">{formatCurrency(breakdown.contingency)}</span>
+          <span className="text-[0.6875rem] font-semibold text-amber-600 dark:text-amber-400">{formatCurrency(breakdown.contingency)}</span>
         </div>
       </div>
     </div>
@@ -377,46 +428,53 @@ function HoldingCostsCard({ estimate }: { estimate: RehabEstimate }) {
   if (!holding) return null
   
   return (
-    <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-[#0465f2] rounded-xl p-3 space-y-2">
+    <div
+      className="rounded-xl p-3 space-y-2"
+      style={{
+        backgroundColor: 'rgba(139,92,246,0.08)',
+        border: '1px solid rgba(139,92,246,0.25)',
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-violet-500" />
-          <span className="text-sm font-semibold text-violet-800 dark:text-violet-300">Holding Costs</span>
-          <span className="text-[0.625rem] text-violet-500 dark:text-violet-400 font-medium">
+          <Clock className="w-4 h-4" style={{ color: '#8b5cf6' }} />
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Holding Costs</span>
+          <span className="text-[0.625rem] font-medium" style={{ color: '#8b5cf6' }}>
             &quot;The Silent Killer&quot;
           </span>
         </div>
-        <span className="text-sm font-bold text-violet-700 dark:text-violet-300">{formatCurrency(holding.total_holding)}</span>
+        <span className="text-sm font-bold" style={{ color: '#8b5cf6' }}>{formatCurrency(holding.total_holding)}</span>
       </div>
       
-      <div className="bg-white/70 dark:bg-navy-700/70 rounded-lg p-2">
+      <div
+        className="rounded-lg p-2"
+        style={{ backgroundColor: 'var(--surface-card)', opacity: 0.9 }}
+      >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[0.6875rem] text-violet-600 dark:text-violet-400">Estimated Timeline</span>
-          <span className="text-sm font-bold text-violet-800 dark:text-violet-300">{holding.duration_months} months</span>
+          <span className="text-[0.6875rem]" style={{ color: '#8b5cf6' }}>Estimated Timeline</span>
+          <span className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>{holding.duration_months} months</span>
         </div>
         
         <div className="grid grid-cols-2 gap-2 text-[0.625rem]">
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Interest</span>
-            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_interest)}/mo</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Taxes</span>
-            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_taxes)}/mo</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Insurance</span>
-            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_insurance)}/mo</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Utilities</span>
-            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_utilities)}/mo</span>
-          </div>
+          {[
+            { label: 'Interest', value: holding.monthly_interest },
+            { label: 'Taxes', value: holding.monthly_taxes },
+            { label: 'Insurance', value: holding.monthly_insurance },
+            { label: 'Utilities', value: holding.monthly_utilities },
+          ].map((item) => (
+            <div key={item.label} className="flex justify-between">
+              <span style={{ color: 'var(--text-label)' }}>{item.label}</span>
+              <span className="font-medium" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.value)}/mo</span>
+            </div>
+          ))}
         </div>
         
-        <div className="mt-2 pt-2 border-t border-violet-200 dark:border-violet-700 flex justify-between">
-          <span className="text-[0.6875rem] font-medium text-violet-600 dark:text-violet-400">Monthly Burn Rate</span>
-          <span className="text-sm font-bold text-violet-700 dark:text-violet-300">{formatCurrency(holding.monthly_total)}/mo</span>
+        <div
+          className="mt-2 pt-2 flex justify-between"
+          style={{ borderTop: '1px solid rgba(139,92,246,0.2)' }}
+        >
+          <span className="text-[0.6875rem] font-medium" style={{ color: '#8b5cf6' }}>Monthly Burn Rate</span>
+          <span className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>{formatCurrency(holding.monthly_total)}/mo</span>
         </div>
       </div>
     </div>
@@ -437,7 +495,6 @@ export default function QuickRehabEstimate({
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [includeHolding, setIncludeHolding] = useState(true)
   
-  // Generate estimate
   const estimate = useMemo(() => {
     const ri = new RehabIntelligence({
       sq_ft: propertyData.square_footage || 1500,
@@ -461,7 +518,6 @@ export default function QuickRehabEstimate({
     })
   }, [propertyData, condition, contingencyPct, includeHolding])
   
-  // Notify parent of estimate changes
   useMemo(() => {
     onEstimateChange?.(estimate.total_rehab)
   }, [estimate.total_rehab, onEstimateChange])
@@ -475,14 +531,19 @@ export default function QuickRehabEstimate({
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-navy-900 dark:text-white">Quick Estimate</h3>
-            <p className="text-[0.625rem] text-gray-500 dark:text-gray-400">AI-powered rehab analysis</p>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>Quick Estimate</h3>
+            <p className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>AI-powered rehab analysis</p>
           </div>
         </div>
         {onSwitchToDetailed && (
           <button
             onClick={onSwitchToDetailed}
-            className="px-3 py-1.5 text-[0.6875rem] font-medium text-brand-500 border border-brand-200 dark:border-brand-700 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
+            className="px-3 py-1.5 text-[0.6875rem] font-medium rounded-lg transition-colors"
+            style={{
+              color: 'var(--accent-sky)',
+              border: '1px solid var(--border-default)',
+              backgroundColor: 'var(--surface-card)',
+            }}
           >
             Switch to Detailed Mode
           </button>
@@ -494,7 +555,7 @@ export default function QuickRehabEstimate({
       
       {/* Condition Selector */}
       <div>
-        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Property Condition</label>
+        <label className="text-xs font-semibold mb-2 block" style={{ color: 'var(--text-secondary)' }}>Property Condition</label>
         <ConditionSelector value={condition} onChange={setCondition} />
       </div>
       
@@ -504,39 +565,54 @@ export default function QuickRehabEstimate({
       {/* Cost Breakdown */}
       <CostBreakdownCard estimate={estimate} />
       
-      {/* Holding Costs */}
+      {/* Holding Costs Toggle */}
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={includeHolding}
             onChange={(e) => setIncludeHolding(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-500 focus:ring-brand-500 dark:bg-navy-700"
+            className="w-4 h-4 rounded text-brand-500 focus:ring-brand-500"
+            style={{
+              borderColor: 'var(--border-default)',
+              backgroundColor: 'var(--surface-input)',
+            }}
           />
-          <span className="text-xs text-gray-600 dark:text-gray-300">Include holding costs</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Include holding costs</span>
         </label>
       </div>
       
       {includeHolding && <HoldingCostsCard estimate={estimate} />}
       
       {/* Contingency Selector */}
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-[#0465f2] rounded-lg p-3 flex justify-between items-center">
+      <div
+        className="rounded-lg p-3 flex justify-between items-center"
+        style={{
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          border: '1px solid rgba(245,158,11,0.3)',
+        }}
+      >
         <div>
-          <h4 className="text-xs font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
+          <h4 className="text-xs font-semibold text-amber-700 dark:text-amber-400">Contingency Reserve</h4>
           <p className="text-[0.625rem] text-amber-600 dark:text-amber-500">Buffer for unexpected costs</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={contingencyPct}
             onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
-            className="px-2 py-1 border border-amber-300 dark:border-amber-700 rounded-md bg-white dark:bg-navy-700 dark:text-white text-xs"
+            className="px-2 py-1 rounded-md text-xs"
+            style={{
+              backgroundColor: 'var(--surface-input)',
+              color: 'var(--text-heading)',
+              border: '1px solid var(--border-default)',
+            }}
           >
             <option value={0.05}>5%</option>
             <option value={0.10}>10%</option>
             <option value={0.15}>15%</option>
             <option value={0.20}>20%</option>
           </select>
-          <span className="text-sm font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.breakdown.contingency)}</span>
+          <span className="text-sm font-bold text-amber-700 dark:text-amber-400">{formatCurrency(estimate.breakdown.contingency)}</span>
         </div>
       </div>
       
@@ -572,7 +648,12 @@ export default function QuickRehabEstimate({
         {onSwitchToDetailed && (
           <button
             onClick={onSwitchToDetailed}
-            className="flex-1 py-2.5 bg-white dark:bg-navy-700 border-2 border-brand-500 text-brand-500 rounded-lg text-xs font-semibold hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--accent-sky)',
+              border: '2px solid var(--accent-sky)',
+            }}
           >
             <Wrench className="w-3.5 h-3.5" />
             Customize Line Items
@@ -582,4 +663,3 @@ export default function QuickRehabEstimate({
     </div>
   )
 }
-

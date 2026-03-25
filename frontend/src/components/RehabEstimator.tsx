@@ -16,15 +16,8 @@ import {
 } from '@/lib/analytics'
 import QuickRehabEstimate from './QuickRehabEstimate'
 
-// Type for quality tier
 type QualityTier = 'low' | 'mid' | 'high'
-
-// Type for estimator mode
 type EstimatorMode = 'quick' | 'detailed'
-
-// ============================================
-// FORMATTING
-// ============================================
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -49,15 +42,15 @@ function PresetCard({
   return (
     <button
       onClick={onSelect}
-      className={`bg-neutral-50 border-2 rounded-lg p-2 cursor-pointer transition-all text-left ${
-        isActive
-          ? 'border-brand-500 bg-gradient-to-br from-blue-50 to-sky-100'
-          : 'border-gray-200 hover:border-brand-500 hover:bg-blue-50'
-      }`}
+      className="rounded-lg p-2 cursor-pointer transition-all text-left"
+      style={{
+        backgroundColor: isActive ? 'var(--surface-elevated)' : 'var(--surface-card)',
+        border: isActive ? '2px solid var(--accent-sky)' : '2px solid var(--border-default)',
+      }}
     >
-      <div className="text-xs font-semibold text-navy-900 mb-1">{preset.name}</div>
-      <div className="text-[0.625rem] text-gray-500 mb-1 leading-tight">{preset.description}</div>
-      <div className="text-sm font-bold text-brand-500">{formatCurrency(preset.estimatedCost.mid)}</div>
+      <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-heading)' }}>{preset.name}</div>
+      <div className="text-[0.625rem] mb-1 leading-tight" style={{ color: 'var(--text-label)' }}>{preset.description}</div>
+      <div className="text-sm font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(preset.estimatedCost.mid)}</div>
     </button>
   )
 }
@@ -85,11 +78,12 @@ function QualityTabs({
         <button
           key={tier.id}
           onClick={() => onChange(tier.id)}
-          className={`px-2.5 py-1 rounded-md text-[0.6875rem] font-semibold cursor-pointer transition-all border ${
-            value === tier.id
-              ? 'bg-brand-500 text-white border-brand-500'
-              : 'bg-white text-gray-500 border-gray-200 hover:border-brand-500'
-          }`}
+          className="px-2.5 py-1 rounded-md text-[0.6875rem] font-semibold cursor-pointer transition-all"
+          style={{
+            backgroundColor: value === tier.id ? 'var(--accent-sky)' : 'var(--surface-card)',
+            color: value === tier.id ? '#FFFFFF' : 'var(--text-secondary)',
+            border: value === tier.id ? '1px solid var(--accent-sky)' : '1px solid var(--border-default)',
+          }}
         >
           {tier.label}
         </button>
@@ -99,7 +93,7 @@ function QualityTabs({
 }
 
 // ============================================
-// REHAB ITEM ROW - Compact Grid Layout
+// REHAB ITEM ROW
 // ============================================
 
 function RehabItemRow({
@@ -121,47 +115,64 @@ function RehabItemRow({
   const total = unitCost * selection.quantity
   
   return (
-    <div className="grid grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 border-b border-gray-100 hover:bg-gray-50 text-xs">
+    <div
+      className="grid grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-xs transition-colors"
+      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+    >
       {/* Item Name */}
       <div>
-        <div className="font-medium text-navy-900">{item.name}</div>
-        <div className="text-[0.625rem] text-gray-400">{formatCurrency(unitCost)}/{item.unit}</div>
+        <div className="font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</div>
+        <div className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>{formatCurrency(unitCost)}/{item.unit}</div>
       </div>
       
       {/* Quality Badges */}
-      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
-        globalTier === 'low' ? 'bg-sky-100 text-sky-700 border border-sky-300' : 'bg-sky-100 text-sky-700'
-      }`}>Budget</div>
-      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
-        globalTier === 'mid' ? 'bg-sky-100 text-brand-500 border border-brand-500' : 'bg-sky-100 text-brand-500'
-      }`}>Standard</div>
-      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
-        globalTier === 'high' ? 'bg-cyan-100 text-cyan-700 border border-cyan-300' : 'bg-cyan-100 text-cyan-700'
-      }`}>Premium</div>
+      {(['low', 'mid', 'high'] as const).map((tier) => (
+        <div
+          key={tier}
+          className="py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center"
+          style={{
+            backgroundColor: globalTier === tier ? 'var(--surface-elevated)' : 'transparent',
+            color: 'var(--accent-sky)',
+            border: globalTier === tier ? '1px solid var(--accent-sky)' : '1px solid transparent',
+          }}
+        >
+          {tier === 'low' ? 'Budget' : tier === 'mid' ? 'Standard' : 'Premium'}
+        </div>
+      ))}
       
       {/* Quantity Input */}
       <input
         type="number"
         value={selection.quantity}
         onChange={(e) => onUpdate({ ...selection, quantity: Math.max(0, parseInt(e.target.value) || 0) })}
-        className="w-14 px-1.5 py-1 border border-gray-200 rounded-md text-[0.6875rem] text-center focus:outline-none focus:border-brand-500"
+        className="w-14 px-1.5 py-1 rounded-md text-[0.6875rem] text-center focus:outline-none"
+        style={{
+          backgroundColor: 'var(--surface-input)',
+          color: 'var(--text-heading)',
+          border: '1px solid var(--border-default)',
+        }}
       />
       
       {/* Minus Button */}
       <button
         onClick={() => onUpdate({ ...selection, quantity: Math.max(0, selection.quantity - 1) })}
-        className="w-6 h-6 border border-gray-200 bg-white rounded flex items-center justify-center cursor-pointer text-gray-500 hover:border-brand-500 hover:text-brand-500 transition-all"
+        className="w-6 h-6 rounded flex items-center justify-center cursor-pointer transition-all"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-default)',
+          color: 'var(--text-secondary)',
+        }}
       >
         <Minus className="w-3 h-3" />
       </button>
       
       {/* Total */}
-      <div className="font-bold text-navy-900 text-right">{formatCurrency(total)}</div>
+      <div className="font-bold text-right" style={{ color: 'var(--text-heading)' }}>{formatCurrency(total)}</div>
       
       {/* Delete */}
       <button
         onClick={onRemove}
-        className="text-crimson-500 cursor-pointer text-sm hover:text-crimson-600"
+        className="cursor-pointer text-sm text-crimson-500 hover:text-crimson-600"
       >
         ×
       </button>
@@ -213,15 +224,19 @@ function CategorySection({
       {/* Category Header */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex justify-between items-center p-2 bg-neutral-50 rounded-lg mb-1.5 cursor-pointer hover:bg-gray-100"
+        className="w-full flex justify-between items-center p-2 rounded-lg mb-1.5 cursor-pointer transition-colors"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
       >
         <div>
-          <h3 className="text-sm font-semibold text-navy-900">{category.name}</h3>
-          <p className="text-[0.625rem] text-gray-500">{selectedItems.length} items selected</p>
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
+          <p className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>{selectedItems.length} items selected</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-base font-bold text-brand-500">{formatCurrency(categoryTotal)}</div>
-          {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          <div className="text-base font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(categoryTotal)}</div>
+          {expanded
+            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+          }
         </div>
       </button>
       
@@ -246,13 +261,24 @@ function CategorySection({
             <div className="relative">
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
-                className="w-full py-1.5 border border-dashed border-gray-300 bg-transparent rounded-md text-gray-500 text-[0.6875rem] font-medium cursor-pointer mt-1.5 hover:border-brand-500 hover:text-brand-500 hover:bg-blue-50 transition-all"
+                className="w-full py-1.5 border border-dashed rounded-md text-[0.6875rem] font-medium cursor-pointer mt-1.5 transition-all"
+                style={{
+                  borderColor: 'var(--border-default)',
+                  color: 'var(--text-secondary)',
+                  backgroundColor: 'transparent',
+                }}
               >
                 + Add Item
               </button>
               
               {showAddMenu && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-10 max-h-48 overflow-auto">
+                <div
+                  className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-xl z-10 max-h-48 overflow-auto"
+                  style={{
+                    backgroundColor: 'var(--surface-card)',
+                    border: '1px solid var(--border-default)',
+                  }}
+                >
                   {availableItems.map((item) => (
                     <button
                       key={item.id}
@@ -260,10 +286,11 @@ function CategorySection({
                         onAddItem(item.id)
                         setShowAddMenu(false)
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left"
+                      className="w-full flex items-center justify-between px-3 py-2 last:border-0 text-left transition-colors"
+                      style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
-                      <span className="text-xs font-medium text-navy-900">{item.name}</span>
-                      <span className="text-[0.625rem] text-gray-500">{formatCurrency(item.midCost)}/{item.unit}</span>
+                      <span className="text-xs font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</span>
+                      <span className="text-[0.625rem]" style={{ color: 'var(--text-label)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
                     </button>
                   ))}
                 </div>
@@ -288,25 +315,27 @@ function ModeToggle({
   onModeChange: (mode: EstimatorMode) => void
 }) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+    <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: 'var(--surface-elevated)' }}>
       <button
         onClick={() => onModeChange('quick')}
-        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all ${
-          mode === 'quick'
-            ? 'bg-white text-brand-500 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
+        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all"
+        style={{
+          backgroundColor: mode === 'quick' ? 'var(--surface-card)' : 'transparent',
+          color: mode === 'quick' ? 'var(--accent-sky)' : 'var(--text-secondary)',
+          boxShadow: mode === 'quick' ? 'var(--shadow-card)' : 'none',
+        }}
       >
         <Zap className="w-3.5 h-3.5" />
         Quick Estimate
       </button>
       <button
         onClick={() => onModeChange('detailed')}
-        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all ${
-          mode === 'detailed'
-            ? 'bg-white text-brand-500 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
+        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all"
+        style={{
+          backgroundColor: mode === 'detailed' ? 'var(--surface-card)' : 'transparent',
+          color: mode === 'detailed' ? 'var(--accent-sky)' : 'var(--text-secondary)',
+          boxShadow: mode === 'detailed' ? 'var(--shadow-card)' : 'none',
+        }}
       >
         <Wrench className="w-3.5 h-3.5" />
         Detailed Builder
@@ -323,7 +352,6 @@ interface RehabEstimatorProps {
   onEstimateChange?: (total: number) => void
   initialBudget?: number
   propertyAddress?: string
-  // Property data for Quick Estimate mode
   propertyData?: {
     square_footage?: number
     year_built?: number
@@ -339,7 +367,6 @@ interface RehabEstimatorProps {
     lot_size?: number
     hoa_monthly?: number
   }
-  // Initial mode
   initialMode?: EstimatorMode
 }
 
@@ -413,25 +440,26 @@ export default function RehabEstimator({
   const isOverBudget = budgetDiff > 0
   const budgetPct = initialBudget > 0 ? Math.abs(budgetDiff / initialBudget * 100).toFixed(0) : 0
   
-  // If Quick Estimate mode and property data is available
   if (mode === 'quick' && propertyData) {
     return (
       <div className="space-y-4">
-        {/* Mode Toggle */}
         <ModeToggle mode={mode} onModeChange={setMode} />
         
-        {/* Quick Estimate Component */}
         <QuickRehabEstimate
           propertyData={propertyData}
           onEstimateChange={onEstimateChange}
           onSwitchToDetailed={() => setMode('detailed')}
         />
         
-        {/* Back Button */}
         {propertyAddress && (
           <a
             href={`/property?address=${encodeURIComponent(propertyAddress)}`}
-            className="block w-full py-2.5 bg-white border-2 border-gray-200 rounded-lg text-gray-500 text-xs font-semibold text-center cursor-pointer hover:border-brand-500 hover:text-brand-500 transition-all"
+            className="block w-full py-2.5 rounded-lg text-xs font-semibold text-center cursor-pointer transition-all"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--text-secondary)',
+              border: '2px solid var(--border-default)',
+            }}
           >
             ← Back to Property Analytics
           </a>
@@ -442,14 +470,13 @@ export default function RehabEstimator({
   
   return (
     <div className="space-y-3">
-      {/* Mode Toggle - only show if property data is available */}
       {propertyData && (
         <ModeToggle mode={mode} onModeChange={setMode} />
       )}
       
       {/* Quick Start Presets */}
       <div>
-        <div className="text-sm font-semibold text-navy-900 mb-2">Quick Start Presets</div>
+        <div className="text-sm font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
         <div className="grid grid-cols-4 gap-2">
           {REHAB_PRESETS.map((preset) => (
             <PresetCard
@@ -463,9 +490,9 @@ export default function RehabEstimator({
       </div>
 
       {/* Quality Level */}
-      <div className="bg-neutral-50 rounded-lg p-2">
+      <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
         <div className="flex justify-between items-center">
-          <div className="text-xs font-semibold text-gray-500">Quality Level</div>
+          <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Quality Level</div>
           <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
         </div>
       </div>
@@ -486,23 +513,28 @@ export default function RehabEstimator({
       </div>
 
       {/* Contingency Reserve */}
-      <div className="bg-amber-50 border-2 border-amber-400 rounded-lg px-3 py-2 flex justify-between items-center">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg px-3 py-2 flex justify-between items-center">
         <div>
-          <h4 className="text-xs font-semibold text-amber-800">Contingency Reserve</h4>
-          <p className="text-[0.625rem] text-amber-700">Buffer for unexpected costs</p>
+          <h4 className="text-xs font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
+          <p className="text-[0.625rem] text-amber-700 dark:text-amber-500">Buffer for unexpected costs</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={contingencyPct}
             onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
-            className="px-2 py-1 border border-amber-300 rounded-md bg-white text-xs"
+            className="px-2 py-1 rounded-md text-xs"
+            style={{
+              backgroundColor: 'var(--surface-input)',
+              color: 'var(--text-heading)',
+              border: '1px solid var(--border-default)',
+            }}
           >
             <option value={0.05}>5%</option>
             <option value={0.10}>10%</option>
             <option value={0.15}>15%</option>
             <option value={0.20}>20%</option>
           </select>
-          <span className="text-base font-bold text-amber-800">{formatCurrency(estimate.contingency)}</span>
+          <span className="text-base font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.contingency)}</span>
         </div>
       </div>
 
@@ -515,9 +547,7 @@ export default function RehabEstimator({
             <div>Contingency: <span className="font-semibold">{formatCurrency(estimate.contingency)}</span></div>
           </div>
           {initialBudget > 0 && (
-            <div className={`mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[0.6875rem] text-white ${
-              isOverBudget ? 'bg-white/20' : 'bg-white/20'
-            }`}>
+            <div className="mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[0.6875rem] text-white bg-white/20">
               {isOverBudget ? (
                 <AlertTriangle className="w-3 h-3" />
               ) : (
@@ -534,7 +564,12 @@ export default function RehabEstimator({
       {propertyAddress && (
         <a
           href={`/property?address=${encodeURIComponent(propertyAddress)}`}
-          className="block w-full py-2.5 bg-white border-2 border-gray-200 rounded-lg text-gray-500 text-xs font-semibold text-center cursor-pointer hover:border-brand-500 hover:text-brand-500 transition-all"
+          className="block w-full py-2.5 rounded-lg text-xs font-semibold text-center cursor-pointer transition-all"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            color: 'var(--text-secondary)',
+            border: '2px solid var(--border-default)',
+          }}
         >
           ← Back to Property Analytics
         </a>
