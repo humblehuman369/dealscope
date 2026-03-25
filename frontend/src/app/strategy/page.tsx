@@ -851,8 +851,9 @@ function StrategyContent() {
 
           {/* Toggle header */}
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-[1rem] font-bold uppercase tracking-wider" style={{ color: colors.text.primary }}>
-              Financial Breakdown
+            <h3 className="text-[21px] sm:text-[25px] font-bold tracking-tight">
+              <span style={{ color: colors.text.primary }}>DealMaker</span>
+              <span style={{ color: colors.brand.teal }}>IQ</span>
             </h3>
             <button
               onClick={() => setShowDealMaker((v) => !v)}
