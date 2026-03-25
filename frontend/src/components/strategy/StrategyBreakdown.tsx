@@ -54,7 +54,7 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
 
 function Row({ label, value, strike, color }: { label: string; value: string; strike?: boolean; color?: string }) {
   return (
-    <div className="flex justify-between py-1.5 pl-3">
+    <div className="flex justify-between py-1.5 pl-6">
       <span className="text-sm" style={{ color: colors.text.body }}>{label}</span>
       <span
         className="text-sm font-semibold tabular-nums"
@@ -72,7 +72,7 @@ function Row({ label, value, strike, color }: { label: string; value: string; st
 function TotalRow({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div
-      className="flex justify-between pt-2.5 pb-2.5 mt-1.5 pl-3"
+      className="flex justify-between pt-2.5 pb-2.5 mt-1.5 pl-6"
       style={{ borderTop: `2px solid ${color}`, borderBottom: `2px solid ${color}` }}
     >
       <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{label}</span>
@@ -130,7 +130,7 @@ function WhatYoudEarn(props: StrategyBreakdownProps) {
       <SectionHeader title="What You'd Earn" color={colors.brand.blue} />
       <Row label="Monthly Rent" value={formatCurrency(props.monthlyRent)} />
       <Row label="Annual Gross" value={formatCurrency(props.annualRent)} />
-      <div className="flex justify-between py-1.5 pl-3">
+      <div className="flex justify-between py-1.5 pl-6">
         <span className="text-sm" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(props.vacancyPct * 100)}%)</span>
         <span className="text-sm font-semibold tabular-nums" style={{ color: colors.brand.blue }}>({formatCurrency(props.vacancyLoss)})</span>
       </div>
