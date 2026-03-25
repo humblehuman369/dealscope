@@ -30,31 +30,44 @@ interface InlineDealMakerPanelProps {
 }
 
 const PURCHASE_SLIDERS: SliderConfig[] = [
-  { id: 'buyPrice' as any, label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency' },
-  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0, max: 0.50, step: 0.05, format: 'percentage' },
-  { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage' },
+  { id: 'buyPrice' as any, label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency',
+    helpText: 'The price you offer the seller. Lower buy prices improve your cash flow and return metrics.' },
+  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0, max: 0.50, step: 0.05, format: 'percentage',
+    helpText: 'Percentage of buy price paid upfront in cash. Higher down payments reduce your mortgage but require more cash at closing.' },
+  { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
+    helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Typically 2\u20135% of the purchase price.' },
 ]
 
 const FINANCING_SLIDERS: SliderConfig[] = [
-  { id: 'interestRate' as any, label: 'Interest Rate', min: 0.04, max: 0.12, step: 0.00125, format: 'percentage' },
-  { id: 'loanTermYears' as any, label: 'Loan Term', min: 10, max: 30, step: 5, format: 'years' },
+  { id: 'interestRate' as any, label: 'Interest Rate', min: 0.04, max: 0.12, step: 0.00125, format: 'percentage',
+    helpText: 'Annual rate on your mortgage loan. Even small changes significantly impact your monthly payment and long-term cost.' },
+  { id: 'loanTermYears' as any, label: 'Loan Term', min: 10, max: 30, step: 5, format: 'years',
+    helpText: '30-year terms have lower monthly payments but pay more total interest. 15-year terms build equity faster.' },
 ]
 
 const REHAB_SLIDERS: SliderConfig[] = [
-  { id: 'rehabBudget' as any, label: 'Rehab Budget', min: 0, max: 100000, step: 1000, format: 'currency' },
-  { id: 'marketValue' as any, label: 'Market Value', min: 50000, max: 2000000, step: 5000, format: 'currency' },
-  { id: 'arv' as any, label: 'ARV', min: 50000, max: 2000000, step: 5000, format: 'currency' },
+  { id: 'rehabBudget' as any, label: 'Rehab Budget', min: 0, max: 100000, step: 1000, format: 'currency',
+    helpText: 'Estimated cost of repairs and improvements needed. Get contractor bids for accuracy.' },
+  { id: 'marketValue' as any, label: 'Market Value', min: 50000, max: 2000000, step: 5000, format: 'currency',
+    helpText: 'Current estimated market value based on comparable sales. Adjust using Comps to dial in your number.' },
+  { id: 'arv' as any, label: 'ARV', min: 50000, max: 2000000, step: 5000, format: 'currency',
+    helpText: 'After Repair Value \u2014 what the property will be worth after improvements, based on upgraded comps.' },
 ]
 
 const INCOME_SLIDERS: SliderConfig[] = [
-  { id: 'monthlyRent' as any, label: 'Monthly Rent', min: 500, max: 10000, step: 50, format: 'currencyPerMonth' },
-  { id: 'vacancyRate' as any, label: 'Vacancy Rate', min: 0, max: 0.20, step: 0.01, format: 'percentage' },
+  { id: 'monthlyRent' as any, label: 'Monthly Rent', min: 500, max: 10000, step: 50, format: 'currencyPerMonth',
+    helpText: 'Expected monthly rental income based on comparable rentals in the area. Adjust if you have better local data.' },
+  { id: 'vacancyRate' as any, label: 'Vacancy Rate', min: 0, max: 0.20, step: 0.01, format: 'percentage',
+    helpText: 'Percentage of time the property sits empty between tenants. 5% is roughly 18 days per year vacant.' },
 ]
 
 const EXPENSE_SLIDERS: SliderConfig[] = [
-  { id: 'annualPropertyTax' as any, label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear' },
-  { id: 'annualInsurance' as any, label: 'Insurance', min: 0, max: 10000, step: 100, format: 'currencyPerYear' },
-  { id: 'managementRate' as any, label: 'Management Rate', min: 0, max: 0.15, step: 0.01, format: 'percentage' },
+  { id: 'annualPropertyTax' as any, label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear',
+    helpText: 'Annual property tax bill from the county. Verify with the county assessor for accuracy.' },
+  { id: 'annualInsurance' as any, label: 'Insurance', min: 0, max: 10000, step: 100, format: 'currencyPerYear',
+    helpText: 'Annual homeowner\u2019s insurance premium. Get quotes from your insurer for the most accurate number.' },
+  { id: 'managementRate' as any, label: 'Management Rate', min: 0, max: 0.15, step: 0.01, format: 'percentage',
+    helpText: 'Percentage of rent paid to a property manager. 0% if self-managing; 6\u201310% is typical for professional management.' },
 ]
 
 type SliderGroup = {

@@ -14,6 +14,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { SliderFormat, DealMakerSliderProps } from './types'
+import { InfoPopover } from '@/components/ui/InfoPopover'
 
 export function formatSliderValue(value: number, format: SliderFormat): string {
   switch (format) {
@@ -168,8 +169,27 @@ export function DealMakerSlider({
     <div style={{ marginTop: '16px' }}>
       {/* Label and Value */}
       <div className="flex justify-between items-center" style={{ marginBottom: '8px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-heading)' }}>
+        <span className="inline-flex items-center gap-1.5" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-heading)' }}>
           {config.label}
+          {config.helpText && (
+            <InfoPopover
+              ariaLabel={`What is ${config.label}?`}
+              label={
+                <svg className="w-3.5 h-3.5 opacity-40 hover:opacity-80 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              }
+              content={
+                <p style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--chart-tooltip-text)', margin: 0 }}>
+                  {config.helpText}
+                </p>
+              }
+              panelClassName="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 shadow-lg"
+              className="inline-flex items-center"
+            />
+          )}
         </span>
         
         {isEditing ? (

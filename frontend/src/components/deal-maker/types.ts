@@ -119,6 +119,7 @@ export interface SliderConfig {
   isEstimate?: boolean // If true, shows as estimated vs. actual data
   lastUpdated?: Date // When the source data was last updated
   staleThresholdDays?: number // Days after which data is considered stale (default: 7)
+  helpText?: string // Contextual explanation shown via popover on the label
 }
 
 // Tab 1: Buy Price sliders
