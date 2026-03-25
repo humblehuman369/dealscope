@@ -257,14 +257,13 @@ function VerdictContent() {
     }
   }, [addressParam, propertyIdParam])
 
-  // Record one analysis for Starter usage when verdict loads from address (not from Deal Maker)
+  // Record one analysis for Starter usage when verdict loads (address or saved property)
   useEffect(() => {
     if (
       !isLoading &&
       property &&
       analysis &&
-      addressParam &&
-      !propertyIdParam &&
+      (addressParam || propertyIdParam) &&
       isAuthenticated &&
       !isPro &&
       !hasRecordedAnalysisRef.current
