@@ -72,10 +72,10 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
       ))}
 
       {/* Scale labels */}
-      <div className="absolute top-10 left-0 text-[10px] tabular-nums" style={{ color: 'var(--text-label)' }}>
+      <div className="absolute top-10 left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-label)' }}>
         {formatCompactCurrency(min)}
       </div>
-      <div className="absolute top-10 right-0 text-[10px] tabular-nums" style={{ color: 'var(--text-label)' }}>
+      <div className="absolute top-10 right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-label)' }}>
         {formatCompactCurrency(max)}
       </div>
     </div>
@@ -106,7 +106,7 @@ function MarkerDot({ marker, left }: { marker: SourceMarker; left: number }) {
       />
       {hovered && (
         <div
-          className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md text-[10px] font-semibold z-20"
+          className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md text-[12px] font-semibold z-20"
           style={{
             background: 'var(--surface-elevated)',
             border: '1px solid var(--border-default)',
@@ -129,10 +129,10 @@ function SourceLegend({ markers }: { markers: SourceMarker[] }) {
             className="w-2 h-2 rounded-full"
             style={{ backgroundColor: m.color }}
           />
-          <span className="text-[11px]" style={{ color: 'var(--text-label)' }}>
+          <span className="text-[13px]" style={{ color: 'var(--text-label)' }}>
             {m.label}
           </span>
-          <span className="text-[11px] font-semibold tabular-nums" style={{ color: 'var(--text-body)' }}>
+          <span className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--text-body)' }}>
             {formatCompactCurrency(m.value)}
           </span>
         </div>
@@ -145,7 +145,7 @@ function DivergenceBadge({ divergence, pct }: { divergence: DivergenceLevel; pct
   const cfg = DIVERGENCE_CONFIG[divergence]
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold"
       style={{ backgroundColor: cfg.bg, color: cfg.color }}
     >
       {divergence === 'high' && <AlertTriangle className="w-3 h-3" />}
@@ -184,10 +184,10 @@ function ModeButton({
       }}
       title={cfg.description}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}>
+      <div className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}>
         {cfg.label}
       </div>
-      <div className="text-sm font-bold tabular-nums mt-0.5" style={{ color: isActive ? modeColors[mode] : 'var(--text-body)' }}>
+      <div className="text-[16px] font-bold tabular-nums mt-0.5" style={{ color: isActive ? modeColors[mode] : 'var(--text-body)' }}>
         {isCurrency ? formatCompactCurrency(value) : `${formatCurrency(value)}/mo`}
       </div>
     </button>
@@ -210,16 +210,16 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
       {/* Confidence and Spread */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[10px] uppercase" style={{ color: 'var(--text-label)' }}>Confidence</div>
-          <div className="text-sm font-bold" style={{ color: cfgConf.color }}>{cfgConf.label}</div>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>Confidence</div>
+          <div className="text-[16px] font-bold" style={{ color: cfgConf.color }}>{cfgConf.label}</div>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[10px] uppercase" style={{ color: 'var(--text-label)' }}>Sources Used</div>
-          <div className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>{consensus.sourceCount}</div>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>Sources Used</div>
+          <div className="text-[16px] font-bold" style={{ color: 'var(--text-heading)' }}>{consensus.sourceCount}</div>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[10px] uppercase" style={{ color: 'var(--text-label)' }}>IQR Spread</div>
-          <div className="text-sm font-bold tabular-nums" style={{ color: 'var(--text-heading)' }}>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>IQR Spread</div>
+          <div className="text-[16px] font-bold tabular-nums" style={{ color: 'var(--text-heading)' }}>
             {mode === 'value' ? formatCompactCurrency(consensus.iqr) : `$${consensus.iqr}`}
           </div>
         </div>
@@ -227,7 +227,7 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
 
       {/* Available vs Unavailable Sources */}
       {unavailableSources.length > 0 && (
-        <div className="text-[11px]" style={{ color: 'var(--text-label)' }}>
+        <div className="text-[13px]" style={{ color: 'var(--text-label)' }}>
           <span className="font-semibold">Unavailable:</span>{' '}
           {unavailableSources
             .map((id) => {
@@ -246,7 +246,7 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
         if (Math.abs(pct) < 3) return null
         const direction = diff > 0 ? 'above' : 'below'
         return (
-          <div className="flex items-start gap-2 text-[11px] rounded-lg p-2" style={{ background: 'var(--surface-elevated)', color: 'var(--text-body)' }}>
+          <div className="flex items-start gap-2 text-[13px] rounded-lg p-2" style={{ background: 'var(--surface-elevated)', color: 'var(--text-body)' }}>
             <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: diff > 0 ? '#10B981' : '#F59E0B' }} />
             <span>
               Your comps {mode === 'value' ? 'value' : 'rent'} is <strong>{Math.abs(Math.round(pct))}% {direction}</strong> the average of external sources.
@@ -293,7 +293,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
             <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
           </svg>
           <span
-            className="text-xs font-bold uppercase tracking-wider"
+            className="text-[14px] font-bold uppercase tracking-wider"
             style={{ color: 'var(--accent-sky)' }}
           >
             Market Consensus
@@ -302,7 +302,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
         <DivergenceBadge divergence={consensus.divergence} pct={consensus.divergencePct} />
       </div>
 
-      <p className="text-[11px] mb-2" style={{ color: 'var(--text-label)' }}>
+      <p className="text-[13px] mb-2" style={{ color: 'var(--text-label)' }}>
         {mode === 'value' ? 'Property value' : 'Monthly rent'} range across {consensus.sourceCount} data points
       </p>
 
@@ -331,7 +331,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
       {/* Expand / Collapse Details */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1 mt-3 text-[11px] font-medium transition-colors"
+        className="flex items-center gap-1 mt-3 text-[13px] font-medium transition-colors"
         style={{ color: 'var(--accent-sky)' }}
       >
         {expanded ? 'Hide details' : 'Why do values differ?'}
