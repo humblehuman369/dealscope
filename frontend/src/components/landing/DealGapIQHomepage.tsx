@@ -210,65 +210,12 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             These are the numbers listing sites will never show you — because they were never built to calculate them.
           </p>
 
-          <div className="threshold-graphic">
-            {/* Gap span labels above the bar */}
-            <div className="gap-spans">
-              <div className="gap-span gap-span-deal">
-                <div className="gap-span-label sky-accent">DEAL GAP&ensp;-14.3%</div>
-                <div className="gap-span-bracket gap-span-bracket-sky" />
-              </div>
-              <div className="gap-span gap-span-price">
-                <div className="gap-span-label yellow-accent">PRICE GAP&ensp;-9.8%</div>
-                <div className="gap-span-bracket gap-span-bracket-yellow" />
-              </div>
-            </div>
-
-            {/* Bar with three dots */}
-            <div className="threshold-bar">
-              <div className="bar-track"><div className="bar-fill" /></div>
-              <div className="bar-dot dot-blue" style={{ left: '15%' }} />
-              <div className="bar-dot dot-yellow" style={{ left: '50%' }} />
-              <div className="bar-dot dot-red" style={{ left: '88%' }} />
-            </div>
-
-            {/* Three threshold cards */}
-            <div className="threshold-cards">
-              <div className="threshold-card blue-border">
-                <div className="tc-connector blue-connector" />
-                <div className="tc-label text-blue">TARGET BUY</div>
-                <div className="tc-value">$691,723</div>
-                <div className="tc-desc">
-                  Your recommended offer price – set below Income Value so the deal cash flows positively from day one. Set your own terms and customize the Target Buy in DealMaker.
-                </div>
-              </div>
-              <div className="threshold-card yellow-border">
-                <div className="tc-connector yellow-connector" />
-                <div className="tc-label text-yellow">INCOME VALUE</div>
-                <div className="tc-value">$728,129</div>
-                <div className="tc-desc">
-                  The maximum price you can pay and still break even – the point where rental income exactly covers all expenses and payments, leaving $0 in cash flow. Adjust expenses and financing in DealMaker to push Income Value higher.
-                </div>
-              </div>
-              <div className="threshold-card red-border">
-                <div className="tc-connector red-connector" />
-                <div className="tc-label text-red">MARKET PRICE</div>
-                <div className="tc-value">$807,600</div>
-                <div className="tc-desc">
-                  The current estimated market value based on comparable sales. Use the Comps tab to review, add, or remove comps and dial in your number.
-                </div>
-              </div>
-            </div>
-
-            {/* Gap explanations */}
-            <div className="gap-explanations">
-              <p>
-                <span className="sky-accent">Deal Gap</span> shows how close the asking price with the <span className="text-blue">Target Buy</span>, a property&apos;s starting cash-flow price.
-              </p>
-              <p>
-                <span className="yellow-accent">Price Gap</span> shows if the asking price is in line with the <span className="text-yellow">Income Value</span>, a property&apos;s break-even price.
-              </p>
-            </div>
-          </div>
+          <img
+            src="/images/three-price-thresholds-bar-graph.png"
+            alt="Three Price Thresholds — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
+            style={{ width: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
+            draggable={false}
+          />
         </div>
       </section>
 
