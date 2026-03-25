@@ -489,8 +489,12 @@ async def revenuecat_webhook(
 
         if user and event_type == "INITIAL_PURCHASE":
             try:
+                trial_end_str = None
+                if expiration:
+                    trial_end_str = subscription.current_period_end.strftime("%B %d, %Y")
                 await email_service.send_pro_welcome_email(
                     to=user.email, user_name=user.full_name or "",
+                    trial_end_date=trial_end_str,
                 )
             except Exception as e:
                 logger.warning("RevenueCat: failed to send Pro welcome email: %s", e)
@@ -540,9 +544,12 @@ async def revenuecat_webhook(
 
         if user:
             try:
+                price_usd = event.get("price_in_purchased_currency")
+                amount_cents = int(float(price_usd) * 100) if price_usd else None
                 await email_service.send_payment_failed_email(
                     to=user.email, user_name=user.full_name or "",
-                    amount_cents=0, currency="usd",
+                    amount_cents=amount_cents,
+                    currency=event.get("currency", "usd").lower() or "usd",
                 )
             except Exception as e:
                 logger.warning("RevenueCat: failed to send billing issue email: %s", e)
