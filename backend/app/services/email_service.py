@@ -647,14 +647,26 @@ class EmailService:
         self,
         to: str,
         user_name: str,
-        amount_cents: int,
-        currency: str,
+        amount_cents: int | None = None,
+        currency: str = "usd",
     ) -> dict[str, Any]:
-        """Send notification when a payment fails."""
+        """Send notification when a payment fails.
+
+        ``amount_cents`` is optional — when ``None`` or ``0`` the email
+        omits the specific dollar figure (e.g. for RevenueCat events
+        where the exact charge amount isn't available).
+        """
         billing_url = f"{self.frontend_url}/billing"
-        amount_display = (
-            f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
-        )
+
+        if amount_cents:
+            amount_display = (
+                f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
+            )
+            amount_sentence = f"your payment of <strong>{amount_display}</strong> for"
+            preview_text = f"Action required: payment of {amount_display} failed"
+        else:
+            amount_sentence = "your payment for"
+            preview_text = "Action required: payment failed for your DealGapIQ Pro subscription"
 
         content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
@@ -664,7 +676,7 @@ class EmailService:
     Hi {user_name or "there"},
 </p>
 <p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    We were unable to process your payment of <strong>{amount_display}</strong> for your DealGapIQ Pro subscription.
+    We were unable to process {amount_sentence} your DealGapIQ Pro subscription.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
@@ -691,7 +703,7 @@ class EmailService:
 </p>
 """
 
-        html = self._base_template(content, f"Action required: payment of {amount_display} failed")
+        html = self._base_template(content, preview_text)
 
         return await self.send_email(
             to=to,
