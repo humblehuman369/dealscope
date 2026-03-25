@@ -83,7 +83,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           </button>
         </div>
         <p className="hero-note">
-          No account needed · Results in seconds · 5 free analyses per month
+          No account needed · Results in seconds · 3 free analyses per month
         </p>
         <div className="hero-founder">
           <img
@@ -310,7 +310,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
         </button>
         <div className="final-meta">
           <span><span className="check">✓</span> No credit card</span>
-          <span><span className="check">✓</span> 5 free analyses/month</span>
+          <span><span className="check">✓</span> 3 free analyses/month</span>
           <span><span className="check">✓</span> Every assumption editable</span>
         </div>
       </section>
