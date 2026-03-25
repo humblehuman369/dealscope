@@ -1408,7 +1408,7 @@ function VerdictContent() {
                     : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
                 </p>
                 <button
-                  onClick={navigateToStrategy}
+                  onClick={() => navigateToStrategy()}
                   className="px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap flex-shrink-0"
                   style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
                 >
@@ -1635,7 +1635,7 @@ function VerdictContent() {
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
                 : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
             </p>
-            <button onClick={navigateToStrategy} className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
+            <button onClick={() => navigateToStrategy()} className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
               style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}>
               Show Me the Numbers
               <svg className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
