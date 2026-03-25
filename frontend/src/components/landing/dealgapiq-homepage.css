@@ -419,6 +419,7 @@
   line-height: 1.4;
   letter-spacing: -0.01em;
   position: relative;
+  text-align: center;
 }
 .manifesto-quote .em {
   color: var(--accent-sky);
