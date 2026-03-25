@@ -108,14 +108,11 @@ function RehabPageContent() {
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-500 to-sky-600 px-4 py-3 rounded-t-xl flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold text-white mb-0.5">Rehab Estimator</h1>
-              <p className="text-xs text-white/90">
-                {address ? address : 'AI-powered renovation budget analysis'}
-              </p>
+              <h1 className="text-xl font-bold text-white">Rehab Estimator</h1>
             </div>
             <a 
               href={address ? `/property?address=${encodeURIComponent(address)}` : '/'}
-              className="bg-white text-brand-500 border-none px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-50 transition-all"
+              className="bg-white text-brand-500 border-none px-3 py-1.5 rounded-lg text-[13px] font-semibold hover:bg-blue-50 transition-all"
             >
               ← Back
             </a>
