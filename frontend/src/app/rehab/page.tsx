@@ -95,19 +95,12 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen p-2 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
-      <div className="max-w-[800px] mx-auto">
-        <div
-          className="rounded-xl"
-          style={{
-            backgroundColor: 'var(--surface-card)',
-            border: '1px solid var(--border-default)',
-            boxShadow: 'var(--shadow-card)',
-          }}
-        >
+    <div className="min-h-screen transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
+      <div className="w-full">
+        <div style={{ backgroundColor: 'var(--surface-card)' }}>
           {/* Header */}
           <div
-            className="px-4 py-3 rounded-t-xl flex justify-between items-center"
+            className="px-4 py-3 flex justify-between items-center"
             style={{
               background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
               borderBottom: '1px solid var(--border-subtle)',
