@@ -316,6 +316,19 @@ class BillingService:
             subscription.increment_search()
             await db.commit()
             await db.refresh(subscription)
+
+            if subscription.searches_used == subscription.searches_per_month:
+                try:
+                    user = await self._get_user_for_email(db, user_id)
+                    if user:
+                        await email_service.send_analysis_limit_reached_email(
+                            to=user.email,
+                            user_name=user.full_name or "",
+                            limit=subscription.searches_per_month,
+                        )
+                except Exception as e:
+                    logger.warning("Failed to send limit-reached email: %s", e)
+
         return await self.get_usage(db, user_id)
 
     async def grant_subscription(
@@ -778,8 +791,55 @@ class BillingService:
                 )
 
     async def _handle_subscription_updated(self, db: AsyncSession, data: dict[str, Any]):
-        """Handle subscription update."""
+        """Handle subscription update — sync state and send relevant notifications."""
+        # Capture pre-sync state for detecting changes
+        stripe_sub_id = data.get("id")
+        result = await db.execute(select(Subscription).where(Subscription.stripe_subscription_id == stripe_sub_id))
+        existing = result.scalar_one_or_none()
+        was_cancel_at_period_end = existing.cancel_at_period_end if existing else False
+        was_tier = existing.tier if existing else None
+
         await self._sync_subscription(db, data)
+
+        user_id = data.get("metadata", {}).get("user_id")
+        if not user_id and existing:
+            user_id = str(existing.user_id)
+        if not user_id:
+            return
+
+        user = await self._get_user_for_email(db, uuid.UUID(user_id))
+        if not user:
+            return
+
+        now_cancel_at_period_end = data.get("cancel_at_period_end", False)
+
+        # Cancel-at-period-end: user scheduled cancellation (not yet fully canceled)
+        if now_cancel_at_period_end and not was_cancel_at_period_end:
+            period_end_str = "your next billing date"
+            if data.get("current_period_end"):
+                period_end_dt = datetime.fromtimestamp(data["current_period_end"], tz=UTC)
+                period_end_str = period_end_dt.strftime("%B %d, %Y")
+            try:
+                await email_service.send_cancel_at_period_end_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                    period_end_date=period_end_str,
+                )
+            except Exception as e:
+                logger.warning("Failed to send cancel-at-period-end email: %s", e)
+
+        # Upgrade: tier changed from free to pro (not initial creation, which has its own handler)
+        if was_tier == SubscriptionTier.FREE:
+            result2 = await db.execute(select(Subscription).where(Subscription.stripe_subscription_id == stripe_sub_id))
+            updated_sub = result2.scalar_one_or_none()
+            if updated_sub and updated_sub.tier == SubscriptionTier.PRO:
+                try:
+                    await email_service.send_upgrade_confirmation_email(
+                        to=user.email,
+                        user_name=user.full_name or "",
+                    )
+                except Exception as e:
+                    logger.warning("Failed to send upgrade confirmation email: %s", e)
 
     async def _handle_subscription_deleted(self, db: AsyncSession, data: dict[str, Any]):
         """Handle subscription cancellation — downgrade and notify user."""

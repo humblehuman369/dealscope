@@ -82,7 +82,7 @@ export default function PricingContent() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const starterFeatures: Feature[] = [
-    { name: "Up to 5 property analyses per month.", free: true, pro: true },
+    { name: "Up to 3 property analyses per month.", free: true, pro: true },
     { name: "Full Verdict, Income Value, and Target Buy on each property.", free: true, pro: true },
     { name: "Plain-language explanations of every key metric.", free: true, pro: true },
     { name: "All 6 strategy models", free: true, pro: true },

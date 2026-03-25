@@ -449,6 +449,7 @@ async def revenuecat_webhook(
     from sqlalchemy import select
     from app.models.user import User
     from app.models.subscription import Subscription, SubscriptionTier, SubscriptionStatus, TIER_LIMITS
+    from app.services.email_service import email_service
 
     try:
         user_id = __import__("uuid").UUID(app_user_id)
@@ -462,6 +463,10 @@ async def revenuecat_webhook(
     if not subscription:
         logger.warning(f"RevenueCat webhook: no subscription found for user {user_id}")
         return {"received": True, "event_type": event_type, "message": "User subscription not found"}
+
+    # Look up user once for email notifications
+    user_result = await db.execute(select(User).where(User.id == user_id))
+    user = user_result.scalar_one_or_none()
 
     pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
     free_limits = TIER_LIMITS[SubscriptionTier.FREE]
@@ -482,10 +487,35 @@ async def revenuecat_webhook(
 
         logger.info(f"RevenueCat: upgraded user {user_id} to Pro ({event_type})")
 
+        if user and event_type == "INITIAL_PURCHASE":
+            try:
+                await email_service.send_pro_welcome_email(
+                    to=user.email, user_name=user.full_name or "",
+                )
+            except Exception as e:
+                logger.warning("RevenueCat: failed to send Pro welcome email: %s", e)
+        elif user and event_type in ("RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
+            try:
+                await email_service.send_upgrade_confirmation_email(
+                    to=user.email, user_name=user.full_name or "",
+                )
+            except Exception as e:
+                logger.warning("RevenueCat: failed to send upgrade email: %s", e)
+
     elif event_type == "CANCELLATION":
         subscription.cancel_at_period_end = True
         subscription.canceled_at = datetime.now(UTC)
         logger.info(f"RevenueCat: user {user_id} cancelled (access until period end)")
+
+        if user and subscription.current_period_end:
+            try:
+                await email_service.send_cancel_at_period_end_email(
+                    to=user.email,
+                    user_name=user.full_name or "",
+                    period_end_date=subscription.current_period_end.strftime("%B %d, %Y"),
+                )
+            except Exception as e:
+                logger.warning("RevenueCat: failed to send cancellation email: %s", e)
 
     elif event_type in ("EXPIRATION", "NON_RENEWING_PURCHASE"):
         subscription.tier = SubscriptionTier.FREE
@@ -496,9 +526,26 @@ async def revenuecat_webhook(
         subscription.cancel_at_period_end = False
         logger.info(f"RevenueCat: user {user_id} expired, downgraded to Free")
 
+        if user:
+            try:
+                await email_service.send_subscription_canceled_email(
+                    to=user.email, user_name=user.full_name or "",
+                )
+            except Exception as e:
+                logger.warning("RevenueCat: failed to send expiration email: %s", e)
+
     elif event_type == "BILLING_ISSUE":
         subscription.status = SubscriptionStatus.PAST_DUE
         logger.info(f"RevenueCat: billing issue for user {user_id}")
+
+        if user:
+            try:
+                await email_service.send_payment_failed_email(
+                    to=user.email, user_name=user.full_name or "",
+                    amount_cents=0, currency="usd",
+                )
+            except Exception as e:
+                logger.warning("RevenueCat: failed to send billing issue email: %s", e)
 
     elif event_type == "SUBSCRIBER_ALIAS":
         logger.info(f"RevenueCat: alias event for user {user_id}, no action taken")

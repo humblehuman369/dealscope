@@ -21,7 +21,7 @@ export function CtaSection() {
         <div className="card-sm cta-tier">
           <div className="cta-tier-name">Starter</div>
           <div className="cta-tier-price">Free</div>
-          <div className="cta-tier-desc">5 analyses / month</div>
+          <div className="cta-tier-desc">3 analyses / month</div>
         </div>
         <div className="card-sm cta-tier" style={{ borderColor: 'rgba(14,165,233,.3)' }}>
           <div className="cta-tier-name">Pro</div>

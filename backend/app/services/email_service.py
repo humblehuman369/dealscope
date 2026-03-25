@@ -3,7 +3,6 @@ Email Service for sending transactional emails via Resend.
 """
 
 import logging
-import os
 from datetime import datetime
 from typing import Any
 
@@ -30,9 +29,11 @@ class EmailService:
     """
 
     def __init__(self):
-        self.api_key = os.getenv("RESEND_API_KEY")
-        self.from_email = os.getenv("EMAIL_FROM", "DealGapIQ <noreply@dealgapiq.com>")
-        self.frontend_url = os.getenv("FRONTEND_URL", "https://dealgapiq.com")
+        self.api_key = settings.RESEND_API_KEY or None
+        from_name = settings.EMAIL_FROM_NAME or "DealGapIQ"
+        from_addr = settings.EMAIL_FROM or "noreply@dealgapiq.com"
+        self.from_email = f"{from_name} <{from_addr}>"
+        self.frontend_url = settings.FRONTEND_URL or "https://dealgapiq.com"
         self.is_configured = bool(self.api_key and RESEND_AVAILABLE)
 
         if self.is_configured:
@@ -743,6 +744,135 @@ class EmailService:
         return await self.send_email(
             to=to,
             subject="Your Pro subscription has ended - DealGapIQ",
+            html=html,
+        )
+
+    async def send_analysis_limit_reached_email(
+        self,
+        to: str,
+        user_name: str,
+        limit: int,
+    ) -> dict[str, Any]:
+        """Send notification when user hits their monthly analysis limit."""
+        pricing_url = f"{self.frontend_url}/billing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    You've used all {limit} free analyses this month
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    You've reached your monthly limit of {limit} property analyses on your Starter plan. Upgrade to Pro for unlimited analyses and full access to every DealGapIQ tool.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
+            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Pro Investor includes:</p>
+            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong>Unlimited</strong> property analyses</li>
+                <li>Full calculation breakdowns &amp; stress testing</li>
+                <li>Downloadable Excel proformas</li>
+                <li>Lender-ready PDF reports</li>
+                <li>Side-by-side deal comparison</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+{self._button("Upgrade to Pro", pricing_url)}
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Your usage resets in approximately 30 days from your last reset date.
+</p>
+'''
+
+        html = self._base_template(content, f"You've used all {limit} free analyses this month")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Analysis limit reached — Upgrade to continue - DealGapIQ",
+            html=html,
+        )
+
+    async def send_upgrade_confirmation_email(
+        self,
+        to: str,
+        user_name: str,
+        plan_name: str = "Pro Investor",
+    ) -> dict[str, Any]:
+        """Send confirmation when a user upgrades from free to paid."""
+        dashboard_url = f"{self.frontend_url}/dashboard"
+        billing_url = f"{self.frontend_url}/billing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Upgrade confirmed
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ account has been upgraded to <strong>{plan_name}</strong>. All Pro features are now active — unlimited analyses, editable inputs, proformas, PDF reports, and more.
+</p>
+
+{self._button("Start Analyzing Deals", dashboard_url)}
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Manage your subscription anytime from your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
+</p>
+'''
+
+        html = self._base_template(content, f"Your DealGapIQ account has been upgraded to {plan_name}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Upgrade confirmed — Welcome to {plan_name} - DealGapIQ",
+            html=html,
+        )
+
+    async def send_cancel_at_period_end_email(
+        self,
+        to: str,
+        user_name: str,
+        period_end_date: str,
+    ) -> dict[str, Any]:
+        """Send confirmation when a user schedules cancellation at period end."""
+        billing_url = f"{self.frontend_url}/billing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Your cancellation is scheduled
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ Pro subscription has been set to cancel. You'll continue to have full Pro access until <strong>{period_end_date}</strong>, after which your account will move to the Starter plan.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #fffbeb; border-radius: 12px; border-left: 4px solid #f59e0b;">
+            <p style="font-weight: 600; color: #92400e; margin: 0 0 4px 0;">Changed your mind?</p>
+            <p style="font-size: 14px; color: #78350f; margin: 0;">
+                You can reactivate your subscription anytime before <strong>{period_end_date}</strong> from your
+                <a href="{billing_url}" style="color: #d97706; font-weight: 600;">billing page</a> — no interruption in service.
+            </p>
+        </td>
+    </tr>
+</table>
+
+{self._button("Manage Subscription", billing_url)}
+'''
+
+        html = self._base_template(content, f"Your Pro subscription will end on {period_end_date}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Your Pro subscription will end on {period_end_date} - DealGapIQ",
             html=html,
         )
 
