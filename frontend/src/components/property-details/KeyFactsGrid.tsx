@@ -23,7 +23,7 @@ interface FactItem {
 /**
  * KeyFactsGrid Component
  * 
- * Grid of key property facts. Highlighted items (Zestimate, Rent Zestimate)
+ * Grid of key property facts. Highlighted items (Est. Value, Est. Rent)
  * use sky blue accent; all financial values use tabular-nums for column alignment.
  */
 export function KeyFactsGrid({ property }: KeyFactsGridProps) {
@@ -50,14 +50,14 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
       icon: Layers 
     },
     { 
-      label: 'Zestimate®', 
-      value: formatCurrency(property.zestimate), 
+      label: 'Est. Value', 
+      value: formatCurrency(property.valueIqEstimate ?? property.zestimate), 
       icon: TrendingUp, 
       highlight: true 
     },
     { 
-      label: 'Rent Zestimate®', 
-      value: property.rentZestimate ? `${formatCurrency(property.rentZestimate)}/mo` : 'N/A', 
+      label: 'Est. Rent', 
+      value: (property.rentalIqEstimate ?? property.rentZestimate) ? `${formatCurrency(property.rentalIqEstimate ?? property.rentZestimate)}/mo` : 'N/A', 
       icon: Building, 
       highlight: true 
     },
