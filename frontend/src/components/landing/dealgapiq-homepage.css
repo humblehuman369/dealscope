@@ -397,18 +397,10 @@
   flex-shrink: 0;
 }
 
-/* MANIFESTO BANNER */
-.manifesto {
-  padding: 5rem 2rem;
-  margin-top: -20px;
+/* MANIFESTO — inline within paradigm section */
+.manifesto-inline {
+  margin-top: 4rem;
   text-align: center;
-  position: relative;
-}
-.manifesto::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(14,165,233,0.04), transparent);
-  pointer-events: none;
 }
 .manifesto-quote {
   font-family: var(--font-dm, 'DM Sans', sans-serif);
@@ -419,7 +411,6 @@
   margin: 0 auto;
   line-height: 1.4;
   letter-spacing: -0.01em;
-  position: relative;
   text-align: center;
 }
 .manifesto-quote .em {
