@@ -63,7 +63,7 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'strategy' | 'details' | 'price-checker' | 'deal-maker'
+export type AppTab = 'analyze' | 'strategy' | 'details' | 'price-checker' | 'deal-maker' | 'estimator'
 
 interface PropertyInfo {
   address: string
@@ -103,6 +103,7 @@ const TABS: { id: AppTab; label: string }[] = [
   { id: 'details', label: 'Property' },
   { id: 'price-checker', label: 'Comps' },
   { id: 'deal-maker', label: 'DealMaker' },
+  { id: 'estimator', label: 'Estimator' },
 ]
 
 // ===================
@@ -142,6 +143,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
   if (pathname.startsWith('/deal-maker')) return 'deal-maker'
+  if (pathname.startsWith('/rehab')) return 'estimator'
   if (pathname.startsWith('/about')) return undefined
   if (pathname.startsWith('/pricing')) return undefined
   if (pathname.startsWith('/map-search')) return undefined
@@ -547,6 +549,13 @@ export function AppHeader({
           router.push(`/deal-maker?address=${encodedAddress}`)
         } else {
           router.push('/deal-maker')
+        }
+        break
+      case 'estimator':
+        if (displayAddress) {
+          router.push(`/rehab?address=${encodedAddress}`)
+        } else {
+          router.push('/rehab')
         }
         break
     }
