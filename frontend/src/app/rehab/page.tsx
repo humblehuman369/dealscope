@@ -106,13 +106,24 @@ function RehabPageContent() {
           }}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-brand-500 to-sky-600 px-4 py-3 rounded-t-xl flex justify-between items-center">
+          <div
+            className="px-4 py-3 rounded-t-xl flex justify-between items-center"
+            style={{
+              background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+              borderBottom: '1px solid var(--border-subtle)',
+            }}
+          >
             <div>
-              <h1 className="text-xl font-bold text-white">Rehab Estimator</h1>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--accent-sky)' }}>Rehab Estimator</h1>
             </div>
             <a 
               href={address ? `/property?address=${encodeURIComponent(address)}` : '/'}
-              className="bg-white text-brand-500 border-none px-3 py-1.5 rounded-lg text-[13px] font-semibold hover:bg-blue-50 transition-all"
+              className="border-none px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
+              style={{
+                color: 'var(--accent-sky)',
+                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--surface-card)',
+              }}
             >
               ← Back
             </a>
