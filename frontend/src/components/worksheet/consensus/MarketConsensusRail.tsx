@@ -72,10 +72,10 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
       ))}
 
       {/* Scale labels */}
-      <div className="absolute top-10 left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-label)' }}>
+      <div className="absolute top-10 left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
         {formatCompactCurrency(min)}
       </div>
-      <div className="absolute top-10 right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-label)' }}>
+      <div className="absolute top-10 right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
         {formatCompactCurrency(max)}
       </div>
     </div>
@@ -145,7 +145,7 @@ function DivergenceBadge({ divergence, pct }: { divergence: DivergenceLevel; pct
   const cfg = DIVERGENCE_CONFIG[divergence]
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[14px] font-semibold"
       style={{ backgroundColor: cfg.bg, color: cfg.color }}
     >
       {divergence === 'high' && <AlertTriangle className="w-3 h-3" />}
@@ -184,7 +184,7 @@ function ModeButton({
       }}
       title={cfg.description}
     >
-      <div className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}>
+      <div className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}>
         {cfg.label}
       </div>
       <div className="text-[16px] font-bold tabular-nums mt-0.5" style={{ color: isActive ? modeColors[mode] : 'var(--text-body)' }}>
@@ -210,15 +210,15 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
       {/* Confidence and Spread */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>Confidence</div>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>Confidence</div>
           <div className="text-[16px] font-bold" style={{ color: cfgConf.color }}>{cfgConf.label}</div>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>Sources Used</div>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>Sources Used</div>
           <div className="text-[16px] font-bold" style={{ color: 'var(--text-heading)' }}>{consensus.sourceCount}</div>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-label)' }}>IQR Spread</div>
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>IQR Spread</div>
           <div className="text-[16px] font-bold tabular-nums" style={{ color: 'var(--text-heading)' }}>
             {mode === 'value' ? formatCompactCurrency(consensus.iqr) : `$${consensus.iqr}`}
           </div>
@@ -227,7 +227,7 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
 
       {/* Available vs Unavailable Sources */}
       {unavailableSources.length > 0 && (
-        <div className="text-[13px]" style={{ color: 'var(--text-label)' }}>
+        <div className="text-[13px]" style={{ color: 'var(--text-heading)' }}>
           <span className="font-semibold">Unavailable:</span>{' '}
           {unavailableSources
             .map((id) => {
@@ -293,7 +293,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
             <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
           </svg>
           <span
-            className="text-[14px] font-bold uppercase tracking-wider"
+            className="text-[16px] font-bold uppercase tracking-wider"
             style={{ color: 'var(--accent-sky)' }}
           >
             Market Consensus
@@ -302,7 +302,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
         <DivergenceBadge divergence={consensus.divergence} pct={consensus.divergencePct} />
       </div>
 
-      <p className="text-[13px] mb-2" style={{ color: 'var(--text-label)' }}>
+      <p className="text-[13px] mb-2" style={{ color: 'var(--text-heading)' }}>
         {mode === 'value' ? 'Property value' : 'Monthly rent'} range across {consensus.sourceCount} data points
       </p>
 
