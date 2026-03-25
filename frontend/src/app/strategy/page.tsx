@@ -286,7 +286,8 @@ function StrategyContent() {
         setIsLoading(true)
         const propData = await fetchProperty(fetchAddr)
         const v = propData.valuations || {}
-        let price = v.market_price
+        let price = v.value_iq_estimate
+          ?? v.market_price
           ?? v.zestimate
           ?? v.current_value_avm
           ?? (v.tax_assessed_value ? Math.round(v.tax_assessed_value / 0.75) : null)

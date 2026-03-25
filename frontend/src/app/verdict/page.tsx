@@ -333,17 +333,19 @@ function VerdictContent() {
           data.listing.listing_status !== 'SOLD' &&
           data.listing.listing_status !== 'FOR_RENT' &&
           data.listing.listing_status !== 'OTHER'
+        const iqValueEstimate = data.valuations?.value_iq_estimate ?? null
         const zestimate = data.valuations?.zestimate ?? null
         const currentAvm = data.valuations?.current_value_avm ?? null
         const taxAssessed = data.valuations?.tax_assessed_value ?? null
         const listPrice = data.listing?.list_price ?? null
         const apiMarketPrice = data.valuations?.market_price ?? null
 
-        // Market price: listed price or Zestimate (primary source for off-market).
-        // Sequential fallbacks (no blending) ensure the app remains functional
+        // Listed → list price; off-market → IQ Estimate (default Data Source).
+        // Sequential fallbacks ensure the app remains functional
         // when the primary source is unavailable.
         const price =
           (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
+          (iqValueEstimate != null && iqValueEstimate > 0 ? iqValueEstimate : null) ??
           (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
           (zestimate != null && zestimate > 0 ? zestimate : null) ??
           (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
