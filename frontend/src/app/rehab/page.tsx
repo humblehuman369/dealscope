@@ -95,7 +95,7 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
+    <div className="min-h-screen px-3 sm:px-4 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
       <div className="w-full">
         <div style={{ backgroundColor: 'var(--surface-card)' }}>
           {/* Header */}
