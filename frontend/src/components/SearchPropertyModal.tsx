@@ -245,9 +245,9 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   <Search size={28} className="text-[var(--text-inverse)] hidden sm:block" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address</h3>
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address or search</h3>
                   <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
-                    Type or paste any residential address to start
+                    Type or paste any residential address, city, state or zipcode
                   </p>
                 </div>
               </button>
@@ -261,7 +261,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-label)] pointer-events-none z-10" 
                 />
                 <AddressAutocomplete
-                  placeholder="Enter property address..."
+                  placeholder="Address, city, state or zipcode"
                   value={address}
                   onChange={setAddress}
                   onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
