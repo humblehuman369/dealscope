@@ -695,54 +695,78 @@
 .threshold-graphic {
   max-width: 850px;
   margin: 0 auto;
+  position: relative;
 }
-.gap-label-row {
-  display: flex; justify-content: center;
-  margin-bottom: 0.75rem;
+
+/* Gap span labels + brackets above the bar */
+.gap-spans {
+  position: relative;
+  margin-bottom: 0.5rem;
+  padding: 0 2rem;
 }
-.gap-label-row-price {
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  justify-content: center;
-  padding-left: 15%;
+.gap-span {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
 }
-.gap-label {
+.gap-span-deal {
+  left: 15%; right: 12%;
+  top: 0;
+}
+.gap-span-price {
+  left: 50%; right: 12%;
+  top: 2.5rem;
+}
+.gap-span-label {
   font-family: var(--font-mono, 'Space Mono', monospace);
-  font-size: 0.8rem; font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-bottom: 0.35rem;
 }
-.deal-gap-label-bar { color: var(--accent-sky); }
-.price-gap-label-bar { color: var(--status-warning, #fbbf24); }
+.gap-span-bracket {
+  width: 100%; height: 8px;
+  border-left: 2px solid;
+  border-right: 2px solid;
+  border-top: 2px solid;
+  border-radius: 4px 4px 0 0;
+}
+.gap-span-bracket-sky {
+  border-color: var(--accent-sky);
+}
+.gap-span-bracket-yellow {
+  border-color: var(--status-income-value, #FACC15);
+}
 
 .threshold-bar {
   position: relative;
-  height: 12px;
-  margin: 0 2rem;
+  height: 14px;
+  margin: 5rem 2rem 0;
 }
 .bar-track {
   position: absolute; inset: 0;
   background: var(--surface-elevated);
-  border: 1px solid rgba(14,165,233,0.2);
-  border-radius: 6px;
+  border: 1px solid rgba(14,165,233,0.25);
+  border-radius: 7px;
   overflow: hidden;
 }
 .bar-fill {
   height: 100%;
-  width: 55%;
-  background: linear-gradient(90deg, rgba(14,165,233,0.15), rgba(14,165,233,0.05));
-  border-radius: 6px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(14,165,233,0.2), rgba(14,165,233,0.06));
+  border-radius: 7px;
 }
 .bar-dot {
   position: absolute;
   top: 50%; transform: translate(-50%, -50%);
-  width: 16px; height: 16px;
+  width: 18px; height: 18px;
   border-radius: 50%;
-  border: 2px solid;
+  border: 3px solid;
   z-index: 2;
 }
-.dot-green { background: var(--status-positive); border-color: var(--status-positive); box-shadow: 0 0 8px rgba(52,211,153,0.4); }
-.dot-yellow { background: var(--status-income-value, #FACC15); border-color: var(--status-income-value, #FACC15); box-shadow: 0 0 8px rgba(250,204,21,0.4); }
-.dot-red { background: var(--status-negative); border-color: var(--status-negative); box-shadow: 0 0 8px rgba(248,113,113,0.4); }
+.dot-blue { background: var(--accent-sky); border-color: var(--accent-sky); box-shadow: 0 0 10px rgba(14,165,233,0.5); }
+.dot-yellow { background: var(--status-income-value, #FACC15); border-color: var(--status-income-value, #FACC15); box-shadow: 0 0 10px rgba(250,204,21,0.5); }
+.dot-red { background: var(--status-negative); border-color: var(--status-negative); box-shadow: 0 0 10px rgba(248,113,113,0.5); }
 
 .threshold-cards {
   display: grid;
@@ -758,7 +782,7 @@
   position: relative;
   border: 1px solid;
 }
-.green-border { border-color: rgba(52,211,153,0.3); }
+.blue-border { border-color: rgba(14,165,233,0.3); }
 .yellow-border { border-color: rgba(250,204,21,0.3); }
 .red-border { border-color: rgba(248,113,113,0.3); }
 
@@ -766,7 +790,7 @@
   width: 2px; height: 20px;
   margin: -1.25rem auto 0.75rem;
 }
-.green-connector { background: var(--status-positive); }
+.blue-connector { background: var(--accent-sky); }
 .yellow-connector { background: var(--status-income-value, #FACC15); }
 .red-connector { background: var(--status-negative); }
 
@@ -785,18 +809,21 @@
 .tc-desc {
   font-size: 0.8rem; color: var(--text-secondary);
   line-height: 1.6;
+  text-align: left;
 }
 
 .gap-explanations {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   text-align: center;
 }
 .gap-explanations p {
-  font-size: 0.95rem;
+  font-size: clamp(1rem, 2vw, 1.15rem);
   color: var(--text-body);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
 }
 .sky-accent { color: var(--accent-sky); font-weight: 600; }
+.text-blue { color: var(--accent-sky); font-weight: 600; }
 .green-accent { color: var(--status-positive); font-weight: 600; }
 .yellow-accent { color: var(--status-income-value, #FACC15); font-weight: 600; }
 
