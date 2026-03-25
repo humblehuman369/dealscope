@@ -576,7 +576,7 @@ function VerdictContent() {
               const sessionKey = buildDealMakerSessionKey(canonicalAddress)
               const existing = sessionStorage.getItem(sessionKey)
               const parsed = existing ? JSON.parse(existing) : {}
-              if (backendListPrice != null) parsed.listPrice = backendListPrice
+              if (backendListPrice != null) parsed.listPrice = isListed ? backendListPrice : propertyData.price
               if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
               if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
               parsed.timestamp = Date.now()
@@ -606,13 +606,14 @@ function VerdictContent() {
             // Ignore storage errors
           }
 
-          // Use backend list_price as displayed Market (single source of truth)
-          if (backendListPrice != null && backendListPrice > 0) {
+          // For listed properties, the backend list_price is the authoritative asking price.
+          // For off-market, the price from the cascade (IQ Estimate default) is kept so the
+          // Data Sources selector drives Market Price.
+          if (isListed && backendListPrice != null && backendListPrice > 0) {
             setProperty((prev) => {
               if (!prev) return null
               return { ...prev, price: Math.round(backendListPrice) } as IQProperty
             })
-            // Keep address bar in sync: list/market price (never target buy)
             try {
               const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
               const fullAddress = [propertyData.address, propertyData.city, stateZip].filter(Boolean).join(', ')
