@@ -187,15 +187,15 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               </ul>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* MANIFESTO */}
-      <section className="manifesto">
-        <p className="manifesto-quote">
-          &ldquo;You&apos;re not asking <span className="em">do I love this kitchen?</span><br />
-          You&apos;re asking <span className="em">does this property cash flow?</span>&rdquo;
-        </p>
+          {/* MANIFESTO — inside paradigm so it centers between cards and section bottom */}
+          <div className="manifesto-inline">
+            <p className="manifesto-quote">
+              &ldquo;You&apos;re not asking <span className="em">do I love this kitchen?</span><br />
+              You&apos;re asking <span className="em">does this property cash flow?</span>&rdquo;
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* HOW IT WORKS */}
