@@ -108,6 +108,8 @@ export function normalizePropertyData(
     zestimate: p.valuations?.zestimate,
     rentZestimate:
       p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr,
+    valueIqEstimate: p.valuations?.value_iq_estimate,
+    rentalIqEstimate: p.rentals?.rental_stats?.iq_estimate,
     pricePerSqft:
       p.valuations?.price_per_sqft ||
       (livingArea ? Math.round(price / livingArea) : undefined),

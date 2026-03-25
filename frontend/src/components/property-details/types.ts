@@ -209,6 +209,8 @@ export interface PropertyData {
   // Pricing
   zestimate?: number
   rentZestimate?: number
+  valueIqEstimate?: number
+  rentalIqEstimate?: number
   pricePerSqft?: number
   
   // Tax Info
