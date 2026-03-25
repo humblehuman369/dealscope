@@ -579,11 +579,10 @@ export function AppHeader({
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: 'var(--surface-base)' }}
         >
-          {/* Left: Logo (hidden on homepage where hero already shows it) */}
+          {/* Left: Logo */}
           <button 
             onClick={handleLogoClick}
             className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
-            style={{ visibility: isHomepage ? 'hidden' : 'visible' }}
           >
             <span 
               className="text-[21px] sm:text-[25px] font-bold tracking-tight"
