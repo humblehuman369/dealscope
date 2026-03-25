@@ -5,7 +5,7 @@ export const SOURCE_META: Record<DataSourceId, { label: string; color: string }>
   iq: { label: 'IQ Estimate', color: 'var(--accent-sky)' },
   zillow: { label: 'Zillow', color: '#4A90D9' },
   rentcast: { label: 'RentCast', color: '#F59E0B' },
-  redfin: { label: 'Redfin', color: '#A02B2D' },
+  redfin: { label: 'Redfin', color: '#EF5350' },
   realtor: { label: 'Realtor.com', color: '#D92228' },
 }
 
