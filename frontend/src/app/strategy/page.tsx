@@ -498,19 +498,27 @@ function StrategyContent() {
   const annualCashFlow = noi - annualDebt
   const monthlyCashFlow = annualCashFlow / 12
 
-  // Benchmarks — always from backend strategy metrics
-  const strategyCapRate = (topStrategy as { cap_rate?: number; capRate?: number })?.capRate ?? topStrategy?.cap_rate ?? null
-  const totalCashNeeded = bd?.total_cash_needed ?? downPayment + closingCosts + rehabCost
-  const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
-  const strategyCoc = (topStrategy as { cash_on_cash?: number; cashOnCash?: number })?.cashOnCash ?? topStrategy?.cash_on_cash ?? null
-  const strategyDscr = topStrategy?.dscr ?? null
-  const strategyCashFlow = topStrategy?.monthly_cash_flow ?? monthlyCashFlow
-  const strategyAnnualCashFlow = topStrategy?.annual_cash_flow ?? annualCashFlow
-
-  const capRateVal = strategyCapRate ?? null
-  const cocVal = strategyCoc ?? null
-
   const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
+
+  const totalCashNeeded = downPayment + closingCosts + rehabCost
+  const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
+  const strategyDscr = topStrategy?.dscr ?? null
+
+  // Rental strategies: derive all metrics from breakdown values so the metrics
+  // bar, summary cards, and breakdown section stay internally consistent.
+  // Flip/wholesale use backend strategy-level metrics (different economics model).
+  const strategyCashFlow = isFlipOrWholesale
+    ? (topStrategy?.monthly_cash_flow ?? monthlyCashFlow)
+    : monthlyCashFlow
+  const strategyAnnualCashFlow = isFlipOrWholesale
+    ? (topStrategy?.annual_cash_flow ?? annualCashFlow)
+    : annualCashFlow
+  const capRateVal = isFlipOrWholesale
+    ? ((topStrategy as { cap_rate?: number; capRate?: number })?.capRate ?? topStrategy?.cap_rate ?? null)
+    : (targetPrice > 0 ? (noi / targetPrice) * 100 : null)
+  const cocVal = isFlipOrWholesale
+    ? ((topStrategy as { cash_on_cash?: number; cashOnCash?: number })?.cashOnCash ?? topStrategy?.cash_on_cash ?? null)
+    : (totalCashNeeded > 0 ? (annualCashFlow / totalCashNeeded) * 100 : null)
   const benchmarks = isFlipOrWholesale
     ? [
         { metric: 'ROI', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', target: '20%', status: (cocVal !== null && cocVal >= 20) ? 'good' : 'poor' },
