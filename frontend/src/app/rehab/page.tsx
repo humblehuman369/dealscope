@@ -123,7 +123,7 @@ function RehabPageContent() {
           </div>
 
           {/* Content */}
-          <div className="p-3">
+          <div className="py-3" style={{ paddingLeft: 5, paddingRight: 5 }}>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
