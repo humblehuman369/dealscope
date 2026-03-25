@@ -48,8 +48,8 @@ function PresetCard({
         border: isActive ? '2px solid var(--accent-sky)' : '2px solid var(--border-default)',
       }}
     >
-      <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-heading)' }}>{preset.name}</div>
-      <div className="text-xs mb-1 leading-tight" style={{ color: 'var(--text-label)' }}>{preset.description}</div>
+      <div className="text-base font-semibold mb-1" style={{ color: 'var(--text-heading)' }}>{preset.name}</div>
+      <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-label)' }}>{preset.description}</div>
       <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(preset.estimatedCost.mid)}</div>
     </button>
   )
@@ -78,7 +78,7 @@ function QualityTabs({
         <button
           key={tier.id}
           onClick={() => onChange(tier.id)}
-          className="px-2.5 py-1 rounded-md text-[13px] font-semibold cursor-pointer transition-all"
+          className="px-2.5 py-1 rounded-md text-[15px] font-semibold cursor-pointer transition-all"
           style={{
             backgroundColor: value === tier.id ? 'var(--accent-sky)' : 'var(--surface-card)',
             color: value === tier.id ? '#FFFFFF' : 'var(--text-secondary)',
@@ -228,8 +228,8 @@ function CategorySection({
         style={{ backgroundColor: 'var(--surface-elevated)' }}
       >
         <div>
-          <h3 className="text-lg font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
-          <p className="text-sm" style={{ color: 'var(--text-label)' }}>{selectedItems.length} items selected</p>
+          <h3 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
+          <p className="text-base" style={{ color: 'var(--text-label)' }}>{selectedItems.length} items selected</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(categoryTotal)}</div>
@@ -261,7 +261,7 @@ function CategorySection({
             <div className="relative">
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
-                className="w-full py-1.5 border border-dashed rounded-md text-[13px] font-medium cursor-pointer mt-1.5 transition-all"
+                className="w-full py-1.5 border border-dashed rounded-md text-[15px] font-medium cursor-pointer mt-1.5 transition-all"
                 style={{
                   borderColor: 'var(--border-default)',
                   color: 'var(--text-secondary)',
@@ -476,7 +476,7 @@ export default function RehabEstimator({
       
       {/* Quick Start Presets */}
       <div>
-        <div className="text-base font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
+        <div className="text-lg font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
         <div className="grid grid-cols-4 gap-2">
           {REHAB_PRESETS.map((preset) => (
             <PresetCard
@@ -492,7 +492,7 @@ export default function RehabEstimator({
       {/* Quality Level */}
       <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
         <div className="flex justify-between items-center">
-          <div className="text-base font-semibold" style={{ color: 'var(--text-secondary)' }}>Quality Level</div>
+          <div className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Quality Level</div>
           <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
         </div>
       </div>
@@ -515,8 +515,8 @@ export default function RehabEstimator({
       {/* Contingency Reserve */}
       <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg px-3 py-2 flex justify-between items-center">
         <div>
-          <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
-          <p className="text-xs text-amber-700 dark:text-amber-500">Buffer for unexpected costs</p>
+          <h4 className="text-base font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
+          <p className="text-sm text-amber-700 dark:text-amber-500">Buffer for unexpected costs</p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -534,7 +534,7 @@ export default function RehabEstimator({
             <option value={0.15}>15%</option>
             <option value={0.20}>20%</option>
           </select>
-          <span className="text-base font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.contingency)}</span>
+          <span className="text-lg font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.contingency)}</span>
         </div>
       </div>
 
