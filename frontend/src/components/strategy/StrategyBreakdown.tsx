@@ -85,7 +85,7 @@ function WhatYoudPay(props: StrategyBreakdownProps) {
   return (
     <div>
       <SectionHeader title="What You'd Pay" color={colors.brand.blue} />
-      <Row label="Market Price" value={formatCurrency(props.listPrice)} strike />
+      <Row label="Market Price" value={formatCurrency(props.listPrice)} />
       <Row label="Target Buy" value={formatCurrency(props.targetPrice)} color={colors.brand.blue} />
       <Row label="Loan Amount" value={formatCurrency(props.loanAmount)} />
       <Row label={`Down Payment (${Math.round(props.downPaymentPct * 100)}%)`} value={formatCurrency(props.downPayment)} />
