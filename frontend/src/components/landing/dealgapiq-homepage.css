@@ -1114,12 +1114,18 @@
   100% { top: 200%; opacity: 0; }
 }
 @keyframes funnelGlow {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(14,165,233,0.1)); }
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(14,165,233,0.15)); }
   50% { filter: drop-shadow(0 0 18px rgba(14,165,233,0.35)); }
 }
 @keyframes funnelPulseLabel {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+@keyframes funnelFlowH {
+  0% { left: -100%; opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { left: 200%; opacity: 0; }
 }
 
 /* RESPONSIVE */
@@ -1130,6 +1136,12 @@
   .steps-layout { grid-template-columns: 1fr; }
   .funnel { flex-direction: row; padding: 1.5rem 0; }
   .funnel-line { width: 40px; height: 1px; }
+  .funnel-line::after {
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent, var(--accent-sky), transparent);
+    animation: funnelFlowH 2.4s ease-in-out infinite;
+  }
   .funnel-text { writing-mode: horizontal-tb; }
   .funnel-shape svg { transform: rotate(90deg); }
   .threshold-cards { grid-template-columns: 1fr; }
