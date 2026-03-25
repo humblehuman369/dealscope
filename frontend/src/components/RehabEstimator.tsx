@@ -289,8 +289,8 @@ function CategorySection({
                       className="w-full flex items-center justify-between px-3 py-2 last:border-0 text-left transition-colors"
                       style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
-                      <span className="text-sm font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</span>
-                      <span className="text-xs" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
+                      <span className="text-base font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</span>
+                      <span className="text-sm" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
                     </button>
                   ))}
                 </div>
