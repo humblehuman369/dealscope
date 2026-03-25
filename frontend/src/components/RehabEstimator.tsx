@@ -227,9 +227,9 @@ function CategorySection({
         className="w-full flex justify-between items-center p-2 rounded-lg mb-1.5 cursor-pointer transition-colors"
         style={{ backgroundColor: 'var(--surface-elevated)' }}
       >
-        <div>
-          <h3 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
-          <p className="text-base" style={{ color: 'var(--text-heading)' }}>{selectedItems.length} items selected</p>
+        <div className="text-left pl-2">
+          <h3 className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{selectedItems.length} items selected</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(categoryTotal)}</div>
