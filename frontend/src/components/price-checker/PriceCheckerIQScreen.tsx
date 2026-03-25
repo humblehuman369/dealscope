@@ -1156,181 +1156,179 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
 
-        {/* Full-width sections: Adjustment Grid + Market Consensus */}
-        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:mt-3 md:mx-4' : ''}>
-          <div className="mx-4 md:mx-0 mt-3 md:mt-0">
-            <AdjustmentGrid
-              compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
-              isExpanded={showAdjGrid}
-              onToggle={() => setShowAdjGrid(!showAdjGrid)}
-              isSale={isSale}
-            />
-          </div>
+        {/* Comps content: full-width panels then 2-column comps + map */}
+        {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
+          <div className="md:mt-3 md:mx-4">
+            {/* Adjustment Grid — always full width */}
+            <div className="mx-4 md:mx-0">
+              <AdjustmentGrid
+                compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
+                isExpanded={showAdjGrid}
+                onToggle={() => setShowAdjGrid(!showAdjGrid)}
+                isSale={isSale}
+              />
+            </div>
 
-          <div className="mx-4 md:mx-0 mt-3">
-            <MarketConsensusRail
-              consensus={isSale ? saleConsensus : rentConsensus}
-              mode={isSale ? 'value' : 'rent'}
-              onApplyMode={handleApplyConsensusMode}
-              activeMode={activeUnderwriteMode}
-            />
-          </div>
-        </div>
+            {/* Market Consensus — always full width */}
+            <div className="mx-4 md:mx-0 mt-3">
+              <MarketConsensusRail
+                consensus={isSale ? saleConsensus : rentConsensus}
+                mode={isSale ? 'value' : 'rent'}
+                onApplyMode={handleApplyConsensusMode}
+                activeMode={activeUnderwriteMode}
+              />
+            </div>
 
-        {/* 2-column layout: comps list + map side by side */}
-        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0
-          ? mapLayout === 'side'
-            ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3 md:mx-4'
-            : 'md:mt-3 md:mx-4'
-          : ''
-        }>
-          {/* Left column: controls + comp cards */}
-          <div className="min-w-0">
-            {/* Controls + Filters */}
-            <div className="px-4 md:px-0 mt-3 md:mt-0 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
+            {/* Comps + Map: 2-column grid when side layout */}
+            <div className={mapLayout === 'side'
+              ? 'md:grid md:grid-cols-2 md:gap-6 mt-3'
+              : 'mt-3'
+            }>
+              {/* Left column: controls + comp cards */}
+              <div className="min-w-0">
+                {/* Controls + Filters */}
+                <div className="px-4 md:px-0 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
-                {/* New / All / Reset */}
-                <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                  title="Replace unselected comps with new ones">
-                  <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
-                </button>
-                <button onClick={handleRefreshAll} disabled={loading}
-                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                  title="Fetch all new comps from API">
-                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
-                </button>
-                {hasChangedFromOriginal && (
-                  <button onClick={handleResetToOriginal} disabled={loading}
-                    className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                    title="Restore original system-selected comps">
-                    <RotateCcw className="w-3 h-3" />Reset
-                  </button>
-                )}
+                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
+                    {/* New / All / Reset */}
+                    <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
+                      className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                      title="Replace unselected comps with new ones">
+                      <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
+                    </button>
+                    <button onClick={handleRefreshAll} disabled={loading}
+                      className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                      title="Fetch all new comps from API">
+                      <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
+                    </button>
+                    {hasChangedFromOriginal && (
+                      <button onClick={handleResetToOriginal} disabled={loading}
+                        className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                        title="Restore original system-selected comps">
+                        <RotateCcw className="w-3 h-3" />Reset
+                      </button>
+                    )}
 
-                {/* Divider */}
-                <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
 
-                {/* Recency filter */}
-                <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
-                  {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
-                    <button key={val} onClick={() => setRecencyFilter(val)}
-                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
-                        recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
-                      }`}>{label}</button>
+                    {/* Recency filter */}
+                    <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
+                      {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
+                        <button key={val} onClick={() => setRecencyFilter(val)}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
+                            recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
+                          }`}>{label}</button>
+                      ))}
+                    </div>
+
+                    <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
+                        className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
+                      <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
+                        className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comp Cards */}
+                <div className="w-full min-w-0 px-4 md:px-0 mt-3 space-y-3">
+                  {filteredComps.map(comp => (
+                    <CompCard
+                      key={comp.id}
+                      comp={comp}
+                      subject={subject}
+                      isSale={isSale}
+                      isSelected={selectedIds.has(comp.id)}
+                      onToggle={() => toggleComp(comp.id)}
+                      isExpanded={expandedComp === comp.id}
+                      onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
+                      onRefreshComp={() => handleRefreshComp(comp.id)}
+                      refreshing={refreshingCompId === comp.id}
+                      onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
+                    />
                   ))}
                 </div>
 
-                <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
-
-                <div className="flex items-center gap-2">
-                  <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                    className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
-                  <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                    className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
-                </div>
+                {/* Location Quality */}
+                <div className={`mx-4 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
+                    <span className={`text-xs font-semibold ${
+                      comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
+                    }`}>
+                      Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Right column: sticky map (desktop only, side layout) */}
+              {mapLayout === 'side' && (
+                <div className="hidden md:block">
+                  <div
+                    className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
+                    style={{ height: 'calc(100vh - 320px)' }}
+                  >
+                    <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[var(--accent-sky-light)]" />
+                        <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
+                          <span className="flex items-center gap-1">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
+                            Subject
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full inline-block"
+                              style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
+                            />
+                            {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
+                          </span>
+                        </div>
+                        <div className="flex rounded-md border border-[var(--border-subtle)] overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setMapLayout('top')}
+                            className="p-1.5 transition-colors text-[var(--text-label)] hover:text-[var(--text-body)]"
+                            title="Wide top view"
+                          >
+                            <GalleryHorizontalEnd className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMapLayout('side')}
+                            className="p-1.5 transition-colors bg-[var(--accent-sky)]/15 text-[var(--accent-sky-light)]"
+                            title="Side panel view"
+                          >
+                            <PanelRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-h-0 border-t border-[var(--border-subtle)]">
+                      <CompsProximityMap
+                        subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
+                        comps={mapComps}
+                        activeView={activeView}
+                        hideHeader
+                        className="h-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Comp Cards */}
-            {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-              <div className="w-full min-w-0 px-4 md:px-0 mt-3 space-y-3">
-                {filteredComps.map(comp => (
-                  <CompCard
-                    key={comp.id}
-                    comp={comp}
-                    subject={subject}
-                    isSale={isSale}
-                    isSelected={selectedIds.has(comp.id)}
-                    onToggle={() => toggleComp(comp.id)}
-                    isExpanded={expandedComp === comp.id}
-                    onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
-                    onRefreshComp={() => handleRefreshComp(comp.id)}
-                    refreshing={refreshingCompId === comp.id}
-                    onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Location Quality */}
-            {!loading && !loadFailed && comps.length > 0 && (
-              <div className={`mx-4 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
-                  <span className={`text-xs font-semibold ${
-                    comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
-                  }`}>
-                    Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
-
-          {/* Right column: sticky map (desktop only, side layout) */}
-          {mapLayout === 'side' && hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-            <div className="hidden md:block">
-              <div
-                className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
-                style={{ height: 'calc(100vh - 320px)' }}
-              >
-                <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[var(--accent-sky-light)]" />
-                    <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
-                      <span className="flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
-                        Subject
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full inline-block"
-                          style={{ backgroundColor: isSale ? 'var(--accent-sky)' : 'var(--accent-sky-light)' }}
-                        />
-                        {isSale ? 'Sale' : 'Rent'} Comps ({mapComps.length})
-                      </span>
-                    </div>
-                    <div className="flex rounded-md border border-[var(--border-subtle)] overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setMapLayout('top')}
-                        className="p-1.5 transition-colors text-[var(--text-label)] hover:text-[var(--text-body)]"
-                        title="Wide top view"
-                      >
-                        <GalleryHorizontalEnd className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMapLayout('side')}
-                        className="p-1.5 transition-colors bg-[var(--accent-sky)]/15 text-[var(--accent-sky-light)]"
-                        title="Side panel view"
-                      >
-                        <PanelRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 min-h-0 border-t border-[var(--border-subtle)]">
-                  <CompsProximityMap
-                    subject={{ latitude: property.latitude, longitude: property.longitude, address: fullAddress }}
-                    comps={mapComps}
-                    activeView={activeView}
-                    hideHeader
-                    className="h-full"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </main>
 
       {/* Toast */}
