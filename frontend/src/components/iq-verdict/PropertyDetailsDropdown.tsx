@@ -128,7 +128,7 @@ export function PropertyDetailsDropdown({ property }: PropertyDetailsDropdownPro
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 space-y-4">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-4 space-y-4">
         {/* Property Facts */}
         <div>
           <div
