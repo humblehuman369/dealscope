@@ -1156,37 +1156,38 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           </div>
         )}
 
-        {/* Layout wrapper: side-by-side grid when map is 'side', single column when 'top' */}
+        {/* Full-width sections: Adjustment Grid + Market Consensus */}
+        <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0 ? 'md:mt-3 md:mx-4' : ''}>
+          <div className="mx-4 md:mx-0 mt-3 md:mt-0">
+            <AdjustmentGrid
+              compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
+              isExpanded={showAdjGrid}
+              onToggle={() => setShowAdjGrid(!showAdjGrid)}
+              isSale={isSale}
+            />
+          </div>
+
+          <div className="mx-4 md:mx-0 mt-3">
+            <MarketConsensusRail
+              consensus={isSale ? saleConsensus : rentConsensus}
+              mode={isSale ? 'value' : 'rent'}
+              onApplyMode={handleApplyConsensusMode}
+              activeMode={activeUnderwriteMode}
+            />
+          </div>
+        </div>
+
+        {/* 2-column layout: comps list + map side by side */}
         <div className={hasValidSubject && !loading && !loadFailed && comps.length > 0
           ? mapLayout === 'side'
             ? 'md:grid md:grid-cols-2 md:gap-6 md:mt-3 md:mx-4'
             : 'md:mt-3 md:mx-4'
           : ''
         }>
-          {/* Left column (or full width when map is top) */}
+          {/* Left column: controls + comp cards */}
           <div className="min-w-0">
-            {/* Adjustment Grid (accordion, loads open) */}
-            <div className="mx-4 md:mx-0 mt-3 md:mt-0">
-              <AdjustmentGrid
-                compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
-                isExpanded={showAdjGrid}
-                onToggle={() => setShowAdjGrid(!showAdjGrid)}
-                isSale={isSale}
-              />
-            </div>
-
-            {/* Market Consensus Rail */}
-            <div className="mx-4 md:mx-0 mt-3">
-              <MarketConsensusRail
-                consensus={isSale ? saleConsensus : rentConsensus}
-                mode={isSale ? 'value' : 'rent'}
-                onApplyMode={handleApplyConsensusMode}
-                activeMode={activeUnderwriteMode}
-              />
-            </div>
-
             {/* Controls + Filters */}
-            <div className="px-4 md:px-0 mt-3 min-w-0">
+            <div className="px-4 md:px-0 mt-3 md:mt-0 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
