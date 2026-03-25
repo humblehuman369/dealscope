@@ -172,7 +172,7 @@ async def register(body: UserRegister, request: Request, response: Response, db:
     if verification_token:
         try:
             await email_service.send_verification_email(
-                to_email=user.email,
+                to=user.email,
                 user_name=user.full_name or user.email,
                 verification_token=verification_token,
             )
@@ -476,7 +476,7 @@ async def verify_email(body: EmailVerification, request: Request, db: DbSession)
 
     # Send welcome email
     try:
-        await email_service.send_welcome_email(to_email=user.email, user_name=user.full_name or user.email)
+        await email_service.send_welcome_email(to=user.email, user_name=user.full_name or user.email)
     except Exception:
         pass
 
@@ -491,7 +491,7 @@ async def resend_verification(user: CurrentUser, db: DbSession):
     await db.commit()
     try:
         await email_service.send_verification_email(
-            to_email=user.email,
+            to=user.email,
             user_name=user.full_name or user.email,
             verification_token=raw_token,
         )
@@ -513,7 +513,7 @@ async def forgot_password(body: PasswordReset, request: Request, db: DbSession):
         raw_token, user = result
         try:
             await email_service.send_password_reset_email(
-                to_email=user.email,
+                to=user.email,
                 user_name=user.full_name or user.email,
                 reset_token=raw_token,
             )
@@ -539,7 +539,7 @@ async def reset_password(body: PasswordResetConfirm, request: Request, response:
     _clear_auth_cookies(response)
 
     try:
-        await email_service.send_password_changed_email(to_email=user.email, user_name=user.full_name or user.email)
+        await email_service.send_password_changed_email(to=user.email, user_name=user.full_name or user.email)
     except Exception:
         pass
 
@@ -564,7 +564,7 @@ async def change_password(
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     try:
-        await email_service.send_password_changed_email(to_email=user.email, user_name=user.full_name or user.email)
+        await email_service.send_password_changed_email(to=user.email, user_name=user.full_name or user.email)
     except Exception:
         pass
 

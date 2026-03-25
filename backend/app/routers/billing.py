@@ -112,8 +112,25 @@ async def record_analysis(current_user: CurrentUser, db: DbSession):
     Called when a user completes an analysis (e.g. leaves the analyzing screen
     and lands on the verdict). Starter users' Analyses count increments;
     Pro users have unlimited analyses so no change. Returns updated usage.
+
+    Returns 403 when the monthly analysis limit has been reached.
     """
-    return await billing_service.record_analysis(db, current_user.id)
+    from app.core.exceptions import SubscriptionLimitError
+
+    try:
+        return await billing_service.record_analysis(db, current_user.id)
+    except SubscriptionLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": e.code,
+                "message": f"You've used all {e.limit} free analyses this month. Upgrade to Pro for unlimited.",
+                "limit_type": e.limit_type,
+                "current": e.current,
+                "limit": e.limit,
+                "tier_required": e.tier_required,
+            },
+        )
 
 
 @router.post("/subscription/cancel", response_model=CancelSubscriptionResponse, summary="Cancel subscription")
