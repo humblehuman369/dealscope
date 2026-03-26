@@ -143,7 +143,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
 
   return (
     <div
-      className="grid grid-cols-[1fr_1fr_50px_auto] sm:grid-cols-[1fr_1.2fr_55px_auto] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className="grid grid-cols-[1fr_1fr_45px_92px] sm:grid-cols-[1fr_1.2fr_50px_92px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
@@ -181,8 +181,9 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-sm font-semibold tabular-nums text-right bg-transparent outline-none min-w-[80px] sm:min-w-[100px] rounded px-1 cursor-text transition-all focus:bg-white/[0.06] focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
-        style={{ color: C.heading, border: 'none', borderBottom: '1px dashed var(--border-subtle)' }}
+        className="text-sm font-semibold tabular-nums text-right outline-none w-[88px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
+        style={{ color: C.heading, border: '1px solid var(--border-subtle)', background: 'var(--surface-elevated)' }}
+        size={10}
       />
     </div>
   )
