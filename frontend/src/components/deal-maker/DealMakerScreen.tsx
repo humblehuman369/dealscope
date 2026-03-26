@@ -34,7 +34,7 @@ import {
   // LTR types (extracted)
   LTRDealMakerState, LTRDealMakerMetrics,
   AnyStrategyState, AnyStrategyMetrics,
-  DealMakerPropertyData, AccordionSection,
+  DealMakerPropertyData,
   // Helpers (extracted)
   getStrategyType,
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
@@ -213,7 +213,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
-  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['buyPrice', 'financing', 'rehab', 'income', 'expenses']))
+  
   const strategyType = getStrategyType(currentStrategy)
   const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(() => buildLTRState(property, listPrice))
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(() => buildSTRState(property, listPrice))
@@ -941,32 +941,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
-  const toggleAccordion = (section: AccordionSection) => {
-    if (!section) return
-    setOpenSections(prev => {
-      const next = new Set(prev)
-      if (next.has(section)) {
-        next.delete(section)
-      } else {
-        next.add(section)
-      }
-      return next
-    })
-  }
-
-  const handleContinue = (currentSection: AccordionSection) => {
-    const sectionOrder: AccordionSection[] = ['buyPrice', 'financing', 'rehab', 'income', 'expenses']
-    const currentIndex = sectionOrder.indexOf(currentSection)
-    if (currentIndex < sectionOrder.length - 1) {
-      const nextSection = sectionOrder[currentIndex + 1]
-      setOpenSections(prev => new Set(prev).add(nextSection!))
-      setTimeout(() => {
-        document.getElementById(`section-${nextSection}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
-    } else {
-      router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
-    }
-  }
+  
 
   // getValueColor imported from ./types
 
@@ -1144,43 +1119,18 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         </div>
       </div>
 
-      {/* Main Content - Accordion Sections */}
+      {/* Main Content */}
       <main className="px-4 sm:px-6 pb-24 sm:pb-28">
-        {accordionSections.map((section) => (
-          <div
-            key={section.id}
-            id={`section-${section.id}`}
-            className="rounded-xl mb-3 overflow-hidden transition-all"
-            style={openSections.has(section.id) ? {
-              background: 'var(--surface-base)',
-              border: '1px solid var(--border-focus)',
-              boxShadow: 'var(--shadow-card-hover)',
-            } : {
-              background: 'var(--surface-base)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-          >
-            {/* Accordion Header */}
-            <button
-              className="flex items-center gap-3 p-4 sm:p-5 w-full text-left"
-              onClick={() => toggleAccordion(section.id)}
-            >
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface-base)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
+        {accordionSections.map((section, index) => (
+          <div key={section.id} id={`section-${section.id}`}>
+            {/* Section Header */}
+            <div className="flex items-center gap-3 p-4 sm:p-5">
               <div className="w-6 h-6 text-[var(--accent-sky)]">{section.icon}</div>
               <span className="flex-1 text-[15px] sm:text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{section.title}</span>
-              <svg
-                className={`w-5 h-5 text-[var(--text-secondary)] transition-transform duration-200 ${openSections.has(section.id) ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
+            </div>
 
-            {/* Accordion Content */}
-            {openSections.has(section.id) && (
+            {/* Section Content */}
               <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[var(--border-subtle)]">
                 {/* Buy Price Section */}
                 {section.id === 'buyPrice' && (
@@ -2816,21 +2766,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                   </>
                 )}
 
-                {/* Continue Button */}
-                <button
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-6 text-white rounded-xl text-sm font-semibold mt-5 transition-all hover:scale-[1.02] whitespace-nowrap"
-                  style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)', boxShadow: '0 0 20px rgba(14,165,233,0.3)' }}
-                  onClick={() => handleContinue(section.id)}
-                >
-                  {section.id === 'expenses' ? 'View Analysis' : 'Continue to Next'}
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                  </svg>
-                </button>
               </div>
+            {index < accordionSections.length - 1 && (
+              <div className="border-t border-[var(--border-subtle)]" />
             )}
           </div>
         ))}
+        </div>
       </main>
 
       {/* Floating "See Results" Button */}
