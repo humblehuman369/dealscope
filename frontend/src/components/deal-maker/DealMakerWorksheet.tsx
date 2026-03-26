@@ -148,7 +148,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <div className="relative h-5 flex items-center justify-center min-w-[40px]">
-        <div className="w-full h-[6px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
+        <div className="w-full h-[3px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
           <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${fill}%`, background: C.blue }} />
           <input
             type="range"
@@ -160,12 +160,12 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div
-            className="absolute w-4 h-4 rounded-full -translate-y-1/2 top-1/2"
+            className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2"
             style={{
-              left: `calc(${Math.min(100, Math.max(0, fill))}% - 8px)`,
+              left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
               background: 'var(--surface-card)',
-              border: '2.5px solid var(--accent-sky)',
-              boxShadow: '0 0 6px rgba(14,165,233,0.35)',
+              border: '2px solid var(--accent-sky)',
+              boxShadow: '0 0 5px rgba(14,165,233,0.3)',
             }}
           />
         </div>
