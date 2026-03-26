@@ -688,6 +688,8 @@ export function AppHeader({
                 onManualSubmit={handleManualSubmit}
                 searchMode="location"
                 placeholder="Address, city, state, or zip..."
+                id="header-address-search"
+                name="address"
                 className="w-full pl-9 pr-3 py-1.5 rounded-full text-sm"
                 style={{
                   backgroundColor: 'var(--surface-elevated)',
@@ -924,6 +926,8 @@ export function AppHeader({
                 onManualSubmit={handleManualSubmit}
                 searchMode="location"
                 placeholder="Address, city, state, or zip..."
+                id="mobile-address-search"
+                name="address"
                 className="flex-1 py-2 px-1 text-sm bg-transparent"
                 style={{
                   color: 'var(--text-heading)',
