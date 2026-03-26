@@ -40,6 +40,7 @@ import {
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
 import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
+import { DealMakerBreakdown } from './DealMakerBreakdown'
 import {
   buildInitialState,
   buildLTRState,
@@ -2774,6 +2775,14 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         ))}
         </div>
       </main>
+
+      {/* Financial Breakdown */}
+      <DealMakerBreakdown
+        strategyType={strategyType}
+        state={state}
+        metrics={metrics}
+        listPrice={listPrice ?? (state as LTRDealMakerState).buyPrice ?? 0}
+      />
 
       {/* Floating "See Results" Button */}
       <div className="fixed bottom-0 left-0 right-0 max-w-[960px] mx-auto px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-black via-black to-transparent pointer-events-none z-20">
