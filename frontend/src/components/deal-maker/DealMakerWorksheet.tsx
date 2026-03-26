@@ -61,7 +61,7 @@ function Row({ label, value, color }: { label: string; value: string; color?: st
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold tabular-nums" style={{ color: color || C.heading }}>{value}</span>
+      <span className="text-sm font-semibold tabular-nums text-right w-[92px] shrink-0 pr-1.5" style={{ color: color || C.heading }}>{value}</span>
     </div>
   )
 }
@@ -70,7 +70,7 @@ function NegRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold tabular-nums" style={{ color: C.blue }}>({value})</span>
+      <span className="text-sm font-semibold tabular-nums text-right w-[92px] shrink-0 pr-1.5" style={{ color: C.blue }}>({value})</span>
     </div>
   )
 }
@@ -78,11 +78,11 @@ function NegRow({ label, value }: { label: string; value: string }) {
 function TotalRow({ label, value }: { label: string; value: string }) {
   return (
     <div
-      className="flex justify-between py-2 px-4 mt-1"
+      className="flex justify-between py-2 pl-4 pr-1 mt-1"
       style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}
     >
       <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{label}</span>
-      <span className="font-bold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{value}</span>
+      <span className="font-bold tabular-nums text-[0.95rem] text-right w-[92px] shrink-0 pr-1.5" style={{ color: C.heading }}>{value}</span>
     </div>
   )
 }
@@ -91,7 +91,7 @@ function StatusRow({ label, pass }: { label: string; pass: boolean }) {
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold" style={{ color: pass ? '#10B981' : '#F43F5E' }}>{pass ? 'PASS' : 'FAIL'}</span>
+      <span className="text-sm font-semibold text-right w-[92px] shrink-0 pr-1.5" style={{ color: pass ? '#10B981' : '#F43F5E' }}>{pass ? 'PASS' : 'FAIL'}</span>
     </div>
   )
 }
