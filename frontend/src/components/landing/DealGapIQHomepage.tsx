@@ -83,7 +83,9 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           </button>
         </div>
         <p className="hero-note">
-          No account needed · Results in seconds · 3 free analyses per month
+          <span>No account needed</span>
+          <span>Results in seconds</span>
+          <span>3 free analyses per month</span>
         </p>
         <div className="hero-founder">
           <img

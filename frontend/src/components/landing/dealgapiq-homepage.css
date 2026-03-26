@@ -78,11 +78,12 @@
 
 .hero-pre {
   font-family: var(--font-mono, 'Space Mono', monospace);
-  font-size: 0.85rem;
+  font-size: clamp(0.55rem, 2.5vw, 0.85rem);
   color: var(--text-secondary);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   margin-bottom: calc(1.5rem + 20px);
+  white-space: nowrap;
   position: relative; z-index: 1;
   animation: fadeUp 0.8s ease 0.1s both;
 }
@@ -151,6 +152,14 @@
   font-size: 0.85rem; color: var(--text-label);
   position: relative; z-index: 1;
   animation: fadeUp 0.8s ease 0.5s both;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0;
+}
+.hero-note span {
+  white-space: nowrap;
+}
+.hero-note span:not(:last-child)::after {
+  content: ' · ';
+  white-space: pre;
 }
 
 .hero-founder {
