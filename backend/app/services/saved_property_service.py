@@ -21,6 +21,45 @@ from app.schemas.saved_property import (
 
 logger = logging.getLogger(__name__)
 
+# Common street‑type abbreviations → canonical short form.
+# Used by _normalize_address to make ILIKE matching resilient to
+# differences like "Street" vs "St", "Drive" vs "Dr", etc.
+_STREET_ABBREVS: list[tuple[str, str]] = [
+    ("street", "st"),
+    ("avenue", "ave"),
+    ("boulevard", "blvd"),
+    ("drive", "dr"),
+    ("place", "pl"),
+    ("court", "ct"),
+    ("lane", "ln"),
+    ("road", "rd"),
+    ("circle", "cir"),
+    ("terrace", "ter"),
+    ("highway", "hwy"),
+    ("parkway", "pkwy"),
+    ("southwest", "sw"),
+    ("southeast", "se"),
+    ("northwest", "nw"),
+    ("northeast", "ne"),
+]
+
+
+def _normalize_address(address: str) -> str:
+    """Best-effort address normalisation for fuzzy ILIKE matching."""
+    import re
+
+    s = address.strip()
+    # Collapse multiple spaces / normalise whitespace
+    s = re.sub(r"\s+", " ", s)
+    # Lower-case for word replacement (ILIKE is case-insensitive anyway)
+    lower = s.lower()
+    for long, short in _STREET_ABBREVS:
+        lower = re.sub(rf"\b{long}\b", short, lower)
+    # Restore original casing approach: use the shortened form but keep
+    # the original non-word characters.  Since ILIKE is case-insensitive
+    # we can just return the lowered+normalised string.
+    return lower
+
 
 def _sanitize_json_finite(obj):
     """Recursively replace non-finite floats (inf, -inf, nan) with None so JSON/JSONB accepts the value."""
@@ -147,20 +186,52 @@ class SavedPropertyService:
         return result.scalar_one_or_none()
 
     async def get_by_address_or_id(
-        self, db: AsyncSession, user_id: str, external_id: str | None = None, address: str | None = None
+        self,
+        db: AsyncSession,
+        user_id: str,
+        external_id: str | None = None,
+        address: str | None = None,
+        zpid: str | None = None,
     ) -> SavedProperty | None:
-        """Check if a property is already saved."""
-        conditions = [SavedProperty.user_id == uuid.UUID(user_id)]
+        """Check if a property is already saved.
+
+        Lookup priority: zpid (exact) → external_id (exact) → address (fuzzy).
+        """
+        user_cond = SavedProperty.user_id == uuid.UUID(user_id)
+
+        # zpid is the most reliable identifier
+        if zpid:
+            result = await db.execute(
+                select(SavedProperty).where(and_(user_cond, SavedProperty.zpid == zpid))
+            )
+            found = result.scalar_one_or_none()
+            if found:
+                return found
 
         if external_id:
-            conditions.append(SavedProperty.external_property_id == external_id)
-        elif address:
-            conditions.append(SavedProperty.full_address.ilike(f"%{address}%"))
-        else:
-            return None
+            result = await db.execute(
+                select(SavedProperty).where(and_(user_cond, SavedProperty.external_property_id == external_id))
+            )
+            found = result.scalar_one_or_none()
+            if found:
+                return found
 
-        result = await db.execute(select(SavedProperty).where(and_(*conditions)))
-        return result.scalar_one_or_none()
+        if address:
+            normalized = _normalize_address(address)
+            result = await db.execute(
+                select(SavedProperty).where(and_(user_cond, SavedProperty.full_address.ilike(f"%{normalized}%")))
+            )
+            found = result.scalar_one_or_none()
+            if found:
+                return found
+            # Retry with the raw address in case normalization removed a match
+            if normalized != address:
+                result = await db.execute(
+                    select(SavedProperty).where(and_(user_cond, SavedProperty.full_address.ilike(f"%{address}%")))
+                )
+                return result.scalar_one_or_none()
+
+        return None
 
     def _apply_list_filters(
         self,

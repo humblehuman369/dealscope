@@ -52,8 +52,10 @@ export function useSaveProperty({
     if (!displayAddress) return
     const capturedVersion = stateVersionRef.current
     try {
+      const params = new URLSearchParams({ address: displayAddress })
+      if (propertySnapshot?.zpid) params.set('zpid', propertySnapshot.zpid)
       const result = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
-        `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
+        `/api/v1/properties/saved/check?${params.toString()}`
       )
       if (stateVersionRef.current === capturedVersion) {
         setIsSaved(result.is_saved)
@@ -65,7 +67,7 @@ export function useSaveProperty({
         setSavedPropertyId(null)
       }
     }
-  }, [displayAddress])
+  }, [displayAddress, propertySnapshot?.zpid])
 
   useEffect(() => {
     checkSaved()
@@ -109,8 +111,10 @@ export function useSaveProperty({
         stateVersionRef.current++
         // Recover the savedPropertyId so toggle/unsave work correctly
         try {
+          const rp = new URLSearchParams({ address: displayAddress })
+          if (propertySnapshot?.zpid) rp.set('zpid', propertySnapshot.zpid)
           const check = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
-            `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
+            `/api/v1/properties/saved/check?${rp.toString()}`
           )
           if (check.saved_property_id) setSavedPropertyId(check.saved_property_id)
         } catch { /* best-effort */ }

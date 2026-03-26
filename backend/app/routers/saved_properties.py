@@ -100,6 +100,7 @@ async def check_property_saved(
     db: DbSession,
     address: str | None = Query(None, description="Full address to check"),
     external_id: str | None = Query(None, description="External property ID to check"),
+    zpid: str | None = Query(None, description="Zillow property ID to check"),
 ):
     """
     Check if a property is already saved by the current user.
@@ -110,6 +111,7 @@ async def check_property_saved(
         user_id=str(current_user.id),
         external_id=external_id,
         address=address,
+        zpid=zpid,
     )
 
     if saved:
