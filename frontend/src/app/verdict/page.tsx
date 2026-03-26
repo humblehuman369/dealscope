@@ -1364,8 +1364,9 @@ function VerdictContent() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-baseline gap-2">
-                    <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 12, fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      Deal Gap
+                    <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
+                      <span style={{ color: 'var(--accent-sky)' }}>The</span>{' '}
+                      <span style={{ color: '#FFFFFF' }}>DealGap</span>
                     </span>
                     <span
                       className="tabular-nums"
