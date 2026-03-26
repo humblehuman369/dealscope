@@ -49,17 +49,18 @@ const C = {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex items-center justify-between mb-2 mt-1">
-      <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: C.blue }}>
-        <span className="text-[1rem] font-bold uppercase tracking-wide" style={{ color: C.blue }}>{title}</span>
-      </div>
+    <div
+      className="flex items-center px-3 py-2 rounded-lg mb-1"
+      style={{ backgroundColor: 'var(--surface-elevated)' }}
+    >
+      <span className="text-[0.8rem] font-bold uppercase tracking-wider" style={{ color: C.blue }}>{title}</span>
     </div>
   )
 }
 
 function Row({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="flex justify-between py-1.5 pl-6">
+    <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <span className="text-sm font-semibold tabular-nums" style={{ color: color || C.heading }}>{value}</span>
     </div>
@@ -68,7 +69,7 @@ function Row({ label, value, color }: { label: string; value: string; color?: st
 
 function NegRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-1.5 pl-6">
+    <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <span className="text-sm font-semibold tabular-nums" style={{ color: C.blue }}>({value})</span>
     </div>
@@ -77,16 +78,19 @@ function NegRow({ label, value }: { label: string; value: string }) {
 
 function TotalRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between pt-2 pb-2 mt-1 pl-6" style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}>
-      <span className="font-semibold tabular-nums text-[1.05rem]" style={{ color: C.heading }}>{label}</span>
-      <span className="font-bold tabular-nums text-[1.05rem]" style={{ color: C.heading }}>{value}</span>
+    <div
+      className="flex justify-between py-2 px-4 mt-1 rounded-md"
+      style={{ borderTop: `1px solid ${C.border}`, backgroundColor: 'var(--surface-elevated)' }}
+    >
+      <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{label}</span>
+      <span className="font-bold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{value}</span>
     </div>
   )
 }
 
 function StatusRow({ label, pass }: { label: string; pass: boolean }) {
   return (
-    <div className="flex justify-between py-1.5 pl-6">
+    <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <span className="text-sm font-semibold" style={{ color: pass ? '#10B981' : '#F43F5E' }}>{pass ? 'PASS' : 'FAIL'}</span>
     </div>
@@ -94,7 +98,7 @@ function StatusRow({ label, pass }: { label: string; pass: boolean }) {
 }
 
 function Divider() {
-  return <hr className="my-4" style={{ borderColor: C.border }} />
+  return <hr className="my-2" style={{ borderColor: C.border }} />
 }
 
 // ---------------------------------------------------------------------------
@@ -116,10 +120,13 @@ function SliderRow({ label, value, displayValue, min, max, step, onChange }: Sli
   const fill = ((clamped - min) / (max - min)) * 100
 
   return (
-    <div className="flex items-center gap-3 py-1.5 pl-6">
-      <span className="text-sm shrink-0 w-[120px] sm:w-[150px]" style={{ color: C.body }}>{label}</span>
-      <div className="flex-1 relative h-5 flex items-center min-w-[80px]">
-        <div className="w-full h-[5px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
+    <div
+      className="grid grid-cols-[110px_1fr_auto] sm:grid-cols-[140px_1fr_auto] items-center gap-3 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      style={{ borderBottom: `1px solid ${C.border}` }}
+    >
+      <span className="text-sm" style={{ color: C.body }}>{label}</span>
+      <div className="relative h-5 flex items-center min-w-[60px]">
+        <div className="w-full h-[6px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
           <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${fill}%`, background: C.blue }} />
           <input
             type="range"
@@ -131,17 +138,17 @@ function SliderRow({ label, value, displayValue, min, max, step, onChange }: Sli
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div
-            className="absolute w-3.5 h-3.5 rounded-full -translate-y-1/2 top-1/2"
+            className="absolute w-4 h-4 rounded-full -translate-y-1/2 top-1/2"
             style={{
-              left: `calc(${Math.min(100, Math.max(0, fill))}% - 7px)`,
+              left: `calc(${Math.min(100, Math.max(0, fill))}% - 8px)`,
               background: 'var(--surface-card)',
               border: '2.5px solid var(--accent-sky)',
-              boxShadow: 'var(--shadow-card)',
+              boxShadow: '0 0 6px rgba(14,165,233,0.35)',
             }}
           />
         </div>
       </div>
-      <span className="text-sm font-semibold tabular-nums shrink-0 text-right w-[90px] sm:w-[110px]" style={{ color: C.heading }}>
+      <span className="text-sm font-semibold tabular-nums text-right min-w-[90px] sm:min-w-[110px]" style={{ color: C.heading }}>
         {displayValue}
       </span>
     </div>
@@ -159,9 +166,12 @@ function ToggleRow({ label, options, value, onChange }: {
   onChange: (v: string) => void
 }) {
   return (
-    <div className="flex items-center gap-3 py-1.5 pl-6">
-      <span className="text-sm shrink-0 w-[120px] sm:w-[150px]" style={{ color: C.body }}>{label}</span>
-      <div className="flex-1 flex gap-1.5">
+    <div
+      className="grid grid-cols-[110px_1fr] sm:grid-cols-[140px_1fr] items-center gap-3 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      style={{ borderBottom: `1px solid ${C.border}` }}
+    >
+      <span className="text-sm" style={{ color: C.body }}>{label}</span>
+      <div className="flex gap-1.5">
         {options.map((opt) => (
           <button
             key={opt.id}
