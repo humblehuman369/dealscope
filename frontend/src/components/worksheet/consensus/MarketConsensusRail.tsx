@@ -72,10 +72,10 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
       ))}
 
       {/* Scale labels */}
-      <div className="absolute top-10 left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
+      <div className="absolute top-[26px] left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
         {formatCompactCurrency(min)}
       </div>
-      <div className="absolute top-10 right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
+      <div className="absolute top-[26px] right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
         {formatCompactCurrency(max)}
       </div>
     </div>
