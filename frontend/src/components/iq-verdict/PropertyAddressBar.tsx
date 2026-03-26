@@ -248,7 +248,7 @@ export function PropertyAddressBar({
             alignItems: 'center',
             gap: 12,
             flex: '1 1 auto',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             flexWrap: 'wrap',
           }}
         >
