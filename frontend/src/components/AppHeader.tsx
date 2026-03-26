@@ -208,6 +208,7 @@ export function AppHeader({
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const mobileNavRef = useRef<HTMLDivElement>(null)
+  const [scrolledPast, setScrolledPast] = useState(false)
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
@@ -254,6 +255,13 @@ export function AppHeader({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [mobileNavOpen])
+
+  // Collapse property details row on mobile after scrolling past the header
+  useEffect(() => {
+    const onScroll = () => setScrolledPast(window.scrollY > 100)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   // Helper to fully decode a URL-encoded string (handles double/triple encoding)
   const fullyDecode = (str: string): string => {
@@ -1090,6 +1098,7 @@ export function AppHeader({
                 : () => router.push(signInUrl)}
               isDropdownOpen={detailsDropdownOpen}
               onToggleDropdown={handleToggleDetailsDropdown}
+              detailsCollapsed={scrolledPast}
             />
             {detailsDropdownOpen && (
               dropdownLoading

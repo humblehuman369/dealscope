@@ -41,6 +41,8 @@ interface PropertyAddressBarProps {
   isDropdownOpen?: boolean
   /** Toggle the details dropdown */
   onToggleDropdown?: () => void
+  /** When true, collapse the details row on mobile (address stays visible) */
+  detailsCollapsed?: boolean
 }
 
 function formatShortPrice(price: number): string {
@@ -149,6 +151,7 @@ export function PropertyAddressBar({
   onBookmarkClick,
   isDropdownOpen,
   onToggleDropdown,
+  detailsCollapsed,
 }: PropertyAddressBarProps) {
   const [internalBookmarked, setInternalBookmarked] = useState(false)
   const isControlled = onBookmarkClick != null
@@ -180,7 +183,9 @@ export function PropertyAddressBar({
       }}
     >
       <div
-        className="flex items-center justify-between flex-wrap gap-2 sm:gap-4 px-2 py-2 sm:px-4 sm:py-3"
+        className={`flex items-center justify-between flex-wrap sm:gap-4 px-2 py-2 sm:px-4 sm:py-3 transition-[gap] duration-300 ${
+          detailsCollapsed ? 'gap-0' : 'gap-2'
+        }`}
         style={{
           borderBottom: `1px solid ${barTokens.border}`,
         }}
@@ -236,7 +241,11 @@ export function PropertyAddressBar({
         </div>
 
         {/* Details + Actions (grouped so icons never wrap to a separate line) */}
-        <div className="flex items-center flex-1 gap-2 sm:gap-3 min-w-0">
+        <div className={`flex items-center flex-1 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
+          detailsCollapsed
+            ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
+            : 'max-h-12 opacity-100'
+        }`}>
           <div className="flex items-center flex-wrap flex-1 gap-1.5 sm:gap-3 min-w-0">
             <DetailItem label="Beds" value={beds} />
             <Dot />
