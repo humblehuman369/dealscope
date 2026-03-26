@@ -818,7 +818,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
         }}
       >
         {/* Dual Valuation Panel: header scrolls away; cards row freezes at top */}
-        <div className="mx-4 mt-4">
+        <div className="mx-2 mt-4">
           {/* Header — scrolls up and out of view */}
           <div className={`relative rounded-t-xl p-4 overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
@@ -985,7 +985,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Proximity Map accordion (mobile only; desktop uses sticky side panel) */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="mx-4 mt-3 md:hidden">
+          <div className="mx-2 mt-3 md:hidden">
             <div className={`bg-[var(--surface-base)] rounded-xl overflow-hidden ${largeCardBorderGlow}`}>
               <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
                 <button
@@ -1048,7 +1048,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* No property (landed without address or zpid) */}
         {!hasValidSubject && (
-          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
+          <div className={`mx-2 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
             <MapPin className="mx-auto mb-3 text-[var(--text-heading)] w-10 h-10" aria-hidden />
             <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">Enter a property to view comps</h3>
             <p className="text-xs text-[var(--text-heading)] mb-4 max-w-md mx-auto">
@@ -1076,7 +1076,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Unavailable (friendly fallback — no raw errors) */}
         {hasValidSubject && loadFailed && !loading && (
-          <div className={`mx-4 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
+          <div className={`mx-2 mt-3 rounded-xl p-6 text-center bg-[var(--surface-base)] ${cardBorderGlow}`}>
             <Info className="mx-auto mb-3 text-[var(--text-heading)] w-10 h-10" aria-hidden />
             <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">
               Comparable {isSale ? 'sales' : 'rentals'} temporarily unavailable
@@ -1096,7 +1096,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Empty (success but no comps found) */}
         {hasValidSubject && !loading && !loadFailed && comps.length === 0 && (
-          <div className={`mx-4 mt-3 bg-[var(--surface-base)] rounded-xl p-6 text-center ${cardBorderGlow}`}>
+          <div className={`mx-2 mt-3 bg-[var(--surface-base)] rounded-xl p-6 text-center ${cardBorderGlow}`}>
             {isSale ? <Building2 className="mx-auto mb-2 text-[var(--text-heading)] w-8 h-8" /> : <Home className="mx-auto mb-2 text-[var(--text-heading)] w-8 h-8" />}
             <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">No {isSale ? 'Sale' : 'Rental'} Comps Found</h3>
             <p className="text-xs text-[var(--text-heading)]">Try refreshing or check the property address</p>
@@ -1105,7 +1105,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Top-wide map (desktop only, when mapLayout === 'top') */}
         {mapLayout === 'top' && hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="hidden md:block mx-4 mt-3">
+          <div className="hidden md:block mx-2 mt-3">
             <div className={`rounded-xl overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}>
               <div className="flex items-center justify-between px-4 py-2.5">
                 <div className="flex items-center gap-2">
@@ -1158,9 +1158,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
         {/* Comps content: full-width panels then 2-column comps + map */}
         {hasValidSubject && !loading && !loadFailed && comps.length > 0 && (
-          <div className="md:mt-3 md:mx-4">
+          <div className="md:mt-3 md:mx-2">
             {/* Adjustment Grid — always full width */}
-            <div className="mx-4 md:mx-0">
+            <div className="mx-2 md:mx-0">
               <AdjustmentGrid
                 compAdjustments={isSale ? saleAppraisal.compAdjustments : rentAppraisal.compAdjustments}
                 isExpanded={showAdjGrid}
@@ -1170,7 +1170,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             </div>
 
             {/* Market Consensus — always full width */}
-            <div className="mx-4 md:mx-0 mt-3">
+            <div className="mx-2 md:mx-0 mt-3">
               <MarketConsensusRail
                 consensus={isSale ? saleConsensus : rentConsensus}
                 mode={isSale ? 'value' : 'rent'}
@@ -1256,7 +1256,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
 
                 {/* Location Quality */}
-                <div className={`mx-4 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
+                <div className={`mx-2 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
                     <span className={`text-xs font-semibold ${
