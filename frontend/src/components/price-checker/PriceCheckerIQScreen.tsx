@@ -829,7 +829,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
-                  <p className="text-xs text-[var(--text-heading)]">From {selectedIds.size} selected</p>
                 </div>
               </div>
               <div className="flex rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center">
@@ -898,6 +897,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
+                <div className="text-[10px] text-[var(--text-heading)]">From {selectedIds.size} selected</div>
                 <div className="-mt-2 flex justify-end">
                   <button
                     onClick={handleApplyValues}
