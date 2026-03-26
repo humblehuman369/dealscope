@@ -1164,7 +1164,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 currentStrategy === strategy
                   ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)] shadow-[var(--shadow-card)]'
-                  : 'bg-transparent text-blue-500 border-[0.5px] border-blue-500 hover:text-blue-400 hover:border-blue-400'
+                  : 'bg-transparent text-[var(--accent-sky)] border-[0.5px] border-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] hover:border-[var(--accent-sky-light)]'
               }`}
             >
               {strategy}
