@@ -176,14 +176,14 @@ export function PropertyAddressBar({
 
   return (
     <div
-      className="w-full px-2 sm:px-6"
+      className="w-full px-1 sm:px-6"
       style={{
         background: 'var(--surface-base)',
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
       <div
-        className={`flex items-center justify-between flex-wrap sm:gap-4 px-2 py-2 sm:px-4 sm:py-3 transition-[gap] duration-300 ${
+        className={`flex items-center justify-between flex-wrap sm:gap-4 px-1 py-2 sm:px-4 sm:py-3 transition-[gap] duration-300 ${
           detailsCollapsed ? 'gap-0' : 'gap-2'
         }`}
         style={{
@@ -240,8 +240,8 @@ export function PropertyAddressBar({
           </Link>
         </div>
 
-        {/* Details + Actions (grouped so icons never wrap to a separate line) */}
-        <div className={`flex items-center flex-1 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
+        {/* Details + Actions (full-width row on mobile, inline on desktop) */}
+        <div className={`flex items-center w-full sm:w-auto sm:flex-1 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
           detailsCollapsed
             ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
             : 'max-h-12 opacity-100'
