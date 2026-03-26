@@ -258,8 +258,6 @@ export function PropertyAddressBar({
           <Dot />
           <DetailItem label="Sqft" value={sqft.toLocaleString()} />
           <Dot />
-          <DetailItem label="" value={formatShortPrice(price)} accent />
-          <Dot />
           <StatusText status={statusLabel} />
         </div>
 
