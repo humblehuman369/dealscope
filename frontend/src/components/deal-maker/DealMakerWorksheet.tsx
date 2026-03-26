@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
+import { exportDealMakerExcel } from './exportExcel'
 import type {
   StrategyType,
   AnyStrategyState,
@@ -868,9 +869,26 @@ export interface DealMakerWorksheetProps {
   listPrice: number
   updateState: (key: string, value: number | string) => void
   isCalculating: boolean
+  propertyAddress?: string
 }
 
-export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, updateState, isCalculating }: DealMakerWorksheetProps) {
+export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, updateState, isCalculating, propertyAddress }: DealMakerWorksheetProps) {
+  const [exporting, setExporting] = useState(false)
+  const [exportDone, setExportDone] = useState(false)
+
+  const handleExportExcel = useCallback(async () => {
+    setExporting(true)
+    try {
+      await exportDealMakerExcel(strategyType, state, metrics, propertyAddress || 'Property', listPrice)
+      setExportDone(true)
+      setTimeout(() => setExportDone(false), 3000)
+    } catch (e) {
+      console.error('Excel export failed:', e)
+    } finally {
+      setExporting(false)
+    }
+  }, [strategyType, state, metrics, propertyAddress, listPrice])
+
   return (
     <section className="px-4 sm:px-6 pb-24 sm:pb-28">
       <div
@@ -896,6 +914,37 @@ export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, up
         {strategyType === 'wholesale' && <WholesaleWorksheet state={state as WholesaleDealMakerState} metrics={metrics as WholesaleMetrics} up={updateState} />}
 
         <WorksheetSummary strategyType={strategyType} metrics={metrics} />
+
+        {/* Download Excel */}
+        <div className="mt-5 flex justify-center">
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting || isCalculating}
+            className="flex items-center gap-2.5 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+            style={{
+              background: exportDone ? '#10B981' : 'var(--accent-sky)',
+              color: '#fff',
+              boxShadow: exportDone ? '0 0 12px rgba(16,185,129,0.4)' : '0 0 12px rgba(14,165,233,0.3)',
+            }}
+          >
+            {exporting ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" /></svg>
+                Generating...
+              </>
+            ) : exportDone ? (
+              <>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                Downloaded
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 18 15 15" /></svg>
+                Download Excel
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </section>
   )
