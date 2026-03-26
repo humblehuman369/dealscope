@@ -611,50 +611,231 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // Map backend result to the metrics shape the UI expects
   const metrics = useMemo<AnyStrategyMetrics>(() => {
-    // If backend result available for non-LTR strategies, use it directly
+    // If backend result available for non-LTR strategies, map snake_case → camelCase
     if (backendResult && strategyType !== 'ltr') {
-      // Flip: transform backend snake_case keys to FlipMetrics camelCase
+      const br = backendResult as Record<string, number | boolean | string>
+      const n = (k: string) => { const v = br[k]; return typeof v === 'number' && isFinite(v) ? v : 0 }
+
+      if (strategyType === 'str') {
+        const strState = state as STRDealMakerState
+        const buyPrice = strState.buyPrice
+        const downPaymentAmt = n('down_payment') || (buyPrice * strState.downPaymentPercent)
+        const closingCostsAmt = n('closing_costs') || (buyPrice * strState.closingCostsPercent)
+        const loanAmt = n('loan_amount') || (buyPrice - downPaymentAmt)
+        const monthlyPmt = n('monthly_payment')
+        const cashNeeded = n('total_cash_needed') || (downPaymentAmt + closingCostsAmt + strState.furnitureSetupCost)
+        const annualGross = n('gross_revenue')
+        const nightsOcc = n('nights_occupied')
+        const numBookings = n('num_bookings')
+        const annualCF = n('annual_cash_flow')
+        const totalExpAnnual = n('gross_expenses')
+        const ds = n('deal_score')
+        return {
+          cashNeeded,
+          totalInvestmentWithFurniture: cashNeeded,
+          downPaymentAmount: downPaymentAmt,
+          closingCostsAmount: closingCostsAmt,
+          loanAmount: loanAmt,
+          monthlyPayment: monthlyPmt,
+          grossNightlyRevenue: n('rental_revenue') / 365,
+          monthlyGrossRevenue: annualGross / 12,
+          annualGrossRevenue: annualGross,
+          revPAR: n('revpar'),
+          numberOfTurnovers: numBookings,
+          nightsOccupied: nightsOcc,
+          monthlyExpenses: {
+            mortgage: monthlyPmt,
+            taxes: n('property_taxes') / 12,
+            insurance: n('insurance') / 12,
+            hoa: strState.monthlyHoa,
+            utilities: n('utilities') / 12,
+            maintenance: n('maintenance') / 12,
+            management: n('str_management') / 12,
+            platformFees: n('platform_fees') / 12,
+            cleaning: n('cleaning_costs') / 12,
+            supplies: n('supplies') / 12,
+          },
+          totalMonthlyExpenses: totalExpAnnual / 12 + monthlyPmt,
+          totalAnnualExpenses: totalExpAnnual,
+          monthlyCashFlow: n('monthly_cash_flow'),
+          annualCashFlow: annualCF,
+          noi: n('noi'),
+          capRate: n('cap_rate'),
+          cocReturn: n('cash_on_cash_return'),
+          breakEvenOccupancy: n('break_even_occupancy'),
+          equityCreated: strState.arv - (buyPrice + strState.rehabBudget),
+          dealScore: ds,
+          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as STRMetrics['dealGrade'],
+          profitQuality: (annualCF >= 10000 ? 'A' : annualCF >= 5000 ? 'B' : annualCF >= 0 ? 'C' : 'F') as STRMetrics['profitQuality'],
+        } as STRMetrics
+      }
+
+      if (strategyType === 'brrrr') {
+        const bState = state as BRRRRDealMakerState
+        const totalInvested = n('total_cash_invested')
+        const cashOutRefi = n('cash_out')
+        const cashLeft = n('cash_left_in_deal')
+        const annualCF = n('annual_cash_flow')
+        const refiLoan = n('refinance_loan_amount')
+        const infiniteRoi = cashLeft <= 0
+        const capitalRecycled = totalInvested > 0 ? (cashOutRefi / totalInvested) * 100 : 0
+        const coc = cashLeft > 0 ? (annualCF / cashLeft) * 100 : (annualCF > 0 ? 999 : 0)
+        const equityPos = n('equity_position') || (bState.arv - refiLoan)
+        const ds = n('deal_score')
+        return {
+          initialLoanAmount: n('loan_amount'),
+          initialDownPayment: n('cash_to_close'),
+          initialClosingCosts: n('purchase_costs'),
+          cashRequiredPhase1: n('cash_to_close'),
+          totalRehabCost: n('total_rehab'),
+          holdingCosts: n('holding_costs'),
+          cashRequiredPhase2: n('total_rehab') + n('holding_costs'),
+          allInCost: n('all_in_cost'),
+          estimatedNoi: n('noi'),
+          estimatedCapRate: n('cap_rate_arv'),
+          refinanceLoanAmount: refiLoan,
+          refinanceClosingCosts: n('refinance_costs'),
+          cashOutAtRefinance: cashOutRefi,
+          newMonthlyPayment: n('annual_debt_service') / 12,
+          totalCashInvested: totalInvested,
+          cashLeftInDeal: cashLeft,
+          capitalRecycledPct: capitalRecycled,
+          infiniteRoiAchieved: infiniteRoi,
+          equityPosition: equityPos,
+          equityPct: bState.arv > 0 ? (equityPos / bState.arv) * 100 : 0,
+          postRefiMonthlyCashFlow: n('monthly_cash_flow'),
+          postRefiAnnualCashFlow: annualCF,
+          postRefiCashOnCash: coc,
+          dealScore: ds,
+          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as BRRRRMetrics['dealGrade'],
+        } as BRRRRMetrics
+      }
+
       if (strategyType === 'flip') {
-        const br = backendResult as Record<string, number | boolean>
-        const purchasePrice = Number(br.purchase_price) || 0
-        const loanAmount = Number(br.loan_amount) || 0
+        const purchasePrice = n('purchase_price')
+        const loanAmount = n('loan_amount')
         const downPayment = purchasePrice - loanAmount
-        const purchaseCosts = Number(br.purchase_costs) || 0
-        const pointsCost = Number(br.points_cost) || 0
-        const inspectionCosts = Number(br.inspection_costs) || 0
-        const holdingMonths = Number(br.holding_months) || 0
-        const monthlyPayment = Number(br.monthly_payment) || 0
-        const netProfitBefore = Number(br.net_profit_before_tax) || 0
-        const netProfitAfter = Number(br.net_profit_after_tax) || 0
-        const ds = Number(br.deal_score) || 0
+        const purchaseCosts = n('purchase_costs')
+        const pointsCost = n('points_cost')
+        const inspectionCosts = n('inspection_costs')
+        const holdingMonths = n('holding_months')
+        const monthlyPayment = n('monthly_payment')
+        const netProfitBefore = n('net_profit_before_tax')
+        const netProfitAfter = n('net_profit_after_tax')
+        const ds = n('deal_score')
         return {
           loanAmount,
           downPayment,
           closingCosts: purchaseCosts,
           loanPointsCost: pointsCost,
           cashAtPurchase: downPayment + purchaseCosts + pointsCost + inspectionCosts,
-          totalRehabCost: Number(br.total_renovation) || 0,
+          totalRehabCost: n('total_renovation'),
           holdingPeriodMonths: holdingMonths,
-          totalHoldingCosts: Number(br.total_holding_costs) || 0,
+          totalHoldingCosts: n('total_holding_costs'),
           interestCosts: monthlyPayment * holdingMonths,
-          grossSaleProceeds: Number(br.arv) || 0,
-          sellingCosts: Number(br.selling_costs) || 0,
-          netSaleProceeds: Number(br.net_sale_proceeds) || 0,
-          totalProjectCost: Number(br.total_project_cost) || 0,
-          grossProfit: Number(br.gross_profit) || 0,
+          grossSaleProceeds: n('arv'),
+          sellingCosts: n('selling_costs'),
+          netSaleProceeds: n('net_sale_proceeds'),
+          totalProjectCost: n('total_project_cost'),
+          grossProfit: n('gross_profit'),
           capitalGainsTax: Math.max(0, netProfitBefore - netProfitAfter),
           netProfit: netProfitBefore,
-          cashRequired: Number(br.total_cash_required) || 0,
-          roi: Number(br.roi) || 0,
-          annualizedRoi: Number(br.annualized_roi) || 0,
-          profitMargin: Number(br.profit_margin) || 0,
-          maxAllowableOffer: Number(br.mao) || 0,
+          cashRequired: n('total_cash_required'),
+          roi: n('roi'),
+          annualizedRoi: n('annualized_roi'),
+          profitMargin: n('profit_margin'),
+          maxAllowableOffer: n('mao'),
           meets70PercentRule: !!br.meets_70_rule,
           dealScore: ds,
           dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as FlipMetrics['dealGrade'],
         } as FlipMetrics
       }
-      return backendResult as unknown as AnyStrategyMetrics
+
+      if (strategyType === 'house_hack') {
+        const hhState = state as HouseHackDealMakerState
+        const loanAmt = n('loan_amount')
+        const monthlyPI = n('monthly_payment')
+        const monthlyPmi = n('monthly_pmi')
+        const monthlyTaxes = n('monthly_taxes')
+        const monthlyIns = n('monthly_insurance')
+        const piti = n('monthly_piti') || (monthlyPI + monthlyPmi + monthlyTaxes + monthlyIns + hhState.monthlyHoa)
+        const downPmt = n('down_payment')
+        const closingCost = n('closing_costs')
+        const cashToClose = n('total_cash_needed') || (downPmt + closingCost)
+        const rentalIncome = n('rental_income')
+        const totalMonthExp = n('total_monthly_expenses')
+        const rentedUnits = Math.max(0, hhState.totalUnits - hhState.ownerOccupiedUnits)
+        const grossRentalInc = hhState.avgRentPerUnit * rentedUnits
+        const effectiveRentalInc = grossRentalInc * (1 - hhState.vacancyRate)
+        const effectiveCost = n('your_housing_cost')
+        const savingsVsRent = n('savings_vs_renting')
+        const offsetPct = n('housing_offset')
+        const fullRentalCF = n('full_rental_cash_flow')
+        const fullRentalAnnual = n('full_rental_annual')
+        const cocReturn = n('coc_return')
+        const ds = n('deal_score')
+        return {
+          loanAmount: loanAmt,
+          monthlyPrincipalInterest: monthlyPI,
+          monthlyPmi,
+          monthlyTaxes,
+          monthlyInsurance: monthlyIns,
+          monthlyPITI: piti,
+          downPayment: downPmt,
+          closingCosts: closingCost,
+          cashToClose,
+          rentedUnits,
+          grossRentalIncome: grossRentalInc,
+          effectiveRentalIncome: effectiveRentalInc || rentalIncome,
+          monthlyMaintenance: n('maintenance_monthly'),
+          monthlyCapex: n('capex_monthly'),
+          monthlyOperatingExpenses: totalMonthExp,
+          netRentalIncome: (effectiveRentalInc || rentalIncome) - totalMonthExp,
+          effectiveHousingCost: effectiveCost,
+          housingCostSavings: savingsVsRent,
+          housingOffsetPercent: offsetPct,
+          livesForFree: effectiveCost <= 0,
+          annualCashFlow: fullRentalAnnual,
+          cashOnCashReturn: cocReturn,
+          fullRentalIncome: n('full_rental_income'),
+          fullRentalCashFlow: fullRentalCF,
+          fullRentalCoCReturn: cashToClose > 0 ? (fullRentalAnnual / cashToClose) * 100 : 0,
+          dealScore: ds,
+          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as HouseHackMetrics['dealGrade'],
+        } as HouseHackMetrics
+      }
+
+      if (strategyType === 'wholesale') {
+        const wsState = state as WholesaleDealMakerState
+        const mao = n('mao')
+        const contractPx = n('contract_price') || wsState.contractPrice
+        const investorPx = n('investor_price')
+        const assignFee = n('assignment_fee') || wsState.assignmentFee
+        const netProfit = n('net_profit')
+        const totalRisk = n('total_cash_at_risk')
+        const roiVal = n('roi')
+        const investorAllIn = n('investor_all_in')
+        const investorProfit = n('investor_profit')
+        const investorROI = n('investor_roi')
+        const ds = n('deal_score')
+        return {
+          maxAllowableOffer: mao,
+          contractVsMAO: contractPx - mao,
+          meets70PercentRule: contractPx <= mao,
+          endBuyerPrice: investorPx,
+          endBuyerAllIn: investorAllIn,
+          endBuyerProfit: investorProfit,
+          endBuyerROI: investorROI,
+          totalCashAtRisk: totalRisk,
+          grossProfit: assignFee,
+          netProfit,
+          roi: roiVal,
+          annualizedROI: wsState.daysToClose > 0 ? roiVal * (365 / wsState.daysToClose) : 0,
+          dealViability: (br.deal_viability as string) || 'unknown',
+          dealScore: ds,
+          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as WholesaleMetrics['dealGrade'],
+        } as WholesaleMetrics
+      }
     }
     
     // For saved properties with LTR, use cached metrics from store
@@ -665,13 +846,14 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       const dealGap = effectiveListPrice > 0 
         ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice 
         : 0
+      const totalCashNeeded = (cachedMetrics.total_cash_needed || 0) + (ltrState.rehabBudget || 0)
       
       return {
-        cashNeeded: cachedMetrics.total_cash_needed || 0,
+        cashNeeded: totalCashNeeded,
         dealGap,
         annualProfit: cachedMetrics.annual_cash_flow || 0,
-        capRate: (cachedMetrics.cap_rate || 0) * 100, // Convert to percentage
-        cocReturn: (cachedMetrics.cash_on_cash || 0) * 100, // Convert to percentage
+        capRate: (cachedMetrics.cap_rate || 0) * 100,
+        cocReturn: totalCashNeeded > 0 ? ((cachedMetrics.annual_cash_flow || 0) / totalCashNeeded) * 100 : 0,
         monthlyPayment: cachedMetrics.monthly_payment || 0,
         loanAmount: cachedMetrics.loan_amount || 0,
         equityCreated: cachedMetrics.equity_after_rehab || 0,
@@ -684,7 +866,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     const ltrState = state as LTRDealMakerState
     const downPaymentAmount = ltrState.buyPrice * ltrState.downPaymentPercent
     const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
-    const cashNeeded = downPaymentAmount + closingCostsAmount
+    const cashNeeded = downPaymentAmount + closingCostsAmount + ltrState.rehabBudget
 
     const loanAmount = ltrState.buyPrice - downPaymentAmount
     const monthlyPayment = calculateMortgagePayment(loanAmount, ltrState.interestRate, ltrState.loanTermYears)
@@ -694,7 +876,6 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
     const grossMonthlyIncome = ltrState.monthlyRent + ltrState.otherIncome
 
-    // Calculate operating expenses
     const vacancy = grossMonthlyIncome * ltrState.vacancyRate
     const maintenance = grossMonthlyIncome * ltrState.maintenanceRate
     const management = grossMonthlyIncome * ltrState.managementRate
