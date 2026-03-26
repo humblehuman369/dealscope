@@ -213,7 +213,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
-  const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['buyPrice', 'financing', 'rehab', 'income', 'expenses']))
   const strategyType = getStrategyType(currentStrategy)
   const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(() => buildLTRState(property, listPrice))
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(() => buildSTRState(property, listPrice))
@@ -942,16 +942,28 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }
 
   const toggleAccordion = (section: AccordionSection) => {
-    setActiveAccordion(activeAccordion === section ? null : section)
+    if (!section) return
+    setOpenSections(prev => {
+      const next = new Set(prev)
+      if (next.has(section)) {
+        next.delete(section)
+      } else {
+        next.add(section)
+      }
+      return next
+    })
   }
 
   const handleContinue = (currentSection: AccordionSection) => {
     const sectionOrder: AccordionSection[] = ['buyPrice', 'financing', 'rehab', 'income', 'expenses']
     const currentIndex = sectionOrder.indexOf(currentSection)
     if (currentIndex < sectionOrder.length - 1) {
-      setActiveAccordion(sectionOrder[currentIndex + 1])
+      const nextSection = sectionOrder[currentIndex + 1]
+      setOpenSections(prev => new Set(prev).add(nextSection!))
+      setTimeout(() => {
+        document.getElementById(`section-${nextSection}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
     } else {
-      // Final step - view verdict
       router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
     }
   }
@@ -1137,8 +1149,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         {accordionSections.map((section) => (
           <div
             key={section.id}
+            id={`section-${section.id}`}
             className="rounded-xl mb-3 overflow-hidden transition-all"
-            style={activeAccordion === section.id ? {
+            style={openSections.has(section.id) ? {
               background: 'var(--surface-base)',
               border: '1px solid var(--border-focus)',
               boxShadow: 'var(--shadow-card-hover)',
@@ -1156,7 +1169,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
               <div className="w-6 h-6 text-[var(--accent-sky)]">{section.icon}</div>
               <span className="flex-1 text-[15px] sm:text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{section.title}</span>
               <svg
-                className={`w-5 h-5 text-[var(--text-secondary)] transition-transform duration-200 ${activeAccordion === section.id ? 'rotate-180' : ''}`}
+                className={`w-5 h-5 text-[var(--text-secondary)] transition-transform duration-200 ${openSections.has(section.id) ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -1167,7 +1180,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             </button>
 
             {/* Accordion Content */}
-            {activeAccordion === section.id && (
+            {openSections.has(section.id) && (
               <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[var(--border-subtle)]">
                 {/* Buy Price Section */}
                 {section.id === 'buyPrice' && (
