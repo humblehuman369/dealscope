@@ -100,10 +100,7 @@
   animation: fadeUp 0.8s ease 0.2s both;
 }
 .hero h1 .accent {
-  background: linear-gradient(135deg, var(--accent-sky), var(--status-positive));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-sky);
 }
 
 .hero-sub {
