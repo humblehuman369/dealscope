@@ -865,7 +865,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[14px] font-semibold text-[var(--text-heading)] uppercase tracking-wide">
+                  <span className="text-[14px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
@@ -930,9 +930,9 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       if (isSale) setSaleOverrideArv(v)
                       else setRentOverrideImproved(v)
                     }}
-                    className="text-lg font-bold text-[var(--accent-sky-light)] tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
+                    className="text-lg font-bold text-white tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
                 ) : (
-                  <div className="text-lg font-bold text-[var(--accent-sky-light)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  <div className="text-lg font-bold text-white tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
                     {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
                   </div>
