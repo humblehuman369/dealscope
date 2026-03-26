@@ -865,7 +865,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-semibold text-[var(--text-heading)] uppercase tracking-wide">
+                  <span className="text-[14px] font-semibold text-[var(--text-heading)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
@@ -890,14 +890,14 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[12px] text-[var(--text-heading)] mt-0.5">As-Is Condition</div>
-                <div className="text-[12px] text-[var(--text-heading)]">
+                <div className="text-[13px] font-medium text-[var(--text-heading)] mt-0.5">As-Is Condition</div>
+                <div className="text-[13px] font-medium text-[var(--text-heading)]">
                   Range: {isSale 
                     ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
                 </div>
-                <div className="text-[12px] text-[var(--text-heading)]">From {selectedIds.size} selected</div>
+                <div className="text-[13px] font-medium text-[var(--text-heading)]">From {selectedIds.size} selected</div>
                 <div className="-mt-2 flex justify-end">
                   <button
                     onClick={handleApplyValues}
@@ -912,7 +912,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Right: ARV / Improved Rent */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
+                  <span className="text-[14px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
                   </span>
                   <button onClick={() => {
@@ -937,10 +937,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
                   </div>
                 )}
-                <div className="text-[12px] text-[var(--text-heading)] mt-0.5">Post-Rehab</div>
+                <div className="text-[13px] font-medium text-[var(--text-heading)] mt-0.5">Post-Rehab</div>
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-3 h-3 text-[var(--status-positive)]" />
-                  <span className="text-[12px] font-medium text-[var(--status-positive)]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
+                  <span className="text-[13px] font-medium text-[var(--status-positive)]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
                 <div className="-mt-2 flex justify-end">
                   <button
