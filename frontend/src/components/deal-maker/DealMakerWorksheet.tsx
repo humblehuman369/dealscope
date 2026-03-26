@@ -181,8 +181,8 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-sm font-semibold tabular-nums text-right bg-transparent outline-none min-w-[80px] sm:min-w-[100px] rounded px-1 transition-colors focus:bg-white/[0.06] focus:ring-1 focus:ring-[var(--accent-sky)]"
-        style={{ color: C.heading, border: 'none' }}
+        className="text-sm font-semibold tabular-nums text-right bg-transparent outline-none min-w-[80px] sm:min-w-[100px] rounded px-1 cursor-text transition-all focus:bg-white/[0.06] focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
+        style={{ color: C.heading, border: 'none', borderBottom: '1px dashed var(--border-subtle)' }}
       />
     </div>
   )
