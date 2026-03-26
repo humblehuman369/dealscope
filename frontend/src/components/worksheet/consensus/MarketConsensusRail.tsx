@@ -122,9 +122,9 @@ function MarkerDot({ marker, left }: { marker: SourceMarker; left: number }) {
 
 function SourceLegend({ markers }: { markers: SourceMarker[] }) {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-2 mt-1">
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-1">
       {markers.map((m) => (
-        <div key={m.id} className="flex flex-col items-start">
+        <div key={m.id} className="flex flex-col items-center">
           <div className="flex items-center gap-1.5">
             <div
               className="w-2 h-2 rounded-full"
@@ -134,7 +134,7 @@ function SourceLegend({ markers }: { markers: SourceMarker[] }) {
               {m.label}
             </span>
           </div>
-          <span className="text-[13px] font-semibold tabular-nums pl-3.5" style={{ color: 'var(--text-body)' }}>
+          <span className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--text-body)' }}>
             {formatCompactCurrency(m.value)}
           </span>
         </div>
