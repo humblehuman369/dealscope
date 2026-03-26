@@ -225,7 +225,7 @@ function CategorySection({
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex justify-between items-center p-2 rounded-lg mb-1.5 cursor-pointer transition-colors"
-        style={{ backgroundColor: 'var(--surface-card)' }}
+        style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}
       >
         <div className="text-left pl-2">
           <h3 className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
@@ -490,7 +490,7 @@ export default function RehabEstimator({
       </div>
 
       {/* Quality Level */}
-      <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+      <div className="rounded-lg p-2" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
         <div className="flex justify-between items-center">
           <div className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Quality Level</div>
           <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
