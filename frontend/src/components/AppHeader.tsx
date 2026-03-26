@@ -206,6 +206,8 @@ export function AppHeader({
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const mobileNavRef = useRef<HTMLDivElement>(null)
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
@@ -239,6 +241,19 @@ export function AppHeader({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showMoreMenu])
+
+  // Close mobile nav on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileNavRef.current && !mobileNavRef.current.contains(e.target as Node)) {
+        setMobileNavOpen(false)
+      }
+    }
+    if (mobileNavOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [mobileNavOpen])
 
   // Helper to fully decode a URL-encoded string (handles double/triple encoding)
   const fullyDecode = (str: string): string => {
@@ -404,10 +419,11 @@ export function AppHeader({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [detailsDropdownOpen])
 
-  // Close dropdown on navigation
+  // Close dropdowns on navigation
   useEffect(() => {
     setDetailsDropdownOpen(false)
     setDropdownPropertyData(null)
+    setMobileNavOpen(false)
   }, [pathname])
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
@@ -653,7 +669,7 @@ export function AppHeader({
               <>
                 <Link
                   href="/about"
-                  className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
                   style={{
                     color: 'var(--text-heading)',
                     borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
@@ -664,7 +680,7 @@ export function AppHeader({
                 </Link>
                 <Link
                   href="/pricing"
-                  className="text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
                   style={{
                     color: 'var(--text-heading)',
                     borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
@@ -714,7 +730,7 @@ export function AppHeader({
             {isHomepage ? (
               <button
                 onClick={toggleTheme}
-                className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 items-center justify-center"
                 aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {mounted && theme === 'dark' ? (
@@ -794,6 +810,38 @@ export function AppHeader({
 
                 {showProfileMenu && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
+                    {isHomepage && (
+                      <div className="sm:hidden">
+                        <Link
+                          href="/about"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <Info className="w-4 h-4" /> About
+                        </Link>
+                        <Link
+                          href="/pricing"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <DollarSign className="w-4 h-4" /> Pricing
+                        </Link>
+                        <button
+                          onClick={() => { toggleTheme(); setShowProfileMenu(false) }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          {mounted && theme === 'dark' ? (
+                            <><Sun className="w-4 h-4" /> Light Mode</>
+                          ) : (
+                            <><Moon className="w-4 h-4" /> Dark Mode</>
+                          )}
+                        </button>
+                        <div className="border-t border-slate-100 dark:border-navy-700 my-1" />
+                      </div>
+                    )}
                     {user && (
                       <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
                         <div className="flex items-center gap-2">
@@ -856,13 +904,79 @@ export function AppHeader({
                 )}
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap"
-                style={{ color: colors.brand.teal }}
-              >
-                Login / Register
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className={`${isHomepage ? 'hidden sm:inline' : ''} text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap`}
+                  style={{ color: colors.brand.teal }}
+                >
+                  Login / Register
+                </Link>
+                {isHomepage && (
+                  <div className="sm:hidden relative" ref={mobileNavRef}>
+                    <button
+                      onClick={() => setMobileNavOpen(prev => !prev)}
+                      className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                      aria-label="Navigation menu"
+                      aria-expanded={mobileNavOpen}
+                      aria-haspopup="true"
+                    >
+                      {mobileNavOpen ? (
+                        <X className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
+                      ) : (
+                        <Menu className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
+                      )}
+                    </button>
+                    {mobileNavOpen && (
+                      <div
+                        className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
+                        style={{
+                          background: 'var(--surface-card)',
+                          border: '1px solid var(--border-default)',
+                        }}
+                      >
+                        <Link
+                          href="/about"
+                          onClick={() => setMobileNavOpen(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <Info className="w-4 h-4" /> About
+                        </Link>
+                        <Link
+                          href="/pricing"
+                          onClick={() => setMobileNavOpen(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <DollarSign className="w-4 h-4" /> Pricing
+                        </Link>
+                        <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
+                        <button
+                          onClick={() => { toggleTheme(); setMobileNavOpen(false) }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          {mounted && theme === 'dark' ? (
+                            <><Sun className="w-4 h-4" /> Light Mode</>
+                          ) : (
+                            <><Moon className="w-4 h-4" /> Dark Mode</>
+                          )}
+                        </button>
+                        <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
+                        <Link
+                          href="/login"
+                          onClick={() => setMobileNavOpen(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/5"
+                          style={{ color: 'var(--accent-sky)' }}
+                        >
+                          <UserCircle className="w-4 h-4" /> Login / Register
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
