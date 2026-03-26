@@ -539,15 +539,15 @@ export default function RehabEstimator({
       </div>
 
       {/* Total Estimate */}
-      <div className="bg-gradient-to-r from-brand-500 to-sky-600 rounded-xl px-4 py-3 flex justify-between items-center">
+      <div className="rounded-xl px-4 py-3 flex justify-between items-center" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
         <div>
-          <h2 className="text-lg font-bold text-white mb-1">Total Estimate</h2>
-          <div className="flex gap-4 text-xs text-white/90">
+          <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--accent-sky)' }}>Total Estimate</h2>
+          <div className="flex gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
             <div>Base: <span className="font-semibold">{formatCurrency(estimate.totalCost)}</span></div>
             <div>Contingency: <span className="font-semibold">{formatCurrency(estimate.contingency)}</span></div>
           </div>
           {initialBudget > 0 && (
-            <div className="mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[13px] text-white bg-white/20">
+            <div className="mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)', backgroundColor: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}>
               {isOverBudget ? (
                 <AlertTriangle className="w-3.5 h-3.5" />
               ) : (
@@ -557,7 +557,7 @@ export default function RehabEstimator({
             </div>
           )}
         </div>
-        <div className="text-3xl font-bold text-white">{formatCurrency(estimate.grandTotal)}</div>
+        <div className="text-3xl font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(estimate.grandTotal)}</div>
       </div>
 
       {/* Back Button */}
