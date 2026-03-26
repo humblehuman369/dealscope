@@ -65,7 +65,7 @@
   border-radius: 40px;
   padding: 0.4rem 1.2rem;
   font-size: 0.85rem; color: var(--accent-sky);
-  margin-bottom: calc(2rem + 20px);
+  margin-bottom: calc(2rem + 10px);
   position: relative; z-index: 1;
   animation: fadeUp 0.8s ease both;
 }
@@ -82,7 +82,7 @@
   color: var(--text-secondary);
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  margin-bottom: calc(1.5rem + 10px);
+  margin-bottom: calc(1.5rem + 20px);
   position: relative; z-index: 1;
   animation: fadeUp 0.8s ease 0.1s both;
 }
