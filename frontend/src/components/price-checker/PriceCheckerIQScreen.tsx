@@ -896,7 +896,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
                     : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
                   }
-                  {' '}(From <span className="text-[var(--status-positive)]">{selectedIds.size}</span> selected)
+                  {' '}<span className="text-[var(--status-positive)]">(From {selectedIds.size} selected)</span>
                 </div>
                 <div className="mt-auto flex justify-end pt-1">
                   <button
