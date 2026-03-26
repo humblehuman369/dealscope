@@ -1063,9 +1063,9 @@ function VerdictContent() {
         {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Centered single-column container */}
-        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
+        <div className="w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto">
           {/* Full-width photo gallery */}
-          <section className="mx-5 mt-6">
+          <section className="mx-0 sm:mx-5 mt-6">
             {property.zpid ? (
               <PropertyPhotoGallery
                 zpid={String(property.zpid)}
@@ -1087,7 +1087,7 @@ function VerdictContent() {
 
           {/* Main verdict content */}
           <section
-            className="mx-5 mt-4 px-5 py-6 rounded-2xl"
+            className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5 py-6 rounded-none sm:rounded-2xl"
             style={{
               background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
@@ -1476,11 +1476,10 @@ function VerdictContent() {
           </section>
 
           {/* Key Insights card */}
-          <div className="mx-5 mt-4">
+          <div className="mx-0 sm:mx-5 mt-4">
             <div
+              className="rounded-none sm:rounded-[14px] overflow-hidden"
               style={{
-                borderRadius: 14,
-                overflow: 'hidden',
                 background: 'var(--surface-card)',
                 border: '1px solid var(--border-default)',
                 boxShadow: 'var(--shadow-card)',
@@ -1577,7 +1576,7 @@ function VerdictContent() {
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 
           {/* Top Action Buttons — same as Strategy page */}
-          <section className="px-5 pb-6">
+          <section className="px-3 sm:px-5 pb-6">
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={handleNavigateToDealMaker}
@@ -1619,10 +1618,10 @@ function VerdictContent() {
           </section>
 
           {/* div-e gradient divider */}
-          <div className="mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)', boxShadow: 'var(--shadow-card)' }} />
+          <div className="mx-0 sm:mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)', boxShadow: 'var(--shadow-card)' }} />
 
           {/* CTA → Strategy — copy adapts to Deal Gap tier */}
-          <section className="px-5 py-10 text-center">
+          <section className="px-3 sm:px-5 py-10 text-center">
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--accent-sky)' }}>
               {dealGapPct <= 10 ? 'This deal passed the screen' : dealGapPct <= 20 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
             </p>
@@ -1652,7 +1651,7 @@ function VerdictContent() {
           </section>
 
           {/* Trust Strip */}
-          <div className="px-5 py-5 text-center border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="px-3 sm:px-5 py-5 text-center border-t" style={{ borderColor: 'var(--border-subtle)' }}>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
               DealGap IQ analyzes <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>comparable sales</span> to calculate every Deal Gap. No guesswork — just data.
             </p>
