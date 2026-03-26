@@ -225,7 +225,7 @@ function CategorySection({
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex justify-between items-center p-2 rounded-lg mb-1.5 cursor-pointer transition-colors"
-        style={{ backgroundColor: 'var(--surface-elevated)' }}
+        style={{ backgroundColor: 'var(--surface-card)' }}
       >
         <div className="text-left pl-2">
           <h3 className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
