@@ -122,7 +122,7 @@ function LTRBreakdown({ state, metrics, listPrice }: { state: LTRDealMakerState;
   const cashNeeded = num(m, 'cashNeeded') || (downPayment + closingCosts)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="What You'd Pay" color={colors.brand.blue} />
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
       <Row label="Buy Price" value={fmt(state.buyPrice)} color={colors.brand.blue} />
@@ -186,7 +186,7 @@ function STRBreakdown({ state, metrics, listPrice }: { state: STRDealMakerState;
   const me = (m.monthlyExpenses || {}) as Record<string, number>
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="What You'd Pay" color={colors.brand.blue} />
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
       <Row label="Buy Price" value={fmt(state.buyPrice)} color={colors.brand.blue} />
@@ -255,7 +255,7 @@ function BRRRRBreakdown({ state, metrics }: { state: BRRRRDealMakerState; metric
   const coc = num(m, 'postRefiCashOnCash')
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="Phase 1 — Buy" color={colors.brand.blue} />
       <Row label="Purchase Price" value={fmt(state.purchasePrice)} />
       <Row label={`Hard Money Down (${Math.round(state.downPaymentPercent * 100)}%)`} value={fmt(initialDown)} />
@@ -320,7 +320,7 @@ function FlipBreakdown({ state, metrics }: { state: FlipDealMakerState; metrics:
   const annualizedRoi = num(m, 'annualizedRoi')
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="Acquisition" color={colors.brand.blue} />
       <Row label="Purchase Price" value={fmt(state.purchasePrice)} />
       {state.financingType !== 'cash' && (
@@ -388,7 +388,7 @@ function HouseHackBreakdown({ state, metrics }: { state: HouseHackDealMakerState
   const offset = num(m, 'housingOffsetPercent')
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="What You'd Pay" color={colors.brand.blue} />
       <Row label="Purchase Price" value={fmt(state.purchasePrice)} />
       <Row label={`Down Payment (${(state.downPaymentPercent * 100).toFixed(1)}%)`} value={fmt(downPayment)} />
@@ -450,7 +450,7 @@ function WholesaleBreakdown({ state, metrics }: { state: WholesaleDealMakerState
   const annualizedROI = num(m, 'annualizedROI')
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <SectionHeader title="Deal Analysis" color={colors.brand.blue} />
       <Row label="After Repair Value" value={fmt(state.arv)} />
       <Row label="Estimated Repairs" value={fmt(state.estimatedRepairs)} />
