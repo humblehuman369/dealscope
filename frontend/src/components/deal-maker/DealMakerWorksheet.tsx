@@ -79,7 +79,7 @@ function TotalRow({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="flex justify-between py-2 px-4 mt-1"
-      style={{ borderTop: `1px solid ${C.border}` }}
+      style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}
     >
       <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{label}</span>
       <span className="font-bold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{value}</span>
