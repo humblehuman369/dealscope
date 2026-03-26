@@ -33,7 +33,7 @@ const MODE_CONFIG: Record<UnderwritingMode, { label: string; description: string
 // ============================================
 
 function RangeBar({ consensus }: { consensus: ConsensusResult }) {
-  const { markers, min, max, q1, q3 } = consensus
+  const { markers, min, max } = consensus
   if (markers.length === 0 || max === min) return null
 
   const range = max - min
@@ -44,26 +44,12 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
 
   const pct = (v: number) => ((v - scaleMin) / scaleRange) * 100
 
-  const bandLeft = pct(q1)
-  const bandWidth = pct(q3) - bandLeft
-
   return (
     <div className="relative w-full h-12 mt-2 mb-1">
       {/* Track */}
       <div
         className="absolute top-5 left-0 right-0 h-[3px] rounded-full"
         style={{ background: 'var(--border-default)' }}
-      />
-
-      {/* Consensus Band (IQR) */}
-      <div
-        className="absolute top-[17px] h-[8px] rounded-md"
-        style={{
-          left: `${bandLeft}%`,
-          width: `${Math.max(bandWidth, 1)}%`,
-          background: 'linear-gradient(135deg, rgba(14,165,233,0.20) 0%, rgba(20,184,166,0.20) 100%)',
-          border: '1px solid rgba(14,165,233,0.35)',
-        }}
       />
 
       {/* Source Markers */}
