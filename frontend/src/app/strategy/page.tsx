@@ -1162,36 +1162,6 @@ function StrategyContent() {
             </p>
           </div>
 
-          {/* Try Another Strategy */}
-          <div className="mt-7 flex gap-4 items-start rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
-            <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: colors.accentBg.gold }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.brand.gold} strokeWidth="2" strokeLinecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-            </div>
-            <div>
-              <p className="text-sm font-extrabold mb-1.5" style={{ color: colors.text.primary }}>Try a different strategy.</p>
-              <p className="text-[13px] leading-relaxed mb-3" style={{ color: colors.text.body }}>This property scored well across multiple strategies. Tap one to see how the numbers change.</p>
-              <div className="flex flex-wrap gap-1.5">
-                {sortedStrategies.map((s) => {
-                  const isActive = s.id === activeStrategyId
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => setSelectedStrategyId(s.id)}
-                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer transition-all"
-                      style={{
-                        background: isActive ? colors.brand.teal : colors.background.cardUp,
-                        border: `1px solid ${isActive ? colors.brand.teal : colors.ui.border}`,
-                        color: isActive ? 'var(--text-inverse)' : colors.text.body,
-                      }}
-                    >
-                      {s.name}
-                      <span className="ml-1 opacity-60">{s.score}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
