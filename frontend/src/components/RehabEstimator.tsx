@@ -228,7 +228,7 @@ function CategorySection({
         style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}
       >
         <div className="text-left pl-2">
-          <h3 className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>{category.name}</h3>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--accent-sky)' }}>{category.name}</h3>
           <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{selectedItems.length} items selected</p>
         </div>
         <div className="flex items-center gap-3">
@@ -492,7 +492,7 @@ export default function RehabEstimator({
       {/* Quality Level */}
       <div className="rounded-lg p-2" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
         <div className="flex justify-between items-center">
-          <div className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Quality Level</div>
+          <div className="text-lg font-semibold" style={{ color: 'var(--accent-sky)' }}>Quality Level</div>
           <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
         </div>
       </div>
