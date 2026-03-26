@@ -34,7 +34,6 @@ function buildPayload(
   strategyType: StrategyType,
   state: Record<string, unknown>,
 ): Record<string, unknown> {
-  // Common fields for LTR
   if (strategyType === 'ltr') {
     const s = state as {
       buyPrice: number
@@ -56,8 +55,8 @@ function buildPayload(
     return {
       purchase_price: s.buyPrice,
       monthly_rent: s.monthlyRent + (s.otherIncome || 0),
-      down_payment_pct: s.downPaymentPercent * 100,
-      interest_rate: s.interestRate * 100,
+      down_payment_pct: s.downPaymentPercent,
+      interest_rate: s.interestRate,
       loan_term_years: s.loanTermYears,
       closing_costs: s.buyPrice * s.closingCostsPercent,
       rehab_costs: s.rehabBudget || 0,
@@ -73,18 +72,23 @@ function buildPayload(
 
   if (strategyType === 'str') {
     const s = state as Record<string, number>
+    const buyPrice = s.purchasePrice || s.buyPrice
     return {
-      purchase_price: s.purchasePrice || s.buyPrice,
+      purchase_price: buyPrice,
       average_daily_rate: s.averageDailyRate,
       occupancy_rate: s.occupancyRate,
-      down_payment_pct: (s.downPaymentPercent || 0.2) * 100,
-      interest_rate: (s.interestRate || 0.06) * 100,
+      down_payment_pct: s.downPaymentPercent || 0.2,
+      interest_rate: s.interestRate || 0.06,
       loan_term_years: s.loanTermYears || 30,
-      closing_costs: (s.purchasePrice || s.buyPrice) * (s.closingCostsPercent || 0.03),
+      closing_costs: buyPrice * (s.closingCostsPercent || 0.03),
       furnishing_budget: s.furnitureSetupCost || s.furnishingBudget || 0,
-      platform_fees_pct: s.platformFeesPct || 0.03,
-      property_management_pct: s.strManagementRate || s.managementRate || 0.2,
-      cleaning_cost_per_turn: s.cleaningCostPerTurnover || s.cleaningCostPerTurn || 75,
+      platform_fees_pct: s.platformFeeRate || 0.15,
+      property_management_pct: s.strManagementRate || s.managementRate || 0.10,
+      cleaning_cost_per_turn: s.cleaningCostPerTurnover || s.cleaningCostPerTurn || 150,
+      cleaning_fee_revenue: s.cleaningFeeRevenue || 75,
+      avg_booking_length: s.avgLengthOfStayDays || 6,
+      supplies_monthly: s.suppliesMonthly || 100,
+      utilities_monthly: s.additionalUtilitiesMonthly || 0,
       property_taxes_annual: s.annualPropertyTax || 3600,
       insurance_annual: s.annualInsurance || 1500,
       maintenance_pct: s.maintenanceRate || 0.05,
@@ -97,13 +101,13 @@ function buildPayload(
       purchase_price: s.purchasePrice || s.buyPrice,
       rehab_costs: s.rehabBudget || 0,
       arv: s.arv || 0,
-      monthly_rent: s.monthlyRent || 0,
-      down_payment_pct: (s.downPaymentPercent || 0.2) * 100,
-      interest_rate: (s.interestRate || 0.06) * 100,
+      monthly_rent: s.postRehabMonthlyRent || s.monthlyRent || 0,
+      down_payment_pct: s.downPaymentPercent || 0.2,
+      interest_rate: s.hardMoneyRate || s.interestRate || 0.10,
       holding_months: s.holdingPeriodMonths || 6,
-      refi_ltv: (s.refinanceLtv || 0.75) * 100,
-      refi_interest_rate: (s.refinanceInterestRate || s.interestRate || 0.06) * 100,
-      refi_loan_term: s.refinanceLoanTerm || 30,
+      refi_ltv: s.refinanceLtv || 0.75,
+      refi_interest_rate: s.refinanceInterestRate || 0.06,
+      refi_loan_term: s.refinanceTermYears || 30,
       property_taxes_annual: s.annualPropertyTax || 3600,
       insurance_annual: s.annualInsurance || 1500,
       vacancy_rate: s.vacancyRate || 0.05,
@@ -140,28 +144,41 @@ function buildPayload(
   }
 
   if (strategyType === 'house_hack') {
-    const s = state as Record<string, number | number[]>
+    const s = state as Record<string, number>
+    const totalUnits = s.totalUnits || 4
+    const ownerUnits = s.ownerOccupiedUnits || 1
+    const rentedUnits = Math.max(0, totalUnits - ownerUnits)
+    const avgRent = s.avgRentPerUnit || 1500
+    const purchasePrice = s.purchasePrice || s.buyPrice
     return {
-      purchase_price: (s.purchasePrice as number) || (s.buyPrice as number),
-      unit_rents: s.unitRents || [(s.avgRentPerUnit as number) || 1500],
-      down_payment_pct: ((s.downPaymentPercent as number) || 0.05) * 100,
-      interest_rate: ((s.interestRate as number) || 0.06) * 100,
-      loan_term_years: (s.loanTermYears as number) || 30,
-      property_taxes_annual: (s.annualPropertyTax as number) || 3600,
-      insurance_annual: (s.annualInsurance as number) || 1500,
-      vacancy_rate: (s.vacancyRate as number) || 0.05,
-      maintenance_pct: (s.maintenanceRate as number) || 0.05,
+      purchase_price: purchasePrice,
+      unit_rents: Array(rentedUnits).fill(avgRent),
+      owner_market_rent: s.ownerUnitMarketRent || 1500,
+      down_payment_pct: s.downPaymentPercent || 0.035,
+      interest_rate: s.interestRate || 0.065,
+      loan_term_years: s.loanTermYears || 30,
+      closing_costs: purchasePrice * (s.closingCostsPercent || 0.03),
+      pmi_rate: s.pmiRate || 0.0085,
+      property_taxes_annual: s.annualPropertyTax || 6000,
+      insurance_annual: s.annualInsurance || 2400,
+      vacancy_rate: s.vacancyRate || 0.05,
+      maintenance_pct: s.maintenanceRate || 0.05,
+      capex_pct: s.capexRate || 0.05,
+      utilities_monthly: s.utilitiesMonthly || 200,
     }
   }
 
   // wholesale
   const s = state as Record<string, number>
+  const contractPrice = s.contractPrice || 0
+  const assignmentFee = s.assignmentFee || 15000
   return {
     arv: s.arv || 0,
-    contract_price: s.contractPrice || 0,
-    investor_price: s.investorPrice || s.contractPrice + (s.assignmentFee || 10000),
+    contract_price: contractPrice,
+    investor_price: contractPrice + assignmentFee,
     rehab_costs: s.estimatedRepairs || s.rehabBudget || 0,
-    assignment_fee: s.assignmentFee || 10000,
+    assignment_fee: assignmentFee,
+    marketing_costs: s.marketingCosts || 500,
     earnest_money: s.earnestMoney || 1000,
   }
 }

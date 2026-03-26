@@ -256,7 +256,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
-      <TotalRow label="Cash Needed" value={fmt(cashNeeded + state.rehabBudget)} />
+      <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
 
       <Divider />
 
