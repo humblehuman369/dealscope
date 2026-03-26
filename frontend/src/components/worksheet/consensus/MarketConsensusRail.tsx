@@ -108,7 +108,7 @@ function MarkerDot({ marker, left }: { marker: SourceMarker; left: number }) {
 
 function SourceLegend({ markers }: { markers: SourceMarker[] }) {
   return (
-    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-1">
+    <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-1">
       {markers.map((m) => (
         <div key={m.id} className="flex flex-col items-center">
           <div className="flex items-center gap-1.5">
@@ -219,7 +219,7 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
           <span className="font-semibold">Unavailable:</span>{' '}
           {unavailableSources
             .map((id) => {
-              const labels: Record<string, string> = { iq: 'IQ Estimate', zillow: 'Zillow', rentcast: 'RentCast', redfin: 'Redfin', realtor: 'Realtor.com' }
+              const labels: Record<string, string> = { iq: 'IQ Estimate', zillow: 'Zillow', rentcast: 'RentCast', redfin: 'Redfin', realtor: 'Realtor' }
               return labels[id]
             })
             .join(', ')}
