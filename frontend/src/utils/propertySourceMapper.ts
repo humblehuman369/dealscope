@@ -6,7 +6,7 @@ export const SOURCE_META: Record<DataSourceId, { label: string; color: string }>
   zillow: { label: 'Zillow', color: '#4A90D9' },
   rentcast: { label: 'RentCast', color: '#F59E0B' },
   redfin: { label: 'Redfin', color: '#EF5350' },
-  realtor: { label: 'Realtor.com', color: '#D92228' },
+  realtor: { label: 'Realtor', color: '#D92228' },
 }
 
 export const ALL_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
