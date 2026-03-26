@@ -144,11 +144,11 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
 
   return (
     <div
-      className="grid grid-cols-[0.7fr_1.3fr_45px_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className="grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <div className="relative h-5 flex items-center justify-center min-w-[40px]">
+      <div className="relative h-5 hidden sm:flex items-center justify-center min-w-[40px]">
         <div className="w-full h-[3px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
           <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${fill}%`, background: C.blue }} />
           <input
@@ -171,7 +171,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
           />
         </div>
       </div>
-      <span className="text-xs tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
+      <span className="hidden sm:block text-xs tabular-nums text-right" style={{ color: 'var(--text-secondary)' }}>
         {secondaryValue ?? ''}
       </span>
       <input
