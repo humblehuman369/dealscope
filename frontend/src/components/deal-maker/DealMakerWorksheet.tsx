@@ -78,8 +78,8 @@ function NegRow({ label, value }: { label: string; value: string }) {
 function TotalRow({ label, value }: { label: string; value: string }) {
   return (
     <div
-      className="flex justify-between py-2 px-4 mt-1 rounded-md"
-      style={{ borderTop: `1px solid ${C.border}`, backgroundColor: 'var(--surface-elevated)' }}
+      className="flex justify-between py-2 px-4 mt-1"
+      style={{ borderTop: `1px solid ${C.border}` }}
     >
       <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{label}</span>
       <span className="font-bold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{value}</span>
