@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { parseAddressString } from '@/utils/formatters'
+import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
 
 export interface PropertySnapshot {
   street?: string
@@ -40,18 +42,28 @@ export function useSaveProperty({
   const [isSaved, setIsSaved] = useState(false)
   const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const queryClient = useQueryClient()
+
+  // Incremented after save/unsave so in-flight checkSaved calls don't
+  // overwrite authoritative state with a stale server response.
+  const stateVersionRef = useRef(0)
 
   const checkSaved = useCallback(async () => {
     if (!displayAddress) return
+    const capturedVersion = stateVersionRef.current
     try {
       const result = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
         `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
       )
-      setIsSaved(result.is_saved)
-      setSavedPropertyId(result.saved_property_id)
+      if (stateVersionRef.current === capturedVersion) {
+        setIsSaved(result.is_saved)
+        setSavedPropertyId(result.saved_property_id)
+      }
     } catch {
-      setIsSaved(false)
-      setSavedPropertyId(null)
+      if (stateVersionRef.current === capturedVersion) {
+        setIsSaved(false)
+        setSavedPropertyId(null)
+      }
     }
   }, [displayAddress])
 
@@ -88,14 +100,26 @@ export function useSaveProperty({
       })
       setIsSaved(true)
       setSavedPropertyId(result?.id ?? null)
+      stateVersionRef.current++
+      queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
-      if (status === 409) setIsSaved(true)
+      if (status === 409) {
+        setIsSaved(true)
+        stateVersionRef.current++
+        // Recover the savedPropertyId so toggle/unsave work correctly
+        try {
+          const check = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
+            `/api/v1/properties/saved/check?address=${encodeURIComponent(displayAddress)}`
+          )
+          if (check.saved_property_id) setSavedPropertyId(check.saved_property_id)
+        } catch { /* best-effort */ }
+      }
       throw err
     } finally {
       setIsSaving(false)
     }
-  }, [displayAddress, propertySnapshot, isSaving])
+  }, [displayAddress, propertySnapshot, isSaving, queryClient])
 
   const unsave = useCallback(async () => {
     if (!savedPropertyId || isSaving) return
@@ -104,10 +128,12 @@ export function useSaveProperty({
       await api.delete(`/api/v1/properties/saved/${savedPropertyId}`)
       setIsSaved(false)
       setSavedPropertyId(null)
+      stateVersionRef.current++
+      queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
     } finally {
       setIsSaving(false)
     }
-  }, [savedPropertyId, isSaving])
+  }, [savedPropertyId, isSaving, queryClient])
 
   const toggle = useCallback(async () => {
     if (isSaved && savedPropertyId) await unsave()

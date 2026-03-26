@@ -64,7 +64,7 @@ export function SavePropertyButton({
   return (
     <button
       type="button"
-      onClick={() => toggle()}
+      onClick={() => toggle().catch(() => {})}
       disabled={isSaving}
       className={`inline-flex items-center gap-1.5 rounded transition-all p-1.5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       title={isSaved ? 'Saved — click to remove' : 'Save property'}
