@@ -657,6 +657,207 @@ function WholesaleWorksheet({ state, metrics, up }: {
 }
 
 // ---------------------------------------------------------------------------
+// Summary Cards — bottom-of-worksheet KPI panel
+// ---------------------------------------------------------------------------
+
+function fmtParen(v: number): string {
+  if (v < 0) return `($${Math.abs(Math.round(v)).toLocaleString()})`
+  return `$${Math.round(v).toLocaleString()}`
+}
+
+function BigCard({ title, subtitle, annual, monthly, suffix = '/yr' }: {
+  title: string; subtitle: string; annual: number; monthly?: number; suffix?: string
+}) {
+  const positive = annual >= 0
+  const clr = positive ? '#10B981' : '#F43F5E'
+  const borderClr = positive ? 'rgba(16,185,129,0.35)' : 'rgba(244,63,94,0.35)'
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: `1.5px solid ${borderClr}` }}>
+      <div className="text-xs font-bold uppercase tracking-wider" style={{ color: clr }}>{title}</div>
+      <div className="text-[11px] mt-0.5" style={{ color: C.body }}>{subtitle}</div>
+      <div className="text-[1.65rem] font-bold mt-3 tabular-nums leading-tight" style={{ color: clr }}>
+        {fmtParen(annual)}<span className="text-sm font-normal opacity-70">{suffix}</span>
+      </div>
+      {monthly !== undefined && (
+        <>
+          <div className="my-2.5" style={{ borderTop: `1px solid ${borderClr}` }} />
+          <div className="text-sm font-medium tabular-nums" style={{ color: clr }}>
+            {fmtParen(monthly)}<span className="text-xs opacity-70">/mo</span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function ValueCard({ title, subtitle, value, color }: {
+  title: string; subtitle: string; value: string; color: string
+}) {
+  const borderClr = color === '#10B981' ? 'rgba(16,185,129,0.35)' : color === '#F43F5E' ? 'rgba(244,63,94,0.35)' : 'var(--border-default)'
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: `1.5px solid ${borderClr}` }}>
+      <div className="text-xs font-bold uppercase tracking-wider" style={{ color }}>{title}</div>
+      <div className="text-[11px] mt-0.5" style={{ color: C.body }}>{subtitle}</div>
+      <div className="text-[1.65rem] font-bold mt-3 tabular-nums leading-tight" style={{ color }}>{value}</div>
+    </div>
+  )
+}
+
+function BadgeCard({ title, value, target, isGood }: {
+  title: string; value: string; target: string; isGood: boolean
+}) {
+  const clr = isGood ? '#10B981' : '#F43F5E'
+  return (
+    <div className="rounded-xl px-4 py-3.5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)' }}>
+      <div className="flex justify-between items-baseline">
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: C.heading }}>{title}</span>
+        <span className="text-xl font-bold tabular-nums" style={{ color: C.heading }}>{value}</span>
+      </div>
+      <div className="flex justify-between items-center mt-2">
+        <span className="text-xs" style={{ color: C.body }}>Target: {target}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: clr }} />
+          <span className="text-xs font-semibold" style={{ color: clr }}>{isGood ? 'GOOD' : 'POOR'}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function StatusBadgeCard({ title, value, pass }: {
+  title: string; value: string; pass: boolean
+}) {
+  const clr = pass ? '#10B981' : '#F43F5E'
+  return (
+    <div className="rounded-xl px-4 py-3.5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)' }}>
+      <div className="flex justify-between items-baseline">
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: C.heading }}>{title}</span>
+        <span className="text-xl font-bold tabular-nums" style={{ color: clr }}>{value}</span>
+      </div>
+      <div className="flex justify-end items-center mt-2">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: clr }} />
+          <span className="text-xs font-semibold" style={{ color: clr }}>{pass ? 'PASS' : 'FAIL'}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function WorksheetSummary({ strategyType, metrics }: { strategyType: StrategyType; metrics: AnyStrategyMetrics }) {
+  const m = metrics as unknown as Record<string, unknown>
+
+  if (strategyType === 'ltr') {
+    const annualProfit = num(m, 'annualProfit')
+    const monthlyPayment = num(m, 'monthlyPayment')
+    const noi = annualProfit + monthlyPayment * 12
+    const capRate = num(m, 'capRate')
+    const cocReturn = num(m, 'cocReturn')
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <BigCard title="NOI" subtitle="Before Mortgage" annual={noi} monthly={noi / 12} />
+        <BigCard title="NET CASH FLOW" subtitle="After Mortgage" annual={annualProfit} monthly={annualProfit / 12} />
+        <BadgeCard title="CAP RATE" value={`${capRate.toFixed(1)}%`} target="6.0%" isGood={capRate >= 6} />
+        <BadgeCard title="CASH-ON-CASH" value={`${cocReturn.toFixed(1)}%`} target="8.0%" isGood={cocReturn >= 8} />
+      </div>
+    )
+  }
+
+  if (strategyType === 'str') {
+    const annualCF = num(m, 'annualCashFlow')
+    const monthlyPmt = num(m, 'monthlyPayment')
+    const noi = num(m, 'noi') || (annualCF + monthlyPmt * 12)
+    const capRate = num(m, 'capRate')
+    const cocReturn = num(m, 'cocReturn')
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <BigCard title="NOI" subtitle="Before Mortgage" annual={noi} monthly={noi / 12} />
+        <BigCard title="NET CASH FLOW" subtitle="After Mortgage" annual={annualCF} monthly={annualCF / 12} />
+        <BadgeCard title="CAP RATE" value={`${capRate.toFixed(1)}%`} target="6.0%" isGood={capRate >= 6} />
+        <BadgeCard title="CASH-ON-CASH" value={`${cocReturn.toFixed(1)}%`} target="8.0%" isGood={cocReturn >= 8} />
+      </div>
+    )
+  }
+
+  if (strategyType === 'brrrr') {
+    const annualCF = num(m, 'postRefiAnnualCashFlow')
+    const newPmt = num(m, 'newMonthlyPayment')
+    const estimatedNoi = num(m, 'estimatedNoi')
+    const noi = estimatedNoi || (annualCF + newPmt * 12)
+    const capRate = num(m, 'estimatedCapRate')
+    const coc = num(m, 'postRefiCashOnCash')
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <BigCard title="NOI" subtitle="Before Mortgage" annual={noi} monthly={noi / 12} />
+        <BigCard title="NET CASH FLOW" subtitle="Post-Refinance" annual={annualCF} monthly={annualCF / 12} />
+        <BadgeCard title="CAP RATE" value={`${capRate.toFixed(1)}%`} target="6.0%" isGood={capRate >= 6} />
+        <BadgeCard title="CASH-ON-CASH" value={coc > 999 ? '∞' : `${coc.toFixed(1)}%`} target="8.0%" isGood={coc >= 8} />
+      </div>
+    )
+  }
+
+  if (strategyType === 'flip') {
+    const netProfit = num(m, 'netProfit')
+    const roi = num(m, 'roi')
+    const annualizedRoi = num(m, 'annualizedRoi')
+    const meets70 = !!(m.meets70PercentRule)
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <BigCard title="NET PROFIT" subtitle="After All Costs" annual={netProfit} suffix="" />
+        <ValueCard title="TOTAL ROI" subtitle="Return on Cash Invested" value={`${roi.toFixed(1)}%`} color={roi >= 0 ? '#10B981' : '#F43F5E'} />
+        <BadgeCard title="ANN. ROI" value={`${annualizedRoi.toFixed(1)}%`} target="30%" isGood={annualizedRoi >= 30} />
+        <StatusBadgeCard title="70% RULE" value={meets70 ? 'PASS' : 'FAIL'} pass={meets70} />
+      </div>
+    )
+  }
+
+  if (strategyType === 'house_hack') {
+    const effectiveCost = num(m, 'effectiveHousingCost')
+    const netRental = num(m, 'netRentalIncome')
+    const offset = num(m, 'housingOffsetPercent')
+    const coc = num(m, 'cashOnCashReturn')
+    const housingPositive = effectiveCost <= 0
+    const housingClr = housingPositive ? '#10B981' : '#F43F5E'
+    const rentalClr = netRental >= 0 ? '#10B981' : '#F43F5E'
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <ValueCard
+          title="EFFECTIVE HOUSING"
+          subtitle="Your Monthly Cost"
+          value={`${housingPositive ? '+' : ''}${fmt(Math.abs(effectiveCost))}/mo`}
+          color={housingClr}
+        />
+        <ValueCard
+          title="NET RENTAL INCOME"
+          subtitle="After Vacancy & Expenses"
+          value={`${fmt(netRental)}/mo`}
+          color={rentalClr}
+        />
+        <BadgeCard title="HOUSING OFFSET" value={`${offset.toFixed(0)}%`} target="100%" isGood={offset >= 100} />
+        <BadgeCard title="COC RETURN" value={`${coc.toFixed(1)}%`} target="8.0%" isGood={coc >= 8} />
+      </div>
+    )
+  }
+
+  if (strategyType === 'wholesale') {
+    const netProfit = num(m, 'netProfit')
+    const roi = num(m, 'roi')
+    const annROI = num(m, 'annualizedROI')
+    const buyerROI = num(m, 'endBuyerROI')
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <ValueCard title="NET PROFIT" subtitle="Your Assignment Profit" value={fmt(netProfit)} color={netProfit >= 0 ? '#10B981' : '#F43F5E'} />
+        <ValueCard title="ROI" subtitle="Return on Cash at Risk" value={`${roi.toFixed(1)}%`} color={roi >= 0 ? '#10B981' : '#F43F5E'} />
+        <BadgeCard title="ANN. ROI" value={`${annROI.toFixed(0)}%`} target="500%" isGood={annROI >= 500} />
+        <BadgeCard title="BUYER ROI" value={`${buyerROI.toFixed(1)}%`} target="20%" isGood={buyerROI >= 20} />
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -693,6 +894,8 @@ export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, up
         {strategyType === 'flip' && <FlipWorksheet state={state as FlipDealMakerState} metrics={metrics as FlipMetrics} up={updateState} />}
         {strategyType === 'house_hack' && <HouseHackWorksheet state={state as HouseHackDealMakerState} metrics={metrics as HouseHackMetrics} up={updateState} />}
         {strategyType === 'wholesale' && <WholesaleWorksheet state={state as WholesaleDealMakerState} metrics={metrics as WholesaleMetrics} up={updateState} />}
+
+        <WorksheetSummary strategyType={strategyType} metrics={metrics} />
       </div>
     </section>
   )
