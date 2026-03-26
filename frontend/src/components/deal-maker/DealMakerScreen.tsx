@@ -1211,6 +1211,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         listPrice={listPrice ?? (state as LTRDealMakerState).buyPrice ?? 0}
         updateState={updateState}
         isCalculating={isCalculating || backendCalculating}
+        propertyAddress={fullAddress}
       />
 
 
