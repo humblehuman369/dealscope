@@ -49,11 +49,10 @@ const C = {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div
-      className="flex items-center px-3 py-2 rounded-lg mb-1"
-      style={{ backgroundColor: 'var(--surface-elevated)' }}
-    >
-      <span className="text-[0.8rem] font-bold uppercase tracking-wider" style={{ color: C.blue }}>{title}</span>
+    <div className="flex items-center mb-2 mt-1">
+      <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: C.blue }}>
+        <span className="text-[1rem] font-bold uppercase tracking-wide" style={{ color: C.blue }}>{title}</span>
+      </div>
     </div>
   )
 }
