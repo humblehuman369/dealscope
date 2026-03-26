@@ -57,7 +57,7 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
 
       {/* Consensus Band (IQR) */}
       <div
-        className="absolute top-[14px] h-[14px] rounded-md"
+        className="absolute top-[17px] h-[8px] rounded-md"
         style={{
           left: `${bandLeft}%`,
           width: `${Math.max(bandWidth, 1)}%`,
