@@ -863,7 +863,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
             <div className="grid grid-cols-2 gap-2.5 mb-2">
               {/* Left: Comp Appraisal / RentCast Estimate */}
-              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
+              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-[14px] font-semibold text-[var(--text-heading)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
@@ -898,7 +898,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   }
                 </div>
                 <div className="text-[13px] font-medium text-[var(--text-heading)]">From {selectedIds.size} selected</div>
-                <div className="-mt-2 flex justify-end">
+                <div className="mt-auto flex justify-end pt-1">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
@@ -910,7 +910,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               </div>
 
               {/* Right: ARV / Improved Rent */}
-              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)]">
+              <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-[14px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
@@ -942,7 +942,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <TrendingUp className="w-3 h-3 text-[var(--status-positive)]" />
                   <span className="text-[13px] font-medium text-[var(--status-positive)]">{isSale ? '+15% rehab premium' : '+10% condition premium'}</span>
                 </div>
-                <div className="-mt-2 flex justify-end">
+                <div className="mt-auto flex justify-end pt-1">
                   <button
                     onClick={handleApplyValues}
                     disabled={(isSale ? displayArv : displayImprovedRent) === 0}
@@ -965,7 +965,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   type="button"
                   onClick={handleDownloadReport}
                   disabled={saleSelected.size === 0 || downloadingReport}
-                  className="flex items-center justify-center gap-1.5 py-2 px-5 rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[14px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center gap-1.5 py-[2.5px] px-2.5 rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
                   title="Download appraisal report as PDF"
                 >
                   {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
