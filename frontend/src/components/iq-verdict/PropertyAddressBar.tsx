@@ -173,22 +173,16 @@ export function PropertyAddressBar({
 
   return (
     <div
+      className="w-full px-2 sm:px-6"
       style={{
         background: 'var(--surface-base)',
         fontFamily: "'DM Sans', sans-serif",
-        padding: '0 24px',
-        width: '100%',
       }}
     >
       <div
+        className="flex items-center justify-between flex-wrap gap-2 sm:gap-4 px-2 py-2 sm:px-4 sm:py-3"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
           borderBottom: `1px solid ${barTokens.border}`,
-          gap: 16,
-          flexWrap: 'wrap',
         }}
       >
         {/* Left: House icon + Address link */}
@@ -241,28 +235,19 @@ export function PropertyAddressBar({
           </Link>
         </div>
 
-        {/* Center: Inline details with dot separators */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            flex: '1 1 auto',
-            justifyContent: 'flex-start',
-            flexWrap: 'wrap',
-          }}
-        >
-          <DetailItem label="Beds" value={beds} />
-          <Dot />
-          <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
-          <Dot />
-          <DetailItem label="Sqft" value={sqft.toLocaleString()} />
-          <Dot />
-          <StatusText status={statusLabel} />
-        </div>
+        {/* Details + Actions (grouped so icons never wrap to a separate line) */}
+        <div className="flex items-center flex-1 gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center flex-wrap flex-1 gap-1.5 sm:gap-3 min-w-0">
+            <DetailItem label="Beds" value={beds} />
+            <Dot />
+            <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
+            <Dot />
+            <DetailItem label="Sqft" value={sqft.toLocaleString()} />
+            <Dot />
+            <StatusText status={statusLabel} />
+          </div>
 
-        {/* Right: Bookmark + Chevron */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
           <button
             type="button"
             onClick={handleBookmarkClick}
@@ -342,6 +327,7 @@ export function PropertyAddressBar({
               </svg>
             </button>
           )}
+          </div>
         </div>
       </div>
     </div>
