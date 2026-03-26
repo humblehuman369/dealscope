@@ -95,7 +95,7 @@
   letter-spacing: -0.02em;
   color: var(--text-heading);
   max-width: 900px;
-  margin-bottom: 1.5rem;
+  margin-bottom: calc(1.5rem + 20px);
   position: relative; z-index: 1;
   animation: fadeUp 0.8s ease 0.2s both;
 }
