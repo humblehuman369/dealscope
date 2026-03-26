@@ -61,7 +61,7 @@ function Row({ label, value, color }: { label: string; value: string; color?: st
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold tabular-nums text-right w-[92px] shrink-0 pr-1.5" style={{ color: color || C.heading }}>{value}</span>
+      <span className="text-sm font-semibold tabular-nums text-right w-[119px] shrink-0 pr-1.5" style={{ color: color || C.heading }}>{value}</span>
     </div>
   )
 }
@@ -70,7 +70,7 @@ function NegRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold tabular-nums text-right w-[92px] shrink-0 pr-1.5" style={{ color: C.blue }}>({value})</span>
+      <span className="text-sm font-semibold tabular-nums text-right w-[119px] shrink-0 pr-1.5" style={{ color: C.blue }}>({value})</span>
     </div>
   )
 }
@@ -82,7 +82,7 @@ function TotalRow({ label, value }: { label: string; value: string }) {
       style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}
     >
       <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>{label}</span>
-      <span className="font-bold tabular-nums text-[0.95rem] text-right w-[92px] shrink-0 pr-1.5" style={{ color: C.heading }}>{value}</span>
+      <span className="font-bold tabular-nums text-[0.95rem] text-right w-[119px] shrink-0 pr-1.5" style={{ color: C.heading }}>{value}</span>
     </div>
   )
 }
@@ -91,7 +91,7 @@ function StatusRow({ label, pass }: { label: string; pass: boolean }) {
   return (
     <div className="flex justify-between py-1.5 pl-4 pr-1" style={{ borderBottom: `1px solid ${C.border}` }}>
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
-      <span className="text-sm font-semibold text-right w-[92px] shrink-0 pr-1.5" style={{ color: pass ? '#10B981' : '#F43F5E' }}>{pass ? 'PASS' : 'FAIL'}</span>
+      <span className="text-sm font-semibold text-right w-[119px] shrink-0 pr-1.5" style={{ color: pass ? '#10B981' : '#F43F5E' }}>{pass ? 'PASS' : 'FAIL'}</span>
     </div>
   )
 }
@@ -143,7 +143,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
 
   return (
     <div
-      className="grid grid-cols-[0.7fr_1.3fr_45px_92px] sm:grid-cols-[0.7fr_1.5fr_50px_92px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className="grid grid-cols-[0.7fr_1.3fr_45px_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
@@ -181,7 +181,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-sm font-semibold tabular-nums text-right outline-none w-[88px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
+        className="text-sm font-semibold tabular-nums text-right outline-none w-[115px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
         style={{ color: C.heading, border: '1px solid var(--border-subtle)', background: 'var(--surface-elevated)' }}
         size={10}
       />
