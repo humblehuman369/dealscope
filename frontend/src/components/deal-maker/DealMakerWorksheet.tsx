@@ -143,7 +143,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
 
   return (
     <div
-      className="grid grid-cols-[1fr_1fr_45px_92px] sm:grid-cols-[1fr_1.2fr_50px_92px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className="grid grid-cols-[0.7fr_1.3fr_45px_92px] sm:grid-cols-[0.7fr_1.5fr_50px_92px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
