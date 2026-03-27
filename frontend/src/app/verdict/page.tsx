@@ -1420,7 +1420,7 @@ function VerdictContent() {
               </div>
 
               {/* Row 3: video + expandable details toggle */}
-              <div className="flex items-center gap-4 mt-3">
+              <div className="flex flex-wrap items-center gap-4 mt-3">
                 <button
                   type="button"
                   onClick={() => setShowDealGapVideo(true)}
