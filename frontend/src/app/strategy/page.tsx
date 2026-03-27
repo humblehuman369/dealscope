@@ -26,6 +26,7 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { UnifiedDealMaker } from '@/components/strategy/UnifiedDealMaker'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 
@@ -424,14 +425,7 @@ function StrategyContent() {
   }, [scheduleRecalc])
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: 'var(--text-heading)' }}>Loading strategy...</p>
-        </div>
-      </div>
-    )
+    return <IQLoadingLogo />
   }
 
   if (error || !data) {
@@ -1262,14 +1256,7 @@ function StrategyContent() {
 
 export default function StrategyPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-          <p style={{ color: 'var(--text-heading)' }}>Loading strategy...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<IQLoadingLogo />}>
       <StrategyContent />
     </Suspense>
   )

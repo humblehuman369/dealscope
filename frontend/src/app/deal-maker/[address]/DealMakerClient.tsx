@@ -5,17 +5,14 @@ import dynamic from 'next/dynamic'
 import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 // DealMakerScreen is ~1,500+ lines with 6 strategy calculators.
 // Dynamic import keeps it out of the initial page bundle.
 const DealMakerScreen = dynamic(
   () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
   {
-    loading: () => (
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)]" />
-      </div>
-    ),
+    loading: () => <IQLoadingLogo />,
   },
 )
 
