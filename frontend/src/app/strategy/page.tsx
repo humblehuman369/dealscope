@@ -23,11 +23,12 @@ import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, isLikelyFullAddress, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
-import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
+import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
-import { UnifiedDealMaker } from '@/components/strategy/UnifiedDealMaker'
+import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
+import type { LTRDealMakerState, LTRDealMakerMetrics } from '@/components/deal-maker/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 
 // Types from existing verdict system
@@ -529,6 +530,62 @@ function StrategyContent() {
         ...(strategyDscr != null ? [{ metric: 'DSCR', value: strategyDscr.toFixed(2), target: '1.25', status: strategyDscr >= 1.25 ? 'good' : 'poor' }] : []),
       ]
 
+  const worksheetState: LTRDealMakerState = (() => {
+    const io = inlineOverrides as Record<string, number | undefined>
+    return {
+      buyPrice: io.purchasePrice ?? targetPrice,
+      downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+      closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+      interestRate: io.interestRate ?? rate,
+      loanTermYears: io.loanTerm ?? loanTermYears,
+      rehabBudget: io.rehabBudget ?? rehabCost,
+      arv: io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice,
+      monthlyRent: io.monthlyRent ?? monthlyRent,
+      otherIncome: 0,
+      vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
+      maintenanceRate: maintPct,
+      managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
+      annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
+      annualInsurance: io.insurance ?? insurance,
+      monthlyHoa: 0,
+    }
+  })()
+
+  const worksheetMetrics: LTRDealMakerMetrics = {
+    cashNeeded: totalCashNeeded,
+    dealGap: dealGapPct / 100,
+    annualProfit: strategyAnnualCashFlow,
+    capRate: capRateVal ?? 0,
+    cocReturn: cocVal ?? 0,
+    monthlyPayment: monthlyPI,
+    loanAmount,
+    equityCreated: 0,
+    grossMonthlyIncome: monthlyRent,
+    totalMonthlyExpenses: totalExpenses / 12,
+  }
+
+  const handleWorksheetUpdate = (key: string, value: number | string) => {
+    const fieldMap: Record<string, keyof InlineDealMakerValues> = {
+      buyPrice: 'buyPrice',
+      downPaymentPercent: 'downPayment',
+      closingCostsPercent: 'closingCosts',
+      interestRate: 'interestRate',
+      loanTermYears: 'loanTerm',
+      rehabBudget: 'rehabBudget',
+      arv: 'arv',
+      monthlyRent: 'monthlyRent',
+      vacancyRate: 'vacancyRate',
+      annualPropertyTax: 'propertyTaxes',
+      annualInsurance: 'insurance',
+      managementRate: 'managementRate',
+      maintenanceRate: 'managementRate',
+    }
+    const mapped = fieldMap[key]
+    if (mapped) {
+      handleInlineSliderChange(mapped, typeof value === 'number' ? value : parseFloat(value))
+    }
+  }
+
   const handlePDFDownload = (theme: 'light' | 'dark' = 'light') => {
     if (!isAuthenticated) {
       openAuthModal('login')
@@ -913,247 +970,50 @@ function StrategyContent() {
             </div>
           </div>
 
-          {/* Financial Breakdown card */}
-          <div
-            className="rounded-[14px] p-5 sm:p-6"
-            style={{
-              background: 'var(--surface-card)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-card-hover)',
-            }}
-          >
+          {/* Financial Breakdown — DealMaker Worksheet */}
+          <DealMakerWorksheet
+            strategyType="ltr"
+            state={worksheetState}
+            metrics={worksheetMetrics}
+            listPrice={listPrice}
+            updateState={handleWorksheetUpdate}
+            isCalculating={isRecalculating}
+            propertyAddress={resolvedAddress}
+          />
 
-          {(() => {
-            const io = inlineOverrides as Record<string, number | undefined>
-            const sliderValues: InlineDealMakerValues = {
-              buyPrice: io.purchasePrice ?? targetPrice,
-              downPayment: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
-              closingCosts: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
-              interestRate: io.interestRate ?? rate,
-              loanTerm: io.loanTerm ?? loanTermYears,
-              rehabBudget: io.rehabBudget ?? rehabCost,
-              marketValue: io.listPrice ?? listPrice,
-              arv: io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? dealMakerOverrides?.arv ?? listPrice,
-              monthlyRent: io.monthlyRent ?? monthlyRent,
-              vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
-              propertyTaxes: io.propertyTaxes ?? propertyTaxes,
-              insurance: io.insurance ?? insurance,
-              managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
-            }
-
-            return (
-              <UnifiedDealMaker
-                listPrice={listPrice}
-                targetPrice={targetPrice}
-                loanAmount={loanAmount}
-                downPayment={downPayment}
-                downPaymentPct={downPaymentPct}
-                closingCosts={closingCosts}
-                closingCostsPct={closingCostsPct}
-                rehabCost={rehabCost}
-                rate={rate}
-                loanTermYears={loanTermYears}
-                monthlyPI={monthlyPI}
-                annualDebt={annualDebt}
-                propertyTaxes={propertyTaxes}
-                insurance={insurance}
-                mgmt={mgmt}
-                mgmtPct={mgmtPct}
-                maint={maint}
-                maintPct={maintPct}
-                vacancyLoss={vacancyLoss}
-                vacancyPct={vacancyPct}
-                totalExpenses={totalExpenses}
-                monthlyRent={monthlyRent}
-                annualRent={annualRent}
-                effectiveIncome={effectiveIncome}
-                sliderValues={sliderValues}
-                onSliderChange={handleInlineSliderChange}
-                capRate={capRateVal}
-                cashOnCash={cocVal}
-                annualCashFlow={strategyAnnualCashFlow}
-              />
-            )
-          })()}
-
-          </div>{/* end container box */}
-
-          {/* Summary Cards — use per-strategy metrics when available */}
-          {isFlipOrWholesale ? (
-            /* Flip & Wholesale: Profit-oriented cards */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-10 pt-4">
-              <div className="rounded-xl p-4" style={{ background: strategyAnnualCashFlow >= 0 ? colors.accentBg.green : colors.accentBg.red, border: `1px solid ${strategyAnnualCashFlow >= 0 ? 'var(--status-positive)' : 'var(--status-negative)'}` }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>{activeStrategyId === 'wholesale' ? 'Assignment Fee' : 'Net Profit'}</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>Estimated</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: strategyAnnualCashFlow >= 0 ? colors.status.positive : colors.status.negative }}>{formatCurrency(strategyAnnualCashFlow)}</p>
-                </div>
+          {/* IQ Estimate Source Selector */}
+          {!isFlipOrWholesale &&
+            (iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
+              iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
+              <div className="px-4 sm:px-6 -mt-16">
+                <IQEstimateSelector
+                  sources={iqSources}
+                  onSourceChange={(type, _sourceId, _value) => {
+                    if (_value == null) return
+                    const nextSrcOverrides = { ...sourceOverrides }
+                    if (type === 'value') {
+                      nextSrcOverrides.price = _value
+                      setSourceOverrides(nextSrcOverrides)
+                      try {
+                        writeDealMakerOverrides(resolvedAddress, {
+                          price: _value,
+                          listPrice: _value,
+                        })
+                      } catch { /* ignore */ }
+                    } else {
+                      nextSrcOverrides.monthlyRent = _value
+                      setSourceOverrides(nextSrcOverrides)
+                      try {
+                        writeDealMakerOverrides(resolvedAddress, {
+                          monthlyRent: _value,
+                        })
+                      } catch { /* ignore */ }
+                    }
+                    const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
+                    recalcVerdict(propertyInfo, merged, nextSrcOverrides)
+                  }}
+                />
               </div>
-              <div className="rounded-xl p-4" style={{ background: colors.accentBg.green, border: '1px solid var(--status-positive)' }}>
-                <p className="text-sm font-semibold" style={{ color: colors.text.primary }}>ROI</p>
-                <div className="flex justify-between items-baseline mt-1">
-                  <p className="text-xs font-medium" style={{ color: colors.status.positive }}>Return</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: colors.status.positive }}>{cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Rental strategies: NOI and Net Cash Flow */
-            <>
-              {(() => {
-                const netColor = strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative
-                const netGreen = strategyCashFlow >= 0
-                return (
-                  <div
-                    className="grid grid-cols-2 mt-6 rounded-xl overflow-hidden"
-                    style={{
-                      background: 'var(--surface-card)',
-                      border: '1px solid var(--border-default)',
-                      boxShadow: 'var(--shadow-card)',
-                    }}
-                  >
-                    <div className="p-4 sm:p-5" style={{ borderRight: '1px solid var(--border-default)' }}>
-                      <p className="text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
-                      <p className="text-[10px] sm:text-xs font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
-                      <p className="text-[20px] sm:text-[26px] font-extrabold tabular-nums mt-2 leading-tight" style={{ color: colors.status.positive }}>
-                        {formatCurrency(noi)}<span className="text-[11px] sm:text-sm font-semibold opacity-70">/yr</span>
-                      </p>
-                      <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-default)' }}>
-                        <p className="text-xs sm:text-sm font-semibold tabular-nums" style={{ color: colors.status.positive }}>
-                          {formatCurrency(Math.round(noi / 12))}/mo
-                        </p>
-                      </div>
-                    </div>
-                    <div className="p-4 sm:p-5">
-                      <p className="text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
-                      <p className="text-[10px] sm:text-xs font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
-                      <p className="text-[20px] sm:text-[26px] font-extrabold tabular-nums mt-2 leading-tight" style={{ color: netColor }}>
-                        {netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}<span className="text-[11px] sm:text-sm font-semibold opacity-70">/yr</span>
-                      </p>
-                      <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-default)' }}>
-                        <p className="text-xs sm:text-sm font-semibold tabular-nums" style={{ color: netColor }}>
-                          {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {(() => {
-                const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
-                const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
-                return (
-                  <div
-                    className="grid grid-cols-2 mt-4 rounded-xl overflow-hidden"
-                    style={{
-                      background: 'var(--surface-card)',
-                      border: '1px solid var(--border-default)',
-                      boxShadow: 'var(--shadow-card)',
-                    }}
-                  >
-                    <div className="p-4" style={{ borderRight: '1px solid var(--border-default)' }}>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
-                        <p className="text-sm sm:text-base font-bold tabular-nums" style={{ color: colors.text.primary }}>
-                          {capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—'}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-[11px]" style={{ color: colors.text.body }}>Target: 6.0%</p>
-                        {capAssess && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: capAssess.color }}>
-                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: capAssess.color }} />
-                            {capAssess.label}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
-                        <p className="text-sm sm:text-base font-bold tabular-nums" style={{ color: colors.text.primary }}>
-                          {cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-[11px]" style={{ color: colors.text.body }}>Target: 8.0%</p>
-                        {cocAssess && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: cocAssess.color }}>
-                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: cocAssess.color }} />
-                            {cocAssess.label}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {/* IQ Estimate Source Selector */}
-              {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
-                iqSources.rent.iq != null || iqSources.rent.zillow != null || iqSources.rent.rentcast != null || iqSources.rent.realtor != null) && (
-                <div className="mt-5">
-                  <IQEstimateSelector
-                    sources={iqSources}
-                    onSourceChange={(type, _sourceId, _value) => {
-                      if (_value == null) return
-                      const nextSrcOverrides = { ...sourceOverrides }
-                      if (type === 'value') {
-                        nextSrcOverrides.price = _value
-                        setSourceOverrides(nextSrcOverrides)
-                        try {
-                          writeDealMakerOverrides(resolvedAddress, {
-                            price: _value,
-                            listPrice: _value,
-                          })
-                        } catch { /* ignore */ }
-                      } else {
-                        nextSrcOverrides.monthlyRent = _value
-                        setSourceOverrides(nextSrcOverrides)
-                        try {
-                          writeDealMakerOverrides(resolvedAddress, {
-                            monthlyRent: _value,
-                          })
-                        } catch { /* ignore */ }
-                      }
-                      const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
-                      recalcVerdict(propertyInfo, merged, nextSrcOverrides)
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2 mt-5">
-                <button
-                  onClick={() => handlePDFDownload('light')}
-                  disabled={isExporting === 'pdf'}
-                  className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                  style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
-                >
-                  {isExporting === 'pdf' ? (
-                    <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
-                  ) : (
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                  )}
-                  <span>{isExporting === 'pdf' ? 'Generating...' : 'Download PDF'}</span>
-                </button>
-                <button
-                  onClick={handleExcelDownload}
-                  disabled={isExporting === 'excel'}
-                  className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                  style={{ background: colors.background.cardUp, border: `1px solid ${colors.brand.teal}`, color: colors.brand.teal }}
-                >
-                  {isExporting === 'excel' ? (
-                    <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
-                  ) : (
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-                  )}
-                  <span>{isExporting === 'excel' ? 'Generating...' : 'Download Excel'}</span>
-                </button>
-              </div>
-            </>
           )}
 
           {/* The Bottom Line */}
