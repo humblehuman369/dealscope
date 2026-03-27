@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { exportDealMakerExcel } from './exportExcel'
 import type {
   StrategyType,
@@ -117,16 +117,40 @@ interface SliderRowProps {
   parseInput?: (raw: string) => number
 }
 
+function adaptRange(val: number, propMin: number, propMax: number): [number, number] {
+  if (val >= propMin && val <= propMax) return [propMin, propMax]
+  const lo = val * 0.5
+  const hi = val * 1.5
+  const newMin = Math.max(0, Math.min(lo, hi))
+  const newMax = Math.max(lo, hi)
+  if (isFinite(newMin) && isFinite(newMax) && newMax > newMin) return [newMin, newMax]
+  return [propMin, propMax]
+}
+
 function SliderRow({ label, value, displayValue, secondaryValue, min, max, step, onChange, parseInput }: SliderRowProps) {
-  const [rangeMin, setRangeMin] = useState(min)
-  const [rangeMax, setRangeMax] = useState(max)
+  const [rangeMin, setRangeMin] = useState(() => adaptRange(value, min, max)[0])
+  const [rangeMax, setRangeMax] = useState(() => adaptRange(value, min, max)[1])
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
 
   useEffect(() => {
-    setRangeMin(min)
-    setRangeMax(max)
+    const [lo, hi] = adaptRange(value, min, max)
+    setRangeMin(lo)
+    setRangeMax(hi)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [min, max])
+
+  const rangeRef = useRef({ min: rangeMin, max: rangeMax })
+  rangeRef.current = { min: rangeMin, max: rangeMax }
+
+  useEffect(() => {
+    const { min: rMin, max: rMax } = rangeRef.current
+    if (value < rMin || value > rMax) {
+      const [lo, hi] = adaptRange(value, rMin, rMax)
+      setRangeMin(lo)
+      setRangeMax(hi)
+    }
+  }, [value])
 
   const clamped = Math.min(rangeMax, Math.max(rangeMin, value))
   const fill = rangeMax > rangeMin ? ((clamped - rangeMin) / (rangeMax - rangeMin)) * 100 : 0
@@ -143,14 +167,9 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
     const parsed = parseInput ? parseInput(draft) : parseFloat(draft)
     if (!isNaN(parsed) && isFinite(parsed)) {
       if (parsed < rangeMin || parsed > rangeMax) {
-        const lo = parsed * 0.5
-        const hi = parsed * 1.5
-        const newMin = Math.max(0, Math.min(lo, hi))
-        const newMax = Math.max(lo, hi)
-        if (isFinite(newMin) && isFinite(newMax) && newMax > newMin) {
-          setRangeMin(newMin)
-          setRangeMax(newMax)
-        }
+        const [lo, hi] = adaptRange(parsed, rangeMin, rangeMax)
+        setRangeMin(lo)
+        setRangeMax(hi)
       }
       onChange(parsed)
     }
