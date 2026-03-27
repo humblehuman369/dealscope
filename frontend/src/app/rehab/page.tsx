@@ -95,12 +95,12 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen px-3 sm:px-4 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
+    <div className="min-h-screen px-1 sm:px-4 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
       <div className="w-full">
         <div style={{ backgroundColor: 'var(--surface-card)' }}>
           {/* Header */}
           <div
-            className="px-4 py-3 flex justify-between items-center"
+            className="px-1 sm:px-4 py-3 flex justify-between items-center"
             style={{
               background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
               borderBottom: '1px solid var(--border-subtle)',
@@ -123,7 +123,7 @@ function RehabPageContent() {
           </div>
 
           {/* Content */}
-          <div className="py-3" style={{ paddingLeft: 5, paddingRight: 5 }}>
+          <div className="px-[1px] sm:px-[5px] py-3">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
