@@ -116,7 +116,7 @@ function RehabItemRow({
   
   return (
     <div
-      className="grid grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
+      className="grid grid-cols-[2fr_auto_auto_1fr_auto] sm:grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {/* Item Name */}
@@ -129,7 +129,7 @@ function RehabItemRow({
       {(['low', 'mid', 'high'] as const).map((tier) => (
         <div
           key={tier}
-          className="py-0.5 px-1.5 rounded text-xs font-semibold text-center"
+          className="hidden sm:block py-0.5 px-1.5 rounded text-xs font-semibold text-center"
           style={{
             backgroundColor: globalTier === tier ? 'var(--surface-elevated)' : 'transparent',
             color: 'var(--accent-sky)',
