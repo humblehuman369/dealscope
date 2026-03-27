@@ -844,16 +844,8 @@ function StrategyContent() {
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-[1px] sm:px-5 pt-2 pb-6">
-          <div
-            className="rounded-[14px] p-5 sm:p-6"
-            style={{
-              background: 'var(--surface-card)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-card-hover)',
-            }}
-          >
 
-          {/* Strategy Tabs */}
+          {/* Strategy Tabs — outside card container */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY: { id: string; label: string }[] = [
               { id: 'ltr', label: 'Long-term' },
@@ -864,37 +856,33 @@ function StrategyContent() {
               { id: 'wholesale', label: 'Wholesale' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
-            const topRow = available.slice(0, 3)
-            const bottomRow = available.slice(3)
-            const renderPill = (s: { id: string; label: string }) => {
-              const isActive = s.id === activeStrategyId
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => handleStrategyChange(s.id)}
-                  className="flex-1 py-2.5 rounded-full text-[13px] sm:text-sm font-bold tracking-wide transition-all"
-                  style={{
-                    background: isActive ? colors.brand.teal : 'transparent',
-                    color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
-                    border: `1.5px solid ${colors.brand.teal}`,
-                  }}
-                >
-                  {s.label}
-                </button>
-              )
-            }
             return (
-              <div className="mb-5 flex flex-col gap-2">
-                <div className="flex gap-2">{topRow.map(renderPill)}</div>
-                {bottomRow.length > 0 && <div className="flex gap-2">{bottomRow.map(renderPill)}</div>}
+              <div className="mb-4 flex gap-2">
+                {available.map((s) => {
+                  const isActive = s.id === activeStrategyId
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleStrategyChange(s.id)}
+                      className="flex-1 py-2.5 rounded-full text-[12px] sm:text-sm font-bold tracking-wide transition-all"
+                      style={{
+                        background: isActive ? colors.brand.teal : 'transparent',
+                        color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
+                        border: `1.5px solid ${colors.brand.teal}`,
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  )
+                })}
               </div>
             )
           })()}
 
-          {/* Key Metrics Bar */}
+          {/* Key Metrics Bar — own container */}
           <div
-            className="rounded-xl px-4 sm:px-5 py-3 mb-6 relative"
+            className="rounded-xl px-4 sm:px-5 py-3 mb-4 relative"
             style={{
               background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
@@ -930,6 +918,16 @@ function StrategyContent() {
               ))}
             </div>
           </div>
+
+          {/* Financial Breakdown card */}
+          <div
+            className="rounded-[14px] p-5 sm:p-6"
+            style={{
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card-hover)',
+            }}
+          >
 
           {(() => {
             const io = inlineOverrides as Record<string, number | undefined>
