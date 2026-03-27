@@ -907,9 +907,19 @@ export interface DealMakerWorksheetProps {
   updateState: (key: string, value: number | string) => void
   isCalculating: boolean
   propertyAddress?: string
+  flushWithinParent?: boolean
 }
 
-export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, updateState, isCalculating, propertyAddress }: DealMakerWorksheetProps) {
+export function DealMakerWorksheet({
+  strategyType,
+  state,
+  metrics,
+  listPrice,
+  updateState,
+  isCalculating,
+  propertyAddress,
+  flushWithinParent = false,
+}: DealMakerWorksheetProps) {
   const [exporting, setExporting] = useState(false)
   const [exportDone, setExportDone] = useState(false)
 
@@ -927,7 +937,7 @@ export function DealMakerWorksheet({ strategyType, state, metrics, listPrice, up
   }, [strategyType, state, metrics, propertyAddress, listPrice])
 
   return (
-    <section className="mx-4 sm:mx-6 pb-24 sm:pb-28">
+    <section className={`${flushWithinParent ? '' : 'mx-4 sm:mx-6'} pb-24 sm:pb-28`}>
       <div
         className="rounded-xl p-4 sm:p-5"
         style={{
