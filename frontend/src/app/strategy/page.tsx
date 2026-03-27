@@ -665,7 +665,7 @@ function StrategyContent() {
           const isListedProp = !!propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
           const pLabel = isListedProp ? 'Asking' : 'Market'
           return (
-          <section className="px-5 pt-6 pb-2">
+          <section className="px-[1px] sm:px-5 pt-6 pb-2">
             {/* Three price metric cards */}
             <div className="flex flex-col sm:flex-row gap-2.5 items-stretch mb-6">
               {[
@@ -794,7 +794,7 @@ function StrategyContent() {
         })()}
 
         {/* Next Steps — accordion, closed by default */}
-        <section className="px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <section className="px-[1px] sm:px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
           <details>
             <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 <span style={{ color: 'var(--accent-sky)', margin: 0, fontSize: '0.85rem', fontWeight: 500, fontFamily: 'Inter, sans-serif', letterSpacing: '0.02em' }}>Next Steps?</span>
@@ -839,7 +839,7 @@ function StrategyContent() {
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
-        <section className="px-5 pt-2 pb-6">
+        <section className="px-[1px] sm:px-5 pt-2 pb-6">
           <div
             className="rounded-[14px] p-5 sm:p-6"
             style={{
@@ -1165,7 +1165,7 @@ function StrategyContent() {
         </section>
 
         {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
-        <section className="px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
+        <section className="px-[1px] sm:px-5 py-8 border-t" style={{ borderColor: colors.ui.border }}>
           <div className="w-full rounded-[14px] p-5" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card-hover)' }}>
             <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>Investor Benchmarks</p>
             <h2 className={tw.textHeading} style={{ color: colors.text.primary, marginBottom: 6 }}>How Does This Stack Up?</h2>
@@ -1204,7 +1204,7 @@ function StrategyContent() {
         </AuthGate>
 
         {/* Save CTA — adapt for logged-in vs anonymous; future: scan limit → Pro upgrade */}
-        <section className="px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
+        <section className="px-[1px] sm:px-5 py-10 text-center border-t" style={{ borderColor: colors.ui.border }}>
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>You screened it. You proved it.</p>
           <h2 className="text-2xl font-extrabold mb-3" style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}>Now Save It.</h2>
           <p className="text-[15px] mb-7 mx-auto max-w-md" style={{ color: colors.text.body, lineHeight: 1.6 }}>
