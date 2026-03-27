@@ -867,7 +867,7 @@ function StrategyContent() {
                   { num: '1', text: <><strong style={{ color: 'var(--text-heading)' }}>Review Deal Terms</strong> – Check the down payment, financing, interest rate, and other details to understand the deal.</> },
                   { num: '2', text: <><strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.</> },
                   { num: '3', text: <><strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.</> },
-                  { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Appraise with Comps</strong> – Visit the Comps tab to make your own appraisal report.</> },
+                  { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Use Appraiser to Set Your Values</strong> – Visit the Appraiser tab to confirm value, set the ARV and create your own appraisal report.</> },
                 ].map((step) => (
                   <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                     <div style={{
