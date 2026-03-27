@@ -1419,21 +1419,34 @@ function VerdictContent() {
                 </button>
               </div>
 
-              {/* Row 3: expandable details toggle */}
-              <button
-                type="button"
-                onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
-                className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold transition-colors"
-                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
-              >
-                {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
-                <svg
-                  className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              {/* Row 3: video + expandable details toggle */}
+              <div className="flex items-center gap-4 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowDealGapVideo(true)}
+                  className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
                 >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                  </svg>
+                  What is DealGapIQ?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
+                  className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                >
+                  {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
 
               {isDealGapDetailsOpen && (
                 <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
@@ -1450,28 +1463,15 @@ function VerdictContent() {
                       ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
                       : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                   </p>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => setShowDealGapVideo(true)}
-                      className="text-xs font-semibold flex items-center gap-1.5"
-                      style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                      </svg>
-                      What is DealGapIQ?
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleShowMethodology}
-                      className="text-xs font-semibold flex items-center gap-1"
-                      style={{ color: 'var(--text-body)', background: 'transparent', border: 'none', padding: 0 }}
-                    >
-                      <span style={{ fontSize: 12 }}>ⓘ</span>
-                      How Deal Gap works
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleShowMethodology}
+                    className="text-xs font-semibold flex items-center gap-1"
+                    style={{ color: 'var(--text-body)', background: 'transparent', border: 'none', padding: 0 }}
+                  >
+                    <span style={{ fontSize: 12 }}>ⓘ</span>
+                    How Deal Gap works
+                  </button>
                 </div>
               )}
 
