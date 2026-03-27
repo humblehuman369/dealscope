@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
@@ -559,24 +560,18 @@ export default function PricingContent() {
           textAlign: "center",
         }}
       >
-        <div
+        <Image
+          src="/images/brad-geisen-headshot.png"
+          alt="Brad Geisen"
+          width={72}
+          height={72}
           style={{
-            width: "56px",
-            height: "56px",
             borderRadius: "50%",
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-default)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            objectFit: "cover",
             margin: "0 auto 16px",
-            fontSize: "18px",
-            fontWeight: 700,
-            color: "var(--accent-sky)",
+            display: "block",
           }}
-        >
-          BG
-        </div>
+        />
         <p style={{ fontSize: "15px", fontWeight: 600, margin: "0 0 2px 0" }}>Brad Geisen</p>
         <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 20px 0" }}>
           Founder, DealGapIQ &middot; 35+ years in real estate data &amp; technology
