@@ -3,6 +3,7 @@
 import { TrendingUp, DollarSign, Save } from 'lucide-react'
 import type { InvestorFormData } from './types'
 import { STRATEGIES, EXPERIENCE_LEVELS, RISK_LEVELS, US_STATES } from './types'
+import { DefaultsEditor } from '@/components/profile/DefaultsEditor'
 
 // ===========================================
 // Investor Tab — Dark Fintech Theme
@@ -229,6 +230,17 @@ export function InvestorTab({
             )
           })}
         </div>
+      </div>
+
+      {/* ── Investment Assumptions ───────────────── */}
+      <div>
+        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+          Investment Assumptions
+        </label>
+        <p className="text-xs text-[var(--text-label)] mb-4">
+          Set your default assumptions used across property analysis calculations.
+        </p>
+        <DefaultsEditor showHeader />
       </div>
 
       {/* ── Save ─────────────────────────────────── */}
