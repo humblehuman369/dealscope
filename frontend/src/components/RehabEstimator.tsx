@@ -477,7 +477,7 @@ export default function RehabEstimator({
       {/* Quick Start Presets */}
       <div>
         <div className="text-lg font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {REHAB_PRESETS.map((preset) => (
             <PresetCard
               key={preset.id}
