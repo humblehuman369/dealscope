@@ -995,6 +995,7 @@ function StrategyContent() {
             updateState={handleWorksheetUpdate}
             isCalculating={isRecalculating}
             propertyAddress={resolvedAddress}
+            flushWithinParent
           />
 
           {/* IQ Estimate Source Selector */}
