@@ -26,8 +26,8 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { tw, getAssessment } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
-import { StrategyBreakdown } from '@/components/strategy/StrategyBreakdown'
-import { InlineDealMakerPanel, type InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
+import { UnifiedDealMaker } from '@/components/strategy/UnifiedDealMaker'
+import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 
 // Types from existing verdict system
 interface BackendAnalysisResponse {
@@ -105,7 +105,6 @@ function StrategyContent() {
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
   const strategyParam = searchParams.get('strategy')
-  const sectionParam = searchParams.get('section') as 'purchase' | 'income' | 'rehab' | null
   const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
@@ -118,7 +117,6 @@ function StrategyContent() {
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
-  const [showDealMaker, setShowDealMaker] = useState(true)
   const [isRecalculating, setIsRecalculating] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recalcDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -377,6 +375,12 @@ function StrategyContent() {
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
   }, [router, resolvedAddress])
+
+  const handleStrategyChange = useCallback((strategyId: string) => {
+    setSelectedStrategyId(strategyId)
+    const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
+    recalcVerdict(propertyInfo, merged, sourceOverrides)
+  }, [initialOverrides, inlineOverrides, propertyInfo, sourceOverrides, recalcVerdict])
 
   // Trigger debounced backend recalculation when sliders change
   const scheduleRecalc = useCallback((nextOverrides: Record<string, any>, nextSourceOverrides?: { price?: number; monthlyRent?: number }) => {
@@ -849,13 +853,44 @@ function StrategyContent() {
             }}
           >
 
-          {/* Section header */}
-          <div className="mb-5">
-            <h3 className="text-[21px] sm:text-[25px] font-bold tracking-tight">
-              <span style={{ color: colors.text.primary }}>DealMaker</span>
-              <span style={{ color: colors.brand.teal }}>IQ</span>
-            </h3>
-          </div>
+          {/* Strategy Tabs */}
+          {sortedStrategies.length > 1 && (() => {
+            const STRATEGY_DISPLAY: { id: string; label: string }[] = [
+              { id: 'ltr', label: 'Long-term' },
+              { id: 'str', label: 'Short-term' },
+              { id: 'brrrr', label: 'BRRRR' },
+              { id: 'fix-and-flip', label: 'Fix & Flip' },
+              { id: 'house-hack', label: 'House Hack' },
+              { id: 'wholesale', label: 'Wholesale' },
+            ]
+            const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
+            const topRow = available.slice(0, 3)
+            const bottomRow = available.slice(3)
+            const renderPill = (s: { id: string; label: string }) => {
+              const isActive = s.id === activeStrategyId
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleStrategyChange(s.id)}
+                  className="flex-1 py-2.5 rounded-full text-[13px] sm:text-sm font-bold tracking-wide transition-all"
+                  style={{
+                    background: isActive ? colors.brand.teal : 'transparent',
+                    color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
+                    border: `1.5px solid ${colors.brand.teal}`,
+                  }}
+                >
+                  {s.label}
+                </button>
+              )
+            }
+            return (
+              <div className="mb-5 flex flex-col gap-2">
+                <div className="flex gap-2">{topRow.map(renderPill)}</div>
+                {bottomRow.length > 0 && <div className="flex gap-2">{bottomRow.map(renderPill)}</div>}
+              </div>
+            )
+          })()}
 
           {/* Key Metrics Bar */}
           <div
@@ -897,14 +932,6 @@ function StrategyContent() {
           </div>
 
           {(() => {
-            const breakdownProps = {
-              listPrice, targetPrice, loanAmount, downPayment, downPaymentPct,
-              closingCosts, closingCostsPct, rehabCost, rate, loanTermYears,
-              monthlyPI, annualDebt, propertyTaxes, insurance, mgmt, mgmtPct,
-              maint, maintPct, reserves, reservesPct, totalExpenses,
-              monthlyRent, annualRent, vacancyLoss, vacancyPct, effectiveIncome,
-            }
-
             const io = inlineOverrides as Record<string, number | undefined>
             const sliderValues: InlineDealMakerValues = {
               buyPrice: io.purchasePrice ?? targetPrice,
@@ -922,20 +949,38 @@ function StrategyContent() {
               managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
             }
 
-            if (!showDealMaker) {
-              return <StrategyBreakdown {...breakdownProps} />
-            }
-
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 md:items-stretch gap-6 md:gap-8 transition-all duration-300">
-                <StrategyBreakdown {...breakdownProps} isCompact />
-                <InlineDealMakerPanel
-                  values={sliderValues}
-                  onChange={handleInlineSliderChange}
-                  listPrice={listPrice}
-                  initialSection={sectionParam ?? undefined}
-                />
-              </div>
+              <UnifiedDealMaker
+                listPrice={listPrice}
+                targetPrice={targetPrice}
+                loanAmount={loanAmount}
+                downPayment={downPayment}
+                downPaymentPct={downPaymentPct}
+                closingCosts={closingCosts}
+                closingCostsPct={closingCostsPct}
+                rehabCost={rehabCost}
+                rate={rate}
+                loanTermYears={loanTermYears}
+                monthlyPI={monthlyPI}
+                annualDebt={annualDebt}
+                propertyTaxes={propertyTaxes}
+                insurance={insurance}
+                mgmt={mgmt}
+                mgmtPct={mgmtPct}
+                maint={maint}
+                maintPct={maintPct}
+                vacancyLoss={vacancyLoss}
+                vacancyPct={vacancyPct}
+                totalExpenses={totalExpenses}
+                monthlyRent={monthlyRent}
+                annualRent={annualRent}
+                effectiveIncome={effectiveIncome}
+                sliderValues={sliderValues}
+                onSliderChange={handleInlineSliderChange}
+                capRate={capRateVal}
+                cashOnCash={cocVal}
+                annualCashFlow={strategyAnnualCashFlow}
+              />
             )
           })()}
 
@@ -1100,20 +1145,8 @@ function StrategyContent() {
                 </div>
               )}
 
-              {/* Action Buttons — always 3 across */}
-              <div className="grid grid-cols-3 gap-2 mt-5">
-                <button
-                  onClick={() => setShowDealMaker((v) => !v)}
-                  className="flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
-                  style={{
-                    background: showDealMaker ? 'transparent' : colors.brand.teal,
-                    color: showDealMaker ? colors.brand.teal : 'var(--text-inverse)',
-                    border: showDealMaker ? `1px solid ${colors.brand.teal}` : '1px solid transparent',
-                  }}
-                >
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                  <span>{showDealMaker ? 'Hide DealMaker' : 'Adjust Terms'}</span>
-                </button>
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2 mt-5">
                 <button
                   onClick={() => handlePDFDownload('light')}
                   disabled={isExporting === 'pdf'}
