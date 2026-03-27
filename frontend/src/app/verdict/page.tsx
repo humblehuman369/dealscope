@@ -1354,7 +1354,7 @@ function VerdictContent() {
               })()}
             </div>
 
-            {/* Deal Gap Summary — compact scannable header */}
+            {/* Deal Gap Summary — two-column layout with video */}
             <div
               className="mt-6 rounded-xl px-5 py-4"
               style={{
@@ -1362,92 +1362,136 @@ function VerdictContent() {
                 border: '1px solid var(--border-default)',
               }}
             >
-              {/* Row 1: headline metric + tier + meta */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-baseline gap-2">
-                    <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
-                      <span style={{ color: 'var(--accent-sky)' }}>The</span>{' '}
-                      <span style={{ color: '#FFFFFF' }}>DealGap</span>
-                    </span>
+              <div className="flex flex-col md:flex-row md:gap-6">
+                {/* Left column: headline, verdict, links */}
+                <div className="flex-1 min-w-0">
+                  {/* Headline metric + tier badge */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-baseline gap-2">
+                      <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
+                        <span style={{ color: 'var(--accent-sky)' }}>The</span>{' '}
+                        <span style={{ color: 'var(--text-heading)' }}>DealGap</span>
+                      </span>
+                      <span
+                        className="tabular-nums"
+                        style={{
+                          fontSize: 'clamp(26px, 3vw, 36px)',
+                          fontWeight: 800,
+                          color: 'var(--accent-sky)',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {dealGapDisplay}
+                      </span>
+                    </div>
                     <span
-                      className="tabular-nums"
                       style={{
-                        fontSize: 'clamp(26px, 3vw, 36px)',
-                        fontWeight: 800,
-                        color: 'var(--accent-sky)',
-                        lineHeight: 1,
+                        display: 'inline-flex',
+                        borderRadius: 999,
+                        border: '1px solid var(--border-focus)',
+                        padding: '3px 10px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: 'var(--text-heading)',
+                        background: 'var(--surface-card)',
                       }}
                     >
-                      {dealGapDisplay}
+                      {tier.label}
                     </span>
                   </div>
-                  <span
+
+                  {/* Verdict copy */}
+                  <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
+                    {effectiveDisplayPct > 0
+                      ? 'This deal cash flows at current terms. Confirm your numbers in Strategy before you move.'
+                      : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
+                  </p>
+
+                  {/* Action links */}
+                  <div className="flex items-center gap-4 mt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowDealGapVideo(true)}
+                      className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                      style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                      </svg>
+                      What is DealGapIQ?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
+                      className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                      style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                    >
+                      {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right column: video thumbnail + CTA */}
+                <div className="flex flex-col items-center gap-3 mt-4 md:mt-0 flex-shrink-0" style={{ width: 220 }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowDealGapVideo(true)}
+                    className="relative w-full rounded-lg overflow-hidden group"
                     style={{
-                      display: 'inline-flex',
-                      borderRadius: 999,
-                      border: '1px solid var(--border-focus)',
-                      padding: '3px 10px',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: 'var(--text-heading)',
+                      aspectRatio: '16/9',
                       background: 'var(--surface-card)',
+                      border: '1px solid var(--border-subtle)',
+                      padding: 0,
+                      cursor: 'pointer',
                     }}
                   >
-                    {tier.label}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-[11px]" style={{ color: 'var(--text-label)' }}>
-                  <span className="tabular-nums"><strong style={{ color: 'var(--text-heading)' }}>{dataSourceCount}</strong> sources</span>
-                  <span className="tabular-nums">{analysisTimeSeconds.toFixed(1)}s</span>
-                </div>
-              </div>
+                    <video
+                      src="/videos/what-is-dealgapiq.mp4"
+                      preload="metadata"
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-colors"
+                      style={{ background: 'rgba(0,0,0,0.45)' }}
+                    >
+                      <div
+                        className="flex items-center justify-center rounded-full transition-transform group-hover:scale-110"
+                        style={{
+                          width: 40,
+                          height: 40,
+                          background: 'linear-gradient(135deg, var(--accent-brand-blue), var(--accent-sky))',
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 2 }}>
+                          <polygon points="6,3 20,12 6,21" />
+                        </svg>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: '#fff', letterSpacing: '0.01em' }}>
+                        What is DealGapIQ?
+                      </span>
+                    </div>
+                  </button>
 
-              {/* Row 2: single-line verdict + CTA */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
-                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
-                  {effectiveDisplayPct > 0
-                    ? 'This deal cash flows at current terms. Confirm your numbers in Strategy before you move.'
-                    : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
-                </p>
-                <button
-                  onClick={() => navigateToStrategy()}
-                  className="px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap flex-shrink-0"
-                  style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
-                >
-                  Continue to Strategy
-                </button>
-              </div>
-
-              {/* Row 3: video + expandable details toggle */}
-              <div className="flex flex-wrap items-center gap-4 mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowDealGapVideo(true)}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                  </svg>
-                  What is DealGapIQ?
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
-                >
-                  {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
-                  <svg
-                    className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  <button
+                    onClick={() => navigateToStrategy()}
+                    className="w-full px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap"
+                    style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
                   >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
+                    Continue to Strategy
+                  </button>
+                </div>
               </div>
 
+              {/* Expandable details — full width below both columns */}
               {isDealGapDetailsOpen && (
                 <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                   <p
@@ -1460,7 +1504,7 @@ function VerdictContent() {
                     }}
                   >
                     {effectiveDisplayPct > 0
-                      ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
+                      ? 'A positive DealGap means the asking price falls below your Target Buy — this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
                       : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                   </p>
                   <button
