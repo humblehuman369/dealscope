@@ -46,6 +46,7 @@ import {
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
 import { InfoPopover } from '@/components/ui/InfoPopover'
+import { VideoModal } from '@/components/ui/VideoModal'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { ProGate } from '@/components/ProGate'
 import { trackEvent } from '@/lib/eventTracking'
@@ -235,6 +236,7 @@ function VerdictContent() {
   })
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
   const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
+  const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(false)
 
   // Stores the static analysis inputs so the verdict can be re-calculated
@@ -1449,17 +1451,17 @@ function VerdictContent() {
                       : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <InfoPopover
-                      ariaLabel="What is DealGap"
-                      label="What is DealGap?"
-                      className="text-xs font-semibold underline underline-offset-2 text-[var(--accent-sky)]"
-                      panelClassName="absolute left-0 top-full z-20 mt-2 w-[min(360px,calc(100vw-96px))] rounded-xl border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 text-left text-sm leading-snug text-[var(--chart-tooltip-text)] shadow-lg"
-                      content={
-                        <p style={{ margin: 0 }}>
-                          {tier.headline} {tier.subHeadline}
-                        </p>
-                      }
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDealGapVideo(true)}
+                      className="text-xs font-semibold flex items-center gap-1.5"
+                      style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                      </svg>
+                      What is DealGapIQ?
+                    </button>
                     <button
                       type="button"
                       onClick={handleShowMethodology}
@@ -1472,6 +1474,13 @@ function VerdictContent() {
                   </div>
                 </div>
               )}
+
+              <VideoModal
+                open={showDealGapVideo}
+                onClose={() => setShowDealGapVideo(false)}
+                src="/videos/what-is-dealgapiq.mp4"
+                title="What is DealGapIQ?"
+              />
             </div>
           </section>
 
