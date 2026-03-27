@@ -48,7 +48,7 @@ function PresetCard({
         border: isActive ? '2px solid var(--accent-sky)' : '2px solid var(--border-default)',
       }}
     >
-      <div className="text-base font-semibold mb-1" style={{ color: 'var(--text-heading)' }}>{preset.name}</div>
+      <div className="text-base font-semibold mb-1" style={{ color: 'var(--accent-sky)' }}>{preset.name}</div>
       <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-heading)' }}>{preset.description}</div>
       <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(preset.estimatedCost.mid)}</div>
     </button>
