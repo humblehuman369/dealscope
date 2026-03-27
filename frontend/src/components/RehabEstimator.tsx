@@ -425,6 +425,10 @@ export default function RehabEstimator({
   }
   
   const handlePresetSelect = (preset: RehabPreset) => {
+    if (activePreset === preset.id) {
+      setActivePreset(null)
+      return
+    }
     setSelections(preset.selections)
     setActivePreset(preset.id)
     setGlobalTier('mid')
