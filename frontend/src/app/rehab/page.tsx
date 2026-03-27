@@ -2,8 +2,8 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { API_BASE_URL } from '@/lib/env'
 
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { 
@@ -125,9 +125,7 @@ function RehabPageContent() {
           {/* Content */}
           <div className="px-[1px] sm:px-[5px] py-3">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
-              </div>
+              <IQLoadingLogo />
             ) : (
               <RehabEstimator 
                 initialBudget={initialBudget} 
@@ -145,11 +143,7 @@ function RehabPageContent() {
 
 export default function RehabPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-base)' }}>
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-label)' }} />
-      </div>
-    }>
+    <Suspense fallback={<IQLoadingLogo />}>
       <RehabPageContent />
     </Suspense>
   )

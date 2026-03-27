@@ -3,8 +3,8 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PriceCheckerIQScreen } from '@/components/price-checker'
-import { Loader2 } from 'lucide-react'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 /**
  * PriceCheckerIQ Page
@@ -52,11 +52,7 @@ function PriceIntelContent() {
 
 export default function PriceIntelPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#38bdf8] animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<IQLoadingLogo />}>
       <PriceIntelContent />
     </Suspense>
   )

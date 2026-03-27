@@ -8,6 +8,7 @@ import { Search, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucid
 import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
@@ -17,11 +18,7 @@ import type { AddressValidationResult } from '@/types/address'
 const DealMakerScreen = dynamic(
   () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
   {
-    loading: () => (
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)]" />
-      </div>
-    ),
+    loading: () => <IQLoadingLogo />,
   },
 )
 
@@ -179,14 +176,7 @@ export default function DealMakerIndexPage() {
     : undefined
 
   if (addressParam && isLoading) {
-    return (
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--accent-sky)] mx-auto mb-4" />
-          <p className="text-[var(--text-secondary)] text-sm">Loading property data...</p>
-        </div>
-      </div>
-    )
+    return <IQLoadingLogo />
   }
 
   if (addressParam && error) {
