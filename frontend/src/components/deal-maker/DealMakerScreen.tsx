@@ -1117,6 +1117,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     ]
   }, [strategyType, metrics, state])
 
+  const headerIsCalculating = isCalculating || backendCalculating
+
   return (
     <div className="deal-maker-theme min-h-screen bg-[var(--surface-base)] max-w-[960px] mx-auto font-['Inter',sans-serif]">
       <style>{`
@@ -1175,25 +1177,29 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
       {/* Key Metrics Row */}
       <div
-        className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3"
+        className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3 relative"
         style={{
-          background: 'var(--surface-base)',
+          background: 'var(--surface-card)',
           border: '1px solid var(--border-default)',
           boxShadow: 'var(--shadow-card)',
+          opacity: headerIsCalculating ? 0.7 : 1,
+          transition: 'opacity 0.2s ease',
         }}
       >
-        {isCalculating && (
-          <div className="flex items-center justify-center gap-2 py-1 text-[10px] text-[var(--accent-sky)]">
-            <div className="w-2 h-2 bg-[var(--accent-sky)] rounded-full animate-pulse" />
-            Recalculating...
+        {headerIsCalculating && (
+          <div className="absolute top-1 right-2 flex items-center gap-1.5">
+            <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+            <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>Recalculating</span>
           </div>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-1.5">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
           {headerMetrics.map((metric, index) => (
             <div key={index} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
-              <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
+              <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>
+                {metric.label}
+              </span>
               <span 
-                className={`text-[13px] sm:text-base font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
+                className={`text-[13px] sm:text-base font-semibold tabular-nums ${headerIsCalculating ? 'opacity-60' : ''}`}
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
