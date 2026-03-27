@@ -31,8 +31,10 @@ interface DealGapIQHomepageProps {
 export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isDealGapVideoPlaying, setIsDealGapVideoPlaying] = useState(false);
   const [founderImgError, setFounderImgError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const dealGapVideoRef = useRef<HTMLVideoElement>(null);
 
   const handleAnalyzeClick = () => {
     router.push('/search');
@@ -52,6 +54,17 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
 
   const handleVideoEnded = () => {
     setIsVideoPlaying(false);
+  };
+
+  const playDealGapVideo = () => {
+    const video = dealGapVideoRef.current;
+    if (!video) return;
+    video.play();
+    setIsDealGapVideoPlaying(true);
+  };
+
+  const handleDealGapVideoEnded = () => {
+    setIsDealGapVideoPlaying(false);
   };
 
   return (
@@ -218,6 +231,32 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             style={{ width: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
             draggable={false}
           />
+
+          <div
+            className="video-container"
+            style={{ marginTop: '3rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
+            onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
+          >
+            <video
+              ref={dealGapVideoRef}
+              preload="metadata"
+              playsInline
+              controls={isDealGapVideoPlaying}
+              src="/videos/what-is-dealgapiq.mp4"
+              onEnded={handleDealGapVideoEnded}
+              onPause={() => {
+                if (dealGapVideoRef.current?.ended) setIsDealGapVideoPlaying(false);
+              }}
+            />
+            <div className={`video-poster-overlay${isDealGapVideoPlaying ? ' hidden' : ''}`}>
+              <div className="video-play-btn">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+              </div>
+              <div className="video-label">What is DealGapIQ?</div>
+            </div>
+          </div>
         </div>
       </section>
 
