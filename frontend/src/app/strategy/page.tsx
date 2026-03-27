@@ -1004,72 +1004,64 @@ function StrategyContent() {
               </div>
             </div>
           ) : (
-            /* Rental strategies: NOI and Net Cash Flow — compact, always side-by-side, responsive */
+            /* Rental strategies: NOI and Net Cash Flow */
             <>
-              <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 mt-6 sm:mt-8 md:mt-10 pt-2 sm:pt-4 w-full min-w-0">
-                <div
-                  className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
-                  style={{
-                    background: 'var(--surface-card)',
-                    borderLeft: `3px solid ${colors.status.positive}`,
-                    borderTop: '1px solid var(--status-positive)',
-                    borderRight: '1px solid var(--status-positive)',
-                    borderBottom: '1px solid var(--status-positive)',
-                    boxShadow: 'var(--shadow-card)',
-                  }}
-                >
-                  <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: colors.status.positive }}>NOI</p>
-                  <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>Before Mortgage</p>
-                  <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: colors.status.positive }}>
-                    <span className="truncate">{formatCurrency(noi)}</span>
-                    <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
-                  </p>
-                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: '1px solid var(--status-positive)' }}>
-                    <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: colors.status.positive }}>
-                      {formatCurrency(Math.round(noi / 12))}/mo
-                    </p>
-                  </div>
-                </div>
-
-                {(() => {
-                  const netColor = strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative
-                  const netGreen = strategyCashFlow >= 0
-                  return (
-                    <div
-                      className="min-w-0 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl"
-                      style={{
-                        background: 'var(--surface-card)',
-                        borderLeft: `3px solid ${netColor}`,
-                        borderTop: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
-                        borderRight: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
-                        borderBottom: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}`,
-                        boxShadow: 'var(--shadow-card)',
-                      }}
-                    >
-                      <p className="text-[11px] sm:text-[14px] font-bold uppercase tracking-wider truncate" style={{ color: netColor }}>Net Cash Flow</p>
-                      <p className="text-[10px] sm:text-[13px] font-medium mt-0.5 truncate" style={{ color: colors.text.body }}>After Mortgage</p>
-                      <p className="text-[17px] sm:text-[24px] md:text-[28px] font-extrabold tabular-nums mt-2 sm:mt-3 leading-tight" style={{ color: netColor }}>
-                        <span className="truncate">{netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}</span>
-                        <span className="text-[11px] sm:text-[14px] font-semibold opacity-70">/yr</span>
+              {(() => {
+                const netColor = strategyCashFlow >= 0 ? colors.status.positive : colors.status.negative
+                const netGreen = strategyCashFlow >= 0
+                return (
+                  <div
+                    className="grid grid-cols-2 mt-6 rounded-xl overflow-hidden"
+                    style={{
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--border-default)',
+                      boxShadow: 'var(--shadow-card)',
+                    }}
+                  >
+                    <div className="p-4 sm:p-5" style={{ borderRight: '1px solid var(--border-default)' }}>
+                      <p className="text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: colors.status.positive }}>NOI</p>
+                      <p className="text-[10px] sm:text-xs font-medium mt-0.5" style={{ color: colors.text.body }}>Before Mortgage</p>
+                      <p className="text-[20px] sm:text-[26px] font-extrabold tabular-nums mt-2 leading-tight" style={{ color: colors.status.positive }}>
+                        {formatCurrency(noi)}<span className="text-[11px] sm:text-sm font-semibold opacity-70">/yr</span>
                       </p>
-                      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3" style={{ borderTop: `1px solid ${netGreen ? 'var(--status-positive)' : 'var(--status-negative)'}` }}>
-                        <p className="text-[12px] sm:text-[16px] font-semibold tabular-nums truncate" style={{ color: netColor }}>
+                      <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-default)' }}>
+                        <p className="text-xs sm:text-sm font-semibold tabular-nums" style={{ color: colors.status.positive }}>
+                          {formatCurrency(Math.round(noi / 12))}/mo
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:p-5">
+                      <p className="text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: netColor }}>Net Cash Flow</p>
+                      <p className="text-[10px] sm:text-xs font-medium mt-0.5" style={{ color: colors.text.body }}>After Mortgage</p>
+                      <p className="text-[20px] sm:text-[26px] font-extrabold tabular-nums mt-2 leading-tight" style={{ color: netColor }}>
+                        {netGreen ? formatCurrency(strategyAnnualCashFlow) : `(${formatCurrency(Math.abs(strategyAnnualCashFlow))})`}<span className="text-[11px] sm:text-sm font-semibold opacity-70">/yr</span>
+                      </p>
+                      <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-default)' }}>
+                        <p className="text-xs sm:text-sm font-semibold tabular-nums" style={{ color: netColor }}>
                           {netGreen ? '' : '('}{formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo{netGreen ? '' : ')'}
                         </p>
                       </div>
                     </div>
-                  )
-                })()}
-              </div>
+                  </div>
+                )
+              })()}
 
-              <div className="grid grid-cols-2 gap-4 mt-4 w-full">
-                {(() => {
-                  const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
-                  return (
-                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
+              {(() => {
+                const capAssess = capRateVal !== null ? getAssessment(capRateVal, 6.0) : null
+                const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
+                return (
+                  <div
+                    className="grid grid-cols-2 mt-4 rounded-xl overflow-hidden"
+                    style={{
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--border-default)',
+                      boxShadow: 'var(--shadow-card)',
+                    }}
+                  >
+                    <div className="p-4" style={{ borderRight: '1px solid var(--border-default)' }}>
                       <div className="flex items-center justify-between">
-                        <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
-                        <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                        <p className="text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cap Rate</p>
+                        <p className="text-sm sm:text-base font-bold tabular-nums" style={{ color: colors.text.primary }}>
                           {capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—'}
                         </p>
                       </div>
@@ -1083,15 +1075,10 @@ function StrategyContent() {
                         )}
                       </div>
                     </div>
-                  )
-                })()}
-                {(() => {
-                  const cocAssess = cocVal !== null ? getAssessment(cocVal, 8.0) : null
-                  return (
-                    <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)' }}>
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-[18px] font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
-                        <p className="text-[18px] font-bold tabular-nums" style={{ color: colors.text.primary }}>
+                        <p className="text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: colors.text.body }}>Cash-on-Cash</p>
+                        <p className="text-sm sm:text-base font-bold tabular-nums" style={{ color: colors.text.primary }}>
                           {cocVal !== null ? `${cocVal.toFixed(1)}%` : '—'}
                         </p>
                       </div>
@@ -1105,9 +1092,9 @@ function StrategyContent() {
                         )}
                       </div>
                     </div>
-                  )
-                })()}
-              </div>
+                  </div>
+                )
+              })()}
 
               {/* IQ Estimate Source Selector */}
               {(iqSources.value.iq != null || iqSources.value.zillow != null || iqSources.value.rentcast != null || iqSources.value.redfin != null || iqSources.value.realtor != null ||
