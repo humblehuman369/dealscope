@@ -629,7 +629,7 @@ export const REHAB_PRESETS: RehabPreset[] = [
   {
     id: 'cosmetic',
     name: 'Cosmetic Refresh',
-    description: 'Paint, flooring, light fixtures',
+    description: 'Paint + flooring + light fixtures + minor repairs',
     estimatedCost: { low: 8000, mid: 15000, high: 25000 },
     selections: [
       { itemId: 'interior_paint', quantity: 2000, tier: 'mid' },
@@ -670,7 +670,7 @@ export const REHAB_PRESETS: RehabPreset[] = [
   {
     id: 'heavy',
     name: 'Heavy Rehab',
-    description: 'Everything + systems',
+    description: 'Everything + Systems + Remodel',
     estimatedCost: { low: 80000, mid: 120000, high: 180000 },
     selections: [
       { itemId: 'interior_paint', quantity: 3000, tier: 'mid' },
