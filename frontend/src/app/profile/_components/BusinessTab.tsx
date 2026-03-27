@@ -13,10 +13,10 @@ import { US_STATES } from './types'
 
 // Shared input classes for consistency
 const inputClass =
-  'w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
+  'w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
 
 const selectClass =
-  'w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
+  'w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors'
 
 interface BusinessTabProps {
   businessForm: BusinessFormData
@@ -148,7 +148,7 @@ export function BusinessTab({
               <select
                 value={phone.type}
                 onChange={(e) => onUpdatePhone(index, 'type', e.target.value)}
-                className="w-28 px-3 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] transition-colors"
+                className="w-28 px-3 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] transition-colors"
                 style={{ colorScheme: 'light' }}
               >
                 <option value="mobile">Mobile</option>
@@ -160,7 +160,7 @@ export function BusinessTab({
                 type="tel"
                 value={phone.number}
                 onChange={(e) => onUpdatePhone(index, 'number', e.target.value)}
-                className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+                className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
                 placeholder="(555) 555-5555"
               />
               <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer select-none">
@@ -168,7 +168,7 @@ export function BusinessTab({
                   type="checkbox"
                   checked={phone.primary}
                   onChange={(e) => onUpdatePhone(index, 'primary', e.target.checked)}
-                  className="rounded border-[var(--border-default)] bg-[var(--surface-input)] text-[var(--accent-sky)] focus:ring-[var(--color-sky-dim)] focus:ring-offset-0"
+                  className="rounded border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--accent-sky)] focus:ring-[var(--color-sky-dim)] focus:ring-offset-0"
                 />
                 Primary
               </label>
@@ -199,7 +199,7 @@ export function BusinessTab({
               type="url"
               value={businessForm.social_links.website || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, website: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="https://yourwebsite.com"
             />
           </div>
@@ -209,7 +209,7 @@ export function BusinessTab({
               type="url"
               value={businessForm.social_links.linkedin || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, linkedin: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="LinkedIn URL"
             />
           </div>
@@ -219,7 +219,7 @@ export function BusinessTab({
               type="url"
               value={businessForm.social_links.instagram || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, instagram: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Instagram URL"
             />
           </div>
@@ -229,7 +229,7 @@ export function BusinessTab({
               type="url"
               value={businessForm.social_links.twitter || ''}
               onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, twitter: e.target.value } }))}
-              className="flex-1 px-4 py-2 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Twitter/X URL"
             />
           </div>
@@ -277,7 +277,7 @@ export function BusinessTab({
           value={businessForm.bio}
           onChange={(e) => setBusinessForm(prev => ({ ...prev, bio: e.target.value }))}
           rows={4}
-          className="w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors resize-none"
+          className="w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors resize-none"
           placeholder="Tell others about your investment experience and expertise..."
         />
       </div>
