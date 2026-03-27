@@ -86,38 +86,47 @@ function ProfileContent() {
         </div>
 
         {/* ── Profile Card with Avatar ──────────── */}
-        <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden mb-6">
-          {/* Subtle radial gradient banner — depth, not decoration */}
+        <div className="relative isolate mb-6">
           <div
-            className="h-24"
+            className="pointer-events-none absolute -inset-2 -z-10 rounded-3xl blur-xl"
             style={{
               background:
-                'radial-gradient(ellipse at 50% 100%, var(--color-sky-dim), transparent 80%)',
+                'radial-gradient(ellipse at 50% 30%, rgba(56, 189, 248, 0.28), rgba(56, 189, 248, 0) 70%)',
             }}
           />
-          <div className="relative px-6 pb-6">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12">
-              {/* Avatar */}
-              <div className="relative">
-                <div
-                  className="w-24 h-24 rounded-2xl flex items-center justify-center text-[var(--text-inverse)] text-4xl font-bold border-4 border-[var(--surface-card)] shadow-lg"
-                  style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))', boxShadow: 'var(--shadow-card)' }}
-                >
-                  {user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()}
+          <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden">
+            {/* Subtle radial gradient banner — depth, not decoration */}
+            <div
+              className="h-24"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 50% 100%, var(--color-sky-dim), transparent 80%)',
+              }}
+            />
+            <div className="relative px-6 pb-6">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12">
+                {/* Avatar */}
+                <div className="relative">
+                  <div
+                    className="w-24 h-24 rounded-2xl flex items-center justify-center text-[var(--text-inverse)] text-4xl font-bold border-4 border-[var(--surface-card)] shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))', boxShadow: 'var(--shadow-card)' }}
+                  >
+                    {user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()}
+                  </div>
+                  <button className="absolute bottom-0 right-0 p-2 bg-[var(--surface-card)] rounded-full shadow-lg border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-colors">
+                    <Camera className="w-4 h-4 text-[var(--text-secondary)]" />
+                  </button>
                 </div>
-                <button className="absolute bottom-0 right-0 p-2 bg-[var(--surface-card)] rounded-full shadow-lg border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-colors">
-                  <Camera className="w-4 h-4 text-[var(--text-secondary)]" />
-                </button>
-              </div>
-              {/* Name & Email */}
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-[var(--text-heading)]">
-                  {user?.full_name || 'Add your name'}
-                </h2>
-                <p className="text-[var(--text-secondary)] flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  {user?.email}
-                </p>
+                {/* Name & Email */}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-[var(--text-heading)]">
+                    {user?.full_name || 'Add your name'}
+                  </h2>
+                  <p className="text-[var(--text-secondary)] flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    {user?.email}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -157,43 +166,52 @@ function ProfileContent() {
         </div>
 
         {/* ── Tab Content ───────────────────────── */}
-        <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] p-6 sm:p-8">
-          {activeTab === 'account' && (
-            <AccountTab
-              user={user}
-              accountForm={accountForm}
-              setAccountForm={setAccountForm}
-              isSaving={isSaving}
-              onSave={saveAccountInfo}
-            />
-          )}
+        <div className="relative isolate">
+          <div
+            className="pointer-events-none absolute -inset-2 -z-10 rounded-3xl blur-xl"
+            style={{
+              background:
+                'radial-gradient(ellipse at 50% 30%, rgba(56, 189, 248, 0.24), rgba(56, 189, 248, 0) 72%)',
+            }}
+          />
+          <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] p-6 sm:p-8">
+            {activeTab === 'account' && (
+              <AccountTab
+                user={user}
+                accountForm={accountForm}
+                setAccountForm={setAccountForm}
+                isSaving={isSaving}
+                onSave={saveAccountInfo}
+              />
+            )}
 
-          {activeTab === 'business' && (
-            <BusinessTab
-              businessForm={businessForm}
-              setBusinessForm={setBusinessForm}
-              isSaving={isSaving}
-              onSave={saveBusinessProfile}
-              onAddPhone={addPhoneNumber}
-              onRemovePhone={removePhoneNumber}
-              onUpdatePhone={updatePhoneNumber}
-            />
-          )}
+            {activeTab === 'business' && (
+              <BusinessTab
+                businessForm={businessForm}
+                setBusinessForm={setBusinessForm}
+                isSaving={isSaving}
+                onSave={saveBusinessProfile}
+                onAddPhone={addPhoneNumber}
+                onRemovePhone={removePhoneNumber}
+                onUpdatePhone={updatePhoneNumber}
+              />
+            )}
 
-          {activeTab === 'investor' && (
-            <InvestorTab
-              investorForm={investorForm}
-              setInvestorForm={setInvestorForm}
-              isSaving={isSaving}
-              onSave={saveInvestorProfile}
-              onToggleStrategy={toggleStrategy}
-              onToggleMarket={toggleMarket}
-            />
-          )}
+            {activeTab === 'investor' && (
+              <InvestorTab
+                investorForm={investorForm}
+                setInvestorForm={setInvestorForm}
+                isSaving={isSaving}
+                onSave={saveInvestorProfile}
+                onToggleStrategy={toggleStrategy}
+                onToggleMarket={toggleMarket}
+              />
+            )}
 
-          {activeTab === 'preferences' && (
-            <PreferencesTab />
-          )}
+            {activeTab === 'preferences' && (
+              <PreferencesTab />
+            )}
+          </div>
         </div>
       </div>
     </div>

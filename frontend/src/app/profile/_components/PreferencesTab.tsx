@@ -125,97 +125,124 @@ export function PreferencesTab() {
       </div>
 
       {/* Notifications */}
-      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
-        <div className="flex items-center gap-2 mb-4">
-          <Bell className="w-4 h-4 text-[var(--accent-sky)]" />
-          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Notifications</p>
-        </div>
+      <div className="relative isolate">
+        <div
+          className="pointer-events-none absolute -inset-2 -z-10 rounded-2xl blur-xl"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 20%, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0) 72%)',
+          }}
+        />
+        <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
+          <div className="flex items-center gap-2 mb-4">
+            <Bell className="w-4 h-4 text-[var(--accent-sky)]" />
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Notifications</p>
+          </div>
 
-        <div className="divide-y divide-[var(--border-subtle)]">
-          <Toggle
-            checked={prefs.email_deal_alerts}
-            onChange={(v) => updatePref('email_deal_alerts', v)}
-            label="Deal Alerts"
-            description="Get notified when properties matching your criteria are found"
-          />
-          <Toggle
-            checked={prefs.email_weekly_digest}
-            onChange={(v) => updatePref('email_weekly_digest', v)}
-            label="Weekly Digest"
-            description="Weekly summary of your portfolio performance and new opportunities"
-          />
-          <Toggle
-            checked={prefs.push_new_analysis}
-            onChange={(v) => updatePref('push_new_analysis', v)}
-            label="Analysis Complete"
-            description="Push notification when a property analysis finishes"
-          />
-          <Toggle
-            checked={prefs.push_price_changes}
-            onChange={(v) => updatePref('push_price_changes', v)}
-            label="Price Change Alerts"
-            description="Get notified when saved properties have price changes"
-          />
-          <Toggle
-            checked={prefs.marketing_emails}
-            onChange={(v) => updatePref('marketing_emails', v)}
-            label="Product Updates"
-            description="New features, tips, and DealGapIQ news"
-          />
+          <div className="divide-y divide-[var(--border-subtle)]">
+            <Toggle
+              checked={prefs.email_deal_alerts}
+              onChange={(v) => updatePref('email_deal_alerts', v)}
+              label="Deal Alerts"
+              description="Get notified when properties matching your criteria are found"
+            />
+            <Toggle
+              checked={prefs.email_weekly_digest}
+              onChange={(v) => updatePref('email_weekly_digest', v)}
+              label="Weekly Digest"
+              description="Weekly summary of your portfolio performance and new opportunities"
+            />
+            <Toggle
+              checked={prefs.push_new_analysis}
+              onChange={(v) => updatePref('push_new_analysis', v)}
+              label="Analysis Complete"
+              description="Push notification when a property analysis finishes"
+            />
+            <Toggle
+              checked={prefs.push_price_changes}
+              onChange={(v) => updatePref('push_price_changes', v)}
+              label="Price Change Alerts"
+              description="Get notified when saved properties have price changes"
+            />
+            <Toggle
+              checked={prefs.marketing_emails}
+              onChange={(v) => updatePref('marketing_emails', v)}
+              label="Product Updates"
+              description="New features, tips, and DealGapIQ news"
+            />
+          </div>
         </div>
       </div>
 
       {/* Appearance */}
-      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
-        <div className="flex items-center gap-2 mb-4">
-          <Palette className="w-4 h-4 text-[var(--status-positive)]" />
-          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Appearance</p>
-        </div>
+      <div className="relative isolate">
+        <div
+          className="pointer-events-none absolute -inset-2 -z-10 rounded-2xl blur-xl"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 20%, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0) 72%)',
+          }}
+        />
+        <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
+          <div className="flex items-center gap-2 mb-4">
+            <Palette className="w-4 h-4 text-[var(--status-positive)]" />
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Appearance</p>
+          </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {(['system', 'dark', 'light'] as const).map((opt) => (
-            <button
-              key={opt}
-              onClick={() => updateTheme(opt)}
-              className="py-3 px-4 rounded-lg text-sm font-medium transition-all text-center capitalize"
-              style={{
-                background: theme === opt ? 'var(--color-sky-dim)' : 'var(--surface-card)',
-                border: `1px solid ${theme === opt ? 'var(--border-focus)' : 'var(--border-default)'}`,
-                color: theme === opt ? 'var(--accent-sky)' : 'var(--text-secondary)',
-              }}
-            >
-              {opt}
-            </button>
-          ))}
+          <div className="grid grid-cols-3 gap-2">
+            {(['system', 'dark', 'light'] as const).map((opt) => (
+              <button
+                key={opt}
+                onClick={() => updateTheme(opt)}
+                className="py-3 px-4 rounded-lg text-sm font-medium transition-all text-center capitalize"
+                style={{
+                  background: theme === opt ? 'var(--color-sky-dim)' : 'var(--surface-card)',
+                  border: `1px solid ${theme === opt ? 'var(--border-focus)' : 'var(--border-default)'}`,
+                  color: theme === opt ? 'var(--accent-sky)' : 'var(--text-secondary)',
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Security */}
-      <div className="p-5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)]">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-4 h-4 text-[var(--status-warning)]" />
-          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Security</p>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium text-[var(--text-body)]">Password</p>
-              <p className="text-xs text-[var(--text-label)]">Last changed: Never</p>
-            </div>
-            <a
-              href="mailto:support@dealgapiq.com?subject=Password%20Reset%20Request"
-              className="text-xs font-semibold text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] transition-colors"
-            >
-              Request Change
-            </a>
+      <div className="relative isolate">
+        <div
+          className="pointer-events-none absolute -inset-2 -z-10 rounded-2xl blur-xl"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 20%, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0) 72%)',
+          }}
+        />
+        <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-4 h-4 text-[var(--status-warning)]" />
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Security</p>
           </div>
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium text-[var(--text-body)]">Two-Factor Authentication</p>
-              <p className="text-xs text-[var(--text-label)]">Add an extra layer of security</p>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-body)]">Password</p>
+                <p className="text-xs text-[var(--text-label)]">Last changed: Never</p>
+              </div>
+              <a
+                href="mailto:support@dealgapiq.com?subject=Password%20Reset%20Request"
+                className="text-xs font-semibold text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] transition-colors"
+              >
+                Request Change
+              </a>
             </div>
-            <span className="text-xs font-semibold text-[var(--text-label)]">Coming Soon</span>
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-body)]">Two-Factor Authentication</p>
+                <p className="text-xs text-[var(--text-label)]">Add an extra layer of security</p>
+              </div>
+              <span className="text-xs font-semibold text-[var(--text-label)]">Coming Soon</span>
+            </div>
           </div>
         </div>
       </div>

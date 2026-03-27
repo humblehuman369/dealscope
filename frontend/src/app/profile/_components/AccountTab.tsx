@@ -37,7 +37,7 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
             type="text"
             value={accountForm.full_name}
             onChange={(e) => setAccountForm(prev => ({ ...prev, full_name: e.target.value }))}
-            className="w-full px-4 py-2.5 bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
+            className="w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
             placeholder="Your full name"
           />
         </div>
@@ -51,39 +51,48 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
             type="email"
             value={user?.email || ''}
             disabled
-            className="w-full px-4 py-2.5 bg-[var(--surface-elevated)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-label)] cursor-not-allowed"
+            className="w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-label)] cursor-not-allowed"
           />
           <p className="mt-1.5 text-xs text-[var(--text-label)]">Contact support to change email</p>
         </div>
       </div>
 
       {/* Account Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-subtle)]">
-        <div>
-          <p className="text-xs text-[var(--text-label)] font-medium">Member since</p>
-          <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 tabular-nums">
-            {user?.created_at ? formatDate(user.created_at) : 'N/A'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-[var(--text-label)] font-medium">Last login</p>
-          <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 tabular-nums">
-            {user?.last_login ? formatDate(user.last_login) : 'N/A'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-[var(--text-label)] font-medium">Status</p>
-          <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${user?.is_active ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'}`} />
-            {user?.is_active ? 'Active' : 'Inactive'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-[var(--text-label)] font-medium">Email verified</p>
-          <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${user?.is_verified ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-warning)]'}`} />
-            {user?.is_verified ? 'Verified' : 'Pending'}
-          </p>
+      <div className="relative isolate">
+        <div
+          className="pointer-events-none absolute -inset-2 -z-10 rounded-2xl blur-xl"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 20%, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0) 72%)',
+          }}
+        />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)]">
+          <div>
+            <p className="text-xs text-[var(--text-label)] font-medium">Member since</p>
+            <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 tabular-nums">
+              {user?.created_at ? formatDate(user.created_at) : 'N/A'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-label)] font-medium">Last login</p>
+            <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 tabular-nums">
+              {user?.last_login ? formatDate(user.last_login) : 'N/A'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-label)] font-medium">Status</p>
+            <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${user?.is_active ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'}`} />
+              {user?.is_active ? 'Active' : 'Inactive'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-label)] font-medium">Email verified</p>
+            <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${user?.is_verified ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-warning)]'}`} />
+              {user?.is_verified ? 'Verified' : 'Pending'}
+            </p>
+          </div>
         </div>
       </div>
 
