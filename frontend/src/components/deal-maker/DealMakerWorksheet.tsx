@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { exportDealMakerExcel } from './exportExcel'
 import type {
   StrategyType,
@@ -118,10 +118,18 @@ interface SliderRowProps {
 }
 
 function SliderRow({ label, value, displayValue, secondaryValue, min, max, step, onChange, parseInput }: SliderRowProps) {
-  const clamped = Math.min(max, Math.max(min, value))
-  const fill = ((clamped - min) / (max - min)) * 100
+  const [rangeMin, setRangeMin] = useState(min)
+  const [rangeMax, setRangeMax] = useState(max)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+
+  useEffect(() => {
+    setRangeMin(min)
+    setRangeMax(max)
+  }, [min, max])
+
+  const clamped = Math.min(rangeMax, Math.max(rangeMin, value))
+  const fill = rangeMax > rangeMin ? ((clamped - rangeMin) / (rangeMax - rangeMin)) * 100 : 0
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setEditing(true)
@@ -134,9 +142,19 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
     setEditing(false)
     const parsed = parseInput ? parseInput(draft) : parseFloat(draft)
     if (!isNaN(parsed) && isFinite(parsed)) {
-      onChange(Math.min(max, Math.max(min, parsed)))
+      if (parsed < rangeMin || parsed > rangeMax) {
+        const lo = parsed * 0.5
+        const hi = parsed * 1.5
+        const newMin = Math.max(0, Math.min(lo, hi))
+        const newMax = Math.max(lo, hi)
+        if (isFinite(newMin) && isFinite(newMax) && newMax > newMin) {
+          setRangeMin(newMin)
+          setRangeMax(newMax)
+        }
+      }
+      onChange(parsed)
     }
-  }, [draft, min, max, onChange, parseInput])
+  }, [draft, rangeMin, rangeMax, onChange, parseInput])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
@@ -153,8 +171,8 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
           <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${fill}%`, background: C.blue }} />
           <input
             type="range"
-            min={min}
-            max={max}
+            min={rangeMin}
+            max={rangeMax}
             step={step ?? (Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.01)}
             value={clamped}
             onChange={(e) => onChange(parseFloat(e.target.value))}
