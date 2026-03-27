@@ -27,6 +27,7 @@ import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
 import type { LTRDealMakerState, LTRDealMakerMetrics } from '@/components/deal-maker/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
@@ -120,6 +121,7 @@ function StrategyContent() {
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
   const [isRecalculating, setIsRecalculating] = useState(false)
+  const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recalcDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedAddressRef = useRef(addressParam)
@@ -741,6 +743,20 @@ function StrategyContent() {
               ))}
             </div>
 
+            <div className="flex items-center justify-start mb-1">
+              <button
+                type="button"
+                onClick={() => setShowDealGapVideo(true)}
+                className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors"
+                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                </svg>
+                What is Deal Gap?
+              </button>
+            </div>
+
             <div className="relative" style={{ paddingTop: 20 }}>
               {(() => {
                 const markers = [
@@ -1110,6 +1126,13 @@ function StrategyContent() {
         </section>
 
       </div>
+
+      <VideoModal
+        open={showDealGapVideo}
+        onClose={() => setShowDealGapVideo(false)}
+        src="/videos/what-is-dealgapiq.mp4"
+        title="What is Deal Gap?"
+      />
     </div>
   )
 }
