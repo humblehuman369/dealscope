@@ -40,8 +40,8 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
     router.push('/search');
   };
 
-  const scrollToHow = () => {
-    const el = document.querySelector('.how');
+  const scrollToPrices = () => {
+    const el = document.querySelector('.prices');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -91,8 +91,8 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           <button className="cta-primary" onClick={handleAnalyzeClick}>
             Analyze a Property Free →
           </button>
-          <button className="cta-ghost" onClick={scrollToHow}>
-            See How It Works
+          <button className="cta-ghost" onClick={scrollToPrices}>
+            What is Deal Gap?
           </button>
         </div>
         <p className="hero-note">
