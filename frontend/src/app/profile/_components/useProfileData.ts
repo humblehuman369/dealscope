@@ -13,6 +13,10 @@ import type {
   PhoneNumber,
 } from './types'
 
+interface DocumentUploadResponse {
+  id: string
+}
+
 // ===========================================
 // useProfileData — owns all Profile page state
 // ===========================================
@@ -26,6 +30,7 @@ export function useProfileData() {
   const [fullUserData, setFullUserData] = useState<UserData | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -187,6 +192,49 @@ export function useProfileData() {
     }
   }
 
+  const uploadAvatar = async (file: File) => {
+    setIsUploadingAvatar(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select an image file (JPG, PNG, GIF, or WebP).')
+      }
+
+      const maxFileSizeBytes = 10 * 1024 * 1024
+      if (file.size > maxFileSizeBytes) {
+        throw new Error('Image size must be 10MB or less.')
+      }
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('document_type', 'other')
+      formData.append('description', 'profile-avatar')
+
+      const uploaded = await apiRequest<DocumentUploadResponse>('/api/v1/documents', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const avatarUrl = `/api/v1/documents/${uploaded.id}/view`
+
+      await apiRequest('/api/v1/users/me', {
+        method: 'PATCH',
+        body: { avatar_url: avatarUrl },
+      })
+
+      setAccountForm(prev => ({ ...prev, avatar_url: avatarUrl }))
+      setFullUserData(prev => (prev ? { ...prev, avatar_url: avatarUrl } : prev))
+      await refreshUser()
+      setSuccess('Profile image updated successfully!')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload profile image')
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+  }
+
   // ── Phone number management ──────────────────
 
   const addPhoneNumber = () => {
@@ -256,11 +304,13 @@ export function useProfileData() {
 
     // Status
     isSaving,
+    isUploadingAvatar,
     error,
     success,
 
     // Save actions
     saveAccountInfo,
+    uploadAvatar,
     saveBusinessProfile,
     saveInvestorProfile,
 
