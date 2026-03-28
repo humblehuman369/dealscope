@@ -453,7 +453,8 @@ interface SliderInputProps {
 
 function SliderInput({ config, value, systemDefault, onChange }: SliderInputProps) {
   const isCustomized = Math.abs(value - systemDefault) > 0.001
-  const progressPct = ((value - config.min) / (config.max - config.min || 1)) * 100
+  const rawProgressPct = ((value - config.min) / (config.max - config.min || 1)) * 100
+  const progressPct = Math.min(100, Math.max(0, rawProgressPct))
   
   return (
     <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg p-4">
