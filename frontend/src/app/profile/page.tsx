@@ -174,7 +174,12 @@ function ProfileContent() {
                 'radial-gradient(ellipse at 50% 30%, rgba(56, 189, 248, 0.24), rgba(56, 189, 248, 0) 72%)',
             }}
           />
-          <div className="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] p-6 sm:p-8">
+          <div
+            className="rounded-2xl border border-[var(--border-default)] p-6 sm:p-8"
+            style={{
+              background: activeTab === 'investor' ? 'var(--color-sky-dim)' : 'var(--surface-card)',
+            }}
+          >
             {activeTab === 'account' && (
               <AccountTab
                 user={user}

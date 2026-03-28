@@ -56,7 +56,7 @@ export function InvestorTab({
                 onClick={() => setInvestorForm(prev => ({ ...prev, investment_experience: level.value }))}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${
                   isSelected
-                    ? 'border-[var(--border-focus)] bg-[var(--color-sky-dim)]'
+                    ? 'border-[var(--border-focus)] bg-[var(--surface-card)]'
                     : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--border-strong)]'
                 }`}
               >
@@ -84,7 +84,7 @@ export function InvestorTab({
                 onClick={() => onToggleStrategy(strategy.id)}
                 className={`p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
                   isSelected
-                    ? 'border-[var(--border-focus)] bg-[var(--color-sky-dim)]'
+                    ? 'border-[var(--border-focus)] bg-[var(--surface-card)]'
                     : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--border-strong)]'
                 }`}
               >
