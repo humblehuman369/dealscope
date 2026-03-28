@@ -104,11 +104,17 @@ export function usePropertyData() {
   );
 
   const getCached = useCallback(
-    (address: string): PropertyResponseCompat | undefined => {
+    (address: string, opts?: FetchPropertyOptions): PropertyResponseCompat | undefined => {
       const canonicalAddress = canonicalizeAddressForIdentity(address);
+      const keyParts = [
+        canonicalAddress,
+        opts?.city,
+        opts?.state,
+        opts?.zip_code,
+      ].filter(Boolean);
       return queryClient.getQueryData<PropertyResponseCompat>([
         PROPERTY_KEY,
-        canonicalAddress,
+        ...keyParts,
       ]);
     },
     [queryClient],
