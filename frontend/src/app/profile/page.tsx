@@ -175,7 +175,7 @@ function ProfileContent() {
             }}
           />
           <div
-            className="rounded-2xl border border-[var(--border-default)] p-6 sm:p-8"
+            className="relative rounded-2xl border border-[var(--border-default)] p-6 sm:p-8 overflow-hidden"
             style={{
               background: 'var(--surface-card)',
               boxShadow: activeTab === 'investor'
@@ -183,6 +183,17 @@ function ProfileContent() {
                 : undefined,
             }}
           >
+            {activeTab === 'investor' && (
+              <div
+                className="pointer-events-none absolute inset-0 rounded-2xl"
+                style={{
+                  background:
+                    'radial-gradient(120% 85% at 50% 8%, rgba(56,189,248,0.24), rgba(56,189,248,0.10) 42%, rgba(56,189,248,0.00) 78%)',
+                  mixBlendMode: 'screen',
+                }}
+              />
+            )}
+            <div className="relative z-10">
             {activeTab === 'account' && (
               <AccountTab
                 user={user}
@@ -219,6 +230,7 @@ function ProfileContent() {
             {activeTab === 'preferences' && (
               <PreferencesTab />
             )}
+            </div>
           </div>
         </div>
       </div>
