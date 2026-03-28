@@ -453,6 +453,7 @@ interface SliderInputProps {
 
 function SliderInput({ config, value, systemDefault, onChange }: SliderInputProps) {
   const isCustomized = Math.abs(value - systemDefault) > 0.001
+  const progressPct = ((value - config.min) / (config.max - config.min || 1)) * 100
   
   return (
     <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg p-4">
@@ -480,8 +481,11 @@ function SliderInput({ config, value, systemDefault, onChange }: SliderInputProp
         step={config.step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-2 bg-[var(--surface-elevated)] rounded-lg appearance-none cursor-pointer"
-        style={{ accentColor: 'var(--accent-sky)' }}
+        className="w-full h-2 rounded-lg appearance-none cursor-pointer border border-[var(--accent-sky)]"
+        style={{
+          accentColor: 'var(--accent-sky)',
+          background: `linear-gradient(to right, var(--accent-sky) 0%, var(--accent-sky) ${progressPct}%, var(--surface-elevated) ${progressPct}%, var(--surface-elevated) 100%)`,
+        }}
       />
       
       <div className="flex justify-between text-xs text-[var(--text-label)] mt-1">
