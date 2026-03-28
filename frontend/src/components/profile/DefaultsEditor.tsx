@@ -172,9 +172,10 @@ function getValue(
 interface DefaultsEditorProps {
   onClose?: () => void
   showHeader?: boolean
+  showContainer?: boolean
 }
 
-export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorProps) {
+export function DefaultsEditor({ onClose, showHeader = true, showContainer = true }: DefaultsEditorProps) {
   const {
     assumptions,
     hasCustomizations,
@@ -286,7 +287,7 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
   }
   
   return (
-    <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] overflow-hidden">
+    <div className={showContainer ? 'bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] overflow-hidden' : ''}>
       {showHeader && (
         <div className="px-6 py-4 border-b border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between">
           <div>
@@ -308,7 +309,7 @@ export function DefaultsEditor({ onClose, showHeader = true }: DefaultsEditorPro
         </div>
       )}
       
-      <div className="p-6">
+      <div className={showContainer ? 'p-6' : ''}>
         {/* Status Messages */}
         {error && (
           <div className="mb-4 p-3 bg-[rgba(248,113,113,0.10)] border border-[rgba(248,113,113,0.25)] rounded-lg text-[var(--status-negative)] text-sm">
