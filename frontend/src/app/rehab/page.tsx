@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { API_BASE_URL } from '@/lib/env'
+import type { RegionalCostContext } from '@/lib/estimatorTypes'
 
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { 
   loading: () => (
@@ -34,9 +35,23 @@ function RehabPageContent() {
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)
   
   const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
+  const [costContext, setCostContext] = useState<RegionalCostContext | null>(null)
   const [loading, setLoading] = useState(!!address)
-  
+
   useEffect(() => {
+    async function fetchCostContext(zipCode: string) {
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/v1/rehab/cost-context?zip_code=${encodeURIComponent(zipCode)}`
+        )
+        if (res.ok) {
+          setCostContext(await res.json())
+        }
+      } catch {
+        // Non-critical: estimator works without cost context
+      }
+    }
+
     const sqft = searchParams.get('sqft')
     const yearBuilt = searchParams.get('year_built')
     const arv = searchParams.get('arv')
@@ -57,6 +72,7 @@ function RehabPageContent() {
         has_pool: hasPool === 'true',
         stories: stories ? parseInt(stories, 10) : undefined,
       })
+      if (zipCode) fetchCostContext(zipCode)
       setLoading(false)
     } else if (address) {
       const fetchPropertyData = async () => {
@@ -67,12 +83,13 @@ function RehabPageContent() {
           
           if (response.ok) {
             const data = await response.json()
+            const zip = data.address?.zip_code
             setPropertyData({
               square_footage: data.details?.square_footage,
               year_built: data.details?.year_built,
               arv: data.valuations?.current_value_avm,
               current_value_avm: data.valuations?.current_value_avm,
-              zip_code: data.address?.zip_code,
+              zip_code: zip,
               bedrooms: data.details?.bedrooms,
               bathrooms: data.details?.bathrooms,
               has_pool: data.details?.features?.includes('Pool'),
@@ -80,6 +97,7 @@ function RehabPageContent() {
               lot_size: data.details?.lot_size,
               hoa_monthly: data.financial?.hoa_monthly,
             })
+            if (zip) fetchCostContext(zip)
           }
         } catch (err) {
           console.error('Failed to fetch property data:', err)
@@ -131,6 +149,7 @@ function RehabPageContent() {
                 initialBudget={initialBudget} 
                 propertyAddress={address}
                 propertyData={propertyData}
+                costContext={costContext}
                 initialMode={propertyData ? 'quick' : 'detailed'}
               />
             )}

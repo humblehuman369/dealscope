@@ -15,6 +15,9 @@ import {
   CapExWarning,
   getLocationFactor,
 } from '@/lib/rehabIntelligence'
+import type { RegionalCostContext } from '@/lib/estimatorTypes'
+import { ConfidenceBadge, CostExplanationPanel } from './EstimatorConfidence'
+import { trackConditionChanged } from '@/lib/estimatorTracking'
 
 // ============================================
 // TYPES
@@ -39,6 +42,7 @@ interface QuickRehabEstimateProps {
   onEstimateChange?: (total: number) => void
   onSwitchToDetailed?: () => void
   initialCondition?: PropertyCondition
+  costContext?: RegionalCostContext | null
 }
 
 // ============================================
@@ -489,9 +493,14 @@ export default function QuickRehabEstimate({
   propertyData,
   onEstimateChange,
   onSwitchToDetailed,
-  initialCondition = 'fair'
+  initialCondition = 'fair',
+  costContext,
 }: QuickRehabEstimateProps) {
-  const [condition, setCondition] = useState<PropertyCondition>(initialCondition)
+  const [condition, setConditionRaw] = useState<PropertyCondition>(initialCondition)
+  const setCondition = (c: PropertyCondition) => {
+    setConditionRaw(c)
+    trackConditionChanged(c, propertyData.zip_code)
+  }
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [includeHolding, setIncludeHolding] = useState(true)
   
@@ -565,6 +574,13 @@ export default function QuickRehabEstimate({
       {/* Cost Breakdown */}
       <CostBreakdownCard estimate={estimate} />
       
+      {/* Why This Number */}
+      <CostExplanationPanel
+        propertyData={propertyData}
+        costContext={costContext}
+        totalEstimate={estimate.total_rehab}
+      />
+
       {/* Holding Costs Toggle */}
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 cursor-pointer">

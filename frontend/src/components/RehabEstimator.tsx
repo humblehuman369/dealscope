@@ -16,6 +16,15 @@ import {
 } from '@/lib/analytics'
 import { generatePropertyPresets } from '@/lib/rehabPresetGenerator'
 import type { GeneratedPreset, RegionalCostContext } from '@/lib/estimatorTypes'
+import { ConfidenceBadge, RegionalContextCard, CostExplanationPanel } from './EstimatorConfidence'
+import {
+  trackPresetSelected,
+  trackLineItemAdded,
+  trackLineItemRemoved,
+  trackTierChanged,
+  trackContingencyChanged,
+  trackModeSwitched,
+} from '@/lib/estimatorTracking'
 import QuickRehabEstimate from './QuickRehabEstimate'
 
 type QualityTier = 'low' | 'mid' | 'high'
@@ -381,9 +390,21 @@ export default function RehabEstimator({
   costContext,
   initialMode = 'quick'
 }: RehabEstimatorProps) {
-  const [mode, setMode] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
+  const [mode, setModeRaw] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
+  const setMode = useCallback((newMode: EstimatorMode) => {
+    setModeRaw(prev => {
+      if (prev !== newMode) trackModeSwitched(prev, newMode)
+      return newMode
+    })
+  }, [])
   const [selections, setSelections] = useState<RehabSelection[]>([])
-  const [contingencyPct, setContingencyPct] = useState(0.10)
+  const [contingencyPct, setContingencyPctRaw] = useState(0.10)
+  const setContingencyPct = useCallback((pct: number) => {
+    setContingencyPctRaw(prev => {
+      if (prev !== pct) trackContingencyChanged(prev, pct, propertyData?.zip_code)
+      return pct
+    })
+  }, [propertyData?.zip_code])
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
 
@@ -409,10 +430,13 @@ export default function RehabEstimator({
     onEstimateChange?.(estimate.grandTotal)
   }, [estimate.grandTotal, onEstimateChange])
   
+  const zipCode = propertyData?.zip_code
+
   const handleGlobalTierChange = useCallback((tier: QualityTier) => {
     setGlobalTier(tier)
     setActivePreset(null)
-  }, [])
+    trackTierChanged(tier, zipCode)
+  }, [zipCode])
   
   const handleAddItem = (itemId: string) => {
     let defaultQty = 1
@@ -425,6 +449,7 @@ export default function RehabEstimator({
     }
     setSelections([...selections, { itemId, quantity: defaultQty, tier: globalTier }])
     setActivePreset(null)
+    trackLineItemAdded(itemId, defaultQty, zipCode)
   }
   
   const handleUpdateItem = (itemId: string, selection: RehabSelection) => {
@@ -435,6 +460,7 @@ export default function RehabEstimator({
   const handleRemoveItem = (itemId: string) => {
     setSelections(selections.filter(s => s.itemId !== itemId))
     setActivePreset(null)
+    trackLineItemRemoved(itemId, zipCode)
   }
   
   const handlePresetSelect = (preset: RehabPreset) => {
@@ -445,6 +471,7 @@ export default function RehabEstimator({
     setSelections(preset.selections)
     setActivePreset(preset.id)
     setGlobalTier('mid')
+    trackPresetSelected(preset.id, isPropertyDriven, zipCode, propertyData?.square_footage)
   }
   
   const handleClearAll = () => {
@@ -466,6 +493,7 @@ export default function RehabEstimator({
           propertyData={propertyData}
           onEstimateChange={onEstimateChange}
           onSwitchToDetailed={() => setMode('detailed')}
+          costContext={costContext}
         />
         
         {propertyAddress && (
@@ -515,6 +543,9 @@ export default function RehabEstimator({
           ))}
         </div>
       </div>
+
+      {/* Regional Cost Context */}
+      {costContext && <RegionalContextCard costContext={costContext} />}
 
       {/* Quality Level */}
       <div className="rounded-lg p-2" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
@@ -586,6 +617,14 @@ export default function RehabEstimator({
         </div>
         <div className="text-3xl font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(estimate.grandTotal)}</div>
       </div>
+
+      {/* Why This Number */}
+      <CostExplanationPanel
+        propertyData={propertyData}
+        costContext={costContext}
+        totalEstimate={estimate.grandTotal}
+        breakdown={estimate.breakdown}
+      />
 
       {/* Back Button */}
       {propertyAddress && (
