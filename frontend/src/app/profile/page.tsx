@@ -179,7 +179,7 @@ function ProfileContent() {
             style={{
               background: 'var(--surface-card)',
               boxShadow: activeTab === 'investor'
-                ? 'var(--shadow-card), inset 0 0 48px rgba(56,189,248,0.16)'
+                ? 'var(--shadow-card), inset 0 0 48px var(--glow-sky-inset)'
                 : undefined,
             }}
           >

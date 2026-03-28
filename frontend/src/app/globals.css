@@ -86,6 +86,7 @@
   --shadow-card: 0 0 20px rgba(14,165,233,0.15);
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.5);
+  --glow-sky-inset: rgba(56,189,248,0.16);
 
   --chart-grid: #1E293B;
   --chart-axis: #94A3B8;
@@ -205,6 +206,7 @@
   --shadow-card: 0 0 20px rgba(14,165,233,0.15);
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.5);
+  --glow-sky-inset: rgba(56,189,248,0.16);
 
   --chart-grid: #1E293B;
   --chart-axis: #94A3B8;
@@ -255,6 +257,7 @@
   --shadow-card: 0 0 20px rgba(14,165,233,0.15);
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.15);
+  --glow-sky-inset: rgba(3,105,161,0.16);
 
   --chart-grid: #E2E8F0;
   --chart-axis: #64748B;
