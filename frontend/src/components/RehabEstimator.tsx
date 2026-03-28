@@ -14,6 +14,8 @@ import {
   calculateRehabEstimate,
   RehabPreset
 } from '@/lib/analytics'
+import { generatePropertyPresets } from '@/lib/rehabPresetGenerator'
+import type { GeneratedPreset, RegionalCostContext } from '@/lib/estimatorTypes'
 import QuickRehabEstimate from './QuickRehabEstimate'
 
 type QualityTier = 'low' | 'mid' | 'high'
@@ -367,6 +369,7 @@ interface RehabEstimatorProps {
     lot_size?: number
     hoa_monthly?: number
   }
+  costContext?: RegionalCostContext | null
   initialMode?: EstimatorMode
 }
 
@@ -375,6 +378,7 @@ export default function RehabEstimator({
   initialBudget = 40000, 
   propertyAddress,
   propertyData,
+  costContext,
   initialMode = 'quick'
 }: RehabEstimatorProps) {
   const [mode, setMode] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
@@ -382,6 +386,15 @@ export default function RehabEstimator({
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
+
+  const presets: RehabPreset[] = useMemo(() => {
+    if (propertyData) {
+      return generatePropertyPresets(propertyData, costContext)
+    }
+    return REHAB_PRESETS
+  }, [propertyData, costContext])
+
+  const isPropertyDriven = !!propertyData
   
   const syncedSelections = useMemo(() => {
     return selections.map(s => ({ ...s, tier: globalTier }))
@@ -480,9 +493,19 @@ export default function RehabEstimator({
       
       {/* Quick Start Presets */}
       <div>
-        <div className="text-lg font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="text-lg font-semibold" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
+          {isPropertyDriven && (
+            <span
+              className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+              style={{ backgroundColor: 'rgba(56,189,248,0.15)', color: 'var(--accent-sky)' }}
+            >
+              Property-Specific
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {REHAB_PRESETS.map((preset) => (
+          {presets.map((preset) => (
             <PresetCard
               key={preset.id}
               preset={preset}
