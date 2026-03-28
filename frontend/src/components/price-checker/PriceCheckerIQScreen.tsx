@@ -368,7 +368,7 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
       <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--surface-elevated)] transition-colors">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[var(--accent-sky-light)]" />
-          <span className="text-sm font-semibold text-[var(--text-heading)]">Adjustment Breakdown</span>
+          <span className="text-base font-semibold text-[var(--text-heading)]">Adjustment Breakdown</span>
           <span className="text-xs text-[var(--text-heading)]">({compAdjustments.length})</span>
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-heading)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-heading)]" />}
@@ -828,18 +828,18 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <Target className="w-4.5 h-4.5 text-[var(--accent-sky-light)]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
+                  <h3 className="text-base font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
                 </div>
               </div>
               <div className="flex rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center">
                 <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${
                     isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
                   Sale Comps
                 </button>
                 <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${
                     !isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
                   }`}>
                   Rent Comps
@@ -865,7 +865,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[14px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
+                  <span className="text-[16px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
@@ -912,7 +912,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Right: ARV / Improved Rent */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[14px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
+                  <span className="text-[16px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
                   </span>
                   <button onClick={() => {
