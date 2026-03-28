@@ -179,17 +179,16 @@ function ProfileContent() {
             style={{
               background: 'var(--surface-card)',
               boxShadow: activeTab === 'investor'
-                ? 'var(--shadow-card), inset 0 0 48px var(--glow-sky-inset)'
+                ? 'var(--shadow-card)'
                 : undefined,
             }}
           >
             {activeTab === 'investor' && (
               <div
-                className="pointer-events-none absolute inset-0 rounded-2xl"
+                className="pointer-events-none absolute inset-x-0 top-0 h-24"
                 style={{
                   background:
-                    'radial-gradient(120% 85% at 50% 8%, rgba(56,189,248,0.24), rgba(56,189,248,0.10) 42%, rgba(56,189,248,0.00) 78%)',
-                  mixBlendMode: 'screen',
+                    'radial-gradient(ellipse at 50% 0%, var(--color-sky-dim), transparent 72%)',
                 }}
               />
             )}
