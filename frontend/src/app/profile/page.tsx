@@ -177,7 +177,8 @@ function ProfileContent() {
           <div
             className="rounded-2xl border border-[var(--border-default)] p-6 sm:p-8"
             style={{
-              background: activeTab === 'investor' ? 'var(--color-sky-dim)' : 'var(--surface-card)',
+              background: activeTab === 'investor' ? 'var(--accent-sky)' : 'var(--surface-card)',
+              boxShadow: activeTab === 'investor' ? 'var(--shadow-card)' : undefined,
             }}
           >
             {activeTab === 'account' && (
