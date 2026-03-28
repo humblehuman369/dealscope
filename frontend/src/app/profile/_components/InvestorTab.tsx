@@ -44,7 +44,7 @@ export function InvestorTab({
 
       {/* ── Experience Level ────────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[16px] font-medium text-[var(--text-body)] mb-3">
           Investment Experience
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -72,7 +72,7 @@ export function InvestorTab({
 
       {/* ── Preferred Strategies ─────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[16px] font-medium text-[var(--text-body)] mb-3">
           Preferred Investment Strategies
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -100,7 +100,7 @@ export function InvestorTab({
 
       {/* ── Budget Range ─────────────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[16px] font-medium text-[var(--text-body)] mb-3">
           Investment Budget Range
         </label>
         <div className="grid grid-cols-2 gap-4">
@@ -135,7 +135,7 @@ export function InvestorTab({
 
       {/* ── Target Returns ───────────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[16px] font-medium text-[var(--text-body)] mb-3">
           Target Returns
         </label>
         <div className="grid grid-cols-2 gap-4">
@@ -172,7 +172,7 @@ export function InvestorTab({
 
       {/* ── Risk Tolerance ───────────────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[16px] font-medium text-[var(--text-body)] mb-3">
           Risk Tolerance
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -234,10 +234,10 @@ export function InvestorTab({
 
       {/* ── Investment Assumptions ───────────────── */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text-body)] mb-3">
+        <label className="block text-[18px] font-medium text-[var(--text-body)] mb-3">
           Investment Assumptions
         </label>
-        <p className="text-xs text-[var(--text-label)] mb-4">
+        <p className="text-[16px] text-[var(--text-label)] mb-4">
           Set your default assumptions used across property analysis calculations.
         </p>
         <DefaultsEditor showHeader={false} showContainer={false} />
