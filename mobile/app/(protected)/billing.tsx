@@ -9,10 +9,9 @@ import { spacing } from '@/constants/spacing';
 
 export default function BillingScreen() {
   const router = useRouter();
-  const { data: subscription } = useSubscription();
+  const { tier, status, isPro } = useSubscription();
   const { data: usage } = useUsage();
 
-  const isPro = subscription?.tier === 'pro';
   const usagePct = usage
     ? Math.min(100, (usage.searches_used / usage.searches_limit) * 100)
     : 0;
@@ -32,7 +31,7 @@ export default function BillingScreen() {
           <Text style={styles.planLabel}>CURRENT PLAN</Text>
           <Text style={styles.planName}>{isPro ? 'Pro' : 'Starter'}</Text>
           <Text style={styles.planStatus}>
-            {subscription?.status === 'active' ? 'Active' : subscription?.status ?? 'Free'}
+            {status === 'active' ? 'Active' : status}
           </Text>
           {!isPro && (
             <Button
@@ -51,15 +50,6 @@ export default function BillingScreen() {
             </View>
             <Text style={styles.usageText}>
               {usage.searches_used} / {usage.searches_limit} searches
-            </Text>
-          </Card>
-        )}
-
-        {subscription?.current_period_end && (
-          <Card glow="none" style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Renewal Date</Text>
-            <Text style={styles.infoValue}>
-              {new Date(subscription.current_period_end).toLocaleDateString()}
             </Text>
           </Card>
         )}

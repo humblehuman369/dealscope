@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui';
 import { useSavedProperties, useDeleteSavedProperty } from '@/hooks/useSavedProperties';
+import type { SavedPropertySummary } from '@/hooks/useSavedProperties';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
@@ -13,9 +14,20 @@ function fmtC(v: number | null | undefined): string {
   return '$' + Math.round(v).toLocaleString();
 }
 
+function getDisplayAddress(item: SavedPropertySummary): string {
+  const stateZip = [item.address_state, item.address_zip].filter(Boolean).join(' ');
+  const parts = [item.address_street, item.address_city, stateZip].filter(Boolean);
+  return parts.join(', ').trim() || item.address_street;
+}
+
 export default function SavedPropertiesScreen() {
   const router = useRouter();
-  const { data: properties, isLoading } = useSavedProperties();
+  const { data: properties, isLoading } = useSavedProperties({
+    page: 0,
+    pageSize: 50,
+    status: 'all',
+    search: '',
+  });
   const deleteMutation = useDeleteSavedProperty();
 
   function handleDelete(id: string) {
@@ -49,39 +61,41 @@ export default function SavedPropertiesScreen() {
         data={properties}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              router.push({ pathname: '/verdict', params: { address: item.address } })
-            }
-            onLongPress={() => handleDelete(item.id)}
-          >
-            <Card glow="sm" style={styles.propCard}>
-              <View style={styles.propHeader}>
-                <Text style={styles.propAddress} numberOfLines={2}>
-                  {item.address}
+        renderItem={({ item }) => {
+          const displayAddress = getDisplayAddress(item);
+          return (
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: '/verdict', params: { address: displayAddress } })
+              }
+              onLongPress={() => handleDelete(item.id)}
+            >
+              <Card glow="sm" style={styles.propCard}>
+                <View style={styles.propHeader}>
+                  <Text style={styles.propAddress} numberOfLines={2}>
+                    {item.nickname ?? displayAddress}
+                  </Text>
+                  {item.best_cash_flow != null && (
+                    <View style={[styles.scoreBadge, { backgroundColor: (item.best_cash_flow >= 0 ? colors.success : colors.error) + '20' }]}>
+                      <Text style={[styles.scoreText, { color: item.best_cash_flow >= 0 ? colors.success : colors.error }]}>
+                        {fmtC(item.best_cash_flow)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.propMeta}>
+                  {[
+                    item.status !== 'watching' && item.status,
+                    item.best_strategy,
+                    item.best_coc_return != null && `${item.best_coc_return.toFixed(1)}% CoC`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Text>
-                {item.deal_score != null && (
-                  <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item.deal_score) + '20' }]}>
-                    <Text style={[styles.scoreText, { color: getScoreColor(item.deal_score) }]}>
-                      {Math.round(item.deal_score)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.propMeta}>
-                {[
-                  item.bedrooms && `${item.bedrooms} bd`,
-                  item.bathrooms && `${item.bathrooms} ba`,
-                  item.square_footage && `${item.square_footage.toLocaleString()} sqft`,
-                  item.list_price && fmtC(item.list_price),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </Text>
-            </Card>
-          </Pressable>
-        )}
+              </Card>
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

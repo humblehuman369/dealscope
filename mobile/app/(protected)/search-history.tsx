@@ -2,15 +2,19 @@ import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, StyleSheet }
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Button } from '@/components/ui';
-import { useSearchHistory, useDeleteSearchHistoryItem, useClearSearchHistory } from '@/hooks/useSearchHistory';
+import { useSearchHistory, useDeleteSearchHistoryEntry, useClearSearchHistory } from '@/hooks/useSearchHistory';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
 
 export default function SearchHistoryScreen() {
   const router = useRouter();
-  const { data: history, isLoading } = useSearchHistory();
-  const deleteItem = useDeleteSearchHistoryItem();
+  const { data: history, isLoading } = useSearchHistory({
+    page: 0,
+    pageSize: 50,
+    successfulOnly: false,
+  });
+  const deleteItem = useDeleteSearchHistoryEntry();
   const clearAll = useClearSearchHistory();
 
   function handleClear() {
@@ -49,7 +53,7 @@ export default function SearchHistoryScreen() {
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
-              router.push({ pathname: '/analyzing', params: { address: item.address } })
+              router.push({ pathname: '/analyzing', params: { address: item.search_query } })
             }
             onLongPress={() => {
               Alert.alert('Delete', 'Remove this search?', [
@@ -59,7 +63,7 @@ export default function SearchHistoryScreen() {
             }}
           >
             <Card glow="none" style={styles.itemCard}>
-              <Text style={styles.itemAddress} numberOfLines={2}>{item.address}</Text>
+              <Text style={styles.itemAddress} numberOfLines={2}>{item.search_query}</Text>
               <Text style={styles.itemDate}>
                 {new Date(item.searched_at).toLocaleDateString()}
               </Text>

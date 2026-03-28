@@ -1,12 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/services/api';
+import { useSession } from './useSession';
 
-interface SubscriptionInfo {
-  tier: string;
-  status: string;
-  current_period_end?: string;
-  cancel_at_period_end?: boolean;
-}
+export type SubscriptionTier = 'free' | 'pro';
 
 interface UsageInfo {
   searches_used: number;
@@ -15,16 +11,28 @@ interface UsageInfo {
   period_end: string;
 }
 
+/**
+ * Derives subscription info from the session user — no additional API call.
+ * Mirrors frontend/src/hooks/useSubscription.ts.
+ */
 export function useSubscription() {
-  return useQuery<SubscriptionInfo>({
-    queryKey: ['subscription'],
-    queryFn: async () => {
-      const { data } = await api.get<SubscriptionInfo>('/api/v1/billing/subscription');
-      return data;
-    },
-    staleTime: 60_000,
-    retry: false,
-  });
+  const { user, isLoading, isAuthenticated } = useSession();
+
+  const tier: SubscriptionTier = (user?.subscription_tier as SubscriptionTier) ?? 'free';
+  const status = user?.subscription_status ?? 'active';
+  const isPro = tier === 'pro';
+  const isFree = tier === 'free';
+  const isTrialing = status === 'trialing';
+
+  return {
+    tier,
+    status,
+    isPro,
+    isFree,
+    isTrialing,
+    isLoading,
+    isAuthenticated,
+  };
 }
 
 export function useUsage() {
