@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Button, Input } from '@/components/ui';
 import { useSession } from '@/hooks/useSession';
-import api from '@/services/api';
+import { authApi } from '@/services/auth';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing, layout } from '@/constants/spacing';
@@ -32,10 +32,7 @@ export default function SettingsScreen() {
     setPwLoading(true);
     setPwError('');
     try {
-      await api.put('/api/v1/users/me', {
-        current_password: currentPassword,
-        new_password: newPassword,
-      });
+      await authApi.changePassword(currentPassword, newPassword);
       setPwSuccess('Password updated successfully');
       setCurrentPassword('');
       setNewPassword('');
