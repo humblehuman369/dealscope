@@ -240,7 +240,7 @@ export function InvestorTab({
         <p className="text-xs text-[var(--text-label)] mb-4">
           Set your default assumptions used across property analysis calculations.
         </p>
-        <DefaultsEditor showHeader />
+        <DefaultsEditor showHeader={false} showContainer={false} />
       </div>
 
       {/* ── Save ─────────────────────────────────── */}
