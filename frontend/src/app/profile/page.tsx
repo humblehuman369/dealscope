@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useRef, useState, Suspense, type ChangeEvent } from 'react'
 import { User, Building2, TrendingUp, Bell, Mail, Camera, X, Check } from 'lucide-react'
 import { useProfileData } from './_components/useProfileData'
 import { AccountTab } from './_components/AccountTab'
@@ -43,10 +43,12 @@ function ProfileContent() {
     setInvestorForm,
 
     isSaving,
+    isUploadingAvatar,
     error,
     success,
 
     saveAccountInfo,
+    uploadAvatar,
     saveBusinessProfile,
     saveInvestorProfile,
 
@@ -57,6 +59,16 @@ function ProfileContent() {
     toggleStrategy,
     toggleMarket,
   } = useProfileData()
+  const avatarInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleAvatarSelect = async (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0]
+    if (!selectedFile) return
+    await uploadAvatar(selectedFile)
+    event.target.value = ''
+  }
+
+  const avatarSrc = accountForm.avatar_url || user?.avatar_url || ''
 
   if (isLoading) {
     return (
@@ -111,10 +123,36 @@ function ProfileContent() {
                     className="w-24 h-24 rounded-2xl flex items-center justify-center text-[var(--text-inverse)] text-4xl font-bold border-4 border-[var(--surface-card)] shadow-lg"
                     style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))', boxShadow: 'var(--shadow-card)' }}
                   >
-                    {user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()}
+                    {avatarSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={avatarSrc}
+                        alt="Profile avatar"
+                        className="w-full h-full object-cover rounded-[12px]"
+                      />
+                    ) : (
+                      user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()
+                    )}
                   </div>
-                  <button className="absolute bottom-0 right-0 p-2 bg-[var(--surface-card)] rounded-full shadow-lg border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-colors">
-                    <Camera className="w-4 h-4 text-[var(--text-secondary)]" />
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarSelect}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-0 right-0 p-2 bg-[var(--surface-card)] rounded-full shadow-lg border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    aria-label="Upload profile image"
+                  >
+                    {isUploadingAvatar ? (
+                      <div className="w-4 h-4 border-2 border-[var(--text-secondary)] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4 text-[var(--text-secondary)]" />
+                    )}
                   </button>
                 </div>
                 {/* Name & Email */}

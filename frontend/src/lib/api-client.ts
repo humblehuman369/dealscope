@@ -262,9 +262,13 @@ async function apiRequest<T>(
   const timeout =
     timeoutMs ?? (method === 'GET' ? DEFAULT_GET_TIMEOUT_MS : DEFAULT_MUTATE_TIMEOUT_MS)
 
-  const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...headers,
+  const isFormDataBody = typeof FormData !== 'undefined' && body instanceof FormData
+  const requestHeaders: Record<string, string> = { ...headers }
+  if (!isFormDataBody && !requestHeaders['Content-Type']) {
+    requestHeaders['Content-Type'] = 'application/json'
+  }
+  if (isFormDataBody && requestHeaders['Content-Type']) {
+    delete requestHeaders['Content-Type']
   }
 
   // Fall back to in-memory token if available (covers the window
@@ -291,7 +295,7 @@ async function apiRequest<T>(
       signal: requestSignal,
     }
     if (body !== undefined) {
-      config.body = JSON.stringify(body)
+      config.body = isFormDataBody ? body : JSON.stringify(body)
     }
     return fetch(requestUrl, config)
   }
@@ -326,7 +330,7 @@ async function apiRequest<T>(
             signal: requestSignal,
           }
           if (body !== undefined) {
-            retryConfig.body = JSON.stringify(body)
+            retryConfig.body = isFormDataBody ? body : JSON.stringify(body)
           }
           return fetch(`${API_BASE_URL}${endpoint}`, retryConfig)
         })

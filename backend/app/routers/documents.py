@@ -265,6 +265,32 @@ async def download_document(
     )
 
 
+@router.get("/{document_id}/view", summary="View a document inline")
+async def view_document(
+    document_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Stream the document for in-app viewing (e.g., profile avatars)."""
+    try:
+        file_bytes, filename, mime_type = await document_service.download_document(
+            db=db,
+            document_id=document_id,
+            user_id=str(current_user.id),
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    return StreamingResponse(
+        BytesIO(file_bytes),
+        media_type=mime_type,
+        headers={
+            "Content-Disposition": f'inline; filename="{filename}"',
+            "Cache-Control": "private, max-age=3600",
+        },
+    )
+
+
 @router.get("/{document_id}/url", summary="Get document access URL")
 async def get_document_url(
     document_id: str,
