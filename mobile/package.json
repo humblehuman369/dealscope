@@ -20,6 +20,7 @@
     "axios": "^1.7.0",
     "expo": "~55.0.4",
     "expo-constants": "~55.0.7",
+    "expo-dev-client": "~55.0.19",
     "expo-file-system": "~55.0.10",
     "expo-font": "~55.0.4",
     "expo-linking": "~55.0.7",
