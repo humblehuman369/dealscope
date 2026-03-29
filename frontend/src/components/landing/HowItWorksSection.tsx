@@ -19,7 +19,7 @@ export function HowItWorksSection() {
             src="/images/how-it-works-steps.png"
             alt="Step 1: The Verdict — instant deal analysis. Step 2: The Strategy — professional-grade tools."
             width={1024}
-            height={900}
+            height={851}
             style={{ width: '100%', maxWidth: '900px', height: 'auto', borderRadius: '12px' }}
             priority
           />
