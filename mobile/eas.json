@@ -24,7 +24,8 @@
       "ios": { "buildConfiguration": "Release" },
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com"
+        "EXPO_PUBLIC_API_URL": "https://api-staging.dealgapiq.com",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
     "production": {
@@ -34,7 +35,8 @@
       "ios": { "buildConfiguration": "Release" },
       "android": { "buildType": "app-bundle" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.dealgapiq.com"
+        "EXPO_PUBLIC_API_URL": "https://api.dealgapiq.com",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
