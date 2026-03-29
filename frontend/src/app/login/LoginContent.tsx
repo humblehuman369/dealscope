@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import LoginForm from '@/components/auth/LoginForm'
+import { IS_CAPACITOR } from '@/lib/env'
 
 function LoginInner() {
   const router = useRouter()
@@ -131,13 +132,18 @@ function LoginInner() {
             {/* Google OAuth */}
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 const base =
                   typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
                     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
                     : ''
                 const url = base ? `${base}/api/v1/auth/google` : '/api/v1/auth/google'
-                window.location.href = url
+                if (IS_CAPACITOR) {
+                  const { Browser } = await import('@capacitor/browser')
+                  await Browser.open({ url })
+                } else {
+                  window.location.href = url
+                }
               }}
               style={{
                 width: '100%',

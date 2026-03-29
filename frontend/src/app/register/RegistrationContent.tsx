@@ -7,6 +7,7 @@ import { useRegister, useLogin } from "@/hooks/useSession";
 import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "@/lib/stripe";
 import { billingApi } from "@/lib/api-client";
+import { IS_CAPACITOR } from "@/lib/env";
 
 // ─── Icons ───
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
@@ -686,12 +687,17 @@ function RegistrationInner() {
       {/* Google OAuth — redirect to backend; callback sets cookies and redirects to frontend */}
       <button
         type="button"
-        onClick={() => {
+        onClick={async () => {
           const base = typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL
             ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")
             : "";
           const url = base ? `${base}/api/v1/auth/google` : "/api/v1/auth/google";
-          window.location.href = url;
+          if (IS_CAPACITOR) {
+            const { Browser } = await import("@capacitor/browser");
+            await Browser.open({ url });
+          } else {
+            window.location.href = url;
+          }
         }}
         style={{
           width: "100%",

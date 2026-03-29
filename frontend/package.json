@@ -15,10 +15,17 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "theme:check": "bash scripts/check-theme-surfaces.sh",
-    "theme:check:strict": "bash scripts/check-theme-surfaces.sh --strict"
+    "theme:check:strict": "bash scripts/check-theme-surfaces.sh --strict",
+    "cap:sync": "npx cap sync",
+    "cap:sync:ios": "npx cap sync ios",
+    "cap:sync:android": "npx cap sync android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "cap:build": "bash scripts/build-capacitor.sh"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
+    "@capacitor/browser": "^8.0.3",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@capacitor/ios": "^8.2.0",
