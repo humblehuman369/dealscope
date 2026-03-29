@@ -13,6 +13,9 @@ dist/
 # Environment files
 .env*.local
 
+# iOS local signing config (contains Apple Developer Team ID)
+ios/local.xcconfig
+
 # Debug
 npm-debug.log*
 yarn-debug.log*
