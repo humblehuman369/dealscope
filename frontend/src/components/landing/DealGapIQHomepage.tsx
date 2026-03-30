@@ -226,9 +226,9 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           </p>
 
           <img
-            src="/images/three-price-thresholds-bar-graph.png"
-            alt="Three Price Thresholds — Deal Gap and Price Gap explained with Target Buy, Income Value, and Market Price"
-            style={{ width: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
+            src="/images/deal-gap-bar.png"
+            alt="Deal Gap and Price Gap — Distance to a Deal and Distance to Break-Even with Target Buy, Income Value, and Market Price"
+            style={{ width: '100%', maxWidth: 720, height: 'auto', display: 'block', margin: '0 auto' }}
             draggable={false}
           />
 
