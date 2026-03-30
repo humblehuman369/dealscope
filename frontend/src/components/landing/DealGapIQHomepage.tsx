@@ -112,32 +112,76 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
         </div>
       </section>
 
-      {/* VIDEO */}
-      <section className="video-section">
-        <div className="video-inner">
+      {/* THREE PRICE THRESHOLDS */}
+      <section className="prices">
+        <div className="prices-inner">
+          <div className="section-label">Your Three Numbers</div>
+          <h2>Every Property Has Three Key Prices</h2>
+          <p className="prices-tagline">KNOW THE NUMBER. SEE THE GAP.</p>
+          <p className="prices-sub">
+            DealGapIQ shows what it&apos;s worth (Market Value), what it takes to break even
+            (Income Value), and what you should pay to profit (Target Buy) — plus exactly
+            how far the asking price is from each one.
+          </p>
+
+          <div className="threshold-graphic">
+            <div className="gap-header">
+              <span className="gap-title sky-accent">DEAL GAP  -18.6%</span>
+              <span className="gap-sub-label">Distance to a Deal</span>
+            </div>
+            <div className="bar-area">
+              <div className="bracket bracket-top bracket-sky" />
+              <div className="threshold-bar">
+                <div className="bar-track"><div className="bar-fill" /></div>
+                <div className="bar-dot dot-blue" style={{ left: '20%' }} />
+                <div className="bar-dot dot-yellow" style={{ left: '50%' }} />
+                <div className="bar-dot dot-red" style={{ left: '80%' }} />
+              </div>
+              <div className="bracket bracket-bottom bracket-yellow" />
+            </div>
+            <div className="gap-header">
+              <span className="gap-title yellow-accent">PRICE GAP  -14.3%</span>
+              <span className="gap-sub-label">Distance to Break-Even</span>
+            </div>
+            <div className="price-badges">
+              <div className="price-badge badge-blue">
+                <span className="badge-title">Profit Zone</span>
+                <span className="badge-label">TARGET BUY</span>
+              </div>
+              <div className="price-badge badge-yellow">
+                <span className="badge-title">Break-Even Line</span>
+                <span className="badge-label">INCOME VALUE</span>
+              </div>
+              <div className="price-badge badge-red">
+                <span className="badge-title">Asking Price</span>
+                <span className="badge-label">LIST PRICE</span>
+              </div>
+            </div>
+          </div>
+
           <div
             className="video-container"
-            onClick={!isVideoPlaying ? playVideo : undefined}
+            style={{ marginTop: '3rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
+            onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
           >
             <video
-              ref={videoRef}
+              ref={dealGapVideoRef}
               preload="metadata"
               playsInline
-              controls={isVideoPlaying}
-              src="/videos/intro-to-dealgapiq.mp4"
-              poster="/images/intro-video-poster.png"
-              onEnded={handleVideoEnded}
+              controls={isDealGapVideoPlaying}
+              src="/videos/what-is-dealgapiq.mp4"
+              onEnded={handleDealGapVideoEnded}
               onPause={() => {
-                if (videoRef.current?.ended) setIsVideoPlaying(false);
+                if (dealGapVideoRef.current?.ended) setIsDealGapVideoPlaying(false);
               }}
             />
-            <div className={`video-poster-overlay${isVideoPlaying ? ' hidden' : ''}`}>
+            <div className={`video-poster-overlay${isDealGapVideoPlaying ? ' hidden' : ''}`}>
               <div className="video-play-btn">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                   <polygon points="6,3 20,12 6,21" />
                 </svg>
               </div>
-              <div className="video-label">See How DealGapIQ Works in 90 Seconds</div>
+              <div className="video-label">What is DealGapIQ?</div>
             </div>
           </div>
         </div>
@@ -216,76 +260,32 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       {/* HOW IT WORKS */}
       <HowItWorksSection />
 
-      {/* THREE PRICE THRESHOLDS */}
-      <section className="prices">
-        <div className="prices-inner">
-          <div className="section-label">Your Three Numbers</div>
-          <h2>Every Property Has Three Key Prices</h2>
-          <p className="prices-tagline">KNOW THE NUMBER. SEE THE GAP.</p>
-          <p className="prices-sub">
-            DealGapIQ shows what it&apos;s worth (Market Value), what it takes to break even
-            (Income Value), and what you should pay to profit (Target Buy) — plus exactly
-            how far the asking price is from each one.
-          </p>
-
-          <div className="threshold-graphic">
-            <div className="gap-header">
-              <span className="gap-title sky-accent">DEAL GAP  -18.6%</span>
-              <span className="gap-sub-label">Distance to a Deal</span>
-            </div>
-            <div className="bar-area">
-              <div className="bracket bracket-top bracket-sky" />
-              <div className="threshold-bar">
-                <div className="bar-track"><div className="bar-fill" /></div>
-                <div className="bar-dot dot-blue" style={{ left: '20%' }} />
-                <div className="bar-dot dot-yellow" style={{ left: '50%' }} />
-                <div className="bar-dot dot-red" style={{ left: '80%' }} />
-              </div>
-              <div className="bracket bracket-bottom bracket-yellow" />
-            </div>
-            <div className="gap-header">
-              <span className="gap-title yellow-accent">PRICE GAP  -14.3%</span>
-              <span className="gap-sub-label">Distance to Break-Even</span>
-            </div>
-            <div className="price-badges">
-              <div className="price-badge badge-blue">
-                <span className="badge-title">Profit Zone</span>
-                <span className="badge-label">TARGET BUY</span>
-              </div>
-              <div className="price-badge badge-yellow">
-                <span className="badge-title">Break-Even Line</span>
-                <span className="badge-label">INCOME VALUE</span>
-              </div>
-              <div className="price-badge badge-red">
-                <span className="badge-title">Asking Price</span>
-                <span className="badge-label">LIST PRICE</span>
-              </div>
-            </div>
-          </div>
-
+      {/* VIDEO */}
+      <section className="video-section">
+        <div className="video-inner">
           <div
             className="video-container"
-            style={{ marginTop: '3rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
-            onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
+            onClick={!isVideoPlaying ? playVideo : undefined}
           >
             <video
-              ref={dealGapVideoRef}
+              ref={videoRef}
               preload="metadata"
               playsInline
-              controls={isDealGapVideoPlaying}
-              src="/videos/what-is-dealgapiq.mp4"
-              onEnded={handleDealGapVideoEnded}
+              controls={isVideoPlaying}
+              src="/videos/intro-to-dealgapiq.mp4"
+              poster="/images/intro-video-poster.png"
+              onEnded={handleVideoEnded}
               onPause={() => {
-                if (dealGapVideoRef.current?.ended) setIsDealGapVideoPlaying(false);
+                if (videoRef.current?.ended) setIsVideoPlaying(false);
               }}
             />
-            <div className={`video-poster-overlay${isDealGapVideoPlaying ? ' hidden' : ''}`}>
+            <div className={`video-poster-overlay${isVideoPlaying ? ' hidden' : ''}`}>
               <div className="video-play-btn">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                   <polygon points="6,3 20,12 6,21" />
                 </svg>
               </div>
-              <div className="video-label">What is DealGapIQ?</div>
+              <div className="video-label">See How DealGapIQ Works in 90 Seconds</div>
             </div>
           </div>
         </div>
