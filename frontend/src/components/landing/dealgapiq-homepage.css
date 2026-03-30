@@ -746,7 +746,7 @@
 
 /* THREE PRICES — Threshold Bar Graphic */
 .prices {
-  padding: calc(6rem + 120px) 2rem 6rem;
+  padding: calc(6rem + 100px) 2rem 6rem;
   position: relative;
 }
 .prices::before {
@@ -773,6 +773,9 @@
   max-width: 1000px;
   margin: 0 auto;
   text-align: center;
+}
+.prices .section-label {
+  margin-bottom: calc(1rem + 20px);
 }
 .prices h2 {
   font-family: var(--font-dm, 'DM Sans', sans-serif);
