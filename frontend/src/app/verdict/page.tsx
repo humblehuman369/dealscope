@@ -1114,7 +1114,7 @@ function VerdictContent() {
                     label: 'Profit Zone',
                     value: purchasePrice,
                     color: 'var(--accent-sky)',
-                    copy: 'Your target offer — set below Break-Even Line to aim for positive cash flow.',
+                    copy: 'The price you should aim to pay to create positive cash flow.',
                     linkLabel: 'PROFIT ZONE',
                     strategySection: 'purchase' as const,
                   },
@@ -1122,7 +1122,7 @@ function VerdictContent() {
                     label: 'Break-Even Line',
                     value: incomeValue,
                     color: 'var(--status-warning)',
-                    copy: 'The price where rental income exactly covers all expenses and mortgage payments — cash flow is $0.',
+                    copy: 'The break-even price\u2014where rent covers all costs.',
                     linkLabel: 'BREAK-EVEN LINE',
                     strategySection: 'income' as const,
                   },
@@ -1147,7 +1147,7 @@ function VerdictContent() {
                   >
                     <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                     <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                    <p className="leading-snug text-left flex-1" style={{ color: 'var(--text-body)', fontSize: 'clamp(13px, 1.1vw, 16px)' }}>{card.copy}</p>
+                    <p className="leading-snug text-center flex-1 flex items-center justify-center" style={{ color: 'var(--text-muted)', fontSize: 'clamp(12px, 1vw, 14px)' }}>{card.copy}</p>
                     <button
                       onClick={'linkToComps' in card ? navigateToComps : () => navigateToStrategy(card.strategySection)}
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
