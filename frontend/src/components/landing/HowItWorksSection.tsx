@@ -14,148 +14,107 @@ export function HowItWorksSection() {
         </p>
 
         <div className="steps-layout">
-          {/* STEP 1 — The IQ Verdict */}
+          {/* STEP 1 — The Smell Test */}
           <div className="step-card">
-            <div className="step-badges">
-              <span className="badge-solid badge-sky">STEP 1</span>
-              <span className="badge-outline badge-outline-sky">FREE</span>
+            <div className="step-header">
+              <div className="step-number step-number-sky">1</div>
+              <span className="step-tier step-tier-sky">FREE</span>
             </div>
-            <h3>The IQ Verdict</h3>
+            <h3>The Smell Test</h3>
             <p className="step-card-desc">
-              Paste any address. In seconds, get a Verdict Score that tells you whether
-              the deal is worth pursuing — before you waste a single hour.
+              Paste any address. In seconds, know if the deal is worth your time.
             </p>
-            <div className="step-pills">
-              <div className="step-pill">
-                <span className="pill-dot pill-sky" />
-                Verdict Score (0–100)
+
+            <div className="smell-visual">
+              <div className="smell-gaps">
+                <div className="smell-gap">
+                  <span className="smell-gap-label text-sky">DEAL GAP</span>
+                  <span className="smell-gap-value text-sky">-16.3%</span>
+                </div>
+                <div className="smell-gap">
+                  <span className="smell-gap-label text-yellow">PRICE GAP</span>
+                  <span className="smell-gap-value text-yellow">-16.5%</span>
+                </div>
               </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-sky" />
-                Three Price Thresholds
-              </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-sky" />
-                Deal Gap &amp; Price Gap
-              </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-sky" />
-                Cash Flow Snapshot
+              <div className="smell-bar">
+                <div className="smell-bar-track">
+                  <div className="smell-bar-fill" />
+                </div>
+                <div className="smell-dot smell-dot-green" style={{ left: '18%' }}>
+                  <span className="smell-dot-pip" />
+                </div>
+                <div className="smell-dot smell-dot-yellow" style={{ left: '42%' }}>
+                  <span className="smell-dot-pip" />
+                </div>
+                <div className="smell-dot smell-dot-red" style={{ left: '82%' }}>
+                  <span className="smell-dot-pip" />
+                </div>
               </div>
             </div>
 
-            {/* Mini Verdict Result */}
-            <div className="verdict-card">
-              <div className="vc-header">
-                <span className="vc-label">IQ VERDICT</span>
+            <div className="price-boxes">
+              <div className="price-box price-box-green">
+                <div className="price-box-label">TARGET BUY</div>
+                <div className="price-box-value">$285k</div>
+                <div className="price-box-sub">Investor entry</div>
               </div>
-              <div className="vc-score">78</div>
-              <div className="vc-badge">Strong Upside — Worth Pursuing</div>
-              <div className="vc-prices">
-                <div className="vc-price">
-                  <div className="vc-price-label text-green">TARGET BUY</div>
-                  <div className="vc-price-value">$285k</div>
-                  <div className="vc-price-sub">Investor entry</div>
-                </div>
-                <div className="vc-price">
-                  <div className="vc-price-label text-yellow">INCOME VALUE</div>
-                  <div className="vc-price-value">$312k</div>
-                  <div className="vc-price-sub">Cash flow basis</div>
-                </div>
-                <div className="vc-price">
-                  <div className="vc-price-label text-red">MARKET PRICE</div>
-                  <div className="vc-price-value">$340k</div>
-                  <div className="vc-price-sub">Current ask</div>
-                </div>
+              <div className="price-box price-box-yellow">
+                <div className="price-box-label">INCOME VALUE</div>
+                <div className="price-box-value">$312k</div>
+                <div className="price-box-sub">Cash flow basis</div>
+              </div>
+              <div className="price-box price-box-red">
+                <div className="price-box-label">MARKET PRICE</div>
+                <div className="price-box-value">$340k</div>
+                <div className="price-box-sub">Current ask</div>
               </div>
             </div>
           </div>
 
-          {/* FUNNEL DIVIDER */}
-          <div className="funnel">
-            <span className="funnel-text funnel-text-top">FILTER</span>
-            <div className="funnel-line" />
-            <div className="funnel-shape">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          {/* CONNECTOR */}
+          <div className="step-connector">
+            <div className="connector-line" />
+            <div className="connector-badge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
-                  d="M3 4h18l-7 8v5l-4 2V12L3 4z"
-                  stroke="var(--accent-sky)"
-                  strokeWidth="1.5"
+                  d="M5 12h14M13 5l7 7-7 7"
+                  stroke="var(--status-positive)"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
             </div>
-            <div className="funnel-line" />
-            <span className="funnel-text funnel-text-bottom">GO DEEP</span>
+            <div className="connector-line" />
           </div>
 
-          {/* STEP 2 — The Strategy Engine */}
+          {/* STEP 2 — The Deep Dive */}
           <div className="step-card">
-            <div className="step-badges">
-              <span className="badge-solid badge-green">STEP 2</span>
-              <span className="badge-outline badge-outline-green">PRO</span>
+            <div className="step-header">
+              <div className="step-number step-number-green">2</div>
+              <span className="step-tier step-tier-green">PRO</span>
             </div>
-            <h3>The Strategy Engine</h3>
+            <h3>The Deep Dive</h3>
             <p className="step-card-desc">
-              Only when a deal passes the Verdict do you unlock professional-grade
-              tools — built for the strategy you actually plan to run.
+              Pro-grade tools built for the strategy you actually plan to run.
             </p>
-            <div className="step-pills">
-              <div className="step-pill">
-                <span className="pill-dot pill-green" />
-                6 Investment Strategies
-              </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-green" />
-                Deal Maker with Editable Assumptions
-              </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-green" />
-                Comp-Based Appraisal
-              </div>
-              <div className="step-pill">
-                <span className="pill-dot pill-green" />
-                Rehab Cost Estimator
-              </div>
-            </div>
 
-            {/* Mini Strategy Engine Card */}
-            <div className="se-card">
-              <div className="se-header">
-                <span className="se-header-label">STRATEGY ENGINE</span>
-                <span className="se-header-pro">Pro Tools</span>
+            <div className="tool-tiles">
+              <div className="tool-tile">
+                <div className="tool-tile-name">STRATEGY</div>
+                <div className="tool-tile-desc">Run your numbers across 6 investment strategies</div>
               </div>
-              <div className="se-bars">
-                <div className="se-bar" style={{ background: 'var(--status-positive)' }} />
-                <div className="se-bar" style={{ background: 'var(--accent-sky)' }} />
-                <div className="se-bar" style={{ background: 'var(--status-income-value, #FACC15)' }} />
-                <div className="se-bar" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                <div className="se-bar" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                <div className="se-bar" style={{ background: 'rgba(255,255,255,0.1)' }} />
+              <div className="tool-tile">
+                <div className="tool-tile-name">APPRAISER</div>
+                <div className="tool-tile-desc">Comp-based appraisal with local market data</div>
               </div>
-              <div className="se-tools">
-                <div className="se-tool">
-                  <span className="se-dot" style={{ background: 'var(--status-positive)' }} />
-                  <div>
-                    <div className="se-tool-name">Long-Term Rental</div>
-                    <div className="se-tool-desc">Cash flow &amp; DSCR analysis</div>
-                  </div>
-                </div>
-                <div className="se-tool">
-                  <span className="se-dot" style={{ background: 'var(--accent-sky)' }} />
-                  <div>
-                    <div className="se-tool-name">Fix &amp; Flip</div>
-                    <div className="se-tool-desc">ARV, rehab costs, ROI</div>
-                  </div>
-                </div>
-                <div className="se-tool">
-                  <span className="se-dot" style={{ background: 'var(--status-income-value, #FACC15)' }} />
-                  <div>
-                    <div className="se-tool-name">BRRRR</div>
-                    <div className="se-tool-desc">Refi, equity, repeat</div>
-                  </div>
-                </div>
+              <div className="tool-tile">
+                <div className="tool-tile-name">DEALMAKER</div>
+                <div className="tool-tile-desc">Negotiate, adjust assumptions, close the deal</div>
+              </div>
+              <div className="tool-tile">
+                <div className="tool-tile-name">ESTIMATOR</div>
+                <div className="tool-tile-desc">Accurate rehab costs with local market pricing</div>
               </div>
             </div>
           </div>
