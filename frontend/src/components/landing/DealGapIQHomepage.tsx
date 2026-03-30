@@ -256,37 +256,6 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
         </div>
       </section>
 
-      {/* VIDEO */}
-      <section className="video-section">
-        <div className="video-inner">
-          <div
-            className="video-container"
-            onClick={!isVideoPlaying ? playVideo : undefined}
-          >
-            <video
-              ref={videoRef}
-              preload="metadata"
-              playsInline
-              controls={isVideoPlaying}
-              src="/videos/intro-to-dealgapiq.mp4"
-              poster="/images/intro-video-poster.png"
-              onEnded={handleVideoEnded}
-              onPause={() => {
-                if (videoRef.current?.ended) setIsVideoPlaying(false);
-              }}
-            />
-            <div className={`video-poster-overlay${isVideoPlaying ? ' hidden' : ''}`}>
-              <div className="video-play-btn">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-                  <polygon points="6,3 20,12 6,21" />
-                </svg>
-              </div>
-              <div className="video-label">See How DealGapIQ Works in 90 Seconds</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* COMP-BASED APPRAISAL */}
       <section className="comp-appraisal">
         <div className="comp-inner">
@@ -324,6 +293,37 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               <p className="comp-disclaimer">
                 <strong>Not a licensed appraisal.</strong> An investor-grade comp analysis modeled after the industry standard — so you can price property with the same rigor the professionals use.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VIDEO */}
+      <section className="video-section">
+        <div className="video-inner">
+          <div
+            className="video-container"
+            onClick={!isVideoPlaying ? playVideo : undefined}
+          >
+            <video
+              ref={videoRef}
+              preload="metadata"
+              playsInline
+              controls={isVideoPlaying}
+              src="/videos/intro-to-dealgapiq.mp4"
+              poster="/images/intro-video-poster.png"
+              onEnded={handleVideoEnded}
+              onPause={() => {
+                if (videoRef.current?.ended) setIsVideoPlaying(false);
+              }}
+            />
+            <div className={`video-poster-overlay${isVideoPlaying ? ' hidden' : ''}`}>
+              <div className="video-play-btn">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+              </div>
+              <div className="video-label">See How DealGapIQ Works in 90 Seconds</div>
             </div>
           </div>
         </div>
