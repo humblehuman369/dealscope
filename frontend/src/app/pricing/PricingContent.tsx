@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
@@ -26,11 +26,12 @@ const LockIcon: React.FC = () => (
   </svg>
 );
 
-interface Feature {
-  name: string;
-  free: boolean | string;
-  pro: boolean | string;
-}
+const ShieldIcon: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 12l2 2 4-4" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
@@ -64,6 +65,71 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
+interface ComparisonRow {
+  name: string;
+  free: boolean | string;
+  pro: boolean | string;
+}
+
+interface ComparisonCategory {
+  name: string;
+  rows: ComparisonRow[];
+}
+
+const COMPARISON_DATA: ComparisonCategory[] = [
+  {
+    name: "Property Analysis",
+    rows: [
+      { name: "Property analyses per month", free: "3", pro: "Unlimited" },
+      { name: "IQ Verdict with deal score", free: true, pro: true },
+      { name: "Income Value, Target Buy & Deal Gap", free: true, pro: true },
+      { name: "Multi-source IQ Estimates (Zillow, RentCast, Redfin, Realtor)", free: true, pro: true },
+      { name: "Choose your preferred estimate source", free: true, pro: true },
+      { name: "All 6 strategy snapshots (LTR, STR, BRRRR, Flip, House Hack, Wholesale)", free: true, pro: true },
+      { name: "Plain-language metric explanations", free: true, pro: true },
+      { name: "Seller Motivation indicator", free: true, pro: true },
+    ],
+  },
+  {
+    name: "Financial Modeling",
+    rows: [
+      { name: "Full calculation breakdown", free: false, pro: true },
+      { name: "Editable assumptions & stress testing", free: false, pro: true },
+      { name: "Sensitivity analysis across scenarios", free: false, pro: true },
+      { name: "10-year financial proforma projections", free: false, pro: true },
+      { name: "Deal Maker interactive worksheet", free: false, pro: true },
+    ],
+  },
+  {
+    name: "Market & Comps",
+    rows: [
+      { name: "PriceCheckerIQ — sale & rental comp analysis", free: false, pro: true },
+      { name: "Comps proximity map", free: false, pro: true },
+      { name: "Market Consensus engine", free: false, pro: true },
+      { name: "Nearby ZIP code market comparisons", free: false, pro: true },
+      { name: "Quick Rehab Estimator with regional costs", free: false, pro: true },
+      { name: "Interactive Map Search for listings", free: false, pro: true },
+    ],
+  },
+  {
+    name: "Export & Reporting",
+    rows: [
+      { name: "Downloadable Excel proforma", free: false, pro: true },
+      { name: "Strategy-specific Excel worksheets", free: false, pro: true },
+      { name: "PDF property reports", free: false, pro: true },
+      { name: "Letter of Intent generator (wholesale)", free: false, pro: true },
+    ],
+  },
+  {
+    name: "Portfolio & Deal Management",
+    rows: [
+      { name: "Save properties to DealVaultIQ", free: "Up to 10", pro: "Unlimited" },
+      { name: "Side-by-side deal comparison", free: false, pro: true },
+      { name: "Search history", free: true, pro: true },
+    ],
+  },
+];
+
 const RESPONSIVE_STYLE = `
   @media (max-width: 700px) {
     .pricing-grid { grid-template-columns: 1fr !important; }
@@ -74,6 +140,13 @@ const RESPONSIVE_STYLE = `
     .pricing-bottom-option { width: 100% !important; }
     .pricing-bottom-option a,
     .pricing-bottom-option button { width: 100% !important; text-align: center !important; }
+    .comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .comparison-table { min-width: 520px; }
+    .comparison-header-row { position: sticky; top: 0; z-index: 2; }
+    .mobile-sticky-cta { display: flex !important; }
+  }
+  @media (min-width: 701px) {
+    .mobile-sticky-cta { display: none !important; }
   }
 `;
 
@@ -81,33 +154,77 @@ export default function PricingContent() {
   const { isAuthenticated } = useSession();
   const [isAnnual, setIsAnnual] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
+  const pricingCardsRef = useRef<HTMLDivElement>(null);
 
-  const starterFeatures: Feature[] = [
-    { name: "Up to 3 property analyses per month.", free: true, pro: true },
-    { name: "Full Verdict, Income Value, and Target Buy on each property.", free: true, pro: true },
-    { name: "Plain-language explanations of every key metric.", free: true, pro: true },
-    { name: "All 6 strategy models", free: true, pro: true },
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyCta(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    if (pricingCardsRef.current) observer.observe(pricingCardsRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const starterFeatures: string[] = [
+    "3 property analyses per month",
+    "IQ Verdict with deal score & plain-language explanations",
+    "Income Value, Target Buy & Deal Gap on every property",
+    "Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor",
+    "All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale",
+    "Seller Motivation indicator",
+    "Save up to 10 properties to DealVaultIQ",
   ];
 
   const proFeatures: string[] = [
-    "Unlimited property analyses plus full PDF and Excel underwriting reports.",
-    "Editable assumptions and stress testing for rent, rates, and expenses.",
-    "DealGapIQ pipeline & tracking so you can monitor offers from first look to closed deal.",
-    "Full calculation breakdown",
-    "Comparable rental data sources",
-    "Access nearby ZIP comparisons",
-    "Side-by-side deal comparison",
-    "Seller Motivation indicator",
-    "All 6 strategy models",
+    "Unlimited property analyses",
+    "Full calculation breakdown — see every number behind the verdict",
+    "Editable assumptions & stress testing — adjust rent, rates, and expenses",
+    "PriceCheckerIQ — sale & rental comps with proximity map",
+    "Market Consensus engine — aggregate view across all data sources",
+    "Sensitivity analysis — see how deal metrics shift across scenarios",
+    "Interactive Map Search — browse and analyze listings on a map",
+    "10-year financial proforma projections",
+    "Deal Maker interactive worksheet with real-time recalculation",
+    "Downloadable Excel proforma & strategy-specific worksheets",
+    "PDF property reports",
+    "DealVaultIQ with unlimited saves & side-by-side deal comparison",
   ];
 
   const faqs = [
-    { q: "What happens after my 7-day trial?", a: "You'll be billed at your chosen plan rate. Cancel anytime before the trial ends and you won't be charged." },
-    { q: "Where does DealGapIQ get its data?", a: "We cross-reference 4 data sources including MLS comps, rental databases, tax records, and market indices." },
-    { q: "How is this different from Zillow or PropStream?", a: "We don't just show data — we calculate a specific buy price and verdict across 6 investment strategies." },
-    { q: "Is this a replacement for my own spreadsheets?", a: "Pro includes a downloadable Excel proforma with all the numbers. Use ours or plug the data into yours." },
-    { q: "I only own one property. Is this for me?", a: "If you're evaluating your next purchase, yes. One bad deal costs more than years of Pro." },
-    { q: "Can I cancel anytime?", a: "Yes, instantly. No calls, no retention tricks, no hassle." },
+    {
+      q: "I've never analyzed a real estate deal before. Is this too advanced for me?",
+      a: "Not at all — DealGapIQ was designed for people learning the numbers. Every metric includes a plain-language explanation, so you understand what cap rate, cash-on-cash return, and DSCR mean and why they matter. The Starter plan lets you practice on real properties for free.",
+    },
+    {
+      q: "What happens after my 7-day trial?",
+      a: "You'll be billed at your chosen plan rate. Cancel anytime before the trial ends and you won't be charged. No calls, no retention tricks — cancel in 2 clicks from your account settings.",
+    },
+    {
+      q: "Where does DealGapIQ get its data?",
+      a: "Every analysis cross-references multiple data sources including Zillow (Zestimate & Rent Zestimate), RentCast (AVM & rental data), Redfin (estimates), and Realtor.com. Our IQ Estimate blends all available sources so you're never relying on a single number.",
+    },
+    {
+      q: "How is this different from Zillow or PropStream?",
+      a: "Zillow shows you a Zestimate. PropStream gives you raw data. DealGapIQ calculates a specific buy price and investment verdict across 6 strategies — LTR, STR, BRRRR, Flip, House Hack, and Wholesale — then shows you the Deal Gap between asking price and what the numbers actually support.",
+    },
+    {
+      q: "Is this a replacement for my own spreadsheets?",
+      a: "Pro includes downloadable Excel proformas with full amortization schedules, 10-year projections, and strategy-specific worksheets. Use ours or export the data into yours — either way, you'll have institutional-quality numbers.",
+    },
+    {
+      q: "I only own one property. Is this for me?",
+      a: "If you're evaluating your next purchase, absolutely. One bad deal costs more than years of Pro. Even experienced investors miss deals hiding in plain sight — DealGapIQ finds them in 60 seconds.",
+    },
+    {
+      q: "What is the Deal Gap?",
+      a: "The Deal Gap is the difference between a property's asking price and what the numbers say it's actually worth as an investment. A positive Deal Gap means the property is priced below its investment value — a potential opportunity. A negative gap means you'd be overpaying based on the income it can generate.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes, instantly. No calls, no retention tricks, no hassle. Cancel from your account in 2 clicks and you won't be billed again.",
+    },
   ];
 
   const proCtaHref = !isAuthenticated
@@ -130,8 +247,8 @@ export default function PricingContent() {
     >
       <style>{RESPONSIVE_STYLE}</style>
 
-      {/* ─── HEADER ─── */}
-      <div style={{ textAlign: "center", maxWidth: "600px", margin: "48px auto 0" }}>
+      {/* ─── HERO ─── */}
+      <div style={{ textAlign: "center", maxWidth: "640px", margin: "48px auto 0" }}>
         <p style={{ fontSize: "13px", color: "var(--accent-sky)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 16px 0" }}>
           Pricing
         </p>
@@ -140,8 +257,11 @@ export default function PricingContent() {
           <br />
           <span style={{ color: "var(--accent-sky)" }}>Before You Make the Offer</span>
         </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0" }}>
-          DealGapIQ pinpoints the right price that makes a deal work — your Income Value, Target Buy, and Deal Gap across 6 strategies. In 60 seconds.
+        <p style={{ fontSize: "15px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 8px 0" }}>
+          DealGapIQ calculates your Income Value, Target Buy, and Deal Gap across 6 investment strategies. In 60 seconds.
+        </p>
+        <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 32px 0", fontStyle: "italic" }}>
+          One bad deal costs thousands. DealGapIQ Pro costs $29/mo.
         </p>
 
         {/* ─── TOGGLE ─── */}
@@ -209,7 +329,7 @@ export default function PricingContent() {
       {/* ─── TRUST & FIT BLOCK ─── */}
       <div style={{ maxWidth: "960px", margin: "28px auto 0" }}>
         <p style={{ fontSize: "14px", color: "var(--text-body)", textAlign: "center", margin: "0 0 18px 0", lineHeight: 1.6 }}>
-          Designed for first-time investors, small portfolio owners and private investors.
+          Built for aspiring investors, first-time buyers, and small portfolio owners (1–20 units).
         </p>
         <div
           className="pricing-trust-grid"
@@ -220,34 +340,44 @@ export default function PricingContent() {
           }}
         >
           {[
-            "Every analysis is built on real comparables, rent data, taxes, and your loan terms - you can see and edit every assumption.",
-            "The best tool for new investors to spot investment potential and find the right deals in any local market.",
-            "Each deal comes with a detailed PDF and Excel pro forma so there's nothing hidden when you show the numbers to someone you trust.",
-          ].map((text, i) => (
+            {
+              title: "Multi-source intelligence",
+              text: "Every analysis blends data from Zillow, RentCast, Redfin, and Realtor.com — not a single estimate. You choose which source to trust.",
+            },
+            {
+              title: "Built to teach you underwriting",
+              text: "Plain-language explanations on every metric. Learn cap rates, DSCR, and cash-on-cash returns by analyzing real properties, not textbooks.",
+            },
+            {
+              title: "Institutional-grade output",
+              text: "Downloadable Excel proformas, PDF reports, and 10-year projections — the same depth banks and funds use, in your hands.",
+            },
+          ].map((item, i) => (
             <div
               key={i}
               style={{
                 display: "flex",
-                alignItems: "flex-start",
-                gap: "8px",
-                padding: "10px 12px",
+                flexDirection: "column",
+                gap: "6px",
+                padding: "14px 14px",
                 borderRadius: "10px",
                 border: "1px solid var(--border-default)",
                 background: "var(--surface-card)",
               }}
             >
-              <CheckIcon color="var(--accent-sky)" />
-              <span style={{ fontSize: "12px", color: "var(--text-body)", lineHeight: 1.55 }}>{text}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <CheckIcon color="var(--accent-sky)" />
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-heading)" }}>{item.title}</span>
+              </div>
+              <span style={{ fontSize: "12px", color: "var(--text-body)", lineHeight: 1.55, paddingLeft: "24px" }}>{item.text}</span>
             </div>
           ))}
         </div>
-        <p style={{ fontSize: "15px", color: "var(--accent-sky)", fontWeight: 600, textAlign: "center", margin: "20px 0 0 0", letterSpacing: "0.2px" }}>
-          The best tool to really learn a local market fast!
-        </p>
       </div>
 
       {/* ─── PRICING CARDS ─── */}
       <div
+        ref={pricingCardsRef}
         className="pricing-grid"
         style={{
           maxWidth: "880px",
@@ -258,7 +388,7 @@ export default function PricingContent() {
           alignItems: "start",
         }}
       >
-        {/* FREE CARD */}
+        {/* STARTER CARD */}
         <div
           style={{
             background: "var(--surface-card)",
@@ -275,7 +405,7 @@ export default function PricingContent() {
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>Free</span>
           </div>
           <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 10px 0" }}>
-            Best for learning the numbers and screening your first few deals.
+            Learn the numbers and screen your first deals — no risk, no cost.
           </p>
           <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
             Always free. No credit card required.
@@ -296,26 +426,24 @@ export default function PricingContent() {
               cursor: "pointer",
               textAlign: "center",
               textDecoration: "none",
-              marginBottom: "28px",
+              marginBottom: "8px",
               boxSizing: "border-box",
             }}
           >
             Start Free &rarr;
           </Link>
+          <p style={{ fontSize: "11px", color: "var(--text-label)", textAlign: "center", margin: "0 0 28px 0" }}>
+            No credit card. No commitment.
+          </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {starterFeatures.map((f, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
-                {f.free === true ? (
-                  <CheckIcon color="var(--text-label)" />
-                ) : f.free === false ? (
-                  <DashIcon />
-                ) : (
-                  <CheckIcon color="var(--text-label)" />
-                )}
-                <span style={{ color: f.free === false ? "var(--text-label)" : "var(--text-secondary)" }}>
-                  {typeof f.free === "string" ? `${f.free} — ${f.name.toLowerCase()}` : f.name}
-                </span>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 14px 0" }}>
+            What&apos;s included
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {starterFeatures.map((feature, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "13px" }}>
+                <CheckIcon color="var(--text-label)" />
+                <span style={{ color: "var(--text-secondary)", lineHeight: 1.4 }}>{feature}</span>
               </div>
             ))}
           </div>
@@ -360,20 +488,19 @@ export default function PricingContent() {
               {isAnnual ? "29" : "39"}
             </span>
             <span style={{ fontSize: "15px", color: "var(--text-label)", fontWeight: 500 }}>/mo</span>
-            {isAnnual && <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 400, marginLeft: 6 }}>($348/yr)</span>}
           </div>
-          <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 10px 0" }}>
-            Best for active small portfolio investors analyzing multiple deals every month.
-          </p>
           {isAnnual ? (
-            <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
-              Billed annually &middot; <span style={{ color: "var(--accent-sky)" }}>Save $120/yr</span>
+            <p style={{ fontSize: "12px", color: "var(--text-label)", margin: "0 0 10px 0" }}>
+              Billed annually &middot; <span style={{ color: "var(--accent-sky)", fontWeight: 600 }}>Save $120/yr</span>
             </p>
           ) : (
-            <p style={{ fontSize: "13px", color: "var(--text-label)", margin: "0 0 28px 0" }}>
+            <p style={{ fontSize: "12px", color: "var(--text-label)", margin: "0 0 10px 0" }}>
               Billed monthly &middot; <span style={{ color: "var(--text-secondary)" }}>Switch to annual &amp; save 26%</span>
             </p>
           )}
+          <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 28px 0" }}>
+            For active investors analyzing multiple deals every month. Full underwriting power.
+          </p>
 
           {proCtaHref ? (
             <Link
@@ -390,7 +517,7 @@ export default function PricingContent() {
                 fontWeight: 700,
                 cursor: "pointer",
                 boxShadow: "var(--shadow-card)",
-                marginBottom: "28px",
+                marginBottom: "8px",
                 textAlign: "center",
                 textDecoration: "none",
                 boxSizing: "border-box",
@@ -414,18 +541,24 @@ export default function PricingContent() {
                 fontWeight: 700,
                 cursor: "pointer",
                 boxShadow: "var(--shadow-card)",
-                marginBottom: "28px",
+                marginBottom: "8px",
               }}
             >
               Start 7-Day Free Trial &rarr;
             </button>
           )}
+          <p style={{ fontSize: "11px", color: "var(--text-label)", textAlign: "center", margin: "0 0 28px 0" }}>
+            Cancel anytime in 2 clicks. No commitment.
+          </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent-sky)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 14px 0" }}>
+            Everything in Starter, plus
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {proFeatures.map((feature, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "13px" }}>
                 <CheckIcon color="var(--accent-sky)" />
-                <span style={{ color: "var(--text-body)" }}>{feature}</span>
+                <span style={{ color: "var(--text-body)", lineHeight: 1.4 }}>{feature}</span>
               </div>
             ))}
           </div>
@@ -462,7 +595,7 @@ export default function PricingContent() {
         )}
       </div>
 
-      {/* ─── SECURITY SIGNALS ─── */}
+      {/* ─── SECURITY + DEAL PRIVACY ─── */}
       <div
         style={{
           maxWidth: "600px",
@@ -470,16 +603,158 @@ export default function PricingContent() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "12px",
+          gap: "16px",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-label)" }}>
           <LockIcon />
           <span>Secured by Stripe &middot; PCI compliant</span>
         </div>
-        <p style={{ fontSize: "11px", color: "var(--text-secondary)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>
-          Your data is encrypted in transit and at rest. We never share or sell your information.
-        </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "12px 20px",
+            borderRadius: "10px",
+            border: "1px solid var(--border-default)",
+            background: "var(--surface-card)",
+          }}
+        >
+          <ShieldIcon />
+          <div>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-heading)", margin: "0 0 2px 0" }}>
+              Deal Privacy Guarantee
+            </p>
+            <p style={{ fontSize: "11px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>
+              Your analyzed properties are never shared, sold, or used to front-run your offers. Your deal flow is yours alone.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── FEATURE COMPARISON TABLE ─── */}
+      <div style={{ maxWidth: "880px", margin: "80px auto 0" }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <p style={{ fontSize: "11px", color: "var(--accent-sky)", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", margin: "0 0 10px 0" }}>
+            Full Feature Breakdown
+          </p>
+          <h2 style={{ fontSize: "26px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
+            Compare every feature, side by side
+          </h2>
+          <p style={{ fontSize: "14px", color: "var(--text-body)", margin: "0 0 16px 0" }}>
+            See exactly what you get at each tier — no surprises.
+          </p>
+          <button
+            onClick={() => setComparisonOpen(!comparisonOpen)}
+            style={{
+              padding: "8px 20px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-default)",
+              background: "var(--surface-card)",
+              color: "var(--text-heading)",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            {comparisonOpen ? "Hide comparison" : "View full comparison"}
+            <span style={{
+              transition: "transform 0.2s ease",
+              transform: comparisonOpen ? "rotate(180deg)" : "rotate(0deg)",
+              fontSize: "12px",
+            }}>
+              ▼
+            </span>
+          </button>
+        </div>
+
+        {comparisonOpen && (
+          <div className="comparison-table-wrapper" style={{ borderRadius: "12px", border: "1px solid var(--border-default)", overflow: "hidden" }}>
+            <table
+              className="comparison-table"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "13px",
+              }}
+            >
+              <thead>
+                <tr
+                  className="comparison-header-row"
+                  style={{ background: "var(--surface-elevated)" }}
+                >
+                  <th style={{ textAlign: "left", padding: "14px 20px", fontWeight: 600, color: "var(--text-heading)", width: "60%" }}>
+                    Feature
+                  </th>
+                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--text-label)", width: "20%" }}>
+                    Starter
+                  </th>
+                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--accent-sky)", width: "20%" }}>
+                    Pro Investor
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_DATA.map((category, ci) => (
+                  <React.Fragment key={ci}>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        style={{
+                          padding: "12px 20px 8px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          color: "var(--text-label)",
+                          background: "var(--surface-card)",
+                          borderTop: ci > 0 ? "1px solid var(--border-default)" : "none",
+                        }}
+                      >
+                        {category.name}
+                      </td>
+                    </tr>
+                    {category.rows.map((row, ri) => (
+                      <tr
+                        key={ri}
+                        style={{
+                          borderTop: "1px solid var(--border-subtle)",
+                          background: "var(--surface-card)",
+                        }}
+                      >
+                        <td style={{ padding: "10px 20px", color: "var(--text-body)" }}>
+                          {row.name}
+                        </td>
+                        <td style={{ textAlign: "center", padding: "10px 16px" }}>
+                          {row.free === true ? (
+                            <CheckIcon color="var(--text-label)" />
+                          ) : row.free === false ? (
+                            <DashIcon />
+                          ) : (
+                            <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 500 }}>{row.free}</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: "center", padding: "10px 16px" }}>
+                          {row.pro === true ? (
+                            <CheckIcon color="var(--accent-sky)" />
+                          ) : row.pro === false ? (
+                            <DashIcon />
+                          ) : (
+                            <span style={{ fontSize: "12px", color: "var(--accent-sky)", fontWeight: 600 }}>{row.pro}</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ─── WHY PRO SECTION ─── */}
@@ -497,11 +772,11 @@ export default function PricingContent() {
           Why Pro Matters
         </p>
         <h2 style={{ fontSize: "26px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
-          Free shows you the number.
+          Free shows you the verdict.
           <br />
-          Pro shows you why, with powerful tools to close the deal.
+          Pro gives you the tools to close the deal.
         </h2>
-        <p style={{ fontSize: "14px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: "560px" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: "600px" }}>
           Every DealGapIQ calculation is built on real data: comparables, rents, local vacancy rates, taxes, and market-specific assumptions. Pro lets you see every input, challenge every assumption, and stress test the deal before you write the offer.
         </p>
 
@@ -509,15 +784,17 @@ export default function PricingContent() {
           className="proforma-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "16px",
           }}
         >
           {[
-            { label: "Monthly Rent", value: "$1,850/mo", sub: "Based on 4 comparable rentals" },
+            { label: "Monthly Rent", value: "$1,850/mo", sub: "IQ Estimate from 3 data sources" },
             { label: "Cap Rate", value: "5.2%", sub: "Market adjusted" },
-            { label: "Down Payment", value: "25% down", sub: "Editable in Pro" },
-            { label: "Cash Flow", value: "$8,440", sub: "Annual net income" },
+            { label: "Cash-on-Cash", value: "8.1%", sub: "After all expenses" },
+            { label: "Cash Flow", value: "$8,440/yr", sub: "Annual net income" },
+            { label: "Deal Gap", value: "–$18,200", sub: "Below asking — potential opportunity" },
+            { label: "DSCR", value: "1.24", sub: "Debt coverage ratio" },
           ].map((item, i) => (
             <div
               key={i}
@@ -539,11 +816,19 @@ export default function PricingContent() {
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "20px" }}>
-          <LockIcon />
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-            Pro unlocks editable inputs + downloadable Excel proforma
-          </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <LockIcon />
+            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              Pro unlocks editable inputs, sensitivity analysis, and downloadable Excel proformas
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <CheckIcon color="var(--text-label)" />
+            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              Deal Maker lets you adjust every assumption in real time and see the impact instantly
+            </span>
+          </div>
         </div>
       </div>
 
@@ -652,7 +937,7 @@ export default function PricingContent() {
         <div className="pricing-bottom-options" style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", alignItems: "flex-start" }}>
           <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
             <p style={{ fontSize: "11px", color: "var(--text-label)", margin: 0 }}>
-              Already analyzing multiple deals each month?
+              Analyzing multiple deals each month?
             </p>
             {proCtaHref ? (
               <Link
@@ -691,6 +976,7 @@ export default function PricingContent() {
                 Start 7-Day Free Trial &rarr;
               </button>
             )}
+            <p style={{ fontSize: "10px", color: "var(--text-label)", margin: 0 }}>Cancel anytime. No commitment.</p>
           </div>
 
           <div className="pricing-bottom-option" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
@@ -713,11 +999,9 @@ export default function PricingContent() {
             >
               Start Free
             </Link>
+            <p style={{ fontSize: "10px", color: "var(--text-label)", margin: 0 }}>No credit card required.</p>
           </div>
         </div>
-        <p style={{ fontSize: "11px", color: "var(--text-label)", margin: "14px 0 0 0" }}>
-          No credit card required for Starter. 7-day free trial on Pro.
-        </p>
       </div>
 
       <UpgradeModal
@@ -725,6 +1009,74 @@ export default function PricingContent() {
         onClose={() => setUpgradeModalOpen(false)}
         returnTo="/pricing"
       />
+
+      {/* ─── MOBILE STICKY CTA ─── */}
+      <div
+        className="mobile-sticky-cta"
+        style={{
+          display: "none",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          padding: "12px 20px",
+          background: "var(--surface-card)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "12px",
+          opacity: showStickyCta ? 1 : 0,
+          pointerEvents: showStickyCta ? "auto" : "none",
+          transition: "opacity 0.2s ease",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-heading)", margin: 0, whiteSpace: "nowrap" }}>
+            Pro — ${isAnnual ? "29" : "39"}/mo
+          </p>
+          <p style={{ fontSize: "10px", color: "var(--text-label)", margin: 0 }}>7-day free trial</p>
+        </div>
+        {proCtaHref ? (
+          <Link
+            href={proCtaHref}
+            style={{
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+              color: "var(--text-inverse)",
+              fontSize: "13px",
+              fontWeight: 700,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            Start Trial &rarr;
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleProClick}
+            style={{
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              background: "linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)",
+              color: "var(--text-inverse)",
+              fontSize: "13px",
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            Start Trial &rarr;
+          </button>
+        )}
+      </div>
 
       {/* ─── FOOTER ─── */}
       <div
