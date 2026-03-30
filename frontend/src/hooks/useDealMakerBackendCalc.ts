@@ -198,28 +198,45 @@ export function useDealMakerBackendCalc<T>(
   const [error, setError] = useState<string | null>(null)
 
   const endpoint = WORKSHEET_ENDPOINTS[strategyType]
+  const requestIdRef = useRef(0)
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
+    const id = ++requestIdRef.current
+
     const timer = setTimeout(async () => {
-      setIsCalculating(true)
       setError(null)
+
+      loadingTimerRef.current = setTimeout(() => {
+        if (requestIdRef.current === id) setIsCalculating(true)
+      }, 200)
 
       try {
         const payload = buildPayload(strategyType, state)
         const data = await api.post<T>(endpoint, payload)
-        setResult(data)
+        if (requestIdRef.current === id) {
+          setResult(data)
+        }
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : `Failed to calculate ${strategyType} worksheet metrics`
-        setError(message)
+        if (requestIdRef.current === id) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : `Failed to calculate ${strategyType} worksheet metrics`
+          setError(message)
+        }
       } finally {
-        setIsCalculating(false)
+        clearTimeout(loadingTimerRef.current)
+        if (requestIdRef.current === id) {
+          setIsCalculating(false)
+        }
       }
     }, DEBOUNCE_MS)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      clearTimeout(loadingTimerRef.current)
+    }
   }, [strategyType, state, endpoint])
 
   return { result, isCalculating, error }

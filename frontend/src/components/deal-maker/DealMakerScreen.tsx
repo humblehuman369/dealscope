@@ -1182,16 +1182,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           background: 'var(--surface-card)',
           border: '1px solid var(--border-default)',
           boxShadow: 'var(--shadow-card)',
-          opacity: headerIsCalculating ? 0.7 : 1,
-          transition: 'opacity 0.2s ease',
         }}
       >
-        {headerIsCalculating && (
-          <div className="absolute top-1 right-2 flex items-center gap-1.5">
-            <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-            <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>Recalculating</span>
-          </div>
-        )}
+        <div
+          className="absolute top-1 right-2 flex items-center gap-1.5 transition-opacity duration-200"
+          style={{ opacity: headerIsCalculating ? 1 : 0, pointerEvents: 'none' }}
+        >
+          <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
+          <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>Recalculating</span>
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
           {headerMetrics.map((metric, index) => (
             <div key={index} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
@@ -1199,7 +1198,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                 {metric.label}
               </span>
               <span 
-                className={`text-[13px] sm:text-base font-semibold tabular-nums ${headerIsCalculating ? 'opacity-60' : ''}`}
+                className="text-[13px] sm:text-base font-semibold tabular-nums"
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
