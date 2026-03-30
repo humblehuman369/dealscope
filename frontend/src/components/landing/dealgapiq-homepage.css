@@ -754,11 +754,22 @@
   position: absolute;
   top: 0; left: 50%;
   transform: translateX(-50%);
-  width: 60%;
-  max-width: 600px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent);
-  box-shadow: 0 0 20px 8px rgba(14,165,233,0.06);
+  width: 70%;
+  max-width: 700px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(14,165,233,0.5), transparent);
+  box-shadow: 0 0 30px 10px rgba(14,165,233,0.12);
+}
+.prices::after {
+  content: '';
+  position: absolute;
+  top: -40px; left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  max-width: 500px;
+  height: 80px;
+  background: radial-gradient(ellipse 100% 100% at 50% 50%, rgba(14,165,233,0.1), transparent 70%);
+  pointer-events: none;
 }
 .prices-inner {
   max-width: 1000px;
