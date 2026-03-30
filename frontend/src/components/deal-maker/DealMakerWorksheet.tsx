@@ -956,19 +956,20 @@ export function DealMakerWorksheet({
   return (
     <section className={`${flushWithinParent ? '' : 'mx-4 sm:mx-6'} pb-24 sm:pb-28`}>
       <div
-        className="rounded-xl p-4 sm:p-5"
+        className="rounded-xl p-4 sm:p-5 relative"
         style={{
           background: 'var(--surface-base)',
           border: '1px solid var(--border-default)',
           boxShadow: 'var(--shadow-card)',
         }}
       >
-        {isCalculating && (
-          <div className="flex items-center justify-center gap-2 py-1 mb-2 text-[10px]" style={{ color: C.blue }}>
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.blue }} />
-            Recalculating...
-          </div>
-        )}
+        <div
+          className="absolute top-1.5 right-3 flex items-center gap-1.5 transition-opacity duration-200"
+          style={{ opacity: isCalculating ? 1 : 0, pointerEvents: 'none' }}
+        >
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.blue }} />
+          <span className="text-[10px]" style={{ color: C.blue }}>Recalculating...</span>
+        </div>
 
         {strategyType === 'ltr' && <LTRWorksheet state={state as LTRDealMakerState} metrics={metrics as LTRDealMakerMetrics} listPrice={listPrice} up={updateState} />}
         {strategyType === 'str' && <STRWorksheet state={state as STRDealMakerState} metrics={metrics as STRMetrics} listPrice={listPrice} up={updateState} />}
