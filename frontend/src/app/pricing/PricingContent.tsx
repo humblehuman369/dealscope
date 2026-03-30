@@ -80,8 +80,9 @@ const COMPARISON_DATA: ComparisonCategory[] = [
   {
     name: "Property Analysis",
     rows: [
+      { name: "Property search", free: true, pro: true },
       { name: "Property analyses per month", free: "3", pro: "Unlimited" },
-      { name: "IQ Verdict with deal score", free: true, pro: true },
+      { name: "Verdict with deal score", free: true, pro: true },
       { name: "Income Value, Target Buy & Deal Gap", free: true, pro: true },
       { name: "Multi-source IQ Estimates (Zillow, RentCast, Redfin, Realtor)", free: true, pro: true },
       { name: "Choose your preferred estimate source", free: true, pro: true },
@@ -103,7 +104,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
   {
     name: "Market & Comps",
     rows: [
-      { name: "PriceCheckerIQ — sale & rental comp analysis", free: false, pro: true },
+      { name: "Appraiser — professional appraisal tool with sale & rental comps", free: false, pro: true },
       { name: "Comps proximity map", free: false, pro: true },
       { name: "Market Consensus engine", free: false, pro: true },
       { name: "Nearby ZIP code market comparisons", free: false, pro: true },
@@ -123,7 +124,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
   {
     name: "Portfolio & Deal Management",
     rows: [
-      { name: "Save properties to DealVaultIQ", free: "Up to 10", pro: "Unlimited" },
+      { name: "Save properties to DealGapIQ pipeline", free: "Up to 10", pro: "Unlimited" },
       { name: "Side-by-side deal comparison", free: false, pro: true },
       { name: "Search history", free: true, pro: true },
     ],
@@ -168,20 +169,21 @@ export default function PricingContent() {
   }, []);
 
   const starterFeatures: string[] = [
+    "Property search",
     "3 property analyses per month",
-    "IQ Verdict with deal score & plain-language explanations",
+    "Verdict with deal score & plain-language explanations",
     "Income Value, Target Buy & Deal Gap on every property",
     "Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor",
     "All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale",
     "Seller Motivation indicator",
-    "Save up to 10 properties to DealVaultIQ",
+    "Save up to 10 properties to DealGapIQ pipeline",
   ];
 
   const proFeatures: string[] = [
     "Unlimited property analyses",
     "Full calculation breakdown — see every number behind the verdict",
     "Editable assumptions & stress testing — adjust rent, rates, and expenses",
-    "PriceCheckerIQ — sale & rental comps with proximity map",
+    "Appraiser — professional appraisal tool with sale & rental comps",
     "Market Consensus engine — aggregate view across all data sources",
     "Sensitivity analysis — see how deal metrics shift across scenarios",
     "Interactive Map Search — browse and analyze listings on a map",
@@ -189,7 +191,7 @@ export default function PricingContent() {
     "Deal Maker interactive worksheet with real-time recalculation",
     "Downloadable Excel proforma & strategy-specific worksheets",
     "PDF property reports",
-    "DealVaultIQ with unlimited saves & side-by-side deal comparison",
+    "DealGapIQ pipeline with unlimited saves & side-by-side deal comparison",
   ];
 
   const faqs = [
