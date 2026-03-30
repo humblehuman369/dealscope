@@ -1147,7 +1147,7 @@ function VerdictContent() {
                   >
                     <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
                     <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                    <p className="leading-snug text-center flex-1 flex items-center justify-center" style={{ color: 'var(--text-muted)', fontSize: 'clamp(12px, 1vw, 14px)' }}>{card.copy}</p>
+                    <p className="leading-snug text-center flex-1 flex items-center justify-center font-medium" style={{ color: 'var(--text-muted)', fontSize: 'clamp(12px, 1vw, 14px)' }}>{card.copy}</p>
                     <button
                       onClick={'linkToComps' in card ? navigateToComps : () => navigateToStrategy(card.strategySection)}
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
