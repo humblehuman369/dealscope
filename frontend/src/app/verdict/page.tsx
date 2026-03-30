@@ -1111,27 +1111,27 @@ function VerdictContent() {
               <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
                 {([
                   {
-                    label: 'Target Buy',
+                    label: 'Profit Zone',
                     value: purchasePrice,
                     color: 'var(--accent-sky)',
                     copy: 'The price you should aim to pay to create positive cash flow.',
-                    linkLabel: 'TARGET BUY',
+                    linkLabel: 'PROFIT ZONE',
                     strategySection: 'purchase' as const,
                   },
                   {
-                    label: 'Income Value',
+                    label: 'Break-Even Line',
                     value: incomeValue,
                     color: 'var(--status-warning)',
                     copy: 'The break-even price\u2014where rent covers all costs.',
-                    linkLabel: 'INCOME VALUE',
+                    linkLabel: 'BREAK-EVEN LINE',
                     strategySection: 'income' as const,
                   },
                   {
-                    label: 'Market Price',
+                    label: 'Market Reality',
                     value: property.price,
                     color: 'var(--status-negative)',
                     copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.',
-                    linkLabel: 'MARKET PRICE',
+                    linkLabel: 'MARKET REALITY',
                     linkSuffix: 'in Comps',
                     linkToComps: true,
                   },
