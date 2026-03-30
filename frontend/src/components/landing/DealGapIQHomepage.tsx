@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import './dealgapiq-homepage.css';
-import { HowItWorksSection } from './HowItWorksSection';
 import { DataSourcesSection } from './DataSourcesSection';
 
 function AuthParamHandler() {
@@ -256,9 +255,6 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           </div>
         </div>
       </section>
-
-      {/* HOW IT WORKS */}
-      <HowItWorksSection />
 
       {/* VIDEO */}
       <section className="video-section">
