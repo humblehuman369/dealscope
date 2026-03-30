@@ -1130,7 +1130,7 @@ function VerdictContent() {
                     label: 'Market Reality',
                     value: property.price,
                     color: 'var(--status-negative)',
-                    copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales. In Comps review, add, or remove comps and dial in your number.',
+                    copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales.',
                     linkLabel: 'MARKET REALITY',
                     linkSuffix: 'in Comps',
                     linkToComps: true,
