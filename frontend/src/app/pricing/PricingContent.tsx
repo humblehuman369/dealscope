@@ -87,14 +87,6 @@ export default function PricingContent() {
     { name: "Full Verdict, Income Value, and Target Buy on each property.", free: true, pro: true },
     { name: "Plain-language explanations of every key metric.", free: true, pro: true },
     { name: "All 6 strategy models", free: true, pro: true },
-    { name: "Seller Motivation indicator", free: true, pro: true },
-    { name: "Full calculation breakdown", free: false, pro: true },
-    { name: "Editable inputs & stress testing", free: false, pro: true },
-    { name: "Comparable rental data sources", free: false, pro: true },
-    { name: "Downloadable Excel proforma", free: false, pro: true },
-    { name: "DealVaultIQ pipeline & tracking", free: false, pro: true },
-    { name: "Access nearby ZIP comparisons", free: false, pro: true },
-    { name: "Side-by-side deal comparison", free: false, pro: true },
   ];
 
   const proFeatures: string[] = [
@@ -217,7 +209,7 @@ export default function PricingContent() {
       {/* ─── TRUST & FIT BLOCK ─── */}
       <div style={{ maxWidth: "960px", margin: "28px auto 0" }}>
         <p style={{ fontSize: "14px", color: "var(--text-body)", textAlign: "center", margin: "0 0 18px 0", lineHeight: 1.6 }}>
-          For aspiring investors and small portfolio owners analyzing 1-20 properties a month.
+          Designed for first-time investors, small portfolio owners and private investors.
         </p>
         <div
           className="pricing-trust-grid"
@@ -229,7 +221,7 @@ export default function PricingContent() {
         >
           {[
             "Every analysis is built on real comparables, rent data, taxes, and your loan terms - you can see and edit every assumption.",
-            "Verdict Scores are benchmarked against real U.S. investor discount data by % below list price.",
+            "The best tool for new investors to spot investment potential and find the right deals in any local market.",
             "Each deal comes with a detailed PDF and Excel pro forma so there's nothing hidden when you show the numbers to someone you trust.",
           ].map((text, i) => (
             <div
@@ -249,6 +241,9 @@ export default function PricingContent() {
             </div>
           ))}
         </div>
+        <p style={{ fontSize: "15px", color: "var(--accent-sky)", fontWeight: 600, textAlign: "center", margin: "20px 0 0 0", letterSpacing: "0.2px" }}>
+          The best tool to really learn a local market fast!
+        </p>
       </div>
 
       {/* ─── PRICING CARDS ─── */}
@@ -504,7 +499,7 @@ export default function PricingContent() {
         <h2 style={{ fontSize: "26px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
           Free shows you the number.
           <br />
-          Pro shows you why it&apos;s right.
+          Pro shows you why, with powerful tools to close the deal.
         </h2>
         <p style={{ fontSize: "14px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: "560px" }}>
           Every DealGapIQ calculation is built on real data: comparables, rents, local vacancy rates, taxes, and market-specific assumptions. Pro lets you see every input, challenge every assumption, and stress test the deal before you write the offer.
