@@ -220,17 +220,48 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       <section className="prices">
         <div className="prices-inner">
           <div className="section-label">Your Three Numbers</div>
-          <h2>Every Property Has Three Price Thresholds</h2>
+          <h2>Every Property Has Three Key Prices</h2>
+          <p className="prices-tagline">KNOW THE NUMBER. SEE THE GAP.</p>
           <p className="prices-sub">
-            These are the numbers listing sites will never show you — because they were never built to calculate them.
+            DealGapIQ shows what it&apos;s worth (Market Value), what it takes to break even
+            (Income Value), and what you should pay to profit (Target Buy) — plus exactly
+            how far the asking price is from each one.
           </p>
 
-          <img
-            src="/images/deal-gap-bar.png"
-            alt="Deal Gap and Price Gap — Distance to a Deal and Distance to Break-Even with Target Buy, Income Value, and Market Price"
-            style={{ width: '100%', maxWidth: 720, height: 'auto', display: 'block', margin: '0 auto' }}
-            draggable={false}
-          />
+          <div className="threshold-graphic">
+            <div className="gap-header">
+              <span className="gap-title sky-accent">DEAL GAP  -18.6%</span>
+              <span className="gap-sub-label">Distance to a Deal</span>
+            </div>
+            <div className="bar-area">
+              <div className="bracket bracket-top bracket-sky" />
+              <div className="threshold-bar">
+                <div className="bar-track"><div className="bar-fill" /></div>
+                <div className="bar-dot dot-blue" style={{ left: '20%' }} />
+                <div className="bar-dot dot-yellow" style={{ left: '50%' }} />
+                <div className="bar-dot dot-red" style={{ left: '80%' }} />
+              </div>
+              <div className="bracket bracket-bottom bracket-yellow" />
+            </div>
+            <div className="gap-header">
+              <span className="gap-title yellow-accent">PRICE GAP  -14.3%</span>
+              <span className="gap-sub-label">Distance to Break-Even</span>
+            </div>
+            <div className="price-badges">
+              <div className="price-badge badge-blue">
+                <span className="badge-title">Profit Zone</span>
+                <span className="badge-label">TARGET BUY</span>
+              </div>
+              <div className="price-badge badge-yellow">
+                <span className="badge-title">Break-Even Line</span>
+                <span className="badge-label">INCOME VALUE</span>
+              </div>
+              <div className="price-badge badge-red">
+                <span className="badge-title">Asking Price</span>
+                <span className="badge-label">LIST PRICE</span>
+              </div>
+            </div>
+          </div>
 
           <div
             className="video-container"

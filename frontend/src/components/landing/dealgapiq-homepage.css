@@ -903,6 +903,125 @@
 .green-accent { color: var(--status-positive); font-weight: 600; }
 .yellow-accent { color: var(--status-income-value, #FACC15); font-weight: 600; }
 
+/* Prices section — tagline + bar graphic */
+.prices-tagline {
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: 0.18em;
+  margin-bottom: 1.5rem;
+}
+
+.gap-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.gap-title {
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.gap-sub-label {
+  font-family: var(--font-dm, 'DM Sans', sans-serif);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 0.35rem;
+}
+
+.bar-area {
+  position: relative;
+  margin-bottom: 0.35rem;
+}
+
+.bar-area .threshold-bar {
+  margin: 0;
+  height: 14px;
+}
+
+.bracket {
+  height: 18px;
+}
+
+.bracket-top {
+  margin-left: 20%;
+  margin-right: 20%;
+  border-left: 2px solid;
+  border-right: 2px solid;
+  border-top: 2px solid;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 6px;
+}
+
+.bracket-bottom {
+  margin-left: 50%;
+  margin-right: 20%;
+  border-left: 2px solid;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  border-radius: 0 0 4px 4px;
+  margin-top: 6px;
+}
+
+.bracket-sky { border-color: var(--accent-sky); }
+.bracket-yellow { border-color: var(--status-income-value, #FACC15); }
+
+.price-badges {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.price-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.75rem 2rem;
+  border-radius: 40px;
+  border: 1px solid;
+  min-width: 160px;
+}
+
+.badge-blue {
+  border-color: rgba(14,165,233,0.35);
+  background: rgba(14,165,233,0.04);
+}
+.badge-yellow {
+  border-color: rgba(250,204,21,0.35);
+  background: rgba(250,204,21,0.04);
+}
+.badge-red {
+  border-color: rgba(248,113,113,0.35);
+  background: rgba(248,113,113,0.04);
+}
+
+.badge-title {
+  font-family: var(--font-dm, 'DM Sans', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.badge-blue .badge-title { color: var(--accent-sky); }
+.badge-yellow .badge-title { color: var(--status-income-value, #FACC15); }
+.badge-red .badge-title { color: var(--status-negative); }
+
+.badge-label {
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
+}
+
 /* COMP APPRAISAL */
 .comp-appraisal {
   padding: 6rem 2rem;
@@ -1199,6 +1318,8 @@
   .price-box { padding: 0.65rem 0.35rem; }
   .price-box-value { font-size: 0.95rem; }
   .threshold-cards { grid-template-columns: 1fr; }
+  .price-badges { flex-direction: column; align-items: center; gap: 0.75rem; }
+  .price-badge { min-width: 200px; }
   .comp-layout { grid-template-columns: 1fr; }
   .comp-content .section-label { text-align: center; }
   .comp-content h2 { text-align: center; }
