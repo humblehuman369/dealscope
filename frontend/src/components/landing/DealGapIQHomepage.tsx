@@ -106,7 +106,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <span>
-            Built by <strong>Brad Geisen</strong> — 35 years in real estate data, building HomePath.com, HomeSteps.com and founding Foreclosure.com.
+            Built by <strong>Brad Geisen</strong> — 35 years in real estate data, founded Foreclosure.com, built HomePath.com, HomeSteps.com and other industry leading platforms.
           </span>
         </div>
       </section>
