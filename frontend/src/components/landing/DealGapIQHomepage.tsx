@@ -118,8 +118,8 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           <h2>Every Property Has Three Key Prices</h2>
           <p className="prices-tagline">KNOW THE NUMBER. SEE THE GAP.</p>
           <p className="prices-sub">
-            DealGapIQ shows what it&apos;s worth (Market Value), what it takes to break even
-            (Income Value), and what you should pay to profit (Target Buy) — plus exactly
+            DealGapIQ shows what it&apos;s worth (<strong>Market Value</strong>), what it takes to break even
+            (<strong>Income Value</strong>), and what you should pay to profit (<strong>Target Buy</strong>) — plus exactly
             how far the asking price is from each one.
           </p>
 
