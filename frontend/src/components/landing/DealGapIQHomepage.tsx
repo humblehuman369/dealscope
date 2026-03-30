@@ -122,7 +122,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
 
           <div
             className="video-container"
-            style={{ marginTop: '0.5rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
+            style={{ marginTop: '-3rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
             onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
           >
             <video
