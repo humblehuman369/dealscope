@@ -746,7 +746,7 @@
 
 /* THREE PRICES — Threshold Bar Graphic */
 .prices {
-  padding: calc(6rem + 100px) 2rem 6rem;
+  padding: 6rem 2rem calc(6rem - 50px);
   position: relative;
 }
 .prices::before {
