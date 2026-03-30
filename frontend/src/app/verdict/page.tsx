@@ -1153,7 +1153,7 @@ function VerdictContent() {
                       className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
                       style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
                     >
-                      Improve {card.linkLabel} {'linkSuffix' in card ? card.linkSuffix : 'in Strategy'}
+                      Improve in Strategy
                     </button>
                   </div>
                 ))}
