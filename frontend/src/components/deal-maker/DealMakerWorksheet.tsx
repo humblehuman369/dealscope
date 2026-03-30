@@ -132,6 +132,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
   const [rangeMax, setRangeMax] = useState(() => adaptRange(value, min, max)[1])
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const draggingRef = useRef(false)
 
   useEffect(() => {
     const [lo, hi] = adaptRange(value, min, max)
@@ -144,6 +145,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
   rangeRef.current = { min: rangeMin, max: rangeMax }
 
   useEffect(() => {
+    if (draggingRef.current) return
     const { min: rMin, max: rMax } = rangeRef.current
     if (value < rMin || value > rMax) {
       const [lo, hi] = adaptRange(value, rMin, rMax)
@@ -179,6 +181,17 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
     if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
   }, [])
 
+  const handlePointerDown = useCallback(() => { draggingRef.current = true }, [])
+  const handlePointerUp = useCallback(() => {
+    draggingRef.current = false
+    const { min: rMin, max: rMax } = rangeRef.current
+    if (value < rMin || value > rMax) {
+      const [lo, hi] = adaptRange(value, rMin, rMax)
+      setRangeMin(lo)
+      setRangeMax(hi)
+    }
+  }, [value])
+
   return (
     <div
       className="grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
@@ -187,7 +200,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <div className="relative h-5 hidden sm:flex items-center justify-center min-w-[40px]">
         <div className="w-full h-[3px] rounded-full relative" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${fill}%`, background: C.blue }} />
+          <div className="absolute left-0 top-0 h-full rounded-full pointer-events-none" style={{ width: `${fill}%`, background: C.blue }} />
           <input
             type="range"
             min={rangeMin}
@@ -195,10 +208,14 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
             step={step ?? (Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.01)}
             value={clamped}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
+            className="absolute inset-0 w-full cursor-pointer z-10"
+            style={{ opacity: 0, height: '20px', top: '50%', transform: 'translateY(-50%)' }}
           />
           <div
-            className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2"
+            className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2 pointer-events-none"
             style={{
               left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
               background: 'var(--surface-card)',
