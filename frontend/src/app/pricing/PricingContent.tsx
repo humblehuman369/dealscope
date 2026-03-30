@@ -92,7 +92,7 @@ export default function PricingContent() {
   const proFeatures: string[] = [
     "Unlimited property analyses plus full PDF and Excel underwriting reports.",
     "Editable assumptions and stress testing for rent, rates, and expenses.",
-    "DealVaultIQ pipeline & tracking so you can monitor offers from first look to closed deal.",
+    "DealGapIQ pipeline & tracking so you can monitor offers from first look to closed deal.",
     "Full calculation breakdown",
     "Comparable rental data sources",
     "Access nearby ZIP comparisons",
@@ -597,16 +597,15 @@ export default function PricingContent() {
           className="stats-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "16px",
             marginTop: "24px",
           }}
         >
           {[
             { value: "35+", label: "Years in RE Data" },
-            { value: "30+", label: "Year GSE Partnership" },
-            { value: "80+", label: "Companies Served" },
-            { value: "500+", label: "RE Projects Built" },
+            { value: "30+", label: "Yr GSE Partnerships" },
+            { value: "35+", label: "Years RE Investor" },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: "center" }}>
               <p style={{ fontSize: "22px", fontWeight: 800, color: "var(--accent-sky)", margin: "0 0 2px 0" }}>
