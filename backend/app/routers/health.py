@@ -324,3 +324,108 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
     steps["result"] = "SUCCESS" if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else "PARSED_BUT_EMPTY"
 
     return steps
+
+
+@router.get("/debug/zillow")
+async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
+    """
+    Debug endpoint: runs the AXESSO/Zillow pipeline step-by-step and returns
+    the raw response from each stage so you can diagnose data-pulling issues.
+
+    Non-production only — returns 403 in production.
+    """
+    if settings.is_production:
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": "disabled in production"}, status_code=403)
+
+    import json
+
+    from app.services.zillow_client import create_zillow_client
+
+    steps: dict[str, Any] = {"address": address, "timestamp": datetime.now(UTC).isoformat()}
+
+    if not settings.AXESSO_API_KEY:
+        steps["error"] = "AXESSO_API_KEY not set — Zillow data will not pull"
+        steps["fix"] = "Set AXESSO_API_KEY env var. Get a key at https://axesso.developer.azure-api.net/signup"
+        return steps
+
+    steps["api_key_prefix"] = settings.AXESSO_API_KEY[:6] + "..."
+    steps["base_url"] = settings.AXESSO_URL
+    steps["has_secondary_key"] = bool(settings.AXESSO_API_KEY_SECONDARY)
+
+    client = create_zillow_client(
+        api_key=settings.AXESSO_API_KEY,
+        base_url=settings.AXESSO_URL,
+        fallback_api_key=settings.AXESSO_API_KEY_SECONDARY or None,
+    )
+
+    def _summarize(resp) -> dict[str, Any]:
+        raw = resp.data
+        summary: dict[str, Any] = {
+            "success": resp.success,
+            "status_code": resp.status_code,
+            "error": resp.error,
+        }
+        if hasattr(resp, "zpid"):
+            summary["zpid"] = resp.zpid
+        if isinstance(raw, dict):
+            summary["keys"] = list(raw.keys())
+            truncated = json.dumps(raw, default=str)[:2000]
+            summary["data_preview"] = json.loads(truncated) if len(truncated) < 2000 else truncated
+        elif isinstance(raw, list):
+            summary["list_length"] = len(raw)
+            summary["first_item_keys"] = list(raw[0].keys()) if raw and isinstance(raw[0], dict) else None
+        else:
+            summary["data_type"] = type(raw).__name__ if raw is not None else "None"
+        return summary
+
+    # Step 1: search-by-address
+    search_resp = await client.search_by_address(address)
+    steps["step1_search_by_address"] = _summarize(search_resp)
+
+    if not search_resp.success or not search_resp.data:
+        steps["result"] = f"FAILED at step 1 (search-by-address): {search_resp.error}"
+        cb = client.circuit_breaker
+        if cb:
+            steps["circuit_breaker"] = {"state": cb.state.value, "failures": cb.failures}
+        return steps
+
+    # Extract zpid
+    raw = search_resp.data
+    zpid = None
+    if isinstance(raw, dict):
+        zpid = raw.get("zpid")
+    elif isinstance(raw, list) and raw:
+        zpid = raw[0].get("zpid") if isinstance(raw[0], dict) else None
+    zpid = zpid or search_resp.zpid
+    steps["step1_zpid"] = zpid
+
+    if not zpid:
+        steps["result"] = "FAILED: no zpid found in search response"
+        return steps
+
+    # Step 2: property-v2 (detailed data with zestimate)
+    details_resp = await client.get_property_details(zpid=str(zpid))
+    steps["step2_property_details"] = _summarize(details_resp)
+
+    if details_resp.success and details_resp.data and isinstance(details_resp.data, dict):
+        d = details_resp.data
+        steps["step2_key_values"] = {
+            "zestimate": d.get("zestimate") or d.get("Zestimate"),
+            "rentZestimate": d.get("rentZestimate") or d.get("RentZestimate"),
+            "price": d.get("price"),
+            "homeStatus": d.get("homeStatus"),
+            "bedrooms": d.get("bedrooms"),
+            "bathrooms": d.get("bathrooms"),
+            "livingArea": d.get("livingArea"),
+        }
+        steps["result"] = "SUCCESS"
+    else:
+        steps["result"] = f"FAILED at step 2 (property-v2): {details_resp.error}"
+
+    cb = client.circuit_breaker
+    if cb:
+        steps["circuit_breaker"] = {"state": cb.state.value, "failures": cb.failures}
+
+    return steps

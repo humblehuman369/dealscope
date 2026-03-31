@@ -100,8 +100,18 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
         self.fallback_api_key = (fallback_api_key or "").strip() or None
 
     def _get_headers(self) -> dict[str, str]:
-        """Get authenticated headers for AXESSO API."""
-        return {"axesso-api-key": self.api_key, "Accept": "application/json", "Content-Type": "application/json"}
+        """Get authenticated headers for AXESSO API.
+
+        Sends both ``axesso-api-key`` (legacy) and ``Ocp-Apim-Subscription-Key``
+        (Azure API Management standard) so requests succeed regardless of which
+        header the gateway is currently configured to read.
+        """
+        return {
+            "axesso-api-key": self.api_key,
+            "Ocp-Apim-Subscription-Key": self.api_key,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
 
     def _create_response(
         self,

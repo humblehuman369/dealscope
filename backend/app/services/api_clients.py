@@ -222,8 +222,16 @@ class AXESSOClient(BaseAPIClient[APIResponse]):
         )
 
     def _get_headers(self) -> dict[str, str]:
-        """Return AXESSO authentication headers."""
-        return {"axesso-api-key": self.api_key, "Accept": "application/json"}
+        """Return AXESSO authentication headers.
+
+        Sends both ``axesso-api-key`` (legacy) and ``Ocp-Apim-Subscription-Key``
+        (Azure API Management standard) for gateway compatibility.
+        """
+        return {
+            "axesso-api-key": self.api_key,
+            "Ocp-Apim-Subscription-Key": self.api_key,
+            "Accept": "application/json",
+        }
 
     def _create_response(
         self,
