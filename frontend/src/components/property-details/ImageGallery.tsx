@@ -17,9 +17,11 @@ interface ImageGalleryProps {
  * Full-width responsive image gallery with navigation, thumbnails,
  * and photo/view counters. Active thumbnail uses sky blue ring.
  *
- * Includes referrerPolicy="no-referrer" on all <img> tags to bypass
- * Zillow CDN hotlink protection. When no photos or all fail to load,
- * shows an empty "Photo unavailable" state (no demo/placeholder images).
+ * Uses referrerPolicy="no-referrer" on all <img> tags to bypass
+ * Zillow CDN hotlink protection (crossOrigin="anonymous" must NOT be
+ * used — Zillow's CDN doesn't serve CORS headers, so it breaks loading).
+ * When no photos or all fail to load, shows an empty "Photo unavailable"
+ * state (no demo/placeholder images).
  */
 export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbnails }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -49,7 +51,6 @@ export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbn
             alt={`Property photo ${currentIndex + 1}`}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
             onError={() => handleImageError(currentIndex)}
           />
         ) : (
@@ -128,7 +129,6 @@ export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbn
                   alt={`Thumbnail ${i + 1}`}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
                   onError={() => handleImageError(i)}
                 />
               ) : (
