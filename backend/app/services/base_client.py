@@ -251,6 +251,30 @@ class BaseAPIClient(ABC, Generic[T]):
                         t0 = _time.monotonic()  # reset for next attempt
                         continue
 
+                    elif response.status_code in (502, 503):
+                        wait_time = 2**attempt
+                        logger.warning(
+                            "ext_api provider=%s endpoint=%s status=%s latency_ms=%.1f attempt=%d retrying_in=%ds",
+                            provider,
+                            endpoint,
+                            response.status_code,
+                            latency,
+                            attempt + 1,
+                            wait_time,
+                        )
+                        if attempt < self.max_retries - 1:
+                            await asyncio.sleep(wait_time)
+                            t0 = _time.monotonic()
+                            continue
+                        self._record_failure()
+                        return self._create_response(
+                            success=False,
+                            data=None,
+                            error=f"{provider} API error: {response.status_code} (after {attempt + 1} attempts)",
+                            status_code=response.status_code,
+                            **response_kwargs,
+                        )
+
                     elif response.status_code == 404:
                         logger.info(
                             "ext_api provider=%s endpoint=%s status=404 latency_ms=%.1f attempt=%d",
