@@ -124,7 +124,6 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
                     alt={`Comp photo ${index + 1} of ${photos.length}`}
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
                     onError={() => handleImgError(index)}
                   />
                 )}
@@ -176,7 +175,6 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
                         alt=""
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
                       />
                     </button>
                   ))}
