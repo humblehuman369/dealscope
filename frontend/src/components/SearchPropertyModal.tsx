@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
-import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { AddressAutocomplete, type AddressComponents } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
@@ -26,6 +26,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
   const [showScanInfo, setShowScanInfo] = useState(false);
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle');
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null);
+  const [placeComponents, setPlaceComponents] = useState<AddressComponents | null>(null);
 
   if (!isOpen) return null;
 
@@ -51,11 +52,18 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     setShowScanInfo(true);
   };
 
-  const proceedToVerdict = (addressToUse: string) => {
+  const proceedToVerdict = (
+    addressToUse: string,
+    components?: { city?: string; state?: string; zipCode?: string } | null,
+  ) => {
     trackEvent('property_searched', { source: 'search_modal' });
     onClose();
     const canonicalAddress = canonicalizeAddressForIdentity(addressToUse);
-    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+    const params = new URLSearchParams({ address: canonicalAddress });
+    if (components?.city) params.set('city', components.city);
+    if (components?.state) params.set('state', components.state);
+    if (components?.zipCode) params.set('zip_code', components.zipCode);
+    router.push(`/verdict?${params.toString()}`);
   };
 
   const handleAddressSubmit = async (e: React.FormEvent) => {
@@ -76,8 +84,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       const data = await res.json();
 
       if (res.status === 503 || (res.ok === false && data?.code === 'VALIDATION_UNAVAILABLE')) {
-        setValidationStatus('unavailable');
-        proceedToVerdict(raw);
+        if (isLikelyFullAddress(raw)) {
+          setValidationStatus('unavailable');
+          proceedToVerdict(raw, placeComponents);
+        } else {
+          setValidationStatus('error');
+        }
         return;
       }
 
@@ -91,7 +103,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
 
       if (result.isValid) {
         setValidationStatus('valid');
-        proceedToVerdict(result.formattedAddress || raw);
+        const stdAddr = result.standardizedAddress;
+        proceedToVerdict(result.formattedAddress || raw, {
+          city: stdAddr?.city,
+          state: stdAddr?.state,
+          zipCode: stdAddr?.zipCode,
+        });
         return;
       }
 
@@ -116,7 +133,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       setValidationStatus('issues');
       return;
     }
-    proceedToVerdict(entered);
+    proceedToVerdict(entered, placeComponents);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -131,6 +148,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     setAddress('');
     setValidationStatus('idle');
     setValidationResult(null);
+    setPlaceComponents(null);
   };
 
   return (
@@ -264,7 +282,10 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   placeholder="Address, city, state or zipcode"
                   value={address}
                   onChange={setAddress}
-                  onPlaceSelect={(value) => setAddress(canonicalizeAddressForIdentity(value))}
+                  onPlaceSelect={(value, components) => {
+                    setAddress(canonicalizeAddressForIdentity(value));
+                    setPlaceComponents(components ?? null);
+                  }}
                   autoFocus
                   name="address"
                   aria-label="Property address"
