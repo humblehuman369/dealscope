@@ -99,7 +99,11 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           <span>Results in seconds</span>
           <span>3 free analyses per month</span>
         </p>
-        <div className="hero-founder">
+      </section>
+
+      {/* FOUNDER SEPARATOR */}
+      <section className="founder-separator">
+        <div className="founder-separator-inner">
           <img
             src="/brad-geisen.png"
             alt="Brad Geisen"
