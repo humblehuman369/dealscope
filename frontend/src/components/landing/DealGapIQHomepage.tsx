@@ -295,6 +295,83 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
         </div>
       </section>
 
+      {/* SCAN PROPERTY */}
+      <section className="scan-property">
+        <div className="scan-inner">
+          <div className="scan-layout">
+            <div className="scan-image-wrap">
+              <img
+                src="/images/scan-property-hero.png"
+                alt="Investor scanning a property with her phone using DealGapIQ"
+                draggable={false}
+              />
+              <div className="scan-image-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                <span>Point &amp; Scan</span>
+              </div>
+            </div>
+
+            <div className="scan-content">
+              <div className="section-label">Scan Any Property</div>
+              <h2>See a Property. Scan It.<br />Know the Deal.</h2>
+              <p className="scan-lead">
+                Spot a house while you&apos;re out? Don&apos;t guess — <strong>scan it.</strong>
+              </p>
+              <p className="scan-body">
+                With DealGapIQ, simply point your phone, tap once, and instantly capture the property.
+                Behind the scenes, DealGapIQ analyzes value, cash flow potential, and deal viability in seconds — so you know if it&apos;s worth pursuing before anyone else does.
+              </p>
+
+              <div className="scan-highlights">
+                <div className="scan-highlight">
+                  <div className="scan-highlight-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>No Address Entry. No Delays.</h3>
+                    <p>Just real-time investment intelligence.</p>
+                  </div>
+                </div>
+                <div className="scan-highlight">
+                  <div className="scan-highlight-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Saved to Your Dashboard</h3>
+                    <p>Scan now — come back for full analysis whenever you&apos;re ready.</p>
+                  </div>
+                </div>
+                <div className="scan-highlight">
+                  <div className="scan-highlight-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Never Miss an Opportunity</h3>
+                    <p>DealGapIQ captures, analyzes, and saves — so deals don&apos;t slip by.</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="scan-closing">
+                Opportunities don&apos;t wait until you get back to your desk. <strong>Now, neither does your analysis.</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* DATA SOURCES */}
       <DataSourcesSection />
 
