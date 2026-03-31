@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
-import { AddressAutocomplete, type AddressComponents } from '@/components/AddressAutocomplete';
+import { AddressAutocomplete, type AddressComponents, type PlaceMetadata } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
-import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
+import { canonicalizeAddressForIdentity, isLikelyFullAddress, classifyPlaceTypes, classifySearchInput } from '@/utils/addressIdentity';
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
@@ -70,6 +70,13 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     e.preventDefault();
     const raw = address.trim();
     if (!raw) return;
+
+    if (classifySearchInput(raw) === 'zip') {
+      trackEvent('property_searched', { source: 'search_modal', type: 'zip' });
+      onClose();
+      router.push(`/map-search?label=${encodeURIComponent(raw)}`);
+      return;
+    }
 
     setValidationStatus('validating');
     setValidationResult(null);
@@ -282,7 +289,26 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   placeholder="Address, city, state or zipcode"
                   value={address}
                   onChange={setAddress}
-                  onPlaceSelect={(value, components) => {
+                  searchMode="location"
+                  onPlaceSelect={(value, components, meta) => {
+                    const placeCategory = meta?.placeTypes
+                      ? classifyPlaceTypes(meta.placeTypes).category
+                      : 'unknown';
+
+                    if (placeCategory !== 'address' && placeCategory !== 'unknown' && meta?.location) {
+                      const { zoom } = classifyPlaceTypes(meta.placeTypes);
+                      trackEvent('property_searched', { source: 'search_modal', type: placeCategory });
+                      onClose();
+                      const params = new URLSearchParams({
+                        lat: String(meta.location.lat),
+                        lng: String(meta.location.lng),
+                        zoom: String(zoom),
+                        label: value,
+                      });
+                      router.push(`/map-search?${params.toString()}`);
+                      return;
+                    }
+
                     setAddress(canonicalizeAddressForIdentity(value));
                     setPlaceComponents(components ?? null);
                   }}

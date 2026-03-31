@@ -75,6 +75,48 @@ async function reverseGeocode(
   }
 }
 
+async function forwardGeocode(
+  query: string,
+  apiKey: string,
+): Promise<{ lat: number; lng: number; zoom: number } | null> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&components=country:US&key=${apiKey}`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.status !== 'OK' || !data.results?.length) return null
+    const result = data.results[0]
+    const loc = result.geometry?.location
+    if (!loc) return null
+    const types: string[] = result.types || []
+    let zoom = 12
+    if (types.includes('postal_code')) zoom = 13
+    else if (types.includes('locality') || types.includes('sublocality')) zoom = 12
+    else if (types.includes('administrative_area_level_2')) zoom = 10
+    else if (types.includes('administrative_area_level_1')) zoom = 7
+    return { lat: loc.lat, lng: loc.lng, zoom }
+  } catch {
+    return null
+  }
+}
+
+function LabelGeocoder({ label, apiKey }: { label: string; apiKey: string }) {
+  const map = useMap()
+  const geocodedRef = useRef(false)
+
+  useEffect(() => {
+    if (!map || !label || geocodedRef.current) return
+    geocodedRef.current = true
+
+    forwardGeocode(label, apiKey).then((result) => {
+      if (!result || !map) return
+      map.panTo({ lat: result.lat, lng: result.lng })
+      map.setZoom(result.zoom)
+    })
+  }, [map, label, apiKey])
+
+  return null
+}
+
 function formatCompactPrice(price: number | null): string {
   if (price == null) return '?'
   if (price >= 1_000_000) return `$${(price / 1_000_000).toFixed(1)}M`
@@ -308,6 +350,7 @@ export function MapSearchView() {
   }, [searchParams])
 
   const locationLabel = searchParams.get('label') ?? null
+  const needsGeocode = !!locationLabel && initialCenter === DEFAULT_CENTER
 
   const {
     listings,
@@ -533,6 +576,10 @@ export function MapSearchView() {
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             </AdvancedMarker>
+          )}
+
+          {needsGeocode && apiKey && (
+            <LabelGeocoder label={locationLabel!} apiKey={apiKey} />
           )}
 
           {/* Click-to-geocode popup rendered as centered overlay below */}
