@@ -918,7 +918,20 @@ class PropertySearchRequest(BaseModel):
                     "(example: '33486' or '33486-1234')"
                 )
             self.state = state.upper()
-            street = address.split(",")[0].strip() if "," in address else address
+            if "," in address:
+                # Strip trailing segments that duplicate the separate
+                # city/state/zip fields, but keep unit/apt numbers.
+                # Matches ", City[, ST[ ZIP]]" at end of string.
+                suffix = re.compile(
+                    r",\s*" + re.escape(city)
+                    + r"(?:\s*,\s*" + re.escape(self.state)
+                    + r"(?:\s+" + re.escape(zip_code) + r")?)?\s*$",
+                    re.IGNORECASE,
+                )
+                stripped = suffix.sub("", address).strip()
+                street = stripped if stripped else address
+            else:
+                street = address
             if not street:
                 raise ValueError(
                     "street address is required when using city, state, "
