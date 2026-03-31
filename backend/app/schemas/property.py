@@ -889,7 +889,9 @@ class PropertySearchRequest(BaseModel):
 
     @model_validator(mode="after")
     def _require_full_address(self) -> "PropertySearchRequest":
-        full_address_re = re.compile(r"^\d[\w\s.#/-]*,\s*[^,]+,\s*[A-Za-z]{2}\s+\d{5}(?:-\d{4})?$")
+        full_address_re = re.compile(
+            r"^\d[\w\s.#/-]*,\s*[^,]+,\s*[A-Za-z]{2}\s+\d{5}(?:-\d{4})?$"
+        )
         state_re = re.compile(r"^[A-Za-z]{2}$")
         zip_re = re.compile(r"^\d{5}(?:-\d{4})?$")
 
@@ -898,29 +900,43 @@ class PropertySearchRequest(BaseModel):
         state = self.state
         zip_code = self.zip_code
 
+        # Path 1: full comma-separated address matching strict format
         if "," in address:
             normalized = re.sub(r",\s*USA$", "", address, flags=re.IGNORECASE)
-            if not full_address_re.match(normalized):
+            if full_address_re.match(normalized):
+                self.address = normalized
+                return self
+            # Regex didn't match — fall through to try separate fields
+
+        # Path 2: street address + separate city/state/zip fields
+        if city and state and zip_code:
+            if not state_re.match(state):
+                raise ValueError("state must be a 2-letter code (example: 'FL')")
+            if not zip_re.match(zip_code):
                 raise ValueError(
-                    "address must include street, city, state, and zip code "
-                    "(example: '1451 NW 10 St, Boca Raton, FL 33486')"
+                    "zip_code must be 5 digits or ZIP+4 "
+                    "(example: '33486' or '33486-1234')"
                 )
-            self.address = normalized
+            self.state = state.upper()
+            street = address.split(",")[0].strip() if "," in address else address
+            if not street:
+                raise ValueError(
+                    "street address is required when using city, state, "
+                    "and zip_code fields"
+                )
+            self.address = f"{street}, {city}, {self.state} {zip_code}"
             return self
 
-        if not city or not state or not zip_code:
+        # Neither path succeeded
+        if "," in address:
             raise ValueError(
-                "full address required: provide either a complete 'address' string "
-                "or include city, state, and zip_code fields"
+                "address must include street, city, state, and zip code "
+                "(example: '1451 NW 10 St, Boca Raton, FL 33486')"
             )
-        if not state_re.match(state):
-            raise ValueError("state must be a 2-letter code (example: 'FL')")
-        if not zip_re.match(zip_code):
-            raise ValueError("zip_code must be 5 digits or ZIP+4 (example: '33486' or '33486-1234')")
-
-        self.state = state.upper()
-        self.address = f"{address}, {city}, {self.state} {zip_code}"
-        return self
+        raise ValueError(
+            "full address required: provide either a complete 'address' string "
+            "or include city, state, and zip_code fields"
+        )
 
 
 class PropertyResponse(BaseModel):
