@@ -257,32 +257,43 @@ class PropertyService:
                     and valuations.get("zestimate") is None
                     and not rental_stats_cached.get("zillow_estimate")
                 )
-                zillow_stale = False
-                if zillow_absent:
+
+                # Redfin data absent — Redfin API may have had a transient
+                # failure.  Re-fetch after 4 hours (same pattern as Zillow).
+                redfin_absent = (
+                    self.redfin is not None
+                    and valuations.get("redfin_estimate") is None
+                    and not rental_stats_cached.get("redfin_estimate")
+                )
+
+                def _cache_age_exceeds(seconds: int) -> bool:
                     fetched_raw = cached_data.get("fetched_at")
-                    if fetched_raw:
-                        try:
-                            fetched_dt = (
-                                datetime.fromisoformat(str(fetched_raw))
-                                if isinstance(fetched_raw, str)
-                                else fetched_raw
-                            )
-                            if fetched_dt.tzinfo is None:
-                                fetched_dt = fetched_dt.replace(tzinfo=UTC)
-                            zillow_stale = (datetime.now(UTC) - fetched_dt).total_seconds() > 14400
-                        except (ValueError, TypeError):
-                            zillow_stale = True
-                    else:
-                        zillow_stale = True
+                    if not fetched_raw:
+                        return True
+                    try:
+                        fetched_dt = (
+                            datetime.fromisoformat(str(fetched_raw))
+                            if isinstance(fetched_raw, str)
+                            else fetched_raw
+                        )
+                        if fetched_dt.tzinfo is None:
+                            fetched_dt = fetched_dt.replace(tzinfo=UTC)
+                        return (datetime.now(UTC) - fetched_dt).total_seconds() > seconds
+                    except (ValueError, TypeError):
+                        return True
+
+                zillow_stale = zillow_absent and _cache_age_exceeds(14400)
+                redfin_stale = redfin_absent and _cache_age_exceeds(14400)
 
                 stale = (
                     is_off_market_cached
                     and valuations.get("zestimate") is None
                     and valuations.get("market_price") in (None, 1)
-                ) or missing_iq_fields or zillow_stale
+                ) or missing_iq_fields or zillow_stale or redfin_stale
                 if stale:
                     reason = (
                         "Zillow data absent > 4h" if zillow_stale
+                        else "Redfin data absent > 4h" if redfin_stale
                         else "IQ estimate data missing"
                     )
                     logger.info("Cache hit for %s but %s — forcing re-fetch", address, reason)
@@ -533,12 +544,15 @@ class PropertyService:
         if pre_fetched is None:
             try:
                 serialized = response.model_dump()
-                # Shorter TTL when Zillow data is absent so AXESSO is retried
-                # sooner (4 h vs default 24 h).
+                # Shorter TTL when Zillow or Redfin data is absent so APIs
+                # are retried sooner (4 h vs default 24 h).
                 _has_zillow = response.zpid is not None or (
                     response.valuations and response.valuations.zestimate is not None
                 )
-                _cache_ttl = 86400 if _has_zillow else 14400
+                _has_redfin = self.redfin is None or (
+                    response.valuations and response.valuations.redfin_estimate is not None
+                )
+                _cache_ttl = 86400 if (_has_zillow and _has_redfin) else 14400
                 await self._cache.set_property(address, serialized, ttl_seconds=_cache_ttl)
                 await self._cache.set(f"prop_id:{property_id}", serialized, ttl_seconds=_cache_ttl)
                 logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")

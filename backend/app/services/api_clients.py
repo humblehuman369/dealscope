@@ -366,23 +366,44 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         """
         Extract the Redfin URL path from auto-complete response.
 
-        Response shape:
-          { "data": [ { "rows": [ { "url": "/TN/Franklin/...", ... } ], "name": "Addresses" } ] }
+        Primary shape:
+          { "data": [ { "rows": [ { "url": "/TN/Franklin/...", ... } ] } ] }
+
+        Also handles wrapped responses where ``data`` is a dict containing
+        a nested list under various keys (``data``, ``sections``, ``categories``).
         """
         if not isinstance(data, dict):
             return None
-        categories = data.get("data")
-        if not isinstance(categories, list):
+
+        def _scan_categories(categories: list) -> str | None:
+            for category in categories:
+                if not isinstance(category, dict):
+                    continue
+                rows = category.get("rows")
+                if not isinstance(rows, list):
+                    continue
+                for row in rows:
+                    if isinstance(row, dict) and row.get("url"):
+                        return str(row["url"])
             return None
-        for category in categories:
-            if not isinstance(category, dict):
-                continue
-            rows = category.get("rows")
-            if not isinstance(rows, list):
-                continue
-            for row in rows:
-                if isinstance(row, dict) and row.get("url"):
-                    return str(row["url"])
+
+        top = data.get("data")
+        if isinstance(top, list):
+            return _scan_categories(top)
+
+        if isinstance(top, dict):
+            for key in ("data", "sections", "categories"):
+                nested = top.get(key)
+                if isinstance(nested, list):
+                    result = _scan_categories(nested)
+                    if result:
+                        return result
+            rows = top.get("rows")
+            if isinstance(rows, list):
+                for row in rows:
+                    if isinstance(row, dict) and row.get("url"):
+                        return str(row["url"])
+
         return None
 
     @staticmethod
@@ -448,9 +469,16 @@ class RedfinClient(BaseAPIClient[APIResponse]):
 
         url_path = self._extract_url_from_autocomplete(ac_resp.data)
         if not url_path:
+            import json as _json
+            _preview = ""
+            try:
+                _preview = _json.dumps(ac_resp.data, default=str)[:500]
+            except Exception:
+                _preview = str(type(ac_resp.data))
             logger.warning(
-                "Redfin step 1 FAILED: no URL found in auto-complete response (keys=%s)",
+                "Redfin step 1 FAILED: no URL found in auto-complete response (keys=%s, preview=%s)",
                 list(ac_resp.data.keys()) if isinstance(ac_resp.data, dict) else type(ac_resp.data).__name__,
+                _preview,
             )
             return None
         logger.info("Redfin step 1 OK: auto-complete → url=%s", url_path)
