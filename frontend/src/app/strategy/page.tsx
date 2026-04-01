@@ -784,19 +784,13 @@ function StrategyContent() {
                   : 0
                 const isPositiveIncomeCase = incomeVal > listPrice && priceGapPct > 0.1
 
-                const useIncomeBracket = isPositiveIncomeCase && incomePos != null && marketPos != null
-                const dealBracketLeft = useIncomeBracket
-                  ? Math.min(marketPos!, incomePos!)
-                  : (targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0)
-                const dealBracketRight = useIncomeBracket
-                  ? Math.max(marketPos!, incomePos!)
-                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
-                const dealBracketPct = useIncomeBracket
-                  ? priceGapPct
-                  : (listPrice > 0 && targetPrice > 0
-                    ? ((listPrice - targetPrice) / listPrice) * 100
-                    : 0)
-                const effectiveDisplayPct = isPositiveIncomeCase ? priceGapPct : -dealBracketPct
+                // Deal Gap bracket always spans Target Buy to Market.
+                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
+                const dealBracketPct = listPrice > 0 && targetPrice > 0
+                  ? ((listPrice - targetPrice) / listPrice) * 100
+                  : 0
+                const effectiveDisplayPct = -dealBracketPct
                 const showDealBracket = (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
@@ -804,10 +798,10 @@ function StrategyContent() {
                 const priceGap = listPrice > 0 && incomeVal > 0
                   ? ((incomeVal - listPrice) / listPrice) * 100
                   : 0
-                const showPriceGap = !isPositiveIncomeCase && incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = 'DEAL GAP'
-                const bracketColor = isPositiveIncomeCase ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const bracketLabel = effectiveDisplayPct >= 0 ? 'DEAL GAIN' : 'DEAL GAP'
+                const bracketColor = effectiveDisplayPct >= 0 ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
