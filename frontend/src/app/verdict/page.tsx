@@ -1302,7 +1302,14 @@ function VerdictContent() {
                 const priceGap = property.price > 0 && incomeValue > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = !isPositiveIncomeCase && incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+
+                const bracketLabel = isPositiveIncomeCase ? 'SWEET SPOT' : 'DEAL GAP'
+                const bracketColor = isPositiveIncomeCase ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
+                const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
+                const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
+                const fmtPrice = (v: number) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}K`
 
                 return (
                   <>
@@ -1316,38 +1323,97 @@ function VerdictContent() {
                       >
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
-                          style={{ color: 'var(--accent-sky)' }}
+                          style={{ color: bracketColor }}
                         >
-                          DEAL GAP &nbsp;{effectiveDisplayPct >= 0 ? '+' : ''}{effectiveDisplayPct.toFixed(1)}%
+                          {bracketLabel} &nbsp;{effectiveDisplayPct >= 0 ? '+' : ''}{effectiveDisplayPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
-                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
-                          <div style={{ height: 1, background: 'var(--accent-sky)', flex: 1 }} />
-                          <div style={{ width: 1, height: 14, background: 'var(--accent-sky)', flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
+                          <div style={{ height: 1, background: bracketColor, flex: 1 }} />
+                          <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
                         </div>
                       </div>
                     )}
 
-                    {/* Bar with proportionally-positioned dots */}
+                    {/* Bar with proportionally-positioned dots and optional Sweet Spot zone */}
                     <div className="relative rounded-full" style={{
                       height: 22,
                       background: 'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
                       border: '1.5px solid rgba(56,189,248,0.5)',
                       boxShadow: 'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
                     }}>
-                      {markers.map((m, i) => (
-                        <div key={i} className="absolute rounded-full"
+                      {isPositiveIncomeCase && sweetSpotWidth > 0 && (
+                        <div
+                          className="absolute rounded-full sweet-spot-pulse"
                           style={{
-                            width: 18,
-                            height: 18,
-                            top: '50%',
-                            left: `${pos(m.price)}%`,
-                            transform: 'translate(-50%, -50%)',
-                            background: m.dotColor,
-                            boxShadow: `0 0 8px ${m.dotColor}90`,
+                            left: `${sweetSpotLeft}%`,
+                            width: `${sweetSpotWidth}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
                           }}
-                        />
-                      ))}
+                        >
+                          <span style={{
+                            color: 'var(--status-positive)',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: '0.08em',
+                            textShadow: '0 0 8px rgba(52,211,153,0.6)',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            SWEET SPOT
+                          </span>
+                        </div>
+                      )}
+                      {markers.map((m, i) => {
+                        const isRing = tbMarketOverlap && m.label === 'Target Buy'
+                        return (
+                          <div key={i} className="absolute rounded-full"
+                            style={{
+                              width: isRing ? 24 : 18,
+                              height: isRing ? 24 : 18,
+                              top: '50%',
+                              left: `${pos(m.price)}%`,
+                              transform: 'translate(-50%, -50%)',
+                              background: isRing ? 'transparent' : m.dotColor,
+                              border: isRing ? `2px solid ${m.dotColor}` : 'none',
+                              boxShadow: `0 0 8px ${m.dotColor}90`,
+                              zIndex: isRing ? 0 : 1,
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+
+                    {/* Price labels below dots (grouped when overlapping) */}
+                    <div className="relative" style={{ height: 32, marginTop: 4 }}>
+                      {(() => {
+                        const groups: { labels: string[]; price: number; colors: string[]; left: number }[] = []
+                        markers.forEach(m => {
+                          const p = pos(m.price)
+                          const existing = groups.find(g => Math.abs(g.left - p) < 3)
+                          if (existing) { existing.labels.push(m.label); existing.colors.push(m.dotColor) }
+                          else { groups.push({ labels: [m.label], price: m.price, colors: [m.dotColor], left: p }) }
+                        })
+                        return groups.map((g, i) => (
+                          <div key={i} className="absolute text-center" style={{ left: `${g.left}%`, transform: 'translateX(-50%)', top: 0 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                              {g.labels.map((l, j) => (
+                                <span key={j}>
+                                  {j > 0 && <span style={{ color: 'var(--text-muted)' }}> / </span>}
+                                  <span style={{ color: g.colors[j] }}>{l}</span>
+                                </span>
+                              ))}
+                            </div>
+                            <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                              {fmtPrice(g.price)}
+                            </div>
+                          </div>
+                        ))
+                      })()}
                     </div>
 
                     {showPriceGap && (
