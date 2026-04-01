@@ -111,7 +111,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           />
           <div className="founder-separator-text">
             <p className="founder-separator-name">Built by Brad Geisen</p>
-            <p className="founder-separator-bio">35 years in real estate data, founded Foreclosure.com, built HomePath.com, HomeSteps.com and other industry leading platforms.</p>
+            <p className="founder-separator-bio">35 years in real estate data, founded Foreclosure.com,<br />built HomePath.com, HomeSteps.com and<br />other industry leading platforms.</p>
           </div>
         </div>
       </section>
