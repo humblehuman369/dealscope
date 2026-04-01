@@ -1157,6 +1157,15 @@ input[type="range"]::-moz-range-thumb {
   animation: bracket-pulse 3s ease-in-out infinite;
 }
 
+@keyframes sweetSpotPulse {
+  0%, 100% { box-shadow: inset 0 0 12px rgba(52, 211, 153, 0.2); }
+  50% { box-shadow: inset 0 0 20px rgba(52, 211, 153, 0.4), 0 0 12px rgba(52, 211, 153, 0.15); }
+}
+
+.sweet-spot-pulse {
+  animation: sweetSpotPulse 3s ease-in-out infinite;
+}
+
 /* Data Sources CTA — draw attention to "Select any source..." */
 @keyframes data-sources-attention {
   0%, 100% {
