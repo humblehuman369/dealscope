@@ -1290,8 +1290,8 @@ function VerdictContent() {
                   : 0
                 const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = 'DEAL GAP'
-                const bracketColor = 'var(--accent-sky)'
+                const bracketLabel = effectiveDisplayPct >= 0 ? 'DEAL GAIN' : 'DEAL GAP'
+                const bracketColor = effectiveDisplayPct >= 0 ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
