@@ -1110,7 +1110,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     return [
       { label: 'Buy Price', value: formatPrice(ltrState.buyPrice), color: 'white' },
       { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
-      { label: 'Deal Gap', value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`, color: 'cyan' },
+      { label: -ltrMetrics.dealGap >= 0 ? 'Deal Gain' : 'Deal Gap', value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`, color: -ltrMetrics.dealGap >= 0 ? 'teal' : 'cyan' },
       { label: 'Annual Profit', value: formatPrice(ltrMetrics.annualProfit), color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose' },
       { label: 'CAP Rate', value: `${ltrMetrics.capRate.toFixed(1)}%`, color: 'white' },
       { label: 'COC Return', value: `${ltrMetrics.cocReturn.toFixed(1)}%`, color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose' },
