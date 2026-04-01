@@ -297,10 +297,14 @@ function StrategyContent() {
       let fetchAddr = addressParam
       if (!isLikelyFullAddress(fetchAddr) && typeof window !== 'undefined') {
         const activeAddr = sessionStorage.getItem('dealMaker_activeAddress')
+        // Match the full street segment (before first comma) rather than just
+        // a prefix, so "1451 NW 10th St" doesn't wrongly match "1451 SW 10th St"
+        const inputStreet = fetchAddr.split(',')[0].trim().toLowerCase()
+        const activeStreet = activeAddr?.split(',')[0].trim().toLowerCase()
         if (
           activeAddr &&
           isLikelyFullAddress(activeAddr) &&
-          activeAddr.toLowerCase().startsWith(fetchAddr.split(',')[0].trim().toLowerCase())
+          inputStreet === activeStreet
         ) {
           fetchAddr = activeAddr
         }
