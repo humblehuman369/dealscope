@@ -1279,7 +1279,7 @@ function VerdictContent() {
                 const dealBracketPct = property.price > 0 && purchasePrice > 0
                   ? ((property.price - purchasePrice) / property.price) * 100
                   : 0
-                const isDealGain = effectiveDisplayPct >= 0 && isPositiveIncomeCase
+                const isDealGain = dealBracketPct < 0.5 && isPositiveIncomeCase
                 const dealBracketRight = isDealGain && incomePos != null
                   ? incomePos
                   : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
@@ -1288,7 +1288,7 @@ function VerdictContent() {
                   : (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
                 const dealDisplayPct = isDealGain
                   ? ((incomeValue - purchasePrice) / property.price) * 100
-                  : effectiveDisplayPct
+                  : -dealBracketPct
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
                 const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0

@@ -789,7 +789,7 @@ function StrategyContent() {
                   ? ((listPrice - targetPrice) / listPrice) * 100
                   : 0
                 const effectiveDisplayPct = -dealBracketPct
-                const isDealGain = effectiveDisplayPct >= 0 && isPositiveIncomeCase
+                const isDealGain = dealBracketPct < 0.5 && isPositiveIncomeCase
                 const dealBracketRight = isDealGain && incomePos != null
                   ? incomePos
                   : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
@@ -934,7 +934,7 @@ function StrategyContent() {
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
-                          style={{ color: 'var(--status-warning)', marginBottom: 0 }}
+                          style={{ color: 'var(--status-warning)', marginBottom: 8 }}
                         >
                           PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}{priceGap.toFixed(1)}%
                         </p>
