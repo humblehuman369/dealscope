@@ -119,17 +119,18 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       {/* THREE PRICE THRESHOLDS */}
       <section className="prices">
         <div className="prices-inner">
-          <img
-            src="/images/three-key-prices.png"
-            alt="Every Property Has Three Key Prices — DealGapIQ shows Market Value, Income Value, and Target Buy with Deal Gap and Price Gap indicators"
-            className="three-prices-graphic"
-          />
-
           <div
-            className="video-container"
-            style={{ marginTop: '-3rem', maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
+            className={`video-container dealgap-video-combined${isDealGapVideoPlaying ? ' is-playing' : ''}`}
+            style={{ maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
             onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
           >
+            {!isDealGapVideoPlaying && (
+              <img
+                src="/images/three-key-prices.png"
+                alt="Every Property Has Three Key Prices — DealGapIQ shows Market Value, Income Value, and Target Buy with Deal Gap and Price Gap indicators"
+                className="three-prices-graphic"
+              />
+            )}
             <video
               ref={dealGapVideoRef}
               preload="metadata"
@@ -140,6 +141,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               onPause={() => {
                 if (dealGapVideoRef.current?.ended) setIsDealGapVideoPlaying(false);
               }}
+              style={!isDealGapVideoPlaying ? { display: 'none' } : undefined}
             />
             <div className={`video-poster-overlay${isDealGapVideoPlaying ? ' hidden' : ''}`}>
               <div className="video-play-btn">

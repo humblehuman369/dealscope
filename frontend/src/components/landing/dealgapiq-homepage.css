@@ -276,6 +276,29 @@
   color: #fff;
   letter-spacing: -0.01em;
 }
+/* Combined chart + video variant */
+.dealgap-video-combined {
+  aspect-ratio: auto;
+}
+.dealgap-video-combined .three-prices-graphic {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 0;
+  max-width: none;
+  margin: 0;
+}
+.dealgap-video-combined .video-poster-overlay {
+  background: rgba(0,0,0,0.35);
+}
+.dealgap-video-combined:hover .video-poster-overlay {
+  background: rgba(0,0,0,0.25);
+}
+.dealgap-video-combined.is-playing {
+  aspect-ratio: 16/9;
+}
+
 .video-duration {
   font-family: var(--font-mono, 'Space Mono', monospace);
   font-size: 0.8rem;
@@ -775,7 +798,7 @@
 
 /* THREE PRICES — Threshold Bar Graphic */
 .prices {
-  padding: 3rem 2rem calc(6rem - 100px);
+  padding: 3rem 2rem 4rem;
   position: relative;
 }
 .prices-inner {
