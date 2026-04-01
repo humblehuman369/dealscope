@@ -139,8 +139,10 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     }
   };
 
+  // Start camera once on mount — must not depend on `scanner` (new ref every render)
   useEffect(() => {
     let stream: MediaStream | null = null;
+    let cancelled = false;
 
     async function startCamera() {
       try {
@@ -153,11 +155,12 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
           audio: false,
         });
 
-        if (videoRef.current) {
+        if (!cancelled && videoRef.current) {
           videoRef.current.srcObject = stream;
           setCameraReady(true);
         }
       } catch (error) {
+        if (cancelled) return;
         console.error('Camera error:', error);
         if (error instanceof Error) {
           if (error.name === 'NotAllowedError') {
@@ -173,16 +176,22 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
     startCamera();
 
-    if (scanner.hasCompass && !scanner.heading) {
-      scanner.requestOrientationPermission();
-    }
-
     return () => {
+      cancelled = true;
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [scanner]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Request compass permission separately — only when compass becomes available
+  useEffect(() => {
+    if (scanner.hasCompass && !scanner.heading) {
+      scanner.requestOrientationPermission();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanner.hasCompass, scanner.heading]);
 
   const handleScan = async () => {
     if (scanner.heading === null && scanner.isOrientationSupported) {
