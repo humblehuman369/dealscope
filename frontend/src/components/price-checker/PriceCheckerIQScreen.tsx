@@ -1186,8 +1186,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
             }>
               {/* Left column: controls + comp cards */}
               <div className="min-w-0">
-                {/* Controls + Filters */}
-                <div className="px-1 sm:px-1 md:px-0 min-w-0">
+                {/* Controls + Filters — sticky on desktop so they stay below the valuation panel */}
+                <div className="px-1 sm:px-1 md:px-0 min-w-0 md:sticky md:top-[304px] md:z-30 md:bg-[var(--surface-base)] md:pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
