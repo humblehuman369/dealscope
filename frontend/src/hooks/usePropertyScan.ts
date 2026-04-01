@@ -4,78 +4,14 @@ import { useState, useCallback } from 'react';
 import { useGeolocation } from './useGeolocation';
 import { useDeviceOrientation } from './useDeviceOrientation';
 import { calculateTargetPoint, generateScanCone } from '@/lib/geoCalculations';
-
-interface PropertyData {
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  formattedAddress: string;
-  lat: number;
-  lng: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  sqft?: number;
-  yearBuilt?: number;
-}
+import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode';
 
 export interface ScanResult {
-  property: PropertyData;
+  property: GeocodedProperty;
   confidence: number;
   scanTime: number;
   heading: number;
   distance: number;
-}
-
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-/**
- * Reverse geocode coordinates to get address using Google Maps API.
- */
-async function reverseGeocode(lat: number, lng: number): Promise<PropertyData | null> {
-  try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${GOOGLE_MAPS_API_KEY}`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.status !== 'OK' || !data.results?.length) {
-      return null;
-    }
-
-    // Find the street address result
-    const streetAddress = data.results.find((r: { types: string[] }) => 
-      r.types.includes('street_address') || 
-      r.types.includes('premise') ||
-      r.types.includes('subpremise')
-    ) || data.results[0];
-
-    if (!streetAddress) return null;
-
-    const components = streetAddress.address_components;
-    const getComponent = (type: string, useShort = false) => {
-      const comp = components.find((c: { types: string[]; long_name: string; short_name: string }) => c.types.includes(type));
-      return (useShort ? comp?.short_name : comp?.long_name) || '';
-    };
-
-    const streetNumber = getComponent('street_number');
-    const route = getComponent('route');
-    const city = getComponent('locality') || getComponent('sublocality');
-    const state = getComponent('administrative_area_level_1', true);
-    const zip = getComponent('postal_code');
-
-    return {
-      address: streetNumber ? `${streetNumber} ${route}` : route,
-      city,
-      state,
-      zip,
-      formattedAddress: streetAddress.formatted_address || '',
-      lat: streetAddress.geometry.location.lat,
-      lng: streetAddress.geometry.location.lng,
-    };
-  } catch (error) {
-    console.error('Reverse geocode error:', error);
-    return null;
-  }
 }
 
 /**
@@ -127,14 +63,12 @@ export function usePropertyScan() {
         25
       );
 
-      // First try the center target point
-      let matchedProperty = await reverseGeocode(targetPoint.lat, targetPoint.lng);
+      let matchedProperty = await reverseGeocodeProperty(targetPoint.lat, targetPoint.lng);
       let confidence = 95;
 
-      // If no match, try scan cone points
       if (!matchedProperty) {
         for (const point of scanPoints.slice(0, 10)) {
-          matchedProperty = await reverseGeocode(point.lat, point.lng);
+          matchedProperty = await reverseGeocodeProperty(point.lat, point.lng);
           if (matchedProperty) {
             confidence = Math.max(50, 90 - Math.abs(point.angle) * 2);
             break;
