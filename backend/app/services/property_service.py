@@ -271,13 +271,43 @@ class PropertyService:
                 missing_iq_fields = has_source_value and (
                     valuations.get("value_iq_estimate") is None and not rental_stats_cached
                 )
+                # Zillow data completely absent — AXESSO likely had a transient
+                # failure.  Re-fetch after 4 hours to give the API time to
+                # recover without hammering it on every request.
+                zillow_absent = (
+                    cached_data.get("zpid") is None
+                    and valuations.get("zestimate") is None
+                    and not rental_stats_cached.get("zillow_estimate")
+                )
+                zillow_stale = False
+                if zillow_absent:
+                    fetched_raw = cached_data.get("fetched_at")
+                    if fetched_raw:
+                        try:
+                            fetched_dt = (
+                                datetime.fromisoformat(str(fetched_raw))
+                                if isinstance(fetched_raw, str)
+                                else fetched_raw
+                            )
+                            if fetched_dt.tzinfo is None:
+                                fetched_dt = fetched_dt.replace(tzinfo=UTC)
+                            zillow_stale = (datetime.now(UTC) - fetched_dt).total_seconds() > 14400
+                        except (ValueError, TypeError):
+                            zillow_stale = True
+                    else:
+                        zillow_stale = True
+
                 stale = (
                     is_off_market_cached
                     and valuations.get("zestimate") is None
                     and valuations.get("market_price") in (None, 1)
-                ) or missing_iq_fields
+                ) or missing_iq_fields or zillow_stale
                 if stale:
-                    logger.info("Cache hit for %s but IQ estimate data missing — forcing re-fetch", address)
+                    reason = (
+                        "Zillow data absent > 4h" if zillow_stale
+                        else "IQ estimate data missing"
+                    )
+                    logger.info("Cache hit for %s but %s — forcing re-fetch", address, reason)
                     await self._cache.clear_property_cache(address)
                 else:
                     logger.info(f"Cache hit for property: {address}")
@@ -535,8 +565,14 @@ class PropertyService:
         if pre_fetched is None:
             try:
                 serialized = response.model_dump()
-                await self._cache.set_property(address, serialized)
-                await self._cache.set(f"prop_id:{property_id}", serialized)
+                # Shorter TTL when Zillow data is absent so AXESSO is retried
+                # sooner (4 h vs default 24 h).
+                _has_zillow = response.zpid is not None or (
+                    response.valuations and response.valuations.zestimate is not None
+                )
+                _cache_ttl = 86400 if _has_zillow else 14400
+                await self._cache.set_property(address, serialized, ttl_seconds=_cache_ttl)
+                await self._cache.set(f"prop_id:{property_id}", serialized, ttl_seconds=_cache_ttl)
                 logger.info(f"Cached property: {address} (backend={'redis' if self._cache.use_redis else 'memory'})")
             except Exception as e:
                 logger.warning(f"Failed to cache property: {e}")
