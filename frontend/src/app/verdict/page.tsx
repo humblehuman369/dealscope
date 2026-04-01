@@ -1335,7 +1335,7 @@ function VerdictContent() {
                             left: `${sweetSpotLeft}%`,
                             width: `${sweetSpotWidth}%`,
                             height: '100%',
-                            background: 'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
+                            background: 'var(--status-positive)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1343,11 +1343,10 @@ function VerdictContent() {
                           }}
                         >
                           <span style={{
-                            color: 'var(--status-positive)',
+                            color: '#ffffff',
                             fontSize: 11,
                             fontWeight: 700,
                             letterSpacing: '0.08em',
-                            textShadow: '0 0 8px rgba(52,211,153,0.6)',
                             whiteSpace: 'nowrap',
                           }}>
                             SWEET SPOT
