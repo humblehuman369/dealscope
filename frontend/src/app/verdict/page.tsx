@@ -1018,9 +1018,8 @@ function VerdictContent() {
     ? ((incomeValue - property.price) / property.price) * 100
     : 0
   const isPositiveIncomeCase = incomeValue > property.price && priceGapPct > 0.1
-  // When income exceeds market, display the price gap % as the deal gap (positive).
-  // Otherwise use the target-buy-to-market discount (negated for user-facing sign).
-  const effectiveDisplayPct = isPositiveIncomeCase ? priceGapPct : -dealGapPct
+  // Deal Gap is always the margin between Target Buy and Market Price.
+  const effectiveDisplayPct = -dealGapPct
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Probability of achieving discount derived from Deal Gap %
@@ -1281,20 +1280,12 @@ function VerdictContent() {
                 const marketPos = property.price > 0 ? pos(property.price) : null
                 const incomePos = incomeValue > 0 ? pos(incomeValue) : null
 
-                // In positive-income case the target-buy-to-market span collapses to ~0.
-                // Use the market-to-income span instead so the bracket stays visible.
-                const useIncomeBracket = isPositiveIncomeCase && incomePos != null && marketPos != null
-                const dealBracketLeft = useIncomeBracket
-                  ? Math.min(marketPos!, incomePos!)
-                  : (targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0)
-                const dealBracketRight = useIncomeBracket
-                  ? Math.max(marketPos!, incomePos!)
-                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
-                const dealBracketPct = useIncomeBracket
-                  ? priceGapPct
-                  : (property.price > 0 && purchasePrice > 0
-                    ? ((property.price - purchasePrice) / property.price) * 100
-                    : 0)
+                // Deal Gap bracket always spans Target Buy to Market.
+                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
+                const dealBracketPct = property.price > 0 && purchasePrice > 0
+                  ? ((property.price - purchasePrice) / property.price) * 100
+                  : 0
                 const showDealBracket = (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
@@ -1302,10 +1293,10 @@ function VerdictContent() {
                 const priceGap = property.price > 0 && incomeValue > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = !isPositiveIncomeCase && incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
                 const bracketLabel = 'DEAL GAP'
-                const bracketColor = isPositiveIncomeCase ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const bracketColor = 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
