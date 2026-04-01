@@ -9,7 +9,7 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 
 import logging
 
-from app.core.formulas import calculate_buy_price, compute_market_price, estimate_income_value
+from app.core.formulas import calculate_buy_price, estimate_income_value
 from app.schemas.analytics import (
     DealFactor,
     DealScoreFactors,
@@ -871,24 +871,6 @@ def compute_iq_verdict(
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
     )
-
-    if input_data.is_listed is False and (
-        input_data.zestimate is not None
-        or input_data.current_value_avm is not None
-        or input_data.tax_assessed_value is not None
-    ):
-        computed_market = compute_market_price(
-            is_listed=False,
-            list_price=input_data.list_price,
-            zestimate=input_data.zestimate,
-            current_value_avm=input_data.current_value_avm,
-            tax_assessed_value=input_data.tax_assessed_value,
-        )
-        if computed_market is not None:
-            list_price = float(computed_market)
-            arv = input_data.arv or (list_price * 1.15)
-            if input_data.rehab_cost is None:
-                rehab_cost = arv * a.rehab.renovation_budget_pct
 
     buy_price = input_data.purchase_price or calculate_buy_price(
         market_price=list_price,
