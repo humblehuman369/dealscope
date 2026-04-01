@@ -806,7 +806,7 @@ function StrategyContent() {
                   : 0
                 const showPriceGap = !isPositiveIncomeCase && incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = isPositiveIncomeCase ? 'SWEET SPOT' : 'DEAL GAP'
+                const bracketLabel = 'DEAL GAP'
                 const bracketColor = isPositiveIncomeCase ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
