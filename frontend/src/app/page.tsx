@@ -21,10 +21,12 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
+import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { DealGapIQHomepage } from '@/components/landing';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
+import type { GeocodedProperty } from '@/lib/reverseGeocode';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -61,6 +63,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [addressInput, setAddressInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const hasValidSearchAddress = isLikelyFullAddress(addressInput);
   
   const scanner = usePropertyScan();
@@ -188,16 +191,25 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     await scanner.performScan(distance, manualHeading ?? undefined);
   };
 
+  const navigateToVerdict = (prop: GeocodedProperty) => {
+    const hasFullAddress = prop.address && prop.city && prop.state && prop.zip;
+    const address = hasFullAddress
+      ? `${prop.address}, ${prop.city}, ${prop.state} ${prop.zip}`
+      : prop.formattedAddress || [prop.address, prop.city, prop.state, prop.zip].filter(Boolean).join(', ');
+
+    router.push(`/verdict?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
+  };
+
   const handleViewDetails = () => {
     if (scanner.result?.property) {
-      const { address: street, city, state, zip, formattedAddress } = scanner.result.property;
-      const hasFullAddress = street && city && state && zip;
-      const address = hasFullAddress
-        ? `${street}, ${city}, ${state} ${zip}`
-        : formattedAddress || [street, city, state, zip].filter(Boolean).join(', ');
-
-      router.push(`/verdict?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
+      navigateToVerdict(scanner.result.property);
     }
+  };
+
+  const handleMapPickProperty = (property: GeocodedProperty) => {
+    setShowMapPicker(false);
+    scanner.clearResult();
+    navigateToVerdict(property);
   };
 
   if (cameraError) {
@@ -529,6 +541,17 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
           result={scanner.result}
           onClose={scanner.clearResult}
           onViewDetails={handleViewDetails}
+          onPickFromMap={() => setShowMapPicker(true)}
+        />
+      )}
+
+      {showMapPicker && scanner.latitude !== null && scanner.longitude !== null && scanner.result && (
+        <MapPropertyPicker
+          userLat={scanner.latitude}
+          userLng={scanner.longitude}
+          scannedProperty={scanner.result.property}
+          onSelectProperty={handleMapPickProperty}
+          onClose={() => setShowMapPicker(false)}
         />
       )}
 
