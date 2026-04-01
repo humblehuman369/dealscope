@@ -485,6 +485,7 @@ class PropertyService:
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),
+                insurance_annual=self._estimate_insurance(normalized),
                 hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0),
                 # Mortgage rates for frontend
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
@@ -611,7 +612,7 @@ class PropertyService:
             list_price=max(1, list_price),
             monthly_rent=monthly_rent,
             property_taxes=market.property_taxes_annual or (list_price * 0.012),
-            insurance=getattr(market, "insurance_annual", None) or (list_price * 0.01),
+            insurance=market.insurance_annual or (list_price * 0.01),
             bedrooms=details.bedrooms or 3,
             bathrooms=float(details.bathrooms or 2),
             sqft=details.square_footage,
@@ -899,6 +900,28 @@ class PropertyService:
             # Typical 1-1.5% of value
             return avm * 0.012
         return 4500  # Default fallback
+
+    def _estimate_insurance(self, data: dict) -> float:
+        """Estimate annual insurance as a percentage of market price.
+
+        Uses ZIP-based regional insurance rates (e.g. 1.5% in FL for
+        hurricane risk, 0.8% in CA) with a 1% national default.
+        """
+        from app.services.assumptions_service import get_market_adjustments
+
+        market_price = (
+            data.get("value_iq_estimate")
+            or data.get("zestimate")
+            or data.get("current_value_avm")
+            or data.get("list_price")
+        )
+        if not market_price:
+            return 1500  # safe fallback when no price data available
+
+        zip_code = data.get("zip_code", "")
+        adjustments = get_market_adjustments(zip_code)
+        insurance_rate = adjustments.get("insurance_rate", 0.01)
+        return round(market_price * insurance_rate, 2)
 
     async def _resolve_zpid_from_address(self, address: str) -> str | None:
         """Resolve a Zillow zpid from a full address."""
