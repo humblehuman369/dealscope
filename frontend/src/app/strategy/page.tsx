@@ -784,14 +784,21 @@ function StrategyContent() {
                   : 0
                 const isPositiveIncomeCase = incomeVal > listPrice && priceGapPct > 0.1
 
-                // Deal Gap bracket always spans Target Buy to Market.
                 const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
-                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
                 const dealBracketPct = listPrice > 0 && targetPrice > 0
                   ? ((listPrice - targetPrice) / listPrice) * 100
                   : 0
                 const effectiveDisplayPct = -dealBracketPct
-                const showDealBracket = (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
+                const isDealGain = effectiveDisplayPct >= 0 && isPositiveIncomeCase
+                const dealBracketRight = isDealGain && incomePos != null
+                  ? incomePos
+                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
+                const showDealBracket = isDealGain
+                  ? (dealBracketRight - dealBracketLeft) >= 3
+                  : (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
+                const dealDisplayPct = isDealGain
+                  ? ((incomeVal - targetPrice) / listPrice) * 100
+                  : effectiveDisplayPct
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
                 const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
@@ -800,8 +807,8 @@ function StrategyContent() {
                   : 0
                 const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = effectiveDisplayPct >= 0 ? 'DEAL GAIN' : 'DEAL GAP'
-                const bracketColor = effectiveDisplayPct >= 0 ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const bracketLabel = isDealGain ? 'DEAL GAIN' : 'DEAL GAP'
+                const bracketColor = isDealGain ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
@@ -821,7 +828,7 @@ function StrategyContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: bracketColor }}
                         >
-                          {bracketLabel} &nbsp;{effectiveDisplayPct >= 0 ? '+' : ''}{effectiveDisplayPct.toFixed(1)}%
+                          {bracketLabel} &nbsp;{dealDisplayPct >= 0 ? '+' : ''}{dealDisplayPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
@@ -929,7 +936,7 @@ function StrategyContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
                           style={{ color: 'var(--status-warning)', marginBottom: 0 }}
                         >
-                          PRICE GAP &nbsp;{priceGap.toFixed(1)}%
+                          PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}{priceGap.toFixed(1)}%
                         </p>
                       </div>
                     )}
@@ -1046,7 +1053,7 @@ function StrategyContent() {
               {[
                 { label: 'Buy Price', value: formatCurrency(targetPrice) },
                 { label: 'Cash Needed', value: formatCurrency(totalCashNeeded) },
-                { label: 'Deal Gap', value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`, highlight: true, negative: dealGapPct > 0 },
+                { label: dealGapPct <= 0 ? 'Deal Gain' : 'Deal Gap', value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`, highlight: true, negative: dealGapPct > 0 },
                 { label: 'Annual Profit', value: formatCurrency(strategyAnnualCashFlow), highlight: true, negative: strategyAnnualCashFlow < 0 },
                 { label: 'CAP Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—', negative: capRateVal !== null && capRateVal < 0 },
                 { label: 'COC Return', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', negative: cocVal !== null && cocVal < 0 },

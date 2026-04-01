@@ -1275,13 +1275,20 @@ function VerdictContent() {
                 const marketPos = property.price > 0 ? pos(property.price) : null
                 const incomePos = incomeValue > 0 ? pos(incomeValue) : null
 
-                // Deal Gap bracket always spans Target Buy to Market.
                 const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
-                const dealBracketRight = targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0
                 const dealBracketPct = property.price > 0 && purchasePrice > 0
                   ? ((property.price - purchasePrice) / property.price) * 100
                   : 0
-                const showDealBracket = (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
+                const isDealGain = effectiveDisplayPct >= 0 && isPositiveIncomeCase
+                const dealBracketRight = isDealGain && incomePos != null
+                  ? incomePos
+                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
+                const showDealBracket = isDealGain
+                  ? (dealBracketRight - dealBracketLeft) >= 3
+                  : (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
+                const dealDisplayPct = isDealGain
+                  ? ((incomeValue - purchasePrice) / property.price) * 100
+                  : effectiveDisplayPct
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
                 const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
@@ -1290,8 +1297,8 @@ function VerdictContent() {
                   : 0
                 const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = effectiveDisplayPct >= 0 ? 'DEAL GAIN' : 'DEAL GAP'
-                const bracketColor = effectiveDisplayPct >= 0 ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const bracketLabel = isDealGain ? 'DEAL GAIN' : 'DEAL GAP'
+                const bracketColor = isDealGain ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
@@ -1311,7 +1318,7 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: bracketColor }}
                         >
-                          {bracketLabel} &nbsp;{effectiveDisplayPct >= 0 ? '+' : ''}{effectiveDisplayPct.toFixed(1)}%
+                          {bracketLabel} &nbsp;{dealDisplayPct >= 0 ? '+' : ''}{dealDisplayPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
                           <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
@@ -1335,7 +1342,7 @@ function VerdictContent() {
                             left: `${sweetSpotLeft}%`,
                             width: `${sweetSpotWidth}%`,
                             height: '100%',
-                            background: 'var(--status-positive)',
+                            background: 'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1343,10 +1350,11 @@ function VerdictContent() {
                           }}
                         >
                           <span style={{
-                            color: '#ffffff',
+                            color: 'var(--status-positive)',
                             fontSize: 11,
                             fontWeight: 700,
                             letterSpacing: '0.08em',
+                            textShadow: '0 0 8px rgba(52,211,153,0.6)',
                             whiteSpace: 'nowrap',
                           }}>
                             SWEET SPOT
@@ -1418,7 +1426,7 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
                           style={{ color: 'var(--status-warning)', marginBottom: 8 }}
                         >
-                          PRICE GAP &nbsp;{priceGap.toFixed(1)}%
+                          PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}{priceGap.toFixed(1)}%
                         </p>
                       </div>
                     )}
