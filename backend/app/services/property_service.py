@@ -192,8 +192,16 @@ class PropertyService:
                 if zillow_zpid and zestimate is None:
                     details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
                     if details_response.success and details_response.data:
-                        raw_export["property_details"] = details_response.data
-                        unwrapped = self._unwrap_axesso_property(details_response.data)
+                        details_data = details_response.data
+                        if isinstance(details_data, dict) and details_data.get("error"):
+                            raw_export["property_details"] = {
+                                "success": False,
+                                "error": details_data.get("error"),
+                                "data": details_data,
+                            }
+                        else:
+                            raw_export["property_details"] = details_data
+                            unwrapped = self._unwrap_axesso_property(details_data)
                     else:
                         raw_export["property_details"] = {
                             "success": False,
@@ -360,12 +368,22 @@ class PropertyService:
                     if zillow_zpid and zestimate is None:
                         details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
                         if details_response.success and details_response.data:
-                            axesso_data = self._unwrap_axesso_property(details_response.data)
-                            zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                            rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                            logger.info(
-                                f"Zillow property-v2 retrieved - zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
-                            )
+                            details_data = details_response.data
+                            if isinstance(details_data, dict) and details_data.get("error"):
+                                logger.warning(
+                                    "Zillow property-v2 returned error: %s (zpid=%s)",
+                                    details_data.get("error"),
+                                    zillow_zpid,
+                                )
+                            else:
+                                axesso_data = self._unwrap_axesso_property(details_data)
+                                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                                rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                                logger.info(
+                                    "Zillow property-v2 retrieved - zestimate: $%s, rentZestimate: $%s",
+                                    zestimate,
+                                    rent_zestimate,
+                                )
                     logger.info(
                         f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
                     )

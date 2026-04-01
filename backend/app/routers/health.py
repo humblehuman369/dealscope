@@ -327,11 +327,18 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
 
 
 @router.get("/debug/zillow")
-async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
+async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483", key: str = ""):
     """
     Debug endpoint: runs the AXESSO/Zillow pipeline step-by-step and returns
     the raw response from each stage so you can diagnose data-pulling issues.
+
+    Requires SECRET_KEY prefix (first 8 chars) as ``key`` query param in production.
     """
+    if settings.is_production:
+        from fastapi.responses import JSONResponse
+
+        if not key or not settings.SECRET_KEY or key != settings.SECRET_KEY[:8]:
+            return JSONResponse({"error": "disabled in production"}, status_code=403)
 
     import json
 
@@ -385,11 +392,24 @@ async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
             steps["circuit_breaker"] = {"state": cb.state.value, "failures": cb.failures}
         return steps
 
-    # Extract zpid
+    # Extract zpid and key values from step 1
     raw = search_resp.data
     zpid = None
     if isinstance(raw, dict):
         zpid = raw.get("zpid")
+        steps["step1_key_values"] = {
+            "zestimate": raw.get("zestimate"),
+            "rentZestimate": raw.get("rentZestimate"),
+            "Zestimate": raw.get("Zestimate"),
+            "RentZestimate": raw.get("RentZestimate"),
+            "price": raw.get("price"),
+            "homeStatus": raw.get("homeStatus"),
+            "bedrooms": raw.get("bedrooms"),
+            "bathrooms": raw.get("bathrooms"),
+            "livingArea": raw.get("livingArea"),
+            "yearBuilt": raw.get("yearBuilt"),
+            "lotSize": raw.get("lotSize"),
+        }
     elif isinstance(raw, list) and raw:
         zpid = raw[0].get("zpid") if isinstance(raw[0], dict) else None
     zpid = zpid or search_resp.zpid
@@ -405,6 +425,9 @@ async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
 
     if details_resp.success and details_resp.data and isinstance(details_resp.data, dict):
         d = details_resp.data
+        if d.get("error"):
+            steps["step2_error"] = d.get("error")
+            steps["step2_note"] = "property-v2 returned HTTP 200 but body contains error; step 1 data used instead"
         steps["step2_key_values"] = {
             "zestimate": d.get("zestimate") or d.get("Zestimate"),
             "rentZestimate": d.get("rentZestimate") or d.get("RentZestimate"),
@@ -414,9 +437,11 @@ async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
             "bathrooms": d.get("bathrooms"),
             "livingArea": d.get("livingArea"),
         }
-        steps["result"] = "SUCCESS"
-    else:
-        steps["result"] = f"FAILED at step 2 (property-v2): {details_resp.error}"
+
+    steps["result"] = "SUCCESS" if (
+        (isinstance(raw, dict) and (raw.get("zestimate") is not None or raw.get("Zestimate") is not None))
+        or (details_resp.success and details_resp.data and isinstance(details_resp.data, dict) and not details_resp.data.get("error"))
+    ) else "PARTIAL - step 1 data available but property-v2 failed"
 
     cb = client.circuit_breaker
     if cb:
