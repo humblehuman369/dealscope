@@ -121,14 +121,14 @@ export function ScanResultSheet({
             </div>
           </div>
 
-          {/* "Not this property?" link */}
           {onPickFromMap && (
             <button
               onClick={onPickFromMap}
-              className="w-full flex items-center justify-center gap-2 py-2.5 mb-4 rounded-xl text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl text-sm font-semibold transition-colors"
               style={{
                 color: 'var(--accent-sky, #0EA5E9)',
-                background: 'transparent',
+                background: 'rgba(14, 165, 233, 0.08)',
+                border: '1px solid rgba(14, 165, 233, 0.3)',
               }}
             >
               <Map className="w-4 h-4" />
