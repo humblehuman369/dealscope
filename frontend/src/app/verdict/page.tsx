@@ -244,6 +244,10 @@ function VerdictContent() {
   const analysisInputsRef = useRef<Record<string, any> | null>(null)
   const hasRecordedAnalysisRef = useRef(false)
 
+  // Guards against race conditions when rapidly switching between properties.
+  // Each address change increments the counter; stale async responses are discarded.
+  const fetchGenerationRef = useRef(0)
+
   // Reset recording flag when user navigates to a different property (new address or propertyId)
   useEffect(() => {
     hasRecordedAnalysisRef.current = false
@@ -292,6 +296,8 @@ function VerdictContent() {
   
   // Fetch property data from API (or use store data for saved properties)
   useEffect(() => {
+    const generation = ++fetchGenerationRef.current
+
     async function fetchPropertyData() {
       // For saved property mode, wait for store to load then use that data
       if (isSavedPropertyMode) {
@@ -313,6 +319,15 @@ function VerdictContent() {
         return
       }
 
+      // Reset stale state from previous property before fetching
+      setProperty(null)
+      setAnalysis(null)
+      setPropertyPhotos([])
+      setIqSources({
+        value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+        rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+      })
+
       try {
         setIsLoading(true)
         setError(null)
@@ -323,6 +338,9 @@ function VerdictContent() {
           state: stateParam,
           zip_code: zipCodeParam,
         })
+
+        // Discard if a newer address search has started since this fetch began
+        if (generation !== fetchGenerationRef.current) return
 
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
         const monthlyRent = data.rentals?.monthly_rent_ltr || 0
@@ -554,6 +572,9 @@ function VerdictContent() {
 
         const analysisData = await analysisPromise
 
+        // Discard if a newer address search has started since this fetch began
+        if (generation !== fetchGenerationRef.current) return
+
         // Diagnostic logging — traces exact key formats from backend
         console.log('[IQ Verdict] Raw backend response:', JSON.stringify(analysisData).slice(0, 500))
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
@@ -630,6 +651,7 @@ function VerdictContent() {
           // Phase 2: non-blocking photo fetch — do not await; update property when done
           if (propertyData.zpid) {
             fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then((result) => {
+              if (generation !== fetchGenerationRef.current) return
               if (result.status === 'success' && result.photos.length > 0) {
                 setPropertyPhotos(result.photos)
                 setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))

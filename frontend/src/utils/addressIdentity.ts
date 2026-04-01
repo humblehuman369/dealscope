@@ -64,16 +64,24 @@ function tryParseJson(raw: string | null): Record<string, unknown> | null {
 export function readDealMakerOverrides(address?: string): Record<string, unknown> | null {
   if (typeof window === 'undefined') return null
 
-  const keysToTry: string[] = []
-  if (address) keysToTry.push(buildDealMakerSessionKey(address))
-
-  const activeAddress = sessionStorage.getItem('dealMaker_activeAddress')
-  if (activeAddress) keysToTry.push(buildDealMakerSessionKey(activeAddress))
-
-  for (const key of keysToTry) {
-    const parsed = tryParseJson(sessionStorage.getItem(key))
+  // Try the exact requested address first
+  if (address) {
+    const parsed = tryParseJson(sessionStorage.getItem(buildDealMakerSessionKey(address)))
     if (parsed) return parsed
   }
+
+  // Only fall back to dealMaker_activeAddress when no specific address was
+  // requested (e.g. header reading "whatever is active"). When a specific
+  // address IS provided, returning a different property's data causes the
+  // stale-data bug (e.g. SW vs NW of same street).
+  if (!address) {
+    const activeAddress = sessionStorage.getItem('dealMaker_activeAddress')
+    if (activeAddress) {
+      const parsed = tryParseJson(sessionStorage.getItem(buildDealMakerSessionKey(activeAddress)))
+      if (parsed) return parsed
+    }
+  }
+
   return null
 }
 
