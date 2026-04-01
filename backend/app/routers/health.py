@@ -255,17 +255,18 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/debug/redfin")
-async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
+async def debug_redfin(address: str = "123 Main St, Franklin, TN", key: str = ""):
     """
     Debug endpoint: runs the full Redfin pipeline step-by-step and returns
     the raw response from each stage so you can see the exact shape.
 
-    Non-production only — returns 403 in production.
+    Requires SECRET_KEY prefix (first 8 chars) as ``key`` query param in production.
     """
     if settings.is_production:
         from fastapi.responses import JSONResponse
 
-        return JSONResponse({"error": "disabled in production"}, status_code=403)
+        if not key or not settings.SECRET_KEY or key != settings.SECRET_KEY[:8]:
+            return JSONResponse({"error": "disabled in production"}, status_code=403)
 
     from app.services.api_clients import RedfinClient
 
