@@ -371,13 +371,8 @@ function VerdictContent() {
           (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
           1
 
-        // Get property taxes from API data
-        const propertyTaxes = data.taxes?.annual_tax_amount 
-          || data.taxes?.tax_amount 
-          || null
-
-        // Get insurance estimate if available
-        const insurance = data.expenses?.insurance_annual || null
+        const propertyTaxes = data.market?.property_taxes_annual ?? null
+        const insurance = data.market?.insurance_annual ?? null
 
         // Get STR data if available (use null checks to properly handle 0 values)
         const averageDailyRate = data.rentals?.average_daily_rate ?? null

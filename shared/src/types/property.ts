@@ -145,6 +145,7 @@ export interface MarketData {
   market_health_score?: number | null;
   market_strength?: string | null;
   property_taxes_annual?: number | null;
+  insurance_annual?: number | null;
   hoa_fees_monthly?: number | null;
   mortgage_rate_arm5?: number | null;
   mortgage_rate_30yr?: number | null;

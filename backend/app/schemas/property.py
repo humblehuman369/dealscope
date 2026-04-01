@@ -306,6 +306,7 @@ class MarketData(BaseModel):
     market_health_score: int | None = None
     market_strength: str | None = None
     property_taxes_annual: float | None = None
+    insurance_annual: float | None = None
     hoa_fees_monthly: float | None = None
     # Mortgage rate data for frontend calculations
     mortgage_rate_arm5: float | None = None

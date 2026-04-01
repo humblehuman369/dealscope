@@ -69,10 +69,8 @@ export default function DealMakerIndexPage() {
         (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
         FALLBACK_PROPERTY.price
 
-      const propertyTaxes = data.taxes?.annual_tax_amount
-        || data.taxes?.tax_amount
-        || null
-      const insurance = data.expenses?.insurance_annual || null
+      const propertyTaxes = data.market?.property_taxes_annual ?? null
+      const insurance = data.market?.insurance_annual ?? null
 
       const parsedAddress = parseAddressString(address)
 
