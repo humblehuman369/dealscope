@@ -327,11 +327,18 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
 
 
 @router.get("/debug/zillow")
-async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
+async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483", key: str = ""):
     """
-    Debug endpoint: runs the AXESSO/Zillow pipeline step-by-step.
-    TODO: re-secure with SECRET_KEY gate after diagnosis.
+    Debug endpoint: runs the AXESSO/Zillow pipeline step-by-step and returns
+    the raw response from each stage so you can diagnose data-pulling issues.
+
+    Requires SECRET_KEY prefix (first 8 chars) as ``key`` query param in production.
     """
+    if settings.is_production:
+        from fastapi.responses import JSONResponse
+
+        if not key or not settings.SECRET_KEY or key != settings.SECRET_KEY[:8]:
+            return JSONResponse({"error": "disabled in production"}, status_code=403)
 
     import json
 

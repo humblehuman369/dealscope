@@ -178,47 +178,17 @@ class PropertyService:
         """
         Fetch raw AXESSO/Zillow data. Returns (raw_export_dict, unwrapped_property_dict).
         raw_export_dict is for Excel; always records each response (data or error) for auditing.
+        Uses _fetch_zillow_with_retry for resilience against empty responses.
         """
         raw_export: dict[str, Any] = {"address": address, "fetched_at": datetime.now(UTC).isoformat()}
         unwrapped: dict[str, Any] | None = None
         try:
-            zillow_response = await self.zillow.search_by_address(address)
-            if zillow_response.success and zillow_response.data:
-                raw_export["search_by_address"] = zillow_response.data
-                raw = zillow_response.data
-                unwrapped = self._unwrap_axesso_property(raw)
-                zillow_zpid = unwrapped.get("zpid") or raw.get("zpid")
-                zestimate = unwrapped.get("zestimate") or unwrapped.get("Zestimate")
-                if zillow_zpid and zestimate is None:
-                    details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
-                    if details_response.success and details_response.data:
-                        details_data = details_response.data
-                        if isinstance(details_data, dict) and details_data.get("error"):
-                            raw_export["property_details"] = {
-                                "success": False,
-                                "error": details_data.get("error"),
-                                "data": details_data,
-                            }
-                        else:
-                            raw_export["property_details"] = details_data
-                            unwrapped = self._unwrap_axesso_property(details_data)
-                    else:
-                        raw_export["property_details"] = {
-                            "success": False,
-                            "status_code": getattr(details_response, "status_code", None),
-                            "error": details_response.error,
-                            "data": details_response.data,
-                        }
-                else:
-                    raw_export["property_details"] = None
+            unwrapped, zpid = await self._fetch_zillow_with_retry(address)
+            if unwrapped:
+                raw_export["search_by_address"] = unwrapped
             else:
-                raw_export["search_by_address"] = {
-                    "success": False,
-                    "status_code": getattr(zillow_response, "status_code", None),
-                    "error": zillow_response.error,
-                    "data": zillow_response.data,
-                }
-                raw_export["property_details"] = None
+                raw_export["search_by_address"] = {"success": False, "error": "No data returned"}
+            raw_export["property_details"] = None
         except Exception as e:
             raw_export["error"] = str(e)
         return raw_export, unwrapped
@@ -356,41 +326,21 @@ class PropertyService:
             t_zil = time.perf_counter()
             zillow_zpid = None
             try:
-                logger.info(f"Fetching Zillow data for: {address}")
-                zillow_response = await self.zillow.search_by_address(address)
-
-                if zillow_response.success and zillow_response.data:
-                    raw = zillow_response.data
-                    axesso_data = self._unwrap_axesso_property(raw)
-                    zillow_zpid = axesso_data.get("zpid") or raw.get("zpid")
+                logger.info("Fetching Zillow data for: %s", address)
+                axesso_data, zillow_zpid = await self._fetch_zillow_with_retry(address)
+                if axesso_data:
                     zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
                     rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                    if zillow_zpid and zestimate is None:
-                        details_response = await self.zillow.get_property_details(zpid=str(zillow_zpid))
-                        if details_response.success and details_response.data:
-                            details_data = details_response.data
-                            if isinstance(details_data, dict) and details_data.get("error"):
-                                logger.warning(
-                                    "Zillow property-v2 returned error: %s (zpid=%s)",
-                                    details_data.get("error"),
-                                    zillow_zpid,
-                                )
-                            else:
-                                axesso_data = self._unwrap_axesso_property(details_data)
-                                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                                rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                                logger.info(
-                                    "Zillow property-v2 retrieved - zestimate: $%s, rentZestimate: $%s",
-                                    zestimate,
-                                    rent_zestimate,
-                                )
                     logger.info(
-                        f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}"
+                        "Zillow data retrieved - zpid: %s, zestimate: $%s, rentZestimate: $%s",
+                        zillow_zpid,
+                        zestimate,
+                        rent_zestimate,
                     )
                 else:
-                    logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
+                    logger.warning("Zillow search returned no data for: %s", address)
             except Exception as e:
-                logger.error(f"Error fetching Zillow data: {e}")
+                logger.error("Error fetching Zillow data: %s", e)
             timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
 
             # Fetch from Redfin (value estimate only)
@@ -697,6 +647,60 @@ class PropertyService:
             longitude=None,
             full_address=address,
         )
+
+    async def _fetch_zillow_with_retry(
+        self, address: str, max_attempts: int = 3
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """Fetch Zillow data via search-by-address, retrying on empty responses.
+
+        AXESSO intermittently returns HTTP 200 with all-null values
+        (``responseStatus: PAGE_FOUND`` but zpid/zestimate/etc. are null).
+        This method retries up to ``max_attempts`` times with a short delay
+        when an empty response is detected.
+
+        Returns (axesso_data_dict, zpid_string) or (None, None) on failure.
+        """
+        for attempt in range(max_attempts):
+            zillow_response = await self.zillow.search_by_address(address)
+            if not zillow_response.success or not zillow_response.data:
+                logger.warning("Zillow search failed for: %s - %s", address, zillow_response.error)
+                return None, None
+
+            raw = zillow_response.data
+            axesso_data = self._unwrap_axesso_property(raw)
+            zpid = axesso_data.get("zpid") or raw.get("zpid")
+
+            if zpid is not None:
+                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                if zpid and zestimate is None:
+                    details_response = await self.zillow.get_property_details(zpid=str(zpid))
+                    if details_response.success and details_response.data:
+                        details_data = details_response.data
+                        if isinstance(details_data, dict) and details_data.get("error"):
+                            logger.warning(
+                                "Zillow property-v2 returned error: %s (zpid=%s)",
+                                details_data.get("error"),
+                                zpid,
+                            )
+                        else:
+                            axesso_data = self._unwrap_axesso_property(details_data)
+                return axesso_data, str(zpid) if zpid else None
+
+            if attempt < max_attempts - 1:
+                wait = 1.0 * (attempt + 1)
+                logger.info(
+                    "AXESSO returned empty response for %s (attempt %d/%d), retrying in %.1fs",
+                    address,
+                    attempt + 1,
+                    max_attempts,
+                    wait,
+                )
+                await asyncio.sleep(wait)
+
+        logger.warning(
+            "AXESSO returned empty responses for %s after %d attempts", address, max_attempts
+        )
+        return None, None
 
     def _unwrap_axesso_property(self, raw: dict[str, Any]) -> dict[str, Any]:
         """
