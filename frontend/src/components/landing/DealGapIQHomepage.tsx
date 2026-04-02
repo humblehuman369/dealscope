@@ -100,33 +100,11 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             </p>
           </div>
           <div className="hero-visual">
-            <div className="hero-phone-frame">
-              <div className="hero-phone-notch" />
-              <div className="hero-phone-screen">
-                <div className="hero-phone-house" />
-                <div className="hero-phone-metrics">
-                  <div className="hero-phone-row">
-                    <span className="hero-phone-label">List Price</span>
-                    <span className="hero-phone-value">$580,000</span>
-                  </div>
-                  <div className="hero-phone-divider" />
-                  <div className="hero-phone-row">
-                    <span className="hero-phone-label">Breakeven</span>
-                    <span className="hero-phone-value">$522,000</span>
-                  </div>
-                  <div className="hero-phone-divider" />
-                  <div className="hero-phone-row">
-                    <span className="hero-phone-label">Target Buy</span>
-                    <span className="hero-phone-value">$487,000</span>
-                  </div>
-                  <div className="hero-phone-divider" />
-                  <div className="hero-phone-row">
-                    <span className="hero-phone-label">Deal Gap</span>
-                    <span className="hero-phone-value hero-phone-negative">−16.0%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img
+              src="/images/verdict-preview.png"
+              alt="DealGapIQ Verdict — Investment Overview showing Target Buy, Income Value, Market Price, Deal Gap, and Data Sources"
+              className="hero-verdict-img"
+            />
           </div>
         </div>
       </section>
