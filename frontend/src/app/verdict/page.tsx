@@ -1297,7 +1297,7 @@ function VerdictContent() {
                   : 0
                 const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
 
-                const bracketLabel = isDealGain ? 'DEAL GAIN' : 'DEAL GAP'
+                const bracketLabel = 'DEAL GAP'
                 const bracketColor = isDealGain ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
@@ -1350,11 +1350,10 @@ function VerdictContent() {
                           }}
                         >
                           <span style={{
-                            color: 'var(--status-positive)',
+                            color: '#ffffff',
                             fontSize: 11,
                             fontWeight: 700,
                             letterSpacing: '0.08em',
-                            textShadow: '0 0 8px rgba(52,211,153,0.6)',
                             whiteSpace: 'nowrap',
                           }}>
                             SWEET SPOT
