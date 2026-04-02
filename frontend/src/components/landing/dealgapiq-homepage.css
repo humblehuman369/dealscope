@@ -156,15 +156,12 @@
   animation: fadeUp 0.8s ease 0.5s both;
 }
 
-/* HERO VERDICT IMAGE */
-.hero-verdict-img {
-  width: 380px;
+/* HERO PHONE IMAGE */
+.hero-phone-img {
+  width: 420px;
   max-width: 100%;
-  border-radius: 16px;
-  box-shadow:
-    0 25px 60px rgba(0,0,0,0.5),
-    0 0 80px rgba(14,165,233,0.06);
   animation: fadeUp 0.8s ease 0.3s both;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
 }
 
 /* FOUNDER SEPARATOR */
@@ -1519,7 +1516,7 @@
 /* RESPONSIVE */
 @media (max-width: 960px) {
   .hero-columns { gap: 2.5rem; }
-  .hero-verdict-img { width: 320px; }
+  .hero-phone-img { width: 340px; }
 }
 
 @media (max-width: 768px) {
@@ -1529,7 +1526,7 @@
   .hero-cta-group { justify-content: center; }
   .hero-note { text-align: center; }
   .hero-visual { order: -1; }
-  .hero-verdict-img { width: 280px; }
+  .hero-phone-img { width: 260px; }
   .hero h1 { font-size: 2.2rem; }
   .compare-grid { grid-template-columns: 1fr; }
   .compare-vs { padding: 1rem 0; }
