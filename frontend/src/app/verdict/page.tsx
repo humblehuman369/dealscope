@@ -1125,139 +1125,67 @@ function VerdictContent() {
                 Investment Overview
               </h2>
               <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
-                {([
+                {[
                   {
-                    label: 'Profit Zone',
+                    title: 'Target Buy',
+                    subtitle: 'Profit Zone',
                     value: purchasePrice,
                     color: 'var(--accent-sky)',
-                    copy: 'The price you should aim to pay to create positive cash flow.',
-                    linkLabel: 'PROFIT ZONE',
-                    strategySection: 'purchase' as const,
+                    tooltip: 'The price you should aim to pay to create positive cash flow.',
                   },
                   {
-                    label: 'Break-Even Line',
+                    title: 'Income Value',
+                    subtitle: 'Break-Even',
                     value: incomeValue,
                     color: 'var(--status-warning)',
-                    copy: 'The break-even price\u2014where rent covers all costs.',
-                    linkLabel: 'BREAK-EVEN LINE',
-                    strategySection: 'income' as const,
+                    tooltip: 'The break-even price\u2014where rent covers all costs.',
                   },
                   {
-                    label: 'Market Reality',
+                    title: 'Market Price',
+                    subtitle: 'Market Reality',
                     value: property.price,
                     color: 'var(--status-negative)',
-                    copy: 'The current list price or, for off-market properties, the estimated value based on comparable sales.',
-                    linkLabel: 'MARKET REALITY',
-                    linkSuffix: 'in Comps',
-                    linkToComps: true,
+                    tooltip: 'The current list price or, for off-market properties, the estimated value based on comparable sales.',
                   },
-                ] as const).map((card) => (
+                ].map((card) => (
                   <div
-                    key={card.label}
-                    className="rounded-xl py-4 px-4 text-center sm:flex-1 flex flex-col"
+                    key={card.title}
+                    className="rounded-xl py-3 px-4 text-center sm:flex-1"
                     style={{
                       background: 'var(--surface-card)',
                       border: `1px solid ${card.color}`,
                       boxShadow: 'var(--shadow-card)',
                     }}
                   >
-                    <p className="text-sm font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-heading)' }}>{card.label}</p>
-                    <p className="tabular-nums mb-2 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                    <p className="leading-snug text-center flex-1 flex items-center justify-center font-medium" style={{ color: 'var(--text-muted)', fontSize: 'clamp(13px, 1.1vw, 15px)' }}>{card.copy}</p>
-                    <button
-                      onClick={'linkToComps' in card ? navigateToComps : () => navigateToStrategy(card.strategySection)}
-                      className="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:opacity-80 cursor-pointer"
-                      style={{ color: card.color, background: 'transparent', border: `1.5px solid ${card.color}` }}
-                    >
-                      Improve in Strategy
-                    </button>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--text-heading)' }}>{card.title}</p>
+                      <InfoPopover
+                        ariaLabel={`What is ${card.title}?`}
+                        label={
+                          <svg className="w-3.5 h-3.5 opacity-40 hover:opacity-80 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                        }
+                        content={
+                          <p style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--chart-tooltip-text)', margin: 0 }}>
+                            {card.tooltip}
+                          </p>
+                        }
+                        panelClassName="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 rounded-lg border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 shadow-lg"
+                        className="inline-flex items-center"
+                      />
+                    </div>
+                    <p className="tabular-nums mb-1 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{card.subtitle}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Data Sources Accordion */}
-            {hasDataSources && (
-              <div
-                className="mt-[3px] rounded-xl overflow-hidden"
-                style={{
-                  background: 'var(--surface-card)',
-                  border: '1px solid var(--border-default)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsDataSourcesOpen((prev) => !prev)}
-                  className="w-full px-4 py-3 flex items-center justify-between"
-                  style={{ color: 'var(--text-heading)' }}
-                  aria-expanded={isDataSourcesOpen}
-                  aria-controls="verdict-data-sources-panel"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">Data Sources</span>
-                    <span className="text-[10px] sm:text-[12px]" style={{ color: 'var(--text-label)' }}>
-                      {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {isDataSourcesOpen && (
-                  <div id="verdict-data-sources-panel" className="px-3 pb-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <IQEstimateSelector
-                      sources={iqSources}
-                      highlightIntro
-                      showHeader={false}
-                      compact
-                      onSourceChange={(type, _sourceId, _value) => {
-                        if (_value == null) return
-                        setProperty((prev) => {
-                          if (!prev) return prev
-                          if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
-                          if (type === 'value') return { ...prev, price: _value } as IQProperty
-                          return prev
-                        })
-                        recalculateVerdict(
-                          type === 'value'
-                            ? { list_price: _value }
-                            : { monthly_rent: _value },
-                        )
-                        try {
-                          const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
-                          const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
-                          if (type === 'value') {
-                            writeDealMakerOverrides(fullAddress || addressParam, {
-                              price: _value,
-                              listPrice: _value,
-                            })
-                          } else {
-                            writeDealMakerOverrides(fullAddress || addressParam, {
-                              monthlyRent: _value,
-                            })
-                          }
-                        } catch {
-                          // Ignore storage errors
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Price scale bar (Deal Gap / Price Gap) */}
-            <div className="mt-7 relative" style={{ paddingTop: 0 }}>
+            <div className="mt-5 relative" style={{ paddingTop: 0 }}>
               {(() => {
                 const markers = [
                   { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },
@@ -1430,6 +1358,86 @@ function VerdictContent() {
                 )
               })()}
             </div>
+
+            {/* Data Sources Accordion */}
+            {hasDataSources && (
+              <div
+                className="mt-5 rounded-xl overflow-hidden"
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border-default)',
+                  boxShadow: 'var(--shadow-card)',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsDataSourcesOpen((prev) => !prev)}
+                  className="w-full px-4 py-3 flex items-center justify-between"
+                  style={{ color: 'var(--text-heading)' }}
+                  aria-expanded={isDataSourcesOpen}
+                  aria-controls="verdict-data-sources-panel"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">Data Sources</span>
+                    <span className="text-[10px] sm:text-[12px]" style={{ color: 'var(--text-label)' }}>
+                      {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {isDataSourcesOpen && (
+                  <div id="verdict-data-sources-panel" className="px-3 pb-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <IQEstimateSelector
+                      sources={iqSources}
+                      highlightIntro
+                      showHeader={false}
+                      compact
+                      onSourceChange={(type, _sourceId, _value) => {
+                        if (_value == null) return
+                        setProperty((prev) => {
+                          if (!prev) return prev
+                          if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                          if (type === 'value') return { ...prev, price: _value } as IQProperty
+                          return prev
+                        })
+                        recalculateVerdict(
+                          type === 'value'
+                            ? { list_price: _value }
+                            : { monthly_rent: _value },
+                        )
+                        try {
+                          const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
+                          const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                          if (type === 'value') {
+                            writeDealMakerOverrides(fullAddress || addressParam, {
+                              price: _value,
+                              listPrice: _value,
+                            })
+                          } else {
+                            writeDealMakerOverrides(fullAddress || addressParam, {
+                              monthlyRent: _value,
+                            })
+                          }
+                        } catch {
+                          // Ignore storage errors
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Deal Gap Summary — two-column layout with video */}
             <div
