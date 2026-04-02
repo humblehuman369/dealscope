@@ -204,7 +204,7 @@ export function MapPropertyPicker({
               }}
             >
               <MapPin className="w-4 h-4" style={{ color: 'var(--accent-sky, #0EA5E9)' }} />
-              Tap any property on the map
+              Select any property on the map
             </div>
           </div>
         )}

@@ -34,6 +34,13 @@ function validatePropertyResponse(data: PropertyResponseCompat): PropertyRespons
     }
   }
 
+  const mkt = data.market as Record<string, any> | undefined
+  if (mkt) {
+    for (const k of ['property_taxes_annual', 'insurance_annual', 'hoa_fees_monthly']) {
+      if (mkt[k] != null) mkt[k] = finiteOrNull(mkt[k])
+    }
+  }
+
   const r = data.rentals as Record<string, any> | undefined
   if (r) {
     if (r.monthly_rent_ltr != null) r.monthly_rent_ltr = finiteOrNull(r.monthly_rent_ltr)

@@ -249,6 +249,8 @@ class PropertyService:
                 missing_iq_fields = has_source_value and (
                     valuations.get("value_iq_estimate") is None and not rental_stats_cached
                 )
+                market_cached = cached_data.get("market") or {}
+                missing_insurance = market_cached.get("insurance_annual") is None
                 # Zillow data completely absent — AXESSO likely had a transient
                 # failure.  Re-fetch after 4 hours to give the API time to
                 # recover without hammering it on every request.
@@ -289,11 +291,12 @@ class PropertyService:
                     is_off_market_cached
                     and valuations.get("zestimate") is None
                     and valuations.get("market_price") in (None, 1)
-                ) or missing_iq_fields or zillow_stale or redfin_stale
+                ) or missing_iq_fields or missing_insurance or zillow_stale or redfin_stale
                 if stale:
                     reason = (
                         "Zillow data absent > 4h" if zillow_stale
                         else "Redfin data absent > 4h" if redfin_stale
+                        else "insurance_annual missing" if missing_insurance
                         else "IQ estimate data missing"
                     )
                     logger.info("Cache hit for %s but %s — forcing re-fetch", address, reason)
