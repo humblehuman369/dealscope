@@ -292,10 +292,10 @@
   margin: 0;
 }
 .dealgap-video-combined .video-poster-overlay {
-  background: rgba(0,0,0,0.35);
+  background: transparent;
 }
 .dealgap-video-combined:hover .video-poster-overlay {
-  background: rgba(0,0,0,0.25);
+  background: transparent;
 }
 .dealgap-video-combined.is-playing {
   aspect-ratio: 16/9;
