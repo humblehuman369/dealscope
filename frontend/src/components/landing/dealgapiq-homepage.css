@@ -281,15 +281,11 @@
 /* Combined chart + video variant */
 .dealgap-video-combined {
   aspect-ratio: auto;
+  cursor: pointer;
 }
-.dealgap-video-combined .three-prices-graphic {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  border-radius: 0;
-  max-width: none;
-  margin: 0;
+.dealgap-video-combined .threshold-graphic {
+  position: relative;
+  z-index: 1;
 }
 .dealgap-video-combined .video-poster-overlay {
   background: transparent;
@@ -830,6 +826,74 @@
   max-width: 850px;
   margin: 0 auto;
   position: relative;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.threshold-labels-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 1.5rem;
+  margin-bottom: 0;
+}
+.threshold-labels-bottom {
+  padding: 0 1.5rem;
+  margin-top: 0;
+}
+.threshold-label-anchor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.threshold-label-left { align-items: flex-start; padding-left: 8%; }
+.threshold-label-right { align-items: flex-end; padding-right: 4%; }
+.threshold-label-left-bottom { align-items: flex-start; padding-left: 32%; }
+
+.threshold-label-badge {
+  font-family: var(--font-dm, 'DM Sans', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.3rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.threshold-label-line {
+  display: block;
+  width: 2px;
+  height: 20px;
+}
+.threshold-line-blue { background: var(--accent-sky); }
+.threshold-line-yellow { background: var(--status-income-value, #FACC15); }
+.threshold-line-red { background: var(--status-negative); }
+
+.threshold-bar-area {
+  padding: 0 2rem;
+}
+.gap-label-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+.gap-label-text {
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.gap-label-value {
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.threshold-bar {
+  position: relative;
+  height: 14px;
+  margin: 0.25rem 0;
 }
 
 /* Gap span labels + brackets above the bar */
@@ -872,11 +936,6 @@
   border-color: var(--status-income-value, #FACC15);
 }
 
-.threshold-bar {
-  position: relative;
-  height: 14px;
-  margin: 5rem 2rem 0;
-}
 .bar-track {
   position: absolute; inset: 0;
   background: var(--surface-elevated);
