@@ -120,6 +120,14 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       {/* THREE PRICE THRESHOLDS */}
       <section className="prices">
         <div className="prices-inner">
+          <div className="section-label">Know the number. See the gap.</div>
+          <h2>Every Property Has Three Key Prices</h2>
+          <p className="prices-sub">
+            DealGapIQ shows what it&apos;s worth (Market Value), what it takes to break even
+            (Income Value), and what you should pay to profit (Target Buy), plus exactly how far the asking
+            price is from each.
+          </p>
+
           <div
             className={`video-container dealgap-video-combined${isDealGapVideoPlaying ? ' is-playing' : ''}`}
             style={{ maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
@@ -128,7 +136,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             {!isDealGapVideoPlaying && (
               <img
                 src="/images/three-key-prices.png"
-                alt="Every Property Has Three Key Prices — DealGapIQ shows Market Value, Income Value, and Target Buy with Deal Gap and Price Gap indicators"
+                alt="DealGapIQ chart showing Target Buy, Income Value, and List Price with Deal Gap and Price Gap indicators"
                 className="three-prices-graphic"
               />
             )}
@@ -151,6 +159,21 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
                 </svg>
               </div>
               <div className="video-label">What is DealGapIQ?</div>
+            </div>
+          </div>
+
+          <div className="price-badges">
+            <div className="price-badge badge-blue">
+              <span className="badge-title">Profit Zone</span>
+              <span className="badge-label">Target Buy</span>
+            </div>
+            <div className="price-badge badge-yellow">
+              <span className="badge-title">Break-Even Line</span>
+              <span className="badge-label">Income Value</span>
+            </div>
+            <div className="price-badge badge-red">
+              <span className="badge-title">Market Reality</span>
+              <span className="badge-label">Market Value</span>
             </div>
           </div>
         </div>
