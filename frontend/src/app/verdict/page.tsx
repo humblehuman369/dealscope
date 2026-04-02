@@ -1260,9 +1260,9 @@ function VerdictContent() {
             <div className="mt-7 relative" style={{ paddingTop: 0 }}>
               {(() => {
                 const markers = [
-                  { label: 'Target Buy', price: purchasePrice, dotColor: 'var(--accent-sky)' },
-                  { label: 'Income Value', price: incomeValue, dotColor: 'var(--status-warning)' },
-                  { label: priceLabel, price: property.price, dotColor: 'var(--status-negative)' },
+                  { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },
+                  { label: 'INCOME', price: incomeValue, dotColor: 'var(--status-warning)' },
+                  { label: 'MARKET', price: property.price, dotColor: 'var(--status-negative)' },
                 ].filter(m => m.price > 0).sort((a, b) => a.price - b.price)
 
                 const allPrices = markers.map(m => m.price)
@@ -1361,7 +1361,7 @@ function VerdictContent() {
                         </div>
                       )}
                       {markers.map((m, i) => {
-                        const isRing = tbMarketOverlap && m.label === 'Target Buy'
+                        const isRing = tbMarketOverlap && m.label === 'TARGET'
                         return (
                           <div key={i} className="absolute rounded-full"
                             style={{
@@ -1381,7 +1381,7 @@ function VerdictContent() {
                     </div>
 
                     {/* Price labels below dots (grouped when overlapping) */}
-                    <div className="relative" style={{ height: 32, marginTop: 4 }}>
+                    <div className="relative" style={{ height: 18, marginTop: 4 }}>
                       {(() => {
                         const groups: { labels: string[]; price: number; colors: string[]; left: number }[] = []
                         markers.forEach(m => {
@@ -1399,9 +1399,6 @@ function VerdictContent() {
                                   <span style={{ color: g.colors[j] }}>{l}</span>
                                 </span>
                               ))}
-                            </div>
-                            <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                              {fmtPrice(g.price)}
                             </div>
                           </div>
                         ))
