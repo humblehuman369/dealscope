@@ -101,9 +101,9 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           </div>
           <div className="hero-visual">
             <img
-              src="/images/verdict-preview.png"
-              alt="DealGapIQ Verdict — Investment Overview showing Target Buy, Income Value, Market Price, Deal Gap, and Data Sources"
-              className="hero-verdict-img"
+              src="/images/hero-phone-hand.png"
+              alt="Hand holding phone showing DealGapIQ property analysis with List Price, Breakeven, Target Buy, and Deal Gap"
+              className="hero-phone-img"
             />
           </div>
         </div>
