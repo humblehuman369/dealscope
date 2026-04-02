@@ -343,7 +343,7 @@ function VerdictContent() {
         if (generation !== fetchGenerationRef.current) return
 
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
-        const monthlyRent = data.rentals?.monthly_rent_ltr || 0
+        const monthlyRent = data.rentals?.monthly_rent_ltr ?? 0
 
         // Market Price: when listed = List Price; when off-market = API market_price or same fallback as backend
         const isListed =

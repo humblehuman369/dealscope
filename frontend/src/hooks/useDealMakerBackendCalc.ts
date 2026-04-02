@@ -8,7 +8,7 @@
  * The client only provides inputs and displays results.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api-client'
 
 const DEBOUNCE_MS = 150
@@ -201,8 +201,20 @@ export function useDealMakerBackendCalc<T>(
   const requestIdRef = useRef(0)
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
+  // Serialize state to a stable string so the effect only fires when values change,
+  // not on every render (object identity changes every render).
+  const stateKey = JSON.stringify(state)
+
   useEffect(() => {
     const id = ++requestIdRef.current
+    let parsedState: Record<string, unknown>
+    try {
+      parsedState = JSON.parse(stateKey)
+    } catch {
+      return
+    }
+
+    const controller = new AbortController()
 
     const timer = setTimeout(async () => {
       setError(null)
@@ -212,12 +224,13 @@ export function useDealMakerBackendCalc<T>(
       }, 200)
 
       try {
-        const payload = buildPayload(strategyType, state)
-        const data = await api.post<T>(endpoint, payload)
+        const payload = buildPayload(strategyType, parsedState)
+        const data = await api.post<T>(endpoint, payload, { signal: controller.signal })
         if (requestIdRef.current === id) {
           setResult(data)
         }
       } catch (err) {
+        if (controller.signal.aborted) return
         if (requestIdRef.current === id) {
           const message =
             err instanceof Error
@@ -236,8 +249,10 @@ export function useDealMakerBackendCalc<T>(
     return () => {
       clearTimeout(timer)
       clearTimeout(loadingTimerRef.current)
+      controller.abort()
     }
-  }, [strategyType, state, endpoint])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [strategyType, stateKey, endpoint])
 
   return { result, isCalculating, error }
 }

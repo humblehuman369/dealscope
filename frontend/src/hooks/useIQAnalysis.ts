@@ -9,7 +9,7 @@
  * The client only provides inputs and displays results.
  */
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api-client'
 import type { IQTargetResult, TargetAssumptions } from '@/lib/iqTarget'
 import type { StrategyId } from '@/components/analytics/types'
@@ -208,12 +208,23 @@ export function useIQAnalysis(
   const [error, setError] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
+  // Serialize assumptions to a stable string so the effect only fires when
+  // values actually change, not on every render due to object identity.
+  const assumptionsKey = JSON.stringify(assumptions)
+
   useEffect(() => {
     if (!strategyId) {
       setIqTarget(null)
       setVerdictDealScore(null)
       setMetricsAtTarget(null)
       setMetricsAtList(null)
+      return
+    }
+
+    let parsedAssumptions: TargetAssumptions
+    try {
+      parsedAssumptions = JSON.parse(assumptionsKey)
+    } catch {
       return
     }
 
@@ -230,15 +241,14 @@ export function useIQAnalysis(
       setError(null)
 
       try {
-        // 1. Get IQ Target from verdict endpoint
         const verdictPayload = {
-          list_price: assumptions.listPrice,
-          monthly_rent: assumptions.monthlyRent,
-          property_taxes: assumptions.propertyTaxes,
-          insurance: assumptions.insurance,
-          arv: assumptions.arv,
-          average_daily_rate: assumptions.averageDailyRate,
-          occupancy_rate: assumptions.occupancyRate,
+          list_price: parsedAssumptions.listPrice,
+          monthly_rent: parsedAssumptions.monthlyRent,
+          property_taxes: parsedAssumptions.propertyTaxes,
+          insurance: parsedAssumptions.insurance,
+          arv: parsedAssumptions.arv,
+          average_daily_rate: parsedAssumptions.averageDailyRate,
+          occupancy_rate: parsedAssumptions.occupancyRate,
         }
 
         const verdict = await api.post<VerdictResponse>(
@@ -247,10 +257,9 @@ export function useIQAnalysis(
           { signal: controller.signal },
         )
 
-        // Bail out if aborted between calls
         if (controller.signal.aborted) return
 
-        const target = mapVerdictToIQTarget(verdict, strategyId, assumptions)
+        const target = mapVerdictToIQTarget(verdict, strategyId, parsedAssumptions)
         setIqTarget(target)
         const ds = verdict.deal_score ?? verdict.dealScore ?? 0
         const opp = verdict.opportunity
@@ -264,18 +273,17 @@ export function useIQAnalysis(
           discountPercent: verdict.discount_percent ?? verdict.discountPercent ?? 0,
         })
 
-        // 2. Get metrics at both prices via worksheet endpoint
         const endpoint = WORKSHEET_ENDPOINTS[strategyId]
         if (endpoint) {
           const [targetResult, listResult] = await Promise.all([
             api.post<Record<string, unknown>>(
               endpoint,
-              buildWorksheetPayload(strategyId, target.targetPrice, assumptions),
+              buildWorksheetPayload(strategyId, target.targetPrice, parsedAssumptions),
               { signal: controller.signal },
             ),
             api.post<Record<string, unknown>>(
               endpoint,
-              buildWorksheetPayload(strategyId, assumptions.listPrice, assumptions),
+              buildWorksheetPayload(strategyId, parsedAssumptions.listPrice, parsedAssumptions),
               { signal: controller.signal },
             ),
           ])
@@ -284,7 +292,6 @@ export function useIQAnalysis(
           setMetricsAtList(listResult)
         }
       } catch (err) {
-        // Ignore aborted requests
         if (err instanceof Error && err.name === 'AbortError') return
         const message =
           err instanceof Error
@@ -300,7 +307,8 @@ export function useIQAnalysis(
       clearTimeout(timer)
       controller.abort()
     }
-  }, [strategyId, assumptions])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [strategyId, assumptionsKey])
 
   return { iqTarget, verdictDealScore, metricsAtTarget, metricsAtList, isLoading, error }
 }

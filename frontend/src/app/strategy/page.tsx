@@ -320,7 +320,7 @@ function StrategyContent() {
           ?? v.current_value_avm
           ?? (v.tax_assessed_value ? Math.round(v.tax_assessed_value / 0.75) : null)
           ?? 1
-        let monthlyRent = propData.rentals?.monthly_rent_ltr || 0
+        let monthlyRent = propData.rentals?.monthly_rent_ltr ?? 0
         let propertyTaxes = propData.market?.property_taxes_annual ?? 0
         let insuranceVal = propData.market?.insurance_annual ?? 0
 

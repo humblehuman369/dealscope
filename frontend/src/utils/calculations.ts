@@ -212,8 +212,8 @@ export const calculateMetrics = (inputs: AnalyticsInputs): CalculatedMetrics => 
     ? (annualNOI / inputs.purchasePrice) * 100 
     : 0;
   
-  const dscr = monthlyMortgage > 0 
-    ? (grossMonthlyIncome - operatingExpenses + monthlyMortgage * (inputs.vacancyRate / 100)) / monthlyMortgage 
+  const dscr = annualDebtService > 0 
+    ? annualNOI / annualDebtService 
     : Infinity;
   
   const onePercentRule = inputs.purchasePrice > 0 
@@ -268,23 +268,40 @@ export const calculateMetrics = (inputs: AnalyticsInputs): CalculatedMetrics => 
 };
 
 /**
- * Calculate max purchase price for target cash flow
+ * Calculate max purchase price for target cash flow.
+ *
+ * Uses an inline cash-flow computation instead of calling calculateMetrics()
+ * to avoid mutual recursion (calculateMetrics → calculateMaxPurchasePrice → calculateMetrics).
  */
 const calculateMaxPurchasePrice = (
   inputs: AnalyticsInputs,
   targetMonthlyCashFlow: number
 ): number => {
-  // Binary search for max purchase price
   let low = 0;
   let high = inputs.purchasePrice * 2;
   let maxPrice = 0;
+  const MAX_ITERATIONS = 30;
 
-  while (high - low > 1000) {
+  for (let i = 0; i < MAX_ITERATIONS && high - low > 1000; i++) {
     const mid = (low + high) / 2;
-    const testInputs = { ...inputs, purchasePrice: mid };
-    const testMetrics = calculateMetrics(testInputs);
 
-    if (testMetrics.monthlyCashFlow >= targetMonthlyCashFlow) {
+    const dp = mid * (inputs.downPaymentPercent / 100);
+    const loan = mid - dp;
+    const mortgage = calculateMortgagePayment(loan, inputs.interestRate, inputs.loanTermYears);
+
+    const grossIncome = inputs.monthlyRent + inputs.otherIncome;
+    const opex =
+      inputs.monthlyRent * (inputs.vacancyRate / 100) +
+      inputs.monthlyRent * (inputs.maintenanceRate / 100) +
+      inputs.monthlyRent * (inputs.managementRate / 100) +
+      inputs.annualPropertyTax / 12 +
+      inputs.annualInsurance / 12 +
+      inputs.monthlyHoa +
+      inputs.utilities;
+
+    const cashFlow = grossIncome - opex - mortgage;
+
+    if (cashFlow >= targetMonthlyCashFlow) {
       maxPrice = mid;
       low = mid;
     } else {

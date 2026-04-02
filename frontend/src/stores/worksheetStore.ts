@@ -180,11 +180,11 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     
     const assumptions: WorksheetAssumptions = {
       ...baseDefaults,
-      purchasePrice: data.listPrice || 0,
-      monthlyRent: data.monthlyRent || 0,
-      propertyTaxes: data.propertyTaxes || 0,
-      insurance: data.insurance || 0,
-      arv: data.arv || data.listPrice || 0,
+      purchasePrice: data.listPrice ?? 0,
+      monthlyRent: data.monthlyRent ?? 0,
+      propertyTaxes: data.propertyTaxes ?? 0,
+      insurance: data.insurance ?? 0,
+      arv: data.arv ?? data.listPrice ?? 0,
       closingCosts: (data.listPrice || 0) * baseDefaults.closingCostsPct,
       ...savedAssumptions,
     }
@@ -275,18 +275,10 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       set({ isCalculating: true, calculationError: null })
 
       try {
-        const response = await fetch(WORKSHEET_API_URL, {
+        const data = await apiRequest<WorksheetMetrics>(WORKSHEET_API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
+          body: payload,
         })
-
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Failed to calculate worksheet metrics')
-        }
 
         set({
           worksheetMetrics: data,
@@ -315,6 +307,11 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
   },
 
   reset: () => {
+    if (calcTimeout) clearTimeout(calcTimeout)
+    if (saveTimeout) clearTimeout(saveTimeout)
+    calcTimeout = null
+    saveTimeout = null
+
     set({
       propertyId: null,
       propertyData: null,
