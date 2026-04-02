@@ -406,8 +406,8 @@ function VerdictContent() {
           listingStatus: data.listing?.listing_status || undefined,
           // Enriched data for dynamic scoring
           monthlyRent: monthlyRent,
-          propertyTaxes,
-          insurance,
+          propertyTaxes: propertyTaxes ?? undefined,
+          insurance: insurance ?? undefined,
           averageDailyRate: averageDailyRate ?? undefined,
           // Use null check (not truthy check) to properly handle 0% occupancy
           occupancyRate: occupancyRate != null ? occupancyRate / 100 : undefined,
