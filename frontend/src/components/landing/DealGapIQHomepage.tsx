@@ -84,8 +84,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             </h1>
             <p className="hero-sub">
               Every listing is designed to sell you.{' '}
-              <strong>DealGap<span className="accent-inline">IQ</span></strong>{' '}
-              answers the only question that matters to an investor: is this a good deal?
+              <strong>DealGap<span className="accent-inline">IQ</span> answers the only question that matters to an investor: is this a good deal?</strong>
             </p>
             <div className="hero-cta-group">
               <button className="cta-primary" onClick={handleAnalyzeClick}>
