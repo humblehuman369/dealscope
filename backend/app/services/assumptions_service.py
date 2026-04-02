@@ -15,56 +15,112 @@ from app.schemas.property import AllAssumptions
 
 logger = logging.getLogger(__name__)
 
-# Market-specific adjustment factors by state/region
-# These override default assumptions based on location
+# Insurance rates sourced from NBER / Redfin median home value data (2024).
+# Rates = average annual premium / median home value by state.
+# Other adjustment fields use state-specific values where available,
+# falling back to national averages.
+_DEFAULT_ADJ: dict[str, Any] = {
+    "property_tax_rate": 0.012,
+    "rent_to_price_ratio": 0.008,
+    "appreciation_rate": 0.04,
+    "vacancy_rate": 0.07,
+}
+
 MARKET_ADJUSTMENTS: dict[str, dict[str, Any]] = {
-    # Florida - higher insurance, lower property taxes in some areas
+    # ── Southeast ────────────────────────────────────────────────
+    "AL": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
+    "AR": {"insurance_rate": 0.016, **_DEFAULT_ADJ},
     "FL": {
-        "insurance_rate": 0.015,  # 1.5% of value (higher due to hurricanes)
-        "property_tax_rate": 0.01,  # 1.0% effective rate
-        "rent_to_price_ratio": 0.007,  # 0.7% (lower in hot markets)
-        "appreciation_rate": 0.05,  # 5% appreciation
-        "vacancy_rate": 0.06,  # 6% vacancy (tourist areas)
+        "insurance_rate": 0.014,
+        "property_tax_rate": 0.01,
+        "rent_to_price_ratio": 0.007,
+        "appreciation_rate": 0.05,
+        "vacancy_rate": 0.06,
     },
-    # South Florida (higher costs, premium market)
     "FL_SOUTH": {
-        "insurance_rate": 0.018,  # 1.8% (coastal premium)
+        "insurance_rate": 0.018,
         "property_tax_rate": 0.012,
         "rent_to_price_ratio": 0.006,
         "appreciation_rate": 0.06,
         "vacancy_rate": 0.05,
     },
-    # Texas - no state income tax, higher property taxes
-    "TX": {
-        "insurance_rate": 0.012,
-        "property_tax_rate": 0.022,  # 2.2% (higher property taxes)
-        "rent_to_price_ratio": 0.009,
-        "appreciation_rate": 0.04,
-        "vacancy_rate": 0.07,
-    },
-    # California - high prices, lower yields
-    "CA": {
-        "insurance_rate": 0.008,
-        "property_tax_rate": 0.0075,  # Prop 13 limits
-        "rent_to_price_ratio": 0.004,  # Very low yields
-        "appreciation_rate": 0.04,
-        "vacancy_rate": 0.04,
-    },
-    # Georgia
     "GA": {
-        "insurance_rate": 0.01,
+        "insurance_rate": 0.007,
         "property_tax_rate": 0.012,
         "rent_to_price_ratio": 0.008,
         "appreciation_rate": 0.045,
         "vacancy_rate": 0.07,
     },
-    # Default (national averages)
+    "KY": {"insurance_rate": 0.014, **_DEFAULT_ADJ},
+    "LA": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
+    "MS": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
+    "NC": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "SC": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "TN": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "VA": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "WV": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
+    # ── Southwest / South Central ────────────────────────────────
+    "AZ": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "NM": {"insurance_rate": 0.010, **_DEFAULT_ADJ},
+    "OK": {"insurance_rate": 0.019, **_DEFAULT_ADJ},
+    "TX": {
+        "insurance_rate": 0.011,
+        "property_tax_rate": 0.022,
+        "rent_to_price_ratio": 0.009,
+        "appreciation_rate": 0.04,
+        "vacancy_rate": 0.07,
+    },
+    # ── Midwest / Plains ─────────────────────────────────────────
+    "IA": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "IL": {"insurance_rate": 0.011, **_DEFAULT_ADJ},
+    "IN": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
+    "KS": {"insurance_rate": 0.018, **_DEFAULT_ADJ},
+    "MI": {"insurance_rate": 0.010, **_DEFAULT_ADJ},
+    "MN": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
+    "MO": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
+    "ND": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
+    "NE": {"insurance_rate": 0.020, **_DEFAULT_ADJ},
+    "OH": {"insurance_rate": 0.008, **_DEFAULT_ADJ},
+    "SD": {"insurance_rate": 0.011, **_DEFAULT_ADJ},
+    "WI": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    # ── Northeast ────────────────────────────────────────────────
+    "CT": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "DC": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
+    "DE": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "MA": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "MD": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "ME": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "NH": {"insurance_rate": 0.003, **_DEFAULT_ADJ},
+    "NJ": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "NY": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "PA": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
+    "RI": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "VT": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
+    # ── West / Mountain ──────────────────────────────────────────
+    "AK": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "CA": {
+        "insurance_rate": 0.005,
+        "property_tax_rate": 0.0075,
+        "rent_to_price_ratio": 0.004,
+        "appreciation_rate": 0.04,
+        "vacancy_rate": 0.04,
+    },
+    "CO": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
+    "HI": {"insurance_rate": 0.002, **_DEFAULT_ADJ},
+    "ID": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "MT": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "NV": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
+    "OR": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
+    "UT": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "WA": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "WY": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    # ── National fallback ────────────────────────────────────────
     "DEFAULT": {
-        "insurance_rate": 0.01,  # 1% of value
-        "property_tax_rate": 0.012,  # 1.2% average
-        "rent_to_price_ratio": 0.008,  # 0.8% (close to 1% rule)
-        "appreciation_rate": 0.04,  # 4% historical average
-        "vacancy_rate": 0.07,  # 7% vacancy
+        "insurance_rate": 0.010,
+        "property_tax_rate": 0.012,
+        "rent_to_price_ratio": 0.008,
+        "appreciation_rate": 0.04,
+        "vacancy_rate": 0.07,
     },
 }
 
@@ -73,9 +129,10 @@ SOUTH_FLORIDA_ZIPS = {"330", "331", "332", "333", "334", "339"}
 
 
 def get_state_from_zip(zip_code: str) -> str:
-    """
-    Determine state from zip code prefix.
-    This is a simplified mapping; in production you'd use a proper zip database.
+    """Map a ZIP code to a two-letter state/region key.
+
+    Uses standard USPS ZIP prefix ranges. Returns ``"DEFAULT"`` for
+    unrecognised or missing codes.
     """
     if not zip_code or len(zip_code) < 3:
         return "DEFAULT"
@@ -83,44 +140,131 @@ def get_state_from_zip(zip_code: str) -> str:
     prefix = zip_code[:3]
     prefix_int = int(prefix) if prefix.isdigit() else 0
 
-    # Simplified zip to state mapping (major ranges)
-    if 100 <= prefix_int <= 149:  # NY/NJ area
+    # Northeast
+    if 10 <= prefix_int <= 27:
+        return "MA"
+    if 28 <= prefix_int <= 29:
+        return "RI"
+    if 30 <= prefix_int <= 38:
+        return "NH"
+    if 39 <= prefix_int <= 49:
+        return "ME"
+    if 50 <= prefix_int <= 59:
+        return "VT"
+    if 60 <= prefix_int <= 69:
+        return "CT"
+    if 70 <= prefix_int <= 89:
+        return "NJ"
+    if 100 <= prefix_int <= 149:
         return "NY"
-    elif 150 <= prefix_int <= 196:  # PA/DE
+    if 150 <= prefix_int <= 196:
         return "PA"
-    elif 200 <= prefix_int <= 219:  # DC/MD/VA
+    if 197 <= prefix_int <= 199:
+        return "DE"
+
+    # Mid-Atlantic / DC / VA / WV
+    if 200 <= prefix_int <= 205:
+        return "DC"
+    if 206 <= prefix_int <= 219:
+        return "MD"
+    if 220 <= prefix_int <= 246:
         return "VA"
-    elif 220 <= prefix_int <= 246:  # VA/WV
-        return "VA"
-    elif 247 <= prefix_int <= 297:  # NC/SC
+    if 247 <= prefix_int <= 268:
+        return "WV"
+
+    # Carolinas
+    if 270 <= prefix_int <= 289:
         return "NC"
-    elif 300 <= prefix_int <= 319:  # GA
+    if 290 <= prefix_int <= 299:
+        return "SC"
+
+    # Southeast
+    if 300 <= prefix_int <= 319:
         return "GA"
-    elif 320 <= prefix_int <= 349:  # FL
-        # Check for South Florida
+    if 320 <= prefix_int <= 349:
         if prefix in SOUTH_FLORIDA_ZIPS:
             return "FL_SOUTH"
         return "FL"
-    elif 350 <= prefix_int <= 369:  # AL
+    if 350 <= prefix_int <= 369:
         return "AL"
-    elif 370 <= prefix_int <= 385:  # TN
+    if 370 <= prefix_int <= 385:
         return "TN"
-    elif 386 <= prefix_int <= 397:  # MS
+    if 386 <= prefix_int <= 397:
         return "MS"
-    elif 700 <= prefix_int <= 714:  # LA
+    if 398 <= prefix_int <= 399:
+        return "GA"
+
+    # East Central
+    if 400 <= prefix_int <= 427:
+        return "KY"
+    if 430 <= prefix_int <= 459:
+        return "OH"
+    if 460 <= prefix_int <= 479:
+        return "IN"
+    if 480 <= prefix_int <= 499:
+        return "MI"
+
+    # Upper Midwest
+    if 500 <= prefix_int <= 528:
+        return "IA"
+    if 530 <= prefix_int <= 549:
+        return "WI"
+    if 550 <= prefix_int <= 567:
+        return "MN"
+    if 570 <= prefix_int <= 577:
+        return "SD"
+    if 580 <= prefix_int <= 588:
+        return "ND"
+    if 590 <= prefix_int <= 599:
+        return "MT"
+
+    # Central
+    if 600 <= prefix_int <= 629:
+        return "IL"
+    if 630 <= prefix_int <= 658:
+        return "MO"
+    if 660 <= prefix_int <= 679:
+        return "KS"
+    if 680 <= prefix_int <= 693:
+        return "NE"
+
+    # South Central
+    if 700 <= prefix_int <= 714:
         return "LA"
-    elif 750 <= prefix_int <= 799:  # TX
+    if 716 <= prefix_int <= 729:
+        return "AR"
+    if 730 <= prefix_int <= 749:
+        return "OK"
+    if 750 <= prefix_int <= 799:
         return "TX"
-    elif 800 <= prefix_int <= 816:  # CO
+
+    # Mountain
+    if 800 <= prefix_int <= 816:
         return "CO"
-    elif 850 <= prefix_int <= 865:  # AZ
+    if 820 <= prefix_int <= 831:
+        return "WY"
+    if 832 <= prefix_int <= 838:
+        return "ID"
+    if 840 <= prefix_int <= 847:
+        return "UT"
+    if 850 <= prefix_int <= 865:
         return "AZ"
-    elif 900 <= prefix_int <= 961:  # CA
+    if 870 <= prefix_int <= 884:
+        return "NM"
+    if 889 <= prefix_int <= 898:
+        return "NV"
+
+    # Pacific
+    if 900 <= prefix_int <= 961:
         return "CA"
-    elif 970 <= prefix_int <= 979:  # OR
+    if 967 <= prefix_int <= 968:
+        return "HI"
+    if 970 <= prefix_int <= 979:
         return "OR"
-    elif 980 <= prefix_int <= 994:  # WA
+    if 980 <= prefix_int <= 994:
         return "WA"
+    if 995 <= prefix_int <= 999:
+        return "AK"
 
     return "DEFAULT"
 
