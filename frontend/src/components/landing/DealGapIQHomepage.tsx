@@ -98,13 +98,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               Built for first-time investors. Trusted by experienced buyers.
             </p>
           </div>
-          <div className="hero-visual">
-            <img
-              src="/images/hero-phone-hand.png"
-              alt="Hand holding phone showing DealGapIQ property analysis with List Price, Breakeven, Target Buy, and Deal Gap"
-              className="hero-phone-img"
-            />
-          </div>
+          <div className="hero-visual" />
         </div>
       </section>
 
