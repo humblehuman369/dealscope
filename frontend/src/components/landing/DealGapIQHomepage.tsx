@@ -75,30 +75,60 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-badge">Built for Real Estate Investors</div>
-        <div className="hero-pre">Not a listing site. A decision engine.</div>
-        <h1>
-          See Every Property Through<br />
-          <span className="accent">an Investor Lens.</span>
-        </h1>
-        <p className="hero-sub">
-          Every property listing you&apos;ve ever seen was designed to sell you on that property.{' '}
-          <strong>DealGapIQ answers the only question that matters to an investor:</strong>{' '}
-          <strong>is this a good deal?</strong>
-        </p>
-        <div className="hero-cta-group">
-          <button className="cta-primary" onClick={handleAnalyzeClick}>
-            Analyze a Property Free →
-          </button>
-          <button className="cta-ghost" onClick={scrollToPrices}>
-            What is Deal Gap?
-          </button>
+        <div className="hero-columns">
+          <div className="hero-text">
+            <div className="hero-pre">Not a listing site. A deal decision engine.</div>
+            <h1>
+              See Every Property<br />Through<br />
+              <span className="accent">an Investors Lens</span>
+            </h1>
+            <p className="hero-sub">
+              Every listing is designed to sell you.{' '}
+              <strong>DealGap<span className="accent-inline">IQ</span></strong>{' '}
+              answers the only question that matters to an investor: is this a good deal?
+            </p>
+            <div className="hero-cta-group">
+              <button className="cta-primary" onClick={handleAnalyzeClick}>
+                Analyze Any Property
+              </button>
+              <button className="cta-ghost" onClick={scrollToPrices}>
+                What is DealGapIQ?
+              </button>
+            </div>
+            <p className="hero-note">
+              Built for first-time investors. Trusted by experienced buyers.
+            </p>
+          </div>
+          <div className="hero-visual">
+            <div className="hero-phone-frame">
+              <div className="hero-phone-notch" />
+              <div className="hero-phone-screen">
+                <div className="hero-phone-house" />
+                <div className="hero-phone-metrics">
+                  <div className="hero-phone-row">
+                    <span className="hero-phone-label">List Price</span>
+                    <span className="hero-phone-value">$580,000</span>
+                  </div>
+                  <div className="hero-phone-divider" />
+                  <div className="hero-phone-row">
+                    <span className="hero-phone-label">Breakeven</span>
+                    <span className="hero-phone-value">$522,000</span>
+                  </div>
+                  <div className="hero-phone-divider" />
+                  <div className="hero-phone-row">
+                    <span className="hero-phone-label">Target Buy</span>
+                    <span className="hero-phone-value">$487,000</span>
+                  </div>
+                  <div className="hero-phone-divider" />
+                  <div className="hero-phone-row">
+                    <span className="hero-phone-label">Deal Gap</span>
+                    <span className="hero-phone-value hero-phone-negative">−16.0%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="hero-note">
-          <span>No account needed</span>
-          <span>Results in seconds</span>
-          <span>3 free analyses per month</span>
-        </p>
       </section>
 
       {/* FOUNDER SEPARATOR */}
