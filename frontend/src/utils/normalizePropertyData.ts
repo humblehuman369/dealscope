@@ -23,8 +23,8 @@ export function normalizePropertyData(
   const state = p.address?.state || (stateZipMatch?.[1] ?? '')
   const zipcode = p.address?.zip_code || (stateZipMatch?.[2] ?? '')
   const price =
-    p.valuations?.current_value_avm || p.valuations?.zestimate || 0
-  const livingArea = p.details?.square_footage || 0
+    p.valuations?.current_value_avm ?? p.valuations?.zestimate ?? 0
+  const livingArea = p.details?.square_footage ?? 0
 
   const heating: string[] = []
   if (p.details?.heating_type) heating.push(p.details.heating_type)
@@ -77,7 +77,7 @@ export function normalizePropertyData(
   const isOffMarket =
     p.listing?.is_off_market ??
     (listingStatus === 'OFF_MARKET' || listingStatus === 'SOLD')
-  const displayPrice = p.listing?.list_price || price
+  const displayPrice = p.listing?.list_price ?? price
 
   return {
     zpid: p.zpid || zpid,
@@ -95,23 +95,23 @@ export function normalizePropertyData(
     brokerageName: p.listing?.brokerage_name,
     listingAgentName: p.listing?.listing_agent_name,
     mlsId: p.listing?.mls_id,
-    bedrooms: p.details?.bedrooms || 0,
-    bathrooms: p.details?.bathrooms || 0,
+    bedrooms: p.details?.bedrooms ?? 0,
+    bathrooms: p.details?.bathrooms ?? 0,
     livingArea,
     lotSize: p.details?.lot_size,
     lotSizeAcres: p.details?.lot_size
       ? Math.round((p.details.lot_size / 43560) * 100) / 100
       : undefined,
-    yearBuilt: p.details?.year_built || 0,
+    yearBuilt: p.details?.year_built ?? 0,
     propertyType: p.details?.property_type || 'SINGLE_FAMILY',
     stories: p.details?.stories,
     zestimate: p.valuations?.zestimate,
     rentZestimate:
-      p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr,
+      p.valuations?.rent_zestimate ?? p.rentals?.monthly_rent_ltr,
     valueIqEstimate: p.valuations?.value_iq_estimate,
     rentalIqEstimate: p.rentals?.rental_stats?.iq_estimate,
     pricePerSqft:
-      p.valuations?.price_per_sqft ||
+      p.valuations?.price_per_sqft ??
       (livingArea ? Math.round(price / livingArea) : undefined),
     annualTax: p.market?.property_taxes_annual,
     taxAssessedValue: p.valuations?.tax_assessed_value,
@@ -120,7 +120,7 @@ export function normalizePropertyData(
     longitude: p.address?.longitude,
     description:
       p.description ||
-      `${p.details?.bedrooms || 0} bed, ${p.details?.bathrooms || 0} bath property in ${city}, ${state}.`,
+      `${p.details?.bedrooms ?? 0} bed, ${p.details?.bathrooms ?? 0} bath property in ${city}, ${state}.`,
     images: [],
     totalPhotos: 0,
     heating,

@@ -19,6 +19,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { apiRequest } from '@/lib/api-client'
 import { SavedProperty } from '@/types/savedProperty'
 
 // ---------------------------------------------------------------------------
@@ -122,40 +123,39 @@ export function useWorksheetCalculator<
 
   // -- Debounced API calculation --------------------------------------------
   useEffect(() => {
+    const controller = new AbortController()
+
     const timer = setTimeout(async () => {
       setIsCalculating(true)
       setError(null)
 
       try {
         const payload = configRef.current.buildPayload(inputs)
-        const response = await fetch(configRef.current.apiUrl, {
+        const data = await apiRequest<TResult>(configRef.current.apiUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: payload,
+          signal: controller.signal,
         })
 
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(
-            data?.detail ||
-              `Failed to calculate ${configRef.current.strategyName} worksheet metrics`,
-          )
-        }
-
-        setResult(data as TResult)
+        setResult(data)
       } catch (err) {
+        if (controller.signal.aborted) return
         const message =
           err instanceof Error
             ? err.message
             : `Failed to calculate ${configRef.current.strategyName} worksheet metrics`
         setError(message)
       } finally {
-        setIsCalculating(false)
+        if (!controller.signal.aborted) {
+          setIsCalculating(false)
+        }
       }
     }, CALC_DEBOUNCE_MS)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [inputs])
 
   // -- Input updater --------------------------------------------------------
