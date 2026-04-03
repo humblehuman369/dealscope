@@ -458,8 +458,13 @@ function StrategyContent() {
   const monthlyRent = bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0
   const propertyTaxes = bd?.property_taxes ?? propertyInfo?.propertyTaxes ?? 0
   const insurance = bd?.insurance ?? propertyInfo?.insurance ?? 0
-  const rehabCost = bd?.rehab_cost ?? dealMakerOverrides?.rehabBudget
-    ?? (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
+  // Prefer explicit DealMaker/session rehab so sliders win over stale breakdown during debounce;
+  // backend `rehab_cost` of 0 must not block a user-entered budget (use `??` only after override check).
+  const rehabCost =
+    dealMakerOverrides != null && dealMakerOverrides.rehabBudget != null
+      ? dealMakerOverrides.rehabBudget
+      : (bd?.rehab_cost ??
+        (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0))
 
   const rate = bd?.interest_rate != null
     ? bd.interest_rate / 100

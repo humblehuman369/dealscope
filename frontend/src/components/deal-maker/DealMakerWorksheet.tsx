@@ -301,7 +301,11 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
-  const cashNeeded = num(m, 'cashNeeded') || (downPayment + closingCosts)
+  const cashFromMetrics = m['cashNeeded']
+  const cashNeeded =
+    typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
+      ? cashFromMetrics
+      : downPayment + closingCosts + state.rehabBudget
 
   return (
     <>
@@ -357,7 +361,11 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
   const closingCosts = num(m, 'closingCostsAmount') || (state.buyPrice * state.closingCostsPercent)
   const loanAmount = num(m, 'loanAmount') || (state.buyPrice - downPayment)
   const monthlyPayment = num(m, 'monthlyPayment')
-  const cashNeeded = num(m, 'cashNeeded') || (downPayment + closingCosts + state.furnitureSetupCost)
+  const cashFromMetrics = m['cashNeeded']
+  const cashNeeded =
+    typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
+      ? cashFromMetrics
+      : downPayment + closingCosts + state.furnitureSetupCost + state.rehabBudget
   const nightsOccupied = num(m, 'nightsOccupied')
   const monthlyGross = num(m, 'monthlyGrossRevenue')
   const annualGross = num(m, 'annualGrossRevenue')
