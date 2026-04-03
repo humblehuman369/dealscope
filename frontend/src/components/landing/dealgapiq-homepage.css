@@ -179,7 +179,7 @@
   width: 64px; height: 64px;
   border-radius: 50%;
   background: #000;
-  border: 2px solid #0EA5E9;
+  border: none;
   object-fit: cover; object-position: 50% 20%;
   flex-shrink: 0;
 }
@@ -1437,7 +1437,7 @@
   width: 160px; height: 160px;
   border-radius: 50%;
   background: #000;
-  border: 2px solid #0EA5E9;
+  border: none;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-label);
