@@ -39,6 +39,7 @@ import { PropertyPhotoGallery } from '@/components/property-details'
 import {
   buildDealMakerSessionKey,
   canonicalizeAddressForIdentity,
+  isInitialOverrideEligible,
   isLikelyFullAddress,
   readDealMakerOverrides,
   writeDealMakerOverrides,
@@ -52,6 +53,7 @@ import { ProGate } from '@/components/ProGate'
 import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
@@ -179,7 +181,12 @@ function VerdictContent() {
       const data = readDealMakerOverrides(addressParam)
       // Check if data is recent (within last hour)
       const ts = data?.timestamp
-      if (typeof ts === 'number' && !Number.isNaN(ts) && Date.now() - ts < 3600000) {
+      if (
+        typeof ts === 'number' &&
+        !Number.isNaN(ts) &&
+        Date.now() - ts < 3600000 &&
+        isInitialOverrideEligible(data)
+      ) {
         console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
         return data
       }
@@ -454,7 +461,7 @@ function VerdictContent() {
             sqft: propertyData.sqft,
             price: propertyData.price,
             listingStatus: propertyData.listingStatus || null,
-          })
+          }, { origin: 'verdict_sync' })
         } catch {
           // Ignore storage errors
         }
@@ -540,30 +547,33 @@ function VerdictContent() {
             ? dealMakerStore.record.buy_price
             : undefined
 
-        const analysisBody = {
-          list_price: listPriceForCalc,
-          purchase_price: purchasePriceOverride,
-          monthly_rent: rentForCalc,
-          property_taxes: taxesForCalc,
+        const payloadBase: VerdictPayloadBase = {
+          listPrice: listPriceForCalc,
+          monthlyRent: rentForCalc,
+          propertyTaxes: taxesForCalc,
           insurance: insuranceForCalc,
           bedrooms: propertyData.beds,
           bathrooms: propertyData.baths,
           sqft: propertyData.sqft,
           arv: arvForCalc,
-          average_daily_rate: propertyData.averageDailyRate,
-          occupancy_rate: propertyData.occupancyRate,
-          is_listed: isListed,
+          averageDailyRate: propertyData.averageDailyRate ?? null,
+          occupancyRate: propertyData.occupancyRate ?? null,
+          isListed: !!isListed,
           zestimate: zestimate ?? undefined,
-          current_value_avm: currentAvm ?? undefined,
-          tax_assessed_value: taxAssessed ?? undefined,
-          listing_status: data.listing?.listing_status || undefined,
-          days_on_market: data.listing?.days_on_market ?? undefined,
-          seller_type: data.listing?.seller_type || undefined,
-          is_foreclosure: data.listing?.is_foreclosure || false,
-          is_bank_owned: data.listing?.is_bank_owned || false,
-          is_fsbo: data.listing?.is_fsbo || false,
-          market_temperature: data.market?.market_stats?.market_temperature || undefined,
+          currentValueAvm: currentAvm ?? undefined,
+          taxAssessedValue: taxAssessed ?? undefined,
+          listingStatus: data.listing?.listing_status || undefined,
+          daysOnMarket: data.listing?.days_on_market ?? undefined,
+          sellerType: data.listing?.seller_type || undefined,
+          isForeclosure: data.listing?.is_foreclosure || false,
+          isBankOwned: data.listing?.is_bank_owned || false,
+          isFsbo: data.listing?.is_fsbo || false,
+          marketTemperature: data.market?.market_stats?.market_temperature || undefined,
         }
+        const analysisBody = buildVerdictAnalysisPayload(
+          payloadBase,
+          purchasePriceOverride != null ? { purchasePrice: purchasePriceOverride } : null,
+        )
         analysisInputsRef.current = analysisBody
 
         const analysisPromise = api.post<BackendAnalysisResponse & Record<string, any>>(
@@ -623,7 +633,9 @@ function VerdictContent() {
                 parsed.vacancyRate = Math.round((record.vacancy_rate ?? 0.05) * 100)
                 parsed.managementRate = Math.round((record.management_pct ?? 0) * 100)
               }
-              writeDealMakerOverrides(canonicalAddress, parsed)
+              writeDealMakerOverrides(canonicalAddress, parsed, {
+                origin: isSavedPropertyMode ? 'saved_property' : 'verdict_sync',
+              })
             }
           } catch {
             // Ignore storage errors
@@ -643,7 +655,7 @@ function VerdictContent() {
               writeDealMakerOverrides(fullAddress || addressParam, {
                 listPrice: backendListPrice,
                 price: Math.round(backendListPrice),
-              })
+              }, { origin: 'verdict_sync' })
             } catch {
               // Ignore storage errors
             }
@@ -1429,11 +1441,11 @@ function VerdictContent() {
                             writeDealMakerOverrides(fullAddress || addressParam, {
                               price: _value,
                               listPrice: _value,
-                            })
+                            }, { origin: 'source_selection' })
                           } else {
                             writeDealMakerOverrides(fullAddress || addressParam, {
                               monthlyRent: _value,
-                            })
+                            }, { origin: 'source_selection' })
                           }
                         } catch {
                           // Ignore storage errors

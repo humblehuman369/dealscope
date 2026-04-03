@@ -21,10 +21,20 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
-import { buildDealMakerSessionKey, canonicalizeAddressForIdentity, isLikelyFullAddress, writeDealMakerOverrides } from '@/utils/addressIdentity'
-import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
+import {
+  isInitialOverrideEligible,
+  isLikelyFullAddress,
+  readDealMakerOverrides,
+  writeDealMakerOverrides,
+} from '@/utils/addressIdentity'
+import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
+import {
+  buildVerdictAnalysisPayload,
+  buildVerdictBaseFromPropertyResponse,
+  type VerdictPayloadBase,
+} from '@/utils/verdictPayload'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { VideoModal } from '@/components/ui/VideoModal'
@@ -140,19 +150,18 @@ function StrategyContent() {
     if (typeof window === 'undefined' || !addressParam) return
     const loadOverrides = () => {
       try {
-        const canonicalAddress = canonicalizeAddressForIdentity(addressParam)
-        const sessionKey = buildDealMakerSessionKey(canonicalAddress)
-        const stored = sessionStorage.getItem(sessionKey)
-        if (!stored) return
-        const parsed = JSON.parse(stored)
-        if (!(parsed.timestamp && Date.now() - parsed.timestamp < 3600000)) return
-        console.log('[StrategyIQ] Loaded DealMaker overrides from sessionStorage:', parsed)
-        setInitialOverrides(parsed)
-        if (typeof parsed.listPrice === 'number' && parsed.listPrice > 0) {
-          setSourceOverrides((prev) => ({ ...prev, price: parsed.listPrice }))
-        }
-        if (!strategyParam && parsed.strategy) {
-          setSelectedStrategyId(parsed.strategy)
+        const parsed = readDealMakerOverrides(addressParam)
+        if (!(parsed?.timestamp && Date.now() - parsed.timestamp < 3600000)) return
+        if (isInitialOverrideEligible(parsed)) {
+          console.log('[StrategyIQ] Loaded eligible DealMaker overrides from sessionStorage:', parsed)
+          setInitialOverrides(parsed)
+          const storedListPrice = typeof parsed.listPrice === 'number' ? parsed.listPrice : null
+          if (storedListPrice != null && storedListPrice > 0) {
+            setSourceOverrides((prev) => ({ ...prev, price: storedListPrice }))
+          }
+          if (!strategyParam && typeof parsed.strategy === 'string' && parsed.strategy) {
+            setSelectedStrategyId(parsed.strategy)
+          }
         }
       } catch (e) {
         console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
@@ -218,57 +227,31 @@ function StrategyContent() {
     }
   }, [isLoading, data, addressParam, isAuthenticated, isPro, queryClient])
 
-  // Build the backend verdict API payload from current property info + overrides.
-  // Converts session-stored percentage values (e.g. 20 for 20%) to backend decimal (0.20).
-  const buildVerdictPayload = useCallback((
-    propInfo: any,
-    overrides: Record<string, any> | null,
-    srcOverrides: { price?: number; monthlyRent?: number },
-  ) => {
+  const toPayloadBase = useCallback((propInfo: any): VerdictPayloadBase => {
     const v = propInfo?.valuations || propInfo || {}
-    let price = propInfo?.price ?? 1
-    let rent = propInfo?.monthlyRent ?? 0
-    let taxes = propInfo?.propertyTaxes ?? 0
-    let ins = propInfo?.insurance ?? 0
-
-    if (srcOverrides.price != null) price = srcOverrides.price
-    if (srcOverrides.monthlyRent != null) rent = srcOverrides.monthlyRent
-
-    const payload: Record<string, any> = {
-      list_price: price,
-      monthly_rent: rent,
-      property_taxes: taxes,
-      insurance: ins,
+    return {
+      listPrice: propInfo?.price ?? 1,
+      monthlyRent: propInfo?.monthlyRent ?? 0,
+      propertyTaxes: propInfo?.propertyTaxes ?? 0,
+      insurance: propInfo?.insurance ?? 0,
       bedrooms: propInfo?.details?.bedrooms || 3,
       bathrooms: propInfo?.details?.bathrooms || 2,
       sqft: propInfo?.details?.square_footage || 1500,
-      is_listed: propInfo?._isListed ?? undefined,
+      arv: propInfo?.arv ?? null,
+      averageDailyRate: propInfo?.averageDailyRate ?? null,
+      occupancyRate: propInfo?.occupancyRate ?? null,
+      isListed: propInfo?._isListed ?? undefined,
       zestimate: v.zestimate ?? undefined,
-      current_value_avm: v.current_value_avm ?? undefined,
-      tax_assessed_value: v.tax_assessed_value ?? undefined,
+      currentValueAvm: v.current_value_avm ?? undefined,
+      taxAssessedValue: v.tax_assessed_value ?? undefined,
+      listingStatus: propInfo?.listing?.listing_status ?? propInfo?.listingStatus ?? undefined,
+      daysOnMarket: propInfo?.listing?.days_on_market ?? undefined,
+      sellerType: propInfo?.listing?.seller_type ?? undefined,
+      isForeclosure: propInfo?.listing?.is_foreclosure || false,
+      isBankOwned: propInfo?.listing?.is_bank_owned || false,
+      isFsbo: propInfo?.listing?.is_fsbo || false,
+      marketTemperature: propInfo?.market?.market_stats?.market_temperature || undefined,
     }
-
-    if (overrides) {
-      if (overrides.purchasePrice != null || overrides.buyPrice != null) {
-        payload.purchase_price = overrides.purchasePrice ?? overrides.buyPrice
-      }
-      if (overrides.downPayment != null) payload.down_payment_pct = overrides.downPayment / 100
-      if (overrides.closingCosts != null) payload.closing_costs_pct = overrides.closingCosts / 100
-      if (overrides.interestRate != null) {
-        const raw = overrides.interestRate
-        payload.interest_rate = raw <= 1 ? raw : raw / 100
-      }
-      if (overrides.loanTerm != null) payload.loan_term_years = overrides.loanTerm
-      if (overrides.vacancyRate != null) payload.vacancy_rate = overrides.vacancyRate / 100
-      if (overrides.managementRate != null) payload.management_pct = overrides.managementRate / 100
-      if (overrides.rehabBudget != null) payload.rehab_cost = overrides.rehabBudget
-      if (overrides.arv != null) payload.arv = overrides.arv
-      if (overrides.monthlyRent != null) payload.monthly_rent = overrides.monthlyRent
-      if (overrides.propertyTaxes != null) payload.property_taxes = overrides.propertyTaxes
-      if (overrides.insurance != null) payload.insurance = overrides.insurance
-    }
-
-    return payload
   }, [])
 
   // Debounced backend recalculation — calls verdict API with all current overrides
@@ -280,7 +263,7 @@ function StrategyContent() {
     if (!propInfo) return
     try {
       setIsRecalculating(true)
-      const payload = buildVerdictPayload(propInfo, overrides, srcOverrides)
+      const payload = buildVerdictAnalysisPayload(toPayloadBase(propInfo), overrides, srcOverrides)
       const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', payload)
       setData(analysis)
     } catch (err) {
@@ -288,7 +271,7 @@ function StrategyContent() {
     } finally {
       setIsRecalculating(false)
     }
-  }, [buildVerdictPayload])
+  }, [toPayloadBase])
 
   useEffect(() => {
     async function fetchData() {
@@ -313,25 +296,14 @@ function StrategyContent() {
       try {
         setIsLoading(true)
         const propData = await fetchProperty(fetchAddr)
-        const v = propData.valuations || {}
-        let price = v.value_iq_estimate
-          ?? v.market_price
-          ?? v.zestimate
-          ?? v.current_value_avm
-          ?? (v.tax_assessed_value ? Math.round(v.tax_assessed_value / 0.75) : null)
-          ?? 1
-        let monthlyRent = propData.rentals?.monthly_rent_ltr ?? 0
-        let propertyTaxes = propData.market?.property_taxes_annual ?? 0
-        let insuranceVal = propData.market?.insurance_annual ?? 0
-
-        if (conditionParam) {
-          const cond = getConditionAdjustment(Number(conditionParam))
-          price += cond.pricePremium
-        }
-        if (locationParam) {
-          const loc = getLocationAdjustment(Number(locationParam))
-          monthlyRent = Math.round(monthlyRent * loc.rentMultiplier)
-        }
+        const baseDefaults = buildVerdictBaseFromPropertyResponse(propData, {
+          condition: conditionParam ? Number(conditionParam) : null,
+          location: locationParam ? Number(locationParam) : null,
+        })
+        let price = baseDefaults.listPrice
+        let monthlyRent = baseDefaults.monthlyRent
+        let propertyTaxes = baseDefaults.propertyTaxes
+        let insuranceVal = baseDefaults.insurance
 
         if (dealMakerOverrides) {
           if (dealMakerOverrides.listPrice != null && dealMakerOverrides.listPrice > 0) {
@@ -344,8 +316,7 @@ function StrategyContent() {
           if (dealMakerOverrides.insurance != null) insuranceVal = dealMakerOverrides.insurance
         }
 
-        const listingStatus = propData.listing?.listing_status
-        const isListed = listingStatus && !['OFF_MARKET', 'SOLD', 'FOR_RENT', 'OTHER'].includes(String(listingStatus)) && price > 0
+        const isListed = !!baseDefaults.isListed && price > 0
         const enrichedPropInfo = { ...propData, price, monthlyRent, propertyTaxes, insurance: insuranceVal, _isListed: isListed }
         setPropertyInfo(enrichedPropInfo)
 
@@ -367,7 +338,7 @@ function StrategyContent() {
           },
         })
 
-        const payload = buildVerdictPayload(enrichedPropInfo, dealMakerOverrides, sourceOverrides)
+        const payload = buildVerdictAnalysisPayload(toPayloadBase(enrichedPropInfo), dealMakerOverrides, sourceOverrides)
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', payload)
         setData(analysis)
       } catch (err) {
@@ -378,7 +349,7 @@ function StrategyContent() {
     }
     fetchData()
   // eslint-disable-next-line react-hooks/exhaustive-deps -- api.post is a stable module-level reference; initialOverrides only (not inline slider changes)
-  }, [addressParam, conditionParam, locationParam, initialOverrides])
+  }, [addressParam, conditionParam, locationParam, initialOverrides, dealMakerOverrides, sourceOverrides, toPayloadBase, fetchProperty])
 
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
@@ -424,7 +395,7 @@ function StrategyContent() {
       const next = { ...prev, [mapping.key]: overrideValue }
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
-        try { writeDealMakerOverrides(resolvedAddressRef.current, next) } catch { /* ignore */ }
+        try { writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' }) } catch { /* ignore */ }
       }, 300)
       scheduleRecalc(next)
       return next
@@ -1096,7 +1067,7 @@ function StrategyContent() {
                         writeDealMakerOverrides(resolvedAddress, {
                           price: _value,
                           listPrice: _value,
-                        })
+                        }, { origin: 'source_selection' })
                       } catch { /* ignore */ }
                     } else {
                       nextSrcOverrides.monthlyRent = _value
@@ -1104,7 +1075,7 @@ function StrategyContent() {
                       try {
                         writeDealMakerOverrides(resolvedAddress, {
                           monthlyRent: _value,
-                        })
+                        }, { origin: 'source_selection' })
                       } catch { /* ignore */ }
                     }
                     const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
