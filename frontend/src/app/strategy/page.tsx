@@ -28,6 +28,7 @@ import {
   writeDealMakerOverrides,
 } from '@/utils/addressIdentity'
 import { getConditionAdjustment } from '@/utils/property-adjustments'
+import { calculateMortgagePayment } from '@/utils/calculations'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { IQEstimateSelector, type IQEstimateSources } from '@/components/iq-verdict/IQEstimateSelector'
 import {
@@ -475,8 +476,17 @@ function StrategyContent() {
 
   const downPayment = bd?.down_payment ?? targetPrice * downPaymentPct
   const closingCosts = bd?.closing_costs ?? targetPrice * closingCostsPct
-  const loanAmount = bd?.loan_amount ?? targetPrice - downPayment
-  const monthlyPI = bd?.monthly_payment ?? 0
+  // BRRRR backend breakdown uses refinance loan for `loan_amount` / debt service (post-refi model).
+  // This page always renders the LTR-style worksheet, so show acquisition P&I tied to Target Buy.
+  const purchaseLoanAmount = Math.max(0, targetPrice - downPayment)
+  let loanAmount =
+    activeStrategyId === 'brrrr'
+      ? purchaseLoanAmount
+      : (bd?.loan_amount ?? purchaseLoanAmount)
+  let monthlyPI = bd?.monthly_payment ?? 0
+  if (activeStrategyId === 'brrrr') {
+    monthlyPI = calculateMortgagePayment(loanAmount, rate * 100, loanTermYears)
+  }
   const annualRent = bd?.annual_gross_rent ?? monthlyRent * 12
   const vacancyLoss = bd?.vacancy_loss ?? annualRent * vacancyPct
   const effectiveIncome = bd?.effective_income ?? annualRent - vacancyLoss
@@ -485,7 +495,8 @@ function StrategyContent() {
   const reserves = bd?.reserves ?? annualRent * reservesPct
   const totalExpenses = bd?.total_operating_expenses ?? propertyTaxes + insurance + mgmt + maint + reserves
   const noi = bd?.noi ?? effectiveIncome - totalExpenses
-  const annualDebt = bd?.annual_debt_service ?? monthlyPI * 12
+  const annualDebt =
+    activeStrategyId === 'brrrr' ? monthlyPI * 12 : (bd?.annual_debt_service ?? monthlyPI * 12)
   const annualCashFlow = noi - annualDebt
   const monthlyCashFlow = annualCashFlow / 12
 
@@ -493,7 +504,10 @@ function StrategyContent() {
 
   const totalCashNeeded = downPayment + closingCosts + rehabCost
   const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
-  const strategyDscr = topStrategy?.dscr ?? null
+  const strategyDscr =
+    activeStrategyId === 'brrrr' && annualDebt > 0
+      ? noi / annualDebt
+      : (topStrategy?.dscr ?? null)
 
   // Rental strategies: derive all metrics from breakdown values so the metrics
   // bar, summary cards, and breakdown section stay internally consistent.
