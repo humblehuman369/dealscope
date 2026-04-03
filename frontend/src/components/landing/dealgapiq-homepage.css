@@ -283,9 +283,19 @@
   aspect-ratio: auto;
   cursor: pointer;
 }
-.dealgap-video-combined .threshold-graphic {
-  position: relative;
-  z-index: 1;
+.three-prices-crop {
+  overflow: hidden;
+  max-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.three-prices-crop .three-prices-graphic {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: -18%;
+  margin-bottom: -12%;
 }
 .dealgap-video-combined .video-poster-overlay {
   background: transparent;
