@@ -999,8 +999,8 @@ function VerdictContent() {
   }
 
   // Derived values for display
-  const purchasePrice = analysis.purchasePrice || Math.round(property.price * 0.95)
-  const incomeValue = analysis.incomeValue || property.price
+  const purchasePrice = analysis.purchasePrice ?? Math.round(property.price * 0.95)
+  const incomeValue = analysis.incomeValue ?? property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
   const monthlyRent = property.monthlyRent || 0
   const isListed = !!property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)

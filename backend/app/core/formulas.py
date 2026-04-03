@@ -170,7 +170,9 @@ def calculate_buy_price(
     )
 
     if income_value <= 0:
-        return market_price
+        # When income value is zero/negative (e.g. rent cannot cover baseline expenses),
+        # the breakeven buy price should not snap back to market price.
+        return 0
 
     buy_price = round(income_value * (1 - discount_pct))
     return min(buy_price, market_price)
