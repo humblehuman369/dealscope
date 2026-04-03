@@ -974,6 +974,37 @@ function VerdictContent() {
     }
   }, [property, router])
 
+  // Must run before loading/error early returns — same hook count every render (React #310 if below returns).
+  const navigateToStrategy = useCallback(
+    (section?: StrategyWorksheetSection) => {
+      if (!property) return
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const parts = [property.address, property.city, stateZip].filter(Boolean)
+      let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+
+      if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+        fullAddress = backendFullAddressRef.current
+      }
+
+      const params = new URLSearchParams({ address: fullAddress })
+      if (conditionParam) params.set('condition', conditionParam)
+      if (locationParam) params.set('location', locationParam)
+      if (section) params.set('section', section)
+
+      router.push(`/strategy?${params.toString()}`)
+    },
+    [property, conditionParam, locationParam, router],
+  )
+
+  const openDataSourcesAndScroll = useCallback(() => {
+    setIsDataSourcesOpen(true)
+    requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        dataSourcesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 120)
+    })
+  }, [])
+
   // Loading state — pulsating IQ logo until data arrives
   if (isLoading) {
     return <IQLoadingLogo />
@@ -1059,32 +1090,6 @@ function VerdictContent() {
   const analysisTimeSeconds = 4.2
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
-
-  const navigateToStrategy = useCallback((section?: StrategyWorksheetSection) => {
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const parts = [property.address, property.city, stateZip].filter(Boolean)
-    let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
-
-    if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
-      fullAddress = backendFullAddressRef.current
-    }
-
-    const params = new URLSearchParams({ address: fullAddress })
-    if (conditionParam) params.set('condition', conditionParam)
-    if (locationParam) params.set('location', locationParam)
-    if (section) params.set('section', section)
-
-    router.push(`/strategy?${params.toString()}`)
-  }, [property?.address, property?.city, property?.state, property?.zip, conditionParam, locationParam, router])
-
-  const openDataSourcesAndScroll = useCallback(() => {
-    setIsDataSourcesOpen(true)
-    requestAnimationFrame(() => {
-      window.setTimeout(() => {
-        dataSourcesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }, 120)
-    })
-  }, [])
 
   /** Comps tab in nav — PriceCheckerIQ at /price-intel (same params as AnalysisNav "Comps" link). */
   const navigateToComps = () => {
