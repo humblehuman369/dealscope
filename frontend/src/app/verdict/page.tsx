@@ -207,7 +207,9 @@ function VerdictContent() {
   // the previous Target Buy becomes the next analysis's purchase_price override.
   // DealMaker always navigates here with URL params; saved-property mode uses dealMakerStore directly.
   const overridePurchasePrice = urlPurchasePrice || null
-  const overrideMonthlyRent = urlMonthlyRent ?? (sessionData?.monthlyRent != null ? String(sessionData.monthlyRent) : null)
+  // Keep Verdict default calculations anchored to IQ Estimate rent unless an explicit
+  // URL override is provided (e.g., coming directly from Deal Maker).
+  const overrideMonthlyRent = urlMonthlyRent
   const overridePropertyTaxes = urlPropertyTaxes ?? (sessionData?.propertyTaxes != null ? String(sessionData.propertyTaxes) : null)
   const overrideInsurance = urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
   const overrideArv = urlArv ?? (sessionData?.arv != null ? String(sessionData.arv) : null)
