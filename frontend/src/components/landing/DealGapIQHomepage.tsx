@@ -134,41 +134,12 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
           >
             {!isDealGapVideoPlaying && (
-              <div className="threshold-graphic">
-                <div className="threshold-labels-top">
-                  <div className="threshold-label-anchor threshold-label-left">
-                    <span className="threshold-label-badge sky-accent">Target Buy</span>
-                    <span className="threshold-label-line threshold-line-blue" />
-                  </div>
-                  <div className="threshold-label-anchor threshold-label-right">
-                    <span className="threshold-label-badge" style={{ color: 'var(--status-negative)' }}>List Price</span>
-                    <span className="threshold-label-line threshold-line-red" />
-                  </div>
-                </div>
-
-                <div className="threshold-bar-area">
-                  <div className="gap-label-row">
-                    <span className="gap-label-text sky-accent">DEAL GAP</span>
-                    <span className="gap-label-value sky-accent">-18.6%</span>
-                  </div>
-                  <div className="threshold-bar">
-                    <div className="bar-track"><div className="bar-fill" /></div>
-                    <div className="bar-dot dot-blue" style={{ left: '15%' }} />
-                    <div className="bar-dot dot-yellow" style={{ left: '42%' }} />
-                    <div className="bar-dot dot-red" style={{ left: '88%' }} />
-                  </div>
-                  <div className="gap-label-row">
-                    <span className="gap-label-text yellow-accent">PRICE GAP</span>
-                    <span className="gap-label-value yellow-accent">-14.3%</span>
-                  </div>
-                </div>
-
-                <div className="threshold-labels-bottom">
-                  <div className="threshold-label-anchor threshold-label-left-bottom">
-                    <span className="threshold-label-line threshold-line-yellow" />
-                    <span className="threshold-label-badge yellow-accent">Income Value</span>
-                  </div>
-                </div>
+              <div className="three-prices-crop">
+                <img
+                  src="/images/three-key-prices.png"
+                  alt="DealGapIQ chart showing Target Buy, Income Value, and List Price with Deal Gap and Price Gap indicators"
+                  className="three-prices-graphic"
+                />
               </div>
             )}
             <video
