@@ -176,11 +176,11 @@
   gap: 1.5rem;
 }
 .founder-separator img {
-  width: 64px; height: 64px;
+  width: 80px; height: 80px;
   border-radius: 50%;
-  background: #000;
+  background: transparent;
   border: none;
-  object-fit: cover; object-position: 50% 20%;
+  object-fit: cover;
   flex-shrink: 0;
 }
 .founder-separator-text {
@@ -205,7 +205,7 @@
 @media (max-width: 600px) {
   .founder-separator { padding: 2rem 1.5rem; }
   .founder-separator-inner { gap: 1rem; }
-  .founder-separator img { width: 52px; height: 52px; }
+  .founder-separator img { width: 65px; height: 65px; }
   .founder-separator-name { font-size: 0.95rem; }
   .founder-separator-bio { font-size: 0.85rem; }
 }

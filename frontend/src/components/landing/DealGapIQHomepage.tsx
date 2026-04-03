@@ -116,7 +116,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       <section className="founder-separator">
         <div className="founder-separator-inner">
           <img
-            src="/brad-geisen.png"
+            src="/images/brad-geisen-separator.png"
             alt="Brad Geisen"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
