@@ -78,6 +78,7 @@ def _calculate_ltr_strategy(
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
+    rehab_cost: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -85,7 +86,7 @@ def _calculate_ltr_strategy(
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
     loan_amount = price - down_payment
-    total_cash = down_payment + closing_costs
+    total_cash = down_payment + closing_costs + rehab_cost
     monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
@@ -123,6 +124,7 @@ def _calculate_ltr_strategy(
             "down_payment_pct": round(f.down_payment_pct * 100, 1),
             "closing_costs": round(closing_costs),
             "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
+            "rehab_cost": round(rehab_cost),
             "total_cash_needed": round(total_cash),
             "loan_amount": round(loan_amount),
             "interest_rate": round(f.interest_rate * 100, 1),
@@ -154,6 +156,7 @@ def _calculate_str_strategy(
     occupancy: float,
     property_taxes: float,
     insurance: float,
+    rehab_cost: float,
     a: AllAssumptions,
 ) -> dict:
     f = a.financing
@@ -161,7 +164,7 @@ def _calculate_str_strategy(
     s = a.str_assumptions
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
-    total_cash = down_payment + closing_costs + s.furniture_setup_cost
+    total_cash = down_payment + closing_costs + s.furniture_setup_cost + rehab_cost
     loan_amount = price - down_payment
     monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
@@ -200,6 +203,7 @@ def _calculate_str_strategy(
             "closing_costs": round(closing_costs),
             "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "furniture_setup": round(s.furniture_setup_cost),
+            "rehab_cost": round(rehab_cost),
             "total_cash_needed": round(total_cash),
             "loan_amount": round(loan_amount),
             "interest_rate": round(f.interest_rate * 100, 1),
@@ -896,8 +900,8 @@ def compute_iq_verdict(
         buy_price = income_value
 
     strategies = [
-        _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, a),
-        _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance, a),
+        _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a),
+        _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance, rehab_cost, a),
         _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a),
         _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance, a),
         _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance, a),

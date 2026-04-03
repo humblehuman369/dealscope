@@ -263,6 +263,10 @@ class TestComputeIQVerdict:
         assert resp.inputs_used["rehab_cost"] == 25_000
         brrrr = next(s for s in resp.strategies if s.id == "brrrr")
         assert brrrr.breakdown["rehab_cost"] == 25_000
+        ltr = next(s for s in resp.strategies if s.id == "long-term-rental")
+        assert ltr.breakdown["rehab_cost"] == 25_000
+        str_s = next(s for s in resp.strategies if s.id == "short-term-rental")
+        assert str_s.breakdown["rehab_cost"] == 25_000
 
     def test_capex_pct_override(self):
         """capex_pct override should change reserves in LTR breakdown."""
@@ -324,7 +328,7 @@ class TestComputeIQVerdict:
         bd = ltr.breakdown
         required_keys = [
             "purchase_price", "down_payment", "down_payment_pct",
-            "closing_costs", "closing_costs_pct", "total_cash_needed",
+            "closing_costs", "closing_costs_pct", "rehab_cost", "total_cash_needed",
             "loan_amount", "interest_rate", "loan_term_years", "monthly_payment",
             "monthly_rent", "annual_gross_rent", "vacancy_rate", "vacancy_loss",
             "effective_income", "property_taxes", "insurance",
