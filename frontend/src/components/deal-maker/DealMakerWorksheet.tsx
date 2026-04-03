@@ -48,9 +48,9 @@ const C = {
   border: 'var(--border-subtle)',
 } as const
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({ title, anchorId }: { title: string; anchorId?: string }) {
   return (
-    <div className="flex items-center mb-2 mt-1">
+    <div id={anchorId} className="flex items-center mb-2 mt-1 scroll-mt-28">
       <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: C.blue }}>
         <span className="text-[1rem] font-bold uppercase tracking-wide" style={{ color: C.blue }}>{title}</span>
       </div>
@@ -309,17 +309,18 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
 
   return (
     <>
-      <SectionHeader title="What You'd Pay" />
+      <SectionHeader title="What You'd Pay" anchorId="strategy-worksheet-purchase" />
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
       <SliderRow label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
       <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <div id="strategy-worksheet-rehab" className="scroll-mt-28 h-0 overflow-hidden" aria-hidden />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
       <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
 
       <Divider />
 
-      <SectionHeader title="Your Loan Payment" />
+      <SectionHeader title="Your Loan Payment" anchorId="strategy-worksheet-financing" />
       <Row label="Loan Amount" value={fmt(loanAmount)} />
       <SliderRow label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
@@ -328,7 +329,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
 
       <Divider />
 
-      <SectionHeader title="What It Costs" />
+      <SectionHeader title="What It Costs" anchorId="strategy-worksheet-costs" />
       <SliderRow label="Property Tax" value={state.annualPropertyTax} displayValue={`${fmt(state.annualPropertyTax)}/yr`} min={0} max={20000} onChange={(v) => up('annualPropertyTax', v)} />
       <SliderRow label="Insurance" value={state.annualInsurance} displayValue={`${fmt(state.annualInsurance)}/yr`} min={0} max={10000} onChange={(v) => up('annualInsurance', v)} />
       <SliderRow label="Management" value={(state.managementRate ?? 0) * 100} secondaryValue={`${((state.managementRate ?? 0) * 100).toFixed(0)}%`} displayValue={`${fmt(grossMonthly * (state.managementRate ?? 0) * 12)}/yr`} min={0} max={15} onChange={(v) => up('managementRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
@@ -338,7 +339,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
 
       <Divider />
 
-      <SectionHeader title="What You'd Earn" />
+      <SectionHeader title="What You'd Earn" anchorId="strategy-worksheet-income" />
       <SliderRow label="Monthly Rent" value={state.monthlyRent} displayValue={fmt(state.monthlyRent)} min={500} max={10000} onChange={(v) => up('monthlyRent', v)} />
       <Row label="Gross Monthly" value={fmt(grossMonthly)} />
       <Row label="Annual Cash Flow" value={fmt(annualProfit)} color={annualProfit >= 0 ? C.blue : '#F43F5E'} />

@@ -54,6 +54,9 @@ import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
+import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
+import { VerdictGapGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
+import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
 interface BackendAnalysisResponse {
@@ -247,7 +250,8 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
-  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
+  const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(false)
@@ -1056,7 +1060,7 @@ function VerdictContent() {
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
 
-  const navigateToStrategy = (section?: 'purchase' | 'income' | 'rehab') => {
+  const navigateToStrategy = useCallback((section?: StrategyWorksheetSection) => {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const parts = [property.address, property.city, stateZip].filter(Boolean)
     let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
@@ -1069,9 +1073,18 @@ function VerdictContent() {
     if (conditionParam) params.set('condition', conditionParam)
     if (locationParam) params.set('location', locationParam)
     if (section) params.set('section', section)
-    
+
     router.push(`/strategy?${params.toString()}`)
-  }
+  }, [property?.address, property?.city, property?.state, property?.zip, conditionParam, locationParam, router])
+
+  const openDataSourcesAndScroll = useCallback(() => {
+    setIsDataSourcesOpen(true)
+    requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        dataSourcesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 120)
+    })
+  }, [])
 
   /** Comps tab in nav — PriceCheckerIQ at /price-intel (same params as AnalysisNav "Comps" link). */
   const navigateToComps = () => {
@@ -1200,6 +1213,33 @@ function VerdictContent() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              <MarketAnchorNote isListed={isListed} />
+              {hasDataSources && (
+                <p className="text-[12px] sm:text-[13px] leading-relaxed m-0" style={{ color: 'var(--text-body)' }}>
+                  Rent or value look off?{' '}
+                  <button
+                    type="button"
+                    onClick={openDataSourcesAndScroll}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    Open Data Sources
+                  </button>{' '}
+                  to switch provider, or use{' '}
+                  <button
+                    type="button"
+                    onClick={handleNavigateToDealMaker}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    Change Terms
+                  </button>{' '}
+                  for full control.
+                </p>
+              )}
             </div>
 
             {/* Price scale bar (Deal Gap / Price Gap) */}
@@ -1380,6 +1420,7 @@ function VerdictContent() {
             {/* Data Sources Accordion */}
             {hasDataSources && (
               <div
+                ref={dataSourcesRef}
                 className="mt-5 rounded-xl overflow-hidden"
                 style={{
                   background: 'var(--surface-card)',
@@ -1503,12 +1544,29 @@ function VerdictContent() {
                     </span>
                   </div>
 
-                  {/* Verdict copy */}
-                  <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
-                    {effectiveDisplayPct > 0
-                      ? 'This deal cash flows at current terms. Confirm your numbers in Strategy before you move.'
-                      : 'The market price exceeds breakeven. Negotiation or creative terms are needed to make this work.'}
-                  </p>
+                  {/* Verdict copy — positive spread; neutral at anchor; challenging when discount is required */}
+                  {effectiveDisplayPct > 0 ? (
+                    <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
+                      This deal cash flows at current terms. Confirm your numbers in Strategy before you move.
+                    </p>
+                  ) : dealGapPct > 0 ? (
+                    <VerdictGapGuidance
+                      tier={tier}
+                      dealGapPct={dealGapPct}
+                      effectiveDisplayPct={effectiveDisplayPct}
+                      isListed={isListed}
+                      isAuthenticated={isAuthenticated}
+                      hasDataSources={hasDataSources}
+                      onOpenDataSources={openDataSourcesAndScroll}
+                      onNavigateStrategy={navigateToStrategy}
+                      onDealMaker={handleNavigateToDealMaker}
+                      onSignIn={() => openAuthModal('login')}
+                    />
+                  ) : (
+                    <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
+                      At modeled terms, target buy aligns with the market anchor. Still validate rent, expenses, and financing in Strategy before you commit.
+                    </p>
+                  )}
 
                   {/* Action links */}
                   <div className="flex items-center gap-4 mt-3">
@@ -1779,7 +1837,7 @@ function VerdictContent() {
           {/* CTA → Strategy — copy adapts to Deal Gap tier */}
           <section className="px-3 sm:px-5 py-10 text-center">
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--accent-sky)' }}>
-              {dealGapPct <= 10 ? 'This deal passed the screen' : dealGapPct <= 20 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'Zestimate'}`}
+              {dealGapPct <= 10 ? 'This deal passed the screen' : dealGapPct <= 20 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'this estimate'}`}
             </p>
             <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: 'var(--text-heading)' }}>
               {dealGapPct <= 10 ? 'Now Prove It.' : dealGapPct <= 20 ? 'Find the Angle.' : 'See What Would Work.'}
@@ -1789,8 +1847,21 @@ function VerdictContent() {
                 ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
                 : dealGapPct <= 20
                 ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
-                : 'See exactly how far off the numbers are — and find the price or strategy that would make this deal work. Consider waiting for a price reduction or adjusting your assumptions.'}
+                : 'See how far the numbers are off—and what would fix them. Price cuts are only one lever: better financing, more cash down, seller carry, verified rent, or tighter expenses can all close the gap. Strategy walks through each scenario.'}
             </p>
+            {dealGapPct > 20 && !isAuthenticated && (
+              <p className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg" style={{ color: 'var(--text-secondary)' }}>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="font-semibold underline-offset-2 hover:underline"
+                  style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Sign in
+                </button>{' '}
+                to use live sliders and save assumptions across visits.
+              </p>
+            )}
             <button onClick={() => navigateToStrategy()} className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
               style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}>
               Show Me the Numbers
