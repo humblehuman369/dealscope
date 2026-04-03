@@ -1411,7 +1411,7 @@ function VerdictContent() {
                   to switch provider, or use{' '}
                   <button
                     type="button"
-                    onClick={handleNavigateToDealMaker}
+                    onClick={() => navigateToStrategy()}
                     className="font-semibold underline-offset-2 hover:underline"
                     style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                   >
