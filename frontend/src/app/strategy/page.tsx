@@ -136,6 +136,12 @@ function StrategyContent() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recalcDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedAddressRef = useRef(addressParam)
+  /** After first successful property load, refetches skip full-page loader (DealMaker sliders / session echo). */
+  const hasLoadedPropertyRef = useRef(false)
+
+  useEffect(() => {
+    hasLoadedPropertyRef.current = false
+  }, [addressParam])
 
   // Overrides from sessionStorage (Verdict / DealMaker page) — drives initial API fetch.
   const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
@@ -169,8 +175,8 @@ function StrategyContent() {
       }
     }
     loadOverrides()
-    window.addEventListener('dealMakerOverridesUpdated', loadOverrides)
-    return () => window.removeEventListener('dealMakerOverridesUpdated', loadOverrides)
+    // Do not subscribe to dealMakerOverridesUpdated: this page writes session on slider change;
+    // re-loading would setInitialOverrides and retrigger full fetch + loading flash. Initial read on mount is enough.
   }, [addressParam, strategyParam])
 
   const savePropertySnapshot = useMemo(() => {
@@ -294,8 +300,9 @@ function StrategyContent() {
         }
       }
 
+      const showBlockingLoader = !hasLoadedPropertyRef.current
       try {
-        setIsLoading(true)
+        if (showBlockingLoader) setIsLoading(true)
         const propData = await fetchProperty(fetchAddr)
         const baseDefaults = buildVerdictBaseFromPropertyResponse(propData, {
           condition: conditionParam ? Number(conditionParam) : null,
@@ -342,15 +349,18 @@ function StrategyContent() {
         const payload = buildVerdictAnalysisPayload(toPayloadBase(enrichedPropInfo), dealMakerOverrides, sourceOverrides)
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', payload)
         setData(analysis)
+        hasLoadedPropertyRef.current = true
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load')
       } finally {
-        setIsLoading(false)
+        if (showBlockingLoader) setIsLoading(false)
       }
     }
     fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- api.post is a stable module-level reference; initialOverrides only (not inline slider changes)
-  }, [addressParam, conditionParam, locationParam, initialOverrides, dealMakerOverrides, sourceOverrides, toPayloadBase, fetchProperty])
+  // Inline slider changes merge into dealMakerOverrides but must NOT refetch property + full-page loader — use debounced recalcVerdict only.
+  // sourceOverrides changes are handled by recalcVerdict from IQ selector, not a full refetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional narrow deps
+  }, [addressParam, conditionParam, locationParam, initialOverrides, toPayloadBase, fetchProperty])
 
   const handleBack = useCallback(() => {
     router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
@@ -1035,8 +1045,6 @@ function StrategyContent() {
               background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
               boxShadow: 'var(--shadow-card)',
-              opacity: isRecalculating ? 0.7 : 1,
-              transition: 'opacity 0.2s ease',
             }}
           >
             {isRecalculating && (
