@@ -37,6 +37,11 @@ import {
   type VerdictPayloadBase,
 } from '@/utils/verdictPayload'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
+import {
+  parseStrategyWorksheetSection,
+  strategyWorksheetAnchorId,
+} from '@/components/iq-verdict/strategyWorksheetSection'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
@@ -111,7 +116,7 @@ function StrategyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const { isAuthenticated } = useSession()
+  const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
@@ -119,6 +124,7 @@ function StrategyContent() {
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
   const strategyParam = searchParams.get('strategy')
+  const worksheetSectionParam = parseStrategyWorksheetSection(searchParams.get('section'))
   const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
@@ -412,6 +418,16 @@ function StrategyContent() {
       return next
     })
   }, [scheduleRecalc])
+
+  useEffect(() => {
+    if (isLoading || sessionLoading || !data || !worksheetSectionParam) return
+    const id = strategyWorksheetAnchorId(worksheetSectionParam)
+    const delay = isAuthenticated ? 400 : 550
+    const t = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, delay)
+    return () => window.clearTimeout(t)
+  }, [isLoading, sessionLoading, data, worksheetSectionParam, isAuthenticated])
 
   if (isLoading) {
     return <IQLoadingLogo />
@@ -762,6 +778,10 @@ function StrategyContent() {
               ))}
             </div>
 
+            <div className="mb-4">
+              <MarketAnchorNote isListed={isListedProp} />
+            </div>
+
             <div className="flex items-center justify-start mb-1">
               <button
                 type="button"
@@ -980,6 +1000,26 @@ function StrategyContent() {
                   { num: '2', text: <><strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong> – Use the DealMaker tab to tweak parameters and see real-time changes.</> },
                   { num: '3', text: <><strong style={{ color: 'var(--text-heading)' }}>Download Reports</strong> – Get the full property report and Excel worksheet below for deeper insight.</> },
                   { num: '4', text: <><strong style={{ color: 'var(--text-heading)' }}>Use Appraiser to Set Your Values</strong> – Visit the Appraiser tab to confirm value, set the ARV and create your own appraisal report.</> },
+                  ...(dealGapPct > 20
+                    ? [
+                        {
+                          num: '5',
+                          text: (
+                            <>
+                              <strong style={{ color: 'var(--text-heading)' }}>Stress-test structure, not just price</strong> – If the Deal Gap is wide, model a lower interest rate, larger down payment, shorter loan term, or seller financing (including low- or zero-rate carry) in the worksheet below.
+                            </>
+                          ),
+                        },
+                        {
+                          num: '6',
+                          text: (
+                            <>
+                              <strong style={{ color: 'var(--text-heading)' }}>Verify income and value anchors</strong> – Use the IQ Estimate selector when you sign in to swap value or rent sources; small changes there move Income Value and Target Buy.
+                            </>
+                          ),
+                        },
+                      ]
+                    : []),
                 ].map((step) => (
                   <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                     <div style={{
