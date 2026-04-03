@@ -955,6 +955,7 @@ export function AppHeader({
               isDropdownOpen={detailsDropdownOpen}
               onToggleDropdown={handleToggleDetailsDropdown}
               detailsCollapsed={scrolledPast}
+              loading={!p}
             />
             {detailsDropdownOpen && (
               dropdownLoading

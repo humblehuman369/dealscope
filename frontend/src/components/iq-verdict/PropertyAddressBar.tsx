@@ -43,6 +43,8 @@ interface PropertyAddressBarProps {
   onToggleDropdown?: () => void
   /** When true, collapse the details row on mobile (address stays visible) */
   detailsCollapsed?: boolean
+  /** When true, hide the detail chips (beds/baths/sqft/status) — shown during initial data fetch */
+  loading?: boolean
 }
 
 function formatShortPrice(price: number): string {
@@ -152,6 +154,7 @@ export function PropertyAddressBar({
   isDropdownOpen,
   onToggleDropdown,
   detailsCollapsed,
+  loading,
 }: PropertyAddressBarProps) {
   const [internalBookmarked, setInternalBookmarked] = useState(false)
   const isControlled = onBookmarkClick != null
@@ -246,6 +249,7 @@ export function PropertyAddressBar({
             ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
             : 'max-h-12 opacity-100'
         }`}>
+          {!loading && (
           <div className="flex items-center flex-wrap flex-1 gap-1.5 sm:gap-3 min-w-0">
             <DetailItem label="Beds" value={beds} />
             <Dot />
@@ -255,6 +259,7 @@ export function PropertyAddressBar({
             <Dot />
             <StatusText status={statusLabel} />
           </div>
+          )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
           <button
