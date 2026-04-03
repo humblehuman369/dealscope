@@ -66,6 +66,16 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
     setIsDealGapVideoPlaying(false);
   };
 
+  const handleDealGapVideoLoadedData = () => {
+    const video = dealGapVideoRef.current;
+    if (!video || isDealGapVideoPlaying) return;
+
+    // Force-render a real opening frame instead of a static image poster.
+    if (video.currentTime < 0.01) {
+      video.currentTime = 0.01;
+    }
+  };
+
   return (
     <div style={{ background: 'var(--surface-base)', color: 'var(--text-body)', lineHeight: 1.6, overflowX: 'hidden' }}>
 
@@ -133,26 +143,17 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             style={{ maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}
             onClick={!isDealGapVideoPlaying ? playDealGapVideo : undefined}
           >
-            {!isDealGapVideoPlaying && (
-              <div className="three-prices-crop">
-                <img
-                  src="/images/three-key-prices.png"
-                  alt="DealGapIQ chart showing Target Buy, Income Value, and List Price with Deal Gap and Price Gap indicators"
-                  className="three-prices-graphic"
-                />
-              </div>
-            )}
             <video
               ref={dealGapVideoRef}
-              preload="metadata"
+              preload="auto"
               playsInline
               controls={isDealGapVideoPlaying}
               src="/videos/what-is-dealgapiq.mp4"
+              onLoadedData={handleDealGapVideoLoadedData}
               onEnded={handleDealGapVideoEnded}
               onPause={() => {
                 if (dealGapVideoRef.current?.ended) setIsDealGapVideoPlaying(false);
               }}
-              style={!isDealGapVideoPlaying ? { display: 'none' } : undefined}
             />
             <div className={`video-poster-overlay${isDealGapVideoPlaying ? ' hidden' : ''}`}>
               <div className="video-play-btn">
