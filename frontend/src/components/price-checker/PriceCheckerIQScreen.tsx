@@ -822,27 +822,47 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           {/* Header — scrolls up and out of view */}
           <div className={`relative rounded-t-xl p-4 overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-center justify-center">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="w-9 h-9 shrink-0 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-center justify-center">
                   <Target className="w-4.5 h-4.5 text-[var(--accent-sky-light)]" />
                 </div>
-                <div>
-                  <h3 className="text-[18px] font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
+                <div className="min-w-0">
+                  <h3 className="text-[18px] font-bold text-[var(--text-heading)] truncate">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
                 </div>
               </div>
-              <div className="flex rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center">
-                <button onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
-                  className={`px-3 py-1.5 text-base font-semibold rounded-lg transition-all whitespace-nowrap ${
-                    isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
-                  }`}>
-                  Sale Comps
+              <div
+                className="relative z-10 flex shrink-0 rounded-xl bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-1 justify-self-center"
+                role="group"
+                aria-label="Comparable type"
+              >
+                <button
+                  type="button"
+                  aria-pressed={isSale}
+                  title="Sale comparables"
+                  onClick={() => { setActiveView('sale'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
+                  style={{ color: isSale ? 'var(--accent-sky-light)' : 'var(--text-body)' }}
+                  className={`px-3 py-1.5 text-base font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                    isSale
+                      ? 'bg-[var(--surface-base)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]'
+                      : 'hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  Sales
                 </button>
-                <button onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
-                  className={`px-3 py-1.5 text-base font-semibold rounded-lg transition-all whitespace-nowrap ${
-                    !isSale ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]' : 'text-[var(--text-heading)] hover:text-[var(--text-body)]'
-                  }`}>
-                  Rent Comps
+                <button
+                  type="button"
+                  aria-pressed={!isSale}
+                  title="Rental comparables"
+                  onClick={() => { setActiveView('rent'); setShowAdjGrid(false); setExpandedComp(null); setActiveUnderwriteMode(null) }}
+                  style={{ color: !isSale ? 'var(--accent-sky-light)' : 'var(--text-body)' }}
+                  className={`px-3 py-1.5 text-base font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                    !isSale
+                      ? 'bg-[var(--surface-base)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]'
+                      : 'hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  Rent
                 </button>
               </div>
               <div className="text-center px-2 py-1 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)]">
