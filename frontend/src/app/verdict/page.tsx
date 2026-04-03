@@ -1220,33 +1220,6 @@ function VerdictContent() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
-              <MarketAnchorNote isListed={isListed} />
-              {hasDataSources && (
-                <p className="text-[12px] sm:text-[13px] leading-relaxed m-0" style={{ color: 'var(--text-body)' }}>
-                  Rent or value look off?{' '}
-                  <button
-                    type="button"
-                    onClick={openDataSourcesAndScroll}
-                    className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                  >
-                    Open Data Sources
-                  </button>{' '}
-                  to switch provider, or use{' '}
-                  <button
-                    type="button"
-                    onClick={handleNavigateToDealMaker}
-                    className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                  >
-                    Change Terms
-                  </button>{' '}
-                  for full control.
-                </p>
-              )}
-            </div>
-
             {/* Price scale bar (Deal Gap / Price Gap) */}
             <div className="mt-5 relative" style={{ paddingTop: 0 }}>
               {(() => {
@@ -1420,6 +1393,33 @@ function VerdictContent() {
                   </>
                 )
               })()}
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              <MarketAnchorNote isListed={isListed} />
+              {hasDataSources && (
+                <p className="text-[12px] sm:text-[13px] leading-relaxed m-0" style={{ color: 'var(--text-body)' }}>
+                  Rent or value look off?{' '}
+                  <button
+                    type="button"
+                    onClick={openDataSourcesAndScroll}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    Open Data Sources
+                  </button>{' '}
+                  to switch provider, or use{' '}
+                  <button
+                    type="button"
+                    onClick={handleNavigateToDealMaker}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    Change Terms
+                  </button>{' '}
+                  for full control.
+                </p>
+              )}
             </div>
 
             {/* Data Sources Accordion */}
