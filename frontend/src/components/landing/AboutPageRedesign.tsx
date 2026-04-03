@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import './about-page.css';
@@ -49,8 +49,6 @@ const INVESTOR_ITEMS = [
 
 export function AboutPageRedesign() {
   const router = useRouter();
-  const [founderImgError, setFounderImgError] = useState(false);
-
   const handleAnalyzeClick = () => {
     router.push('/search');
   };
@@ -227,36 +225,34 @@ export function AboutPageRedesign() {
       {/* FOUNDER */}
       <section className="about-founder">
         <div className="about-founder-inner">
-          <div className="about-founder-card">
-            <div className="about-founder-photo">
-              {founderImgError ? (
-                <span>BG</span>
-              ) : (
-                <img
-                  src="/brad-geisen.png"
-                  alt="Brad Geisen"
-                  onError={() => setFounderImgError(true)}
-                />
-              )}
-            </div>
-            <div>
-              <div className="about-founder-name">Brad Geisen</div>
-              <div className="about-founder-role">Founder &amp; CEO</div>
-              <p className="about-founder-bio">
-                I spent 35 years in real estate data &mdash; building HomePath.com for Fannie Mae,
-                HomeSteps.com for Freddie Mac, and founding Foreclosure.com. Today there&apos;s more
-                data than ever, but investors still spend hours piecing it together. DealGapIQ was
-                built to think like an investor, not market like an agent.
-              </p>
-              <div className="about-founder-creds">
-                {CREDS.map((c, i) => (
-                  <div className="about-cred" key={i}>
-                    <div className="about-cred-value">{c.value}</div>
-                    <div className="about-cred-label">{c.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="about-founder-text">
+            <h2>About the Founder</h2>
+            <p>
+              Most real estate platforms are built to help you find properties.<br />
+              Very few are built by someone who understands how deals actually work.
+            </p>
+            <p>
+              DealGapIQ was created by a founder who has spent a career on the side of the market where
+              properties are <strong>analyzed, structured, and executed</strong> &mdash; not just listed.
+            </p>
+            <p>
+              Behind the scenes, he has worked on large-scale real estate disposition programs for major institutions
+              and government agencies, helping shape how properties are evaluated, priced, and sold at scale. At the
+              same time, he has personally invested in <strong>thousands of properties</strong>, gaining firsthand insight into
+              what separates a listing from a true opportunity.
+            </p>
+            <p>
+              That combination &mdash; institutional perspective and real-world execution &mdash; is what powers DealGapIQ.
+              Because the reality is simple:
+            </p>
+            <p className="about-founder-emphasis">
+              <em>Every property can be a deal.</em><br />
+              <em>But only if you understand the numbers behind it.</em>
+            </p>
+            <p>
+              DealGapIQ was built to bring that level of clarity to every investor &mdash; turning complex analysis into a
+              simple, confident decision.
+            </p>
           </div>
         </div>
       </section>
