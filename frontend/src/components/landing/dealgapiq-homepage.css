@@ -1434,17 +1434,18 @@
 }
 .founder-photo {
   width: 160px; height: 160px;
-  border-radius: 16px;
-  background: var(--surface-elevated);
+  border-radius: 50%;
+  background: #fff;
   border: 2px solid rgba(14,165,233,0.2);
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-label);
   font-size: 3rem;
+  flex-shrink: 0;
 }
 .founder-photo img {
   width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 38%;
+  object-fit: cover; object-position: 50% 20%;
   display: block;
 }
 .founder-content h2 {
