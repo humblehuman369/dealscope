@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { AlertTriangle, RefreshCw, ArrowLeft, Search } from 'lucide-react'
 
 interface ErrorProps {
@@ -14,57 +15,89 @@ export default function VerdictError({ error, reset }: ErrorProps) {
   }, [error])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'var(--surface-base)' }}
+    >
       <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-lg border border-slate-200 dark:border-navy-700 p-8 text-center">
-          {/* Error Icon */}
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+        <div
+          className="rounded-2xl shadow-lg p-8 text-center"
+          style={{
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          <div
+            className="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--color-red-dim)' }}
+          >
+            <AlertTriangle className="w-8 h-8" style={{ color: 'var(--status-negative)' }} />
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-            Verdict Error
+          <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-heading)' }}>
+            We couldn&apos;t finish this analysis
           </h1>
 
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
-            We couldn&apos;t generate the investment verdict. The analysis engine may be temporarily unavailable.
+          <p className="mb-4 text-[0.95rem] leading-relaxed" style={{ color: 'var(--text-body)' }}>
+            The verdict step didn&apos;t complete. That&apos;s usually temporary—a busy server, a network blip, or a
+            hiccup with the property lookup.
           </p>
 
-          {/* Error Details (development only) */}
+          <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-heading)' }}>What to try:</strong> Retry once or twice. If it keeps
+            failing, search again with the full street address (including unit if any), or check your connection. Your
+            work isn&apos;t lost until you leave this flow.
+          </p>
+
           {process.env.NODE_ENV === 'development' && error.message && (
-            <div className="mb-6 p-3 bg-slate-100 dark:bg-navy-700 rounded-lg text-left">
-              <p className="text-xs font-mono text-slate-600 dark:text-slate-400 break-all">
+            <div
+              className="mb-6 p-3 rounded-lg text-left"
+              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-subtle)' }}
+            >
+              <p className="text-xs font-mono break-all" style={{ color: 'var(--text-secondary)' }}>
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs font-mono text-slate-500 mt-1">
+                <p className="text-xs font-mono mt-1" style={{ color: 'var(--text-muted)' }}>
                   Error ID: {error.digest}
                 </p>
               )}
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
+              type="button"
               onClick={reset}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium rounded-lg transition-colors"
+              style={{
+                background: 'var(--accent-sky)',
+                color: 'var(--text-inverse)',
+              }}
             >
               <RefreshCw className="w-4 h-4" />
-              Retry Analysis
+              Retry analysis
             </button>
-            <a
+            <Link
               href="/search"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-navy-700 hover:bg-slate-200 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium rounded-lg transition-colors"
+              style={{
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-heading)',
+              }}
             >
               <Search className="w-4 h-4" />
-              New Search
-            </a>
+              New search
+            </Link>
           </div>
 
           <button
+            type="button"
             onClick={() => window.history.back()}
-            className="mt-6 inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
+            className="mt-6 inline-flex items-center gap-1 text-sm transition-colors"
+            style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Go back
