@@ -1429,14 +1429,14 @@
   max-width: 900px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 160px 1fr;
+  grid-template-columns: 192px 1fr;
   gap: 3rem;
   align-items: start;
 }
 .founder-photo {
-  width: 160px; height: 160px;
+  width: 192px; height: 192px;
   border-radius: 50%;
-  background: #000;
+  background: transparent;
   border: none;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
