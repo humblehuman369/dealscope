@@ -164,20 +164,6 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             </div>
           </div>
 
-          <div className="price-badges">
-            <div className="price-badge badge-blue">
-              <span className="badge-title">Profit Zone</span>
-              <span className="badge-label">Target Buy</span>
-            </div>
-            <div className="price-badge badge-yellow">
-              <span className="badge-title">Break-Even Line</span>
-              <span className="badge-label">Income Value</span>
-            </div>
-            <div className="price-badge badge-red">
-              <span className="badge-title">Market Reality</span>
-              <span className="badge-label">Market Value</span>
-            </div>
-          </div>
         </div>
       </section>
 
