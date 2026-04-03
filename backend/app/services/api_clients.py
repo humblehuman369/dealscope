@@ -12,6 +12,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
+from statistics import median
 from typing import Any
 
 from app.services.base_client import BaseAPIClient, BaseAPIResponse
@@ -744,6 +745,7 @@ class DataNormalizer:
 
     def __init__(self):
         self.conflict_threshold = 0.15  # 15% difference triggers conflict flag
+        self.iq_outlier_threshold = 0.20  # 20% median-band filter for IQ estimates
 
     def normalize(
         self,
@@ -1174,15 +1176,33 @@ class DataNormalizer:
             """Average all non-None values from *vals_map* into *field_name*."""
             present = {k: float(v) for k, v in vals_map.items() if v is not None}
             if present:
-                avg = round(sum(present.values()) / len(present))
+                values_for_average = present
+                excluded_outliers: dict[str, float] = {}
+
+                # Filter outliers only when enough sources exist and the median is usable.
+                # Keep original behavior if filtering would leave fewer than 2 values.
+                if len(present) >= 3:
+                    med = median(present.values())
+                    if med > 0:
+                        lower_bound = med * (1 - self.iq_outlier_threshold)
+                        upper_bound = med * (1 + self.iq_outlier_threshold)
+                        filtered = {k: v for k, v in present.items() if lower_bound <= v <= upper_bound}
+                        outliers = {k: v for k, v in present.items() if k not in filtered}
+                        if len(filtered) >= 2:
+                            values_for_average = filtered
+                            excluded_outliers = outliers
+
+                avg = round(sum(values_for_average.values()) / len(values_for_average))
                 normalized[field_name] = avg
-                source = next(iter(present)) if len(present) == 1 else "merged"
+                source = next(iter(values_for_average)) if len(values_for_average) == 1 else "merged"
                 provenance[field_name] = {
                     "source": source,
                     "fetched_at": ts,
-                    "confidence": "high",
+                    "confidence": "medium" if excluded_outliers else "high",
                     "raw_values": present,
-                    "conflict_flag": False,
+                    "filtered_values": values_for_average,
+                    "excluded_outliers": excluded_outliers or None,
+                    "conflict_flag": bool(excluded_outliers),
                 }
             else:
                 normalized[field_name] = None

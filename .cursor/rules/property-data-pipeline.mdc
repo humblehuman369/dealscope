@@ -22,8 +22,8 @@ changes must go in `api_clients.py :: DataNormalizer`.
 ```
 FIELD_MAPPING (declarative)          _compute_iq_estimates (post-processing)
 ─────────────────────────────        ──────────────────────────────────────
-rentcast_data + axesso_data   →      rental_iq_estimate   = avg(rc, zl, rf)
-  ↓ priority-based extraction        value_iq_estimate    = avg(rc, zl, rf)
+rentcast_data + axesso_data   →      rental_iq_estimate   = avg(in-range providers)
+  ↓ priority-based extraction        value_iq_estimate    = avg(in-range providers)
   ↓ conflict detection (>15%)        (single source if only one available)
   ↓ weighted merge when conflict
   ↓
@@ -42,8 +42,10 @@ normalized dict + provenance dict
 ### IQ Estimate Computation
 
 `_compute_iq_estimates()` runs after FIELD_MAPPING and computes:
-- `rental_iq_estimate` = avg of available [rc_rent, zl_rent, rf_rent] — or single source
-- `value_iq_estimate`  = avg of available [rc_avm, zestimate, redfin_estimate] — or single source
+- `rental_iq_estimate` = avg of retained in-range [rc_rent, zl_rent, rf_rent]
+- `value_iq_estimate`  = avg of retained in-range [rc_avm, zestimate, redfin_estimate, realtor_estimate]
+- Outlier filtering: when 3+ sources exist, drop values outside `median ± 20%` (per metric)
+- If filtering leaves fewer than 2 values, fall back to averaging all available values
 - Redfin value and rental estimates are injected via `_inject_redfin_data()` before IQ computation
 - Both are `None` when no source has data — **never fabricated**
 
@@ -91,7 +93,7 @@ data without `value_iq_estimate` / `rental_stats` is re-fetched automatically.
 ## Critical Rules
 
 1. **Never use fake data.** If a source is unavailable → show "Unavailable", never fabricate
-2. **IQ Estimate = average of available sources**, or equals the single available source
+2. **IQ Estimate = average of retained in-range sources** (median ± 20% rule when 3+ sources), or equals the single available source
 3. **Both sources unavailable → IQ Estimate is null**, analysis should warn the user
 4. **`monthly_rent_ltr`** in PropertyResponse reads from `normalized["rental_iq_estimate"]`
 5. **Zillow `rentZestimate`** is extracted via `_unwrap_axesso_property()` which normalizes
