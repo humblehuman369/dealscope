@@ -225,6 +225,9 @@ export function AboutPageRedesign() {
       {/* FOUNDER */}
       <section className="about-founder">
         <div className="about-founder-inner">
+          <div className="about-founder-photo">
+            <img src="/images/brad-geisen-about.png" alt="Brad Geisen" />
+          </div>
           <div className="about-founder-text">
             <h2>About the Founder</h2>
             <p>
