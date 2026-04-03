@@ -16,7 +16,7 @@
  * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
-import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   IQProperty, 
@@ -195,8 +195,12 @@ function VerdictContent() {
     setIsClient(true)
   }, [])
   
-  // Get session data (only on client)
-  const sessionData = isClient ? getSessionData() : null
+  // Get session data (only on client) once per property context.
+  // This avoids feedback loops when this page itself writes overrides to sessionStorage.
+  const sessionData = useMemo(() => {
+    if (!isClient) return null
+    return getSessionData()
+  }, [isClient, getSessionData])
   
   // Use URL params only for purchasePrice — sessionStorage purchasePrice is auto-written
   // by this page's own analysis output, so reading it back creates a feedback loop where
