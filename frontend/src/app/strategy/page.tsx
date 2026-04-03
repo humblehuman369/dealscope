@@ -441,6 +441,7 @@ function StrategyContent() {
 
   // Strategy-specific financial breakdown from backend
   const bd = topStrategy?.breakdown as Record<string, number> | undefined
+  const inputsUsed = (data.inputs_used ?? (data as any).inputsUsed ?? {}) as Record<string, number | undefined>
 
   // All derived financials come from the backend breakdown
   const monthlyRent = bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0
@@ -449,14 +450,28 @@ function StrategyContent() {
   const rehabCost = bd?.rehab_cost ?? dealMakerOverrides?.rehabBudget
     ?? (conditionParam ? getConditionAdjustment(Number(conditionParam)).rehabCost : 0)
 
-  const rate = (bd?.interest_rate ?? 6) / 100
-  const downPaymentPct = (bd?.down_payment_pct ?? 20) / 100
-  const closingCostsPct = (bd?.closing_costs_pct ?? 3) / 100
-  const loanTermYears = bd?.loan_term_years ?? 30
-  const vacancyPct = (bd?.vacancy_rate ?? 5) / 100
-  const mgmtPct = (bd?.management_pct ?? 8) / 100
-  const maintPct = (bd?.maintenance_pct ?? 5) / 100
-  const reservesPct = (bd?.reserves_pct ?? 5) / 100
+  const rate = bd?.interest_rate != null
+    ? bd.interest_rate / 100
+    : (inputsUsed.interest_rate ?? 0.06)
+  const downPaymentPct = bd?.down_payment_pct != null
+    ? bd.down_payment_pct / 100
+    : (inputsUsed.down_payment_pct ?? 0.20)
+  const closingCostsPct = bd?.closing_costs_pct != null
+    ? bd.closing_costs_pct / 100
+    : (inputsUsed.closing_costs_pct ?? 0.03)
+  const loanTermYears = bd?.loan_term_years ?? inputsUsed.loan_term_years ?? 30
+  const vacancyPct = bd?.vacancy_rate != null
+    ? bd.vacancy_rate / 100
+    : (inputsUsed.vacancy_rate ?? 0.05)
+  const mgmtPct = bd?.management_pct != null
+    ? bd.management_pct / 100
+    : (inputsUsed.management_pct ?? 0.08)
+  const maintPct = bd?.maintenance_pct != null
+    ? bd.maintenance_pct / 100
+    : (inputsUsed.maintenance_pct ?? 0.05)
+  const reservesPct = bd?.reserves_pct != null
+    ? bd.reserves_pct / 100
+    : (inputsUsed.capex_pct ?? 0.05)
 
   const downPayment = bd?.down_payment ?? targetPrice * downPaymentPct
   const closingCosts = bd?.closing_costs ?? targetPrice * closingCostsPct
