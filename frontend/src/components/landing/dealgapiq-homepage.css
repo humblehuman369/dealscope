@@ -284,18 +284,20 @@
   cursor: pointer;
 }
 .three-prices-crop {
+  position: relative;
   overflow: hidden;
-  max-height: 420px;
+  aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .three-prices-crop .three-prices-graphic {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  margin-top: -18%;
-  margin-bottom: -12%;
+  object-fit: cover;
+  object-position: center 32%;
+  margin: 0;
 }
 .dealgap-video-combined .video-poster-overlay {
   background: transparent;
@@ -1103,7 +1105,7 @@
 .price-badges {
   display: flex;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 1.4rem;
   margin-top: 2.5rem;
   flex-wrap: wrap;
 }
@@ -1112,41 +1114,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.75rem 2rem;
-  border-radius: 40px;
+  justify-content: center;
+  gap: 0.05rem;
+  padding: 0.9rem 2rem 0.85rem;
+  border-radius: 22px;
   border: 1px solid;
-  min-width: 160px;
+  background: var(--surface-base);
+  min-width: 240px;
 }
 
 .badge-blue {
-  border-color: rgba(14,165,233,0.35);
-  background: rgba(14,165,233,0.04);
+  border-color: rgba(14,165,233,0.8);
 }
 .badge-yellow {
-  border-color: rgba(250,204,21,0.35);
-  background: rgba(250,204,21,0.04);
+  border-color: rgba(250,204,21,0.8);
 }
 .badge-red {
-  border-color: rgba(248,113,113,0.35);
-  background: rgba(248,113,113,0.04);
+  border-color: rgba(248,113,113,0.8);
 }
 
 .badge-title {
   font-family: var(--font-dm, 'DM Sans', sans-serif);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: clamp(1.55rem, 2.25vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  font-weight: 700;
 }
 .badge-blue .badge-title { color: var(--accent-sky); }
 .badge-yellow .badge-title { color: var(--status-income-value, #FACC15); }
 .badge-red .badge-title { color: var(--status-negative); }
 
 .badge-label {
-  font-family: var(--font-mono, 'Space Mono', monospace);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--text-secondary);
+  font-family: var(--font-dm, 'DM Sans', sans-serif);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-heading);
 }
 
 .three-prices-graphic {
@@ -1607,7 +1610,7 @@
   .price-box-value { font-size: 0.95rem; }
   .threshold-cards { grid-template-columns: 1fr; }
   .price-badges { flex-direction: column; align-items: center; gap: 0.75rem; }
-  .price-badge { min-width: 200px; }
+  .price-badge { min-width: 220px; }
   .comp-layout { grid-template-columns: 1fr; }
   .comp-content .section-label { text-align: center; }
   .comp-content h2 { text-align: center; }
