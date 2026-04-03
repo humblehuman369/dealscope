@@ -371,8 +371,8 @@ function VerdictContent() {
           (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
           1
 
-        const propertyTaxes = data.market?.property_taxes_annual ?? null
-        const insurance = data.market?.insurance_annual ?? null
+        const propertyTaxes = data.market?.property_taxes_annual ?? undefined
+        const insurance = data.market?.insurance_annual ?? undefined
 
         // Get STR data if available (use null checks to properly handle 0 values)
         const averageDailyRate = data.rentals?.average_daily_rate ?? null
