@@ -144,7 +144,20 @@ export function AddressAutocomplete({
     script.async = true
     script.defer = true
     script.setAttribute('data-google-places', 'true')
-    script.onload = () => setIsLoaded(true)
+    script.onload = () => {
+      // With loading=async, libraries aren't available at script onload —
+      // must call importLibrary() to materialise the Places namespace.
+      if (window.google?.maps?.places) {
+        setIsLoaded(true)
+      } else if (window.google?.maps?.importLibrary) {
+        window.google.maps
+          .importLibrary('places')
+          .then(() => setIsLoaded(true))
+          .catch(() => setIsLoaded(true))
+      } else {
+        setIsLoaded(true)
+      }
+    }
     script.onerror = () => {
       console.error(
         '[AddressAutocomplete] Google Places script failed to load. ' +
