@@ -51,17 +51,31 @@ export function buildDealMakerSessionKey(address: string): string {
   return `dealMaker_${encodeURIComponent(canonicalizeAddressForIdentity(address))}`
 }
 
-function tryParseJson(raw: string | null): Record<string, unknown> | null {
+export type DealMakerOverrideOrigin =
+  | 'verdict_sync'
+  | 'dealmaker_edit'
+  | 'saved_property'
+  | 'source_selection'
+  | 'unknown'
+
+export interface DealMakerOverrideRecord extends Record<string, unknown> {
+  origin?: DealMakerOverrideOrigin
+  canonicalAddress?: string
+  address?: string
+  timestamp?: number
+}
+
+function tryParseJson(raw: string | null): DealMakerOverrideRecord | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' ? parsed : null
+    return parsed && typeof parsed === 'object' ? (parsed as DealMakerOverrideRecord) : null
   } catch {
     return null
   }
 }
 
-export function readDealMakerOverrides(address?: string): Record<string, unknown> | null {
+export function readDealMakerOverrides(address?: string): DealMakerOverrideRecord | null {
   if (typeof window === 'undefined') return null
 
   // Try the exact requested address first
@@ -88,7 +102,8 @@ export function readDealMakerOverrides(address?: string): Record<string, unknown
 export function writeDealMakerOverrides(
   address: string,
   patch: Record<string, unknown>,
-): Record<string, unknown> | null {
+  options?: { origin?: DealMakerOverrideOrigin },
+): DealMakerOverrideRecord | null {
   if (typeof window === 'undefined') return null
 
   const canonicalAddress = canonicalizeAddressForIdentity(address)
@@ -96,10 +111,25 @@ export function writeDealMakerOverrides(
 
   const sessionKey = buildDealMakerSessionKey(canonicalAddress)
   const existing = tryParseJson(sessionStorage.getItem(sessionKey)) ?? {}
-  const merged = { ...existing, ...patch, canonicalAddress, address: canonicalAddress, timestamp: Date.now() }
+  const origin = options?.origin ?? existing.origin ?? 'unknown'
+  const merged: DealMakerOverrideRecord = {
+    ...existing,
+    ...patch,
+    origin,
+    canonicalAddress,
+    address: canonicalAddress,
+    timestamp: Date.now(),
+  }
 
   sessionStorage.setItem(sessionKey, JSON.stringify(merged))
   sessionStorage.setItem('dealMaker_activeAddress', canonicalAddress)
   window.dispatchEvent(new Event('dealMakerOverridesUpdated'))
   return merged
+}
+
+export function isInitialOverrideEligible(
+  overrides: DealMakerOverrideRecord | null | undefined,
+): boolean {
+  if (!overrides) return false
+  return overrides.origin === 'dealmaker_edit' || overrides.origin === 'saved_property'
 }
