@@ -121,22 +121,25 @@ export function ScanResultSheet({
             </div>
           </div>
 
-          {onPickFromMap && (
-            <button
-              onClick={onPickFromMap}
-              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl text-sm font-semibold transition-colors"
-              style={{
-                color: 'var(--accent-sky, #0EA5E9)',
-                background: 'rgba(14, 165, 233, 0.08)',
-                border: '1px solid rgba(14, 165, 233, 0.3)',
-              }}
-            >
-              <Map className="w-4 h-4" />
-              Not this property? Pick from map
-            </button>
-          )}
+          {/* Confirmation prompt */}
+          <p
+            className="text-center text-sm font-medium mb-3"
+            style={{ color: 'var(--text-body)' }}
+          >
+            Is this your property?
+          </p>
 
-          {/* Action buttons */}
+          {/* Primary CTA */}
+          <button
+            onClick={onViewDetails}
+            className="w-full py-3.5 px-4 rounded-xl text-white font-semibold transition-colors flex items-center justify-center gap-2 mb-3"
+            style={{ background: '#14B8A6' }}
+          >
+            Analyze This Property
+            <ArrowRight className="w-4 h-4" />
+          </button>
+
+          {/* Secondary actions */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
@@ -149,14 +152,20 @@ export function ScanResultSheet({
             >
               Scan Another
             </button>
-            <button
-              onClick={onViewDetails}
-              className="flex-1 py-3 px-4 rounded-xl text-white font-medium transition-colors flex items-center justify-center gap-2"
-              style={{ background: '#14B8A6' }}
-            >
-              View Analytics
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {onPickFromMap && (
+              <button
+                onClick={onPickFromMap}
+                className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                style={{
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-body)',
+                  background: 'var(--surface-card)',
+                }}
+              >
+                <Map className="w-4 h-4" />
+                Search Map
+              </button>
+            )}
           </div>
         </div>
       </div>
