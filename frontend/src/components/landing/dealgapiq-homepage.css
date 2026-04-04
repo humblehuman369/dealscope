@@ -33,7 +33,7 @@
 .hero {
   display: flex; flex-direction: column;
   align-items: flex-start;
-  padding: 6rem 2rem 4rem clamp(2rem, 8vw, 8rem);
+  padding: 76px 2rem 89px clamp(2rem, 8vw, 8rem);
   position: relative;
   overflow: hidden;
 }
