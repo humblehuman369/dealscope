@@ -55,7 +55,7 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
-import { VerdictGapGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
+import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 
 // Backend analysis response — handles both snake_case and camelCase from Pydantic
@@ -997,6 +997,17 @@ function VerdictContent() {
     [property, conditionParam, locationParam, router],
   )
 
+  const navigateToAppraiser = useCallback(() => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const compsQuery = new URLSearchParams({ address: fullAddress })
+    if (property.zpid) compsQuery.set('zpid', String(property.zpid))
+    if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+    if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+    router.push(`/price-intel?${compsQuery.toString()}`)
+  }, [property, router])
+
   const openDataSourcesAndScroll = useCallback(() => {
     setIsDataSourcesOpen(true)
     requestAnimationFrame(() => {
@@ -1552,9 +1563,14 @@ function VerdictContent() {
 
                   {/* Verdict copy — positive spread; neutral at anchor; challenging when discount is required */}
                   {effectiveDisplayPct > 0 ? (
-                    <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
-                      This deal cash flows at current terms. Confirm your numbers in Strategy before you move.
-                    </p>
+                    <VerdictPositiveGuidance
+                      effectiveDisplayPct={effectiveDisplayPct}
+                      isListed={isListed}
+                      isAuthenticated={isAuthenticated}
+                      onNavigateAppraiser={navigateToAppraiser}
+                      onNavigateStrategy={navigateToStrategy}
+                      onSignIn={() => openAuthModal('login')}
+                    />
                   ) : dealGapPct > 0 ? (
                     <VerdictGapGuidance
                       tier={tier}
@@ -1569,9 +1585,14 @@ function VerdictContent() {
                       onSignIn={() => openAuthModal('login')}
                     />
                   ) : (
-                    <p style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)', maxWidth: 520 }}>
-                      At modeled terms, target buy aligns with the market anchor. Still validate rent, expenses, and financing in Strategy before you commit.
-                    </p>
+                    <VerdictPositiveGuidance
+                      effectiveDisplayPct={effectiveDisplayPct}
+                      isListed={isListed}
+                      isAuthenticated={isAuthenticated}
+                      onNavigateAppraiser={navigateToAppraiser}
+                      onNavigateStrategy={navigateToStrategy}
+                      onSignIn={() => openAuthModal('login')}
+                    />
                   )}
 
                   {/* Action links */}
