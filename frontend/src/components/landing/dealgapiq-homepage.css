@@ -160,6 +160,14 @@
   max-width: 100%;
   animation: fadeUp 0.8s ease 0.3s both;
   filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
+  mask-image:
+    linear-gradient(to bottom, black 60%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 10%, black 80%, transparent 100%);
+  -webkit-mask-image:
+    linear-gradient(to bottom, black 60%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 10%, black 80%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 }
 
 /* FOUNDER SEPARATOR */
