@@ -175,6 +175,13 @@ function StrategyContent() {
           if (!strategyParam && typeof parsed.strategy === 'string' && parsed.strategy) {
             setSelectedStrategyId(parsed.strategy)
           }
+        } else if (parsed?.origin === 'source_selection') {
+          const srcPatch: Record<string, number> = {}
+          if (typeof parsed.listPrice === 'number' && parsed.listPrice > 0) srcPatch.price = parsed.listPrice
+          if (typeof parsed.monthlyRent === 'number' && parsed.monthlyRent > 0) srcPatch.monthlyRent = parsed.monthlyRent
+          if (Object.keys(srcPatch).length > 0) {
+            setSourceOverrides((prev) => ({ ...prev, ...srcPatch }))
+          }
         }
       } catch (e) {
         console.warn('[StrategyIQ] Failed to read sessionStorage:', e)
@@ -1141,25 +1148,21 @@ function StrategyContent() {
                   sources={iqSources}
                   onSourceChange={(type, _sourceId, _value) => {
                     if (_value == null) return
-                    const nextSrcOverrides = { ...sourceOverrides }
-                    if (type === 'value') {
-                      nextSrcOverrides.price = _value
-                      setSourceOverrides(nextSrcOverrides)
-                      try {
+                    const patch = type === 'value' ? { price: _value } : { monthlyRent: _value }
+                    const nextSrcOverrides = { ...sourceOverrides, ...patch }
+                    setSourceOverrides(prev => ({ ...prev, ...patch }))
+                    try {
+                      if (type === 'value') {
                         writeDealMakerOverrides(resolvedAddress, {
                           price: _value,
                           listPrice: _value,
                         }, { origin: 'source_selection' })
-                      } catch { /* ignore */ }
-                    } else {
-                      nextSrcOverrides.monthlyRent = _value
-                      setSourceOverrides(nextSrcOverrides)
-                      try {
+                      } else {
                         writeDealMakerOverrides(resolvedAddress, {
                           monthlyRent: _value,
                         }, { origin: 'source_selection' })
-                      } catch { /* ignore */ }
-                    }
+                      }
+                    } catch { /* ignore */ }
                     const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
                     recalcVerdict(propertyInfo, merged, nextSrcOverrides)
                   }}
