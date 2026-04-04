@@ -22,7 +22,7 @@ function getDisplayAddress(item: SavedPropertySummary): string {
 
 export default function SavedPropertiesScreen() {
   const router = useRouter();
-  const { data: properties, isLoading } = useSavedProperties({
+  const { data: properties, isLoading, isError } = useSavedProperties({
     page: 0,
     pageSize: 50,
     status: 'all',
@@ -99,9 +99,13 @@ export default function SavedPropertiesScreen() {
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No Saved Properties</Text>
+              <Text style={styles.emptyTitle}>
+                {isError ? 'Unable to Load Properties' : 'No Saved Properties'}
+              </Text>
               <Text style={styles.emptySubtitle}>
-                Analyze a property and tap the bookmark icon to save it here
+                {isError
+                  ? 'Please check your connection and try again.'
+                  : 'Analyze a property and tap the bookmark icon to save it here'}
               </Text>
             </View>
           ) : null

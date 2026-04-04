@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,9 +7,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { hydrateTokens } from '@/services/token-manager';
+import { initPurchases } from '@/services/purchases';
+import { initSentry } from '@/services/sentry';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { colors } from '@/constants/colors';
+
+initSentry();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,7 +41,13 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    hydrateTokens().then(() => setReady(true));
+    hydrateTokens()
+      .then(() => {
+        if (Platform.OS !== 'web') {
+          initPurchases().catch(() => {});
+        }
+      })
+      .then(() => setReady(true));
   }, []);
 
   useEffect(() => {
@@ -71,6 +82,10 @@ export default function RootLayout() {
           <Stack.Screen name="comps" />
           <Stack.Screen name="pricing" />
           <Stack.Screen name="about" />
+          <Stack.Screen name="terms" />
+          <Stack.Screen name="privacy" />
+          <Stack.Screen name="reset-password" />
+          <Stack.Screen name="verify-email" />
           <Stack.Screen name="(protected)" />
         </Stack>
         </ErrorBoundary>

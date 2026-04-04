@@ -8,6 +8,7 @@ import { FinancialBreakdown } from '@/components/strategy/FinancialBreakdown';
 import { useWorksheet } from '@/hooks/useWorksheet';
 import { useVerdict } from '@/hooks/useVerdict';
 import { usePropertyData } from '@/hooks/usePropertyData';
+import { errorToUserMessage } from '@/utils/errorMessages';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
@@ -86,7 +87,7 @@ export default function StrategyScreen() {
         {error && !isLoading && (
           <View style={styles.loading}>
             <Text style={styles.errorText}>
-              {(error as any)?.message ?? 'Failed to calculate strategy'}
+              {errorToUserMessage(error, 'Unable to calculate strategy. Please try again.')}
             </Text>
           </View>
         )}

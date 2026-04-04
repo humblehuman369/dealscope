@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Linking,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -209,7 +210,21 @@ export default function RegisterScreen() {
           </View>
 
           <Text style={styles.terms}>
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            By creating an account, you agree to our{' '}
+            <Text
+              style={styles.termsLink}
+              onPress={() => Linking.openURL('https://dealgapiq.com/terms')}
+            >
+              Terms of Service
+            </Text>
+            {' '}and{' '}
+            <Text
+              style={styles.termsLink}
+              onPress={() => Linking.openURL('https://dealgapiq.com/privacy')}
+            >
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -293,6 +308,10 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.md,
+  },
+  termsLink: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
   successContainer: {
     flex: 1,

@@ -1,8 +1,11 @@
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Linking, Platform, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Button } from '@/components/ui';
 import { useSubscription, useUsage } from '@/hooks/useSubscription';
+import { restorePurchases, isPro as checkIsPro } from '@/services/purchases';
+import { useRefreshUser } from '@/hooks/useSession';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
@@ -11,6 +14,33 @@ export default function BillingScreen() {
   const router = useRouter();
   const { tier, status, isPro } = useSubscription();
   const { data: usage } = useUsage();
+  const refreshUser = useRefreshUser();
+  const [restoring, setRestoring] = useState(false);
+
+  async function handleRestore() {
+    setRestoring(true);
+    try {
+      const info = await restorePurchases();
+      if (checkIsPro(info)) {
+        refreshUser();
+        Alert.alert('Restored', 'Your Pro subscription has been restored.');
+      } else {
+        Alert.alert('No Subscription Found', 'No active Pro subscription was found for this account.');
+      }
+    } catch {
+      Alert.alert('Restore Error', 'Unable to restore purchases. Please try again.');
+    } finally {
+      setRestoring(false);
+    }
+  }
+
+  function handleManageSubscription() {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('itms-apps://apps.apple.com/account/subscriptions');
+    } else {
+      Linking.openURL('https://play.google.com/store/account/subscriptions');
+    }
+  }
 
   const usagePct = usage
     ? Math.min(100, (usage.searches_used / usage.searches_limit) * 100)
@@ -53,6 +83,26 @@ export default function BillingScreen() {
             </Text>
           </Card>
         )}
+
+        {isPro && (
+          <Button
+            title="Manage Subscription"
+            variant="secondary"
+            onPress={handleManageSubscription}
+          />
+        )}
+
+        <Pressable
+          onPress={handleRestore}
+          disabled={restoring}
+          style={styles.restoreRow}
+        >
+          {restoring ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text style={styles.restoreText}>Restore Purchases</Text>
+          )}
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -94,6 +144,15 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   usageText: { ...typography.caption, color: colors.textSecondary },
+  restoreRow: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  restoreText: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '600',
+  },
   infoCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',

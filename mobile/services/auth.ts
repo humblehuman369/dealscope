@@ -198,6 +198,12 @@ export const authApi = {
     const { data } = await api.delete<AuthMessage>('/api/v1/auth/mfa');
     return data;
   },
+
+  async deleteAccount(): Promise<AuthMessage> {
+    const { data } = await api.delete<AuthMessage>('/api/v1/users/me');
+    await clearTokens();
+    return data;
+  },
 };
 
 export { isMFA };

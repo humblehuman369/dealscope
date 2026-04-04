@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { Card } from '@/components/ui';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
@@ -63,6 +64,24 @@ export default function AboutScreen() {
             </View>
           </Card>
         ))}
+
+        <View style={styles.legalSection}>
+          <View style={styles.legalLinks}>
+            <Pressable onPress={() => Linking.openURL('https://dealgapiq.com/terms')}>
+              <Text style={styles.legalLink}>Terms of Service</Text>
+            </Pressable>
+            <Text style={styles.legalDot}>·</Text>
+            <Pressable onPress={() => Linking.openURL('https://dealgapiq.com/privacy')}>
+              <Text style={styles.legalLink}>Privacy Policy</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.version}>
+            Version {Constants.expoConfig?.version ?? '1.0.0'}
+            {Constants.expoConfig?.ios?.buildNumber
+              ? ` (${Constants.expoConfig.ios.buildNumber})`
+              : ''}
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -104,4 +123,28 @@ const styles = StyleSheet.create({
   stratContent: { flex: 1 },
   stratName: { ...typography.h4, color: colors.textHeading },
   stratDesc: { ...typography.caption, color: colors.textSecondary },
+  legalSection: {
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  legalLink: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  legalDot: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+  },
+  version: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
 });

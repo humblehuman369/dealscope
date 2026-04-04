@@ -67,17 +67,21 @@ export default function AnalyzingScreen() {
     const startTime = Date.now();
 
     (async () => {
+      let fetchError = false;
       try {
         await fetchProperty(address);
       } catch {
-        // property data will show error on verdict screen
+        fetchError = true;
       }
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
       setTimeout(() => {
         if (navigated.current) return;
         navigated.current = true;
-        router.replace({ pathname: '/verdict', params: { address } });
+        router.replace({
+          pathname: '/verdict',
+          params: { address, ...(fetchError ? { fetchError: '1' } : {}) },
+        });
       }, remaining);
     })();
   }, [address, fetchProperty, router]);

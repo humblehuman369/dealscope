@@ -80,9 +80,21 @@ export default function DealMakerScreen() {
     if (!address) return;
     setCalculating(true);
     try {
+      const propertyTaxes = property?.expenses?.property_taxes ?? 0;
+      const insuranceAnnual = property?.expenses?.insurance ?? assumptions.purchase_price * (assumptions.insurance_pct / 100);
+
       const { data } = await api.post<MetricsResult>('/api/v1/worksheet/deal-score', {
-        address,
-        ...assumptions,
+        list_price: listPrice,
+        purchase_price: assumptions.purchase_price,
+        monthly_rent: assumptions.monthly_rent,
+        property_taxes: propertyTaxes,
+        insurance: insuranceAnnual,
+        down_payment_pct: assumptions.down_payment_pct / 100,
+        interest_rate: assumptions.interest_rate / 100,
+        loan_term_years: assumptions.loan_term_years,
+        vacancy_rate: assumptions.vacancy_rate / 100,
+        property_management_pct: assumptions.property_management_pct / 100,
+        maintenance_pct: assumptions.maintenance_pct / 100,
       });
       setMetrics(data);
     } catch {
@@ -90,7 +102,7 @@ export default function DealMakerScreen() {
     } finally {
       setCalculating(false);
     }
-  }, [address, assumptions]);
+  }, [address, assumptions, listPrice, property]);
 
   useEffect(() => {
     const timeout = setTimeout(recalculate, 500);

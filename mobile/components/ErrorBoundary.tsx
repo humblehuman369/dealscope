@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { captureError } from '@/services/sentry';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, info.componentStack);
+    captureError(error, { componentStack: info.componentStack });
   }
 
   render() {
@@ -34,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <Text style={styles.icon}>⚠️</Text>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
-            {this.state.error?.message ?? 'An unexpected error occurred'}
+            An unexpected error occurred. Please try again.
           </Text>
           <Pressable
             onPress={() => this.setState({ hasError: false, error: undefined })}
