@@ -110,7 +110,7 @@ export function MapPropertyPicker({
       </div>
 
       {/* Map */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <APIProvider apiKey={apiKey} libraries={['marker']}>
           <Map
             defaultCenter={{ lat: userLat, lng: userLng }}
@@ -213,7 +213,7 @@ export function MapPropertyPicker({
       {/* Bottom card: geocode result or loading */}
       {(tapPin || isGeocoding) && (
         <div
-          className="relative z-10 px-4 pb-6 pt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
+          className="relative z-20 px-4 pb-6 pt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
           style={{
             background: 'var(--surface-card)',
             borderTop: '1px solid var(--border-subtle)',
