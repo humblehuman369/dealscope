@@ -159,3 +159,118 @@ export function VerdictGapGuidance({
     </div>
   )
 }
+
+/* ------------------------------------------------------------------ */
+
+export interface VerdictPositiveGuidanceProps {
+  effectiveDisplayPct: number
+  isListed: boolean
+  isAuthenticated: boolean
+  onNavigateAppraiser: () => void
+  onNavigateStrategy: (section?: StrategyWorksheetSection) => void
+  onSignIn: () => void
+}
+
+function StaticTip({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="w-full rounded-lg px-2.5 py-2 text-[13px] leading-snug"
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        color: 'var(--text-body)',
+      }}
+    >
+      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>→ </span>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Actionable next-step guidance when the deal clears at modeled terms (positive or neutral gap).
+ */
+export function VerdictPositiveGuidance({
+  effectiveDisplayPct,
+  isListed,
+  isAuthenticated,
+  onNavigateAppraiser,
+  onNavigateStrategy,
+  onSignIn,
+}: VerdictPositiveGuidanceProps) {
+  const isPositive = effectiveDisplayPct > 0
+
+  return (
+    <div style={{ marginTop: 12, maxWidth: 560 }}>
+      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-body)' }}>
+        {isPositive
+          ? 'This deal cash flows at current terms. Here\u2019s what to do next.'
+          : 'At modeled terms, target buy aligns with the market anchor. Verify your assumptions before committing.'}
+      </p>
+
+      <p
+        style={{
+          margin: '14px 0 8px',
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: 'var(--accent-sky)',
+        }}
+      >
+        Next steps
+      </p>
+
+      <ul className="list-none p-0 m-0 flex flex-col gap-2">
+        <li>
+          <LeverButton onClick={onNavigateAppraiser}>
+            <strong style={{ color: 'var(--text-heading)' }}>Verify rental values</strong> — use
+            the Appraiser tab to review local rental and sales comps in the neighborhood.
+          </LeverButton>
+        </li>
+        <li>
+          <LeverButton onClick={() => onNavigateStrategy('rehab')}>
+            <strong style={{ color: 'var(--text-heading)' }}>Budget for rehab</strong> — does the
+            property need renovation or repairs? Build a rehab budget under Purchase in Strategy.
+          </LeverButton>
+        </li>
+        <li>
+          <LeverButton onClick={() => onNavigateStrategy('purchase')}>
+            <strong style={{ color: 'var(--text-heading)' }}>Review cash requirements</strong> —
+            check the Strategy page for total cash needed at closing, reserves, and monthly cash
+            flow.
+          </LeverButton>
+        </li>
+        <li>
+          {isListed ? (
+            <StaticTip>
+              <strong style={{ color: 'var(--text-heading)' }}>Prepare your offer</strong> — this
+              property is actively listed. Move fast — prepare your offer terms, proof of funds, and
+              any contingencies before reaching out to the listing agent.
+            </StaticTip>
+          ) : (
+            <StaticTip>
+              <strong style={{ color: 'var(--text-heading)' }}>Contact the owner</strong> — this
+              property is off-market. Try to make contact with the owner of record to gauge interest
+              before running full due diligence.
+            </StaticTip>
+          )}
+        </li>
+      </ul>
+
+      {!isAuthenticated && (
+        <p style={{ margin: '14px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+          <button
+            type="button"
+            onClick={onSignIn}
+            className="font-semibold underline-offset-2 hover:underline"
+            style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            Sign in
+          </button>{' '}
+          to save scenarios and run the full Strategy worksheet with live sliders.
+        </p>
+      )}
+    </div>
+  )
+}
