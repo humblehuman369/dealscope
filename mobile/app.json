@@ -17,7 +17,8 @@
     },
     "owner": "dealgapiq",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
+      "requireFullScreen": true,
       "bundleIdentifier": "com.dealgapiq.mobile",
       "buildNumber": "1",
       "associatedDomains": [

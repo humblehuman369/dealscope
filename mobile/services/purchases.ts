@@ -23,7 +23,7 @@ export async function initPurchases(userId?: string) {
   const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
   if (!apiKey) return;
 
-  Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+  Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
   await Purchases.configure({ apiKey, appUserID: userId ?? undefined });
   initialized = true;
 }

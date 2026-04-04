@@ -9,7 +9,7 @@ import { spacing } from '@/constants/spacing';
 
 export default function SearchHistoryScreen() {
   const router = useRouter();
-  const { data: history, isLoading } = useSearchHistory({
+  const { data: history, isLoading, isError } = useSearchHistory({
     page: 0,
     pageSize: 50,
     successfulOnly: false,
@@ -73,9 +73,13 @@ export default function SearchHistoryScreen() {
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No Search History</Text>
+              <Text style={styles.emptyTitle}>
+                {isError ? 'Unable to Load History' : 'No Search History'}
+              </Text>
               <Text style={styles.emptySubtitle}>
-                Properties you analyze will appear here
+                {isError
+                  ? 'Please check your connection and try again.'
+                  : 'Properties you analyze will appear here'}
               </Text>
             </View>
           ) : null

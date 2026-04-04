@@ -8,6 +8,7 @@ import { InvestmentMetrics } from '@/components/verdict/InvestmentMetrics';
 import { StrategyGrid } from '@/components/verdict/StrategyGrid';
 import { useVerdict } from '@/hooks/useVerdict';
 import { usePropertyData } from '@/hooks/usePropertyData';
+import { errorToUserMessage } from '@/utils/errorMessages';
 import { colors, cardGlow } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
@@ -48,7 +49,7 @@ export default function VerdictScreen() {
         <View style={styles.loading}>
           <Text style={styles.errorTitle}>Analysis Unavailable</Text>
           <Text style={styles.errorSubtitle}>
-            {(error as any)?.message ?? 'Unable to analyze this property'}
+            {errorToUserMessage(error, 'Unable to analyze this property. Please try again.')}
           </Text>
           <Button
             title="Try Again"

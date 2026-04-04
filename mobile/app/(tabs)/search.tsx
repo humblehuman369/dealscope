@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui';
 import { usePropertyData } from '@/hooks/usePropertyData';
+import { errorToUserMessage } from '@/utils/errorMessages';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing, layout } from '@/constants/spacing';
@@ -44,7 +45,7 @@ export default function SearchScreen() {
         params: { address: trimmed },
       });
     } catch (err: any) {
-      setError(err?.response?.data?.detail ?? err?.message ?? 'Property not found');
+      setError(errorToUserMessage(err, 'Property not found. Please check the address and try again.'));
     } finally {
       setLoading(false);
     }

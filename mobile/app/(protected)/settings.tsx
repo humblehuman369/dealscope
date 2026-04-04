@@ -4,7 +4,9 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Button, Input } from '@/components/ui';
 import { useSession } from '@/hooks/useSession';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/services/auth';
+import { clearTokens } from '@/services/token-manager';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing, layout } from '@/constants/spacing';
@@ -12,12 +14,14 @@ import { spacing, layout } from '@/constants/spacing';
 export default function SettingsScreen() {
   const router = useRouter();
   const { user } = useSession();
+  const queryClient = useQueryClient();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   async function handleChangePassword() {
     if (!currentPassword || !newPassword) return;
@@ -41,6 +45,33 @@ export default function SettingsScreen() {
       setPwError(err?.response?.data?.detail ?? 'Failed to update password');
     } finally {
       setPwLoading(false);
+    }
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account, saved properties, and all associated data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete My Account',
+          style: 'destructive',
+          onPress: () => confirmDeleteAccount(),
+        },
+      ],
+    );
+  }
+
+  async function confirmDeleteAccount() {
+    setDeleting(true);
+    try {
+      await authApi.deleteAccount();
+      queryClient.clear();
+      router.replace('/(auth)/login');
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.detail ?? 'Failed to delete account. Please try again.');
+      setDeleting(false);
     }
   }
 
@@ -95,17 +126,22 @@ export default function SettingsScreen() {
           <Text style={styles.sectionDesc}>
             {user?.mfa_enabled
               ? 'Two-factor authentication is enabled on your account.'
-              : 'Add an extra layer of security to your account.'}
+              : 'Add an extra layer of security to your account. MFA can be configured in your account settings on the web.'}
+          </Text>
+        </Card>
+
+        <Card glow="sm" style={[styles.section, styles.dangerSection]}>
+          <Text style={styles.sectionTitle}>DELETE ACCOUNT</Text>
+          <Text style={styles.sectionDesc}>
+            Permanently delete your account and all associated data including saved
+            properties, search history, and subscription. This cannot be undone.
           </Text>
           <Button
-            title={user?.mfa_enabled ? 'Disable MFA' : 'Enable MFA'}
+            title={deleting ? 'Deleting...' : 'Delete Account'}
             variant="secondary"
-            onPress={() => {
-              Alert.alert(
-                'MFA',
-                'MFA setup is available in the web app at dealgapiq.com/profile',
-              );
-            }}
+            onPress={handleDeleteAccount}
+            loading={deleting}
+            style={styles.deleteBtn}
           />
         </Card>
       </ScrollView>
@@ -131,6 +167,9 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   section: { padding: spacing.md, gap: spacing.md },
+  dangerSection: {
+    borderColor: 'rgba(248,113,113,0.3)',
+  },
   sectionTitle: { ...typography.label, color: colors.textLabel },
   sectionDesc: { ...typography.bodySmall, color: colors.textSecondary },
   error: {
@@ -150,5 +189,8 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: layout.inputRadius,
     overflow: 'hidden',
+  },
+  deleteBtn: {
+    borderColor: colors.error,
   },
 });
