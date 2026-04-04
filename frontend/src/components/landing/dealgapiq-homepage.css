@@ -76,6 +76,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 4rem;
 }
 
 .hero-pre {
@@ -86,6 +87,7 @@
   text-transform: uppercase;
   margin-bottom: 2rem;
   animation: fadeUp 0.8s ease 0.1s both;
+  white-space: nowrap;
 }
 
 .hero h1 {
@@ -1590,7 +1592,7 @@
   .hero-text { text-align: center; }
   .hero-cta-group { justify-content: center; }
   .hero-note { text-align: center; }
-  .hero-visual { order: -1; }
+  .hero-visual { order: -1; margin-right: 0; }
   .hero-phone-img { width: 260px; }
   .hero h1 { font-size: 2.2rem; }
   .compare-grid { grid-template-columns: 1fr; }
