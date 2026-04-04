@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useCallback, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRegister, useLogin } from "@/hooks/useSession";
@@ -546,6 +546,70 @@ const PaymentForm: React.FC<{
   );
 };
 
+// ─── Stable Elements options (avoids re-creating on every render) ───
+const STRIPE_ELEMENTS_OPTIONS = {
+  appearance: {
+    theme: "night" as const,
+    variables: { colorPrimary: "#0EA5E9" },
+  },
+};
+
+// ─── PaymentStep: stable wrapper that keeps Elements mounted ───
+const PaymentStep: React.FC<{
+  trialEndDate: string;
+  onComplete: () => void;
+  onBack: () => void;
+}> = ({ trialEndDate, onComplete, onBack }) => {
+  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (!key) {
+    return (
+      <div
+        style={{
+          background: "#0D1424",
+          border: "1px solid rgba(239,68,68,0.2)",
+          borderRadius: "12px",
+          padding: "36px",
+          width: "100%",
+          maxWidth: "420px",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: "16px", fontWeight: 700, color: "#F87171", marginBottom: "12px" }}>
+          Stripe Not Configured
+        </div>
+        <p style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.6, marginBottom: "20px" }}>
+          Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments. Restart the dev server after changing env.
+        </p>
+        <button
+          onClick={onBack}
+          style={{
+            padding: "10px 20px",
+            border: "1px solid rgba(148,163,184,0.12)",
+            borderRadius: "8px",
+            background: "transparent",
+            color: "#CBD5E1",
+            fontSize: "13px",
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          &larr; Back
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise} options={STRIPE_ELEMENTS_OPTIONS}>
+      <PaymentForm
+        trialEndDate={trialEndDate}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    </Elements>
+  );
+};
+
 // ═══════════════════════════════════════════════
 // INNER COMPONENT (needs useSearchParams inside Suspense)
 // ═══════════════════════════════════════════════
@@ -638,9 +702,13 @@ function RegistrationInner() {
     setStep("payment");
   };
 
-  const handlePaymentComplete = () => {
+  const handlePaymentComplete = useCallback(() => {
     setStep("success");
-  };
+  }, []);
+
+  const handlePaymentBack = useCallback(() => {
+    setStep("confirm");
+  }, []);
 
   const isFormValid =
     form.email.includes("@") &&
@@ -1022,57 +1090,13 @@ function RegistrationInner() {
     </div>
   );
 
-  const renderPayment = () => {
-    // Guard: if Stripe isn't configured (no publishable key), show a dev message
-    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    if (!key) {
-      return (
-        <div
-          style={{
-            background: "#0D1424",
-            border: "1px solid rgba(239,68,68,0.2)",
-            borderRadius: "12px",
-            padding: "36px",
-            width: "100%",
-            maxWidth: "420px",
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: "16px", fontWeight: 700, color: "#F87171", marginBottom: "12px" }}>
-            Stripe Not Configured
-          </div>
-          <p style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.6, marginBottom: "20px" }}>
-            Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments. Restart the dev server after changing env.
-          </p>
-          <button
-            onClick={() => setStep("confirm")}
-            style={{
-              padding: "10px 20px",
-              border: "1px solid rgba(148,163,184,0.12)",
-              borderRadius: "8px",
-              background: "transparent",
-              color: "#CBD5E1",
-              fontSize: "13px",
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            &larr; Back
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <Elements stripe={stripePromise} options={{ appearance: { theme: "night", variables: { colorPrimary: "#0EA5E9" } } }}>
-        <PaymentForm
-          trialEndDate={trialEndDate}
-          onComplete={handlePaymentComplete}
-          onBack={() => setStep("confirm")}
-        />
-      </Elements>
-    );
-  };
+  const renderPayment = () => (
+    <PaymentStep
+      trialEndDate={trialEndDate}
+      onComplete={handlePaymentComplete}
+      onBack={handlePaymentBack}
+    />
+  );
 
   const renderSuccess = () => (
     <div
