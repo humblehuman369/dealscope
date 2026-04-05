@@ -72,3 +72,6 @@ htmlcov/
 # *.csv
 backend/dealgapiq_property_data_*.json
 backend/*.db
+
+# Generated screenshots
+scripts/screenshots/output/

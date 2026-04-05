@@ -12,9 +12,17 @@
     "start": "cd frontend && npm run start",
     "lint": "cd frontend && npm run lint",
     "typecheck:shared": "cd shared && npx tsc --noEmit",
-    "install:mobile": "cd mobile && npm install"
+    "install:mobile": "cd mobile && npm install",
+    "screenshots": "npx tsx scripts/screenshots/capture.ts",
+    "screenshots:frame": "npx tsx scripts/screenshots/frame.ts",
+    "screenshots:all": "npx tsx scripts/screenshots/capture.ts && npx tsx scripts/screenshots/frame.ts"
   },
   "dependencies": {
     "baseline-browser-mapping": "^2.10.8"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1",
+    "sharp": "^0.34.5",
+    "tsx": "^4.21.0"
   }
 }
