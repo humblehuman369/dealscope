@@ -635,7 +635,7 @@ export function AppHeader({
             {isHomepage ? (
               <button
                 onClick={toggleTheme}
-                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 items-center justify-center"
+                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
                 aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {mounted && theme === 'dark' ? (
@@ -648,7 +648,7 @@ export function AppHeader({
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={() => setShowMoreMenu(prev => !prev)}
-                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                   aria-label="More options"
                   aria-expanded={showMoreMenu}
                   aria-haspopup="true"
@@ -702,7 +702,7 @@ export function AppHeader({
               <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={handleProfileClick}
-                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                   aria-label="Menu"
                   aria-expanded={showProfileMenu}
                   aria-haspopup="true"
@@ -821,7 +821,7 @@ export function AppHeader({
                   <div className="sm:hidden relative" ref={mobileNavRef}>
                     <button
                       onClick={() => setMobileNavOpen(prev => !prev)}
-                      className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-white/10 flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                       aria-label="Navigation menu"
                       aria-expanded={mobileNavOpen}
                       aria-haspopup="true"

@@ -17,7 +17,7 @@ const barTokens = {
   label: 'var(--text-label)',
   accent: 'var(--accent-sky)',
   negative: 'var(--status-negative)',
-  dot: 'rgba(255,255,255,0.15)',
+  dot: 'var(--border-strong)',
   hoverAccent: 'rgba(14,165,233,0.08)',
 } as const
 
