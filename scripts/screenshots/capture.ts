@@ -38,8 +38,8 @@ const BASE_URL = getArg('base-url') ?? 'https://dealgapiq.com';
 const HEADED = hasFlag('headed');
 
 const DEMO_EMAIL = getArg('email') ?? 'review@dealgapiq.com';
-const DEMO_PASSWORD = getArg('password') ?? 'Review$123';
-const DEMO_ADDRESS = getArg('address') ?? '742 Evergreen Terrace, Springfield, IL';
+const DEMO_PASSWORD = getArg('password') ?? 'Review$1234';
+const DEMO_ADDRESS = getArg('address') ?? '4407 Deer Creek Blvd, Austin, TX 78757';
 
 // ---------------------------------------------------------------------------
 // Device profiles
@@ -274,95 +274,69 @@ async function login(page: Page): Promise<boolean> {
   }
 }
 
-async function searchAndAnalyze(page: Page): Promise<boolean> {
-  console.log('   → Searching property...');
+async function navigateToVerdict(page: Page): Promise<boolean> {
+  const encoded = encodeURIComponent(DEMO_ADDRESS);
+  const url = `${BASE_URL}/verdict?address=${encoded}`;
+  console.log(`   → Navigating to verdict: ${DEMO_ADDRESS}`);
 
-  // Navigate to search
-  await page.goto(`${BASE_URL}/search`, { waitUntil: 'domcontentloaded' });
-  await waitForContent(page);
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-  // Handle the search modal flow
-  const enterAddress = page.locator('text=Enter Address').first();
-  if (await enterAddress.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await enterAddress.click();
-    await page.waitForTimeout(1000);
-  }
-
-  const searchInput = page.locator(
-    'input[placeholder*="address" i], input[placeholder*="search" i], input[placeholder*="Enter" i], input[type="search"]'
-  ).first();
-
-  if (!await searchInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-    console.log('   ✗ Could not find search input');
-    return false;
-  }
-
-  await searchInput.fill(DEMO_ADDRESS);
-  await page.waitForTimeout(1500);
-
-  // Select autocomplete suggestion if one appears
-  const suggestion = page.locator(
-    '[class*="suggestion"], [class*="autocomplete"] li, [role="option"], [class*="pac-item"]'
-  ).first();
-  if (await suggestion.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await suggestion.click();
-    await page.waitForTimeout(500);
-  }
-
-  // Click Analyze / Search button
-  const analyzeBtn = page.locator(
-    'button:has-text("Analyze"), button:has-text("Search"), button[type="submit"]'
-  ).first();
-  if (await analyzeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await analyzeBtn.click();
-    // Wait for analysis to complete (URL should change to /verdict or /analyzing)
+  // Analysis can take 10-30s — wait for deal content to appear
+  console.log('   → Waiting for analysis to complete...');
+  try {
+    await page.waitForSelector('text=Deal Gap', { timeout: 45000 });
+  } catch {
+    // Might timeout — try other markers
     try {
-      await page.waitForURL(
-        (url) => url.pathname.includes('/verdict') || url.pathname.includes('/analyzing'),
-        { timeout: 20000 }
-      );
-      // If on analyzing page, wait for redirect to verdict
-      if (page.url().includes('/analyzing')) {
-        await page.waitForURL((url) => url.pathname.includes('/verdict'), { timeout: 30000 });
-      }
-      console.log(`   ✓ Analysis complete → ${new URL(page.url()).pathname}`);
-      return true;
+      await page.waitForSelector('text=Target Buy', { timeout: 5000 });
     } catch {
-      console.log(`   ✗ Analysis did not complete. Current: ${page.url()}`);
-      return false;
+      // Capture whatever is visible
     }
   }
 
-  return false;
+  await page.waitForTimeout(2000);
+  const hasContent = await page.locator('text=Deal Gap').isVisible().catch(() => false)
+    || await page.locator('text=Target Buy').isVisible().catch(() => false)
+    || await page.locator('text=Income Value').isVisible().catch(() => false);
+
+  if (hasContent) {
+    console.log('   ✓ Verdict loaded with property data');
+  } else {
+    console.log('   ⚠ Verdict loaded but property data may be missing');
+  }
+
+  return hasContent;
 }
 
 async function captureVerdict(page: Page, isLoggedIn: boolean) {
   console.log('\n   [3/5] IQ Verdict');
 
-  if (isLoggedIn) {
-    const analyzed = await searchAndAnalyze(page);
-    if (analyzed) {
-      await hideAppChrome(page);
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await page.waitForTimeout(1500);
-      await saveScreenshot(page, '03_verdict.png');
-      return;
-    }
-  }
-
-  // Fallback: navigate directly and capture whatever is there
-  await page.goto(`${BASE_URL}/verdict`, { waitUntil: 'domcontentloaded' });
-  await waitForContent(page, 3000);
+  await navigateToVerdict(page);
   await hideAppChrome(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(1000);
   await saveScreenshot(page, '03_verdict.png');
 }
 
 async function captureStrategy(page: Page) {
   console.log('\n   [4/5] Strategy Detail');
 
-  // If we're already on verdict, navigate to strategy
-  await page.goto(`${BASE_URL}/strategy`, { waitUntil: 'domcontentloaded' });
-  await waitForContent(page, 3000);
+  const encoded = encodeURIComponent(DEMO_ADDRESS);
+  await page.goto(`${BASE_URL}/strategy?address=${encoded}`, { waitUntil: 'domcontentloaded' });
+
+  // Strategy page also fetches data — wait for content
+  console.log('   → Waiting for strategy data...');
+  try {
+    await page.waitForSelector('text=Deal Gap', { timeout: 45000 });
+  } catch {
+    try {
+      await page.waitForSelector('text=Cap Rate', { timeout: 5000 });
+    } catch {
+      // Capture whatever is visible
+    }
+  }
+
+  await page.waitForTimeout(2000);
   await hideAppChrome(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(1000);

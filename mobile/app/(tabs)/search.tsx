@@ -69,10 +69,14 @@ export default function SearchScreen() {
         <View style={styles.hero}>
           <Text style={styles.brandTag}>DEALGAPIQ</Text>
           <Text style={styles.heroTitle}>
-            Know Before You Buy
+            See Every Property{'\n'}Through an{' '}
+            <Text style={styles.heroAccent}>Investor Lens</Text>
           </Text>
           <Text style={styles.heroSubtitle}>
-            Analyze any property across 6 investment strategies in seconds
+            Every listing is designed to sell you.{' '}
+            <Text style={styles.heroEmphasis}>
+              DealGapIQ answers the only question that matters: is this a good deal?
+            </Text>
           </Text>
         </View>
 
@@ -127,18 +131,26 @@ export default function SearchScreen() {
         </View>
 
         <View style={styles.metrics}>
-          <Text style={styles.sectionLabel}>PROPRIETARY METRICS</Text>
+          <Text style={styles.sectionLabel}>YOUR THREE NUMBERS</Text>
+          <Text style={styles.metricsTitle}>
+            Every Property Has Three{'\n'}Price Thresholds
+          </Text>
+          <Text style={styles.metricsSubtitle}>
+            Numbers listing sites will never show you.
+          </Text>
           <View style={styles.metricGrid}>
             {[
-              { title: 'Income Value', desc: 'Max price where cash flow = $0' },
-              { title: 'Target Buy', desc: 'Recommended purchase price' },
-              { title: 'Deal Gap', desc: 'Discount from list to target' },
-              { title: 'Verdict Score', desc: '0-100 composite deal quality' },
+              { title: 'Income Value', color: colors.incomeValue, desc: 'The maximum price where cash flow = $0. Your breakeven.' },
+              { title: 'Target Buy', color: colors.success, desc: 'Income Value minus a 5% safety margin. This is what you should offer.' },
+              { title: 'Deal Gap', color: colors.primary, desc: 'The gap between asking price and your Target Buy. The bigger, the better.' },
             ].map((m) => (
-              <Card key={m.title} glow="sm" style={styles.metricCard}>
-                <Text style={styles.metricTitle}>{m.title}</Text>
-                <Text style={styles.metricDesc}>{m.desc}</Text>
-              </Card>
+              <View key={m.title} style={styles.thresholdRow}>
+                <View style={[styles.thresholdDot, { backgroundColor: m.color }]} />
+                <View style={styles.thresholdContent}>
+                  <Text style={[styles.metricTitle, { color: m.color }]}>{m.title}</Text>
+                  <Text style={styles.metricDesc}>{m.desc}</Text>
+                </View>
+              </View>
             ))}
           </View>
         </View>
@@ -165,18 +177,27 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontFamily: fontFamilies.heading,
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: colors.textHeading,
     textAlign: 'center',
-    lineHeight: 38,
+    lineHeight: 36,
+  },
+  heroAccent: {
+    color: colors.primary,
   },
   heroSubtitle: {
     ...typography.bodySmall,
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
-    maxWidth: 300,
+    maxWidth: 320,
+    lineHeight: 22,
+  },
+  heroEmphasis: {
+    color: colors.textBody,
+    fontFamily: fontFamilies.bodyMedium,
+    fontWeight: '600',
   },
   searchCardWrapper: {
     zIndex: 10,
@@ -247,20 +268,49 @@ const styles = StyleSheet.create({
   },
   metrics: {
     marginTop: spacing['2xl'],
+    paddingHorizontal: spacing.xs,
+  },
+  metricsTitle: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textHeading,
+    textAlign: 'center',
+    lineHeight: 30,
+    marginBottom: spacing.sm,
+  },
+  metricsSubtitle: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   metricGrid: {
-    gap: spacing.sm,
+    gap: spacing.lg,
   },
-  metricCard: {
-    padding: spacing.md,
+  thresholdRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  thresholdDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 5,
+  },
+  thresholdContent: {
+    flex: 1,
   },
   metricTitle: {
-    ...typography.h4,
-    color: colors.textHeading,
-    marginBottom: 4,
+    fontFamily: fontFamilies.heading,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   metricDesc: {
     ...typography.bodySmall,
     color: colors.textSecondary,
+    lineHeight: 20,
   },
 });
