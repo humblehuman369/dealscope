@@ -1,12 +1,9 @@
 "use client"
 
-import React, { useState, useCallback, useMemo, Suspense } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRegister, useLogin } from "@/hooks/useSession";
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe";
-import { billingApi } from "@/lib/api-client";
 import { IS_CAPACITOR } from "@/lib/env";
 
 // ─── Icons ───
@@ -33,23 +30,9 @@ const EyeIcon: React.FC<{ open: boolean }> = ({ open }) => (
   </svg>
 );
 
-const ShieldIcon: React.FC = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <path d="M8 1L2.5 3.5V7.5C2.5 10.8 5 13.2 8 14.5C11 13.2 13.5 10.8 13.5 7.5V3.5L8 1Z" stroke="#0EA5E9" strokeWidth="1.2" fill="#0EA5E9" fillOpacity="0.06" />
-    <path d="M5.5 8L7 9.5L10.5 6" stroke="#0EA5E9" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const ArrowIcon: React.FC = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const LockSmallIcon: React.FC = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-    <rect x="2.5" y="5.5" width="7" height="5" rx="1" stroke="#475569" strokeWidth="1" />
-    <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="#475569" strokeWidth="1" strokeLinecap="round" />
   </svg>
 );
 
@@ -63,24 +46,13 @@ const SpinnerIcon: React.FC = () => (
 
 // ─── Types ───
 type PlanType = "starter" | "pro";
-type Step = "form" | "confirm" | "payment" | "success";
+type Step = "form" | "success";
 
 interface FormState {
   email: string;
   password: string;
   firstName: string;
 }
-
-// ─── Stripe Element Styles ───
-const stripeElementStyle = {
-  base: {
-    color: "#E2E8F0",
-    fontSize: "14px",
-    fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
-    "::placeholder": { color: "#475569" },
-  },
-  invalid: { color: "#F87171" },
-};
 
 // ─── Input Field ───
 const InputField: React.FC<{
@@ -303,313 +275,6 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
   );
 };
 
-// ─── Payment Form (with Stripe Elements) ───
-const PaymentForm: React.FC<{
-  trialEndDate: string;
-  onComplete: () => void;
-  onBack: () => void;
-}> = ({ trialEndDate, onComplete, onBack }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async () => {
-    if (!stripe || !elements) return;
-
-    setProcessing(true);
-    setError("");
-
-    try {
-      // Step 1: Create SetupIntent on backend
-      const { client_secret } = await billingApi.createSetupIntent();
-
-      // Step 2: Confirm card setup with Stripe.js
-      const cardElement = elements.getElement(CardNumberElement);
-      if (!cardElement) throw new Error("Card element not found");
-
-      const { error: stripeError, setupIntent } = await stripe.confirmCardSetup(client_secret, {
-        payment_method: { card: cardElement as unknown as import('@stripe/stripe-js').StripeCardElement },
-      });
-
-      if (stripeError) {
-        setError(stripeError.message || "Card verification failed. Please try again.");
-        return;
-      }
-
-      if (!setupIntent?.payment_method) {
-        setError("Failed to process payment method.");
-        return;
-      }
-
-      // Step 3: Create subscription with the confirmed payment method
-      const paymentMethodId = typeof setupIntent.payment_method === "string"
-        ? setupIntent.payment_method
-        : setupIntent.payment_method.id;
-
-      await billingApi.createSubscription(paymentMethodId);
-
-      // Step 4: Success
-      onComplete();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      setError(message);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
-        border: "1px solid rgba(148,163,184,0.06)",
-        borderRadius: "12px",
-        padding: "36px",
-        width: "100%",
-        maxWidth: "420px",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "22px",
-          fontWeight: 800,
-          color: "#F1F5F9",
-          letterSpacing: "-0.025em",
-          margin: "0 0 6px",
-        }}
-      >
-        Payment method
-      </h2>
-      <p style={{ fontSize: "13px", color: "#94A3B8", margin: "0 0 24px", lineHeight: 1.5 }}>
-        You won&apos;t be charged until <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
-      </p>
-
-      {/* Error message */}
-      {error && (
-        <div
-          style={{
-            background: "rgba(239,68,68,0.06)",
-            border: "1px solid rgba(239,68,68,0.15)",
-            borderRadius: "8px",
-            padding: "10px 14px",
-            marginBottom: "16px",
-            fontSize: "13px",
-            color: "#F87171",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Stripe Elements */}
-      <div
-        style={{
-          background: "#0B1120",
-          border: "1px solid rgba(148,163,184,0.1)",
-          borderRadius: "8px",
-          padding: "20px",
-          marginBottom: "8px",
-        }}
-      >
-        {/* Card number */}
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94A3B8", marginBottom: "6px", letterSpacing: "0.03em" }}>
-            Card number
-          </label>
-          <div
-            style={{
-              padding: "12px 14px",
-              background: "rgba(148,163,184,0.04)",
-              border: "1px solid rgba(148,163,184,0.1)",
-              borderRadius: "6px",
-            }}
-          >
-            <CardNumberElement options={{ style: stripeElementStyle, showIcon: true }} />
-          </div>
-        </div>
-
-        {/* Expiry + CVC row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-          <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94A3B8", marginBottom: "6px", letterSpacing: "0.03em" }}>
-              Expiry
-            </label>
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "rgba(148,163,184,0.04)",
-                border: "1px solid rgba(148,163,184,0.1)",
-                borderRadius: "6px",
-              }}
-            >
-              <CardExpiryElement options={{ style: stripeElementStyle }} />
-            </div>
-          </div>
-          <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94A3B8", marginBottom: "6px", letterSpacing: "0.03em" }}>
-              CVC
-            </label>
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "rgba(148,163,184,0.04)",
-                border: "1px solid rgba(148,163,184,0.1)",
-                borderRadius: "6px",
-              }}
-            >
-              <CardCvcElement options={{ style: stripeElementStyle }} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stripe badge */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: "4px",
-          marginBottom: "24px",
-        }}
-      >
-        <LockSmallIcon />
-        <span style={{ fontSize: "10px", color: "#475569" }}>Powered by Stripe</span>
-      </div>
-
-      {/* Summary line */}
-      <div
-        style={{
-          background: "rgba(14,165,233,0.04)",
-          border: "1px solid rgba(14,165,233,0.08)",
-          borderRadius: "8px",
-          padding: "14px 16px",
-          marginBottom: "20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "#CBD5E1" }}>Due today</div>
-          <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
-            Pro starts after trial on {(trialEndDate ?? "").split(",").slice(1).join(",").trim()}
-          </div>
-        </div>
-        <div style={{ fontSize: "24px", fontWeight: 800, color: "#0EA5E9" }}>$0</div>
-      </div>
-
-      <button
-        onClick={handleSubmit}
-        disabled={processing || !stripe}
-        style={{
-          width: "100%",
-          minHeight: "48px",
-          padding: "13px",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "14px",
-          fontWeight: 700,
-          cursor: processing || !stripe ? "not-allowed" : "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          fontFamily: "inherit",
-          background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
-          color: "#fff",
-          opacity: processing ? 0.8 : 1,
-        }}
-      >
-        {processing ? <SpinnerIcon /> : <>Start Free Trial <ArrowIcon /></>}
-      </button>
-
-      <button
-        onClick={onBack}
-        disabled={processing}
-        style={{
-          width: "100%",
-          padding: "10px",
-          border: "none",
-          background: "none",
-          color: "#64748B",
-          fontSize: "12px",
-          cursor: processing ? "not-allowed" : "pointer",
-          fontFamily: "inherit",
-          marginTop: "8px",
-        }}
-      >
-        &larr; Back
-      </button>
-    </div>
-  );
-};
-
-// ─── Stable Elements options (avoids re-creating on every render) ───
-const STRIPE_ELEMENTS_OPTIONS = {
-  appearance: {
-    theme: "night" as const,
-    variables: { colorPrimary: "#0EA5E9" },
-  },
-};
-
-// ─── PaymentStep: stable wrapper that keeps Elements mounted ───
-const PaymentStep: React.FC<{
-  trialEndDate: string;
-  onComplete: () => void;
-  onBack: () => void;
-}> = ({ trialEndDate, onComplete, onBack }) => {
-  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-  if (!key) {
-    return (
-      <div
-        style={{
-          background: "#0D1424",
-          border: "1px solid rgba(239,68,68,0.2)",
-          borderRadius: "12px",
-          padding: "36px",
-          width: "100%",
-          maxWidth: "420px",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "16px", fontWeight: 700, color: "#F87171", marginBottom: "12px" }}>
-          Stripe Not Configured
-        </div>
-        <p style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.6, marginBottom: "20px" }}>
-          Set <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your <code style={{ color: "#CBD5E1", background: "rgba(148,163,184,0.1)", padding: "2px 6px", borderRadius: "4px" }}>.env.local</code> to enable payments. Restart the dev server after changing env.
-        </p>
-        <button
-          onClick={onBack}
-          style={{
-            padding: "10px 20px",
-            border: "1px solid rgba(148,163,184,0.12)",
-            borderRadius: "8px",
-            background: "transparent",
-            color: "#CBD5E1",
-            fontSize: "13px",
-            cursor: "pointer",
-            fontFamily: "inherit",
-          }}
-        >
-          &larr; Back
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <Elements stripe={stripePromise} options={STRIPE_ELEMENTS_OPTIONS}>
-      <PaymentForm
-        trialEndDate={trialEndDate}
-        onComplete={onComplete}
-        onBack={onBack}
-      />
-    </Elements>
-  );
-};
-
 // ═══════════════════════════════════════════════
 // INNER COMPONENT (needs useSearchParams inside Suspense)
 // ═══════════════════════════════════════════════
@@ -684,11 +349,7 @@ function RegistrationInner() {
         // we still advance — the user can log in later.
       }
 
-      if (plan === "starter") {
-        setStep("success");
-      } else {
-        setStep("confirm");
-      }
+      setStep("success");
     } catch (err: unknown) {
       const message = (err instanceof Error ? err.message : "Registration failed. Please try again.") ?? "Unknown error";
       const safeMessage = String(message);
@@ -697,18 +358,6 @@ function RegistrationInner() {
       setLoading(false);
     }
   };
-
-  const handleStartTrial = () => {
-    setStep("payment");
-  };
-
-  const handlePaymentComplete = useCallback(() => {
-    setStep("success");
-  }, []);
-
-  const handlePaymentBack = useCallback(() => {
-    setStep("confirm");
-  }, []);
 
   const isFormValid =
     form.email.includes("@") &&
@@ -931,173 +580,6 @@ function RegistrationInner() {
     </div>
   );
 
-  const renderConfirm = () => (
-    <div
-      style={{
-        background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
-        border: "1px solid rgba(148,163,184,0.06)",
-        borderRadius: "12px",
-        padding: "36px",
-        width: "100%",
-        maxWidth: "420px",
-      }}
-    >
-      {/* Checkmark animation */}
-      <div
-        style={{
-          width: "48px",
-          height: "48px",
-          borderRadius: "50%",
-          background: "rgba(14,165,233,0.08)",
-          border: "1px solid rgba(14,165,233,0.2)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M7 13l3 3 7-7" stroke="#0EA5E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-
-      <h2
-        style={{
-          fontSize: "22px",
-          fontWeight: 800,
-          color: "#F1F5F9",
-          letterSpacing: "-0.025em",
-          margin: "0 0 8px",
-        }}
-      >
-        Account created, {form.firstName}.
-      </h2>
-
-      <p style={{ fontSize: "14px", color: "#94A3B8", lineHeight: 1.6, margin: "0 0 24px" }}>
-        One more step to activate your Pro trial.
-      </p>
-
-      {/* Trial details card */}
-      <div
-        style={{
-          background: "#0B1120",
-          border: "1px solid rgba(14,165,233,0.12)",
-          borderRadius: "10px",
-          padding: "20px",
-          marginBottom: "24px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "16px",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "#F1F5F9" }}>
-              Pro Investor Trial
-            </div>
-            <div style={{ fontSize: "12px", color: "#64748B", marginTop: "2px" }}>
-              7 days of full access
-            </div>
-          </div>
-          <div style={{ fontSize: "13px", fontWeight: 700, color: "#0EA5E9" }}>FREE</div>
-        </div>
-
-        <div
-          style={{
-            height: "1px",
-            background: "rgba(148,163,184,0.06)",
-            margin: "0 0 14px",
-          }}
-        />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8" }}>Today</span>
-            <span style={{ fontSize: "12px", color: "#CBD5E1", fontWeight: 600 }}>
-              Full Pro access begins
-            </span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8" }}>{(trialEndDate ?? "").split(",")[0]}</span>
-            <span style={{ fontSize: "12px", color: "#CBD5E1", fontWeight: 600 }}>
-              Trial ends · We&apos;ll remind you
-            </span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#94A3B8" }}>After trial</span>
-            <span style={{ fontSize: "12px", color: "#CBD5E1", fontWeight: 600 }}>
-              {isAnnual ? "$29/mo (billed annually)" : "$39/mo"} or cancel free
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust signals */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "24px" }}>
-        {[
-          "You won\u2019t be charged today",
-          "We\u2019ll email you 2 days before your trial ends",
-          "Cancel in 2 clicks from account settings",
-        ].map((text, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <ShieldIcon />
-            <span style={{ fontSize: "12px", color: "#94A3B8" }}>{text}</span>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={handleStartTrial}
-        style={{
-          width: "100%",
-          minHeight: "48px",
-          padding: "13px",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "14px",
-          fontWeight: 700,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          fontFamily: "inherit",
-          background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
-          color: "#fff",
-        }}
-      >
-        Add Payment Method <ArrowIcon />
-      </button>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "6px",
-          marginTop: "12px",
-        }}
-      >
-        <LockSmallIcon />
-        <span style={{ fontSize: "11px", color: "#475569" }}>
-          Secured by Stripe · PCI compliant
-        </span>
-      </div>
-    </div>
-  );
-
-  const renderPayment = () => (
-    <PaymentStep
-      trialEndDate={trialEndDate}
-      onComplete={handlePaymentComplete}
-      onBack={handlePaymentBack}
-    />
-  );
-
   const renderSuccess = () => (
     <div
       style={{
@@ -1192,8 +674,6 @@ function RegistrationInner() {
 
   const stepRenderers: Record<Step, () => React.ReactNode> = {
     form: renderForm,
-    confirm: renderConfirm,
-    payment: renderPayment,
     success: renderSuccess,
   };
 
@@ -1248,63 +728,6 @@ function RegistrationInner() {
           >
             DealGap<span style={{ color: "#0EA5E9" }}>IQ</span>
           </Link>
-
-          {/* Step indicator */}
-          {step !== "success" && plan === "pro" && (
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              {(["Account", "Review", "Payment"] as const).map((label, i) => {
-                const stepIndex = ["form", "confirm", "payment"].indexOf(step);
-                const isActive = i <= stepIndex;
-                return (
-                  <React.Fragment key={label}>
-                    {i > 0 && (
-                      <div
-                        style={{
-                          width: "20px",
-                          height: "1px",
-                          background: isActive ? "rgba(14,165,233,0.3)" : "rgba(148,163,184,0.08)",
-                        }}
-                      />
-                    )}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "50%",
-                          background: isActive ? "rgba(14,165,233,0.15)" : "rgba(148,163,184,0.06)",
-                          border: `1px solid ${isActive ? "rgba(14,165,233,0.3)" : "rgba(148,163,184,0.08)"}`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          color: isActive ? "#0EA5E9" : "#475569",
-                        }}
-                      >
-                        {i + 1}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 600,
-                          color: isActive ? "#CBD5E1" : "#475569",
-                        }}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          )}
 
           <Link
             href="/pricing"
