@@ -38,7 +38,7 @@ const BASE_URL = getArg('base-url') ?? 'https://dealgapiq.com';
 const HEADED = hasFlag('headed');
 
 const DEMO_EMAIL = getArg('email') ?? 'review@dealgapiq.com';
-const DEMO_PASSWORD = getArg('password') ?? 'AppReview2026!';
+const DEMO_PASSWORD = getArg('password') ?? 'Review$123';
 const DEMO_ADDRESS = getArg('address') ?? '742 Evergreen Terrace, Springfield, IL';
 
 // ---------------------------------------------------------------------------
