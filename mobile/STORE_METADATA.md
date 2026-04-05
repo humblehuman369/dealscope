@@ -83,7 +83,7 @@ npx tsx scripts/screenshots/capture.ts --base-url http://localhost:3000
 
 ### Prerequisites for auth-gated screens (Verdict, Strategy, Deal Vault)
 
-1. Create the demo account in production: `review@dealgapiq.com` / `Review$123`
+1. Create the demo account in production: `review@dealgapiq.com` / `Review$1234`
 2. Set `subscription_tier: 'pro'` via admin panel
 3. Log in and save 3-5 properties to the Deal Vault
 4. Re-run `npm run screenshots:all`

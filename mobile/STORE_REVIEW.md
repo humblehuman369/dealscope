@@ -5,7 +5,7 @@
 Use the following credentials to test the app with full Pro access:
 
 - **Email:** `review@dealgapiq.com`
-- **Password:** `Review$123`
+- **Password:** `Review$1234`
 
 > **Important:** This account has Pro tier access. Create this account in the
 > production backend before submission and set `subscription_tier: 'pro'` via
