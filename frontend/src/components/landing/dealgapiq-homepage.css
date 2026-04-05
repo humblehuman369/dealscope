@@ -1605,11 +1605,13 @@
   .hero-cta-group { justify-content: center; }
   .hero-note { text-align: center; }
   .hero-visual { order: -1; margin-right: 0; width: 100%; }
-  .hero-phone-img {
+  .hero-phone-img,
+  [data-theme='light'] .hero-phone-img {
     width: 100%;
     max-width: 100%;
     border-radius: 0;
     filter: none;
+    mix-blend-mode: normal;
     mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     mask-composite: unset;
