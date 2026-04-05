@@ -82,6 +82,7 @@
 .hero-pre {
   font-family: var(--font-mono, 'Space Mono', monospace);
   font-size: clamp(0.55rem, 2.5vw, 0.85rem);
+  font-weight: 700;
   color: var(--accent-sky);
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -339,6 +340,7 @@
   text-align: center;
   font-family: var(--font-mono, 'Space Mono', monospace);
   font-size: 0.8rem;
+  font-weight: 700;
   color: var(--accent-sky);
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -515,6 +517,7 @@
 .section-label {
   font-family: var(--font-mono, 'Space Mono', monospace);
   font-size: 0.8rem;
+  font-weight: 700;
   color: var(--accent-sky);
   text-transform: uppercase;
   letter-spacing: 0.2em;
