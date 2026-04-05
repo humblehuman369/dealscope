@@ -72,7 +72,7 @@ class Subscription(Base):
     trial_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
-    properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
+    properties_limit: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3
     searches_per_month: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3 analyses/mo
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
 
@@ -167,7 +167,7 @@ class PaymentHistory(Base):
 # Tier configurations for easy reference
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
-        "properties_limit": 10,
+        "properties_limit": 3,
         "searches_per_month": 3,
         "api_calls_per_month": 50,
         "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],

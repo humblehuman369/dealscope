@@ -124,7 +124,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
   {
     name: "Portfolio & Deal Management",
     rows: [
-      { name: "Save properties to DealGapIQ pipeline", free: "Up to 10", pro: "Unlimited" },
+      { name: "Save properties to DealGapIQ pipeline", free: "Up to 3", pro: "Unlimited" },
       { name: "Side-by-side deal comparison", free: false, pro: true },
       { name: "Search history", free: true, pro: true },
     ],
@@ -176,7 +176,7 @@ export default function PricingContent() {
     "Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor",
     "All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale",
     "Seller Motivation indicator",
-    "Save up to 10 properties to DealGapIQ pipeline",
+    "Save up to 3 properties to DealGapIQ pipeline",
   ];
 
   const proFeatures: string[] = [

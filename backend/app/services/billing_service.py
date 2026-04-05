@@ -102,7 +102,7 @@ class BillingService:
                 price_yearly=0,
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
-                properties_limit=10,
+                properties_limit=3,
                 searches_per_month=3,
                 api_calls_per_month=50,
                 features=[
