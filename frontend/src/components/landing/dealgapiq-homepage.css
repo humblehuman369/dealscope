@@ -1587,13 +1587,22 @@
 }
 
 @media (max-width: 768px) {
-  .hero { padding: 3rem 1.5rem 2rem; min-height: auto; }
-  .hero-columns { flex-direction: column; gap: 2.5rem; }
-  .hero-text { text-align: center; }
+  .hero { padding: 0 0 2rem; min-height: auto; }
+  .hero-columns { flex-direction: column; gap: 0; }
+  .hero-text { text-align: center; padding: 0 1.5rem; }
   .hero-cta-group { justify-content: center; }
   .hero-note { text-align: center; }
-  .hero-visual { order: -1; margin-right: 0; }
-  .hero-phone-img { width: 260px; }
+  .hero-visual { order: -1; margin-right: 0; width: 100%; }
+  .hero-phone-img {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    filter: none;
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    mask-composite: unset;
+    -webkit-mask-composite: unset;
+  }
   .hero h1 { font-size: 2.2rem; }
   .compare-grid { grid-template-columns: 1fr; }
   .compare-vs { padding: 1rem 0; }
