@@ -1582,8 +1582,10 @@
 
 /* RESPONSIVE */
 @media (max-width: 960px) {
-  .hero-columns { gap: 2.5rem; }
-  .hero-phone-img { width: 340px; }
+  .hero-columns { gap: 1.5rem; }
+  .hero-visual { margin-right: 1.5rem; }
+  .hero-phone-img { width: 280px; }
+  .hero h1 { font-size: clamp(2rem, 4.5vw, 3.2rem); }
 }
 
 @media (max-width: 768px) {
