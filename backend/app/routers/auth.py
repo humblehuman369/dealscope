@@ -41,6 +41,7 @@ from app.schemas.auth import (
     UserRegister,
     UserResponse,
 )
+from app.repositories.session_repository import session_repo
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
 from app.services.session_service import session_service
@@ -87,6 +88,35 @@ def _clear_auth_cookies(response: Response) -> None:
             domain=settings.COOKIE_DOMAIN,
             path="/",
         )
+
+
+async def _check_new_device_and_notify(
+    db: AsyncSession,
+    user,
+    *,
+    ip_address: str | None,
+    user_agent: str | None,
+) -> None:
+    """Send a security alert when login comes from an unrecognised device/IP."""
+    try:
+        known = await session_repo.has_matching_session(
+            db,
+            user.id,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
+        if not known:
+            from datetime import UTC, datetime as _dt
+
+            await email_service.send_new_device_login_email(
+                to=user.email,
+                user_name=user.full_name or user.email,
+                device_info=user_agent or "Unknown device",
+                ip_address=ip_address,
+                login_time=_dt.now(UTC).strftime("%B %d, %Y at %I:%M %p UTC"),
+            )
+    except Exception as exc:
+        logger.warning("New-device login email failed: %s", exc)
 
 
 async def _build_user_response(db: AsyncSession, user) -> UserResponse:
@@ -366,6 +396,10 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
 
     _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
 
+    await _check_new_device_and_notify(
+        db, user, ip_address=_client_ip(request), user_agent=request.headers.get("User-Agent"),
+    )
+
     user_resp = await _build_user_response(db, user)
     return LoginResponse(
         user=user_resp,
@@ -392,6 +426,10 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+
+    await _check_new_device_and_notify(
+        db, user, ip_address=_client_ip(request), user_agent=request.headers.get("User-Agent"),
+    )
 
     user_resp = await _build_user_response(db, user)
     return LoginResponse(
@@ -648,6 +686,12 @@ async def mfa_verify(body: MFAConfirmRequest, user: CurrentUser, request: Reques
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    try:
+        await email_service.send_mfa_enabled_email(to=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+
     return AuthMessage(message="MFA enabled successfully")
 
 
@@ -656,6 +700,12 @@ async def mfa_disable(user: CurrentUser, request: Request, db: DbSession):
     """Disable MFA for the current user."""
     await auth_service.disable_mfa(db, user.id, ip_address=_client_ip(request))
     await db.commit()
+
+    try:
+        await email_service.send_mfa_disabled_email(to=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+
     return AuthMessage(message="MFA disabled")
 
 

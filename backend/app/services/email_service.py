@@ -2,7 +2,11 @@
 Email Service for sending transactional emails via Resend.
 """
 
+import hashlib
+import hmac
+import html as html_lib
 import logging
+import re
 from datetime import datetime
 from typing import Any
 
@@ -49,38 +53,34 @@ class EmailService:
         html: str,
         text: str | None = None,
         reply_to: str | None = None,
+        headers: dict[str, str] | None = None,
     ) -> dict[str, Any]:
-        """
-        Send an email via Resend.
+        """Send an email via Resend.
 
-        Args:
-            to: Recipient email(s)
-            subject: Email subject
-            html: HTML body
-            text: Plain text body (optional)
-            reply_to: Reply-to address (optional)
-
-        Returns:
-            Response from Resend API or mock response
+        Auto-generates a plain-text fallback from the HTML when ``text``
+        is not provided, improving deliverability and accessibility.
         """
+        if text is None:
+            text = self._html_to_text(html)
+
         if not self.is_configured:
-            # Log email in dev mode
             logger.info(f"[DEV EMAIL] To: {to} | Subject: {subject}")
             logger.debug(f"[DEV EMAIL] Body: {html[:200]}...")
             return {"id": "dev-mode", "success": True}
 
         try:
-            params = {
+            params: dict[str, Any] = {
                 "from": self.from_email,
                 "to": [to] if isinstance(to, str) else to,
                 "subject": subject,
                 "html": html,
+                "text": text,
             }
 
-            if text:
-                params["text"] = text
             if reply_to:
                 params["reply_to"] = reply_to
+            if headers:
+                params["headers"] = headers
 
             response = resend.Emails.send(params)
             logger.info(f"Email sent to {to}: {response.get('id', 'unknown')}")
@@ -177,6 +177,57 @@ class EmailService:
         </td>
     </tr>
 </table>
+'''
+
+    # ===========================================
+    # Helpers
+    # ===========================================
+
+    @staticmethod
+    def _html_to_text(html_content: str) -> str:
+        """Convert HTML email content to a readable plain-text fallback."""
+        text = re.sub(r"<br\s*/?>", "\n", html_content)
+        text = re.sub(r"</p>", "\n\n", text)
+        text = re.sub(r"</h[1-6]>", "\n\n", text)
+        text = re.sub(r"</li>", "\n", text)
+        text = re.sub(r"<li[^>]*>", "  - ", text)
+        text = re.sub(r'<a[^>]*href="([^"]*)"[^>]*>([^<]*)</a>', r"\2 (\1)", text)
+        text = re.sub(r"<[^>]+>", "", text)
+        text = html_lib.unescape(text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        text = re.sub(r" {2,}", " ", text)
+        return text.strip()
+
+    def _generate_unsubscribe_token(self, email: str, category: str) -> str:
+        """Create an HMAC token for one-click email unsubscribe."""
+        key = (settings.SECRET_KEY or "dev-key").encode()
+        message = f"unsubscribe:{email}:{category}".encode()
+        return hmac.new(key, message, hashlib.sha256).hexdigest()
+
+    def _unsubscribe_url(self, email: str, category: str = "marketing") -> str:
+        """Build a tokenized unsubscribe URL."""
+        token = self._generate_unsubscribe_token(email, category)
+        return f"{self.frontend_url}/unsubscribe?email={email}&category={category}&token={token}"
+
+    def _marketing_headers(self, email: str, category: str = "marketing") -> dict[str, str]:
+        """Return ``List-Unsubscribe`` headers for non-transactional emails."""
+        unsub_url = self._unsubscribe_url(email, category)
+        return {
+            "List-Unsubscribe": f"<{unsub_url}>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        }
+
+    def _marketing_footer(self, email: str, category: str = "marketing") -> str:
+        """Extra footer block with unsubscribe link for marketing-adjacent emails."""
+        unsub_url = self._unsubscribe_url(email, category)
+        prefs_url = f"{self.frontend_url}/profile"
+        return f'''
+<hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
+<p style="font-size: 12px; color: #a1a1aa; margin: 0; text-align: center;">
+    <a href="{unsub_url}" style="color: #a1a1aa; text-decoration: underline;">Unsubscribe</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{prefs_url}" style="color: #a1a1aa; text-decoration: underline;">Manage preferences</a>
+</p>
 '''
 
     # ===========================================
@@ -886,6 +937,643 @@ class EmailService:
             to=to,
             subject=f"Your Pro subscription will end on {period_end_date} - DealGapIQ",
             html=html,
+        )
+
+    # ===========================================
+    # Security Emails
+    # ===========================================
+
+    async def send_new_device_login_email(
+        self,
+        to: str,
+        user_name: str,
+        device_info: str,
+        ip_address: str | None = None,
+        login_time: str | None = None,
+    ) -> dict[str, Any]:
+        """Alert user when a login occurs from an unrecognised device or IP."""
+        reset_url = f"{self.frontend_url}/forgot-password"
+        sessions_url = f"{self.frontend_url}/profile"
+        time_display = login_time or datetime.now().strftime("%B %d, %Y at %I:%M %p UTC")
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    New sign-in to your account
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    We detected a sign-in to your DealGapIQ account from a device we don't recognise.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 13px; color: #71717a; margin: 0;">Device</p>
+                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{device_info}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 13px; color: #71717a; margin: 0;">IP Address</p>
+                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{ip_address or "Unknown"}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p style="font-size: 13px; color: #71717a; margin: 0;">Time</p>
+                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{time_display}</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    If this was you, no action is needed. If you don't recognise this activity, secure your account immediately.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
+            <p style="font-weight: 600; color: #991b1b; margin: 0 0 8px 0;">This wasn't me</p>
+            <ul style="font-size: 14px; color: #7f1d1d; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><a href="{reset_url}" style="color: #dc2626; font-weight: 600;">Reset your password</a> immediately</li>
+                <li><a href="{sessions_url}" style="color: #dc2626; font-weight: 600;">Review active sessions</a> and revoke any you don't recognise</li>
+                <li>Enable two-factor authentication if you haven't already</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+'''
+
+        html = self._base_template(content, "New sign-in detected on your DealGapIQ account")
+
+        return await self.send_email(
+            to=to,
+            subject="New sign-in to your account - DealGapIQ",
+            html=html,
+        )
+
+    async def send_mfa_enabled_email(
+        self,
+        to: str,
+        user_name: str,
+    ) -> dict[str, Any]:
+        """Confirm that two-factor authentication was enabled."""
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Two-factor authentication enabled
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Two-factor authentication (2FA) has been successfully enabled on your DealGapIQ account. You'll now need your authenticator app each time you sign in.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f0fdf4; border-radius: 12px; border-left: 4px solid #22c55e;">
+            <p style="font-weight: 600; color: #166534; margin: 0 0 4px 0;">Your account is now more secure</p>
+            <p style="font-size: 14px; color: #15803d; margin: 0;">
+                Keep your authenticator app and backup codes in a safe place. If you lose access, contact support.
+            </p>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+    Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px;">
+    <tr>
+        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
+            <p style="font-size: 14px; color: #991b1b; margin: 0;">
+                If you did not make this change, <a href="{self.frontend_url}/forgot-password" style="color: #dc2626; font-weight: 600;">reset your password immediately</a> and contact support.
+            </p>
+        </td>
+    </tr>
+</table>
+'''
+
+        html = self._base_template(content, "Two-factor authentication is now active on your account")
+
+        return await self.send_email(
+            to=to,
+            subject="Two-factor authentication enabled - DealGapIQ",
+            html=html,
+        )
+
+    async def send_mfa_disabled_email(
+        self,
+        to: str,
+        user_name: str,
+    ) -> dict[str, Any]:
+        """Warn user that two-factor authentication was disabled."""
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Two-factor authentication disabled
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Two-factor authentication (2FA) has been removed from your DealGapIQ account. Your account is now protected by your password only.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #fffbeb; border-radius: 12px; border-left: 4px solid #f59e0b;">
+            <p style="font-weight: 600; color: #92400e; margin: 0 0 4px 0;">Your account security has been reduced</p>
+            <p style="font-size: 14px; color: #78350f; margin: 0;">
+                We recommend keeping 2FA enabled. You can re-enable it anytime from your
+                <a href="{self.frontend_url}/profile" style="color: #d97706; font-weight: 600;">profile settings</a>.
+            </p>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+    Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px;">
+    <tr>
+        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
+            <p style="font-size: 14px; color: #991b1b; margin: 0;">
+                If you did not make this change, your account may be compromised. <a href="{self.frontend_url}/forgot-password" style="color: #dc2626; font-weight: 600;">Reset your password immediately</a>.
+            </p>
+        </td>
+    </tr>
+</table>
+'''
+
+        html = self._base_template(content, "Two-factor authentication has been disabled on your account")
+
+        return await self.send_email(
+            to=to,
+            subject="Two-factor authentication disabled - DealGapIQ",
+            html=html,
+        )
+
+    async def send_account_deletion_email(
+        self,
+        to: str,
+        user_name: str,
+        deletion_date: str | None = None,
+    ) -> dict[str, Any]:
+        """Confirm account deletion or scheduled deletion."""
+        date_note = ""
+        if deletion_date:
+            date_note = f' Your data will be permanently deleted on <strong>{deletion_date}</strong>.'
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Account deletion confirmed
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ account has been scheduled for deletion.{date_note}
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
+            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">What will be removed:</p>
+            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Your account credentials and profile</li>
+                <li>Saved properties and analysis history</li>
+                <li>Subscription and payment records</li>
+                <li>All associated data</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 0;">
+    If you did not request this, contact <a href="mailto:support@dealgapiq.com" style="color: #0891b2;">support@dealgapiq.com</a> immediately to cancel the deletion.
+</p>
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
+    You can sign up again anytime at <a href="{self.frontend_url}" style="color: #0891b2;">dealgapiq.com</a>.
+</p>
+'''
+
+        html = self._base_template(content, "Your DealGapIQ account has been scheduled for deletion")
+
+        return await self.send_email(
+            to=to,
+            subject="Account deletion confirmed - DealGapIQ",
+            html=html,
+        )
+
+    # ===========================================
+    # Engagement & Conversion Emails
+    # ===========================================
+
+    async def send_onboarding_nudge_email(
+        self,
+        to: str,
+        user_name: str,
+        steps_remaining: int,
+    ) -> dict[str, Any]:
+        """Nudge user who started but hasn't completed onboarding."""
+        onboarding_url = f"{self.frontend_url}/onboarding"
+        total_steps = 5
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    You're {total_steps - steps_remaining} of {total_steps} steps in
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    You're almost ready to start analyzing deals. Finish setting up your investor profile so DealGapIQ can tailor results to your strategy, budget, and target markets.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
+            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">What you'll unlock:</p>
+            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Personalised deal analysis tuned to your goals</li>
+                <li>IQ Verdict Score calibrated to your risk tolerance</li>
+                <li>Strategy recommendations for your experience level</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    It only takes about 2 minutes to finish.
+</p>
+
+{self._button("Complete Your Profile", onboarding_url)}
+
+{self._marketing_footer(to, "product_updates")}
+'''
+
+        html = self._base_template(content, f"You're {steps_remaining} steps away from your first deal analysis")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Finish setting up your profile ({steps_remaining} steps left) - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "product_updates"),
+        )
+
+    async def send_first_analysis_milestone_email(
+        self,
+        to: str,
+        user_name: str,
+        property_address: str,
+    ) -> dict[str, Any]:
+        """Congratulate user on completing their first property analysis."""
+        search_url = f"{self.frontend_url}/search"
+        pricing_url = f"{self.frontend_url}/pricing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Your first deal analysis is in the books
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    You just analyzed <strong>{property_address}</strong> — that's the hardest part done. Every serious investor starts by running the numbers, and now you have a data-backed verdict on your first deal.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #faf5ff; border-radius: 12px; border-left: 4px solid #8b5cf6;">
+            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Want to go deeper? Pro Investor unlocks:</p>
+            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Unlimited analyses (no monthly cap)</li>
+                <li>Editable inputs &amp; stress testing</li>
+                <li>Downloadable Excel proformas</li>
+                <li>Lender-ready PDF reports</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+{self._button("Analyze Another Property", search_url)}
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Ready for unlimited access? <a href="{pricing_url}" style="color: #0891b2; font-weight: 600;">View Pro plans</a>
+</p>
+
+{self._marketing_footer(to, "product_updates")}
+'''
+
+        html = self._base_template(content, "You just completed your first deal analysis on DealGapIQ")
+
+        return await self.send_email(
+            to=to,
+            subject="Your first analysis is complete - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "product_updates"),
+        )
+
+    async def send_reengagement_email(
+        self,
+        to: str,
+        user_name: str,
+        days_inactive: int,
+    ) -> dict[str, Any]:
+        """Re-engage a user who hasn't been active recently."""
+        search_url = f"{self.frontend_url}/search"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Deals don't wait — neither should you
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    It's been {days_inactive} days since your last visit. The market keeps moving — new listings, price drops, and opportunities are popping up every day.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
+            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Pick up where you left off</p>
+            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Search any US address for instant analysis</li>
+                <li>Compare 6 investment strategies side by side</li>
+                <li>Save deals to your pipeline</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+{self._button("Search a Property", search_url)}
+
+{self._marketing_footer(to, "marketing")}
+'''
+
+        html = self._base_template(content, "New deals are waiting for you on DealGapIQ")
+
+        return await self.send_email(
+            to=to,
+            subject="The market isn't waiting - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "marketing"),
+        )
+
+    async def send_winback_email(
+        self,
+        to: str,
+        user_name: str,
+    ) -> dict[str, Any]:
+        """Win back a user who recently canceled their Pro subscription."""
+        pricing_url = f"{self.frontend_url}/pricing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Your Pro tools are still here
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    We noticed you recently canceled your DealGapIQ Pro subscription. If you're still actively investing, here's what you're missing:
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+    <tr>
+        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
+                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
+                            <strong>Unlimited analyses</strong> — your Starter plan limits you to 3 per month
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7;">
+                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
+                            <strong>Editable inputs &amp; stress testing</strong> — change any variable, recalculate instantly
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7;">
+                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
+                            <strong>Excel proformas &amp; PDF reports</strong> — download and share with lenders
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-top: 12px;">
+                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
+                            <strong>Side-by-side comparison</strong> — evaluate multiple deals at once
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Re-subscribe anytime — your saved properties and analysis history are still here.
+</p>
+
+{self._button("View Pro Plans", pricing_url)}
+
+{self._marketing_footer(to, "marketing")}
+'''
+
+        html = self._base_template(content, "Your DealGapIQ Pro tools are waiting for you")
+
+        return await self.send_email(
+            to=to,
+            subject="Your Pro tools are still here - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "marketing"),
+        )
+
+    # ===========================================
+    # Retention Emails
+    # ===========================================
+
+    async def send_annual_renewal_reminder_email(
+        self,
+        to: str,
+        user_name: str,
+        renewal_date: str,
+        amount_display: str,
+    ) -> dict[str, Any]:
+        """Remind annual subscribers about an upcoming renewal charge."""
+        billing_url = f"{self.frontend_url}/billing"
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Your annual subscription renews soon
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ Pro annual subscription will automatically renew on <strong>{renewal_date}</strong>.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 20px; background-color: #f4f4f5; border-radius: 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
+                        <p style="font-size: 13px; color: #71717a; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Renewal amount</p>
+                        <p style="font-size: 28px; font-weight: 700; color: #18181b; margin: 4px 0 0 0;">{amount_display}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-top: 12px;">
+                        <p style="font-size: 13px; color: #71717a; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Renewal date</p>
+                        <p style="font-size: 16px; color: #3f3f46; margin: 4px 0 0 0;">{renewal_date}</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    No action needed if you'd like to continue. Your Pro access will renew automatically.
+</p>
+
+{self._button("Manage Subscription", billing_url)}
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    To cancel or change plans, visit your <a href="{billing_url}" style="color: #0891b2;">billing page</a> before {renewal_date}.
+</p>
+'''
+
+        html = self._base_template(content, f"Your Pro subscription renews on {renewal_date}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Annual renewal on {renewal_date} ({amount_display}) - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "subscription_alerts"),
+        )
+
+    async def send_activity_digest_email(
+        self,
+        to: str,
+        user_name: str,
+        period: str,
+        stats: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Send a periodic activity digest summarising usage and saved property changes."""
+        search_url = f"{self.frontend_url}/search"
+        saved_url = f"{self.frontend_url}/saved-properties"
+
+        analyses_count = stats.get("analyses_count", 0)
+        saved_count = stats.get("saved_count", 0)
+        price_drops = stats.get("price_drops", 0)
+
+        rows = ""
+        if analyses_count:
+            rows += f'''
+<tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
+    <span style="color: #71717a;">Properties analysed</span></td>
+    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{analyses_count}</td></tr>'''
+        if saved_count:
+            rows += f'''
+<tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
+    <span style="color: #71717a;">Properties saved</span></td>
+    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{saved_count}</td></tr>'''
+        if price_drops:
+            rows += f'''
+<tr><td style="padding: 8px 0;">
+    <span style="color: #71717a;">Saved properties with price drops</span></td>
+    <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #22c55e;">{price_drops}</td></tr>'''
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    Your {period} digest
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    Hi {user_name or "there"}, here's a snapshot of your DealGapIQ activity.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 20px; background-color: #f4f4f5; border-radius: 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                {rows or '<tr><td style="padding: 8px 0; color: #71717a;">No activity this period — search a property to get started.</td></tr>'}
+            </table>
+        </td>
+    </tr>
+</table>
+
+{self._button("Search a Property", search_url)}
+
+<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    <a href="{saved_url}" style="color: #0891b2;">View saved properties</a>
+</p>
+
+{self._marketing_footer(to, "digest")}
+'''
+
+        html = self._base_template(content, f"Your DealGapIQ {period} activity summary")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Your {period} digest - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "digest"),
+        )
+
+    async def send_feature_announcement_email(
+        self,
+        to: str,
+        user_name: str,
+        feature_name: str,
+        feature_description: str,
+        cta_text: str = "Try It Now",
+        cta_url: str | None = None,
+    ) -> dict[str, Any]:
+        """Announce a new feature or product update (manual trigger)."""
+        url = cta_url or self.frontend_url
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+    New: {feature_name}
+</h1>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+    {feature_description}
+</p>
+
+{self._button(cta_text, url)}
+
+{self._marketing_footer(to, "product_updates")}
+'''
+
+        html = self._base_template(content, f"New on DealGapIQ: {feature_name}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"New: {feature_name} - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "product_updates"),
         )
 
     # ===========================================
