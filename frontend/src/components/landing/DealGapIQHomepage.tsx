@@ -109,11 +109,14 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             </p>
           </div>
           <div className="hero-visual">
-            <img
-              src="/images/phone-demo-hero.png"
-              alt="DealGapIQ property analysis on mobile"
-              className="hero-phone-img"
-            />
+            <picture>
+              <source media="(max-width: 768px)" srcSet="/images/phone-house-hero.png" />
+              <img
+                src="/images/phone-demo-hero.png"
+                alt="DealGapIQ property analysis on mobile"
+                className="hero-phone-img"
+              />
+            </picture>
           </div>
         </div>
       </section>
