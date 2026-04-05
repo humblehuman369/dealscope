@@ -4,13 +4,16 @@ import {
   Text,
   ScrollView,
   Pressable,
-  TextInput,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui';
+import {
+  AddressAutocomplete,
+  type AddressComponents,
+} from '@/components/AddressAutocomplete';
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { errorToUserMessage } from '@/utils/errorMessages';
 import { colors } from '@/constants/colors';
@@ -30,6 +33,8 @@ export default function SearchScreen() {
   const router = useRouter();
   const { fetchProperty } = usePropertyData();
   const [address, setAddress] = useState('');
+  const [addressComponents, setAddressComponents] =
+    useState<AddressComponents | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,7 +44,11 @@ export default function SearchScreen() {
     setLoading(true);
     setError('');
     try {
-      await fetchProperty(trimmed);
+      await fetchProperty(trimmed, {
+        city: addressComponents?.city || undefined,
+        state: addressComponents?.state || undefined,
+        zip_code: addressComponents?.zipCode || undefined,
+      });
       router.push({
         pathname: '/analyzing',
         params: { address: trimmed },
@@ -49,7 +58,7 @@ export default function SearchScreen() {
     } finally {
       setLoading(false);
     }
-  }, [address, fetchProperty, router]);
+  }, [address, addressComponents, fetchProperty, router]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -67,41 +76,43 @@ export default function SearchScreen() {
           </Text>
         </View>
 
-        <Card glow="lg" style={styles.searchCard}>
-          <Text style={styles.searchLabel}>PROPERTY ADDRESS</Text>
-          <View style={styles.searchRow}>
-            <TextInput
-              style={styles.searchInput}
+        <View style={styles.searchCardWrapper}>
+          <Card glow="lg" style={styles.searchCard}>
+            <Text style={styles.searchLabel}>PROPERTY ADDRESS</Text>
+            <AddressAutocomplete
               value={address}
               onChangeText={(t) => {
                 setAddress(t);
+                setAddressComponents(null);
+                setError('');
+              }}
+              onSelect={(formatted, components) => {
+                setAddress(formatted);
+                setAddressComponents(components);
                 setError('');
               }}
               placeholder="Enter an address to analyze..."
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="words"
-              returnKeyType="search"
-              onSubmitEditing={handleSearch}
               editable={!loading}
+              onSubmitEditing={handleSearch}
             />
-          </View>
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Pressable
-            onPress={handleSearch}
-            disabled={loading || !address.trim()}
-            style={({ pressed }) => [
-              styles.searchBtn,
-              pressed && styles.searchBtnPressed,
-              (loading || !address.trim()) && styles.searchBtnDisabled,
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator color="#000" size="small" />
-            ) : (
-              <Text style={styles.searchBtnText}>Analyze Property</Text>
-            )}
-          </Pressable>
-        </Card>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Pressable
+              onPress={handleSearch}
+              disabled={loading || !address.trim()}
+              style={({ pressed }) => [
+                styles.searchBtn,
+                pressed && styles.searchBtnPressed,
+                (loading || !address.trim()) && styles.searchBtnDisabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#000" size="small" />
+              ) : (
+                <Text style={styles.searchBtnText}>Analyze Property</Text>
+              )}
+            </Pressable>
+          </Card>
+        </View>
 
         <View style={styles.strategySection}>
           <Text style={styles.sectionLabel}>6 STRATEGIES ANALYZED</Text>
@@ -167,6 +178,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     maxWidth: 300,
   },
+  searchCardWrapper: {
+    zIndex: 10,
+  },
   searchCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
@@ -175,22 +189,6 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.textLabel,
     marginBottom: spacing.sm,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  searchInput: {
-    flex: 1,
-    height: layout.inputHeight,
-    backgroundColor: colors.inputBg,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: layout.inputRadius,
-    paddingHorizontal: 14,
-    fontFamily: fontFamilies.body,
-    fontSize: 16,
-    color: colors.textHeading,
   },
   error: {
     fontFamily: fontFamilies.body,
