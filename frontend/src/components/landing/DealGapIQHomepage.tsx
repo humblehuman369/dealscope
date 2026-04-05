@@ -55,6 +55,14 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
     setIsVideoPlaying(false);
   };
 
+  const handleVideoLoadedData = () => {
+    const video = videoRef.current;
+    if (!video || isVideoPlaying) return;
+    if (video.currentTime < 0.01) {
+      video.currentTime = 0.01;
+    }
+  };
+
   const playDealGapVideo = () => {
     const video = dealGapVideoRef.current;
     if (!video) return;
@@ -300,8 +308,8 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               preload="metadata"
               playsInline
               controls={isVideoPlaying}
-              src="/videos/intro-to-dealgapiq.mp4"
-              poster="/images/intro-video-poster.png"
+              src="/videos/investor-lens-masterclass.mp4"
+              onLoadedData={handleVideoLoadedData}
               onEnded={handleVideoEnded}
               onPause={() => {
                 if (videoRef.current?.ended) setIsVideoPlaying(false);
