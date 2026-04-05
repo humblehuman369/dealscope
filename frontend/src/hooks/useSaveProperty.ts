@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { parseAddressString } from '@/utils/formatters'
 import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
+import { SEARCH_HISTORY_KEYS } from '@/hooks/useSearchHistory'
 
 export interface PropertySnapshot {
   street?: string
@@ -104,6 +105,7 @@ export function useSaveProperty({
       setSavedPropertyId(result?.id ?? null)
       stateVersionRef.current++
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: SEARCH_HISTORY_KEYS.all })
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
       if (status === 409) {
@@ -134,6 +136,7 @@ export function useSaveProperty({
       setSavedPropertyId(null)
       stateVersionRef.current++
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
+      queryClient.invalidateQueries({ queryKey: SEARCH_HISTORY_KEYS.all })
     } finally {
       setIsSaving(false)
     }

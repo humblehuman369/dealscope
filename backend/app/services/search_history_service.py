@@ -252,28 +252,68 @@ class SearchHistoryService:
         self,
         db: AsyncSession,
         user_id: str,
-        property_cache_id: str,
+        property_cache_id: str | None = None,
+        zpid: str | None = None,
+        full_address: str | None = None,
     ) -> bool:
-        """Mark a search as having resulted in a saved property."""
-        query = (
-            select(SearchHistory)
-            .where(
-                and_(
-                    SearchHistory.user_id == UUID(user_id),
-                    SearchHistory.property_cache_id == property_cache_id,
-                )
+        """Mark the most recent matching search as having resulted in a saved property.
+
+        Tries identifiers in order of reliability: property_cache_id → zpid → address.
+        """
+        user_uuid = UUID(user_id)
+
+        for condition in [
+            SearchHistory.property_cache_id == property_cache_id if property_cache_id else None,
+            SearchHistory.zpid == zpid if zpid else None,
+            SearchHistory.search_query.ilike(f"%{full_address}%") if full_address else None,
+        ]:
+            if condition is None:
+                continue
+            query = (
+                select(SearchHistory)
+                .where(and_(SearchHistory.user_id == user_uuid, condition))
+                .order_by(desc(SearchHistory.searched_at))
+                .limit(1)
             )
-            .order_by(desc(SearchHistory.searched_at))
-            .limit(1)
-        )
+            result = await db.execute(query)
+            search_entry = result.scalar_one_or_none()
+            if search_entry:
+                search_entry.was_saved = True
+                await db.commit()
+                return True
 
-        result = await db.execute(query)
-        search_entry = result.scalar_one_or_none()
+        return False
 
-        if search_entry:
-            search_entry.was_saved = True
-            await db.commit()
-            return True
+    async def unmark_as_saved(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        property_cache_id: str | None = None,
+        zpid: str | None = None,
+        full_address: str | None = None,
+    ) -> bool:
+        """Reverse was_saved when a property is removed from the portfolio."""
+        user_uuid = UUID(user_id)
+
+        for condition in [
+            SearchHistory.property_cache_id == property_cache_id if property_cache_id else None,
+            SearchHistory.zpid == zpid if zpid else None,
+            SearchHistory.search_query.ilike(f"%{full_address}%") if full_address else None,
+        ]:
+            if condition is None:
+                continue
+            query = (
+                select(SearchHistory)
+                .where(and_(SearchHistory.user_id == user_uuid, SearchHistory.was_saved, condition))
+                .order_by(desc(SearchHistory.searched_at))
+                .limit(1)
+            )
+            result = await db.execute(query)
+            search_entry = result.scalar_one_or_none()
+            if search_entry:
+                search_entry.was_saved = False
+                await db.commit()
+                return True
 
         return False
 
