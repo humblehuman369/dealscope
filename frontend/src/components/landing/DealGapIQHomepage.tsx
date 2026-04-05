@@ -4,6 +4,7 @@ import React, { useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { useTheme } from '@/context/ThemeContext';
 import './dealgapiq-homepage.css';
 import { DataSourcesSection } from './DataSourcesSection';
 
@@ -29,6 +30,7 @@ interface DealGapIQHomepageProps {
 
 export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQHomepageProps) {
   const router = useRouter();
+  const { theme } = useTheme();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isDealGapVideoPlaying, setIsDealGapVideoPlaying] = useState(false);
   const [founderImgError, setFounderImgError] = useState(false);
@@ -120,7 +122,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             <picture>
               <source media="(max-width: 768px)" srcSet="/images/phone-house-hero.png" />
               <img
-                src="/images/phone-demo-hero.png"
+                src={theme === 'light' ? '/images/phone-demo-hero-light.png' : '/images/phone-demo-hero.png'}
                 alt="DealGapIQ property analysis on mobile"
                 className="hero-phone-img"
               />
