@@ -55,17 +55,54 @@ Rebuilt from the ground up. New architecture, faster analysis, and a cleaner int
 
 ---
 
-## Screenshots Needed
+## Screenshots
 
-### iPhone (6.7" — required)
-1. Login screen
-2. Search screen with address entered
-3. Verdict screen showing deal score and strategy rankings
-4. Strategy detail screen
-5. Deal Vault with saved properties
+### Automated Screenshot Capture
 
-### iPad (12.9" — if supportsTablet)
-Same 5 screens in landscape or portrait.
+Screenshots are generated via Playwright at exact App Store pixel dimensions.
 
-### Android (phone)
-Same 5 screens.
+**Quick start:**
+```bash
+npm run screenshots        # Capture raw screenshots (iPhone 6.7")
+npm run screenshots:frame  # Add marketing headlines + device frame
+npm run screenshots:all    # Both steps
+```
+
+**Options:**
+```bash
+npx tsx scripts/screenshots/capture.ts --device iphone-6.5   # iPhone 6.5"
+npx tsx scripts/screenshots/capture.ts --device ipad          # iPad Pro 12.9"
+npx tsx scripts/screenshots/capture.ts --device android       # Android phone
+npx tsx scripts/screenshots/capture.ts --headed               # Watch the browser
+npx tsx scripts/screenshots/capture.ts --base-url http://localhost:3000
+```
+
+**Output locations:**
+- Raw: `scripts/screenshots/output/iphone-6.7/`
+- Framed: `scripts/screenshots/output/iphone-6.7-framed/`
+
+### Prerequisites for auth-gated screens (Verdict, Strategy, Deal Vault)
+
+1. Create the demo account in production: `review@dealgapiq.com` / `AppReview2026!`
+2. Set `subscription_tier: 'pro'` via admin panel
+3. Log in and save 3-5 properties to the Deal Vault
+4. Re-run `npm run screenshots:all`
+
+### Screenshot Plan
+
+| # | Screen | Marketing Headline | Subline | Output |
+|---|--------|-------------------|---------|--------|
+| 1 | Login | Know Before You Buy | Real estate investment analysis in seconds | `01_login_framed.png` |
+| 2 | Search (address entered) | Search Any Property | Enter an address. Get an instant verdict. | `02_search_framed.png` |
+| 3 | Verdict (deal score) | Instant Deal Score | AI-powered analysis across 6 strategies | `03_verdict_framed.png` |
+| 4 | Strategy detail | See the Numbers | Cash flow, cap rate, DSCR — every metric that matters | `04_strategy_framed.png` |
+| 5 | Deal Vault | Save & Track Deals | Build your pipeline. Revisit analyses anytime. | `05_deal_vault_framed.png` |
+
+### Required Dimensions (App Store Connect)
+
+| Device | Pixels | CSS Viewport | DPR |
+|--------|--------|-------------|-----|
+| iPhone 6.7" (required) | 1290 × 2796 | 430 × 932 | 3x |
+| iPhone 6.5" | 1242 × 2688 | 414 × 896 | 3x |
+| iPad Pro 12.9" | 2048 × 2732 | 1024 × 1366 | 2x |
+| Android phone | 1236 × 2745 | 412 × 915 | 3x |
