@@ -175,6 +175,10 @@
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
 }
+[data-theme='light'] .hero-phone-img {
+  mix-blend-mode: screen;
+  filter: contrast(1.4) saturate(1.15) drop-shadow(0 20px 40px rgba(0,0,0,0.12));
+}
 
 /* FOUNDER SEPARATOR */
 .founder-separator {
