@@ -14,8 +14,16 @@ export function errorToUserMessage(err: unknown, fallback = 'Something went wron
 
   const axiosErr = err as any;
   const serverDetail = axiosErr?.response?.data?.detail;
+
   if (typeof serverDetail === 'string' && serverDetail.length < 200) {
     return serverDetail;
+  }
+
+  if (Array.isArray(serverDetail) && serverDetail.length > 0) {
+    const msg = serverDetail[0]?.msg;
+    if (typeof msg === 'string' && msg.length < 200) {
+      return msg.replace(/^Value error,\s*/i, '');
+    }
   }
 
   const rawMessage = axiosErr?.message ?? String(err);
