@@ -116,6 +116,9 @@
   color: #fff;
   font-weight: 700;
 }
+[data-theme='light'] .hero-sub strong {
+  color: var(--text-heading);
+}
 .hero-sub .accent-inline {
   color: var(--accent-sky);
   font-weight: 700;

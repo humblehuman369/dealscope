@@ -56,6 +56,7 @@
   --text-body: #CBD5E1;
   --text-secondary: #94A3B8;
   --text-label: #7C8CA0;
+  --text-muted: #64748B;
   --text-inverse: #000000;
   --text-link: #0EA5E9;
 
@@ -87,6 +88,7 @@
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.5);
   --glow-sky-inset: rgba(56,189,248,0.16);
+  --hover-overlay: rgba(255,255,255,0.10);
 
   --chart-grid: #1E293B;
   --chart-axis: #94A3B8;
@@ -176,6 +178,7 @@
   --text-body: #CBD5E1;
   --text-secondary: #94A3B8;
   --text-label: #7C8CA0;
+  --text-muted: #64748B;
   --text-inverse: #000000;
   --text-link: #0EA5E9;
 
@@ -207,6 +210,7 @@
   --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
   --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.5);
   --glow-sky-inset: rgba(56,189,248,0.16);
+  --hover-overlay: rgba(255,255,255,0.10);
 
   --chart-grid: #1E293B;
   --chart-axis: #94A3B8;
@@ -215,31 +219,32 @@
 }
 
 [data-theme='light'] {
-  --surface-base: #f5f7fa;
-  --surface-section: #F8FAFC;
+  --surface-base: #EAEEF3;
+  --surface-section: #F1F4F8;
   --surface-card: #FFFFFF;
-  --surface-card-hover: #F1F5F9;
-  --surface-elevated: #F1F5F9;
-  --surface-input: #F8FAFC;
+  --surface-card-hover: #F5F7FA;
+  --surface-elevated: #F8FAFC;
+  --surface-input: #FFFFFF;
   --surface-overlay: rgba(0,0,0,0.5);
 
   --text-heading: #000000;
   --text-body: #1E293B;
   --text-secondary: #334155;
   --text-label: #475569;
+  --text-muted: #64748B;
   --text-inverse: #FFFFFF;
-  --text-link: #0369A1;
+  --text-link: #0284C7;
 
-  --accent-brand-blue: #0344A6;
-  --accent-sky: #0369A1;
-  --accent-sky-light: #0284C7;
-  --accent-gradient-from: #0344A6;
-  --accent-gradient-to: #0369A1;
+  --accent-brand-blue: #0052CC;
+  --accent-sky: #0284C7;
+  --accent-sky-light: #0EA5E9;
+  --accent-gradient-from: #0052CC;
+  --accent-gradient-to: #0284C7;
 
-  --status-positive: #047857;
-  --status-warning: #B45309;
-  --status-negative: #B91C1C;
-  --status-info: #0369A1;
+  --status-positive: #059669;
+  --status-warning: #D97706;
+  --status-negative: #DC2626;
+  --status-info: #0284C7;
   --status-income-value: #A16207;
 
   --strategy-ltr: #0344A6;
@@ -249,17 +254,18 @@
   --strategy-house-hack: #0369A1;
   --strategy-wholesale: #4D7C0F;
 
-  --border-subtle: #E2E8F0;
-  --border-default: #CBD5E1;
-  --border-strong: #94A3B8;
-  --border-focus: #0369A1;
+  --border-subtle: #D5DBE4;
+  --border-default: #B8C4CE;
+  --border-strong: #8896A6;
+  --border-focus: #0284C7;
 
-  --shadow-card: 0 0 20px rgba(14,165,233,0.15);
-  --shadow-card-hover: 0 0 30px rgba(14,165,233,0.25);
-  --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-dropdown: 0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06);
   --glow-sky-inset: rgba(3,105,161,0.16);
+  --hover-overlay: rgba(0,0,0,0.05);
 
-  --chart-grid: #E2E8F0;
+  --chart-grid: #D5DBE4;
   --chart-axis: #64748B;
   --chart-tooltip: #FFFFFF;
   --chart-tooltip-text: #07172e;
@@ -325,6 +331,26 @@ input[type="range"]::-moz-range-thumb {
   border: 3px solid #000;
 }
 
+/* ---- Range Slider — Light Mode ---- */
+[data-theme='light'] input[type="range"]::-webkit-slider-track {
+  background: rgba(0,0,0,0.08);
+}
+[data-theme='light'] input[type="range"]::-webkit-slider-thumb {
+  background: #FFFFFF;
+  border-color: var(--accent-brand-blue);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+[data-theme='light'] input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.2);
+}
+[data-theme='light'] input[type="range"]::-moz-range-track {
+  background: rgba(0,0,0,0.08);
+}
+[data-theme='light'] input[type="range"]::-moz-range-thumb {
+  background: #FFFFFF;
+  border-color: var(--accent-brand-blue);
+}
+
 /* ==========================================
    Base Styles — Dark First
    ========================================== */
@@ -345,7 +371,8 @@ input[type="range"]::-moz-range-thumb {
 
   [data-theme='light'] body {
     background:
-      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(14, 165, 233, 0.035) 0%, transparent 100%),
+      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(14, 165, 233, 0.06) 0%, transparent 100%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(14, 165, 233, 0.03) 0%, transparent 100%),
       var(--color-base);
   }
 
