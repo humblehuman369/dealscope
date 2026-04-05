@@ -5,8 +5,10 @@ Users router for profile and account management.
 import logging
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, DbSession
 from app.schemas.auth import AuthMessage
@@ -413,3 +415,72 @@ async def reset_user_assumptions(current_user: CurrentUser, db: DbSession):
         has_customizations=False,
         updated_at=profile.updated_at.isoformat() if profile.updated_at else None,
     )
+
+
+# ===========================================
+# Email Unsubscribe (unauthenticated)
+# ===========================================
+
+
+@router.get("/unsubscribe", response_class=HTMLResponse, include_in_schema=False)
+async def unsubscribe_from_emails(
+    db: DbSession,
+    email: str = Query(...),
+    category: str = Query("marketing"),
+    token: str = Query(...),
+):
+    """One-click email unsubscribe — no login required.
+
+    Validates an HMAC token so the link can't be forged, then flips the
+    matching preference flag to ``False`` in the user's profile.
+    """
+    from app.services.email_service import email_service
+
+    expected = email_service._generate_unsubscribe_token(email, category)
+    if not _constant_time_compare(token, expected):
+        return HTMLResponse(
+            "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+            "<h2>Invalid link</h2><p>This unsubscribe link is invalid or has expired.</p></body></html>",
+            status_code=400,
+        )
+
+    from sqlalchemy import select, update as sa_update
+
+    from app.models.user import User, UserProfile
+
+    user_result = await db.execute(select(User.id).where(User.email == email.lower().strip()))
+    user_id = user_result.scalar_one_or_none()
+    if not user_id:
+        return HTMLResponse(
+            "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+            "<h2>Unsubscribed</h2><p>You have been unsubscribed.</p></body></html>"
+        )
+
+    profile_result = await db.execute(
+        select(UserProfile.notification_preferences).where(UserProfile.user_id == user_id)
+    )
+    prefs = profile_result.scalar_one_or_none() or {}
+
+    prefs[category] = False
+    await db.execute(
+        sa_update(UserProfile)
+        .where(UserProfile.user_id == user_id)
+        .values(notification_preferences=prefs)
+    )
+    await db.commit()
+
+    label = category.replace("_", " ").title()
+    return HTMLResponse(
+        f"<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+        f"<h2>Unsubscribed</h2>"
+        f"<p>You've been unsubscribed from <strong>{label}</strong> emails.</p>"
+        f"<p style='color:#71717a;font-size:14px'>You can manage all preferences from your "
+        f"<a href='{email_service.frontend_url}/profile'>profile settings</a>.</p></body></html>"
+    )
+
+
+def _constant_time_compare(a: str, b: str) -> bool:
+    """Timing-safe string comparison."""
+    import hmac as _hmac
+
+    return _hmac.compare_digest(a.encode(), b.encode())

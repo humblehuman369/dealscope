@@ -286,9 +286,15 @@ class BillingService:
             days_until_reset=days_until_reset,
         )
 
-    async def record_analysis(self, db: AsyncSession, user_id: uuid.UUID) -> UsageResponse:
-        """
-        Record one property analysis for usage limits.
+    async def record_analysis(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        *,
+        property_address: str | None = None,
+    ) -> UsageResponse:
+        """Record one property analysis for usage limits.
+
         Only increments for non-Pro (Starter) users. Pro has unlimited analyses.
         Raises SubscriptionLimitError when the monthly cap is reached.
         Returns updated usage so the client can refresh the usage bar.
@@ -304,6 +310,8 @@ class BillingService:
                 subscription.reset_usage()
                 await db.commit()
                 await db.refresh(subscription)
+
+        was_first = subscription.searches_used == 0
 
         if subscription.searches_per_month != -1:
             if not subscription.can_search():
@@ -328,6 +336,19 @@ class BillingService:
                         )
                 except Exception as e:
                     logger.warning("Failed to send limit-reached email: %s", e)
+
+        # First-ever analysis milestone
+        if was_first:
+            try:
+                user = await self._get_user_for_email(db, user_id)
+                if user:
+                    await email_service.send_first_analysis_milestone_email(
+                        to=user.email,
+                        user_name=user.full_name or "",
+                        property_address=property_address or "your first property",
+                    )
+            except Exception as e:
+                logger.warning("Failed to send first-analysis milestone email: %s", e)
 
         return await self.get_usage(db, user_id)
 

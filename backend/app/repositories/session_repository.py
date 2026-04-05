@@ -101,6 +101,39 @@ class SessionRepository:
             )
         )
 
+    async def has_matching_session(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        *,
+        user_agent: str | None = None,
+        ip_address: str | None = None,
+    ) -> bool:
+        """Return True if the user has a prior session with the same user-agent OR IP."""
+        if not user_agent and not ip_address:
+            return True
+
+        conditions = [
+            UserSession.user_id == user_id,
+            UserSession.is_revoked.is_(False),
+        ]
+
+        ua_match = UserSession.user_agent == user_agent if user_agent else None
+        ip_match = UserSession.ip_address == ip_address if ip_address else None
+
+        or_clauses = [c for c in (ua_match, ip_match) if c is not None]
+        if not or_clauses:
+            return True
+
+        from sqlalchemy import or_
+
+        conditions.append(or_(*or_clauses))
+
+        result = await db.execute(
+            select(UserSession.id).where(*conditions).limit(1)
+        )
+        return result.scalar_one_or_none() is not None
+
     async def delete_expired(self, db: AsyncSession) -> int:
         """Remove sessions that are either expired or revoked for > 30 days."""
         cutoff = datetime.now(UTC)
