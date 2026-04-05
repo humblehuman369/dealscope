@@ -28,6 +28,7 @@ from app.schemas.saved_property import (
 from app.services.billing_service import billing_service
 from app.services.deal_maker_service import DealMakerService
 from app.services.saved_property_service import saved_property_service, sanitize_for_json_storage
+from app.services.search_history_service import search_history_service
 
 logger = logging.getLogger(__name__)
 
@@ -339,6 +340,18 @@ async def save_property(
                 logger.debug(f"DealMakerRecord reconstruction error details: {e}", exc_info=True)
                 # Continue without deal_maker - property is still saved
 
+        # Mark the corresponding search history entry as saved
+        try:
+            await search_history_service.mark_as_saved(
+                db=db,
+                user_id=str(current_user.id),
+                property_cache_id=saved.external_property_id,
+                zpid=saved.zpid,
+                full_address=saved.full_address,
+            )
+        except Exception as e:
+            logger.warning("Failed to mark search history as saved: %s", e)
+
         # Send push notification in background (non-blocking).
         # IMPORTANT: Background tasks run AFTER the response is sent, so the
         # request-scoped ``db`` session is already closed.  We must create a
@@ -625,6 +638,15 @@ async def delete_saved_property(
     db: DbSession,
 ):
     """Delete a saved property."""
+    # Fetch identifiers before deletion so we can unmark search history
+    saved = await saved_property_service.get_by_id(db=db, property_id=property_id, user_id=str(current_user.id))
+    if not saved:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
+    _ext_id = saved.external_property_id
+    _zpid = saved.zpid
+    _addr = saved.full_address
+
     deleted = await saved_property_service.delete_property(
         db=db,
         property_id=property_id,
@@ -633,6 +655,17 @@ async def delete_saved_property(
 
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
+    try:
+        await search_history_service.unmark_as_saved(
+            db=db,
+            user_id=str(current_user.id),
+            property_cache_id=_ext_id,
+            zpid=_zpid,
+            full_address=_addr,
+        )
+    except Exception as e:
+        logger.warning("Failed to unmark search history as saved: %s", e)
 
 
 # ===========================================
