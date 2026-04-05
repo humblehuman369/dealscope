@@ -1,5 +1,6 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, StyleSheet, Dimensions } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { getAccessToken } from '@/services/token-manager';
@@ -68,6 +69,20 @@ export default function Index() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* ─── Hero Image ─── */}
+        <View style={styles.heroImageWrapper}>
+          <Image
+            source={require('@/assets/hero-house.png')}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', colors.base]}
+            locations={[0.3, 1]}
+            style={styles.heroImageFade}
+          />
+        </View>
+
         {/* ─── Hero ─── */}
         <View style={styles.hero}>
           <View style={styles.heroBadge}>
@@ -258,11 +273,29 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['2xl'] + 20,
   },
 
+  // Hero Image
+  heroImageWrapper: {
+    width: '100%',
+    height: SCREEN_WIDTH * 0.65,
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroImageFade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+  },
+
   // Hero
   hero: {
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing['2xl'],
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
   },
   heroBadge: {

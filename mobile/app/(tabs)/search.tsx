@@ -2,12 +2,15 @@ import { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   Pressable,
   ActivityIndicator,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui';
 import {
@@ -19,6 +22,8 @@ import { errorToUserMessage } from '@/utils/errorMessages';
 import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing, layout } from '@/constants/spacing';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STRATEGY_PILLS = [
   { id: 'ltr', label: 'Long-Term Rental', icon: '🏠' },
@@ -66,6 +71,19 @@ export default function SearchScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.heroImageWrapper}>
+          <Image
+            source={require('@/assets/hero-house.png')}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', colors.base]}
+            locations={[0.3, 1]}
+            style={styles.heroImageFade}
+          />
+        </View>
+
         <View style={styles.hero}>
           <Text style={styles.brandTag}>DEALGAPIQ</Text>
           <Text style={styles.heroTitle}>
@@ -165,9 +183,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing['2xl'],
   },
+  heroImageWrapper: {
+    width: '100%',
+    height: SCREEN_WIDTH * 0.55,
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroImageFade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+  },
   hero: {
     alignItems: 'center',
-    paddingTop: spacing.xl,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.lg,
   },
   brandTag: {
