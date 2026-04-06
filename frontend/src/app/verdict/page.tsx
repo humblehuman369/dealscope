@@ -250,11 +250,11 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
   })
-  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
-  const [showAllInsights, setShowAllInsights] = useState(false)
+  const [showAllInsights, setShowAllInsights] = useState(true)
 
   // Stores the static analysis inputs so the verdict can be re-calculated
   // when the user switches data source without re-fetching property data
