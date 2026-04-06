@@ -45,7 +45,30 @@ import {
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
-import type { LTRDealMakerState, LTRDealMakerMetrics } from '@/components/deal-maker/types'
+import type {
+  StrategyType,
+  AnyStrategyState,
+  AnyStrategyMetrics,
+  LTRDealMakerState,
+  LTRDealMakerMetrics,
+  STRDealMakerState,
+  STRMetrics,
+  BRRRRDealMakerState,
+  BRRRRMetrics,
+  FlipDealMakerState,
+  FlipMetrics,
+  HouseHackDealMakerState,
+  HouseHackMetrics,
+  WholesaleDealMakerState,
+  WholesaleMetrics,
+} from '@/components/deal-maker/types'
+import {
+  DEFAULT_STR_DEAL_MAKER_STATE,
+  DEFAULT_BRRRR_DEAL_MAKER_STATE,
+  DEFAULT_FLIP_DEAL_MAKER_STATE,
+  DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
+  DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+} from '@/components/deal-maker/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 
 // Types from existing verdict system
@@ -111,6 +134,18 @@ const colors = {
     border: 'var(--border-subtle)',
   },
 } as const
+
+function toStrategyType(backendId: string): StrategyType {
+  const map: Record<string, StrategyType> = {
+    'long-term-rental': 'ltr',
+    'short-term-rental': 'str',
+    'brrrr': 'brrrr',
+    'fix-and-flip': 'flip',
+    'house-hack': 'house_hack',
+    'wholesale': 'wholesale',
+  }
+  return map[backendId] || 'ltr'
+}
 
 function StrategyContent() {
   const router = useRouter()
@@ -462,7 +497,8 @@ function StrategyContent() {
     : sortedStrategies[0] || null
   const topStrategyName = topStrategy?.name || 'Long-Term Rental'
   const recommendedStrategyName = sortedStrategies[0]?.name || 'Long-Term Rental'
-  const activeStrategyId = topStrategy?.id || 'ltr'
+  const activeStrategyId = topStrategy?.id || 'long-term-rental'
+  const currentStrategyType = toStrategyType(activeStrategyId)
 
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
@@ -574,42 +610,365 @@ function StrategyContent() {
         ...(strategyDscr != null ? [{ metric: 'DSCR', value: strategyDscr.toFixed(2), target: '1.25', status: strategyDscr >= 1.25 ? 'good' : 'poor' }] : []),
       ]
 
-  const worksheetState: LTRDealMakerState = (() => {
+  const worksheetState: AnyStrategyState = (() => {
     const io = inlineOverrides as Record<string, number | undefined>
-    return {
-      buyPrice: io.purchasePrice ?? targetPrice,
-      downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
-      closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
-      interestRate: io.interestRate ?? rate,
-      loanTermYears: io.loanTerm ?? loanTermYears,
-      rehabBudget: io.rehabBudget ?? rehabCost,
-      arv: io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice,
-      monthlyRent: io.monthlyRent ?? monthlyRent,
-      otherIncome: 0,
-      vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
-      maintenanceRate: maintPct,
-      managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
-      annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
-      annualInsurance: io.insurance ?? insurance,
-      monthlyHoa: 0,
+    const arvVal = io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice
+
+    switch (currentStrategyType) {
+      case 'str': {
+        const adr = bd?.adr ?? DEFAULT_STR_DEAL_MAKER_STATE.averageDailyRate
+        const occRate = bd?.occupancy_rate != null ? bd.occupancy_rate / 100 : DEFAULT_STR_DEAL_MAKER_STATE.occupancyRate
+        return {
+          buyPrice: io.purchasePrice ?? targetPrice,
+          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+          loanType: '30-year' as const,
+          interestRate: io.interestRate ?? rate,
+          loanTermYears: io.loanTerm ?? loanTermYears,
+          rehabBudget: io.rehabBudget ?? rehabCost,
+          arv: arvVal,
+          furnitureSetupCost: bd?.furniture_setup ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
+          averageDailyRate: adr,
+          occupancyRate: occRate,
+          cleaningFeeRevenue: DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
+          avgLengthOfStayDays: DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
+          platformFeeRate: bd?.platform_fees_pct != null ? bd.platform_fees_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.platformFeeRate,
+          strManagementRate: bd?.management_pct != null ? bd.management_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate,
+          cleaningCostPerTurnover: DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
+          suppliesMonthly: bd?.supplies != null ? bd.supplies / 12 : DEFAULT_STR_DEAL_MAKER_STATE.suppliesMonthly,
+          additionalUtilitiesMonthly: bd?.utilities != null ? bd.utilities / 12 : DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly,
+          maintenanceRate: maintPct,
+          annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
+          annualInsurance: io.insurance ?? insurance,
+          monthlyHoa: 0,
+        } satisfies STRDealMakerState
+      }
+
+      case 'brrrr':
+        return {
+          purchasePrice: io.purchasePrice ?? targetPrice,
+          buyDiscountPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct,
+          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+          hardMoneyRate: DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
+          rehabBudget: io.rehabBudget ?? rehabCost,
+          contingencyPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.contingencyPct,
+          holdingPeriodMonths: DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
+          holdingCostsMonthly: DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
+          arv: arvVal,
+          postRehabMonthlyRent: io.monthlyRent ?? monthlyRent,
+          postRehabRentIncreasePct: DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabRentIncreasePct,
+          refinanceLtv: DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceLtv,
+          refinanceInterestRate: bd?.interest_rate != null ? bd.interest_rate / 100 : DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate,
+          refinanceTermYears: bd?.loan_term_years ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceTermYears,
+          refinanceClosingCostsPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceClosingCostsPct,
+          vacancyRate: vacancyPct,
+          maintenanceRate: maintPct,
+          managementRate: mgmtPct,
+          annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
+          annualInsurance: io.insurance ?? insurance,
+          monthlyHoa: 0,
+        } satisfies BRRRRDealMakerState
+
+      case 'flip':
+        return {
+          purchasePrice: io.purchasePrice ?? targetPrice,
+          purchaseDiscountPct: DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
+          closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+          financingType: 'hardMoney' as const,
+          hardMoneyLtv: DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
+          hardMoneyRate: DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
+          loanPoints: DEFAULT_FLIP_DEAL_MAKER_STATE.loanPoints,
+          rehabBudget: io.rehabBudget ?? rehabCost,
+          contingencyPct: DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
+          rehabTimeMonths: bd?.holding_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
+          arv: arvVal,
+          holdingCostsMonthly: (propertyTaxes / 12) + (insurance / 12) + 200,
+          daysOnMarket: DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
+          sellingCostsPct: bd?.selling_costs_pct != null ? bd.selling_costs_pct / 100 : DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
+          capitalGainsRate: DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+        } satisfies FlipDealMakerState
+
+      case 'house_hack': {
+        const totalBeds = bd?.total_bedrooms ?? propertyInfo?.details?.bedrooms ?? 4
+        const rentPerRoom = bd?.rent_per_room ?? (monthlyRent / Math.max(totalBeds, 1))
+        return {
+          purchasePrice: io.purchasePrice ?? targetPrice,
+          totalUnits: totalBeds,
+          ownerOccupiedUnits: 1,
+          ownerUnitMarketRent: rentPerRoom,
+          loanType: 'fha' as const,
+          downPaymentPercent: bd?.down_payment_pct != null ? bd.down_payment_pct / 100 : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.downPaymentPercent,
+          interestRate: io.interestRate ?? (bd?.interest_rate != null ? bd.interest_rate / 100 : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.interestRate),
+          loanTermYears: io.loanTerm ?? (bd?.loan_term_years ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.loanTermYears),
+          pmiRate: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.pmiRate,
+          closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+          avgRentPerUnit: rentPerRoom,
+          vacancyRate: vacancyPct,
+          currentHousingPayment: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
+          annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
+          annualInsurance: io.insurance ?? insurance,
+          monthlyHoa: 0,
+          utilitiesMonthly: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
+          maintenanceRate: maintPct,
+          capexRate: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
+        } satisfies HouseHackDealMakerState
+      }
+
+      case 'wholesale': {
+        const contractPrice = io.purchasePrice ?? targetPrice
+        return {
+          arv: arvVal,
+          estimatedRepairs: io.rehabBudget ?? rehabCost,
+          squareFootage: propertyInfo?.details?.square_footage ?? 1500,
+          contractPrice,
+          earnestMoney: bd?.emd ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.earnestMoney,
+          inspectionPeriodDays: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
+          daysToClose: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.daysToClose,
+          assignmentFee: bd?.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
+          marketingCosts: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
+          closingCosts: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+        } satisfies WholesaleDealMakerState
+      }
+
+      case 'ltr':
+      default:
+        return {
+          buyPrice: io.purchasePrice ?? targetPrice,
+          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
+          interestRate: io.interestRate ?? rate,
+          loanTermYears: io.loanTerm ?? loanTermYears,
+          rehabBudget: io.rehabBudget ?? rehabCost,
+          arv: arvVal,
+          monthlyRent: io.monthlyRent ?? monthlyRent,
+          otherIncome: 0,
+          vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
+          maintenanceRate: maintPct,
+          managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
+          annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
+          annualInsurance: io.insurance ?? insurance,
+          monthlyHoa: 0,
+        } satisfies LTRDealMakerState
     }
   })()
 
-  const worksheetMetrics: LTRDealMakerMetrics = {
-    cashNeeded: totalCashNeeded,
-    dealGap: dealGapPct / 100,
-    annualProfit: strategyAnnualCashFlow,
-    capRate: capRateVal ?? 0,
-    cocReturn: cocVal ?? 0,
-    monthlyPayment: monthlyPI,
-    loanAmount,
-    equityCreated: 0,
-    grossMonthlyIncome: monthlyRent,
-    totalMonthlyExpenses: totalExpenses / 12,
-  }
+  const worksheetMetrics = (() => {
+    switch (currentStrategyType) {
+      case 'str': {
+        const strState = worksheetState as STRDealMakerState
+        const adr = strState.averageDailyRate
+        const occ = strState.occupancyRate
+        const annualRevenue = bd?.annual_gross_revenue ?? adr * 365 * occ
+        const nightsOcc = Math.round(365 * occ)
+        const turnovers = Math.ceil(nightsOcc / strState.avgLengthOfStayDays)
+        return {
+          cashNeeded: totalCashNeeded,
+          totalInvestmentWithFurniture: totalCashNeeded + strState.furnitureSetupCost,
+          downPaymentAmount: downPayment,
+          closingCostsAmount: closingCosts,
+          loanAmount,
+          monthlyPayment: monthlyPI,
+          grossNightlyRevenue: adr,
+          monthlyGrossRevenue: annualRevenue / 12,
+          annualGrossRevenue: annualRevenue,
+          revPAR: adr * occ,
+          numberOfTurnovers: turnovers,
+          nightsOccupied: nightsOcc,
+          monthlyExpenses: {
+            mortgage: monthlyPI, taxes: propertyTaxes / 12, insurance: insurance / 12,
+            hoa: 0, utilities: (bd?.utilities ?? 0) / 12, maintenance: (bd?.maintenance ?? 0) / 12,
+            management: (bd?.management ?? 0) / 12, platformFees: (bd?.platform_fees ?? 0) / 12,
+            cleaning: strState.cleaningCostPerTurnover * turnovers / 12,
+            supplies: strState.suppliesMonthly,
+          },
+          totalMonthlyExpenses: totalExpenses / 12,
+          totalAnnualExpenses: totalExpenses,
+          monthlyCashFlow: strategyCashFlow,
+          annualCashFlow: strategyAnnualCashFlow,
+          noi,
+          capRate: capRateVal ?? 0,
+          cocReturn: cocVal ?? 0,
+          breakEvenOccupancy: adr > 0 ? (totalExpenses + monthlyPI * 12) / (adr * 365) : 0,
+          equityCreated: 0,
+          dealScore: 0,
+          dealGrade: 'C' as const,
+          profitQuality: 'C' as const,
+        } satisfies STRMetrics
+      }
+
+      case 'brrrr': {
+        const brState = worksheetState as BRRRRDealMakerState
+        const initialDown = brState.purchasePrice * brState.downPaymentPercent
+        const initialClosing = brState.purchasePrice * brState.closingCostsPercent
+        const totalRehabCost = brState.rehabBudget * (1 + brState.contingencyPct)
+        const holdCosts = brState.holdingCostsMonthly * brState.holdingPeriodMonths
+        const cashPhase1 = initialDown + initialClosing
+        const cashPhase2 = totalRehabCost + holdCosts
+        const allIn = brState.purchasePrice + totalRehabCost + holdCosts
+        const refiLoan = brState.arv * brState.refinanceLtv
+        const refiClosing = refiLoan * brState.refinanceClosingCostsPct
+        const cashOut = Math.max(0, refiLoan - (brState.purchasePrice - initialDown) - refiClosing)
+        const totalInvested = cashPhase1 + cashPhase2
+        const cashLeftInDeal = Math.max(0, totalInvested - cashOut)
+        const capitalRecycled = totalInvested > 0 ? ((totalInvested - cashLeftInDeal) / totalInvested) * 100 : 0
+        const refiPayment = calculateMortgagePayment(refiLoan, brState.refinanceInterestRate * 100, brState.refinanceTermYears)
+        const annualRentBrrrr = brState.postRehabMonthlyRent * 12
+        const effIncome = annualRentBrrrr * (1 - brState.vacancyRate)
+        const opex = propertyTaxes + insurance + annualRentBrrrr * (brState.managementRate + brState.maintenanceRate)
+        const estNoi = effIncome - opex
+        const postRefiAnnualCF = estNoi - refiPayment * 12
+        const minCashForCoc = Math.max(cashLeftInDeal, totalInvested * 0.10)
+        const postRefiCoc = cashLeftInDeal <= 0 ? (postRefiAnnualCF > 0 ? 999 : 0) : (postRefiAnnualCF / minCashForCoc) * 100
+        return {
+          initialLoanAmount: brState.purchasePrice - initialDown,
+          initialDownPayment: initialDown,
+          initialClosingCosts: initialClosing,
+          cashRequiredPhase1: cashPhase1,
+          totalRehabCost,
+          holdingCosts: holdCosts,
+          cashRequiredPhase2: cashPhase2,
+          allInCost: allIn,
+          estimatedNoi: estNoi,
+          estimatedCapRate: brState.purchasePrice > 0 ? (estNoi / brState.purchasePrice) * 100 : 0,
+          refinanceLoanAmount: refiLoan,
+          refinanceClosingCosts: refiClosing,
+          cashOutAtRefinance: cashOut,
+          newMonthlyPayment: refiPayment,
+          totalCashInvested: totalInvested,
+          cashLeftInDeal,
+          capitalRecycledPct: capitalRecycled,
+          infiniteRoiAchieved: cashLeftInDeal <= 0,
+          equityPosition: brState.arv - refiLoan,
+          equityPct: brState.arv > 0 ? ((brState.arv - refiLoan) / brState.arv) * 100 : 0,
+          postRefiMonthlyCashFlow: postRefiAnnualCF / 12,
+          postRefiAnnualCashFlow: postRefiAnnualCF,
+          postRefiCashOnCash: postRefiCoc,
+          dealScore: 0,
+          dealGrade: 'C' as const,
+        } satisfies BRRRRMetrics
+      }
+
+      case 'flip': {
+        const fState = worksheetState as FlipDealMakerState
+        const fLoan = fState.financingType !== 'cash' ? fState.purchasePrice * fState.hardMoneyLtv : 0
+        const fDown = fState.purchasePrice - fLoan
+        const fClosing = fState.purchasePrice * fState.closingCostsPercent
+        const pointsCost = fLoan * (fState.loanPoints / 100)
+        const totalRehab = fState.rehabBudget * (1 + fState.contingencyPct)
+        const domMonths = fState.daysOnMarket / 30
+        const holdMonths = fState.rehabTimeMonths + domMonths
+        const interestCosts = fState.financingType !== 'cash' ? fLoan * fState.hardMoneyRate * (holdMonths / 12) : 0
+        const totalHolding = fState.holdingCostsMonthly * holdMonths + interestCosts
+        const totalProject = fState.purchasePrice + fClosing + totalRehab + totalHolding + pointsCost
+        const sellingCosts = fState.arv * fState.sellingCostsPct
+        const grossProfit = fState.arv - totalProject - sellingCosts
+        const capGainsTax = Math.max(0, grossProfit) * fState.capitalGainsRate
+        const netProfit = grossProfit - capGainsTax
+        const cashRequired = fDown + fClosing + pointsCost + totalRehab + totalHolding
+        const fRoi = cashRequired > 0 ? (netProfit / cashRequired) * 100 : 0
+        const annRoi = holdMonths > 0 ? fRoi * (12 / holdMonths) : 0
+        const mao = fState.arv * 0.70 - fState.rehabBudget
+        return {
+          loanAmount: fLoan, downPayment: fDown, closingCosts: fClosing, loanPointsCost: pointsCost,
+          cashAtPurchase: fDown + fClosing + pointsCost,
+          totalRehabCost: totalRehab,
+          holdingPeriodMonths: holdMonths, totalHoldingCosts: totalHolding, interestCosts,
+          grossSaleProceeds: fState.arv, sellingCosts, netSaleProceeds: fState.arv - sellingCosts,
+          totalProjectCost: totalProject, grossProfit, capitalGainsTax: capGainsTax, netProfit,
+          cashRequired, roi: fRoi, annualizedRoi: annRoi,
+          profitMargin: fState.arv > 0 ? (netProfit / fState.arv) * 100 : 0,
+          maxAllowableOffer: mao, meets70PercentRule: fState.purchasePrice <= mao,
+          dealScore: 0, dealGrade: 'C' as const,
+        } satisfies FlipMetrics
+      }
+
+      case 'house_hack': {
+        const hState = worksheetState as HouseHackDealMakerState
+        const hLoan = hState.purchasePrice * (1 - hState.downPaymentPercent)
+        const hPI = calculateMortgagePayment(hLoan, hState.interestRate * 100, hState.loanTermYears)
+        const hPmi = hLoan * hState.pmiRate / 12
+        const hTaxes = hState.annualPropertyTax / 12
+        const hIns = hState.annualInsurance / 12
+        const hPiti = hPI + hPmi + hTaxes + hIns + hState.monthlyHoa
+        const hDown = hState.purchasePrice * hState.downPaymentPercent
+        const hClosing = hState.purchasePrice * hState.closingCostsPercent
+        const rentedUnits = Math.max(0, hState.totalUnits - hState.ownerOccupiedUnits)
+        const grossRental = hState.avgRentPerUnit * rentedUnits
+        const effectiveRental = grossRental * (1 - hState.vacancyRate)
+        const monthlyMaint = effectiveRental * hState.maintenanceRate
+        const monthlyCapex = effectiveRental * hState.capexRate
+        const monthlyOpex = hState.utilitiesMonthly + monthlyMaint + monthlyCapex
+        const netRental = effectiveRental - monthlyOpex
+        const effectiveCost = hPiti - netRental
+        return {
+          loanAmount: hLoan, monthlyPrincipalInterest: hPI, monthlyPmi: hPmi,
+          monthlyTaxes: hTaxes, monthlyInsurance: hIns, monthlyPITI: hPiti,
+          downPayment: hDown, closingCosts: hClosing, cashToClose: hDown + hClosing,
+          rentedUnits, grossRentalIncome: grossRental, effectiveRentalIncome: effectiveRental,
+          monthlyMaintenance: monthlyMaint, monthlyCapex, monthlyOperatingExpenses: monthlyOpex,
+          netRentalIncome: netRental,
+          effectiveHousingCost: effectiveCost,
+          housingCostSavings: hState.currentHousingPayment - effectiveCost,
+          housingOffsetPercent: hPiti > 0 ? (netRental / hPiti) * 100 : 0,
+          livesForFree: effectiveCost <= 0,
+          annualCashFlow: netRental * 12 - hPiti * 12,
+          cashOnCashReturn: (hDown + hClosing) > 0 ? ((netRental - hPiti) * 12 / (hDown + hClosing)) * 100 : 0,
+          fullRentalIncome: hState.avgRentPerUnit * hState.totalUnits,
+          fullRentalCashFlow: (hState.avgRentPerUnit * hState.totalUnits * (1 - hState.vacancyRate) - monthlyOpex - hPiti) * 12,
+          fullRentalCoCReturn: 0,
+          dealScore: 0, dealGrade: 'C' as const,
+        } satisfies HouseHackMetrics
+      }
+
+      case 'wholesale': {
+        const wState = worksheetState as WholesaleDealMakerState
+        const mao = wState.arv * 0.70 - wState.estimatedRepairs
+        const endBuyerPrice = wState.contractPrice + wState.assignmentFee
+        const endBuyerAllIn = endBuyerPrice + wState.estimatedRepairs
+        const endBuyerProfit = wState.arv - endBuyerAllIn
+        const cashAtRisk = wState.earnestMoney + wState.marketingCosts + wState.closingCosts
+        const netProfit = wState.assignmentFee - wState.marketingCosts - wState.closingCosts
+        const wRoi = cashAtRisk > 0 ? (netProfit / cashAtRisk) * 100 : 0
+        const annROI = wState.daysToClose > 0 ? wRoi * (365 / wState.daysToClose) : 0
+        const viability: 'strong' | 'moderate' | 'tight' | 'notViable' =
+          wState.contractPrice <= mao * 0.9 ? 'strong' :
+          wState.contractPrice <= mao ? 'moderate' :
+          wState.contractPrice <= mao * 1.05 ? 'tight' : 'notViable'
+        return {
+          maxAllowableOffer: mao,
+          contractVsMAO: wState.contractPrice - mao,
+          meets70PercentRule: wState.contractPrice <= mao,
+          endBuyerPrice, endBuyerAllIn, endBuyerProfit,
+          endBuyerROI: endBuyerAllIn > 0 ? (endBuyerProfit / endBuyerAllIn) * 100 : 0,
+          totalCashAtRisk: cashAtRisk,
+          grossProfit: wState.assignmentFee, netProfit,
+          roi: wRoi, annualizedROI: annROI,
+          dealViability: viability,
+          dealScore: 0, dealGrade: 'C' as const,
+        } satisfies WholesaleMetrics
+      }
+
+      case 'ltr':
+      default:
+        return {
+          cashNeeded: totalCashNeeded,
+          dealGap: dealGapPct / 100,
+          annualProfit: strategyAnnualCashFlow,
+          capRate: capRateVal ?? 0,
+          cocReturn: cocVal ?? 0,
+          monthlyPayment: monthlyPI,
+          loanAmount,
+          equityCreated: 0,
+          grossMonthlyIncome: monthlyRent,
+          totalMonthlyExpenses: totalExpenses / 12,
+        } satisfies LTRDealMakerMetrics
+    }
+  })() as AnyStrategyMetrics
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
     const fieldMap: Record<string, keyof InlineDealMakerValues> = {
+      // LTR fields
       buyPrice: 'buyPrice',
       downPaymentPercent: 'downPayment',
       closingCostsPercent: 'closingCosts',
@@ -623,6 +982,14 @@ function StrategyContent() {
       annualInsurance: 'insurance',
       managementRate: 'managementRate',
       maintenanceRate: 'managementRate',
+      // BRRRR / Flip / HouseHack / Wholesale use 'purchasePrice' for buy
+      purchasePrice: 'buyPrice',
+      // BRRRR post-rehab rent maps to monthlyRent override
+      postRehabMonthlyRent: 'monthlyRent',
+      // Wholesale contract price maps to buy price
+      contractPrice: 'buyPrice',
+      // Wholesale repairs maps to rehab budget
+      estimatedRepairs: 'rehabBudget',
     }
     const mapped = fieldMap[key]
     if (mapped) {
@@ -1058,8 +1425,8 @@ function StrategyContent() {
           {/* Strategy Tabs — outside card container */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY: { id: string; label: string }[] = [
-              { id: 'ltr', label: 'Long-term' },
-              { id: 'str', label: 'Short-term' },
+              { id: 'long-term-rental', label: 'Long-term' },
+              { id: 'short-term-rental', label: 'Short-term' },
               { id: 'brrrr', label: 'BRRRR' },
               { id: 'fix-and-flip', label: 'Fix & Flip' },
               { id: 'house-hack', label: 'House Hack' },
@@ -1129,7 +1496,7 @@ function StrategyContent() {
 
           {/* Financial Breakdown — DealMaker Worksheet */}
           <DealMakerWorksheet
-            strategyType="ltr"
+            strategyType={currentStrategyType}
             state={worksheetState}
             metrics={worksheetMetrics}
             listPrice={listPrice}
