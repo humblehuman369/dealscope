@@ -286,14 +286,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: layout.inputRadius,
     borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.15)',
-    backgroundColor: 'rgba(148,163,184,0.06)',
+    borderColor: 'rgba(148,163,184,0.25)',
+    backgroundColor: 'rgba(148,163,184,0.08)',
   },
   googleButtonText: {
     fontFamily: fontFamilies.bodyMedium,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: colors.textBody,
   },
   divider: {
     flexDirection: 'row',
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   dividerText: {
     fontFamily: fontFamilies.body,
     fontSize: 12,
-    color: colors.textMuted,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   form: {
