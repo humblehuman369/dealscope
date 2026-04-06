@@ -58,25 +58,11 @@ import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 
-// Backend analysis response — handles both snake_case and camelCase from Pydantic
-interface BackendAnalysisResponse {
-  verdict_description?: string; verdictDescription?: string
-  discount_percent?: number; discountPercent?: number
-  strategies: Array<{
-    id: string; name: string; metric: string
-    metric_label?: string; metricLabel?: string
-    metric_value?: number; metricValue?: number
-    score: number; rank: number; badge: string | null
-  }>
-  purchase_price?: number; purchasePrice?: number
-  income_value?: number; incomeValue?: number
-  list_price?: number; listPrice?: number
-  deal_factors?: Array<{ type: string; text: string }>
-  dealFactors?: Array<{ type: string; text: string }>
-  discount_bracket_label?: string; discountBracketLabel?: string
-  // Allow additional camelCase fields from alias generator
-  [key: string]: unknown
-}
+// Backend analysis response type — canonical shape from @dealscope/shared.
+// The backend serializes both snake_case and camelCase via Pydantic alias_generator,
+// so parseAnalysisResponse below handles both casings with nullish coalescing.
+// See: shared/src/types/verdict.ts
+import type { IQVerdictResponse } from '@dealscope/shared'
 
 function InsightItem({ num, title, detail, delay = 0 }: { num: string; title: ReactNode; detail?: ReactNode; delay?: number }) {
   const [show, setShow] = useState(false)
@@ -580,7 +566,7 @@ function VerdictContent() {
         )
         analysisInputsRef.current = analysisBody
 
-        const analysisPromise = api.post<BackendAnalysisResponse & Record<string, any>>(
+        const analysisPromise = api.post<IQVerdictResponse & Record<string, any>>(
           '/api/v1/analysis/verdict',
           analysisBody,
         )
@@ -713,8 +699,8 @@ function VerdictContent() {
     (analysisData: Record<string, any>, propertyId?: string): IQAnalysisResult => ({
       propertyId: propertyId || property?.id,
       analyzedAt: new Date().toISOString(),
-      dealScore: 0,
-      dealVerdict: 'pass' as IQAnalysisResult['dealVerdict'],
+      dealScore: analysisData.deal_score ?? analysisData.dealScore ?? 0,
+      dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict ?? 'pass') as IQAnalysisResult['dealVerdict'],
       verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
       discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
       purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,

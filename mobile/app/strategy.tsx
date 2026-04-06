@@ -43,9 +43,20 @@ export default function StrategyScreen() {
   const { getCached } = usePropertyData();
   const property = address ? getCached(address) : undefined;
 
+  const BACKEND_TO_MOBILE_ID: Record<string, string> = {
+    'long-term-rental': 'ltr',
+    'short-term-rental': 'str',
+    'brrrr': 'brrrr',
+    'fix-and-flip': 'flip',
+    'house-hack': 'house_hack',
+    'wholesale': 'wholesale',
+  };
+
   const scores = verdict?.strategies
     ? Object.fromEntries(
-        Object.entries(verdict.strategies).map(([k, v]) => [k, v.deal_score]),
+        (Array.isArray(verdict.strategies) ? verdict.strategies : []).map(
+          (s: any) => [BACKEND_TO_MOBILE_ID[s.id] ?? s.id, s.score],
+        ),
       )
     : undefined;
 

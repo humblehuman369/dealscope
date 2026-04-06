@@ -56,3 +56,15 @@ export type {
 export type {
   WorksheetMetrics,
 } from './worksheet';
+
+export type {
+  IQVerdictStrategy,
+  IQVerdictDealFactor,
+  IQVerdictScoreDisplay,
+  IQVerdictOpportunityFactors,
+  IQVerdictReturnFactors,
+  IQVerdictResponse,
+  VerdictSection,
+} from './verdict';
+
+export { VERDICT_SECTIONS } from './verdict';
