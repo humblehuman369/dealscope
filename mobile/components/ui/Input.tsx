@@ -36,7 +36,7 @@ export function Input({
           error && styles.inputError,
           style,
         ]}
-        placeholderTextColor={colors.textSecondary}
+        placeholderTextColor={colors.textBody}
         onFocus={(e) => {
           setFocused(true);
           props.onFocus?.(e);
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.bodyMedium,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textBody,
+    color: colors.textHeading,
   },
   input: {
     height: layout.inputHeight,
