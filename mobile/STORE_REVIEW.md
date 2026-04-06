@@ -16,16 +16,19 @@ Use the following credentials to test the app with full Pro access:
 1. **Sign in** with the demo credentials above
 2. **Search** — Enter a US property address (e.g., "123 Main St, Austin, TX 78701")
 3. **Analyzing** — The app fetches property data and runs analysis (~2-3 seconds)
-4. **IQ Verdict** — Shows the deal score (0-100), price targets, and deal signals
-5. **StrategyIQ** — Tap "Show Me the Numbers" to see strategy breakdowns (LTR, STR, BRRRR, etc.)
-6. **DealMaker** — Tap "Change Terms" to adjust assumptions via sliders and see live metric updates
-7. **Saved Properties** — Long-press any analyzed property in the verdict view to bookmark it
+4. **IQ Verdict** — Shows the Investment Overview (Target Buy, Income Value, Market Price), price scale bar, DealGap percentage and tier, and Key Insights
+5. **StrategyIQ** — Tap the StrategyIQ tab to see 6 strategies ranked with full metric breakdowns (cash flow, cap rate, DSCR)
+6. **DealMaker** — Tap the DealMaker tab to adjust purchase price, financing, and expenses via sliders with live metric updates
+7. **Deal Vault** — Save analyzed properties to your vault for later review
 
 ## Key Features to Test
 
 - **Search:** Enter any US residential address
-- **Verdict Score:** Composite 0-100 score with deal gap analysis
-- **6 Strategies:** Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale
+- **DealGap Analysis:** Gap between asking price and income-supported value, with tier (Strong Buy, Buy, Hold, etc.)
+- **Investment Overview:** Target Buy price, Income Value, and Market Price comparison
+- **Price Scale Bar:** Visual gradient showing where Target, Income, and Market prices fall relative to each other
+- **Key Insights:** Numbered insights with expandable details explaining deal dynamics
+- **6 Strategies:** Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale — ranked by score
 - **DealMaker:** Interactive sliders to adjust purchase price, down payment, interest rate, etc.
 - **Deal Vault:** Saved properties list (Profile > Saved Properties)
 - **Search History:** Recent searches (Profile > Search History)

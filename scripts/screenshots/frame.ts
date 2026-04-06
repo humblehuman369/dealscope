@@ -111,20 +111,50 @@ const FRAME_CONFIG = [
   {
     input: '03_verdict.png',
     output: '03_verdict_framed.png',
-    headline: 'Instant Deal Score',
-    subline: 'AI-powered analysis across 6 strategies',
+    headline: 'See the Deal Gap',
+    subline: 'Target Buy, Income Value, and Market Price — instantly',
   },
   {
-    input: '04_strategy.png',
-    output: '04_strategy_framed.png',
+    input: '04_verdict_insights.png',
+    output: '04_verdict_insights_framed.png',
+    headline: 'Know What It Takes',
+    subline: 'Key insights and probability of landing the deal',
+  },
+  {
+    input: '05_strategy.png',
+    output: '05_strategy_framed.png',
+    headline: '6 Strategies Ranked',
+    subline: 'See which approach works best for every property',
+  },
+  {
+    input: '06_strategy_detail.png',
+    output: '06_strategy_detail_framed.png',
     headline: 'See the Numbers',
     subline: 'Cash flow, cap rate, DSCR — every metric that matters',
   },
   {
-    input: '05_deal_vault.png',
-    output: '05_deal_vault_framed.png',
+    input: '07_deal_maker.png',
+    output: '07_deal_maker_framed.png',
+    headline: 'Make It Your Deal',
+    subline: 'Adjust any assumption. Watch the score update live.',
+  },
+  {
+    input: '08_deal_vault.png',
+    output: '08_deal_vault_framed.png',
     headline: 'Save & Track Deals',
     subline: 'Build your pipeline. Revisit analyses anytime.',
+  },
+  {
+    input: '09_search_history.png',
+    output: '09_search_history_framed.png',
+    headline: 'Your Pipeline',
+    subline: 'Every property you\'ve analyzed, one tap away.',
+  },
+  {
+    input: '10_profile.png',
+    output: '10_profile_framed.png',
+    headline: 'Pro Investor Tools',
+    subline: 'Unlimited analyses, full breakdowns, saved deals.',
   },
 ];
 
