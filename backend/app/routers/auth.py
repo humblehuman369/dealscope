@@ -260,18 +260,37 @@ def _backend_base_url(request: Request) -> str:
     return base
 
 
+_MOBILE_ALLOWED_SCHEMES = ("dealgapiq://", "exp://")
+
+
 @router.get("/google")
 async def google_start(request: Request):
-    """Redirect user to Google OAuth consent screen."""
+    """Redirect user to Google OAuth consent screen.
+
+    Accepts an optional ``mobile_redirect`` query parameter.  When present
+    the callback will redirect to the mobile app's URL scheme with tokens
+    in query params instead of setting httpOnly cookies.
+    """
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google sign-in is not configured")
     base = _backend_base_url(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
+
+    import base64 as _b64
+    import json as _json
+
+    state_data: dict = {}
+    mobile_redirect = request.query_params.get("mobile_redirect")
+    if mobile_redirect and any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+        state_data["mobile_redirect"] = mobile_redirect
+    state = _b64.urlsafe_b64encode(_json.dumps(state_data).encode()).decode()
+
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": "openid email profile",
+        "state": state,
     }
     auth_url = f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
     return RedirectResponse(url=auth_url, status_code=302)
@@ -360,6 +379,28 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         remember_me=False,
     )
     await db.commit()
+
+    # Check if this is a mobile OAuth flow
+    import base64 as _b64
+    import json as _json
+
+    mobile_redirect = None
+    state_raw = request.query_params.get("state")
+    if state_raw:
+        try:
+            state_data = _json.loads(_b64.urlsafe_b64decode(state_raw + "=="))
+            mr = state_data.get("mobile_redirect")
+            if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+                mobile_redirect = mr
+        except Exception:
+            pass
+
+    if mobile_redirect:
+        token_params = urlencode({
+            "access_token": jwt_token,
+            "refresh_token": session_obj.refresh_token,
+        })
+        return RedirectResponse(url=f"{mobile_redirect}?{token_params}", status_code=302)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
     _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)

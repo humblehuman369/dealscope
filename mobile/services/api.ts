@@ -11,7 +11,7 @@ import {
   setTokens,
 } from './token-manager';
 
-const BASE_URL =
+export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   Constants.expoConfig?.extra?.apiUrl ??
   '';
