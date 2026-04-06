@@ -1,27 +1,29 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+/**
+ * Mobile Verdict Page — mirrors web frontend/src/app/verdict/page.tsx
+ *
+ * Section order is defined by VERDICT_SECTIONS in @dealscope/shared.
+ * Do NOT add ScoreGauge, deal_score display, or strategy grids here —
+ * those belong on the Strategy and DealMaker pages.
+ *
+ * See: .cursor/rules/mobile-web-parity.mdc
+ */
+import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Button } from '@/components/ui';
-import { ScoreGauge } from '@/components/verdict/ScoreGauge';
-import { PriceCards } from '@/components/verdict/PriceCards';
-import { InvestmentMetrics } from '@/components/verdict/InvestmentMetrics';
-import { StrategyGrid } from '@/components/verdict/StrategyGrid';
+import { InvestmentOverview } from '@/components/verdict/InvestmentOverview';
+import { PriceScaleBar } from '@/components/verdict/PriceScaleBar';
+import { DealGapPanel } from '@/components/verdict/DealGapPanel';
+import { KeyInsights } from '@/components/verdict/KeyInsights';
 import { useVerdict } from '@/hooks/useVerdict';
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { errorToUserMessage } from '@/utils/errorMessages';
-import { colors, cardGlow } from '@/constants/colors';
+import { colors } from '@/constants/colors';
 import { typography, fontFamilies } from '@/constants/typography';
 import { spacing } from '@/constants/spacing';
-import { getScoreColor } from '@/constants/theme';
 
-function fmt(value: number | null | undefined): string {
-  if (value == null) return 'N/A';
-  return '$' + Math.round(value).toLocaleString();
-}
-
-function fmtPct(value: number | null | undefined): string {
-  if (value == null) return 'N/A';
-  return value.toFixed(1) + '%';
+function fmtShort(v: number): string {
+  return '$' + Math.round(v).toLocaleString();
 }
 
 export default function VerdictScreen() {
@@ -35,7 +37,7 @@ export default function VerdictScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.loading}>
+        <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading verdict...</Text>
         </View>
@@ -46,7 +48,7 @@ export default function VerdictScreen() {
   if (error || !analysis) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.loading}>
+        <View style={styles.centered}>
           <Text style={styles.errorTitle}>Analysis Unavailable</Text>
           <Text style={styles.errorSubtitle}>
             {errorToUserMessage(error, 'Unable to analyze this property. Please try again.')}
@@ -61,160 +63,174 @@ export default function VerdictScreen() {
     );
   }
 
-  const score = analysis.deal_score;
-  const scoreColor = getScoreColor(score);
+  // Derived values — same logic as web verdict/page.tsx
+  const purchasePrice = analysis.purchase_price ?? Math.round((property?.listing?.list_price ?? 0) * 0.95);
+  const incomeValue = analysis.income_value ?? property?.listing?.list_price ?? 0;
+  const marketPrice = property?.listing?.list_price
+    ?? property?.valuations?.value_iq_estimate
+    ?? property?.valuations?.zestimate
+    ?? property?.valuations?.market_price
+    ?? analysis.list_price
+    ?? 0;
+  const dealGapPercent = analysis.deal_gap_percent ?? 0;
 
-  const ltrStrategy = analysis.strategies?.ltr;
-  const primaryCashOnCash = ltrStrategy?.cash_on_cash ?? null;
-  const primaryCapRate = ltrStrategy?.cap_rate ?? null;
-  const primaryDscr = ltrStrategy?.dscr ?? null;
-  const primaryCashFlow = ltrStrategy?.monthly_cash_flow ?? null;
-  const primaryNoi = ltrStrategy?.annual_noi ?? null;
-  const primaryCashNeeded = ltrStrategy?.cash_needed ?? null;
+  const isListed = property?.listing?.listing_status
+    ? ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listing.listing_status)
+    : true;
+  const isOffMarket = !isListed;
 
-  const ctaText = score >= 65
-    ? 'This deal passed the screen — see the numbers'
-    : score >= 40
+  const effectiveDisplayPct = -dealGapPercent;
+  const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`;
+
+  const dealGapPct = dealGapPercent;
+  const ctaTagline = dealGapPct <= 10
+    ? 'This deal passed the screen'
+    : dealGapPct <= 20
       ? 'This deal needs a closer look'
-      : 'The numbers don\'t work at asking price';
+      : `The numbers don't work at ${isListed ? 'asking price' : 'this estimate'}`;
+  const ctaHeadline = dealGapPct <= 10
+    ? 'Now Prove It.'
+    : dealGapPct <= 20
+      ? 'Find the Angle.'
+      : 'See What Would Work.';
+  const ctaBody = dealGapPct <= 10
+    ? "Get a full financial breakdown across 6 investment strategies \u2014 what you'd pay, what you'd earn, and whether the numbers actually work."
+    : dealGapPct <= 20
+      ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work.'
+      : 'See how far the numbers are off \u2014 and what would fix them. Strategy walks through each scenario.';
+
+  const navigateToStrategy = () => {
+    router.push({ pathname: '/strategy', params: { address } });
+  };
+
+  const navigateToDealMaker = () => {
+    router.push({ pathname: '/deal-maker', params: { address } });
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header bar */}
+        {/* Header */}
         <View style={styles.headerBar}>
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Text style={styles.backArrow}>←</Text>
+            <Text style={styles.backArrow}>{'\u2190'}</Text>
           </Pressable>
           <Text style={styles.headerTitle}>IQ Verdict</Text>
           <View style={{ width: 24 }} />
         </View>
 
-        {/* Property address */}
-        {property && (
-          <Card glow="none" style={styles.addressCard}>
-            <Text style={styles.addressText} numberOfLines={2}>
-              {property.address?.full_address ?? address}
-            </Text>
-            {property.details && (
-              <Text style={styles.addressMeta}>
-                {[
-                  property.details.bedrooms && `${property.details.bedrooms} bd`,
-                  property.details.bathrooms && `${property.details.bathrooms} ba`,
-                  property.details.square_footage && `${property.details.square_footage.toLocaleString()} sqft`,
-                  property.listing?.list_price && fmt(property.listing.list_price),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </Text>
-            )}
-          </Card>
-        )}
-
-        {/* Score Card */}
-        <Card glow="lg" style={styles.scoreCard}>
-          <Text style={styles.verdictLabel}>THE VERDICT</Text>
-          <ScoreGauge score={score} />
-
-          <View style={styles.scoreDetails}>
-            <View style={styles.scoreDetailItem}>
-              <Text style={styles.scoreDetailLabel}>Deal Gap</Text>
-              <Text style={[styles.scoreDetailValue, {
-                color: (analysis.deal_gap_percent ?? 0) > 0 ? colors.success : colors.error,
-              }]}>
-                {fmtPct(analysis.deal_gap_percent)}
-              </Text>
-            </View>
-            <View style={styles.scoreDetailDivider} />
-            <View style={styles.scoreDetailItem}>
-              <Text style={styles.scoreDetailLabel}>Target Buy</Text>
-              <Text style={[styles.scoreDetailValue, { color: colors.success }]}>
-                {fmt(analysis.purchase_price)}
-              </Text>
-            </View>
+        {/* 1. Photo (property image) */}
+        {property?.listing?.image_url ? (
+          <View style={styles.photoContainer}>
+            <Image
+              source={{ uri: property.listing.image_url }}
+              style={styles.photo}
+              resizeMode="cover"
+            />
           </View>
+        ) : null}
 
-          <View style={[styles.verdictBadge, { backgroundColor: scoreColor + '20' }]}>
-            <Text style={[styles.verdictBadgeText, { color: scoreColor }]}>
-              {analysis.deal_verdict}
-            </Text>
-          </View>
+        {/* Main verdict card — matches web's single-card container */}
+        <Card glow="lg" style={styles.mainCard}>
+          {/* Property address (inside card, like web) */}
+          {property && (
+            <View style={styles.addressBlock}>
+              <Text style={styles.addressText} numberOfLines={2}>
+                {property.address?.full_address ?? address}
+              </Text>
+              {property.details && (
+                <Text style={styles.addressMeta}>
+                  {[
+                    property.details.bedrooms && `${property.details.bedrooms} bd`,
+                    property.details.bathrooms && `${property.details.bathrooms} ba`,
+                    property.details.square_footage && `${property.details.square_footage.toLocaleString()} sqft`,
+                    marketPrice > 0 && fmtShort(marketPrice),
+                  ]
+                    .filter(Boolean)
+                    .join(' \u00B7 ')}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* 2. Investment Overview */}
+          <InvestmentOverview
+            purchasePrice={purchasePrice}
+            incomeValue={incomeValue}
+            marketPrice={marketPrice}
+          />
+
+          {/* 3. Price Scale Bar */}
+          <PriceScaleBar
+            purchasePrice={purchasePrice}
+            incomeValue={incomeValue}
+            marketPrice={marketPrice}
+            dealGapPercent={dealGapPercent}
+          />
+
+          {/* 4. Market Anchor Note */}
+          <Text style={styles.marketNote}>
+            {isOffMarket
+              ? 'Off-market: Market Price is the estimated value based on comparable sales and automated valuations.'
+              : 'Market Price reflects the current list price. Rent or value look off? Use Change Terms for full control.'}
+          </Text>
         </Card>
 
-        {/* Narrative */}
-        {analysis.deal_narrative && (
-          <Card glow="sm" style={styles.narrativeCard}>
-            <Text style={styles.narrativeTitle}>
-              Worth Your Time? Here's What It Takes.
-            </Text>
-            <Text style={styles.narrativeText}>{analysis.deal_narrative}</Text>
-          </Card>
-        )}
+        {/* 6. Deal Gap Explanation */}
+        <DealGapPanel
+          dealGapPercent={dealGapPercent}
+          isListed={isListed}
+          onContinueToStrategy={navigateToStrategy}
+        />
 
-        {/* Deal Factors */}
-        {analysis.deal_factors && analysis.deal_factors.length > 0 && (
-          <Card glow="sm" style={styles.factorsCard}>
-            <Text style={styles.factorsTitle}>DEAL SIGNALS</Text>
-            {analysis.deal_factors.map((f, i) => (
-              <View key={i} style={styles.factorRow}>
-                <Text style={styles.factorDot}>
-                  {f.sentiment === 'positive' ? '✓' : f.sentiment === 'negative' ? '✗' : '–'}
-                </Text>
-                <View style={styles.factorContent}>
-                  <Text style={styles.factorLabel}>{f.label}</Text>
-                  <Text style={styles.factorValue}>{f.value}</Text>
-                </View>
+        {/* 7. Key Insights */}
+        <KeyInsights
+          isOffMarket={isOffMarket}
+          purchasePrice={purchasePrice}
+          marketPrice={marketPrice}
+          dealGapDisplay={dealGapDisplay}
+        />
+
+        {/* 8. Action Buttons */}
+        <View style={styles.actionRow}>
+          <Pressable onPress={navigateToDealMaker} style={styles.actionBtn}>
+            <Text style={styles.actionBtnText}>Change Terms</Text>
+          </Pressable>
+        </View>
+
+        {/* Decorative divider */}
+        <View style={styles.divider} />
+
+        {/* 9. CTA — "Show Me the Numbers" */}
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaTagline}>{ctaTagline}</Text>
+          <Text style={styles.ctaHeadline}>{ctaHeadline}</Text>
+          <Text style={styles.ctaBody}>{ctaBody}</Text>
+
+          <Pressable onPress={navigateToStrategy} style={styles.ctaButton}>
+            <Text style={styles.ctaButtonText}>Show Me the Numbers</Text>
+          </Pressable>
+
+          <View style={styles.trustChecks}>
+            {['Try it Free', 'No signup needed', '60 seconds'].map((label) => (
+              <View key={label} style={styles.trustItem}>
+                <Text style={styles.checkmark}>{'\u2713'}</Text>
+                <Text style={styles.trustLabel}>{label}</Text>
               </View>
             ))}
-          </Card>
-        )}
+          </View>
+        </View>
 
-        {/* Price Cards */}
-        <PriceCards
-          incomeValue={analysis.income_value}
-          targetBuy={analysis.purchase_price}
-          wholesalePrice={analysis.wholesale_price ?? null}
-          listPrice={analysis.list_price}
-          dealGapPercent={analysis.deal_gap_percent}
-        />
-
-        {/* Investment Metrics */}
-        <InvestmentMetrics
-          capRate={primaryCapRate}
-          cashOnCash={primaryCashOnCash}
-          dscr={primaryDscr}
-          monthlyCashFlow={primaryCashFlow}
-          annualNoi={primaryNoi}
-          cashNeeded={primaryCashNeeded}
-        />
-
-        {/* Strategy Grid */}
-        {analysis.strategies && (
-          <StrategyGrid
-            strategies={analysis.strategies}
-            onSelect={(strategyId) => {
-              router.push({
-                pathname: '/strategy',
-                params: { address, strategyId },
-              });
-            }}
-          />
-        )}
-
-        {/* CTA */}
-        <Card glow="active" style={styles.ctaCard}>
-          <Text style={styles.ctaText}>{ctaText}</Text>
-          <Button
-            title="Show Me the Numbers"
-            onPress={() => router.push({ pathname: '/strategy', params: { address } })}
-            style={styles.ctaBtn}
-          />
-          <Pressable
-            onPress={() => router.push({ pathname: '/deal-maker', params: { address } })}
-          >
-            <Text style={styles.ctaLink}>Change Terms</Text>
-          </Pressable>
-        </Card>
+        {/* 10. Trust Strip */}
+        <View style={styles.trustStrip}>
+          <Text style={styles.trustText}>
+            DealGap IQ analyzes{' '}
+            <Text style={styles.trustAccent}>rental income, expenses, market conditions</Text>
+            {' '}and{' '}
+            <Text style={styles.trustAccent}>comparable sales</Text>
+            {' '}to calculate every Deal Gap. No guesswork {'\u2014'} just data.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -227,7 +243,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['2xl'] + 40,
     gap: spacing.lg,
   },
-  loading: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -263,10 +279,21 @@ const styles = StyleSheet.create({
     ...typography.h3,
     color: colors.textHeading,
   },
-  addressCard: {
-    padding: spacing.md,
+  photoContainer: {
+    borderRadius: 14,
+    overflow: 'hidden',
     backgroundColor: colors.panel,
-    borderRadius: 10,
+  },
+  photo: {
+    width: '100%',
+    height: 200,
+  },
+  mainCard: {
+    padding: spacing.lg,
+    gap: spacing.lg,
+  },
+  addressBlock: {
+    gap: 4,
   },
   addressText: {
     ...typography.h4,
@@ -275,113 +302,107 @@ const styles = StyleSheet.create({
   addressMeta: {
     ...typography.caption,
     color: colors.textSecondary,
-    marginTop: 4,
   },
-  scoreCard: {
+  marketNote: {
+    fontFamily: fontFamilies.body,
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  actionBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: 'center',
-    padding: spacing.lg,
+  },
+  actionBtnText: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#000',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  ctaSection: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
     gap: spacing.md,
   },
-  verdictLabel: {
+  ctaTagline: {
     ...typography.label,
     color: colors.primary,
   },
-  scoreDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
+  ctaHeadline: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textHeading,
+    textAlign: 'center',
   },
-  scoreDetailItem: {
+  ctaBody: {
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    color: colors.textBody,
+    textAlign: 'center',
+    lineHeight: 22,
+    maxWidth: 340,
+  },
+  ctaButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    marginTop: spacing.sm,
+  },
+  ctaButtonText: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  trustChecks: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    marginTop: spacing.sm,
+  },
+  trustItem: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  scoreDetailLabel: {
-    ...typography.tag,
-    color: colors.textLabel,
-  },
-  scoreDetailValue: {
-    ...typography.financialLarge,
-  },
-  scoreDetailDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: colors.border,
-  },
-  verdictBadge: {
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
-  verdictBadgeText: {
-    fontFamily: fontFamilies.heading,
+  checkmark: {
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
-  narrativeCard: {
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  narrativeTitle: {
-    ...typography.h4,
-    color: colors.textHeading,
-  },
-  narrativeText: {
-    ...typography.bodySmall,
-    color: colors.textBody,
-    lineHeight: 22,
-  },
-  factorsCard: {
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  factorsTitle: {
-    ...typography.label,
-    color: colors.textLabel,
-  },
-  factorRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    alignItems: 'flex-start',
-  },
-  factorDot: {
-    fontFamily: fontFamilies.monoBold,
-    fontSize: 14,
-    color: colors.primary,
-    width: 20,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  factorContent: {
-    flex: 1,
-  },
-  factorLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  factorValue: {
-    ...typography.bodySmall,
+  trustLabel: {
+    fontFamily: fontFamilies.body,
+    fontSize: 12,
     color: colors.textBody,
   },
-  ctaCard: {
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
+  trustStrip: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  ctaText: {
-    ...typography.body,
+  trustText: {
+    fontFamily: fontFamilies.body,
+    fontSize: 12,
     color: colors.textBody,
     textAlign: 'center',
+    lineHeight: 18,
   },
-  ctaBtn: {
-    width: '100%',
-  },
-  ctaLink: {
+  trustAccent: {
     fontFamily: fontFamilies.bodyMedium,
-    fontSize: 14,
-    color: colors.primary,
     fontWeight: '600',
+    color: colors.primary,
   },
 });
