@@ -36,7 +36,7 @@ export function Input({
           error && styles.inputError,
           style,
         ]}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.textSecondary}
         onFocus={(e) => {
           setFocused(true);
           props.onFocus?.(e);
