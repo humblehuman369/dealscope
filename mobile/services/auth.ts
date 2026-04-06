@@ -88,8 +88,18 @@ export const authApi = {
     const refreshToken = parsed.queryParams?.refresh_token as string | undefined;
 
     if (!accessToken || !refreshToken) {
-      const errorParam = parsed.queryParams?.error as string | undefined;
-      throw new Error(errorParam ?? 'Google sign-in failed. Please try again.');
+      const errorCode = parsed.queryParams?.error as string | undefined;
+      const messages: Record<string, string> = {
+        google_missing_code: 'Google sign-in was cancelled or interrupted.',
+        google_not_configured: 'Google sign-in is not available right now.',
+        google_token_failed: 'Could not complete Google sign-in. Please try again.',
+        google_token_invalid: 'Google verification failed. Please try again.',
+        google_invalid_userinfo: 'Could not retrieve your Google account info.',
+        google_signup_failed: 'Account creation failed. Please try again.',
+      };
+      throw new Error(
+        (errorCode && messages[errorCode]) ?? 'Google sign-in failed. Please try again.',
+      );
     }
 
     await setTokens(accessToken, refreshToken);

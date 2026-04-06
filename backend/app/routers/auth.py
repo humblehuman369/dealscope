@@ -296,17 +296,48 @@ async def google_start(request: Request):
     return RedirectResponse(url=auth_url, status_code=302)
 
 
+def _extract_mobile_redirect(request: Request) -> str | None:
+    """Decode mobile_redirect from the OAuth state parameter, if present and valid."""
+    import base64 as _b64
+    import json as _json
+
+    state_raw = request.query_params.get("state")
+    if not state_raw:
+        return None
+    try:
+        state_data = _json.loads(_b64.urlsafe_b64decode(state_raw + "=="))
+        mr = state_data.get("mobile_redirect")
+        if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+            return mr
+    except Exception:
+        pass
+    return None
+
+
+def _google_error_redirect(error_code: str, mobile_redirect: str | None) -> RedirectResponse:
+    """Build an error redirect for either mobile or web clients."""
+    if mobile_redirect:
+        return RedirectResponse(
+            url=f"{mobile_redirect}?{urlencode({'error': error_code})}",
+            status_code=302,
+        )
+    return RedirectResponse(
+        url=f"{settings.FRONTEND_URL}/register?error={error_code}",
+        status_code=302,
+    )
+
+
 @router.get("/google/callback")
 async def google_callback(request: Request, response: Response, db: DbSession):
-    """Handle Google OAuth callback: exchange code, get or create user, set session, redirect to frontend."""
+    """Handle Google OAuth callback: exchange code, get or create user, set session, redirect to frontend or mobile app."""
+    mobile_redirect = _extract_mobile_redirect(request)
+
     code = request.query_params.get("code")
     if not code:
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_missing_code"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_missing_code", mobile_redirect)
 
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_not_configured"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_not_configured", mobile_redirect)
 
     base = _backend_base_url(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
@@ -325,14 +356,12 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         )
     if token_resp.status_code != 200:
         logger.warning("Google token exchange failed: %s %s", token_resp.status_code, token_resp.text)
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_failed"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_token_failed", mobile_redirect)
 
     token_data = token_resp.json()
     raw_id_token = token_data.get("id_token")
     if not raw_id_token:
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_failed"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_token_failed", mobile_redirect)
 
     # Verify id_token signature, audience, and issuer server-side
     try:
@@ -346,8 +375,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         )
     except ValueError as exc:
         logger.warning("Google id_token verification failed: %s", exc)
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_token_invalid"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_token_invalid", mobile_redirect)
 
     google_id = idinfo.get("sub")
     email = idinfo.get("email")
@@ -355,8 +383,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
     picture = idinfo.get("picture")
 
     if not google_id or not email:
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_invalid_userinfo"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_invalid_userinfo", mobile_redirect)
 
     try:
         user, _created = await auth_service.get_or_create_user_from_google(
@@ -368,8 +395,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         )
     except Exception as e:
         logger.exception("Google get_or_create_user_from_google failed: %s", e)
-        redirect_url = f"{settings.FRONTEND_URL}/register?error=google_signup_failed"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        return _google_error_redirect("google_signup_failed", mobile_redirect)
 
     session_obj, jwt_token = await session_service.create_session(
         db,
@@ -379,21 +405,6 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         remember_me=False,
     )
     await db.commit()
-
-    # Check if this is a mobile OAuth flow
-    import base64 as _b64
-    import json as _json
-
-    mobile_redirect = None
-    state_raw = request.query_params.get("state")
-    if state_raw:
-        try:
-            state_data = _json.loads(_b64.urlsafe_b64decode(state_raw + "=="))
-            mr = state_data.get("mobile_redirect")
-            if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
-                mobile_redirect = mr
-        except Exception:
-            pass
 
     if mobile_redirect:
         token_params = urlencode({
