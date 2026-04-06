@@ -1,4 +1,7 @@
-import api from './api';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+
+import api, { BASE_URL } from './api';
 import { clearTokens, setTokens } from './token-manager';
 
 // ------------------------------------------------------------------
@@ -72,6 +75,35 @@ function isMFA(result: LoginResult): result is MFAChallengeResponse {
 }
 
 export const authApi = {
+  async loginWithGoogle(): Promise<LoginResponse | null> {
+    const redirectUri = Linking.createURL('auth/callback');
+    const authUrl = `${BASE_URL}/api/v1/auth/google?mobile_redirect=${encodeURIComponent(redirectUri)}`;
+
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+
+    if (result.type !== 'success') return null;
+
+    const parsed = Linking.parse(result.url);
+    const accessToken = parsed.queryParams?.access_token as string | undefined;
+    const refreshToken = parsed.queryParams?.refresh_token as string | undefined;
+
+    if (!accessToken || !refreshToken) {
+      const errorParam = parsed.queryParams?.error as string | undefined;
+      throw new Error(errorParam ?? 'Google sign-in failed. Please try again.');
+    }
+
+    await setTokens(accessToken, refreshToken);
+
+    const user = await authApi.me();
+    return {
+      user,
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      token_type: 'bearer',
+      expires_in: 300,
+    };
+  },
+
   async login(
     email: string,
     password: string,

@@ -111,6 +111,24 @@ export function useLogin() {
 }
 
 // ------------------------------------------------------------------
+// useLoginGoogle
+// ------------------------------------------------------------------
+
+export function useLoginGoogle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => authApi.loginWithGoogle(),
+    onSuccess: (data) => {
+      if (data?.user) {
+        _lastKnownUser = data.user;
+        queryClient.setQueryData(SESSION_QUERY_KEY, data.user);
+      }
+    },
+  });
+}
+
+// ------------------------------------------------------------------
 // useLoginMfa
 // ------------------------------------------------------------------
 
