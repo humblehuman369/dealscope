@@ -58,7 +58,7 @@ export function useRevenueCat() {
       try {
         const { Purchases } = await import('@revenuecat/purchases-capacitor')
 
-        const platform = (window as Record<string, unknown>).Capacitor as
+        const platform = (window as unknown as Record<string, unknown>).Capacitor as
           | { getPlatform?: () => string }
           | undefined
         const isIOS = platform?.getPlatform?.() === 'ios'
