@@ -277,16 +277,18 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 pl-4">
-            <span className="text-[12px] text-[var(--text-heading)]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
-            <span className="text-[12px] px-1 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-heading)]">{getDaysAgo(compDate)}</span>
-            {freshness && (
-              <span className="text-[12px] px-1.5 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
-                {freshness.label}
-              </span>
-            )}
-            <button type="button" onClick={(e) => { e.stopPropagation(); onExpand(); }} className="ml-auto text-[14px] text-[var(--accent-sky-light)] hover:opacity-80 font-medium flex items-center gap-0.5">
+          <div className="flex items-center justify-between gap-2 pl-4">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[12px] text-[var(--text-heading)]">{isSale ? 'Sold' : 'Listed'} {formatDate(compDate)}</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-heading)] tabular-nums">{getDaysAgo(compDate)}</span>
+              {freshness && (
+                <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium"
+                  style={{ backgroundColor: freshness.bgColor, color: freshness.color }}>
+                  {freshness.label}
+                </span>
+              )}
+            </div>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onExpand(); }} className="flex-shrink-0 text-[13px] text-[var(--accent-sky-light)] hover:opacity-80 font-medium flex items-center gap-0.5 pr-1">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
