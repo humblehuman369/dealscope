@@ -934,8 +934,8 @@ export function AppHeader({
         return (
           <div
             ref={dropdownRef}
-            className="sticky top-0 z-40"
-            style={{ backgroundColor: 'var(--surface-base)' }}
+            className="sticky z-40"
+            style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--surface-base)' }}
           >
             <PropertyAddressBar
               address={p?.address ?? addrParts.streetAddress}
