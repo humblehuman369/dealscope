@@ -56,8 +56,10 @@ import type {
   BRRRRDealMakerState,
   BRRRRMetrics,
   FlipDealMakerState,
+  FlipFinancingType,
   FlipMetrics,
   HouseHackDealMakerState,
+  HouseHackLoanType,
   HouseHackMetrics,
   WholesaleDealMakerState,
   WholesaleMetrics,
@@ -629,17 +631,17 @@ function StrategyContent() {
           loanTermYears: io.loanTerm ?? loanTermYears,
           rehabBudget: io.rehabBudget ?? rehabCost,
           arv: arvVal,
-          furnitureSetupCost: bd?.furniture_setup ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
-          averageDailyRate: adr,
-          occupancyRate: occRate,
-          cleaningFeeRevenue: DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
-          avgLengthOfStayDays: DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
-          platformFeeRate: bd?.platform_fees_pct != null ? bd.platform_fees_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.platformFeeRate,
-          strManagementRate: bd?.management_pct != null ? bd.management_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate,
-          cleaningCostPerTurnover: DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
-          suppliesMonthly: bd?.supplies != null ? bd.supplies / 12 : DEFAULT_STR_DEAL_MAKER_STATE.suppliesMonthly,
-          additionalUtilitiesMonthly: bd?.utilities != null ? bd.utilities / 12 : DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly,
-          maintenanceRate: maintPct,
+          furnitureSetupCost: io.furnitureSetupCost ?? bd?.furniture_setup ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
+          averageDailyRate: io.averageDailyRate ?? adr,
+          occupancyRate: io.occupancyRate ?? occRate,
+          cleaningFeeRevenue: io.cleaningFeeRevenue ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
+          avgLengthOfStayDays: io.avgLengthOfStayDays ?? DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
+          platformFeeRate: io.platformFeeRate ?? (bd?.platform_fees_pct != null ? bd.platform_fees_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.platformFeeRate),
+          strManagementRate: io.strManagementRate ?? (bd?.management_pct != null ? bd.management_pct / 100 : DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate),
+          cleaningCostPerTurnover: io.cleaningCostPerTurnover ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
+          suppliesMonthly: io.suppliesMonthly ?? (bd?.supplies != null ? bd.supplies / 12 : DEFAULT_STR_DEAL_MAKER_STATE.suppliesMonthly),
+          additionalUtilitiesMonthly: io.additionalUtilitiesMonthly ?? (bd?.utilities != null ? bd.utilities / 12 : DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly),
+          maintenanceRate: io.maintenanceRate ?? maintPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
           monthlyHoa: 0,
@@ -649,46 +651,46 @@ function StrategyContent() {
       case 'brrrr':
         return {
           purchasePrice: io.purchasePrice ?? targetPrice,
-          buyDiscountPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct,
+          buyDiscountPct: io.buyDiscountPct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct,
           downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
-          hardMoneyRate: DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
+          hardMoneyRate: io.hardMoneyRate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
           rehabBudget: io.rehabBudget ?? rehabCost,
-          contingencyPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.contingencyPct,
-          holdingPeriodMonths: DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
-          holdingCostsMonthly: DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
+          contingencyPct: io.contingencyPct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.contingencyPct,
+          holdingPeriodMonths: io.holdingPeriodMonths ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
+          holdingCostsMonthly: io.holdingCostsMonthly ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
           arv: arvVal,
           postRehabMonthlyRent: io.monthlyRent ?? monthlyRent,
           postRehabRentIncreasePct: DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabRentIncreasePct,
-          refinanceLtv: DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceLtv,
-          refinanceInterestRate: bd?.interest_rate != null ? bd.interest_rate / 100 : DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate,
+          refinanceLtv: io.refinanceLtv ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceLtv,
+          refinanceInterestRate: io.refinanceInterestRate ?? (bd?.interest_rate != null ? bd.interest_rate / 100 : DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate),
           refinanceTermYears: bd?.loan_term_years ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceTermYears,
           refinanceClosingCostsPct: DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceClosingCostsPct,
-          vacancyRate: vacancyPct,
-          maintenanceRate: maintPct,
-          managementRate: mgmtPct,
+          vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
+          maintenanceRate: io.maintenanceRate ?? maintPct,
+          managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: 0,
+          monthlyHoa: io.monthlyHoa ?? 0,
         } satisfies BRRRRDealMakerState
 
       case 'flip':
         return {
           purchasePrice: io.purchasePrice ?? targetPrice,
-          purchaseDiscountPct: DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
+          purchaseDiscountPct: io.purchaseDiscountPct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
-          financingType: 'hardMoney' as const,
-          hardMoneyLtv: DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
-          hardMoneyRate: DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
-          loanPoints: DEFAULT_FLIP_DEAL_MAKER_STATE.loanPoints,
+          financingType: (inlineOverrides.financingType as FlipFinancingType) ?? 'hardMoney',
+          hardMoneyLtv: io.hardMoneyLtv ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
+          hardMoneyRate: io.hardMoneyRate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
+          loanPoints: io.loanPoints ?? DEFAULT_FLIP_DEAL_MAKER_STATE.loanPoints,
           rehabBudget: io.rehabBudget ?? rehabCost,
-          contingencyPct: DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
-          rehabTimeMonths: bd?.holding_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
+          contingencyPct: io.contingencyPct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
+          rehabTimeMonths: io.rehabTimeMonths ?? bd?.holding_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
           arv: arvVal,
-          holdingCostsMonthly: (propertyTaxes / 12) + (insurance / 12) + 200,
-          daysOnMarket: DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
-          sellingCostsPct: bd?.selling_costs_pct != null ? bd.selling_costs_pct / 100 : DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
-          capitalGainsRate: DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          holdingCostsMonthly: io.holdingCostsMonthly ?? ((propertyTaxes / 12) + (insurance / 12) + 200),
+          daysOnMarket: io.daysOnMarket ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
+          sellingCostsPct: io.sellingCostsPct ?? (bd?.selling_costs_pct != null ? bd.selling_costs_pct / 100 : DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct),
+          capitalGainsRate: io.capitalGainsRate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
         } satisfies FlipDealMakerState
 
       case 'house_hack': {
@@ -696,24 +698,24 @@ function StrategyContent() {
         const rentPerRoom = bd?.rent_per_room ?? (monthlyRent / Math.max(totalBeds, 1))
         return {
           purchasePrice: io.purchasePrice ?? targetPrice,
-          totalUnits: totalBeds,
-          ownerOccupiedUnits: 1,
+          totalUnits: io.totalUnits ?? totalBeds,
+          ownerOccupiedUnits: io.ownerOccupiedUnits ?? 1,
           ownerUnitMarketRent: rentPerRoom,
-          loanType: 'fha' as const,
-          downPaymentPercent: bd?.down_payment_pct != null ? bd.down_payment_pct / 100 : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.downPaymentPercent,
+          loanType: (inlineOverrides.loanType as HouseHackLoanType) ?? 'fha',
+          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : (bd?.down_payment_pct != null ? bd.down_payment_pct / 100 : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.downPaymentPercent),
           interestRate: io.interestRate ?? (bd?.interest_rate != null ? bd.interest_rate / 100 : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.interestRate),
           loanTermYears: io.loanTerm ?? (bd?.loan_term_years ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.loanTermYears),
-          pmiRate: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.pmiRate,
+          pmiRate: io.pmiRate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.pmiRate,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
-          avgRentPerUnit: rentPerRoom,
-          vacancyRate: vacancyPct,
-          currentHousingPayment: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
+          avgRentPerUnit: io.avgRentPerUnit ?? rentPerRoom,
+          vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
+          currentHousingPayment: io.currentHousingPayment ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: 0,
-          utilitiesMonthly: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
-          maintenanceRate: maintPct,
-          capexRate: DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
+          monthlyHoa: io.monthlyHoa ?? 0,
+          utilitiesMonthly: io.utilitiesMonthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
+          maintenanceRate: io.maintenanceRate ?? maintPct,
+          capexRate: io.capexRate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
         } satisfies HouseHackDealMakerState
       }
 
@@ -724,12 +726,12 @@ function StrategyContent() {
           estimatedRepairs: io.rehabBudget ?? rehabCost,
           squareFootage: propertyInfo?.details?.square_footage ?? 1500,
           contractPrice,
-          earnestMoney: bd?.emd ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.earnestMoney,
-          inspectionPeriodDays: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
-          daysToClose: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.daysToClose,
-          assignmentFee: bd?.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
-          marketingCosts: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
-          closingCosts: DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          earnestMoney: io.earnestMoney ?? bd?.emd ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.earnestMoney,
+          inspectionPeriodDays: io.inspectionPeriodDays ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
+          daysToClose: io.daysToClose ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.daysToClose,
+          assignmentFee: io.assignmentFee ?? bd?.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
+          marketingCosts: io.marketingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
+          closingCosts: io.closingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
         } satisfies WholesaleDealMakerState
       }
 
@@ -746,7 +748,7 @@ function StrategyContent() {
           monthlyRent: io.monthlyRent ?? monthlyRent,
           otherIncome: 0,
           vacancyRate: io.vacancyRate != null ? io.vacancyRate / 100 : vacancyPct,
-          maintenanceRate: maintPct,
+          maintenanceRate: io.maintenanceRate ?? maintPct,
           managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
@@ -970,7 +972,6 @@ function StrategyContent() {
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
     const fieldMap: Record<string, keyof InlineDealMakerValues> = {
-      // LTR fields
       buyPrice: 'buyPrice',
       downPaymentPercent: 'downPayment',
       closingCostsPercent: 'closingCosts',
@@ -983,19 +984,24 @@ function StrategyContent() {
       annualPropertyTax: 'propertyTaxes',
       annualInsurance: 'insurance',
       managementRate: 'managementRate',
-      maintenanceRate: 'managementRate',
-      // BRRRR / Flip / HouseHack / Wholesale use 'purchasePrice' for buy
       purchasePrice: 'buyPrice',
-      // BRRRR post-rehab rent maps to monthlyRent override
       postRehabMonthlyRent: 'monthlyRent',
-      // Wholesale contract price maps to buy price
       contractPrice: 'buyPrice',
-      // Wholesale repairs maps to rehab budget
       estimatedRepairs: 'rehabBudget',
     }
     const mapped = fieldMap[key]
     if (mapped) {
       handleInlineSliderChange(mapped, typeof value === 'number' ? value : parseFloat(value))
+    } else {
+      setInlineOverrides((prev) => {
+        const next = { ...prev, [key]: value }
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+          try { writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' }) } catch { /* ignore */ }
+        }, 300)
+        scheduleRecalc(next)
+        return next
+      })
     }
   }
 
