@@ -75,7 +75,28 @@ async def main(address: str):
         url_path = _extract_url(ac_data)
         print(f"\n  Extracted URL path: {url_path}")
         if not url_path:
-            print("  DIAGNOSIS: No URL found in autocomplete response.")
+            print("  No URL from primary query — trying suffix variants...")
+            for variant in _address_suffix_variants(address):
+                print(f"\n  [Retry] query = {variant!r}")
+                try:
+                    retry_resp = await client.get(
+                        f"{base}/properties/auto-complete",
+                        headers=headers(),
+                        params={"query": variant},
+                    )
+                    print(f"  HTTP {retry_resp.status_code}")
+                    if retry_resp.status_code == 200:
+                        retry_data = retry_resp.json()
+                        url_path = _extract_url(retry_data)
+                        print(f"  Extracted URL path: {url_path}")
+                        if url_path:
+                            print(f"  SUCCESS: suffix variant {variant!r} matched")
+                            break
+                except Exception as e:
+                    print(f"  ERROR: {e}")
+
+        if not url_path:
+            print("\n  DIAGNOSIS: No URL found from any variant.")
             print("  The address may not match any Redfin property, or")
             print("  the response format has changed from what the parser expects.")
             return
@@ -113,6 +134,37 @@ async def main(address: str):
             print("\n  STATUS: SUCCESS — estimates found")
         else:
             print("\n  DIAGNOSIS: Parsed dict empty — details response shape doesn't match parser")
+
+
+_SUFFIX_SWAPS = {
+    "Cir": ["Ct", "Circle"], "Ct": ["Cir", "Court"],
+    "Circle": ["Court", "Cir"], "Court": ["Circle", "Ct"],
+    "St": ["Street"], "Street": ["St"],
+    "Dr": ["Drive"], "Drive": ["Dr"],
+    "Rd": ["Road"], "Road": ["Rd"],
+    "Ave": ["Avenue"], "Avenue": ["Ave"],
+    "Ln": ["Lane"], "Lane": ["Ln"],
+    "Blvd": ["Boulevard"], "Boulevard": ["Blvd"],
+    "Pl": ["Place"], "Place": ["Pl"],
+    "Ter": ["Terrace"], "Terrace": ["Ter"],
+    "Pkwy": ["Parkway"], "Parkway": ["Pkwy"],
+    "Way": ["Wy"], "Wy": ["Way"],
+}
+
+
+def _address_suffix_variants(address):
+    import re
+    parts = address.split(",", 1)
+    street, rest = parts[0], ("," + parts[1] if len(parts) > 1 else "")
+    variants = []
+    for suffix, alts in _SUFFIX_SWAPS.items():
+        pattern = re.compile(r"\b" + re.escape(suffix) + r"\b", re.IGNORECASE)
+        if pattern.search(street):
+            for alt in alts:
+                new_street = pattern.sub(alt, street, count=1)
+                if new_street != street:
+                    variants.append(new_street + rest)
+    return variants
 
 
 def _extract_url(data):
