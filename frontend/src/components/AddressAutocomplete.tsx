@@ -107,6 +107,10 @@ export function AddressAutocomplete({
     }
 
     if (window.google?.maps) {
+      if (window.google.maps.places) {
+        setIsLoaded(true)
+        return
+      }
       const importLibrary = window.google.maps.importLibrary
       if (typeof importLibrary === 'function') {
         importLibrary('places')
@@ -140,22 +144,21 @@ export function AddressAutocomplete({
     }
 
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
     script.async = true
     script.defer = true
     script.setAttribute('data-google-places', 'true')
     script.onload = () => {
-      // With loading=async, libraries aren't available at script onload —
-      // must call importLibrary() to materialise the Places namespace.
       if (window.google?.maps?.places) {
         setIsLoaded(true)
-      } else if (window.google?.maps?.importLibrary) {
-        window.google.maps
-          .importLibrary('places')
-          .then(() => setIsLoaded(true))
-          .catch(() => setIsLoaded(true))
       } else {
-        setIsLoaded(true)
+        const poll = setInterval(() => {
+          if (window.google?.maps?.places) {
+            setIsLoaded(true)
+            clearInterval(poll)
+          }
+        }, 100)
+        setTimeout(() => clearInterval(poll), 5000)
       }
     }
     script.onerror = () => {

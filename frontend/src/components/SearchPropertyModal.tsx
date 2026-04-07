@@ -101,7 +101,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       }
 
       if (!res.ok) {
-        setValidationStatus('error');
+        if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+          setValidationStatus('unavailable');
+          proceedToVerdict(raw, placeComponents);
+        } else {
+          setValidationStatus('error');
+        }
         return;
       }
 
@@ -120,8 +125,14 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       }
 
       setValidationStatus('issues');
-    } catch {
-      setValidationStatus('error');
+    } catch (err) {
+      console.error('[SearchPropertyModal] validate-address failed:', err);
+      if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+        setValidationStatus('unavailable');
+        proceedToVerdict(raw, placeComponents);
+      } else {
+        setValidationStatus('error');
+      }
     }
   };
 
@@ -340,9 +351,19 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
 
               {/* Validation messages and actions */}
               {validationStatus === 'error' && (
-                <p className="text-sm text-[var(--status-negative)]">
-                  Could not validate address. You can try again or use the address as entered.
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-[var(--status-negative)]">
+                    Could not validate address.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={useAsEntered}
+                    className="text-sm py-2 px-3 rounded-lg font-medium transition-colors"
+                    style={{ background: 'var(--surface-elevated)', color: 'var(--text-heading)' }}
+                  >
+                    Use address as entered
+                  </button>
+                </div>
               )}
               {validationStatus === 'issues' && validationResult && (
                 <div className="rounded-xl p-3 space-y-3" style={{ background: 'var(--surface-input)', border: '1px solid var(--border-default)' }}>

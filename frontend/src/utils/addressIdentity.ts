@@ -7,8 +7,12 @@ export function canonicalizeAddressForIdentity(address: string): string {
 
 export function isLikelyFullAddress(address: string): boolean {
   const value = canonicalizeAddressForIdentity(address)
-  // "123 Main St, Boca Raton, FL 33486"
-  return /^\d+[\w\s.#-]*,\s*[^,]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?$/i.test(value)
+  // Strict: "123 Main St, Boca Raton, FL 33486"
+  if (/^\d+[\w\s.#-]*,\s*[^,]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?$/i.test(value)) return true
+  // Lenient: starts with a street number and has at least 3 "word groups"
+  // e.g. "1451 SW 10th ST Boca Raton FL" or "123 Main St Miami FL 33101"
+  const words = value.split(/[\s,]+/).filter(Boolean)
+  return /^\d+/.test(value) && words.length >= 4
 }
 
 export function classifySearchInput(text: string): 'address' | 'zip' | 'unknown' {
