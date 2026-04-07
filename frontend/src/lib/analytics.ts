@@ -469,6 +469,7 @@ export interface RehabSelection {
   itemId: string
   quantity: number
   tier: 'low' | 'mid' | 'high'
+  costOverride?: number
 }
 
 export interface RehabEstimate {
@@ -588,7 +589,8 @@ export function calculateRehabEstimate(
     }
     
     if (foundItem) {
-      const unitCost = selection.tier === 'low' ? foundItem.lowCost :
+      const unitCost = selection.costOverride != null ? selection.costOverride :
+                       selection.tier === 'low' ? foundItem.lowCost :
                        selection.tier === 'mid' ? foundItem.midCost :
                        foundItem.highCost
       const itemTotal = unitCost * selection.quantity
