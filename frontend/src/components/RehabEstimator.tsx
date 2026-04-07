@@ -136,7 +136,7 @@ function RehabItemRow({
   
   return (
     <div
-      className="grid grid-cols-[2fr_auto_auto_1fr_auto] sm:grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
+      className="grid grid-cols-[2fr_auto_auto_auto_1fr_auto] sm:grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {/* Item Name + Editable Unit Cost */}
@@ -199,6 +199,19 @@ function RehabItemRow({
         }}
       >
         <Minus className="w-3 h-3" />
+      </button>
+
+      {/* Plus Button */}
+      <button
+        onClick={() => onUpdate({ ...selection, quantity: selection.quantity + 1 })}
+        className="w-6 h-6 rounded flex items-center justify-center cursor-pointer transition-all"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-default)',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <Plus className="w-3 h-3" />
       </button>
       
       {/* Total */}
