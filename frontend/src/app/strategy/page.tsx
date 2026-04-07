@@ -22,6 +22,7 @@ import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import {
+  canonicalizeAddressForIdentity,
   isInitialOverrideEligible,
   isLikelyFullAddress,
   readDealMakerOverrides,
@@ -165,7 +166,11 @@ function StrategyContent() {
   const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    if (!addressParam) return true
+    const canonical = canonicalizeAddressForIdentity(addressParam)
+    return !queryClient.getQueryData(['property-search', canonical])
+  })
   const [error, setError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState<string | null>(null)
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
@@ -350,7 +355,9 @@ function StrategyContent() {
         }
       }
 
-      const showBlockingLoader = !hasLoadedPropertyRef.current
+      const canonical = canonicalizeAddressForIdentity(fetchAddr)
+      const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
+      const showBlockingLoader = !hasCachedProperty && !hasLoadedPropertyRef.current
       try {
         if (showBlockingLoader) setIsLoading(true)
         const propData = await fetchProperty(fetchAddr)
