@@ -565,7 +565,7 @@ export function AppHeader({
       <header className="relative z-50">
         {/* Brand Bar - pure black (scrolls away) */}
         <div 
-          className="flex items-center justify-between px-4 py-3"
+          className="flex items-center justify-between gap-3 px-4 py-3"
           style={{ backgroundColor: 'var(--surface-base)' }}
         >
           {/* Left: Logo */}
