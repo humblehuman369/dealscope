@@ -16,12 +16,15 @@
     "typecheck": "tsc --noEmit",
     "theme:check": "bash scripts/check-theme-surfaces.sh",
     "theme:check:strict": "bash scripts/check-theme-surfaces.sh --strict",
+    "cap:dev": "bash scripts/cap-dev.sh ios",
+    "cap:dev:android": "bash scripts/cap-dev.sh android",
     "cap:sync": "npx cap sync",
     "cap:sync:ios": "npx cap sync ios",
     "cap:sync:android": "npx cap sync android",
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
-    "cap:build": "bash scripts/build-capacitor.sh"
+    "cap:build": "bash scripts/build-capacitor.sh",
+    "cap:prod": "npx cap sync && npx cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
