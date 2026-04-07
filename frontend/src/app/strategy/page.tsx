@@ -1449,7 +1449,7 @@ function StrategyContent() {
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
-              <div className="mb-4 flex gap-2">
+              <div className="mb-4 grid grid-cols-6 gap-1.5">
                 {available.map((s) => {
                   const isActive = s.id === activeStrategyId
                   return (
@@ -1457,7 +1457,7 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className="flex-1 py-2.5 rounded-full text-[12px] sm:text-sm font-bold tracking-wide transition-all"
+                      className="aspect-square rounded-xl text-[9px] sm:text-sm font-bold leading-tight transition-all flex items-center justify-center"
                       style={{
                         background: isActive ? colors.brand.teal : 'transparent',
                         color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
