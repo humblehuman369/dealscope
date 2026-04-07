@@ -110,18 +110,16 @@ function QualityTabs({
 function RehabItemRow({
   item,
   selection,
-  globalTier,
   onUpdate,
   onRemove
 }: {
   item: RehabItem
   selection: RehabSelection
-  globalTier: QualityTier
   onUpdate: (sel: RehabSelection) => void
   onRemove: () => void
 }) {
-  const unitCost = globalTier === 'low' ? item.lowCost :
-                   globalTier === 'mid' ? item.midCost :
+  const unitCost = selection.tier === 'low' ? item.lowCost :
+                   selection.tier === 'mid' ? item.midCost :
                    item.highCost
   const total = unitCost * selection.quantity
   
@@ -136,19 +134,20 @@ function RehabItemRow({
         <div className="text-xs" style={{ color: 'var(--text-heading)' }}>{formatCurrency(unitCost)}/{item.unit}</div>
       </div>
       
-      {/* Quality Badges */}
+      {/* Quality Badges — clickable per-item tier override */}
       {(['low', 'mid', 'high'] as const).map((tier) => (
-        <div
+        <button
           key={tier}
-          className="hidden sm:block py-0.5 px-1.5 rounded text-xs font-semibold text-center"
+          onClick={() => onUpdate({ ...selection, tier })}
+          className="hidden sm:block py-0.5 px-1.5 rounded text-xs font-semibold text-center cursor-pointer transition-all"
           style={{
-            backgroundColor: globalTier === tier ? 'var(--surface-elevated)' : 'transparent',
+            backgroundColor: selection.tier === tier ? 'var(--surface-elevated)' : 'transparent',
             color: 'var(--accent-sky)',
-            border: globalTier === tier ? '1px solid var(--accent-sky)' : '1px solid transparent',
+            border: selection.tier === tier ? '1px solid var(--accent-sky)' : '1px solid transparent',
           }}
         >
           {tier === 'low' ? 'Budget' : tier === 'mid' ? 'Standard' : 'Premium'}
-        </div>
+        </button>
       ))}
       
       {/* Quantity Input */}
@@ -198,14 +197,12 @@ function RehabItemRow({
 function CategorySection({
   category,
   selections,
-  globalTier,
   onAddItem,
   onUpdateItem,
   onRemoveItem
 }: {
   category: RehabCategory
   selections: RehabSelection[]
-  globalTier: QualityTier
   onAddItem: (itemId: string) => void
   onUpdateItem: (itemId: string, selection: RehabSelection) => void
   onRemoveItem: (itemId: string) => void
@@ -224,8 +221,8 @@ function CategorySection({
   const categoryTotal = selectedItems.reduce((sum, sel) => {
     const item = category.items.find(i => i.id === sel.itemId)
     if (!item) return sum
-    const unitCost = globalTier === 'low' ? item.lowCost :
-                     globalTier === 'mid' ? item.midCost :
+    const unitCost = sel.tier === 'low' ? item.lowCost :
+                     sel.tier === 'mid' ? item.midCost :
                      item.highCost
     return sum + unitCost * sel.quantity
   }, 0)
@@ -261,7 +258,6 @@ function CategorySection({
                 key={sel.itemId}
                 item={item}
                 selection={sel}
-                globalTier={globalTier}
                 onUpdate={(newSel) => onUpdateItem(sel.itemId, newSel)}
                 onRemove={() => onRemoveItem(sel.itemId)}
               />
@@ -417,13 +413,9 @@ export default function RehabEstimator({
 
   const isPropertyDriven = !!propertyData
   
-  const syncedSelections = useMemo(() => {
-    return selections.map(s => ({ ...s, tier: globalTier }))
-  }, [selections, globalTier])
-  
   const estimate = useMemo(
-    () => calculateRehabEstimate(syncedSelections, contingencyPct),
-    [syncedSelections, contingencyPct]
+    () => calculateRehabEstimate(selections, contingencyPct),
+    [selections, contingencyPct]
   )
   
   useMemo(() => {
@@ -434,6 +426,7 @@ export default function RehabEstimator({
 
   const handleGlobalTierChange = useCallback((tier: QualityTier) => {
     setGlobalTier(tier)
+    setSelections(prev => prev.map(s => ({ ...s, tier })))
     setActivePreset(null)
     trackTierChanged(tier, zipCode)
   }, [zipCode])
@@ -561,8 +554,7 @@ export default function RehabEstimator({
           <CategorySection
             key={category.id}
             category={category}
-            selections={syncedSelections}
-            globalTier={globalTier}
+            selections={selections}
             onAddItem={handleAddItem}
             onUpdateItem={handleUpdateItem}
             onRemoveItem={handleRemoveItem}
