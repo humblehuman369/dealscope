@@ -1047,6 +1047,31 @@ input[type="range"]::-moz-range-thumb {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /* Capacitor native shell — applied when html.capacitor is set */
+  html.capacitor body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  html.capacitor {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.capacitor body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  html.capacitor input,
+  html.capacitor textarea,
+  html.capacitor [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   /* Slider dynamic positioning using CSS custom properties */
   .slider-fill {
     width: var(--slider-fill, 0%);

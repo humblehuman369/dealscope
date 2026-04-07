@@ -10,20 +10,29 @@ const config: CapacitorConfig = {
     allowNavigation: [
       'dealgapiq.com',
       '*.dealgapiq.com',
+      'accounts.google.com',
     ],
   },
   ios: {
     contentInset: 'automatic',
+    backgroundColor: '#000000',
+    preferredContentMode: 'mobile',
+    scrollEnabled: true,
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
+      launchAutoHide: false,
+      launchFadeOutDuration: 300,
       backgroundColor: '#000000',
       showSpinner: false,
     },
     StatusBar: {
-      style: 'dark',
+      style: 'LIGHT',
       backgroundColor: '#000000',
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
     },
   },
 };

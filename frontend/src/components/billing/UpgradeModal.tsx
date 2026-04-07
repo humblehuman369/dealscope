@@ -1,15 +1,19 @@
 'use client'
 
 /**
- * UpgradeModal — choose Pro Monthly or Annual, create Stripe Checkout session, redirect.
- * Used from ProGate (inline/section) and from the pricing page when logged in.
+ * UpgradeModal — choose Pro Monthly or Annual.
+ *
+ * Web:       Stripe Checkout redirect.
+ * Capacitor: RevenueCat in-app purchase via StoreKit / Google Play Billing.
  */
 
 import React, { useState, useCallback } from 'react'
-import { X, Loader2, Check } from 'lucide-react'
+import { X, Loader2, Check, RotateCcw } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
+import { IS_CAPACITOR } from '@/lib/env'
+import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 
 interface PricingPlan {
   id: string
@@ -28,15 +32,29 @@ interface UpgradeModalProps {
   returnTo?: string
 }
 
+function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | undefined {
+  const targetType = annual ? 'ANNUAL' : 'MONTHLY'
+  return (
+    packages.find((p) => p.packageType === targetType) ??
+    packages.find((p) =>
+      annual
+        ? p.identifier.toLowerCase().includes('annual')
+        : p.identifier.toLowerCase().includes('monthly'),
+    )
+  )
+}
+
 export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
   const [annual, setAnnual] = useState(true)
   const [loading, setLoading] = useState(false)
   const [plans, setPlans] = useState<PricingPlan[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch plans on open (public endpoint)
+  const rc = useRevenueCat()
+
+  // Fetch Stripe plans on open (web only)
   React.useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || IS_CAPACITOR) return
     setError(null)
     api
       .get<{ plans: PricingPlan[] }>('/api/v1/billing/plans')
@@ -44,12 +62,26 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
       .catch(() => setError('Could not load plans.'))
   }, [isOpen])
 
+  // --- Pricing from RevenueCat or Stripe ---
+  const rcPkg = IS_CAPACITOR ? pickRCPackage(rc.packages, annual) : undefined
   const proPlan = plans.find((p) => p.id === 'pro')
-  const priceMonthly = proPlan ? proPlan.price_monthly / 100 : 39
-  const priceYearly = proPlan ? proPlan.price_yearly / 100 : 348
-  const pricePerMonthAnnual = priceYearly / 12
+
+  const displayPriceMonthly = IS_CAPACITOR
+    ? (rcPkg?.product.priceString ?? '…')
+    : `$${proPlan ? proPlan.price_monthly / 100 : 39}`
+  const displayPriceAnnual = IS_CAPACITOR
+    ? (pickRCPackage(rc.packages, true)?.product.priceString ?? '…')
+    : `$${proPlan ? proPlan.price_yearly / 100 : 348}`
 
   const startCheckout = useCallback(async () => {
+    if (IS_CAPACITOR) {
+      if (!rcPkg) return
+      trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly', platform: 'capacitor' })
+      const success = await rc.purchase(rcPkg.identifier)
+      if (success) onClose()
+      return
+    }
+
     if (!proPlan) return
     const priceId = annual
       ? proPlan.stripe_price_id_yearly
@@ -83,7 +115,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
     } finally {
       setLoading(false)
     }
-  }, [annual, proPlan, returnTo])
+  }, [annual, proPlan, returnTo, rcPkg, rc, onClose])
 
   if (!isOpen) return null
 
@@ -175,20 +207,24 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
         >
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-white">
-              ${annual ? pricePerMonthAnnual : priceMonthly}
+              {IS_CAPACITOR
+                ? (annual ? displayPriceAnnual : displayPriceMonthly)
+                : `$${annual ? (proPlan ? (proPlan.price_yearly / 100) / 12 : 29) : (proPlan ? proPlan.price_monthly / 100 : 39)}`}
             </span>
-            <span className="text-slate-400 text-sm">/month</span>
-            {annual && (
+            <span className="text-slate-400 text-sm">
+              {IS_CAPACITOR ? (annual ? '/year' : '/month') : '/month'}
+            </span>
+            {!IS_CAPACITOR && annual && (
               <span className="text-slate-500 text-xs ml-auto">
-                ${priceYearly}/yr
+                ${proPlan ? proPlan.price_yearly / 100 : 348}/yr
               </span>
             )}
           </div>
         </div>
 
-        {error && (
+        {(error || rc.error) && (
           <p className="px-6 pb-2 text-sm text-red-400" role="alert">
-            {error}
+            {error || rc.error}
           </p>
         )}
 
@@ -196,13 +232,13 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
           <button
             type="button"
             onClick={startCheckout}
-            disabled={loading || !proPlan}
+            disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
             style={{
               background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
             }}
           >
-            {loading ? (
+            {loading || rc.isPurchasing ? (
               <Loader2 size={18} className="animate-spin" />
             ) : (
               <>
@@ -211,6 +247,18 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               </>
             )}
           </button>
+          {IS_CAPACITOR && (
+            <button
+              type="button"
+              onClick={() => rc.restore()}
+              disabled={rc.isPurchasing}
+              className="w-full flex items-center justify-center gap-2 py-2 text-sm transition-colors"
+              style={{ color: '#94a3b8' }}
+            >
+              <RotateCcw size={14} />
+              Restore purchases
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}

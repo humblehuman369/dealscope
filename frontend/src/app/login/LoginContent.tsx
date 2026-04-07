@@ -137,12 +137,13 @@ function LoginInner() {
                   typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
                     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
                     : ''
-                const url = base ? `${base}/api/v1/auth/google` : '/api/v1/auth/google'
+                const endpoint = base ? `${base}/api/v1/auth/google` : '/api/v1/auth/google'
                 if (IS_CAPACITOR) {
                   const { Browser } = await import('@capacitor/browser')
-                  await Browser.open({ url })
+                  const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
+                  await Browser.open({ url: `${endpoint}?mobile_redirect=${mobileRedirect}` })
                 } else {
-                  window.location.href = url
+                  window.location.href = endpoint
                 }
               }}
               style={{
