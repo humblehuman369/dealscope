@@ -1047,6 +1047,10 @@ input[type="range"]::-moz-range-thumb {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  html:not(.capacitor) .pt-safe-header {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
   /* Capacitor native shell — applied when html.capacitor is set */
   html.capacitor body {
     padding-top: env(safe-area-inset-top);
