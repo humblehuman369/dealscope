@@ -43,7 +43,7 @@ export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbn
       {/* Main Image Container */}
       <div
         className="relative rounded-[14px] overflow-hidden"
-        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
+        style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
       >
         {currentVisible ? (
           <img
@@ -156,14 +156,12 @@ export function ImageGallery({ images: rawImages, totalPhotos, views, hideThumbn
  * ImageGallerySkeleton
  * Loading state for the image gallery
  */
-const GALLERY_HEIGHT_PX = 400
-
 export function ImageGallerySkeleton() {
   return (
     <div className="space-y-3">
       <div
         className="relative rounded-[14px] overflow-hidden animate-pulse"
-        style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
+        style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
       >
         <div className="w-full h-full flex flex-col items-center justify-center gap-3">
           <ImageOff size={48} style={{ color: 'var(--text-secondary)' }} />

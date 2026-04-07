@@ -5,8 +5,6 @@ import { Home } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
 
-const GALLERY_HEIGHT_PX = 400
-
 type GalleryState = 'loading' | 'loaded' | 'unavailable'
 
 interface PropertyPhotoGalleryProps {
@@ -72,7 +70,7 @@ export function PropertyPhotoGallery({
       <div className="space-y-3">
         <div
           className="relative rounded-[14px] overflow-hidden flex flex-col items-center justify-center gap-3"
-          style={{ height: `${GALLERY_HEIGHT_PX}px`, backgroundColor: 'var(--surface-elevated)' }}
+          style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
         >
           <Home size={48} style={{ color: 'var(--text-secondary)' }} />
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
