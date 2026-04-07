@@ -8,13 +8,13 @@ import { UpgradeModal } from "@/components/billing/UpgradeModal";
 import { SocialProof } from "@/components/landing/SocialProof";
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto", flexShrink: 0 }}>
     <path d="M5 13l4 4L19 7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const DashIcon: React.FC = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto", flexShrink: 0 }}>
     <path d="M8 12h8" stroke="var(--text-label)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
@@ -142,7 +142,10 @@ const RESPONSIVE_STYLE = `
     .pricing-bottom-option a,
     .pricing-bottom-option button { width: 100% !important; text-align: center !important; }
     .comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .comparison-table { min-width: 520px; }
+    .comparison-table { min-width: 0 !important; font-size: 11px !important; }
+    .comparison-table th { padding: 10px 6px !important; font-size: 11px !important; }
+    .comparison-table td { padding: 8px 6px !important; }
+    .comparison-table td:first-child { padding-left: 12px !important; }
     .comparison-header-row { position: sticky; top: 0; z-index: 2; }
     .mobile-sticky-cta { display: flex !important; }
   }
@@ -689,14 +692,14 @@ export default function PricingContent() {
                   className="comparison-header-row"
                   style={{ background: "var(--surface-elevated)" }}
                 >
-                  <th style={{ textAlign: "left", padding: "14px 20px", fontWeight: 600, color: "var(--text-heading)", width: "60%" }}>
+                  <th style={{ textAlign: "left", padding: "14px 20px", fontWeight: 600, color: "var(--text-heading)", width: "55%" }}>
                     Feature
                   </th>
-                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--text-label)", width: "20%" }}>
+                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--text-label)", width: "22.5%" }}>
                     Starter
                   </th>
-                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--accent-sky)", width: "20%" }}>
-                    Pro Investor
+                  <th style={{ textAlign: "center", padding: "14px 16px", fontWeight: 600, color: "var(--accent-sky)", width: "22.5%" }}>
+                    Pro
                   </th>
                 </tr>
               </thead>
@@ -795,7 +798,7 @@ export default function PricingContent() {
             { label: "Cap Rate", value: "5.2%", sub: "Market adjusted" },
             { label: "Cash-on-Cash", value: "8.1%", sub: "After all expenses" },
             { label: "Cash Flow", value: "$8,440/yr", sub: "Annual net income" },
-            { label: "Deal Gap", value: "–$18,200", sub: "Below asking — potential opportunity" },
+            { label: "Deal Gap", value: "–7.8%", sub: "Below asking — potential opportunity" },
             { label: "DSCR", value: "1.24", sub: "Debt coverage ratio" },
           ].map((item, i) => (
             <div
