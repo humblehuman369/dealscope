@@ -1,12 +1,15 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+const serverUrl = process.env.CAPACITOR_SERVER_URL || 'https://dealgapiq.com';
+const isLocal = serverUrl.startsWith('http://');
+
 const config: CapacitorConfig = {
   appId: 'com.dealgapiq.mobile',
   appName: 'DealGapIQ',
   webDir: 'www',
   server: {
-    url: 'https://dealgapiq.com',
-    cleartext: false,
+    url: serverUrl,
+    cleartext: isLocal,
     allowNavigation: [
       'dealgapiq.com',
       '*.dealgapiq.com',
