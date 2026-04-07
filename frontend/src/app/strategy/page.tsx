@@ -488,13 +488,15 @@ function StrategyContent() {
     )
   }
 
-  // Strategy selection — user-chosen > URL param > highest score
+  // Strategy selection — user-chosen > URL param > long-term-rental default
+  // Default to Long-Term Rental because Target Buy is calculated using that model;
+  // other strategies may show a loss at the Target Buy price.
   const sortedStrategies = data.strategies?.length
     ? [...data.strategies].sort((a, b) => b.score - a.score)
     : []
   const topStrategy = selectedStrategyId
     ? sortedStrategies.find(s => s.id === selectedStrategyId) || sortedStrategies[0] || null
-    : sortedStrategies[0] || null
+    : sortedStrategies.find(s => s.id === 'long-term-rental') || sortedStrategies[0] || null
   const topStrategyName = topStrategy?.name || 'Long-Term Rental'
   const recommendedStrategyName = sortedStrategies[0]?.name || 'Long-Term Rental'
   const activeStrategyId = topStrategy?.id || 'long-term-rental'
