@@ -739,7 +739,7 @@ function BigCard({ title, subtitle, annual, monthly, suffix = '/yr' }: {
     <div className="rounded-xl p-4" style={{ background: 'var(--surface-card)', border: `1.5px solid ${borderClr}` }}>
       <div className="text-xs font-bold uppercase tracking-wider" style={{ color: clr }}>{title}</div>
       <div className="text-[11px] mt-0.5" style={{ color: C.body }}>{subtitle}</div>
-      <div className="text-[1.15rem] sm:text-[1.65rem] font-bold mt-3 tabular-nums leading-tight" style={{ color: clr }}>
+      <div className="text-[1.45rem] sm:text-[1.65rem] font-bold mt-3 tabular-nums leading-tight" style={{ color: clr }}>
         {fmtParen(annual)}<span className="text-sm font-normal opacity-70">{suffix}</span>
       </div>
       {monthly !== undefined && (
