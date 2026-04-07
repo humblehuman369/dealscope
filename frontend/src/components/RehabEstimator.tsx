@@ -118,32 +118,79 @@ function RehabItemRow({
   onUpdate: (sel: RehabSelection) => void
   onRemove: () => void
 }) {
-  const unitCost = selection.tier === 'low' ? item.lowCost :
+  const tierCost = selection.tier === 'low' ? item.lowCost :
                    selection.tier === 'mid' ? item.midCost :
                    item.highCost
+  const unitCost = selection.costOverride != null ? selection.costOverride : tierCost
   const total = unitCost * selection.quantity
+  const hasOverride = selection.costOverride != null
+  
+  const [editingCost, setEditingCost] = useState(false)
+  const [costInput, setCostInput] = useState('')
+
+  const startEditing = () => {
+    setCostInput(String(unitCost))
+    setEditingCost(true)
+  }
+
+  const commitCost = () => {
+    setEditingCost(false)
+    const parsed = parseInt(costInput) || 0
+    if (parsed === tierCost) {
+      onUpdate({ ...selection, costOverride: undefined })
+    } else {
+      onUpdate({ ...selection, costOverride: Math.max(0, parsed) })
+    }
+  }
   
   return (
     <div
       className="grid grid-cols-[2fr_auto_auto_1fr_auto] sm:grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
-      {/* Item Name */}
+      {/* Item Name + Editable Unit Cost */}
       <div>
         <div className="font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</div>
-        <div className="text-xs" style={{ color: 'var(--text-heading)' }}>{formatCurrency(unitCost)}/{item.unit}</div>
+        {editingCost ? (
+          <div className="flex items-center gap-0.5 mt-0.5">
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>$</span>
+            <input
+              type="number"
+              value={costInput}
+              onChange={(e) => setCostInput(e.target.value)}
+              onBlur={commitCost}
+              onKeyDown={(e) => e.key === 'Enter' && commitCost()}
+              autoFocus
+              className="w-20 px-1 py-0.5 rounded text-xs font-semibold focus:outline-none"
+              style={{
+                backgroundColor: 'var(--surface-input)',
+                color: 'var(--accent-sky)',
+                border: '1px solid var(--accent-sky)',
+              }}
+            />
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>/{item.unit}</span>
+          </div>
+        ) : (
+          <button
+            onClick={startEditing}
+            className="text-xs cursor-pointer hover:underline mt-0.5"
+            style={{ color: hasOverride ? 'var(--accent-sky)' : 'var(--text-heading)' }}
+          >
+            {formatCurrency(unitCost)}/{item.unit}{hasOverride ? ' *' : ''}
+          </button>
+        )}
       </div>
       
       {/* Quality Badges — clickable per-item tier override */}
       {(['low', 'mid', 'high'] as const).map((tier) => (
         <button
           key={tier}
-          onClick={() => onUpdate({ ...selection, tier })}
+          onClick={() => onUpdate({ ...selection, tier, costOverride: undefined })}
           className="hidden sm:block py-0.5 px-1.5 rounded text-xs font-semibold text-center cursor-pointer transition-all"
           style={{
-            backgroundColor: selection.tier === tier ? 'var(--surface-elevated)' : 'transparent',
+            backgroundColor: selection.tier === tier && !hasOverride ? 'var(--surface-elevated)' : 'transparent',
             color: 'var(--accent-sky)',
-            border: selection.tier === tier ? '1px solid var(--accent-sky)' : '1px solid transparent',
+            border: selection.tier === tier && !hasOverride ? '1px solid var(--accent-sky)' : '1px solid transparent',
           }}
         >
           {tier === 'low' ? 'Budget' : tier === 'mid' ? 'Standard' : 'Premium'}
@@ -221,7 +268,8 @@ function CategorySection({
   const categoryTotal = selectedItems.reduce((sum, sel) => {
     const item = category.items.find(i => i.id === sel.itemId)
     if (!item) return sum
-    const unitCost = sel.tier === 'low' ? item.lowCost :
+    const unitCost = sel.costOverride != null ? sel.costOverride :
+                     sel.tier === 'low' ? item.lowCost :
                      sel.tier === 'mid' ? item.midCost :
                      item.highCost
     return sum + unitCost * sel.quantity
@@ -426,7 +474,7 @@ export default function RehabEstimator({
 
   const handleGlobalTierChange = useCallback((tier: QualityTier) => {
     setGlobalTier(tier)
-    setSelections(prev => prev.map(s => ({ ...s, tier })))
+    setSelections(prev => prev.map(s => ({ ...s, tier, costOverride: undefined })))
     setActivePreset(null)
     trackTierChanged(tier, zipCode)
   }, [zipCode])
