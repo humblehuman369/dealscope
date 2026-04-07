@@ -138,9 +138,6 @@ export const DEFAULTS = {
 - `frontend/src/hooks/useDefaults.ts` - React hook
 - `frontend/src/stores/index.ts` - Types only, NO values
 
-### Mobile (Consumers)
-- `mobile/services/defaults.ts` - Defaults service and hook
-
 ## Enforcement
 
 1. **TypeScript**: Types imported from `@/stores/index.ts`, values from `useDefaults()`
