@@ -108,7 +108,7 @@ function MarkerDot({ marker, left }: { marker: SourceMarker; left: number }) {
 
 function SourceLegend({ markers }: { markers: SourceMarker[] }) {
   return (
-    <div className="flex flex-wrap justify-between gap-y-2 mt-1">
+    <div className="grid grid-cols-3 gap-2 mt-1">
       {markers.map((m) => (
         <div key={m.id} className="flex flex-col items-center">
           <div className="flex items-center gap-1.5">
@@ -280,10 +280,7 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
             <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
           </svg>
-          <span
-            className="text-[16px] font-bold uppercase tracking-wider"
-            style={{ color: 'var(--accent-sky)' }}
-          >
+          <span className="text-[16px] sm:text-[18px] font-bold text-[var(--text-heading)]">
             Market Consensus
           </span>
         </div>
