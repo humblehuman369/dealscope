@@ -987,11 +987,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   type="button"
                   onClick={handleDownloadReport}
                   disabled={saleSelected.size === 0 || downloadingReport}
-                  className="flex items-center justify-center gap-1.5 py-[2.5px] px-2.5 rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center gap-1 py-[2.5px] px-2 sm:px-2.5 rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[10px] sm:text-[12.5px] font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors flex-shrink-0"
                   title="Download appraisal report as PDF"
                 >
                   {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
-                  DOWNLOAD APPRAISAL REPORT
+                  <span className="sm:hidden">APPRAISAL PDF</span>
+                  <span className="hidden sm:inline">DOWNLOAD APPRAISAL REPORT</span>
                 </button>
               )}
               <div className="flex items-center gap-2 flex-shrink-0">
