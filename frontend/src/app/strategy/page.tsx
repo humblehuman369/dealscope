@@ -1440,12 +1440,12 @@ function StrategyContent() {
           {/* Strategy Tabs — outside card container */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY: { id: string; label: string }[] = [
-              { id: 'long-term-rental', label: 'Long-term' },
-              { id: 'short-term-rental', label: 'Short-term' },
+              { id: 'long-term-rental', label: 'Long\nRental' },
+              { id: 'short-term-rental', label: 'Short\nRental' },
               { id: 'brrrr', label: 'BRRRR' },
-              { id: 'fix-and-flip', label: 'Fix & Flip' },
-              { id: 'house-hack', label: 'House Hack' },
-              { id: 'wholesale', label: 'Wholesale' },
+              { id: 'fix-and-flip', label: 'Fix &\nFlip' },
+              { id: 'house-hack', label: 'House\nHack' },
+              { id: 'wholesale', label: 'Whole\nSale' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
@@ -1457,7 +1457,7 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className="aspect-square rounded-xl text-[9px] sm:text-sm font-bold leading-tight transition-all flex items-center justify-center"
+                      className="aspect-square rounded-xl text-[9px] sm:text-sm font-bold leading-tight transition-all flex items-center justify-center whitespace-pre-line text-center"
                       style={{
                         background: isActive ? colors.brand.teal : 'transparent',
                         color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
