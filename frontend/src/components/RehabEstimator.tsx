@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import {
   Plus, Minus, Trash2, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle, ArrowLeft, Zap, Wrench
@@ -127,13 +127,19 @@ function RehabItemRow({
   
   const [editingCost, setEditingCost] = useState(false)
   const [costInput, setCostInput] = useState('')
+  const committedRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const startEditing = () => {
+    committedRef.current = false
     setCostInput(String(unitCost))
     setEditingCost(true)
+    requestAnimationFrame(() => inputRef.current?.focus())
   }
 
   const commitCost = () => {
+    if (committedRef.current) return
+    committedRef.current = true
     setEditingCost(false)
     const parsed = parseInt(costInput) || 0
     if (parsed === tierCost) {
@@ -155,12 +161,12 @@ function RehabItemRow({
           <div className="flex items-center gap-0.5 mt-0.5">
             <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>$</span>
             <input
+              ref={inputRef}
               type="number"
               value={costInput}
               onChange={(e) => setCostInput(e.target.value)}
               onBlur={commitCost}
               onKeyDown={(e) => e.key === 'Enter' && commitCost()}
-              autoFocus
               className="w-20 px-1 py-0.5 rounded text-xs font-semibold focus:outline-none"
               style={{
                 backgroundColor: 'var(--surface-input)',
