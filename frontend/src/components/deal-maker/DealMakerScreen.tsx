@@ -1193,15 +1193,14 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
           {headerMetrics.map((metric, index) => (
-            <div key={index} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
-              <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>
-                {metric.label}
-              </span>
-              <span 
-                className="text-[13px] sm:text-base font-semibold tabular-nums"
+            <div key={index} className="flex flex-col text-center items-center py-0.5 sm:py-1">
+              <span className="text-[13px] sm:text-base font-semibold tabular-nums"
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
+              </span>
+              <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>
+                {metric.label}
               </span>
             </div>
           ))}
