@@ -822,13 +822,13 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
           {/* Header — scrolls up and out of view */}
           <div className={`relative rounded-t-xl p-4 overflow-hidden bg-[var(--surface-base)] ${largeCardBorderGlow}`}
             style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-              <div className="flex min-w-0 items-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+              <div className="col-span-2 sm:col-span-1 flex min-w-0 items-center gap-2">
                 <div className="w-9 h-9 shrink-0 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-center justify-center">
                   <Target className="w-4.5 h-4.5 text-[var(--accent-sky-light)]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-[18px] font-bold text-[var(--text-heading)] truncate">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
+                  <h3 className="text-[16px] sm:text-[18px] font-bold text-[var(--text-heading)]">{isSale ? 'Appraisal Values' : 'Rental Appraisal'}</h3>
                 </div>
               </div>
               <div
@@ -885,7 +885,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Left: Comp Appraisal / RentCast Estimate */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[18px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
+                  <span className="text-[12px] sm:text-[18px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Comp Appraisal' : 'RentCast Estimate'}
                   </span>
                   <button onClick={() => {
@@ -932,7 +932,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               {/* Right: ARV / Improved Rent */}
               <div className="bg-[var(--surface-base)] rounded-lg px-2.5 py-2 border border-[var(--border-subtle)] flex flex-col">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[18px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
+                  <span className="text-[12px] sm:text-[18px] font-semibold text-[var(--accent-sky-light)] uppercase tracking-wide">
                     {isSale ? 'Est. After Repair' : 'Improved Rent'}
                   </span>
                   <button onClick={() => {
@@ -1017,18 +1017,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
                 </button>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  {isSale && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleDownloadReport(); }}
-                      disabled={saleSelected.size === 0 || downloadingReport}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--surface-base)] border border-[var(--border-subtle)] hover:border-[var(--accent-sky-light)] text-[var(--accent-sky-light)] text-[10px] font-medium disabled:opacity-50 transition-colors"
-                      title="Download appraisal report as PDF"
-                    >
-                      {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
-                      Download report
-                    </button>
-                  )}
                   <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
                     <span className="flex items-center gap-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[var(--status-negative)] inline-block" />
