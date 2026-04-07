@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   Plus, Minus, Trash2, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle, ArrowLeft, Zap, Wrench
@@ -124,24 +124,9 @@ function RehabItemRow({
   const unitCost = selection.costOverride != null ? selection.costOverride : tierCost
   const total = unitCost * selection.quantity
   const hasOverride = selection.costOverride != null
-  
-  const [editingCost, setEditingCost] = useState(false)
-  const [costInput, setCostInput] = useState('')
-  const committedRef = useRef(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const startEditing = () => {
-    committedRef.current = false
-    setCostInput(String(unitCost))
-    setEditingCost(true)
-    requestAnimationFrame(() => inputRef.current?.focus())
-  }
-
-  const commitCost = () => {
-    if (committedRef.current) return
-    committedRef.current = true
-    setEditingCost(false)
-    const parsed = parseInt(costInput) || 0
+  const handleCostChange = (value: string) => {
+    const parsed = parseInt(value) || 0
     if (parsed === tierCost) {
       onUpdate({ ...selection, costOverride: undefined })
     } else {
@@ -157,34 +142,21 @@ function RehabItemRow({
       {/* Item Name + Editable Unit Cost */}
       <div>
         <div className="font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</div>
-        {editingCost ? (
-          <div className="flex items-center gap-0.5 mt-0.5">
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>$</span>
-            <input
-              ref={inputRef}
-              type="number"
-              value={costInput}
-              onChange={(e) => setCostInput(e.target.value)}
-              onBlur={commitCost}
-              onKeyDown={(e) => e.key === 'Enter' && commitCost()}
-              className="w-20 px-1 py-0.5 rounded text-xs font-semibold focus:outline-none"
-              style={{
-                backgroundColor: 'var(--surface-input)',
-                color: 'var(--accent-sky)',
-                border: '1px solid var(--accent-sky)',
-              }}
-            />
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>/{item.unit}</span>
-          </div>
-        ) : (
-          <button
-            onClick={startEditing}
-            className="text-xs cursor-pointer hover:underline mt-0.5"
-            style={{ color: hasOverride ? 'var(--accent-sky)' : 'var(--text-heading)' }}
-          >
-            {formatCurrency(unitCost)}/{item.unit}{hasOverride ? ' *' : ''}
-          </button>
-        )}
+        <div className="flex items-center gap-0.5 mt-0.5">
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>$</span>
+          <input
+            type="number"
+            value={unitCost}
+            onChange={(e) => handleCostChange(e.target.value)}
+            className="w-16 px-1 py-0.5 rounded text-xs font-semibold focus:outline-none"
+            style={{
+              backgroundColor: hasOverride ? 'var(--surface-elevated)' : 'transparent',
+              color: hasOverride ? 'var(--accent-sky)' : 'var(--text-heading)',
+              border: hasOverride ? '1px solid var(--accent-sky)' : '1px solid transparent',
+            }}
+          />
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>/{item.unit}</span>
+        </div>
       </div>
       
       {/* Quality Badges — clickable per-item tier override */}
