@@ -1,0 +1,74 @@
+---
+description: Mobile architecture — Capacitor wrapping the web app, no separate mobile codebase
+alwaysApply: true
+---
+
+# Mobile Architecture
+
+## The Rule
+
+All mobile development happens in `frontend/`. The iOS and Android apps are
+Capacitor wrappers around the production web app at `https://dealgapiq.com`.
+There is **no separate mobile codebase**. There is no `mobile/` directory.
+
+## How It Works
+
+The Capacitor WebView loads the Vercel-deployed web app. The same React
+components, hooks, and styles render on both web and mobile. Platform-specific
+behavior is gated at runtime via `IS_CAPACITOR` from `src/lib/env.ts`.
+
+```
+Web browser ──► https://dealgapiq.com (Vercel) ──► React app
+Capacitor ─────► WKWebView / WebView loads same URL ──► same React app
+                 + native bridge (deep links, IAP, status bar, splash)
+```
+
+## Key Files
+
+| Purpose | Path |
+|---|---|
+| Capacitor config | `frontend/capacitor.config.ts` |
+| Runtime detection | `frontend/src/lib/env.ts` (`IS_CAPACITOR`) |
+| Deep link handler | `frontend/src/hooks/useCapacitorDeepLinks.ts` |
+| Shell UX (status bar, splash, external links) | `frontend/src/hooks/useCapacitorShell.ts` |
+| In-app purchases (RevenueCat) | `frontend/src/hooks/useRevenueCat.ts` |
+| Bridge initializer | `frontend/src/app/providers.tsx` (`CapacitorBridge`) |
+| Build script | `frontend/scripts/build-capacitor.sh` |
+| Local dev script | `frontend/scripts/cap-dev.sh` |
+| iOS native project | `frontend/ios/` |
+| Android native project | `frontend/android/` |
+
+## Capacitor-Gated Code Pattern
+
+```typescript
+import { IS_CAPACITOR } from '@/lib/env'
+
+if (IS_CAPACITOR) {
+  // Native-only behavior (deep links, IAP, status bar, etc.)
+} else {
+  // Web-only behavior (Stripe checkout, cookie auth, etc.)
+}
+```
+
+## Forbidden Patterns
+
+```
+mobile/                          ← DELETED — do not create or reference
+react-native                     ← do not install or import
+expo                             ← do not install or import
+@react-navigation                ← do not install or import
+mobile/app/verdict.tsx           ← does not exist
+mobile/components/               ← does not exist
+```
+
+Do NOT create a `mobile/` directory. Do NOT use React Native, Expo, or any
+native-specific UI framework. All UI is web-standard HTML/CSS/React rendered
+inside the Capacitor WebView.
+
+## When Adding Mobile-Specific Behavior
+
+1. Check if `IS_CAPACITOR` already gates the relevant code path
+2. If not, add a conditional branch using `IS_CAPACITOR`
+3. Keep all code in `frontend/src/` — never create a parallel directory
+4. For native plugin access, import from `@capacitor/*` packages
+5. Test both web and Capacitor builds after changes
