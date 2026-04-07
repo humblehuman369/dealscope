@@ -100,7 +100,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             <div className="hero-pre">Not a listing site. A deal decision engine.</div>
             <h1>
               See Every Property<br />Through<br />
-              <span className="accent">an Investors Lens</span>
+              <span className="accent">an Investor's Lens</span>
             </h1>
             <p className="hero-sub">
               Every listing is designed to sell you.{' '}
