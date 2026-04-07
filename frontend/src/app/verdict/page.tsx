@@ -1009,8 +1009,9 @@ function VerdictContent() {
     })
   }, [])
 
-  // Loading state — pulsating IQ logo until data arrives
-  if (isLoading) {
+  // Loading state — pulsating IQ logo until data arrives.
+  // Also covers the case where property loaded from cache but analysis API is still in flight.
+  if (isLoading || (!analysis && !error)) {
     return <IQLoadingLogo />
   }
 
