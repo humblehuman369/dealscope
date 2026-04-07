@@ -26,5 +26,9 @@ export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
 /**
  * Base URL for the web app (used when Capacitor needs to call
  * Vercel-hosted API routes like /api/report).
+ * Falls back to the production URL in Capacitor so validate-address
+ * and other API routes always resolve to an absolute URL.
  */
-export const WEB_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || ''
+export const WEB_BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (IS_CAPACITOR ? 'https://dealgapiq.com' : '')
