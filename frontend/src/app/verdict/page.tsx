@@ -221,7 +221,11 @@ function VerdictContent() {
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    if (!addressParam) return true
+    const canonical = canonicalizeAddressForIdentity(addressParam)
+    return !queryClient.getQueryData(['property-search', canonical])
+  })
   const [error, setError] = useState<string | null>(null)
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const backendFullAddressRef = useRef('')
@@ -332,7 +336,9 @@ function VerdictContent() {
       })
 
       try {
-        setIsLoading(true)
+        const canonical = canonicalizeAddressForIdentity(addressParam)
+        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
+        if (!hasCachedProperty) setIsLoading(true)
         setError(null)
 
         // Fetch property data (React Query cache — shared with Strategy page)

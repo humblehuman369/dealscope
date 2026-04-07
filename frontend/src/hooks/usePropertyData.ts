@@ -77,9 +77,8 @@ export function usePropertyData() {
   const fetchProperty = useCallback(
     async (address: string, opts?: FetchPropertyOptions): Promise<PropertyResponseCompat> => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
-      const keyParts = [canonicalAddress, opts?.city, opts?.state, opts?.zip_code].filter(Boolean)
       return queryClient.ensureQueryData({
-        queryKey: ['property-search', ...keyParts],
+        queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
           const body: Record<string, string> = { address: canonicalAddress }
           if (opts?.city) body.city = opts.city
@@ -100,8 +99,7 @@ export function usePropertyData() {
   const invalidateProperty = useCallback(
     (address: string, opts?: FetchPropertyOptions) => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
-      const keyParts = [canonicalAddress, opts?.city, opts?.state, opts?.zip_code].filter(Boolean)
-      queryClient.invalidateQueries({ queryKey: ['property-search', ...keyParts] })
+      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress] })
     },
     [queryClient],
   )
