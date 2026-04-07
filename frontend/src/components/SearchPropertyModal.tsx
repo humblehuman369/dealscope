@@ -57,7 +57,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     components?: { city?: string; state?: string; zipCode?: string } | null,
   ) => {
     trackEvent('property_searched', { source: 'search_modal' });
-    onClose();
+    handleClose();
     const canonicalAddress = canonicalizeAddressForIdentity(addressToUse);
     const params = new URLSearchParams({ address: canonicalAddress });
     if (components?.city) params.set('city', components.city);
@@ -73,7 +73,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
 
     if (classifySearchInput(raw) === 'zip') {
       trackEvent('property_searched', { source: 'search_modal', type: 'zip' });
-      onClose();
+      handleClose();
       router.push(`/map-search?label=${encodeURIComponent(raw)}`);
       return;
     }
@@ -309,7 +309,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     if (placeCategory !== 'address' && placeCategory !== 'unknown' && meta?.location) {
                       const { zoom } = classifyPlaceTypes(meta.placeTypes);
                       trackEvent('property_searched', { source: 'search_modal', type: placeCategory });
-                      onClose();
+                      handleClose();
                       const params = new URLSearchParams({
                         lat: String(meta.location.lat),
                         lng: String(meta.location.lng),
