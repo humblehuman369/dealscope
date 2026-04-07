@@ -304,6 +304,33 @@ class RedfinClient(BaseAPIClient[APIResponse]):
       Rental: data["rental-estimate"].rentalEstimateInfo.predictedValue
     """
 
+    _SUFFIX_SWAPS: dict[str, list[str]] = {
+        "Cir": ["Ct", "Circle"],
+        "Ct": ["Cir", "Court"],
+        "Circle": ["Court", "Cir"],
+        "Court": ["Circle", "Ct"],
+        "St": ["Street"],
+        "Street": ["St"],
+        "Dr": ["Drive"],
+        "Drive": ["Dr"],
+        "Rd": ["Road"],
+        "Road": ["Rd"],
+        "Ave": ["Avenue"],
+        "Avenue": ["Ave"],
+        "Ln": ["Lane"],
+        "Lane": ["Ln"],
+        "Blvd": ["Boulevard"],
+        "Boulevard": ["Blvd"],
+        "Pl": ["Place"],
+        "Place": ["Pl"],
+        "Ter": ["Terrace"],
+        "Terrace": ["Ter"],
+        "Pkwy": ["Parkway"],
+        "Parkway": ["Pkwy"],
+        "Way": ["Wy"],
+        "Wy": ["Way"],
+    }
+
     def __init__(
         self,
         api_key: str,
@@ -452,11 +479,36 @@ class RedfinClient(BaseAPIClient[APIResponse]):
 
         return result
 
+    @staticmethod
+    def _address_suffix_variants(address: str) -> list[str]:
+        """Generate alternative addresses by swapping common street suffixes.
+
+        Only operates on the street portion (before the first comma) to avoid
+        false matches in city names or state abbreviations.
+        """
+        import re
+
+        parts = address.split(",", 1)
+        street = parts[0]
+        rest = "," + parts[1] if len(parts) > 1 else ""
+
+        variants: list[str] = []
+        for suffix, alts in RedfinClient._SUFFIX_SWAPS.items():
+            pattern = re.compile(r"\b" + re.escape(suffix) + r"\b", re.IGNORECASE)
+            if pattern.search(street):
+                for alt in alts:
+                    new_street = pattern.sub(alt, street, count=1)
+                    if new_street != street:
+                        variants.append(new_street + rest)
+        return variants
+
     async def get_property_estimate(self, address: str) -> dict[str, Any] | None:
         """
         Two-step lookup: auto-complete(address) → details(url).
 
         Returns dict with redfin_estimate and redfin_rental_estimate, or None.
+        If the initial autocomplete finds no match, retries with common street
+        suffix substitutions (e.g. Cir → Ct) to handle data-source mismatches.
         """
         # Step 1: auto-complete → extract URL path
         ac_resp = await self.auto_complete(address)
@@ -469,6 +521,19 @@ class RedfinClient(BaseAPIClient[APIResponse]):
             return None
 
         url_path = self._extract_url_from_autocomplete(ac_resp.data)
+
+        # Retry with street-suffix variants when autocomplete returns no URL
+        if not url_path:
+            for variant in self._address_suffix_variants(address):
+                ac_retry = await self.auto_complete(variant)
+                if ac_retry.success and ac_retry.data:
+                    url_path = self._extract_url_from_autocomplete(ac_retry.data)
+                    if url_path:
+                        logger.info(
+                            "Redfin suffix retry OK: %r → url=%s", variant, url_path
+                        )
+                        break
+
         if not url_path:
             import json as _json
             _preview = ""
