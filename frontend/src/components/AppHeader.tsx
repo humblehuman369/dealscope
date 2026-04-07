@@ -562,6 +562,16 @@ export function AppHeader({
 
   return (
     <>
+      {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[60]"
+        style={{
+          height: 'env(safe-area-inset-top, 0px)',
+          background: 'var(--surface-base)',
+        }}
+        aria-hidden="true"
+      />
+
       <header className="relative z-50">
         {/* Brand Bar - pure black (scrolls away) */}
         <div 
