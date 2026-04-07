@@ -186,7 +186,7 @@ export function PropertyAddressBar({
       }}
     >
       <div
-        className={`flex items-center justify-between flex-wrap sm:gap-4 px-1 py-2 sm:px-4 sm:py-3 transition-[gap] duration-300 ${
+        className={`flex items-center justify-between flex-wrap sm:flex-nowrap sm:gap-4 px-1 py-2 sm:px-4 sm:py-3 transition-[gap] duration-300 ${
           detailsCollapsed ? 'gap-0' : 'gap-2'
         }`}
         style={{
@@ -194,15 +194,7 @@ export function PropertyAddressBar({
         }}
       >
         {/* Left: House icon + Address link */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            minWidth: 0,
-            flex: '0 1 auto',
-          }}
-        >
+        <div className="flex items-center gap-2.5 min-w-0 sm:flex-1">
           <svg
             width="16"
             height="16"
@@ -244,13 +236,13 @@ export function PropertyAddressBar({
         </div>
 
         {/* Details + Actions (full-width row on mobile, inline on desktop) */}
-        <div className={`flex items-center w-full sm:w-auto sm:flex-1 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
+        <div className={`flex items-center w-full sm:w-auto sm:shrink-0 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
           detailsCollapsed
             ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
             : 'max-h-12 opacity-100'
         }`}>
           {!loading && (
-          <div className="flex items-center flex-wrap flex-1 gap-1.5 sm:gap-3 min-w-0">
+          <div className="flex items-center flex-wrap sm:flex-nowrap flex-1 gap-1.5 sm:gap-3 min-w-0">
             <DetailItem label="Beds" value={beds} />
             <Dot />
             <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
