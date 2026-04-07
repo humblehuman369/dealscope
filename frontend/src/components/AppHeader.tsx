@@ -564,7 +564,7 @@ export function AppHeader({
     <>
       {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
       <div
-        className="fixed top-0 left-0 right-0 z-[60]"
+        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
         style={{
           height: 'env(safe-area-inset-top, 0px)',
           background: 'var(--surface-base)',
@@ -598,7 +598,7 @@ export function AppHeader({
           </button>
 
           {/* Right: About, Pricing, Search, Profile/Login */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 sm:gap-5">
             {isHomepage && (
               <>
                 <Link
@@ -628,7 +628,7 @@ export function AppHeader({
             {/* Property search button opens modal */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="min-h-[40px] px-3 sm:px-4 py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2"
+              className="min-h-[36px] sm:min-h-[40px] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2"
               style={{
                 background: 'var(--surface-elevated)',
                 borderColor: 'var(--border-default)',
@@ -640,7 +640,7 @@ export function AppHeader({
                 className="w-4 h-4 sm:w-5 sm:h-5"
                 style={{ color: 'var(--text-secondary)' }}
               />
-              <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Property Search</span>
+              <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">Property Search</span>
             </button>
             {isHomepage ? (
               <button
@@ -658,7 +658,7 @@ export function AppHeader({
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={() => setShowMoreMenu(prev => !prev)}
-                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                   aria-label="More options"
                   aria-expanded={showMoreMenu}
                   aria-haspopup="true"
@@ -712,7 +712,7 @@ export function AppHeader({
               <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={handleProfileClick}
-                  className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                   aria-label="Menu"
                   aria-expanded={showProfileMenu}
                   aria-haspopup="true"
@@ -831,7 +831,7 @@ export function AppHeader({
                   <div className="sm:hidden relative" ref={mobileNavRef}>
                     <button
                       onClick={() => setMobileNavOpen(prev => !prev)}
-                      className="min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                      className="min-w-[36px] min-h-[36px] p-1.5 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                       aria-label="Navigation menu"
                       aria-expanded={mobileNavOpen}
                       aria-haspopup="true"
@@ -914,7 +914,7 @@ export function AppHeader({
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`
-                    flex-1 px-4 py-[7px] text-[16px] sm:text-[18px] font-medium 
+                    flex-1 px-2 sm:px-4 py-[7px] text-[12px] sm:text-[18px] font-medium 
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
                   style={{
