@@ -84,7 +84,7 @@ export function MapPropertyPicker({
     <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: 'var(--surface-base)' }}>
       {/* Header */}
       <div
-        className="relative z-10 flex items-center justify-between px-4 py-3 shadow-md"
+        className="relative z-10 flex items-center justify-between px-4 py-3 pt-safe-header shadow-md"
         style={{
           background: 'var(--surface-card)',
           borderBottom: '1px solid var(--border-subtle)',
