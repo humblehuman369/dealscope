@@ -1439,17 +1439,17 @@ function StrategyContent() {
 
           {/* Strategy Tabs — outside card container */}
           {sortedStrategies.length > 1 && (() => {
-            const STRATEGY_DISPLAY: { id: string; label: string }[] = [
-              { id: 'long-term-rental', label: 'Long\nRental' },
-              { id: 'short-term-rental', label: 'Short\nRental' },
-              { id: 'brrrr', label: 'BRRRR' },
-              { id: 'fix-and-flip', label: 'Fix &\nFlip' },
-              { id: 'house-hack', label: 'House\nHack' },
-              { id: 'wholesale', label: 'Whole\nSale' },
+            const STRATEGY_DISPLAY = [
+              { id: 'long-term-rental', label: 'Long\nRental', color: '#0465f2' },
+              { id: 'short-term-rental', label: 'Short\nRental', color: '#8b5cf6' },
+              { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
+              { id: 'fix-and-flip', label: 'Fix &\nFlip', color: '#ec4899' },
+              { id: 'house-hack', label: 'House\nHack', color: '#0EA5E9' },
+              { id: 'wholesale', label: 'Whole\nSale', color: '#84cc16' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
-              <div className="mb-4 grid grid-cols-6 gap-1.5">
+              <div className="mb-4 grid grid-cols-6 gap-2">
                 {available.map((s) => {
                   const isActive = s.id === activeStrategyId
                   return (
@@ -1457,11 +1457,17 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className="aspect-square rounded-xl text-[9px] sm:text-sm font-bold leading-tight transition-all flex items-center justify-center whitespace-pre-line text-center"
+                      className="aspect-square rounded-xl text-[9.5px] sm:text-sm font-bold leading-tight transition-all duration-200 flex items-center justify-center whitespace-pre-line text-center"
                       style={{
-                        background: isActive ? colors.brand.teal : 'transparent',
-                        color: isActive ? 'var(--text-inverse)' : colors.brand.teal,
-                        border: `1.5px solid ${colors.brand.teal}`,
+                        background: isActive
+                          ? `linear-gradient(135deg, ${s.color}, ${s.color}CC)`
+                          : `${s.color}12`,
+                        color: isActive ? '#fff' : s.color,
+                        border: `1.5px solid ${isActive ? s.color : `${s.color}60`}`,
+                        boxShadow: isActive
+                          ? `0 0 16px ${s.color}45, 0 2px 8px rgba(0,0,0,0.3)`
+                          : `0 1px 4px rgba(0,0,0,0.15)`,
+                        transform: isActive ? 'scale(1.03)' : 'scale(1)',
                       }}
                     >
                       {s.label}
