@@ -1130,7 +1130,7 @@ function VerdictContent() {
                   src={property.imageUrl}
                   alt={`Property at ${property.address}`}
                   className="w-full object-cover"
-                  style={{ height: 400 }}
+                  style={{ aspectRatio: '3/2' }}
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -1803,7 +1803,7 @@ function VerdictContent() {
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 
           {/* Top Action Buttons — same as Strategy page */}
-          <section className="px-3 sm:px-5 pb-6">
+          <section className="px-3 sm:px-5 pt-4 pb-6">
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={handleNavigateToDealMaker}

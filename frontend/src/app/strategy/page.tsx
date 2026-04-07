@@ -1481,7 +1481,7 @@ function StrategyContent() {
                 { label: 'CAP Rate', value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—', negative: capRateVal !== null && capRateVal < 0 },
                 { label: 'COC Return', value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—', negative: cocVal !== null && cocVal < 0 },
               ].map((m, i) => (
-                <div key={i} className="flex justify-between sm:flex-col sm:text-center items-center sm:items-stretch py-0.5 sm:py-1">
+                <div key={i} className="flex flex-col text-center items-center py-0.5 sm:py-1">
                   <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>{m.label}</span>
                   <span
                     className="text-[13px] sm:text-base font-semibold tabular-nums"
