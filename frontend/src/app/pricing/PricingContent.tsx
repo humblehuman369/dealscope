@@ -8,13 +8,13 @@ import { UpgradeModal } from "@/components/billing/UpgradeModal";
 import { SocialProof } from "@/components/landing/SocialProof";
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto", flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
     <path d="M5 13l4 4L19 7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const DashIcon: React.FC = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto", flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
     <path d="M8 12h8" stroke="var(--text-label)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
