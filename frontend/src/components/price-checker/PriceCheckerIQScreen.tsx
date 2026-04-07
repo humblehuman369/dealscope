@@ -368,7 +368,7 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
       <button onClick={onToggle} className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--surface-elevated)] transition-colors">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[var(--accent-sky-light)]" />
-          <span className="text-[18px] font-semibold text-[var(--text-heading)]">Adjustment Breakdown</span>
+          <span className="text-[16px] sm:text-[18px] font-bold text-[var(--text-heading)]">Adjustment Breakdown</span>
           <span className="text-xs text-[var(--text-heading)]">({compAdjustments.length})</span>
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-heading)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-heading)]" />}
@@ -1014,7 +1014,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                   className="flex items-center gap-2 flex-1 min-w-0 text-left"
                 >
                   <MapPin className="w-4 h-4 text-[var(--accent-sky-light)] flex-shrink-0" />
-                  <span className="text-sm font-semibold text-[var(--text-heading)]">Proximity Map</span>
+                  <span className="text-[16px] sm:text-[18px] font-bold text-[var(--text-heading)]">Proximity Map</span>
                 </button>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="flex items-center gap-3 text-[10px] text-[var(--text-heading)]">
