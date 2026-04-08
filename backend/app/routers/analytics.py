@@ -128,12 +128,8 @@ async def quick_analytics(
                 },
                 "str": {
                     "monthly_cash_flow": result.str_results.monthly_cash_flow if result.str_results else None,
-                    "cash_on_cash_return": result.str_results.cash_on_cash_return
-                    if result.str_results
-                    else None,
-                    "break_even_occupancy": result.str_results.break_even_occupancy
-                    if result.str_results
-                    else None,
+                    "cash_on_cash_return": result.str_results.cash_on_cash_return if result.str_results else None,
+                    "break_even_occupancy": result.str_results.break_even_occupancy if result.str_results else None,
                 },
                 "brrrr": {
                     "cash_left_in_deal": result.brrrr.cash_left_in_deal if result.brrrr else None,

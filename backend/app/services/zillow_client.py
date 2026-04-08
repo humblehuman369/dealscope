@@ -159,11 +159,7 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
             json_data=json_data,
             **response_kwargs,
         )
-        if (
-            result.success
-            or not self.fallback_api_key
-            or result.status_code not in (502, 503, 401, 403)
-        ):
+        if result.success or not self.fallback_api_key or result.status_code not in (502, 503, 401, 403):
             return result
         logger.info(
             "ext_api provider=AXESSO endpoint=%s status=%s retrying with secondary key",

@@ -159,9 +159,7 @@ class AdminService:
         counts_result = await db.execute(counts_query)
         return {row.user_id: row.count for row in counts_result}
 
-    async def _get_user_subscriptions(
-        self, db: AsyncSession, user_ids: list[UUID]
-    ) -> dict[UUID, dict[str, str]]:
+    async def _get_user_subscriptions(self, db: AsyncSession, user_ids: list[UUID]) -> dict[UUID, dict[str, str]]:
         """Batch-fetch subscription tier and status for multiple users."""
         if not user_ids:
             return {}
@@ -171,10 +169,7 @@ class AdminService:
                 Subscription.user_id.in_(user_ids)
             )
         )
-        return {
-            row.user_id: {"tier": row.tier.value, "status": row.status.value}
-            for row in result
-        }
+        return {row.user_id: {"tier": row.tier.value, "status": row.status.value} for row in result}
 
     async def get_user_by_id(self, db: AsyncSession, user_id: UUID) -> User | None:
         """Get a user by ID."""

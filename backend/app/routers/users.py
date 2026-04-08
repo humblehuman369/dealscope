@@ -8,7 +8,6 @@ from typing import Any
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, DbSession
 from app.schemas.auth import AuthMessage
@@ -444,7 +443,8 @@ async def unsubscribe_from_emails(
             status_code=400,
         )
 
-    from sqlalchemy import select, update as sa_update
+    from sqlalchemy import select
+    from sqlalchemy import update as sa_update
 
     from app.models.user import User, UserProfile
 
@@ -463,9 +463,7 @@ async def unsubscribe_from_emails(
 
     prefs[category] = False
     await db.execute(
-        sa_update(UserProfile)
-        .where(UserProfile.user_id == user_id)
-        .values(notification_preferences=prefs)
+        sa_update(UserProfile).where(UserProfile.user_id == user_id).values(notification_preferences=prefs)
     )
     await db.commit()
 

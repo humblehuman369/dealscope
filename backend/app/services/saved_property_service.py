@@ -201,9 +201,7 @@ class SavedPropertyService:
 
         # zpid is the most reliable identifier
         if zpid:
-            result = await db.execute(
-                select(SavedProperty).where(and_(user_cond, SavedProperty.zpid == zpid))
-            )
+            result = await db.execute(select(SavedProperty).where(and_(user_cond, SavedProperty.zpid == zpid)))
             found = result.scalar_one_or_none()
             if found:
                 return found

@@ -84,7 +84,11 @@ def _viewport_radius_miles(north: float, south: float, east: float, west: float)
 
 
 def _compute_grid_points(
-    north: float, south: float, east: float, west: float, grid_size: int,
+    north: float,
+    south: float,
+    east: float,
+    west: float,
+    grid_size: int,
 ) -> list[tuple[float, float]]:
     """Return a list of (lat, lng) center points for a grid_size x grid_size grid."""
     lat_step = (north - south) / grid_size
@@ -155,7 +159,8 @@ class MapSearchService:
 
         # Each sub-query should cover its grid cell; compute from the cell diagonal
         cell_diag = _haversine_distance_miles(
-            req.south, req.west,
+            req.south,
+            req.west,
             req.south + (req.north - req.south) / grid_size,
             req.west + (req.east - req.west) / grid_size,
         )
@@ -170,22 +175,30 @@ class MapSearchService:
 
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                tasks.append(asyncio.create_task(
-                    self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
-                ))
+                tasks.append(
+                    asyncio.create_task(
+                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
+                    )
+                )
                 if self.zillow:
-                    tasks.append(asyncio.create_task(
-                        self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req),
-                    ))
+                    tasks.append(
+                        asyncio.create_task(
+                            self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req),
+                        )
+                    )
 
             if req.listing_type in ("rental", "both"):
-                tasks.append(asyncio.create_task(
-                    self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
-                ))
+                tasks.append(
+                    asyncio.create_task(
+                        self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
+                    )
+                )
                 if self.zillow:
-                    tasks.append(asyncio.create_task(
-                        self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req),
-                    ))
+                    tasks.append(
+                        asyncio.create_task(
+                            self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req),
+                        )
+                    )
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -201,18 +214,16 @@ class MapSearchService:
                     listings.append(item)
 
         if req.polygon:
-            listings = [
-                l for l in listings if _point_in_polygon(l.latitude, l.longitude, req.polygon)
-            ]
+            listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
 
         if req.min_price is not None:
-            listings = [l for l in listings if l.price is not None and l.price >= req.min_price]
+            listings = [item for item in listings if item.price is not None and item.price >= req.min_price]
         if req.max_price is not None:
-            listings = [l for l in listings if l.price is not None and l.price <= req.max_price]
+            listings = [item for item in listings if item.price is not None and item.price <= req.max_price]
         if req.bedrooms is not None:
-            listings = [l for l in listings if l.bedrooms is not None and l.bedrooms >= req.bedrooms]
+            listings = [item for item in listings if item.bedrooms is not None and item.bedrooms >= req.bedrooms]
         if req.bathrooms is not None:
-            listings = [l for l in listings if l.bathrooms is not None and l.bathrooms >= req.bathrooms]
+            listings = [item for item in listings if item.bathrooms is not None and item.bathrooms >= req.bathrooms]
 
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
@@ -221,12 +232,16 @@ class MapSearchService:
             full_queries = sum(1 for r in results if not isinstance(r, Exception) and len(r) >= req.limit * 0.8)
             if full_queries > 0:
                 avg_per_query = raw_source_totals / max(len([r for r in results if not isinstance(r, Exception)]), 1)
-                area_multiplier = max(grid_size ** 2, 1)
+                area_multiplier = max(grid_size**2, 1)
                 estimated_total = int(avg_per_query * area_multiplier * 1.5)
 
         logger.info(
             "Map search returned %d listings from %d grid points (radius=%.1fmi, grid=%dx%d)",
-            len(listings), len(query_points), radius, grid_size, grid_size,
+            len(listings),
+            len(query_points),
+            radius,
+            grid_size,
+            grid_size,
         )
 
         response = MapSearchResponse(

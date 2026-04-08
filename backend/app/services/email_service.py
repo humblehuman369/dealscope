@@ -819,7 +819,7 @@ class EmailService:
         """Send notification when user hits their monthly analysis limit."""
         pricing_url = f"{self.frontend_url}/billing"
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     You've used all {limit} free analyses this month
 </h1>
@@ -850,13 +850,13 @@ class EmailService:
 <p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     Your usage resets in approximately 30 days from your last reset date.
 </p>
-'''
+"""
 
         html = self._base_template(content, f"You've used all {limit} free analyses this month")
 
         return await self.send_email(
             to=to,
-            subject=f"Analysis limit reached — Upgrade to continue - DealGapIQ",
+            subject="Analysis limit reached — Upgrade to continue - DealGapIQ",
             html=html,
         )
 
@@ -1132,7 +1132,7 @@ class EmailService:
         """Confirm account deletion or scheduled deletion."""
         date_note = ""
         if deletion_date:
-            date_note = f' Your data will be permanently deleted on <strong>{deletion_date}</strong>.'
+            date_note = f" Your data will be permanently deleted on <strong>{deletion_date}</strong>."
 
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
@@ -1189,7 +1189,7 @@ class EmailService:
         onboarding_url = f"{self.frontend_url}/onboarding"
         total_steps = 5
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     You're {total_steps - steps_remaining} of {total_steps} steps in
 </h1>
@@ -1220,7 +1220,7 @@ class EmailService:
 {self._button("Complete Your Profile", onboarding_url)}
 
 {self._marketing_footer(to, "product_updates")}
-'''
+"""
 
         html = self._base_template(content, f"You're {steps_remaining} steps away from your first deal analysis")
 
@@ -1293,7 +1293,7 @@ class EmailService:
         """Re-engage a user who hasn't been active recently."""
         search_url = f"{self.frontend_url}/search"
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Deals don't wait — neither should you
 </h1>
@@ -1320,7 +1320,7 @@ class EmailService:
 {self._button("Search a Property", search_url)}
 
 {self._marketing_footer(to, "marketing")}
-'''
+"""
 
         html = self._base_template(content, "New deals are waiting for you on DealGapIQ")
 
@@ -1339,7 +1339,7 @@ class EmailService:
         """Win back a user who recently canceled their Pro subscription."""
         pricing_url = f"{self.frontend_url}/pricing"
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     Your Pro tools are still here
 </h1>
@@ -1394,7 +1394,7 @@ class EmailService:
 {self._button("View Pro Plans", pricing_url)}
 
 {self._marketing_footer(to, "marketing")}
-'''
+"""
 
         html = self._base_template(content, "Your DealGapIQ Pro tools are waiting for you")
 
@@ -1488,20 +1488,20 @@ class EmailService:
 
         rows = ""
         if analyses_count:
-            rows += f'''
+            rows += f"""
 <tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
     <span style="color: #71717a;">Properties analysed</span></td>
-    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{analyses_count}</td></tr>'''
+    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{analyses_count}</td></tr>"""
         if saved_count:
-            rows += f'''
+            rows += f"""
 <tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
     <span style="color: #71717a;">Properties saved</span></td>
-    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{saved_count}</td></tr>'''
+    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{saved_count}</td></tr>"""
         if price_drops:
-            rows += f'''
+            rows += f"""
 <tr><td style="padding: 8px 0;">
     <span style="color: #71717a;">Saved properties with price drops</span></td>
-    <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #22c55e;">{price_drops}</td></tr>'''
+    <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #22c55e;">{price_drops}</td></tr>"""
 
         content = f'''
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
@@ -1551,7 +1551,7 @@ class EmailService:
         """Announce a new feature or product update (manual trigger)."""
         url = cta_url or self.frontend_url
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
     New: {feature_name}
 </h1>
@@ -1565,7 +1565,7 @@ class EmailService:
 {self._button(cta_text, url)}
 
 {self._marketing_footer(to, "product_updates")}
-'''
+"""
 
         html = self._base_template(content, f"New on DealGapIQ: {feature_name}")
 

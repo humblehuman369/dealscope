@@ -564,7 +564,7 @@ function StrategyContent() {
   // BRRRR backend breakdown uses refinance loan for `loan_amount` / debt service (post-refi model).
   // This page always renders the LTR-style worksheet, so show acquisition P&I tied to Target Buy.
   const purchaseLoanAmount = Math.max(0, targetPrice - downPayment)
-  let loanAmount =
+  const loanAmount =
     activeStrategyId === 'brrrr'
       ? purchaseLoanAmount
       : (bd?.loan_amount ?? purchaseLoanAmount)

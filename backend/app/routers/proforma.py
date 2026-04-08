@@ -10,20 +10,19 @@ from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from app.core.deps import OptionalUser, ProUser
-from app.schemas.appraisal_report import AppraisalReportRequest
+from app.schemas.appraisal_report import AppraisalReportRequest, NarrativesPayload
 from app.schemas.proforma import (
     FinancialProforma,
     ProformaExportResponse,
     ProformaRequest,
 )
+from app.services.appraisal_narrative_service import AppraisalNarrativeService
+from app.services.appraisal_report_pdf import AppraisalReportPDFExporter
 from app.services.brrrr_exporter import BRRRRExcelExporter
 from app.services.flip_exporter import FlipExcelExporter
 from app.services.house_hack_exporter import HouseHackExcelExporter
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_generator import generate_proforma_data
-from app.schemas.appraisal_report import NarrativesPayload
-from app.services.appraisal_narrative_service import AppraisalNarrativeService
-from app.services.appraisal_report_pdf import AppraisalReportPDFExporter
 from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
 from app.services.str_exporter import STRExcelExporter
@@ -482,6 +481,7 @@ def _generate_narratives(request: AppraisalReportRequest) -> AppraisalReportRequ
     - If AI is disabled, use deterministic template narratives.
     - If AI is enabled but fails, fall back to templates instead of failing export.
     """
+
     def _template_narratives() -> NarrativesPayload:
         comps_used = len(request.comp_adjustments or [])
         return NarrativesPayload(
@@ -579,7 +579,9 @@ def _generate_narratives(request: AppraisalReportRequest) -> AppraisalReportRequ
             return fallback_text
 
     request.narratives = NarrativesPayload(
-        neighborhood=_safe(lambda: svc.generate_neighborhood_narrative(property_data, ms, comps), fallback.neighborhood),
+        neighborhood=_safe(
+            lambda: svc.generate_neighborhood_narrative(property_data, ms, comps), fallback.neighborhood
+        ),
         site=_safe(lambda: svc.generate_site_narrative(property_data), fallback.site),
         improvements=_safe(lambda: svc.generate_improvements_narrative(property_data), fallback.improvements),
         reconciliation=_safe(lambda: svc.generate_reconciliation_narrative(appraisal_data), fallback.reconciliation),
@@ -627,13 +629,12 @@ async def generate_appraisal_report_pdf(
         logger.error("Appraisal PDF generation error: %s", exc, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail=(
-                "PDF generation temporarily unavailable for this report. "
-                "Falling back to HTML print view."
-            ),
+            detail=("PDF generation temporarily unavailable for this report. Falling back to HTML print view."),
         )
 
-    safe_address = "".join(c if c.isalnum() or c in " -" else "" for c in request.subject_address).strip().replace(" ", "-")[:60]
+    safe_address = (
+        "".join(c if c.isalnum() or c in " -" else "" for c in request.subject_address).strip().replace(" ", "-")[:60]
+    )
     filename = f"DealGapIQ_URAR_{safe_address}_{datetime.now().strftime('%Y%m%d')}.pdf"
 
     return StreamingResponse(

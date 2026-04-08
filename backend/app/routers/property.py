@@ -58,7 +58,7 @@ def _build_full_address(request: PropertySearchRequest) -> str:
 # ============================================
 # PROPERTY SEARCH
 # ============================================
-# SEARCH PROPERTY  
+# SEARCH PROPERTY
 
 
 @router.post("/properties/search", response_model=PropertyResponse)
@@ -242,9 +242,7 @@ async def get_property(property_id: str):
 
 
 @router.get("/photos")
-async def get_property_photos(
-    zpid: str | None = None, url: str | None = None, property_id: str | None = None
-):
+async def get_property_photos(zpid: str | None = None, url: str | None = None, property_id: str | None = None):
     """
     Get property photos from Zillow via AXESSO API.
 
@@ -397,8 +395,14 @@ async def get_similar_rent(
         )
 
         result = await property_service.get_similar_rent(
-            zpid=zpid, url=url, address=address, limit=limit, offset=offset, exclude_zpids=exclude_list,
-            subject_lat=subject_lat, subject_lon=subject_lon,
+            zpid=zpid,
+            url=url,
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list,
+            subject_lat=subject_lat,
+            subject_lon=subject_lon,
         )
         return result
 
@@ -514,8 +518,14 @@ async def get_similar_sold(
         )
 
         result = await property_service.get_similar_sold(
-            zpid=zpid, url=url, address=address, limit=limit, offset=offset, exclude_zpids=exclude_list,
-            subject_lat=subject_lat, subject_lon=subject_lon,
+            zpid=zpid,
+            url=url,
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list,
+            subject_lat=subject_lat,
+            subject_lon=subject_lon,
         )
         return result
 

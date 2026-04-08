@@ -19,7 +19,7 @@ from sqlalchemy import and_, or_, select, update
 
 from app.core.config import settings
 from app.db.session import get_session_factory
-from app.models.subscription import Subscription, SubscriptionStatus, SubscriptionTier
+from app.models.subscription import Subscription, SubscriptionStatus
 from app.models.user import User, UserProfile
 from app.services.email_service import email_service
 
@@ -137,7 +137,7 @@ async def send_onboarding_nudges() -> int:
 
 
 async def send_reengagement_emails() -> int:
-    """Contact users who haven't logged in for 14–60 days (once per 30-day window)."""
+    """Contact users who haven't logged in for 14-60 days (once per 30-day window)."""
     factory = get_session_factory()
     sent = 0
 

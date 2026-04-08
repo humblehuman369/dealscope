@@ -154,12 +154,7 @@ class AppraisalReportPDFExporter:
 
     def _detail_row(self, label: str, value: str, bold: bool = False) -> str:
         style = ' style="font-weight:700;"' if bold else ""
-        return (
-            f'<div class="detail-row"{style}>'
-            f"<span>{label}</span>"
-            f'<span class="detail-value">{value}</span>'
-            f"</div>"
-        )
+        return f'<div class="detail-row"{style}><span>{label}</span><span class="detail-value">{value}</span></div>'
 
     def _narrative_block(self, text: str | None) -> str:
         if not text:
@@ -197,7 +192,6 @@ class AppraisalReportPDFExporter:
 
     def _page_cover_and_neighborhood(self) -> str:
         d = self.data
-        p = self.palette
         street, city_state = self._subject_parts()
         ms = d.market_stats
         n = d.narratives
@@ -519,47 +513,49 @@ class AppraisalReportPDFExporter:
             r += f"<td>{c.comp_address.split(',')[0].strip()}</td>"
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Proximity</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Proximity</td><td>&mdash;</td>"
         for c in comps:
             r += f"<td>{c.distance_miles:.2f} mi</td>" if c.distance_miles is not None else "<td>&mdash;</td>"
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Sale Price</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Sale Price</td><td>&mdash;</td>"
         for c in comps:
             r += f'<td class="money">{_fmt_money(c.base_price)}</td>'
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Price/GLA</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Price/GLA</td><td>&mdash;</td>"
         for c in comps:
             r += f'<td class="money">${c.price_per_sqft:,.0f}</td>'
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Data Source</td><td>MLS / Public Rec.</td>"
-        for c in comps:
+        r = "<tr><td class='row-label'>Data Source</td><td>MLS / Public Rec.</td>"
+        for _c in comps:
             r += _text_cell("MLS / Public Rec.")
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Verification Source</td><td>&mdash;</td>"
-        for c in comps:
+        r = "<tr><td class='row-label'>Verification Source</td><td>&mdash;</td>"
+        for _c in comps:
             r += _text_cell("Public Records")
         rows.append(r + "</tr>")
 
         # --- Sale/Financing ---
-        sale_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Sale &amp; Financing</td></tr>'
+        sale_section = (
+            f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Sale &amp; Financing</td></tr>'
+        )
         rows.append(sale_section)
 
-        r = f"<tr><td class='row-label adj-label'>Sale Date</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label adj-label'>Sale Date</td><td>&mdash;</td>"
         for c in comps:
             r += f"<td>{c.sale_date or '&mdash;'}</td>"
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label adj-label'>Financing Type</td><td>&mdash;</td>"
-        for c in comps:
+        r = "<tr><td class='row-label adj-label'>Financing Type</td><td>&mdash;</td>"
+        for _c in comps:
             r += _text_cell("Conv.")
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label adj-label'>Concessions</td><td>&mdash;</td>"
-        for c in comps:
+        r = "<tr><td class='row-label adj-label'>Concessions</td><td>&mdash;</td>"
+        for _c in comps:
             r += _text_cell("None reported")
         rows.append(r + "</tr>")
 
@@ -568,12 +564,12 @@ class AppraisalReportPDFExporter:
         rows.append(desc_section)
 
         r = f"<tr><td class='row-label adj-label'>Property Type</td><td>{self._prop_type()}</td>"
-        for c in comps:
+        for _c in comps:
             r += _text_cell("SFR")
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label adj-label'>Condition</td><td>Average</td>"
-        for c in comps:
+        r = "<tr><td class='row-label adj-label'>Condition</td><td>Average</td>"
+        for _c in comps:
             r += _text_cell("Average")
         rows.append(r + "</tr>")
 
@@ -598,7 +594,7 @@ class AppraisalReportPDFExporter:
         rows.append(r + "</tr>")
 
         r = f"<tr><td class='row-label adj-label'>Lot Size</td><td>{self._lot_display()}</td>"
-        for c in comps:
+        for _c in comps:
             r += _text_cell("See records")
         rows.append(r + "</tr>")
 
@@ -606,14 +602,20 @@ class AppraisalReportPDFExporter:
         adj_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Adjustments</td></tr>'
         rows.append(adj_section)
 
-        for label, attr in [("Size (GLA)", "size_adjustment"), ("Bedroom", "bedroom_adjustment"), ("Bathroom", "bathroom_adjustment"), ("Age/Condition", "age_adjustment"), ("Lot Size", "lot_adjustment")]:
+        for label, attr in [
+            ("Size (GLA)", "size_adjustment"),
+            ("Bedroom", "bedroom_adjustment"),
+            ("Bathroom", "bathroom_adjustment"),
+            ("Age/Condition", "age_adjustment"),
+            ("Lot Size", "lot_adjustment"),
+        ]:
             r = f"<tr><td class='row-label adj-label'>{label}</td><td>&mdash;</td>"
             for c in comps:
                 r += _adj_cell(getattr(c, attr))
             rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label adj-label'>Financing/Conc.</td><td>&mdash;</td>"
-        for c in comps:
+        r = "<tr><td class='row-label adj-label'>Financing/Conc.</td><td>&mdash;</td>"
+        for _c in comps:
             r += _text_cell("$0")
         rows.append(r + "</tr>")
 
@@ -621,12 +623,12 @@ class AppraisalReportPDFExporter:
         total_section = f'<tr class="adj-header"><td class="row-label" colspan="{n_comps + 2}">Results</td></tr>'
         rows.append(total_section)
 
-        r = f'<tr class="total-row"><td class="row-label">Net Adjustment</td><td>&mdash;</td>'
+        r = '<tr class="total-row"><td class="row-label">Net Adjustment</td><td>&mdash;</td>'
         for c in comps:
             r += _adj_cell(c.total_adjustment)
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Net Adj. %</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Net Adj. %</td><td>&mdash;</td>"
         for c in comps:
             npct = c.net_adjustment_pct
             flag = ""
@@ -635,7 +637,7 @@ class AppraisalReportPDFExporter:
             r += f"<td{flag}>{_fmt_pct(npct)}</td>" if npct is not None else "<td>&mdash;</td>"
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Gross Adj. %</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Gross Adj. %</td><td>&mdash;</td>"
         for c in comps:
             gpct = c.gross_adjustment_pct
             flag = ""
@@ -644,18 +646,22 @@ class AppraisalReportPDFExporter:
             r += f"<td{flag}>{_fmt_pct(gpct)}</td>" if gpct is not None else "<td>&mdash;</td>"
         rows.append(r + "</tr>")
 
-        r = f'<tr class="total-row"><td class="row-label">Adjusted Sale Price</td><td>&mdash;</td>'
+        r = '<tr class="total-row"><td class="row-label">Adjusted Sale Price</td><td>&mdash;</td>'
         for c in comps:
             r += f'<td class="money" style="font-weight:700;">{_fmt_money(c.adjusted_price)}</td>'
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Similarity Score</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Similarity Score</td><td>&mdash;</td>"
         for c in comps:
-            color = p["positive"] if c.similarity_score >= 80 else (p["warning"] if c.similarity_score >= 60 else p["negative"])
+            color = (
+                p["positive"]
+                if c.similarity_score >= 80
+                else (p["warning"] if c.similarity_score >= 60 else p["negative"])
+            )
             r += f'<td style="color:{color};font-weight:600;">{c.similarity_score:.0f}%</td>'
         rows.append(r + "</tr>")
 
-        r = f"<tr><td class='row-label'>Weight</td><td>&mdash;</td>"
+        r = "<tr><td class='row-label'>Weight</td><td>&mdash;</td>"
         for c in comps:
             r += f'<td style="font-weight:600;">{c.weight * 100:.1f}%</td>'
         rows.append(r + "</tr>")
@@ -717,7 +723,9 @@ class AppraisalReportPDFExporter:
         else:
             land_value = d.market_value * 0.20 if d.market_value else None
         if cd and cd.replacement_cost_per_sqft is not None:
-            total_cost_new = cd.total_cost_new or (cd.replacement_cost_per_sqft * d.subject_sqft if d.subject_sqft else None)
+            total_cost_new = cd.total_cost_new or (
+                cd.replacement_cost_per_sqft * d.subject_sqft if d.subject_sqft else None
+            )
         else:
             total_cost_new = d.market_value * 0.80 if d.market_value else None
         if cd and cd.physical_depreciation_pct is not None:
@@ -765,7 +773,7 @@ class AppraisalReportPDFExporter:
         </div>
       </div>"""
         else:
-            income_section = f"""
+            income_section = """
       <div class="section-header">
         <div class="section-label">INCOME APPROACH</div>
         <h2 class="section-title">Income Capitalization Analysis</h2>
@@ -866,11 +874,13 @@ class AppraisalReportPDFExporter:
         else:
             land_pct = 0.20
             land_value = d.market_value * land_pct if d.market_value else None
-            land_source = f"{int(land_pct*100)}% of sales comparison value"
+            land_source = f"{int(land_pct * 100)}% of sales comparison value"
 
         if has_cost_service and cd:
             cost_per_sqft = cd.replacement_cost_per_sqft
-            total_cost_new = cd.total_cost_new or (cost_per_sqft * d.subject_sqft if cost_per_sqft and d.subject_sqft else None)
+            total_cost_new = cd.total_cost_new or (
+                cost_per_sqft * d.subject_sqft if cost_per_sqft and d.subject_sqft else None
+            )
             cost_sqft_display = f"${cost_per_sqft:,.0f}" if cost_per_sqft else "N/A"
             cost_source = "Cost service data"
         else:
@@ -894,7 +904,7 @@ class AppraisalReportPDFExporter:
 
         limitation = ""
         if not has_cost_service:
-            limitation = f"""
+            limitation = """
   <div class="callout-box" style="margin-top:12px;">
     <strong>Limitation:</strong> Reproduction/replacement cost new data and comparable
     land sales were not available for this desktop analysis. The Cost Approach is presented

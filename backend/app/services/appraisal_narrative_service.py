@@ -122,7 +122,9 @@ Describe the neighborhood character, market conditions (supply/demand, price tre
 
         trend_desc = "stable" if temp in (None, "warm") else ("increasing" if temp == "hot" else "declining")
         dom_desc = f"a median of {dom} days on market" if dom else "typical marketing times"
-        price_desc = f"a median sale price of {_fmt_money(med_price)}" if med_price else "prices consistent with the area"
+        price_desc = (
+            f"a median sale price of {_fmt_money(med_price)}" if med_price else "prices consistent with the area"
+        )
 
         return (
             f"The subject property is located in {city}, a predominantly residential area "
@@ -325,7 +327,7 @@ Year Built: {year_built or "N/A"}
 Age: {f"{age} years" if age else "N/A"}
 GLA: {f"{sqft:,} sqft" if sqft else "N/A"}
 Lot Size: {f"{lot:,} sqft" if lot else "N/A"}
-Estimated Land Value ({land_pct*100:.0f}%): {_fmt_money(land_value)}
+Estimated Land Value ({land_pct * 100:.0f}%): {_fmt_money(land_value)}
 Sales Comparison Value: {_fmt_money(market_value)}
 
 Note that reproduction/replacement cost data is not available. The cost approach is presented with limited reliability. Estimate depreciation using straight-line method over the building's age."""
@@ -348,8 +350,8 @@ Note that reproduction/replacement cost data is not available. The cost approach
 
         return (
             f"The estimated site value is {_fmt_money(land_value)} based on "
-            f"{land_pct*100:.0f}% of the sales comparison indicated value. "
-            f"Using an estimated depreciation of {depreciation_pct*100:.0f}% "
+            f"{land_pct * 100:.0f}% of the sales comparison indicated value. "
+            f"Using an estimated depreciation of {depreciation_pct * 100:.0f}% "
             f"(straight-line over {age} years), the depreciated improvement value "
             f"is approximately {_fmt_money(depreciated_value)}. The Cost Approach "
             f"indicates a value of approximately {_fmt_money(cost_indicated)}. "
