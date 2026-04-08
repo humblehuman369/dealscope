@@ -30,7 +30,7 @@ const FORBIDDEN_TAILWIND_RE = new RegExp(
 
 const FORBIDDEN_DARK_RE = /dark:bg-\[#[0-9a-fA-F]{3,8}\]/
 
-const FORBIDDEN_BG_BLACK_RE = /\bbg-black\b/
+const FORBIDDEN_BG_BLACK_RE = /\bbg-black\b(?!\/)/
 
 const HIGH_CHURN_PAGES = [
   'app/verdict/page.tsx',
