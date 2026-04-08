@@ -529,13 +529,12 @@ class RedfinClient(BaseAPIClient[APIResponse]):
                 if ac_retry.success and ac_retry.data:
                     url_path = self._extract_url_from_autocomplete(ac_retry.data)
                     if url_path:
-                        logger.info(
-                            "Redfin suffix retry OK: %r → url=%s", variant, url_path
-                        )
+                        logger.info("Redfin suffix retry OK: %r → url=%s", variant, url_path)
                         break
 
         if not url_path:
             import json as _json
+
             _preview = ""
             try:
                 _preview = _json.dumps(ac_resp.data, default=str)[:500]
@@ -1367,15 +1366,9 @@ def create_api_clients(
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
     normalizer = DataNormalizer()
-    redfin = (
-        RedfinClient(redfin_api_key, redfin_rapidapi_host)
-        if redfin_api_key and redfin_rapidapi_host
-        else None
-    )
+    redfin = RedfinClient(redfin_api_key, redfin_rapidapi_host) if redfin_api_key and redfin_rapidapi_host else None
     realtor = (
-        RealtorClient(realtor_api_key, realtor_rapidapi_host)
-        if realtor_api_key and realtor_rapidapi_host
-        else None
+        RealtorClient(realtor_api_key, realtor_rapidapi_host) if realtor_api_key and realtor_rapidapi_host else None
     )
 
     return rentcast, axesso, normalizer, redfin, realtor

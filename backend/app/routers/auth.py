@@ -22,6 +22,7 @@ from app.core.deps import (
     DbSession,
 )
 from app.repositories.role_repository import role_repo
+from app.repositories.session_repository import session_repo
 from app.schemas.auth import (
     AuthMessage,
     EmailVerification,
@@ -41,7 +42,6 @@ from app.schemas.auth import (
     UserRegister,
     UserResponse,
 )
-from app.repositories.session_repository import session_repo
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
 from app.services.session_service import session_service
@@ -106,7 +106,8 @@ async def _check_new_device_and_notify(
             ip_address=ip_address,
         )
         if not known:
-            from datetime import UTC, datetime as _dt
+            from datetime import UTC
+            from datetime import datetime as _dt
 
             await email_service.send_new_device_login_email(
                 to=user.email,
@@ -407,10 +408,12 @@ async def google_callback(request: Request, response: Response, db: DbSession):
     await db.commit()
 
     if mobile_redirect:
-        token_params = urlencode({
-            "access_token": jwt_token,
-            "refresh_token": session_obj.refresh_token,
-        })
+        token_params = urlencode(
+            {
+                "access_token": jwt_token,
+                "refresh_token": session_obj.refresh_token,
+            }
+        )
         return RedirectResponse(url=f"{mobile_redirect}?{token_params}", status_code=302)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
@@ -449,7 +452,10 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
     _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
 
     await _check_new_device_and_notify(
-        db, user, ip_address=_client_ip(request), user_agent=request.headers.get("User-Agent"),
+        db,
+        user,
+        ip_address=_client_ip(request),
+        user_agent=request.headers.get("User-Agent"),
     )
 
     user_resp = await _build_user_response(db, user)
@@ -480,7 +486,10 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
     _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
 
     await _check_new_device_and_notify(
-        db, user, ip_address=_client_ip(request), user_agent=request.headers.get("User-Agent"),
+        db,
+        user,
+        ip_address=_client_ip(request),
+        user_agent=request.headers.get("User-Agent"),
     )
 
     user_resp = await _build_user_response(db, user)

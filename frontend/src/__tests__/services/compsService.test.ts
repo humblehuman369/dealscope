@@ -148,9 +148,8 @@ describe('comps API (rent-comps)', () => {
       expect(result.ok).toBe(true)
       expect(result.data).not.toBeNull()
       expect(Array.isArray(result.data)).toBe(true)
-      expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/rentcast/rental-comps'),
+        expect.stringContaining('/api/v1/similar-rent'),
         expect.objectContaining({ method: 'GET' })
       )
       expect(fetchMock).toHaveBeenCalledWith(
@@ -168,12 +167,18 @@ describe('comps API (rent-comps)', () => {
       expect(fetchMock).not.toHaveBeenCalled()
     })
 
-    it('returns not ok when API returns 500', async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Internal error' }),
-      })
+    it('returns not ok when both APIs return 500', async () => {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'Internal error' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'Internal error' }),
+        })
 
       const result = await fetchRentComps({ zpid: '456' })
 

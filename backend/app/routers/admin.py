@@ -13,9 +13,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 
 from app.core.deps import DbSession, require_permission
 from app.models.audit_log import AuditAction
+from app.models.subscription import SubscriptionTier
 from app.models.user import User
 from app.repositories.audit_repository import audit_repo
-from app.models.subscription import SubscriptionTier
 from app.schemas.admin import (
     AdminAssumptionsResponse,
     AdminSubscriptionUpdate,

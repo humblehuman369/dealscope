@@ -116,7 +116,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(
         f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}"
-        + (f" (secondary key: Yes)" if settings.AXESSO_API_KEY_SECONDARY else "")
+        + (" (secondary key: Yes)" if settings.AXESSO_API_KEY_SECONDARY else "")
     )
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
     logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")

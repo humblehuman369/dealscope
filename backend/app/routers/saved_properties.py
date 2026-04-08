@@ -27,7 +27,7 @@ from app.schemas.saved_property import (
 )
 from app.services.billing_service import billing_service
 from app.services.deal_maker_service import DealMakerService
-from app.services.saved_property_service import saved_property_service, sanitize_for_json_storage
+from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
 
 logger = logging.getLogger(__name__)

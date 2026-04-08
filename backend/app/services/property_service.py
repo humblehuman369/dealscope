@@ -183,7 +183,7 @@ class PropertyService:
         raw_export: dict[str, Any] = {"address": address, "fetched_at": datetime.now(UTC).isoformat()}
         unwrapped: dict[str, Any] | None = None
         try:
-            unwrapped, zpid = await self._fetch_zillow_with_retry(address)
+            unwrapped, _zpid = await self._fetch_zillow_with_retry(address)
             if unwrapped:
                 raw_export["search_by_address"] = unwrapped
             else:
@@ -274,9 +274,7 @@ class PropertyService:
                         return True
                     try:
                         fetched_dt = (
-                            datetime.fromisoformat(str(fetched_raw))
-                            if isinstance(fetched_raw, str)
-                            else fetched_raw
+                            datetime.fromisoformat(str(fetched_raw)) if isinstance(fetched_raw, str) else fetched_raw
                         )
                         if fetched_dt.tzinfo is None:
                             fetched_dt = fetched_dt.replace(tzinfo=UTC)
@@ -288,15 +286,24 @@ class PropertyService:
                 redfin_stale = redfin_absent and _cache_age_exceeds(14400)
 
                 stale = (
-                    is_off_market_cached
-                    and valuations.get("zestimate") is None
-                    and valuations.get("market_price") in (None, 1)
-                ) or missing_iq_fields or missing_insurance or zillow_stale or redfin_stale
+                    (
+                        is_off_market_cached
+                        and valuations.get("zestimate") is None
+                        and valuations.get("market_price") in (None, 1)
+                    )
+                    or missing_iq_fields
+                    or missing_insurance
+                    or zillow_stale
+                    or redfin_stale
+                )
                 if stale:
                     reason = (
-                        "Zillow data absent > 4h" if zillow_stale
-                        else "Redfin data absent > 4h" if redfin_stale
-                        else "insurance_annual missing" if missing_insurance
+                        "Zillow data absent > 4h"
+                        if zillow_stale
+                        else "Redfin data absent > 4h"
+                        if redfin_stale
+                        else "insurance_annual missing"
+                        if missing_insurance
                         else "IQ estimate data missing"
                     )
                     logger.info("Cache hit for %s but %s — forcing re-fetch", address, reason)
@@ -715,9 +722,7 @@ class PropertyService:
                 )
                 await asyncio.sleep(wait)
 
-        logger.warning(
-            "AXESSO returned empty responses for %s after %d attempts", address, max_attempts
-        )
+        logger.warning("AXESSO returned empty responses for %s after %d attempts", address, max_attempts)
         return None, None
 
     def _unwrap_axesso_property(self, raw: dict[str, Any]) -> dict[str, Any]:
@@ -991,18 +996,14 @@ class PropertyService:
                 return None
 
             lat = _to_float(_first_non_none(payload.get("latitude"), payload.get("lat")))
-            lon = _to_float(
-                _first_non_none(payload.get("longitude"), payload.get("lng"), payload.get("lon"))
-            )
+            lon = _to_float(_first_non_none(payload.get("longitude"), payload.get("lng"), payload.get("lon")))
 
             if lat is None or lon is None:
                 addr = payload.get("address") if isinstance(payload.get("address"), dict) else {}
                 if lat is None:
                     lat = _to_float(_first_non_none(addr.get("latitude"), addr.get("lat")))
                 if lon is None:
-                    lon = _to_float(
-                        _first_non_none(addr.get("longitude"), addr.get("lng"), addr.get("lon"))
-                    )
+                    lon = _to_float(_first_non_none(addr.get("longitude"), addr.get("lng"), addr.get("lon")))
 
             if lat is None or lon is None:
                 lat_long = payload.get("latLong") if isinstance(payload.get("latLong"), dict) else {}
@@ -1161,7 +1162,6 @@ class PropertyService:
                     "raw_comp_count": len(comps_raw),
                 },
             )
-
 
             normalized_comps: list[dict[str, Any]] = []
             for comp in comps_raw:
@@ -1881,9 +1881,7 @@ class PropertyService:
                         if comp_lat is not None and comp_lon is not None:
                             try:
                                 distance = round(
-                                    self._haversine_miles(
-                                        subject_lat, subject_lon, float(comp_lat), float(comp_lon)
-                                    ),
+                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
                                     2,
                                 )
                                 target["distance"] = distance
@@ -2042,9 +2040,7 @@ class PropertyService:
                         if comp_lat is not None and comp_lon is not None:
                             try:
                                 distance = round(
-                                    self._haversine_miles(
-                                        subject_lat, subject_lon, float(comp_lat), float(comp_lon)
-                                    ),
+                                    self._haversine_miles(subject_lat, subject_lon, float(comp_lat), float(comp_lon)),
                                     2,
                                 )
                                 target["distance"] = distance

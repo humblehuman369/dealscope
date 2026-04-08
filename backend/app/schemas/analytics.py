@@ -67,6 +67,7 @@ class IQVerdictInput(BaseModel):
         if n > 10_000:
             return 10_000
         return n
+
     # Off-market market price: when is_listed is False, backend computes Market Price from valuations
     is_listed: bool | None = Field(None, description="True if property has active listing; False for off-market")
     zestimate: float | None = Field(
@@ -87,9 +88,7 @@ class IQVerdictInput(BaseModel):
     management_pct: float | None = Field(
         None, ge=0, le=1, description="Property management as fraction of gross income"
     )
-    closing_costs_pct: float | None = Field(
-        None, ge=0, le=0.20, description="Closing costs fraction (e.g. 0.03 = 3%%)"
-    )
+    closing_costs_pct: float | None = Field(None, ge=0, le=0.20, description="Closing costs fraction (e.g. 0.03 = 3%%)")
     rehab_cost: float | None = Field(None, ge=0, le=10_000_000, description="Rehab budget (dollar amount)")
     capex_pct: float | None = Field(None, ge=0, le=1, description="CapEx / reserves as fraction of gross income")
     buy_discount_pct: float | None = Field(

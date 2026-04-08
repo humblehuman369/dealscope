@@ -5,9 +5,9 @@ NOTE: Default values are imported from app.core.defaults.
 Do NOT hardcode default values in this file.
 """
 
+import re
 from datetime import datetime
 from enum import StrEnum
-import re
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -890,9 +890,7 @@ class PropertySearchRequest(BaseModel):
 
     @model_validator(mode="after")
     def _require_full_address(self) -> "PropertySearchRequest":
-        full_address_re = re.compile(
-            r"^\d[\w\s.#/-]*,\s*[^,]+,\s*[A-Za-z]{2}\s+\d{5}(?:-\d{4})?$"
-        )
+        full_address_re = re.compile(r"^\d[\w\s.#/-]*,\s*[^,]+,\s*[A-Za-z]{2}\s+\d{5}(?:-\d{4})?$")
         state_re = re.compile(r"^[A-Za-z]{2}$")
         zip_re = re.compile(r"^\d{5}(?:-\d{4})?$")
 
@@ -914,19 +912,20 @@ class PropertySearchRequest(BaseModel):
             if not state_re.match(state):
                 raise ValueError("state must be a 2-letter code (example: 'FL')")
             if not zip_re.match(zip_code):
-                raise ValueError(
-                    "zip_code must be 5 digits or ZIP+4 "
-                    "(example: '33486' or '33486-1234')"
-                )
+                raise ValueError("zip_code must be 5 digits or ZIP+4 (example: '33486' or '33486-1234')")
             self.state = state.upper()
             if "," in address:
                 # Strip trailing segments that duplicate the separate
                 # city/state/zip fields, but keep unit/apt numbers.
                 # Matches ", City[, ST[ ZIP]]" at end of string.
                 suffix = re.compile(
-                    r",\s*" + re.escape(city)
-                    + r"(?:\s*,\s*" + re.escape(self.state)
-                    + r"(?:\s+" + re.escape(zip_code) + r")?)?\s*$",
+                    r",\s*"
+                    + re.escape(city)
+                    + r"(?:\s*,\s*"
+                    + re.escape(self.state)
+                    + r"(?:\s+"
+                    + re.escape(zip_code)
+                    + r")?)?\s*$",
                     re.IGNORECASE,
                 )
                 stripped = suffix.sub("", address).strip()
@@ -934,10 +933,7 @@ class PropertySearchRequest(BaseModel):
             else:
                 street = address
             if not street:
-                raise ValueError(
-                    "street address is required when using city, state, "
-                    "and zip_code fields"
-                )
+                raise ValueError("street address is required when using city, state, and zip_code fields")
             self.address = f"{street}, {city}, {self.state} {zip_code}"
             return self
 
@@ -1086,5 +1082,7 @@ class MapSearchResponse(BaseModel):
 
     listings: list[MapListing]
     total_count: int
-    estimated_total: int | None = Field(default=None, description="Estimated total listings in the area (for large viewport extrapolation)")
+    estimated_total: int | None = Field(
+        default=None, description="Estimated total listings in the area (for large viewport extrapolation)"
+    )
     viewport_center: list[float] = Field(description="[lat, lng] center of the searched area")

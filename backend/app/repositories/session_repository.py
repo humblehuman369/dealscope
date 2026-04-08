@@ -129,9 +129,7 @@ class SessionRepository:
 
         conditions.append(or_(*or_clauses))
 
-        result = await db.execute(
-            select(UserSession.id).where(*conditions).limit(1)
-        )
+        result = await db.execute(select(UserSession.id).where(*conditions).limit(1))
         return result.scalar_one_or_none() is not None
 
     async def delete_expired(self, db: AsyncSession) -> int:

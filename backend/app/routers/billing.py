@@ -447,8 +447,9 @@ async def revenuecat_webhook(
         return {"received": True, "event_type": event_type, "message": "No app_user_id, skipped"}
 
     from sqlalchemy import select
+
+    from app.models.subscription import TIER_LIMITS, Subscription, SubscriptionStatus, SubscriptionTier
     from app.models.user import User
-    from app.models.subscription import Subscription, SubscriptionTier, SubscriptionStatus, TIER_LIMITS
     from app.services.email_service import email_service
 
     try:
@@ -470,7 +471,7 @@ async def revenuecat_webhook(
 
     pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
     free_limits = TIER_LIMITS[SubscriptionTier.FREE]
-    from datetime import datetime, UTC
+    from datetime import UTC, datetime
 
     if event_type in ("INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
         subscription.tier = SubscriptionTier.PRO
@@ -493,7 +494,8 @@ async def revenuecat_webhook(
                 if expiration:
                     trial_end_str = subscription.current_period_end.strftime("%B %d, %Y")
                 await email_service.send_pro_welcome_email(
-                    to=user.email, user_name=user.full_name or "",
+                    to=user.email,
+                    user_name=user.full_name or "",
                     trial_end_date=trial_end_str,
                 )
             except Exception as e:
@@ -501,7 +503,8 @@ async def revenuecat_webhook(
         elif user and event_type in ("RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
             try:
                 await email_service.send_upgrade_confirmation_email(
-                    to=user.email, user_name=user.full_name or "",
+                    to=user.email,
+                    user_name=user.full_name or "",
                 )
             except Exception as e:
                 logger.warning("RevenueCat: failed to send upgrade email: %s", e)
@@ -533,7 +536,8 @@ async def revenuecat_webhook(
         if user:
             try:
                 await email_service.send_subscription_canceled_email(
-                    to=user.email, user_name=user.full_name or "",
+                    to=user.email,
+                    user_name=user.full_name or "",
                 )
             except Exception as e:
                 logger.warning("RevenueCat: failed to send expiration email: %s", e)
@@ -547,7 +551,8 @@ async def revenuecat_webhook(
                 price_usd = event.get("price_in_purchased_currency")
                 amount_cents = int(float(price_usd) * 100) if price_usd else None
                 await email_service.send_payment_failed_email(
-                    to=user.email, user_name=user.full_name or "",
+                    to=user.email,
+                    user_name=user.full_name or "",
                     amount_cents=amount_cents,
                     currency=event.get("currency", "usd").lower() or "usd",
                 )

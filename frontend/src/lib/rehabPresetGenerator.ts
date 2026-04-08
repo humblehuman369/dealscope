@@ -8,7 +8,7 @@
  */
 
 import type { RehabSelection } from './analytics'
-import { REHAB_CATEGORIES, calculateRehabEstimate } from './analytics'
+import { REHAB_CATEGORIES, REHAB_PRESETS, calculateRehabEstimate } from './analytics'
 import type {
   EstimatorPropertyInput,
   GeneratedPreset,
@@ -306,8 +306,7 @@ export function generatePropertyPresets(
  * when no property data is available.
  */
 export function getStaticPresetsFallback(): GeneratedPreset[] {
-  const { REHAB_PRESETS } = require('./analytics')
-  return (REHAB_PRESETS as import('./analytics').RehabPreset[]).map(preset => ({
+  return REHAB_PRESETS.map(preset => ({
     ...preset,
     property_driven: true as const,
     scope_drivers: [],

@@ -322,7 +322,9 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN", key: str = ""
         return steps
     parsed = client._parse_details_response(det_resp.data)
     steps["step2_parsed"] = parsed
-    steps["result"] = "SUCCESS" if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else "PARSED_BUT_EMPTY"
+    steps["result"] = (
+        "SUCCESS" if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else "PARSED_BUT_EMPTY"
+    )
 
     return steps
 
@@ -439,10 +441,19 @@ async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483", k
             "livingArea": d.get("livingArea"),
         }
 
-    steps["result"] = "SUCCESS" if (
-        (isinstance(raw, dict) and (raw.get("zestimate") is not None or raw.get("Zestimate") is not None))
-        or (details_resp.success and details_resp.data and isinstance(details_resp.data, dict) and not details_resp.data.get("error"))
-    ) else "PARTIAL - step 1 data available but property-v2 failed"
+    steps["result"] = (
+        "SUCCESS"
+        if (
+            (isinstance(raw, dict) and (raw.get("zestimate") is not None or raw.get("Zestimate") is not None))
+            or (
+                details_resp.success
+                and details_resp.data
+                and isinstance(details_resp.data, dict)
+                and not details_resp.data.get("error")
+            )
+        )
+        else "PARTIAL - step 1 data available but property-v2 failed"
+    )
 
     cb = client.circuit_breaker
     if cb:

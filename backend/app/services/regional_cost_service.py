@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +95,6 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "061": CostFactors(1.40, 1.30, 1.35, "Fairfield County, CT", "medium", 0.70),
     "150": CostFactors(1.22, 1.15, 1.18, "Pittsburgh", "medium", 0.70),
     "191": CostFactors(1.32, 1.25, 1.28, "Philadelphia", "medium", 0.72),
-
     # Mid-Atlantic / DC
     "200": CostFactors(1.30, 1.22, 1.25, "Washington DC", "medium", 0.75),
     "201": CostFactors(1.30, 1.22, 1.25, "Washington DC", "medium", 0.75),
@@ -104,7 +102,6 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "221": CostFactors(1.28, 1.20, 1.22, "Northern Virginia", "medium", 0.72),
     "208": CostFactors(1.25, 1.18, 1.20, "Maryland (Suburbs)", "medium", 0.70),
     "210": CostFactors(1.22, 1.15, 1.18, "Baltimore", "medium", 0.70),
-
     # Southeast
     "300": CostFactors(1.05, 1.00, 1.02, "Atlanta (North)", "medium", 0.72),
     "303": CostFactors(1.05, 1.00, 1.02, "Atlanta", "medium", 0.72),
@@ -118,14 +115,12 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "336": CostFactors(1.18, 1.10, 1.15, "Tampa / St. Pete", "medium", 0.72),
     "337": CostFactors(1.15, 1.08, 1.12, "St. Petersburg", "medium", 0.70),
     "339": CostFactors(1.18, 1.10, 1.15, "Fort Myers / Naples", "medium", 0.70),
-
     # South Florida (catch-all for ZIPs not in _ZIP_FACTORS)
     "330": CostFactors(1.30, 1.20, 1.22, "South Florida", "medium", 0.78),
     "331": CostFactors(1.32, 1.22, 1.25, "Miami-Dade", "medium", 0.78),
     "332": CostFactors(1.28, 1.18, 1.20, "South Florida", "medium", 0.75),
     "333": CostFactors(1.30, 1.20, 1.22, "Fort Lauderdale Metro", "medium", 0.78),
     "334": CostFactors(1.30, 1.20, 1.22, "Palm Beach County", "medium", 0.78),
-
     # Midwest
     "606": CostFactors(1.20, 1.12, 1.15, "Chicago", "medium", 0.72),
     "600": CostFactors(1.18, 1.10, 1.12, "Chicago Suburbs (North)", "medium", 0.70),
@@ -138,7 +133,6 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "630": CostFactors(1.10, 1.02, 1.05, "St. Louis", "medium", 0.68),
     "640": CostFactors(1.08, 1.02, 1.05, "Kansas City", "medium", 0.68),
     "462": CostFactors(1.05, 1.00, 1.02, "Indianapolis", "medium", 0.68),
-
     # Texas
     "750": CostFactors(1.08, 1.02, 1.05, "Dallas / North Texas", "medium", 0.72),
     "751": CostFactors(1.08, 1.02, 1.05, "Dallas", "medium", 0.72),
@@ -150,7 +144,6 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "773": CostFactors(1.08, 1.02, 1.05, "Houston (West)", "medium", 0.70),
     "787": CostFactors(1.12, 1.05, 1.08, "Austin", "medium", 0.72),
     "781": CostFactors(1.05, 1.00, 1.02, "San Antonio", "medium", 0.70),
-
     # Mountain West
     "800": CostFactors(1.15, 1.08, 1.10, "Denver", "medium", 0.72),
     "801": CostFactors(1.15, 1.08, 1.10, "Denver Metro", "medium", 0.72),
@@ -160,7 +153,6 @@ _PREFIX_FACTORS: dict[str, CostFactors] = {
     "857": CostFactors(1.05, 1.00, 1.02, "Tucson", "medium", 0.68),
     "841": CostFactors(1.08, 1.02, 1.05, "Salt Lake City", "medium", 0.70),
     "891": CostFactors(1.12, 1.05, 1.08, "Las Vegas", "medium", 0.72),
-
     # Pacific West
     "900": CostFactors(1.42, 1.35, 1.38, "Los Angeles", "medium", 0.75),
     "901": CostFactors(1.42, 1.35, 1.38, "Los Angeles", "medium", 0.75),
@@ -232,16 +224,41 @@ _NATIONAL_BASELINE = CostFactors(1.00, 1.00, 1.00, "National Average", "low", 0.
 # ZIP → STATE MAPPING (simplified ranges)
 # ============================================
 
+
 def _state_from_prefix(prefix: int) -> str | None:
     ranges = [
-        (10, 14, "NY"), (70, 89, "NJ"), (60, 69, "CT"), (10, 27, "MA"),
-        (15, 19, "PA"), (206, 219, "MD"), (220, 246, "VA"), (200, 205, "DC"),
-        (320, 349, "FL"), (300, 319, "GA"), (270, 289, "NC"), (290, 299, "SC"),
-        (370, 385, "TN"), (350, 369, "AL"), (386, 397, "MS"), (700, 714, "LA"),
-        (750, 799, "TX"), (430, 458, "OH"), (480, 499, "MI"), (600, 629, "IL"),
-        (460, 479, "IN"), (530, 549, "WI"), (550, 567, "MN"), (630, 658, "MO"),
-        (660, 679, "KS"), (800, 816, "CO"), (850, 865, "AZ"), (889, 898, "NV"),
-        (840, 847, "UT"), (970, 979, "OR"), (980, 994, "WA"), (900, 961, "CA"),
+        (10, 14, "NY"),
+        (70, 89, "NJ"),
+        (60, 69, "CT"),
+        (10, 27, "MA"),
+        (15, 19, "PA"),
+        (206, 219, "MD"),
+        (220, 246, "VA"),
+        (200, 205, "DC"),
+        (320, 349, "FL"),
+        (300, 319, "GA"),
+        (270, 289, "NC"),
+        (290, 299, "SC"),
+        (370, 385, "TN"),
+        (350, 369, "AL"),
+        (386, 397, "MS"),
+        (700, 714, "LA"),
+        (750, 799, "TX"),
+        (430, 458, "OH"),
+        (480, 499, "MI"),
+        (600, 629, "IL"),
+        (460, 479, "IN"),
+        (530, 549, "WI"),
+        (550, 567, "MN"),
+        (630, 658, "MO"),
+        (660, 679, "KS"),
+        (800, 816, "CO"),
+        (850, 865, "AZ"),
+        (889, 898, "NV"),
+        (840, 847, "UT"),
+        (970, 979, "OR"),
+        (980, 994, "WA"),
+        (900, 961, "CA"),
         (967, 968, "HI"),
     ]
     for lo, hi, state in ranges:
@@ -253,6 +270,7 @@ def _state_from_prefix(prefix: int) -> str | None:
 # ============================================
 # PUBLIC API
 # ============================================
+
 
 def get_regional_cost_context(zip_code: str) -> dict:
     """
@@ -288,9 +306,7 @@ def get_regional_cost_context(zip_code: str) -> dict:
 
 
 def _to_response(factors: CostFactors, zip_code: str) -> dict:
-    combined = round(
-        (factors.labor * 0.55 + factors.material * 0.35 + factors.permit * 0.10), 3
-    )
+    combined = round((factors.labor * 0.55 + factors.material * 0.35 + factors.permit * 0.10), 3)
 
     data_sources = ["RSMeans Regional Index", "BLS OES Labor Data"]
     if factors.confidence == "high":
