@@ -46,8 +46,8 @@ def upgrade() -> None:
     result = connection.execute(text("""
         SELECT id, property_data_snapshot, custom_assumptions, worksheet_assumptions, address_zip
         FROM saved_properties
-        WHERE (custom_assumptions IS NOT NULL AND custom_assumptions != '{}')
-           OR (worksheet_assumptions IS NOT NULL AND worksheet_assumptions != '{}')
+        WHERE (custom_assumptions IS NOT NULL AND custom_assumptions::text != '{}')
+           OR (worksheet_assumptions IS NOT NULL AND worksheet_assumptions::text != '{}')
     """))
     
     for row in result:
