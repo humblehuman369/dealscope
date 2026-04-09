@@ -455,7 +455,7 @@ def _generate_apple_client_secret() -> str:
 @router.get("/apple")
 async def apple_start(request: Request):
     """Redirect user to Apple Sign In consent screen."""
-    if not settings.APPLE_CLIENT_ID or not settings.APPLE_TEAM_ID:
+    if not all([settings.APPLE_CLIENT_ID, settings.APPLE_TEAM_ID, settings.APPLE_KEY_ID, settings.APPLE_PRIVATE_KEY]):
         raise HTTPException(status_code=503, detail="Apple sign-in is not configured")
 
     base = _backend_base_url(request)
