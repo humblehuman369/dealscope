@@ -236,13 +236,7 @@ export function PreferencesTab() {
                 Request Change
               </a>
             </div>
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium text-[var(--text-body)]">Two-Factor Authentication</p>
-                <p className="text-xs text-[var(--text-label)]">Add an extra layer of security</p>
-              </div>
-              <span className="text-xs font-semibold text-[var(--text-label)]">Coming Soon</span>
-            </div>
+            
           </div>
         </div>
       </div>

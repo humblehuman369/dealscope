@@ -49,6 +49,10 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>DealGapIQ uses your camera to scan properties for instant investment analysis.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DealGapIQ uses your location to identify nearby properties when scanning.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

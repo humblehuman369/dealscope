@@ -647,13 +647,22 @@ function LTRMetricsContent({
     const totalCashNeeded = downPayment + closingCosts
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     
+    const cashFlow = m && 'monthlyCashFlow' in m ? (m as { monthlyCashFlow: number }).monthlyCashFlow : 0
+    const cocPct = (m && 'cashOnCash' in m ? (m as { cashOnCash: number }).cashOnCash : 0) * 100
+    const crPct = (m && 'capRate' in m ? (m as { capRate: number }).capRate : 0) * 100
+
+    let score = 0
+    score += cashFlow > 0 ? Math.min(40, 20 + cashFlow / 25) : Math.max(0, 20 + cashFlow / 25)
+    score += cocPct >= 10 ? 30 : cocPct >= 6 ? 22 : cocPct >= 2 ? 15 : cocPct > 0 ? 8 : 0
+    score += crPct >= 8 ? 30 : crPct >= 5 ? 22 : crPct >= 3 ? 15 : crPct > 0 ? 8 : 0
+
     return {
       buyPrice: iqTarget.targetPrice,
       cashNeeded: totalCashNeeded,
-      monthlyCashFlow: m && 'monthlyCashFlow' in m ? (m as { monthlyCashFlow: number }).monthlyCashFlow : 0,
-      cashOnCash: (m && 'cashOnCash' in m ? (m as { cashOnCash: number }).cashOnCash : 0) * 100,
-      capRate: (m && 'capRate' in m ? (m as { capRate: number }).capRate : 0) * 100,
-      dealScore: 72, // Placeholder - would come from deal score calculation
+      monthlyCashFlow: cashFlow,
+      cashOnCash: cocPct,
+      capRate: crPct,
+      dealScore: Math.round(Math.max(0, Math.min(100, score))),
     }
   }, [iqTarget, assumptions, compareView, metricsAtTarget, metricsAtList])
 
