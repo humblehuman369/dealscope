@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
+import { IS_CAPACITOR } from "@/lib/env";
 import { SocialProof } from "@/components/landing/SocialProof";
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
@@ -611,10 +612,12 @@ export default function PricingContent() {
           gap: "16px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-label)" }}>
-          <LockIcon />
-          <span>Secured by Stripe &middot; PCI compliant</span>
-        </div>
+        {!IS_CAPACITOR && (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-label)" }}>
+            <LockIcon />
+            <span>Secured by Stripe &middot; PCI compliant</span>
+          </div>
+        )}
         <div
           style={{
             display: "flex",
