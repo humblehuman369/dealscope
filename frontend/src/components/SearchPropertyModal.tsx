@@ -37,13 +37,19 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       return;
     }
 
+    if (IS_CAPACITOR) {
+      handleClose();
+      router.push('/?scan=true');
+      return;
+    }
+
+    // Mobile browser fallback — scan uses GPS/compass, not getUserMedia
     const isMobile = typeof window !== 'undefined' && (
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       ('ontouchstart' in window && window.innerWidth < 1024)
     );
-    const hasCamera = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
-    if (isMobile && hasCamera) {
+    if (isMobile) {
       handleClose();
       router.push('/?scan=true');
       return;
