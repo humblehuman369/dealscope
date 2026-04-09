@@ -1,15 +1,11 @@
 'use client'
 
-import { User, Save } from 'lucide-react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { User, Save, Trash2, AlertTriangle } from 'lucide-react'
+import { apiRequest } from '@/lib/api-client'
 import type { AccountFormData } from './types'
 import { formatDate } from './types'
-
-// ===========================================
-// Account Tab — Dark Fintech Theme
-// ===========================================
-// Hierarchy: slate-100 headings, slate-300 labels, slate-400 secondary, slate-500 micro
-// Inputs: white/4% bg, white/7% border, sky-400 focus ring
-// ===========================================
 
 interface AccountTabProps {
   user: { email: string; created_at?: string; last_login?: string | null; is_active?: boolean; is_verified?: boolean; full_name?: string | null } | null
@@ -108,6 +104,100 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
           Save Changes
         </button>
       </div>
+
+      <DeleteAccountSection />
+    </div>
+  )
+}
+
+
+function DeleteAccountSection() {
+  const router = useRouter()
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmText, setConfirmText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async () => {
+    if (confirmText !== 'DELETE') return
+    setIsDeleting(true)
+    setError(null)
+    try {
+      await apiRequest('/api/v1/users/me', { method: 'DELETE' })
+      router.replace('/login')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete account')
+      setIsDeleting(false)
+    }
+  }
+
+  return (
+    <div className="mt-10 pt-8 border-t border-[var(--border-subtle)]">
+      <h3 className="text-lg font-semibold text-[var(--status-negative)] flex items-center gap-2 mb-2">
+        <Trash2 className="w-5 h-5" />
+        Delete Account
+      </h3>
+      <p className="text-sm text-[var(--text-label)] mb-4">
+        Permanently delete your account and all associated data including saved properties,
+        search history, and profile information. This action cannot be undone.
+      </p>
+
+      {!showConfirm ? (
+        <button
+          onClick={() => setShowConfirm(true)}
+          className="px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
+          style={{
+            color: 'var(--status-negative)',
+            borderColor: 'var(--status-negative)',
+            background: 'transparent',
+          }}
+        >
+          Delete My Account
+        </button>
+      ) : (
+        <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--status-negative)', background: 'rgba(239,68,68,0.05)' }}>
+          <div className="flex items-start gap-3 mb-4">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--status-negative)' }} />
+            <div>
+              <p className="text-sm font-semibold text-[var(--text-heading)] mb-1">
+                Are you sure? This is permanent.
+              </p>
+              <p className="text-sm text-[var(--text-label)]">
+                Type <strong className="text-[var(--text-heading)]">DELETE</strong> below to confirm.
+              </p>
+            </div>
+          </div>
+
+          <input
+            type="text"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="Type DELETE to confirm"
+            className="w-full px-4 py-2.5 mb-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/50"
+          />
+
+          {error && (
+            <p className="text-sm mb-3" style={{ color: 'var(--status-negative)' }}>{error}</p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleDelete}
+              disabled={confirmText !== 'DELETE' || isDeleting}
+              className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-opacity disabled:opacity-40"
+              style={{ background: 'var(--status-negative)' }}
+            >
+              {isDeleting ? 'Deleting...' : 'Permanently Delete Account'}
+            </button>
+            <button
+              onClick={() => { setShowConfirm(false); setConfirmText(''); setError(null) }}
+              className="px-4 py-2 text-sm font-medium text-[var(--text-label)] hover:text-[var(--text-heading)] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

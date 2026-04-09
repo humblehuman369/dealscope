@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
             &larr; Back to DealGapIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Privacy Policy</h1>
-          <p className="text-sm text-slate-500">Last updated: February 13, 2026</p>
+          <p className="text-sm text-slate-500">Last updated: April 9, 2026</p>
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
@@ -51,15 +51,19 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">3. Third-Party Data Services</h2>
             <p>
-              To provide property analytics, we use third-party data providers including:
+              To provide property analytics and app functionality, we use third-party service providers including:
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
               <li><strong className="text-slate-300">RentCast</strong> — Rental estimates, property data, and market statistics</li>
               <li><strong className="text-slate-300">AXESSO</strong> — Property listings, valuations, and market data</li>
               <li><strong className="text-slate-300">Google Maps</strong> — Mapping and geocoding services</li>
+              <li><strong className="text-slate-300">RevenueCat</strong> — In-app purchase management and subscription processing on mobile platforms</li>
+              <li><strong className="text-slate-300">Stripe</strong> — Payment processing for web subscriptions</li>
+              <li><strong className="text-slate-300">Apple Sign In</strong> — Authentication via Apple ID (name and email only, per your authorization)</li>
+              <li><strong className="text-slate-300">Google Sign In</strong> — Authentication via Google account (name, email, and profile picture)</li>
             </ul>
             <p className="mt-3">
-              Your property searches are sent to these services to retrieve relevant data. We do not sell your personal information to these or any other third parties.
+              Your property searches are sent to data providers to retrieve relevant data. Payment processors receive only the information necessary to process transactions. We do not sell your personal information to these or any other third parties.
             </p>
           </section>
 
@@ -76,7 +80,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">5. Data Retention</h2>
             <p>
-              We retain your account data for as long as your account is active. Search history and saved properties are retained to provide you with ongoing analytics. You may request deletion of your data at any time by contacting us.
+              We retain your account data for as long as your account is active. Search history and saved properties are retained to provide you with ongoing analytics. You may delete your account and all associated data at any time from your Profile settings (Account tab), or by contacting us.
             </p>
           </section>
 
@@ -92,10 +96,13 @@ export default function PrivacyPolicyPage() {
               <li>Withdraw consent where processing is based on consent</li>
             </ul>
             <p className="mt-3">
-              To exercise these rights, contact us at{' '}
+              You can delete your account directly from the app via Profile → Account → Delete Account.
+              This permanently removes all your data including saved properties, search history, and profile information.
+              You may also contact us at{' '}
               <a href="mailto:support@dealgapiq.com" className="text-sky-400 hover:text-sky-300 underline">
                 support@dealgapiq.com
-              </a>
+              </a>{' '}
+              to exercise any of these rights.
             </p>
           </section>
 

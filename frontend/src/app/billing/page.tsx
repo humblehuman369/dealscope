@@ -18,6 +18,8 @@ import {
 } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { trackEvent } from '@/lib/eventTracking'
+import { IS_CAPACITOR } from '@/lib/env'
+import { UpgradeModal } from '@/components/billing/UpgradeModal'
 
 /* ── Design tokens (DealGapIQ billing design system) ─────────── */
 
@@ -152,6 +154,7 @@ function BillingContent() {
   const [portalLoading, setPortalLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [proHovered, setProHovered] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -162,6 +165,10 @@ function BillingContent() {
   }, [searchParams])
 
   const handleUpgrade = async () => {
+    if (IS_CAPACITOR) {
+      setShowUpgradeModal(true)
+      return
+    }
     setCheckoutLoading(true)
     setMessage(null)
     try {
@@ -187,6 +194,10 @@ function BillingContent() {
   }
 
   const handleManageBilling = async () => {
+    if (IS_CAPACITOR) {
+      setShowUpgradeModal(true)
+      return
+    }
     setPortalLoading(true)
     try {
       const data = await api.post<{ portal_url: string }>('/api/v1/billing/portal')
@@ -210,6 +221,8 @@ function BillingContent() {
   const currentPlanId = isPro ? 'pro' : 'starter'
 
   return (
+    <>
+    <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} returnTo="/billing" />
     <div
       className="min-h-screen bg-[var(--surface-base)]"
       style={{ color: 'var(--text-heading)', fontFamily: FONT_DM, lineHeight: 1.7 }}
@@ -452,7 +465,7 @@ function BillingContent() {
                         }}
                       >
                         {portalLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        Manage Subscription <ExternalLink className="w-3 h-3" />
+                        {IS_CAPACITOR ? 'Manage Subscription' : <>Manage Subscription <ExternalLink className="w-3 h-3" /></>}
                       </button>
                     </div>
                   ) : (
@@ -561,6 +574,7 @@ function BillingContent() {
 
       </div>
     </div>
+    </>
   )
 }
 
