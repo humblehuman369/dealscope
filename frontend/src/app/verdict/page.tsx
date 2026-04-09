@@ -1813,7 +1813,7 @@ function VerdictContent() {
           <section className="px-3 sm:px-5 pt-4 pb-6">
             <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={handleNavigateToDealMaker}
+                onClick={() => navigateToStrategy()}
                 className="relative flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
                 style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
               >
