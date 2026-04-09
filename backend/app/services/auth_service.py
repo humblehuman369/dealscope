@@ -210,6 +210,63 @@ class AuthService:
         logger.info("User registered via Google: %s", email)
         return user, True
 
+    async def get_or_create_user_from_apple(
+        self,
+        db: AsyncSession,
+        *,
+        apple_id: str,
+        email: str,
+        name: str | None = None,
+    ) -> tuple[User, bool]:
+        """Find user by Apple OAuth id, or by email (link account), or create new user.
+
+        Returns (user, created) where created is True only when a new user was created.
+        """
+        email = email.lower().strip()
+
+        user = await user_repo.get_by_oauth(db, "apple", apple_id, load_roles=True)
+        if user:
+            return user, False
+
+        user = await user_repo.get_by_email(db, email, load_roles=True)
+        if user:
+            await user_repo.update_oauth(
+                db,
+                user.id,
+                oauth_provider="apple",
+                oauth_id=apple_id,
+            )
+            await db.refresh(user)
+            return user, False
+
+        placeholder_password = pwd_context.hash(secrets.token_urlsafe(64))
+        user = await user_repo.create(
+            db,
+            email=email,
+            full_name=name or email,
+            hashed_password=placeholder_password,
+            oauth_provider="apple",
+            oauth_id=apple_id,
+            is_verified=True,
+        )
+        await user_repo.create_profile(db, user.id)
+
+        member_role = await role_repo.get_role_by_name(db, "member")
+        if member_role:
+            await role_repo.assign_role(db, user.id, member_role.id)
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.REGISTER,
+            user_id=user.id,
+            ip_address=None,
+            user_agent=None,
+            metadata={"email": email, "oauth": "apple"},
+        )
+
+        logger.info("User registered via Apple: %s", email)
+        return user, True
+
     # ------------------------------------------------------------------
     # Authentication (login)
     # ------------------------------------------------------------------

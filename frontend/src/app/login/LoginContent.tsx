@@ -129,6 +129,48 @@ function LoginInner() {
               Sign in to continue to DealGapIQ.
             </p>
 
+            {/* Sign in with Apple */}
+            <button
+              type="button"
+              onClick={async () => {
+                const base =
+                  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
+                    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
+                    : ''
+                const endpoint = base ? `${base}/api/v1/auth/apple` : '/api/v1/auth/apple'
+                if (IS_CAPACITOR) {
+                  const { Browser } = await import('@capacitor/browser')
+                  const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
+                  await Browser.open({ url: `${endpoint}?mobile_redirect=${mobileRedirect}` })
+                } else {
+                  window.location.href = endpoint
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '11px',
+                background: '#FFFFFF',
+                border: '1px solid rgba(148,163,184,0.15)',
+                borderRadius: '8px',
+                color: '#000000',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                fontFamily: 'inherit',
+                marginBottom: '10px',
+                transition: 'background 0.2s',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="#000000">
+                <path d="M11.182 0c.223 1.05-.304 2.1-.96 2.852-.66.753-1.732 1.332-2.79 1.256-.255-1.014.374-2.08.994-2.738C9.073.666 10.228.112 11.182 0zm2.725 5.348c-.147.09-2.187 1.272-2.164 3.793.027 3.013 2.647 4.013 2.68 4.026-.022.065-.418 1.432-1.38 2.836-.83 1.213-1.69 2.424-3.047 2.448-1.332.024-1.762-.79-3.286-.79-1.525 0-2 .766-3.264.814-1.31.048-2.308-1.312-3.147-2.52C1.82 13.51.39 9.912.39 6.498.39 3.555 2.312 1.985 4.196 1.958c1.285-.024 2.498.867 3.283.867.784 0 2.256-1.073 3.803-.915.648.027 2.468.262 3.637 1.97-.094.058-.012.007-.012.007l-.001-.001.001.462z"/>
+              </svg>
+              Sign in with Apple
+            </button>
+
             {/* Google OAuth */}
             <button
               type="button"

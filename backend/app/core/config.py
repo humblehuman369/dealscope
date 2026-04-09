@@ -214,6 +214,14 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
 
     # ===========================================
+    # Apple Sign In
+    # ===========================================
+    APPLE_CLIENT_ID: str = ""          # Services ID (e.g. com.dealgapiq.web)
+    APPLE_TEAM_ID: str = ""            # 10-char Team ID from developer.apple.com
+    APPLE_KEY_ID: str = ""             # Key ID for the Sign in with Apple private key
+    APPLE_PRIVATE_KEY: str = ""        # PEM contents of the .p8 key (newlines as \n)
+
+    # ===========================================
     # Data Retention
     # ===========================================
     AUDIT_LOG_RETENTION_DAYS: int = 90  # Delete audit logs older than this

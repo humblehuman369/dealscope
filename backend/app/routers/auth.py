@@ -422,6 +422,203 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 
 
 # ------------------------------------------------------------------
+# Apple Sign In
+# ------------------------------------------------------------------
+
+APPLE_AUTH_URL = "https://appleid.apple.com/auth/authorize"
+APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token"
+APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
+
+
+def _generate_apple_client_secret() -> str:
+    """Generate a short-lived JWT client_secret for Apple Sign In.
+
+    Apple requires a JWT signed with your private key instead of a static
+    client_secret. The JWT is valid for up to 6 months; we generate a fresh
+    one per request (valid 5 minutes) for simplicity.
+    """
+    import time
+    import jwt as pyjwt
+
+    now = int(time.time())
+    key = settings.APPLE_PRIVATE_KEY.replace("\\n", "\n")
+    payload = {
+        "iss": settings.APPLE_TEAM_ID,
+        "iat": now,
+        "exp": now + 300,
+        "aud": "https://appleid.apple.com",
+        "sub": settings.APPLE_CLIENT_ID,
+    }
+    return pyjwt.encode(payload, key, algorithm="ES256", headers={"kid": settings.APPLE_KEY_ID})
+
+
+@router.get("/apple")
+async def apple_start(request: Request):
+    """Redirect user to Apple Sign In consent screen."""
+    if not settings.APPLE_CLIENT_ID or not settings.APPLE_TEAM_ID:
+        raise HTTPException(status_code=503, detail="Apple sign-in is not configured")
+
+    base = _backend_base_url(request)
+    redirect_uri = f"{base}/api/v1/auth/apple/callback"
+
+    import base64 as _b64
+    import json as _json
+
+    state_data: dict = {}
+    mobile_redirect = request.query_params.get("mobile_redirect")
+    if mobile_redirect and any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+        state_data["mobile_redirect"] = mobile_redirect
+    state = _b64.urlsafe_b64encode(_json.dumps(state_data).encode()).decode()
+
+    params = {
+        "client_id": settings.APPLE_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "code id_token",
+        "scope": "name email",
+        "response_mode": "form_post",
+        "state": state,
+    }
+    auth_url = f"{APPLE_AUTH_URL}?{urlencode(params)}"
+    return RedirectResponse(url=auth_url, status_code=302)
+
+
+def _apple_error_redirect(error_code: str, mobile_redirect: str | None) -> RedirectResponse:
+    if mobile_redirect:
+        return RedirectResponse(
+            url=f"{mobile_redirect}?{urlencode({'error': error_code})}",
+            status_code=302,
+        )
+    return RedirectResponse(
+        url=f"{settings.FRONTEND_URL}/register?error={error_code}",
+        status_code=302,
+    )
+
+
+@router.post("/apple/callback")
+async def apple_callback(request: Request, response: Response, db: DbSession):
+    """Handle Apple Sign In callback (form_post). Verify id_token, create/login user."""
+    form = await request.form()
+
+    state_raw = form.get("state", "")
+    mobile_redirect: str | None = None
+    if state_raw:
+        import base64 as _b64
+        import json as _json
+        try:
+            state_data = _json.loads(_b64.urlsafe_b64decode(str(state_raw) + "=="))
+            mr = state_data.get("mobile_redirect")
+            if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+                mobile_redirect = mr
+        except Exception:
+            pass
+
+    code = form.get("code")
+    raw_id_token = form.get("id_token")
+    if not code:
+        return _apple_error_redirect("apple_missing_code", mobile_redirect)
+
+    # Exchange authorization code for tokens
+    base = _backend_base_url(request)
+    redirect_uri = f"{base}/api/v1/auth/apple/callback"
+
+    try:
+        client_secret = _generate_apple_client_secret()
+    except Exception:
+        logger.exception("Failed to generate Apple client secret")
+        return _apple_error_redirect("apple_config_error", mobile_redirect)
+
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(
+            APPLE_TOKEN_URL,
+            data={
+                "client_id": settings.APPLE_CLIENT_ID,
+                "client_secret": client_secret,
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+    if token_resp.status_code != 200:
+        logger.warning("Apple token exchange failed: %s %s", token_resp.status_code, token_resp.text)
+        return _apple_error_redirect("apple_token_failed", mobile_redirect)
+
+    token_data = token_resp.json()
+    verified_id_token = token_data.get("id_token") or raw_id_token
+    if not verified_id_token:
+        return _apple_error_redirect("apple_token_failed", mobile_redirect)
+
+    # Decode and verify the id_token (Apple uses RS256)
+    import jwt as pyjwt
+
+    try:
+        jwks_client = pyjwt.PyJWKClient(APPLE_KEYS_URL)
+        signing_key = jwks_client.get_signing_key_from_jwt(verified_id_token)
+        claims = pyjwt.decode(
+            verified_id_token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=settings.APPLE_CLIENT_ID,
+            issuer="https://appleid.apple.com",
+        )
+    except Exception as exc:
+        logger.warning("Apple id_token verification failed: %s", exc)
+        return _apple_error_redirect("apple_token_invalid", mobile_redirect)
+
+    apple_id = claims.get("sub")
+    email = claims.get("email")
+    if not apple_id or not email:
+        return _apple_error_redirect("apple_invalid_userinfo", mobile_redirect)
+
+    # Apple only sends the user's name on the FIRST authorization.
+    # It comes as a JSON string in the form POST body.
+    name = ""
+    user_data_raw = form.get("user")
+    if user_data_raw:
+        import json as _json
+        try:
+            user_info = _json.loads(str(user_data_raw))
+            first = user_info.get("name", {}).get("firstName", "")
+            last = user_info.get("name", {}).get("lastName", "")
+            name = f"{first} {last}".strip()
+        except Exception:
+            pass
+
+    try:
+        user, _created = await auth_service.get_or_create_user_from_apple(
+            db,
+            apple_id=apple_id,
+            email=email,
+            name=name or None,
+        )
+    except Exception as e:
+        logger.exception("Apple get_or_create_user_from_apple failed: %s", e)
+        return _apple_error_redirect("apple_signup_failed", mobile_redirect)
+
+    session_obj, jwt_token = await session_service.create_session(
+        db,
+        user.id,
+        ip_address=_client_ip(request),
+        user_agent=request.headers.get("User-Agent") or "",
+        remember_me=False,
+    )
+    await db.commit()
+
+    if mobile_redirect:
+        token_params = urlencode(
+            {
+                "access_token": jwt_token,
+                "refresh_token": session_obj.refresh_token,
+            }
+        )
+        return RedirectResponse(url=f"{mobile_redirect}?{token_params}", status_code=302)
+
+    redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
+    _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    return redirect_to
+
+
+# ------------------------------------------------------------------
 # Login
 # ------------------------------------------------------------------
 
