@@ -44,11 +44,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     }
 
     // Mobile/tablet detection — iPadOS reports a Mac user agent, so
-    // we also check for touch support with any screen dimension and
-    // the maxTouchPoints hint (iPads report 5).
+    // we also check for touch + maxTouchPoints (iPads report 5).
+    // A width cap prevents Windows touchscreen laptops (maxTouchPoints 10,
+    // screens ≥1920px) from being misidentified as mobile.
     const isMobile = typeof window !== 'undefined' && (
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      ('ontouchstart' in window && navigator.maxTouchPoints > 1)
+      ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 1400)
     );
 
     if (isMobile) {
