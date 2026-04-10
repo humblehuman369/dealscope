@@ -233,11 +233,13 @@ export default function PricingContent() {
     },
   ];
 
-  const proCtaHref = !isAuthenticated
+  // On Capacitor, always open the UpgradeModal (RevenueCat IAP).
+  // Never redirect to /register with plan params — that path leads to Stripe.
+  const proCtaHref = (!isAuthenticated && !IS_CAPACITOR)
     ? `/register?plan=pro&billing=${isAnnual ? "annual" : "monthly"}`
     : undefined;
 
-  const handleProClick = isAuthenticated
+  const handleProClick = (isAuthenticated || IS_CAPACITOR)
     ? () => setUpgradeModalOpen(true)
     : undefined;
 

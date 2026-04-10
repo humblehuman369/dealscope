@@ -43,10 +43,12 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       return;
     }
 
-    // Mobile browser fallback — scan uses GPS/compass, not getUserMedia
+    // Mobile/tablet detection — iPadOS reports a Mac user agent, so
+    // we also check for touch support with any screen dimension and
+    // the maxTouchPoints hint (iPads report 5).
     const isMobile = typeof window !== 'undefined' && (
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      ('ontouchstart' in window && window.innerWidth < 1024)
+      ('ontouchstart' in window && navigator.maxTouchPoints > 1)
     );
 
     if (isMobile) {
