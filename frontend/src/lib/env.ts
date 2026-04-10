@@ -8,9 +8,22 @@
  * Requests go directly to the backend with Bearer token auth.
  */
 
-/** Detect Capacitor runtime (WebView native shell). */
-export const IS_CAPACITOR =
-  typeof window !== 'undefined' && !!(window as any).Capacitor
+/**
+ * Detect Capacitor runtime (WebView native shell).
+ *
+ * Primary: window.Capacitor (injected by native bridge).
+ * Fallback: localStorage flag set on first successful bridge detection,
+ * so subsequent page loads in the same WebView are correctly identified
+ * even if the bridge injection hasn't completed yet.
+ */
+export const IS_CAPACITOR: boolean = (() => {
+  if (typeof window === 'undefined') return false
+  if ((window as any).Capacitor) {
+    try { localStorage.setItem('__cap_bridge', '1') } catch { /* noop */ }
+    return true
+  }
+  try { return localStorage.getItem('__cap_bridge') === '1' } catch { return false }
+})()
 
 /**
  * Base URL prefix for client-side API calls.

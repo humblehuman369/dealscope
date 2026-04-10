@@ -146,6 +146,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
     async function startCamera() {
       try {
+        if (navigator.permissions) {
+          const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          if (status.state === 'denied') {
+            setCameraError('Camera access is blocked. Please enable camera permission in Settings and try again.');
+            return;
+          }
+        }
+
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
@@ -163,12 +171,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         if (cancelled) return;
         console.error('Camera error:', error);
         if (error instanceof Error) {
-          if (error.name === 'NotAllowedError') {
-            setCameraError('Camera permission denied. Please enable camera access in your browser settings.');
+          if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
+            setCameraError('Camera permission denied. Please enable camera access in Settings → DealGapIQ.');
           } else if (error.name === 'NotFoundError') {
             setCameraError('No camera found. Please use a device with a camera.');
+          } else if (error.name === 'AbortError') {
+            setCameraError('Camera access was interrupted. Please close other apps using the camera and try again.');
           } else {
-            setCameraError('Unable to access camera. Please try again.');
+            setCameraError(`Unable to access camera: ${error.message}`);
           }
         }
       }

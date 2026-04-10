@@ -118,11 +118,17 @@ const FAQ_ITEMS = [
   },
 ]
 
-const TRUST_ITEMS = [
+const TRUST_ITEMS_WEB = [
   { Icon: Check, text: 'Cancel anytime' },
   { Icon: CreditCard, text: 'Secured by Stripe' },
   { Icon: FileText, text: 'Instant invoices' },
   { Icon: Shield, text: '7-day free trial' },
+]
+
+const TRUST_ITEMS_CAPACITOR = [
+  { Icon: Check, text: 'Cancel anytime' },
+  { Icon: Shield, text: '7-day free trial' },
+  { Icon: Check, text: 'Restore purchases anytime' },
 ]
 
 /* ── Shared CTA style for disabled/current plan button ───────── */
@@ -507,7 +513,7 @@ function BillingContent() {
           className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-x-10"
           style={{ padding: '2rem 0' }}
         >
-          {TRUST_ITEMS.map(({ Icon, text }) => (
+          {(IS_CAPACITOR ? TRUST_ITEMS_CAPACITOR : TRUST_ITEMS_WEB).map(({ Icon, text }) => (
             <div
               key={text}
               className="flex items-center"
