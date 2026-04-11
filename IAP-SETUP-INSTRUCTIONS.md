@@ -15,7 +15,7 @@ connected between App Store Connect and RevenueCat.
 - **RevenueCat Project ID:** `projd3d13e41`
 - **RevenueCat Entitlement:** `DealGapIQ Pro` (already exists, has 3 products from Test Store)
 - **RevenueCat Offering:** `default` (already exists, has 3 packages)
-- **Stripe Pricing (must match):** $39/month, $348/year ($29/mo billed annually)
+- **Stripe Pricing (must match):** $39.99/month, $349.99/year ($29.17/mo billed annually)
 
 ### What already exists
 
@@ -48,7 +48,7 @@ Ensure ALL of these fields are filled in:
 
 **Subscription Pricing:**
 - Base country: United States
-- Price: **$348.00/year** (Apple price tier closest to $348 — likely Tier 116 or similar. Choose the tier that gives $349.99 if $348 is not exact.)
+- Price: **$349.99/year** (Apple price tier that returns exactly $349.99 via StoreKit)
 
 **App Store Localization** (click + to add English if not present):
 
@@ -65,17 +65,18 @@ Ensure ALL of these fields are filled in:
 
 Navigate to: **DealGapIQ Pro subscription group → click + (or "Create Subscription")**
 
-IMPORTANT: Use this product ID since `com.dealgapiq.mobile.pro.monthly` is reserved:
+IMPORTANT: Use this product ID since `com.dealgapiq.mobile.pro.monthly` and
+`com.dealgapiq.mobile.monthly` are permanently reserved (Apple does not allow reusing deleted product IDs):
 
 | Field | Value |
 |-------|-------|
 | **Reference Name** | DealGapIQ Pro Monthly |
-| **Product ID** | `com.dealgapiq.mobile.monthly` |
+| **Product ID** | `com.dealgapiq.mobile.monthly2` |
 | **Subscription Duration** | 1 Month |
 
 **Subscription Pricing:**
 - Base country: United States
-- Price: **$39.00/month** (Apple price tier closest to $39 — likely Tier 12 at $39.99 or Tier 11. Choose the tier nearest $39.)
+- Price: **$39.99/month** (Apple price tier that returns exactly $39.99 via StoreKit)
 
 **App Store Localization:**
 
@@ -141,7 +142,7 @@ The current App Store products in RevenueCat may have incorrect product IDs. Del
 
 | Display Name | Identifier | Type |
 |-------------|-----------|------|
-| Monthly Subscription | `com.dealgapiq.mobile.monthly` | Subscription |
+| Monthly Subscription | `com.dealgapiq.mobile.monthly2` | Subscription |
 | Yearly Subscription | `com.dealgapiq.mobile.pro.yearly` | Subscription |
 | Lifetime | `com.dealgapiq.mobile.pro.lifetime` | Non-consumable |
 
@@ -164,7 +165,7 @@ The offering should have these packages mapped to the App Store products:
 
 | Package Identifier | Product |
 |-------------------|---------|
-| `$rc_monthly` | `com.dealgapiq.mobile.monthly` (App Store) |
+| `$rc_monthly` | `com.dealgapiq.mobile.monthly2` (App Store) |
 | `$rc_annual` | `com.dealgapiq.mobile.pro.yearly` (App Store) |
 | `$rc_lifetime` | `com.dealgapiq.mobile.pro.lifetime` (App Store) |
 

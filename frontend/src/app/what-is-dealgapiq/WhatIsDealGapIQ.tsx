@@ -427,7 +427,7 @@ export default function WhatIsDealGapIQ() {
           Start Free — Analyze Your First Property
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
         </Link>
-        <div style={{ fontSize: '0.82rem', color: t.textMuted, marginTop: '1rem' }}>5 free analyses per month · No credit card required</div>
+        <div style={{ fontSize: '0.82rem', color: t.textMuted, marginTop: '1rem' }}>3 free analyses per month · No credit card required</div>
       </div>
 
       {/* FOOTER */}

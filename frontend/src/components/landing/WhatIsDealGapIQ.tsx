@@ -124,7 +124,7 @@ export function WhatIsDealGapIQ() {
           </svg>
         </Link>
         <div className="cta-sub-simple">
-          5 free analyses per month · No credit card required · Pro from $29.17/mo
+          3 free analyses per month · No credit card required · Pro from $29.17/mo
         </div>
       </div>
 

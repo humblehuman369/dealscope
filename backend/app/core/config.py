@@ -189,7 +189,7 @@ class Settings(BaseSettings):
         return s.rstrip("/")
 
     # ===========================================
-    # Stripe (Billing) — 2-tier model: Free + Pro ($29/mo)
+    # Stripe (Billing) — 2-tier model: Free + Pro ($39.99/mo or $29.17/mo annual)
     # ===========================================
     STRIPE_SECRET_KEY: str = ""
     STRIPE_PUBLISHABLE_KEY: str = ""
@@ -203,6 +203,8 @@ class Settings(BaseSettings):
     # RevenueCat (Mobile IAP)
     # ===========================================
     REVENUECAT_WEBHOOK_SECRET: str = ""
+    REVENUECAT_API_KEY: str = ""  # V1 secret key for subscriber lookups
+    REVENUECAT_ENTITLEMENT_ID: str = "DealGapIQ Pro"
 
     # ===========================================
     # Google OAuth

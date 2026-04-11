@@ -404,7 +404,7 @@ function RegistrationInner() {
       >
         {plan === "pro"
           ? `Full Pro access free until ${trialEndDate}.`
-          : "Get started with 5 free analyses per month."}
+          : "Get started with 3 free analyses per month."}
       </p>
 
       {/* Sign in with Apple */}

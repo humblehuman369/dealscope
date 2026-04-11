@@ -91,7 +91,7 @@ class BillingService:
         self.plans = self._define_plans()
 
     def _define_plans(self) -> dict[str, PricingPlan]:
-        """Define pricing plans aligned to 2-tier model: Starter (Free) + Pro ($29/mo)."""
+        """Define pricing plans aligned to 2-tier model: Starter (Free) + Pro ($39.99/mo or $29.17/mo annual)."""
         return {
             "free": PricingPlan(
                 id="free",
@@ -158,8 +158,8 @@ class BillingService:
                 name="Pro Investor",
                 tier=SubscriptionTier.PRO,
                 description="For investors who verify the math before they make the offer.",
-                price_monthly=3900,  # $39/month (monthly billing)
-                price_yearly=34800,  # $348/year ($29/mo billed annually)
+                price_monthly=3999,  # $39.99/month (monthly billing)
+                price_yearly=34999,  # $349.99/year ($29.17/mo billed annually)
                 stripe_price_id_monthly=settings.STRIPE_PRICE_PRO_MONTHLY,
                 stripe_price_id_yearly=settings.STRIPE_PRICE_PRO_YEARLY,
                 properties_limit=-1,  # Unlimited
