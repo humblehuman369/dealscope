@@ -288,7 +288,7 @@ function RegistrationInner() {
   const billingParam = searchParams.get("billing");
   const returnToParam = searchParams.get("returnTo") || searchParams.get("redirect");
   const initialPlan: PlanType = planParam === "starter" ? "starter" : "pro";
-  const isAnnual = billingParam !== "monthly"; // default to annual
+  const [isAnnual, setIsAnnual] = useState(billingParam !== "monthly");
 
   const getPostRegisterPath = () => {
     if (!returnToParam) return "/search";
@@ -325,7 +325,12 @@ function RegistrationInner() {
 
   const handlePlanSwitch = (p: PlanType) => {
     setPlan(p);
-    router.replace(`/register?plan=${p}`, { scroll: false });
+    router.replace(`/register?plan=${p}&billing=${isAnnual ? "annual" : "monthly"}`, { scroll: false });
+  };
+
+  const handleBillingToggle = (annual: boolean) => {
+    setIsAnnual(annual);
+    router.replace(`/register?plan=${plan}&billing=${annual ? "annual" : "monthly"}`, { scroll: false });
   };
 
   const handleCreateAccount = async () => {
@@ -785,38 +790,105 @@ function RegistrationInner() {
           </Link>
         </nav>
 
-        {/* ─── PLAN SWITCHER (form step only) ─── */}
+        {/* ─── BILLING TOGGLE + PLAN SWITCHER (form step only) ─── */}
         {step === "form" && (
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
-              gap: "8px",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "16px",
               padding: "32px 24px 0",
             }}
           >
-            {(["starter", "pro"] as PlanType[]).map((p) => (
+            {/* Monthly / Annual toggle */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0",
+                background: "#0D1424",
+                borderRadius: "40px",
+                padding: "4px",
+                border: "1px solid rgba(148,163,184,0.08)",
+              }}
+            >
               <button
-                key={p}
-                onClick={() => handlePlanSwitch(p)}
+                onClick={() => handleBillingToggle(false)}
                 style={{
                   padding: "8px 20px",
-                  borderRadius: "6px",
-                  border: `1px solid ${plan === p ? "rgba(14,165,233,0.25)" : "rgba(148,163,184,0.08)"}`,
-                  background: plan === p ? "rgba(14,165,233,0.06)" : "transparent",
-                  color: plan === p ? "#0EA5E9" : "#64748B",
-                  fontSize: "12px",
-                  fontWeight: 700,
+                  borderRadius: "36px",
+                  border: "none",
+                  fontSize: "13px",
+                  fontWeight: 600,
                   cursor: "pointer",
+                  transition: "all 0.2s ease",
                   fontFamily: "inherit",
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase" as const,
-                  transition: "all 0.2s",
+                  background: !isAnnual ? "#0EA5E9" : "transparent",
+                  color: !isAnnual ? "#fff" : "#64748B",
                 }}
               >
-                {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29" : "$39"}/mo`}
+                Monthly
               </button>
-            ))}
+              <button
+                onClick={() => handleBillingToggle(true)}
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: "36px",
+                  border: "none",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  fontFamily: "inherit",
+                  background: isAnnual ? "#0EA5E9" : "transparent",
+                  color: isAnnual ? "#fff" : "#64748B",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                Annual
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    background: isAnnual ? "rgba(255,255,255,0.22)" : "rgba(14,165,233,0.15)",
+                    color: isAnnual ? "#fff" : "#0EA5E9",
+                    padding: "2px 6px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  SAVE 26%
+                </span>
+              </button>
+            </div>
+
+            {/* Plan switcher */}
+            <div style={{ display: "flex", gap: "8px" }}>
+              {(["starter", "pro"] as PlanType[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => handlePlanSwitch(p)}
+                  style={{
+                    padding: "8px 20px",
+                    borderRadius: "6px",
+                    border: `1px solid ${plan === p ? "rgba(14,165,233,0.25)" : "rgba(148,163,184,0.08)"}`,
+                    background: plan === p ? "rgba(14,165,233,0.06)" : "transparent",
+                    color: plan === p ? "#0EA5E9" : "#64748B",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase" as const,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29" : "$39"}/mo`}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
