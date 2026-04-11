@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/bradgeisen/IQ-Data/dealscope/frontend && npm run dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/bradgeisen/IQ-Data/dealscope/backend && source venv/bin/activate && uvicorn app.main:app --reload --port 8000"
+      ],
+      "port": 8000
+    }
+  ]
+}
