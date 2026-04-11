@@ -193,6 +193,99 @@ class PropertyService:
             raw_export["error"] = str(e)
         return raw_export, unwrapped
 
+    # ------------------------------------------------------------------
+    # Provider fetch helpers — each wraps one external API provider and
+    # returns (data, timing_ms).  Called concurrently via asyncio.gather
+    # inside search_property() to cut wall-clock time from SUM to MAX.
+    # ------------------------------------------------------------------
+
+    async def _fetch_rentcast_provider(self, address: str) -> tuple[dict[str, Any], float]:
+        """Fetch all RentCast data (property, value, rent, market stats)."""
+        t0 = time.perf_counter()
+        data: dict[str, Any] = {}
+
+        rc_property = await self.rentcast.get_property(address)
+        rc_value = await self.rentcast.get_value_estimate(address)
+        rc_rent = await self.rentcast.get_rent_estimate(address)
+
+        if rc_property.success and rc_property.data:
+            data.update(rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data)
+        if rc_value.success and rc_value.data:
+            data.update(rc_value.data)
+        if rc_rent.success and rc_rent.data:
+            data.update(rc_rent.data)
+
+        try:
+            zip_code = data.get("zipCode") or (address.split()[-1] if address else None)
+            if zip_code and str(zip_code).strip():
+                rc_market = await self.rentcast.get_market_statistics(zip_code=str(zip_code).strip())
+                if rc_market.success and rc_market.data:
+                    data["market_statistics"] = rc_market.data
+                    logger.info("RentCast market statistics retrieved for zip: %s", zip_code)
+        except Exception as e:
+            logger.warning("Failed to fetch RentCast market statistics: %s", e)
+
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return data, elapsed_ms
+
+    async def _fetch_zillow_provider(self, address: str) -> tuple[dict[str, Any] | None, str | None, float]:
+        """Fetch Zillow data via AXESSO with retry logic."""
+        t0 = time.perf_counter()
+        axesso_data: dict[str, Any] | None = None
+        zpid: str | None = None
+        try:
+            logger.info("Fetching Zillow data for: %s", address)
+            axesso_data, zpid = await self._fetch_zillow_with_retry(address)
+            if axesso_data:
+                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
+                rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
+                logger.info(
+                    "Zillow data retrieved - zpid: %s, zestimate: $%s, rentZestimate: $%s",
+                    zpid,
+                    zestimate,
+                    rent_zestimate,
+                )
+            else:
+                logger.warning("Zillow search returned no data for: %s", address)
+        except Exception as e:
+            logger.error("Error fetching Zillow data: %s", e)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return axesso_data, zpid, elapsed_ms
+
+    async def _fetch_redfin_provider(self, address: str) -> tuple[dict[str, Any] | None, float]:
+        """Fetch Redfin property estimate."""
+        if not self.redfin:
+            return None, 0.0
+        t0 = time.perf_counter()
+        data: dict[str, Any] | None = None
+        try:
+            data = await self.redfin.get_property_estimate(address)
+            if data:
+                logger.info("Redfin data retrieved - estimate: $%s", data.get("redfin_estimate"))
+            else:
+                logger.warning("Redfin estimate unavailable for: %s", address)
+        except Exception as e:
+            logger.error("Error fetching Redfin data: %s", e)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return data, elapsed_ms
+
+    async def _fetch_realtor_provider(self, address: str) -> tuple[dict[str, Any] | None, float]:
+        """Fetch Realtor.com property estimate."""
+        if not self.realtor:
+            return None, 0.0
+        t0 = time.perf_counter()
+        data: dict[str, Any] | None = None
+        try:
+            data = await self.realtor.get_property_estimate(address)
+            if data:
+                logger.info("Realtor data retrieved - estimate: $%s", data.get("realtor_estimate"))
+            else:
+                logger.warning("Realtor estimate unavailable for: %s", address)
+        except Exception as e:
+            logger.error("Error fetching Realtor data: %s", e)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return data, elapsed_ms
+
     async def search_property(
         self,
         address: str,
@@ -318,83 +411,24 @@ class PropertyService:
                     except Exception as e:
                         logger.warning(f"Failed to deserialize cached property: {e}")
 
-            # Fetch from RentCast
-            t_rc = time.perf_counter()
-            rc_property = await self.rentcast.get_property(address)
-            rc_value = await self.rentcast.get_value_estimate(address)
-            rc_rent = await self.rentcast.get_rent_estimate(address)
-            timings["rentcast_ms"] = (time.perf_counter() - t_rc) * 1000
-
-            if rc_property.success and rc_property.data:
-                rentcast_data.update(rc_property.data[0] if isinstance(rc_property.data, list) else rc_property.data)
-            if rc_value.success and rc_value.data:
-                rentcast_data.update(rc_value.data)
-            if rc_rent.success and rc_rent.data:
-                rentcast_data.update(rc_rent.data)
-
-            # Fetch market statistics from RentCast (for neighborhood/market analysis)
-            try:
-                zip_code = rentcast_data.get("zipCode") or (address.split()[-1] if address else None)
-                if zip_code and str(zip_code).strip():
-                    rc_market = await self.rentcast.get_market_statistics(zip_code=str(zip_code).strip())
-                    if rc_market.success and rc_market.data:
-                        rentcast_data["market_statistics"] = rc_market.data
-                        logger.info("RentCast market statistics retrieved for zip: %s", zip_code)
-            except Exception as e:
-                logger.warning("Failed to fetch RentCast market statistics: %s", e)
-
-            # Fetch from Zillow via AXESSO
-            t_zil = time.perf_counter()
-            zillow_zpid = None
-            try:
-                logger.info("Fetching Zillow data for: %s", address)
-                axesso_data, zillow_zpid = await self._fetch_zillow_with_retry(address)
-                if axesso_data:
-                    zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                    rent_zestimate = axesso_data.get("rentZestimate") or axesso_data.get("RentZestimate")
-                    logger.info(
-                        "Zillow data retrieved - zpid: %s, zestimate: $%s, rentZestimate: $%s",
-                        zillow_zpid,
-                        zestimate,
-                        rent_zestimate,
-                    )
-                else:
-                    logger.warning("Zillow search returned no data for: %s", address)
-            except Exception as e:
-                logger.error("Error fetching Zillow data: %s", e)
-            timings["zillow_ms"] = (time.perf_counter() - t_zil) * 1000
-
-            # Fetch from Redfin (value estimate only)
-            if self.redfin:
-                t_rf = time.perf_counter()
-                try:
-                    redfin_data = await self.redfin.get_property_estimate(address)
-                    if redfin_data:
-                        logger.info(
-                            "Redfin data retrieved - estimate: $%s",
-                            redfin_data.get("redfin_estimate"),
-                        )
-                    else:
-                        logger.warning("Redfin estimate unavailable for: %s", address)
-                except Exception as e:
-                    logger.error("Error fetching Redfin data: %s", e)
-                timings["redfin_ms"] = (time.perf_counter() - t_rf) * 1000
-
-            # Fetch from Realtor.com (value estimate)
-            if self.realtor:
-                t_rt = time.perf_counter()
-                try:
-                    realtor_data = await self.realtor.get_property_estimate(address)
-                    if realtor_data:
-                        logger.info(
-                            "Realtor data retrieved - estimate: $%s",
-                            realtor_data.get("realtor_estimate"),
-                        )
-                    else:
-                        logger.warning("Realtor estimate unavailable for: %s", address)
-                except Exception as e:
-                    logger.error("Error fetching Realtor data: %s", e)
-                timings["realtor_ms"] = (time.perf_counter() - t_rt) * 1000
+            # Fetch from all providers in parallel (RentCast, Zillow, Redfin, Realtor)
+            (
+                (rentcast_data, rentcast_ms),
+                (axesso_data, zillow_zpid, zillow_ms),
+                (redfin_data, redfin_ms),
+                (realtor_data, realtor_ms),
+            ) = await asyncio.gather(
+                self._fetch_rentcast_provider(address),
+                self._fetch_zillow_provider(address),
+                self._fetch_redfin_provider(address),
+                self._fetch_realtor_provider(address),
+            )
+            timings["rentcast_ms"] = rentcast_ms
+            timings["zillow_ms"] = zillow_ms
+            if redfin_ms > 0:
+                timings["redfin_ms"] = redfin_ms
+            if realtor_ms > 0:
+                timings["realtor_ms"] = realtor_ms
 
         # Normalize and merge data
         t_norm = time.perf_counter()
