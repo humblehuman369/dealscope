@@ -133,6 +133,91 @@ async def record_analysis(current_user: CurrentUser, db: DbSession):
         )
 
 
+@router.post("/sync-iap", response_model=SubscriptionResponse, summary="Sync mobile IAP entitlement")
+async def sync_iap(current_user: CurrentUser, db: DbSession):
+    """
+    Called by the mobile app after a RevenueCat purchase or restore.
+
+    If REVENUECAT_API_KEY is configured, queries RevenueCat's subscriber API
+    to verify the user's entitlement and upgrades the local subscription
+    accordingly.  Otherwise returns current subscription state (the webhook
+    will handle the upgrade asynchronously).
+    """
+    import httpx
+
+    from app.models.subscription import TIER_LIMITS, Subscription, SubscriptionStatus, SubscriptionTier
+
+    subscription = await billing_service.get_or_create_subscription(db, current_user.id)
+
+    rc_key = settings.REVENUECAT_API_KEY
+    entitlement_id = settings.REVENUECAT_ENTITLEMENT_ID
+
+    if rc_key:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(
+                    f"https://api.revenuecat.com/v1/subscribers/{current_user.id}",
+                    headers={"Authorization": f"Bearer {rc_key}"},
+                )
+            if resp.status_code == 200:
+                data = resp.json()
+                entitlements = data.get("subscriber", {}).get("entitlements", {})
+                ent = entitlements.get(entitlement_id, {})
+
+                from datetime import UTC, datetime
+
+                expires_str = ent.get("expires_date")
+                is_active = False
+                if expires_str:
+                    expires_dt = datetime.fromisoformat(expires_str.replace("Z", "+00:00"))
+                    is_active = expires_dt > datetime.now(UTC)
+
+                if is_active and subscription.tier != SubscriptionTier.PRO:
+                    pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+                    subscription.tier = SubscriptionTier.PRO
+                    subscription.status = SubscriptionStatus.ACTIVE
+                    subscription.properties_limit = pro_limits["properties_limit"]
+                    subscription.searches_per_month = pro_limits["searches_per_month"]
+                    subscription.api_calls_per_month = pro_limits["api_calls_per_month"]
+                    subscription.cancel_at_period_end = False
+                    subscription.current_period_end = expires_dt
+                    subscription.updated_at = datetime.now(UTC)
+                    await db.commit()
+                    await db.refresh(subscription)
+                    logger.info(f"sync-iap: upgraded user {current_user.id} to Pro via API check")
+
+        except Exception as e:
+            logger.warning(f"sync-iap: RevenueCat API check failed for {current_user.id}: {e}")
+
+    plan_type = PlanType.STARTER
+    if subscription.tier.value == "pro":
+        if subscription.stripe_price_id == settings.STRIPE_PRICE_PRO_YEARLY:
+            plan_type = PlanType.PRO_ANNUAL
+        else:
+            plan_type = PlanType.PRO_MONTHLY
+
+    return SubscriptionResponse(
+        id=str(subscription.id),
+        tier=subscription.tier,
+        status=subscription.status,
+        plan_type=plan_type,
+        current_period_start=subscription.current_period_start,
+        current_period_end=subscription.current_period_end,
+        cancel_at_period_end=subscription.cancel_at_period_end,
+        canceled_at=subscription.canceled_at,
+        trial_start=subscription.trial_start,
+        trial_end=subscription.trial_end,
+        properties_limit=subscription.properties_limit,
+        searches_per_month=subscription.searches_per_month,
+        api_calls_per_month=subscription.api_calls_per_month,
+        searches_used=subscription.searches_used,
+        api_calls_used=subscription.api_calls_used,
+        usage_reset_date=subscription.usage_reset_date,
+        created_at=subscription.created_at,
+        updated_at=subscription.updated_at,
+    )
+
+
 @router.post("/subscription/cancel", response_model=CancelSubscriptionResponse, summary="Cancel subscription")
 async def cancel_subscription(data: CancelSubscriptionRequest, current_user: CurrentUser, db: DbSession):
     """

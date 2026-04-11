@@ -309,7 +309,7 @@ All data comes from Railway. Visuals match frontend.
 - [ ] Configure same products in Google Play Console
 - [ ] Set up 7-day free trial on annual plan
 - [ ] Add API keys to EAS environment variables: `EXPO_PUBLIC_REVENUECAT_IOS_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`
-- [ ] Create `pro` entitlement in RevenueCat dashboard
+- [ ] Create `DealGapIQ Pro` entitlement in RevenueCat dashboard (exact string, case-sensitive)
 
 **Code:**
 - [ ] Verify `services/purchases.ts` initializes correctly with the real API keys
@@ -412,7 +412,7 @@ from RevenueCat. This keeps the backend's `subscription` table in sync.
 
 - [ ] Every screen loads and displays data from Railway staging
 - [ ] Full E2E: register → search → analyzing → verdict → strategy → save → deal vault
-- [ ] Starter flow: 5 analyses → gate → upgrade prompt
+- [ ] Starter flow: 3 analyses → gate → upgrade prompt
 - [ ] Pro flow: purchase → unlimited analyses → Excel export
 - [ ] Restore purchases flow
 - [ ] Biometric login flow
