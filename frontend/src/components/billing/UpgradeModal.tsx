@@ -68,10 +68,10 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
 
   const displayPriceMonthly = IS_CAPACITOR
     ? (rcPkg?.product.priceString ?? '…')
-    : `$${proPlan ? proPlan.price_monthly / 100 : 39}`
+    : `$${proPlan ? proPlan.price_monthly / 100 : 39.99}`
   const displayPriceAnnual = IS_CAPACITOR
     ? (pickRCPackage(rc.packages, true)?.product.priceString ?? '…')
-    : `$${proPlan ? proPlan.price_yearly / 100 : 348}`
+    : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
 
   const startCheckout = useCallback(async () => {
     if (IS_CAPACITOR) {
@@ -192,7 +192,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
                 color: '#fff',
               }}
             >
-              Save 25%
+              Save 27%
             </span>
           )}
         </div>
@@ -209,14 +209,14 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             <span className="text-2xl font-bold text-white">
               {IS_CAPACITOR
                 ? (annual ? displayPriceAnnual : displayPriceMonthly)
-                : `$${annual ? (proPlan ? (proPlan.price_yearly / 100) / 12 : 29) : (proPlan ? proPlan.price_monthly / 100 : 39)}`}
+                : `$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}
             </span>
             <span className="text-slate-400 text-sm">
               {IS_CAPACITOR ? (annual ? '/year' : '/month') : '/month'}
             </span>
             {!IS_CAPACITOR && annual && (
               <span className="text-slate-500 text-xs ml-auto">
-                ${proPlan ? proPlan.price_yearly / 100 : 348}/yr
+                ${proPlan ? proPlan.price_yearly / 100 : 349.99}/yr
               </span>
             )}
           </div>

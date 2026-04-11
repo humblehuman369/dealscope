@@ -63,10 +63,10 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
     {
       id: 'pro',
       name: 'Pro',
-      price: isAnnual ? '$29' : '$39',
+      price: isAnnual ? '$29.17' : '$39.99',
       period: '/month',
       note: isAnnual
-        ? 'Billed annually · Cancel anytime · 7-day free trial'
+        ? 'Billed annually at $349.99 · Cancel anytime · 7-day free trial'
         : 'Billed monthly · Cancel anytime · 7-day free trial',
       recommended: true,
       features: [
@@ -105,7 +105,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
 const FAQ_ITEMS = [
   {
     q: 'What happens when my trial ends?',
-    a: "You'll be charged $29/mo (annual) or $39/mo (monthly). Cancel before the trial ends and you're never charged.",
+    a: "You'll be charged $349.99/yr (annual) or $39.99/mo (monthly). Cancel before the trial ends and you're never charged.",
   },
   {
     q: 'Can I switch back to Starter?',
@@ -284,7 +284,7 @@ function BillingContent() {
               marginBottom: '0.5rem',
             }}
           >
-            {isAnnual ? '$29' : '$39'}/mo vs. one bad deal
+            {isAnnual ? '$29.17' : '$39.99'}/mo vs. one bad deal
           </div>
           <div style={{ fontSize: '1rem', lineHeight: 1.75 }}>
             The average investor who skips proper underwriting overpays by{' '}
@@ -375,7 +375,7 @@ function BillingContent() {
                   borderRadius: 6,
                 }}
               >
-                SAVE 26%
+                SAVE 27%
               </span>
             </button>
           </div>

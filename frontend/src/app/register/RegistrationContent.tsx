@@ -134,8 +134,8 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
   annual = true,
 }) => {
   const isPro = plan === "pro";
-  const proPrice = annual ? "$29" : "$39";
-  const proBillingNote = annual ? "Billed annually · Cancel anytime" : "Billed monthly · Cancel anytime";
+  const proPrice = annual ? "$29.17" : "$39.99";
+  const proBillingNote = annual ? "Billed annually at $349.99 · Cancel anytime" : "Billed monthly · Cancel anytime";
 
   const features = isPro
     ? [
@@ -859,7 +859,7 @@ function RegistrationInner() {
                     borderRadius: "6px",
                   }}
                 >
-                  SAVE 26%
+                  SAVE 27%
                 </span>
               </button>
             </div>
@@ -885,7 +885,7 @@ function RegistrationInner() {
                     transition: "all 0.2s",
                   }}
                 >
-                  {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29" : "$39"}/mo`}
+                  {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29.17" : "$39.99"}/mo`}
                 </button>
               ))}
             </div>

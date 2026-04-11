@@ -269,7 +269,7 @@ export default function PricingContent() {
           DealGapIQ calculates your Income Value, Target Buy, and Deal Gap across 6 investment strategies. In 60 seconds.
         </p>
         <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 32px 0", fontStyle: "italic" }}>
-          One bad deal costs thousands. DealGapIQ Pro costs $29/mo.
+          One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo.
         </p>
 
         {/* ─── TOGGLE ─── */}
@@ -328,7 +328,7 @@ export default function PricingContent() {
                 borderRadius: "6px",
               }}
             >
-              SAVE 26%
+              SAVE 27%
             </span>
           </button>
         </div>
@@ -493,17 +493,17 @@ export default function PricingContent() {
           <div style={{ display: "flex", alignItems: "baseline", gap: "4px", margin: "0 0 2px 0" }}>
             <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--text-label)" }}>$</span>
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>
-              {isAnnual ? "29" : "39"}
+              {isAnnual ? "29.17" : "39.99"}
             </span>
             <span style={{ fontSize: "15px", color: "var(--text-label)", fontWeight: 500 }}>/mo</span>
           </div>
           {isAnnual ? (
             <p style={{ fontSize: "12px", color: "var(--text-label)", margin: "0 0 10px 0" }}>
-              Billed annually &middot; <span style={{ color: "var(--accent-sky)", fontWeight: 600 }}>Save $120/yr</span>
+              Billed annually at $349.99 &middot; <span style={{ color: "var(--accent-sky)", fontWeight: 600 }}>Save $130/yr</span>
             </p>
           ) : (
             <p style={{ fontSize: "12px", color: "var(--text-label)", margin: "0 0 10px 0" }}>
-              Billed monthly &middot; <span style={{ color: "var(--text-secondary)" }}>Switch to annual &amp; save 26%</span>
+              Billed monthly &middot; <span style={{ color: "var(--text-secondary)" }}>Switch to annual &amp; save 27%</span>
             </p>
           )}
           <p style={{ fontSize: "13px", color: "var(--text-body)", lineHeight: 1.6, margin: "0 0 28px 0" }}>
@@ -1044,7 +1044,7 @@ export default function PricingContent() {
       >
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-heading)", margin: 0, whiteSpace: "nowrap" }}>
-            Pro — ${isAnnual ? "29" : "39"}/mo
+            Pro — ${isAnnual ? "29.17" : "39.99"}/mo
           </p>
           <p style={{ fontSize: "10px", color: "var(--text-label)", margin: 0 }}>7-day free trial</p>
         </div>
