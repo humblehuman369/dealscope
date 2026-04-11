@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
-import { api, billingApi } from '@/lib/api-client'
+import { api } from '@/lib/api-client'
 import {
   Check,
   X,
@@ -17,7 +17,6 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
-import { trackEvent } from '@/lib/eventTracking'
 import { IS_CAPACITOR } from '@/lib/env'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
 
@@ -59,45 +58,49 @@ interface PlanConfig {
   features: PlanFeature[]
 }
 
-const PLANS: PlanConfig[] = [
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: '$29',
-    period: '/month',
-    note: 'Billed annually · $39/mo if monthly · 7-day free trial',
-    recommended: true,
-    features: [
-      { bold: 'Unlimited', text: 'property analyses', available: true },
-      { text: 'Deal Gap + Income Value + Target Buy', available: true },
-      { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
-      { text: '6 strategy snapshots', available: true },
-      { text: 'Seller Motivation indicator', available: true },
-      { bold: 'Full calculation breakdown', text: '— see every assumption', available: true },
-      { bold: 'Editable inputs', text: '— stress test any variable', available: true },
-      { bold: 'Excel proforma', text: '+ lender-ready PDF reports', available: true },
-      { bold: 'Side-by-side', text: 'deal comparison pipeline', available: true },
-    ],
-  },
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: '$0',
-    period: '/month',
-    note: 'Free forever · 3 analyses/month',
-    features: [
-      { text: '3 property analyses per month', available: true },
-      { text: 'Deal Gap + Income Value + Target Buy', available: true },
-      { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
-      { text: '6 strategy snapshots', available: true },
-      { text: 'Seller Motivation indicator', available: true },
-      { text: 'Full calculation breakdown', available: false },
-      { text: 'Editable inputs & stress testing', available: false },
-      { text: 'Excel proforma & PDF reports', available: false },
-      { text: 'Side-by-side deal comparison', available: false },
-    ],
-  },
-]
+function getPlans(isAnnual: boolean): PlanConfig[] {
+  return [
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: isAnnual ? '$29' : '$39',
+      period: '/month',
+      note: isAnnual
+        ? 'Billed annually · Cancel anytime · 7-day free trial'
+        : 'Billed monthly · Cancel anytime · 7-day free trial',
+      recommended: true,
+      features: [
+        { bold: 'Unlimited', text: 'property analyses', available: true },
+        { text: 'Deal Gap + Income Value + Target Buy', available: true },
+        { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
+        { text: '6 strategy snapshots', available: true },
+        { text: 'Seller Motivation indicator', available: true },
+        { bold: 'Full calculation breakdown', text: '— see every assumption', available: true },
+        { bold: 'Editable inputs', text: '— stress test any variable', available: true },
+        { bold: 'Excel proforma', text: '+ lender-ready PDF reports', available: true },
+        { bold: 'Side-by-side', text: 'deal comparison pipeline', available: true },
+      ],
+    },
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: '$0',
+      period: '/month',
+      note: 'Free forever · 3 analyses/month',
+      features: [
+        { text: '3 property analyses per month', available: true },
+        { text: 'Deal Gap + Income Value + Target Buy', available: true },
+        { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
+        { text: '6 strategy snapshots', available: true },
+        { text: 'Seller Motivation indicator', available: true },
+        { text: 'Full calculation breakdown', available: false },
+        { text: 'Editable inputs & stress testing', available: false },
+        { text: 'Excel proforma & PDF reports', available: false },
+        { text: 'Side-by-side deal comparison', available: false },
+      ],
+    },
+  ]
+}
 
 const FAQ_ITEMS = [
   {
@@ -156,11 +159,13 @@ function BillingContent() {
   const { isLoading: authLoading } = useSession()
   const { isPro, isTrialing } = useSubscription()
 
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [isAnnual, setIsAnnual] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [proHovered, setProHovered] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+
+  const PLANS = getPlans(isAnnual)
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -170,33 +175,8 @@ function BillingContent() {
     }
   }, [searchParams])
 
-  const handleUpgrade = async () => {
-    if (IS_CAPACITOR) {
-      setShowUpgradeModal(true)
-      return
-    }
-    setCheckoutLoading(true)
-    setMessage(null)
-    try {
-      const origin = typeof window !== 'undefined' ? window.location.origin : ''
-      const { checkout_url } = await billingApi.createCheckoutSession({
-        success_url: `${origin}/billing?success=true`,
-        cancel_url: `${origin}/billing?canceled=true`,
-      })
-      trackEvent('checkout_started', { source: 'billing_page' })
-      window.location.href = checkout_url
-    } catch (err: unknown) {
-      let msg = 'Could not start checkout. Please try again.'
-      if (err instanceof Error) {
-        msg = err.message
-        if (msg.includes('502') || msg.includes('Bad Gateway')) {
-          msg = 'Payment service temporarily unavailable. Please wait 30 seconds and try again.'
-        }
-      }
-      setMessage({ type: 'error', text: msg })
-    } finally {
-      setCheckoutLoading(false)
-    }
+  const handleUpgrade = () => {
+    setShowUpgradeModal(true)
   }
 
   const handleManageBilling = async () => {
@@ -304,7 +284,7 @@ function BillingContent() {
               marginBottom: '0.5rem',
             }}
           >
-            $29/mo vs. one bad deal
+            {isAnnual ? '$29' : '$39'}/mo vs. one bad deal
           </div>
           <div style={{ fontSize: '1rem', lineHeight: 1.75 }}>
             The average investor who skips proper underwriting overpays by{' '}
@@ -334,6 +314,71 @@ function BillingContent() {
             are what they are — and lets you change every assumption until
             you&apos;re confident enough to make an offer.
           </p>
+        </div>
+
+        {/* ── Billing Toggle ── */}
+        <div className="flex justify-center" style={{ marginBottom: '2rem' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0,
+              background: 'var(--surface-card)',
+              borderRadius: 40,
+              padding: 4,
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            <button
+              onClick={() => setIsAnnual(false)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: 36,
+                border: 'none',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: FONT_DM,
+                background: !isAnnual ? T.teal : 'transparent',
+                color: !isAnnual ? 'var(--text-inverse)' : T.muted,
+              }}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setIsAnnual(true)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: 36,
+                border: 'none',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: FONT_DM,
+                background: isAnnual ? T.teal : 'transparent',
+                color: isAnnual ? 'var(--text-inverse)' : T.muted,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              Annual
+              <span
+                style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  background: isAnnual ? 'rgba(255,255,255,0.22)' : 'var(--color-sky-dim)',
+                  color: isAnnual ? 'var(--text-inverse)' : T.teal,
+                  padding: '2px 6px',
+                  borderRadius: 6,
+                }}
+              >
+                SAVE 26%
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* ── Plan Comparison Grid ── */}
@@ -477,8 +522,7 @@ function BillingContent() {
                   ) : (
                     <button
                       onClick={handleUpgrade}
-                      disabled={checkoutLoading}
-                      className="w-full min-h-[48px] transition-opacity hover:opacity-90 disabled:opacity-60"
+                      className="w-full min-h-[48px] transition-opacity hover:opacity-90"
                       style={{
                         display: 'block' as const,
                         textAlign: 'center' as const,
@@ -493,9 +537,7 @@ function BillingContent() {
                         fontFamily: FONT_DM,
                       }}
                     >
-                      {checkoutLoading
-                        ? <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                        : 'Start 7-Day Free Trial →'}
+                      Start 7-Day Free Trial →
                     </button>
                   )
                 ) : (
