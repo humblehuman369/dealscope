@@ -21,17 +21,21 @@ interface UseGeolocationOptions {
 
 const defaultOptions: UseGeolocationOptions = {
   enableHighAccuracy: true,
-  timeout: 5000, // 5 second timeout
-  maximumAge: 60000, // Accept cached position up to 1 minute old
-  watchPosition: false, // Use single request, not watch
+  timeout: 15000,
+  maximumAge: 60000,
+  watchPosition: false,
 };
 
 /**
  * Hook for accessing browser geolocation API.
  * Works on both desktop and mobile browsers.
+ *
+ * Mobile GPS cold starts commonly need 10-20s, so the default timeout
+ * is 15s with a 20s fallback. When `watchPosition` is true the browser
+ * keeps retrying automatically; transient timeouts are suppressed and
+ * only surfaced after the fallback window expires.
  */
 export function useGeolocation(options: UseGeolocationOptions = {}) {
-  // Memoize options to prevent infinite re-renders
   const enableHighAccuracy = options.enableHighAccuracy ?? defaultOptions.enableHighAccuracy;
   const timeout = options.timeout ?? defaultOptions.timeout;
   const maximumAge = options.maximumAge ?? defaultOptions.maximumAge;
@@ -47,10 +51,12 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     timestamp: null,
   });
 
-  // Track if initial request has been made
   const hasRequestedRef = useRef(false);
+  const retryCountRef = useRef(0);
+  const MAX_RETRIES = 2;
 
   const handleSuccess = useCallback((position: GeolocationPosition) => {
+    retryCountRef.current = 0;
     setState(prev => ({
       ...prev,
       latitude: position.coords.latitude,
@@ -62,7 +68,15 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     }));
   }, []);
 
+  const requestLocationRef = useRef<(() => void) | null>(null);
+
   const handleError = useCallback((error: GeolocationPositionError) => {
+    if (error.code === error.TIMEOUT && retryCountRef.current < MAX_RETRIES) {
+      retryCountRef.current += 1;
+      requestLocationRef.current?.();
+      return;
+    }
+
     let errorMessage = 'Unable to get location';
     
     switch (error.code) {
@@ -107,7 +121,13 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     if (watchPosition) {
       const watchId = navigator.geolocation.watchPosition(
         handleSuccess,
-        handleError,
+        (err) => {
+          // In watch mode, transient timeouts are expected while the
+          // device acquires a fix — only surface non-timeout errors.
+          if (err.code !== err.TIMEOUT) {
+            handleError(err);
+          }
+        },
         geoOptions
       );
       return () => navigator.geolocation.clearWatch(watchId);
@@ -120,14 +140,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     }
   }, [enableHighAccuracy, timeout, maximumAge, watchPosition, handleSuccess, handleError]);
 
+  requestLocationRef.current = requestLocation;
+
   // Initial location request - only run once on mount
   useEffect(() => {
     if (hasRequestedRef.current) return;
     hasRequestedRef.current = true;
     
     const cleanup = requestLocation();
-    
-    // Fallback timeout in case browser doesn't trigger error
+
+    const fallbackMs = watchPosition ? 30000 : 20000;
     const fallbackTimeout = setTimeout(() => {
       setState(prev => {
         if (prev.isLoading) {
@@ -139,15 +161,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         }
         return prev;
       });
-    }, 6000); // 6 seconds fallback
+    }, fallbackMs);
     
     return () => {
       clearTimeout(fallbackTimeout);
       if (cleanup) cleanup();
     };
-  }, []); // Empty dependency - only run once on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refresh = useCallback(() => {
+    retryCountRef.current = 0;
     requestLocation();
   }, [requestLocation]);
 

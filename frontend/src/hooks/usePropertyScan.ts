@@ -18,7 +18,7 @@ export interface ScanResult {
  * Hook for performing property scans using GPS and compass.
  */
 export function usePropertyScan() {
-  const geolocation = useGeolocation();
+  const geolocation = useGeolocation({ watchPosition: true });
   const orientation = useDeviceOrientation();
   
   const [isScanning, setIsScanning] = useState(false);
