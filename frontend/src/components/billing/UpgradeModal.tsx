@@ -14,6 +14,7 @@ import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
 import { IS_CAPACITOR } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
+import { PriceCents } from '@/components/ui/PriceCents'
 
 interface PricingPlan {
   id: string
@@ -208,8 +209,8 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-white">
               {IS_CAPACITOR
-                ? (annual ? displayPriceAnnual : displayPriceMonthly)
-                : `$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}
+                ? <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
+                : <PriceCents>{`$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}</PriceCents>}
             </span>
             <span className="text-slate-400 text-sm">
               {IS_CAPACITOR ? (annual ? '/year' : '/month') : '/month'}
