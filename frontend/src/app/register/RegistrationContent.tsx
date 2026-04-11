@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRegister, useLogin } from "@/hooks/useSession";
 import { IS_CAPACITOR } from "@/lib/env";
+import { PriceCents } from "@/components/ui/PriceCents";
 
 // ─── Icons ───
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
@@ -206,7 +207,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
               lineHeight: 1,
             }}
           >
-            {isPro ? proPrice : "Free"}
+            {isPro ? <PriceCents>{proPrice}</PriceCents> : "Free"}
           </span>
           {isPro && (
             <span style={{ fontSize: "14px", color: "#64748B", fontWeight: 500 }}>

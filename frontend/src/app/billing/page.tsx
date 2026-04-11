@@ -19,6 +19,7 @@ import {
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { IS_CAPACITOR } from '@/lib/env'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
+import { PriceCents } from '@/components/ui/PriceCents'
 
 /* ── Design tokens (DealGapIQ billing design system) ─────────── */
 
@@ -284,7 +285,7 @@ function BillingContent() {
               marginBottom: '0.5rem',
             }}
           >
-            {isAnnual ? '$29.17' : '$39.99'}/mo vs. one bad deal
+            <PriceCents>{isAnnual ? '$29.17' : '$39.99'}</PriceCents>/mo vs. one bad deal
           </div>
           <div style={{ fontSize: '1rem', lineHeight: 1.75 }}>
             The average investor who skips proper underwriting overpays by{' '}
@@ -450,7 +451,7 @@ function BillingContent() {
                       lineHeight: 1,
                     }}
                   >
-                    {plan.price}
+                    <PriceCents>{plan.price}</PriceCents>
                   </span>
                   <span style={{ fontSize: '0.85rem', color: T.muted }}>
                     {plan.period}

@@ -7,6 +7,7 @@ import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
 import { IS_CAPACITOR } from "@/lib/env";
 import { SocialProof } from "@/components/landing/SocialProof";
+import { PriceCents } from "@/components/ui/PriceCents";
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
@@ -493,7 +494,7 @@ export default function PricingContent() {
           <div style={{ display: "flex", alignItems: "baseline", gap: "4px", margin: "0 0 2px 0" }}>
             <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--text-label)" }}>$</span>
             <span style={{ fontSize: "48px", fontWeight: 800, letterSpacing: "-2px" }}>
-              {isAnnual ? "29.17" : "39.99"}
+              <PriceCents>{isAnnual ? "29.17" : "39.99"}</PriceCents>
             </span>
             <span style={{ fontSize: "15px", color: "var(--text-label)", fontWeight: 500 }}>/mo</span>
           </div>
