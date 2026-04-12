@@ -39,6 +39,8 @@ export function PropertyPhotoGallery({
   const [streetViewFailed, setStreetViewFailed] = useState(false)
 
   useEffect(() => {
+    setStreetViewFailed(false)
+
     if (initialImages.length > 0) {
       setState('loaded')
       setPhotos(initialImages)
