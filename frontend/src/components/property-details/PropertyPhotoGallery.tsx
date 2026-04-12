@@ -13,6 +13,10 @@ interface PropertyPhotoGalleryProps {
   initialImages?: string[]
   views?: number
   hideThumbnails?: boolean
+  /** Used for Google Street View fallback when Zillow photos are unavailable */
+  address?: string
+  latitude?: number
+  longitude?: number
 }
 
 /**
@@ -24,11 +28,15 @@ export function PropertyPhotoGallery({
   initialImages = [],
   views,
   hideThumbnails,
+  address,
+  latitude,
+  longitude,
 }: PropertyPhotoGalleryProps) {
   const [state, setState] = useState<GalleryState>(
     initialImages.length > 0 ? 'loaded' : 'loading'
   )
   const [photos, setPhotos] = useState<string[]>(initialImages)
+  const [streetViewFailed, setStreetViewFailed] = useState(false)
 
   useEffect(() => {
     if (initialImages.length > 0) {
@@ -66,6 +74,36 @@ export function PropertyPhotoGallery({
   }
 
   if (state === 'unavailable') {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+    const hasCoords = latitude != null && longitude != null
+    let streetViewUrl: string | null = null
+    if (apiKey && !streetViewFailed) {
+      if (hasCoords) {
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${latitude},${longitude}&key=${apiKey}`
+      } else if (address) {
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(address)}&key=${apiKey}`
+      }
+    }
+
+    if (streetViewUrl) {
+      return (
+        <div className="space-y-3">
+          <div
+            className="relative rounded-[14px] overflow-hidden"
+            style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
+          >
+            <img
+              src={streetViewUrl}
+              alt={`Street view of ${address ?? 'property'}`}
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={() => setStreetViewFailed(true)}
+            />
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="space-y-3">
         <div

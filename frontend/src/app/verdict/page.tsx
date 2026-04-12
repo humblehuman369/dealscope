@@ -1130,6 +1130,9 @@ function VerdictContent() {
                 zpid={String(property.zpid)}
                 initialImages={propertyPhotos}
                 hideThumbnails
+                address={property.address}
+                latitude={property.latitude}
+                longitude={property.longitude}
               />
             ) : property.imageUrl ? (
               <div className="rounded-[14px] overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>

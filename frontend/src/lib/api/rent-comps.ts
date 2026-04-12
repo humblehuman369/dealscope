@@ -177,10 +177,10 @@ export function transformRentComps(
       const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
       if (key) {
         if (hasCompCoords) {
-          imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lon}&zoom=18&size=400x300&maptype=satellite&markers=color:blue%7C${lat},${lon}&key=${key}`
+          imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${lat},${lon}&key=${key}`
         } else if (address) {
           const fullAddr = address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : '')
-          imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(fullAddr)}&zoom=18&size=400x300&maptype=satellite&markers=color:blue%7C${encodeURIComponent(fullAddr)}&key=${key}`
+          imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(fullAddr)}&key=${key}`
         }
       }
     }
