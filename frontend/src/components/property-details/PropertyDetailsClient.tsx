@@ -75,6 +75,9 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           zpid={String(property.zpid)}
           initialImages={property.images}
           views={property.views}
+          address={fullAddress}
+          latitude={property.latitude}
+          longitude={property.longitude}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
