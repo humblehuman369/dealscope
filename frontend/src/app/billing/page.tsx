@@ -621,6 +621,30 @@ function BillingContent() {
           </div>
         </div>
 
+        {/* ── Privacy & Terms ── */}
+        <div
+          className="flex items-center justify-center gap-3"
+          style={{ padding: '2rem 0 0' }}
+        >
+          <a
+            href="https://dealgapiq.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.7rem', color: T.muted, textDecoration: 'underline' }}
+          >
+            Privacy Policy
+          </a>
+          <span style={{ fontSize: '0.7rem', color: T.muted }}>·</span>
+          <a
+            href="https://dealgapiq.com/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.7rem', color: T.muted, textDecoration: 'underline' }}
+          >
+            Terms of Use
+          </a>
+        </div>
+
       </div>
     </div>
     </>
