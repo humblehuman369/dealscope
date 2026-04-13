@@ -1013,6 +1013,26 @@ export default function PricingContent() {
             <p style={{ fontSize: "10px", color: "var(--text-label)", margin: 0 }}>No credit card required.</p>
           </div>
         </div>
+
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "20px" }}>
+          <a
+            href="https://dealgapiq.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: "11px", color: "var(--text-label)", textDecoration: "underline" }}
+          >
+            Privacy Policy
+          </a>
+          <span style={{ fontSize: "11px", color: "var(--text-label)" }}>&middot;</span>
+          <a
+            href="https://dealgapiq.com/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: "11px", color: "var(--text-label)", textDecoration: "underline" }}
+          >
+            Terms of Use
+          </a>
+        </div>
       </div>
 
       <UpgradeModal
