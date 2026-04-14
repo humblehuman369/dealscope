@@ -1,4 +1,4 @@
- {"main": "expo-router/entry"
+{
   "name": "dealgapiq-frontend",
   "version": "1.0.0",
   "private": true,
