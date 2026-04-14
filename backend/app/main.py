@@ -176,11 +176,13 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning(f"WeasyPrint: NOT AVAILABLE — PDF exports will fail. Error: {exc}")
 
-    # Start periodic cleanup scheduler (APScheduler)
+    # Start periodic cleanup scheduler (APScheduler).
+    # In multi-worker mode, only the worker that acquires the Redis leader
+    # lock will actually start the scheduler — others skip it safely.
     try:
-        from app.tasks.scheduler import start_scheduler
+        from app.tasks.scheduler import try_start_scheduler
 
-        start_scheduler()
+        await try_start_scheduler()
     except Exception as e:
         logger.warning(f"Scheduler failed to start (non-fatal): {e}")
 

@@ -6,8 +6,9 @@ Uses lazy initialization to allow app to start without database.
 Note: Using psycopg3 driver instead of asyncpg for better SSL handling.
 
 Connection Pooling Strategy:
-- Local/standard deployments: Use QueuePool for connection reuse
-- Railway/serverless: Use NullPool to avoid connection pool issues
+- Persistent containers (Railway, Docker, bare-metal): QueuePool for connection reuse
+- True serverless (Lambda, Vercel edge): NullPool to avoid pool exhaustion across cold starts
+- Override: set DB_USE_NULL_POOL=true to force NullPool regardless of environment
 """
 
 import logging
@@ -26,19 +27,23 @@ _engine: AsyncEngine | None = None
 _session_factory: async_sessionmaker | None = None
 
 
-def _is_serverless_environment() -> bool:
-    """Detect if running in a serverless/Railway environment."""
-    # Check for Railway-specific environment variables
-    if os.environ.get("RAILWAY_ENVIRONMENT"):
+def _should_use_null_pool() -> bool:
+    """Determine whether to disable client-side connection pooling.
+
+    Railway containers are long-lived processes — they benefit from QueuePool
+    just like any traditional server.  NullPool is only appropriate for true
+    serverless runtimes where the process may be frozen/destroyed between
+    invocations and stale pooled connections would cause errors.
+    """
+    explicit = os.environ.get("DB_USE_NULL_POOL", "").lower()
+    if explicit in ("true", "1", "yes"):
         return True
-    # Check for common serverless indicators
+    if explicit in ("false", "0", "no"):
+        return False
+
     if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
         return True
     if os.environ.get("VERCEL"):
-        return True
-    # Check if DATABASE_URL contains Railway indicators
-    db_url = settings.DATABASE_URL or ""
-    if "railway" in db_url.lower():
         return True
     return False
 
@@ -60,29 +65,23 @@ def get_engine() -> AsyncEngine:
         )
 
         if is_private_railway:
-            # Private Railway network - NO SSL needed
             logger.info("SSL mode: disabled (Railway private network)")
         elif is_public_endpoint:
-            # Public Railway endpoint - requires SSL
             if "sslmode=" not in db_url:
                 separator = "&" if "?" in db_url else "?"
                 db_url = f"{db_url}{separator}sslmode=require"
             logger.info("SSL mode: require (Railway public endpoint)")
         else:
-            # Local development or other
             logger.info("SSL mode: disabled (local/other)")
 
-        # Log URL pattern for debugging (mask credentials)
         if "@" in db_url:
             url_start = db_url.split("://")[0]
             url_end = db_url.split("@")[-1]
             logger.info(f"Database URL: {url_start}://***@{url_end}")
 
-        # Determine pool strategy based on environment
-        is_serverless = _is_serverless_environment()
+        use_null_pool = _should_use_null_pool()
 
-        if is_serverless:
-            # Serverless: Use NullPool to avoid connection pool issues
+        if use_null_pool:
             logger.info("Connection pooling: NullPool (serverless environment)")
             _engine = create_async_engine(
                 db_url,
@@ -91,20 +90,27 @@ def get_engine() -> AsyncEngine:
                 poolclass=NullPool,
             )
         else:
-            # Standard deployment: Use QueuePool for connection reuse
+            # Scale per-worker pool so total connections stay within DB limits.
+            # Total max connections = WEB_CONCURRENCY × (pool_size + max_overflow)
+            # Railway Postgres default limit: ~100 connections.
+            workers = max(1, settings.WEB_CONCURRENCY)
+            pool_size = max(2, settings.DB_POOL_SIZE // workers)
+            max_overflow = max(3, settings.DB_MAX_OVERFLOW // workers)
+
             logger.info(
-                f"Connection pooling: QueuePool (pool_size={settings.DB_POOL_SIZE}, "
-                f"max_overflow={settings.DB_MAX_OVERFLOW})"
+                f"Connection pooling: QueuePool (pool_size={pool_size}, "
+                f"max_overflow={max_overflow}, workers={workers}, "
+                f"total_max={workers * (pool_size + max_overflow)})"
             )
             _engine = create_async_engine(
                 db_url,
                 echo=settings.DEBUG,
                 pool_pre_ping=True,
                 poolclass=AsyncAdaptedQueuePool,
-                pool_size=settings.DB_POOL_SIZE,
-                max_overflow=settings.DB_MAX_OVERFLOW,
+                pool_size=pool_size,
+                max_overflow=max_overflow,
                 pool_timeout=settings.DB_POOL_TIMEOUT,
-                pool_recycle=1800,  # Recycle connections after 30 minutes
+                pool_recycle=1800,
             )
 
         logger.info("Database engine created successfully")
