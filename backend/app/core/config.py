@@ -256,7 +256,7 @@ class Settings(BaseSettings):
     FEATURE_DASHBOARD_ENABLED: bool = True
     FEATURE_DOCUMENT_UPLOAD_ENABLED: bool = True
     FEATURE_SHARING_ENABLED: bool = True
-    FEATURE_EMAIL_VERIFICATION_REQUIRED: bool = False  # Require email verification
+    FEATURE_EMAIL_VERIFICATION_REQUIRED: bool = True  # Require email verification
 
     # ===========================================
     # Computed Properties

@@ -532,6 +532,23 @@ class AuthService:
             return None
         return await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
 
+    async def resend_verification_by_email(
+        self,
+        db: AsyncSession,
+        email: str,
+    ) -> tuple[str, "User"] | None:
+        """Look up user by email and create a new verification token.
+
+        Returns ``(raw_token, user)`` or ``None`` if user doesn't exist
+        or is already verified.  Callers should always return a generic
+        success message to prevent email enumeration.
+        """
+        user = await user_repo.get_by_email(db, email.lower().strip())
+        if user is None or user.is_verified:
+            return None
+        raw_token = await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
+        return raw_token, user
+
     # ------------------------------------------------------------------
     # Password reset
     # ------------------------------------------------------------------

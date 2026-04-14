@@ -444,6 +444,13 @@ export const authApi = {
       skipAuth: true,
     }),
 
+  resendVerification: (email: string) =>
+    apiRequest<{ message: string }>('/api/v1/auth/resend-verification', {
+      method: 'POST',
+      body: { email },
+      skipAuth: true,
+    }),
+
   // Sessions
   listSessions: () =>
     apiRequest<SessionInfo[]>('/api/v1/auth/sessions'),
