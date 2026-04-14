@@ -65,13 +65,16 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
 
   // --- Pricing from RevenueCat or Stripe ---
   const rcPkg = IS_CAPACITOR ? pickRCPackage(rc.packages, annual) : undefined
+  const rcPkgAnnual = IS_CAPACITOR ? pickRCPackage(rc.packages, true) : undefined
   const proPlan = plans.find((p) => p.id === 'pro')
 
+  const rcLoading = IS_CAPACITOR && !rc.ready
+
   const displayPriceMonthly = IS_CAPACITOR
-    ? (rcPkg?.product.priceString ?? '…')
+    ? (rcPkg?.product.priceString ?? '$39.99')
     : `$${proPlan ? proPlan.price_monthly / 100 : 39.99}`
   const displayPriceAnnual = IS_CAPACITOR
-    ? (pickRCPackage(rc.packages, true)?.product.priceString ?? '…')
+    ? (rcPkgAnnual?.product.priceString ?? '$349.99')
     : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
 
   const startCheckout = useCallback(async () => {
@@ -207,11 +210,15 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
           }}
         >
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white">
-              {IS_CAPACITOR
-                ? <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
-                : <PriceCents>{`$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}</PriceCents>}
-            </span>
+            {rcLoading ? (
+              <span className="inline-block h-7 w-24 rounded bg-white/10 animate-pulse" />
+            ) : (
+              <span className="text-2xl font-bold text-white">
+                {IS_CAPACITOR
+                  ? <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
+                  : <PriceCents>{`$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}</PriceCents>}
+              </span>
+            )}
             <span className="text-slate-400 text-sm">
               {IS_CAPACITOR ? (annual ? '/year' : '/month') : '/month'}
             </span>
@@ -286,6 +293,17 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               Terms of Use
             </a>
           </div>
+          {IS_CAPACITOR && (
+            <p className="text-[10px] leading-snug text-center mt-1" style={{ color: '#64748b' }}>
+              Payment will be charged to your Apple&nbsp;ID account at confirmation
+              of purchase. Subscription automatically renews unless canceled at
+              least 24&nbsp;hours before the end of the current period. Your account
+              will be charged for renewal within 24&nbsp;hours prior to the end of
+              the current period at the same price. You can manage and cancel your
+              subscriptions by going to your App&nbsp;Store account settings after
+              purchase.
+            </p>
+          )}
         </div>
       </div>
     </div>

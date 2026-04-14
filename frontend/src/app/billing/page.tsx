@@ -644,6 +644,20 @@ function BillingContent() {
             Terms of Use
           </a>
         </div>
+        {IS_CAPACITOR && (
+          <p
+            className="text-center mx-auto"
+            style={{ fontSize: '0.6rem', color: T.muted, lineHeight: 1.5, maxWidth: 480, marginTop: '1rem' }}
+          >
+            Payment will be charged to your Apple&nbsp;ID account at confirmation
+            of purchase. Subscription automatically renews unless canceled at
+            least 24&nbsp;hours before the end of the current period. Your account
+            will be charged for renewal within 24&nbsp;hours prior to the end of
+            the current period at the same price. You can manage and cancel your
+            subscriptions by going to your App&nbsp;Store account settings after
+            purchase.
+          </p>
+        )}
 
       </div>
     </div>

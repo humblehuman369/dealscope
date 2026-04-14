@@ -1033,6 +1033,17 @@ export default function PricingContent() {
             Terms of Use
           </a>
         </div>
+        {IS_CAPACITOR && (
+          <p style={{ fontSize: "10px", color: "var(--text-label)", textAlign: "center", lineHeight: 1.5, maxWidth: "480px", margin: "16px auto 0" }}>
+            Payment will be charged to your Apple&nbsp;ID account at confirmation
+            of purchase. Subscription automatically renews unless canceled at
+            least 24&nbsp;hours before the end of the current period. Your account
+            will be charged for renewal within 24&nbsp;hours prior to the end of
+            the current period at the same price. You can manage and cancel your
+            subscriptions by going to your App&nbsp;Store account settings after
+            purchase.
+          </p>
+        )}
       </div>
 
       <UpgradeModal
