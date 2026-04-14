@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "development"  # development, staging, production
+    WEB_CONCURRENCY: int = 1  # Uvicorn/gunicorn workers per container. Set 2-4 in production.
 
     # ===========================================
     # Database

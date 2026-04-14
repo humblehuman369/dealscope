@@ -36,9 +36,10 @@ class CacheService:
                     decode_responses=True,
                     socket_connect_timeout=5,
                     socket_timeout=5,
+                    max_connections=20,
                 )
                 self.use_redis = True
-                logger.info("Redis cache initialized successfully")
+                logger.info("Redis cache initialized (max_connections=20)")
             except Exception as e:
                 logger.warning(f"Redis not available, using in-memory cache: {e}")
                 self.use_redis = False
