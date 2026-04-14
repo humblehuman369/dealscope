@@ -152,6 +152,10 @@ class EmailVerification(BaseModel):
     token: str
 
 
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+
+
 # -----------------------------------------------------------------------
 # MFA setup
 # -----------------------------------------------------------------------

@@ -36,6 +36,7 @@ from app.schemas.auth import (
     PasswordResetConfirm,
     RefreshTokenRequest,
     RegisterResponse,
+    ResendVerificationRequest,
     SessionInfo,
     TokenResponse,
     UserLogin,
@@ -780,20 +781,24 @@ async def verify_email(body: EmailVerification, request: Request, db: DbSession)
 
 
 @router.post("/resend-verification", response_model=AuthMessage)
-async def resend_verification(user: CurrentUser, db: DbSession):
-    raw_token = await auth_service.resend_verification(db, user.id)
-    if raw_token is None:
-        return AuthMessage(message="Email already verified")
-    await db.commit()
-    try:
-        await email_service.send_verification_email(
-            to=user.email,
-            user_name=user.full_name or user.email,
-            verification_token=raw_token,
-        )
-    except Exception as exc:
-        logger.warning("Resend verification email failed: %s", exc)
-    return AuthMessage(message="Verification email sent")
+async def resend_verification(body: ResendVerificationRequest, db: DbSession):
+    """Resend a verification email. Accepts email (no auth required).
+
+    Always returns success to prevent email enumeration.
+    """
+    result = await auth_service.resend_verification_by_email(db, body.email)
+    if result:
+        await db.commit()
+        raw_token, user = result
+        try:
+            await email_service.send_verification_email(
+                to=user.email,
+                user_name=user.full_name or user.email,
+                verification_token=raw_token,
+            )
+        except Exception as exc:
+            logger.warning("Resend verification email failed: %s", exc)
+    return AuthMessage(message="If an account exists with that email and is unverified, a verification link has been sent.")
 
 
 # ------------------------------------------------------------------

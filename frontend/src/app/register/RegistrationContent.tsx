@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRegister, useLogin } from "@/hooks/useSession";
 import { IS_CAPACITOR } from "@/lib/env";
+import { authApi } from "@/lib/api-client";
 import { PriceCents } from "@/components/ui/PriceCents";
 
 // ─── Icons ───
@@ -307,6 +308,8 @@ function RegistrationInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -338,21 +341,26 @@ function RegistrationInner() {
     setLoading(true);
     setError("");
     try {
-      await registerMutation.mutateAsync({
+      const result = await registerMutation.mutateAsync({
         email: form.email,
         password: form.password,
         fullName: form.firstName,
       });
 
-      // Auto-login after registration
+      if (result.requires_verification) {
+        setRequiresVerification(true);
+        setStep("success");
+        return;
+      }
+
+      // Auto-login after registration (verification disabled)
       try {
         await loginMutation.mutateAsync({
           email: form.email,
           password: form.password,
         });
       } catch {
-        // If auto-login fails (e.g. email verification required),
-        // we still advance — the user can log in later.
+        // If auto-login fails, we still advance — the user can log in later.
       }
 
       setStep("success");
@@ -362,6 +370,16 @@ function RegistrationInner() {
       setError(safeMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendStatus("sending");
+    try {
+      await authApi.resendVerification(form.email);
+      setResendStatus("sent");
+    } catch {
+      setResendStatus("idle");
     }
   };
 
@@ -629,97 +647,225 @@ function RegistrationInner() {
     </div>
   );
 
-  const renderSuccess = () => (
-    <div
-      style={{
-        background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
-        border: "1px solid rgba(14,165,233,0.15)",
-        borderRadius: "12px",
-        padding: "48px 36px",
-        width: "100%",
-        maxWidth: "420px",
-        textAlign: "center",
-      }}
-    >
-      {/* Success animation */}
+  const renderSuccess = () => {
+    if (requiresVerification) {
+      return (
+        <div
+          style={{
+            background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
+            border: "1px solid rgba(14,165,233,0.15)",
+            borderRadius: "12px",
+            padding: "48px 36px",
+            width: "100%",
+            maxWidth: "420px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              background: "rgba(14,165,233,0.1)",
+              border: "2px solid rgba(14,165,233,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 24px",
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="4" y="7" width="20" height="14" rx="2" stroke="#0EA5E9" strokeWidth="2" fill="none" />
+              <path d="M4 9l10 7 10-7" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          <h2
+            style={{
+              fontSize: "24px",
+              fontWeight: 800,
+              color: "#F1F5F9",
+              letterSpacing: "-0.025em",
+              margin: "0 0 8px",
+            }}
+          >
+            Check your email
+          </h2>
+
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#94A3B8",
+              lineHeight: 1.6,
+              margin: "0 0 8px",
+              maxWidth: "320px",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            We sent a verification link to
+          </p>
+          <p
+            style={{
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#CBD5E1",
+              margin: "0 0 24px",
+            }}
+          >
+            {form.email}
+          </p>
+
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#64748B",
+              lineHeight: 1.6,
+              margin: "0 0 32px",
+              maxWidth: "300px",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+            <Link
+              href="/?auth=login"
+              style={{
+                minHeight: "48px",
+                padding: "14px 32px",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "15px",
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                fontFamily: "inherit",
+                background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+                color: "#fff",
+                textDecoration: "none",
+              }}
+            >
+              Go to Sign In <ArrowIcon />
+            </Link>
+
+            <button
+              onClick={handleResendVerification}
+              disabled={resendStatus !== "idle"}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "13px",
+                color: resendStatus === "sent" ? "#22C55E" : "#0EA5E9",
+                cursor: resendStatus === "idle" ? "pointer" : "default",
+                fontFamily: "inherit",
+                fontWeight: 500,
+                opacity: resendStatus === "sending" ? 0.6 : 1,
+              }}
+            >
+              {resendStatus === "idle" && "Didn\u2019t get the email? Resend"}
+              {resendStatus === "sending" && "Sending\u2026"}
+              {resendStatus === "sent" && "Verification email resent"}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
       <div
         style={{
-          width: "64px",
-          height: "64px",
-          borderRadius: "50%",
-          background: "rgba(14,165,233,0.1)",
-          border: "2px solid rgba(14,165,233,0.3)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 24px",
+          background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
+          border: "1px solid rgba(14,165,233,0.15)",
+          borderRadius: "12px",
+          padding: "48px 36px",
+          width: "100%",
+          maxWidth: "420px",
+          textAlign: "center",
         }}
       >
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <path d="M8 15l4 4 8-8" stroke="#0EA5E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            borderRadius: "50%",
+            background: "rgba(14,165,233,0.1)",
+            border: "2px solid rgba(14,165,233,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 24px",
+          }}
+        >
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M8 15l4 4 8-8" stroke="#0EA5E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        <h2
+          style={{
+            fontSize: "24px",
+            fontWeight: 800,
+            color: "#F1F5F9",
+            letterSpacing: "-0.025em",
+            margin: "0 0 8px",
+          }}
+        >
+          You&apos;re in, {form.firstName}.
+        </h2>
+
+        <p
+          style={{
+            fontSize: "14px",
+            color: "#94A3B8",
+            lineHeight: 1.6,
+            margin: "0 0 32px",
+            maxWidth: "320px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          {plan === "pro" ? (
+            <>
+              Your Pro trial is active until{" "}
+              <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
+              Time to find your first Deal Gap.
+            </>
+          ) : (
+            "Your Starter account is ready. Time to find your first Deal Gap."
+          )}
+        </p>
+
+        <button
+          onClick={() => router.replace(getPostRegisterPath())}
+          style={{
+            minHeight: "48px",
+            padding: "14px 32px",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "15px",
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            fontFamily: "inherit",
+            background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+            color: "#fff",
+          }}
+        >
+          {returnToParam ? "Continue" : "Analyze Your First Property"} <ArrowIcon />
+        </button>
+
+        <p style={{ fontSize: "12px", color: "#475569", marginTop: "16px" }}>
+          Enter any address · 60-second analysis
+        </p>
       </div>
-
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: 800,
-          color: "#F1F5F9",
-          letterSpacing: "-0.025em",
-          margin: "0 0 8px",
-        }}
-      >
-        You&apos;re in, {form.firstName}.
-      </h2>
-
-      <p
-        style={{
-          fontSize: "14px",
-          color: "#94A3B8",
-          lineHeight: 1.6,
-          margin: "0 0 32px",
-          maxWidth: "320px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        {plan === "pro" ? (
-          <>
-            Your Pro trial is active until{" "}
-            <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
-            Time to find your first Deal Gap.
-          </>
-        ) : (
-          "Your Starter account is ready. Time to find your first Deal Gap."
-        )}
-      </p>
-
-      <button
-        onClick={() => router.replace(getPostRegisterPath())}
-        style={{
-          minHeight: "48px",
-          padding: "14px 32px",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "15px",
-          fontWeight: 700,
-          cursor: "pointer",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "8px",
-          fontFamily: "inherit",
-          background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
-          color: "#fff",
-        }}
-      >
-        {returnToParam ? "Continue" : "Analyze Your First Property"} <ArrowIcon />
-      </button>
-
-      <p style={{ fontSize: "12px", color: "#475569", marginTop: "16px" }}>
-        Enter any address · 60-second analysis
-      </p>
-    </div>
-  );
+    );
+  };
 
   const stepRenderers: Record<Step, () => React.ReactNode> = {
     form: renderForm,
