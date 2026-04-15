@@ -287,6 +287,46 @@ SUB_LEVELS = [0, 1, 5, 10, 12, 15, 25, 50, 75, 100, 150, 200, 250, 300,
               400, 500, 750, 1000, 1500, 2000, 3000, 5000]
 
 
+def _find_primary_cost_driver(at_subs):
+    """Return (provider_name, pct_of_total) for the highest-cost provider."""
+    costs = compute_all_costs(at_subs)
+    total = costs["_totals"]["grand"]
+    if total <= 0:
+        return "N/A", 0
+
+    all_items = {}
+    for prov, (_, cost, *_) in costs["api"].items():
+        all_items[prov] = cost
+    for svc, (_, cost) in costs["infra"].items():
+        all_items[svc] = cost
+    for svc, (_, cost) in costs["variable"].items():
+        all_items[svc] = cost
+
+    top = max(all_items, key=all_items.get)
+    return top, all_items[top] / total
+
+
+def _find_first_scale_trigger():
+    """Find the first post-breakeven plan upgrade that adds >$10/mo."""
+    start_idx = next((i for i, s in enumerate(SUB_LEVELS) if s >= 25), 0)
+    prev_costs = compute_all_costs(SUB_LEVELS[max(0, start_idx - 1)])
+
+    for subs in SUB_LEVELS[start_idx:]:
+        costs = compute_all_costs(subs)
+        for p in API_PROVIDERS:
+            if costs["api"][p][0] != prev_costs["api"][p][0]:
+                delta = costs["api"][p][1] - prev_costs["api"][p][1]
+                if delta > 10:
+                    return f"~{subs} subs ({p})"
+        for s in INFRA_SERVICES:
+            if costs["infra"][s][0] != prev_costs["infra"][s][0]:
+                delta = costs["infra"][s][1] - prev_costs["infra"][s][1]
+                if delta > 10:
+                    return f"~{subs} subs ({s})"
+        prev_costs = costs
+    return "5000+ subs"
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SHEET 1 — Dashboard
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -312,14 +352,17 @@ def build_dashboard(wb):
     net_rev_100 = 100 * BLENDED_NET_ARPU
     margin_100 = (net_rev_100 - costs_100["_totals"]["grand"]) / net_rev_100
 
+    top_driver, top_pct = _find_primary_cost_driver(100)
+    first_trigger = _find_first_scale_trigger()
+
     r = 4
     kpis = [
         ("Monthly Burn (0 subs)", f"${base_burn:,.2f}", ACCENT_RED),
         ("Breakeven Subscribers", f"{breakeven} Pro", ACCENT_BLUE),
         ("Blended Net ARPU", f"${BLENDED_NET_ARPU}/mo", ACCENT_GREEN),
         (f"Margin @ 100 Subs", f"{margin_100:.0%}", ACCENT_GREEN),
-        ("Primary Cost Driver", "RentCast (51%)", ACCENT_YELLOW),
-        ("First Scale Trigger", "~48–80 subs", ACCENT_YELLOW),
+        ("Top Cost @ 100 Subs", f"{top_driver} ({top_pct:.0%})", ACCENT_YELLOW),
+        ("First Scale Trigger", first_trigger, ACCENT_YELLOW),
     ]
     for i, (label, value, color) in enumerate(kpis):
         col = (i % 3) * 2 + 1
@@ -548,7 +591,7 @@ def build_profitability(wb):
     chart.style = 10
     chart.width = 28
     chart.height = 14
-    cats = Reference(ws, min_col=1, min_row=8, max_row=last_row)
+    cats = Reference(ws, min_col=1, min_row=7, max_row=last_row)
     data = Reference(ws, min_col=ncols - 1, min_row=6, max_row=last_row)
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
@@ -1184,8 +1227,9 @@ def build_risks(wb):
         ws.cell(row=r, column=c, value=val)
     style_header_row(ws, r, len(h))
 
+    rc_driver, rc_pct = _find_primary_cost_driver(100)
     risks = [
-        ("RentCast price increase", "High — 51% of base costs", "Medium", "Optimize caching; negotiate volume"),
+        ("RentCast price increase", f"High — {rc_pct:.0%} of costs @ 100 subs", "Medium", "Optimize caching; negotiate volume"),
         ("AXESSO/Zillow API discontinued", "Critical — lose Zestimate", "Low", "Build fallback to direct Zillow API"),
         ("RapidAPI plan changes", "Medium — lose Redfin/Realtor", "Low", "Evaluate direct API access"),
         ("Apple rejects SBP (15%→30%)", "Medium — mobile margin drops", "Low", "Web-first acquisition strategy"),
