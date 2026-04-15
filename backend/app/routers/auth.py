@@ -262,6 +262,25 @@ def _backend_base_url(request: Request) -> str:
     return base
 
 
+def _oauth_redirect_base(request: Request) -> str:
+    """Base URL for OAuth redirect_uri (Google / Apple callbacks).
+
+    Web deployments proxy /api/* through the frontend (Next.js rewrite on
+    Vercel).  The OAuth redirect_uri must point to the *frontend* domain so
+    that Google/Apple redirect the browser back through the proxy.  This
+    ensures Set-Cookie headers in the callback response are associated with
+    the frontend origin — making auth cookies first-party and accessible on
+    subsequent same-origin API requests.
+
+    Falls back to _backend_base_url for local development where the frontend
+    runs on localhost.
+    """
+    frontend = settings.FRONTEND_URL
+    if frontend and not frontend.startswith("http://localhost"):
+        return frontend.rstrip("/")
+    return _backend_base_url(request)
+
+
 _MOBILE_ALLOWED_SCHEMES = ("dealgapiq://", "exp://")
 
 
@@ -275,7 +294,7 @@ async def google_start(request: Request):
     """
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google sign-in is not configured")
-    base = _backend_base_url(request)
+    base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
 
     import base64 as _b64
@@ -341,7 +360,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
         return _google_error_redirect("google_not_configured", mobile_redirect)
 
-    base = _backend_base_url(request)
+    base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
 
     async with httpx.AsyncClient() as client:
@@ -459,7 +478,7 @@ async def apple_start(request: Request):
     if not all([settings.APPLE_CLIENT_ID, settings.APPLE_TEAM_ID, settings.APPLE_KEY_ID, settings.APPLE_PRIVATE_KEY]):
         raise HTTPException(status_code=503, detail="Apple sign-in is not configured")
 
-    base = _backend_base_url(request)
+    base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/apple/callback"
 
     import base64 as _b64
@@ -519,7 +538,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         return _apple_error_redirect("apple_missing_code", mobile_redirect)
 
     # Exchange authorization code for tokens
-    base = _backend_base_url(request)
+    base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/apple/callback"
 
     try:
