@@ -1,20 +1,205 @@
 """
 DealGap IQ — Financial Proforma Excel Generator
-Generates a multi-sheet Excel workbook with formulas, formatting, and charts.
+Generates a multi-sheet Excel workbook with a centralized cost engine
+that auto-selects the optimal provider plan as subscriber volume scales.
 """
 
+import math
 import openpyxl
 from openpyxl.styles import (
-    Font, PatternFill, Alignment, Border, Side, numbers
+    Font, PatternFill, Alignment, Border, Side,
 )
 from openpyxl.utils import get_column_letter
 from openpyxl.chart import BarChart, LineChart, Reference
-from copy import copy
 
-# ─── Palette ───────────────────────────────────────────────────────────────────
-WHITE = "FFFFFF"
-BLACK = "000000"
-DARK_BG = "0C1220"
+# ═══════════════════════════════════════════════════════════════════════════════
+# COST ENGINE — Provider plan tiers & auto-selection
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Each API provider: calls_per_search and tier list
+# Tier: (name, monthly_fee, included_quota, overage_rate | None)
+# overage_rate=None means no overage — must upgrade when quota exceeded.
+API_PROVIDERS = {
+    "RentCast": {
+        "calls_per_search": 4,
+        "tiers": [
+            ("Developer",       0,      50,      0.20),
+            ("Foundation",      74,     1000,    0.06),
+            ("Growth",          199,    5000,    0.03),
+            ("Scale",           449,    25000,   0.015),
+        ],
+    },
+    "Zillow / AXESSO": {
+        "calls_per_search": 1.5,
+        "tiers": [
+            ("Free Trial",      0,      10,      None),
+            ("Starter",         16,     10000,   None),
+            ("Production",      82,     100000,  None),
+            ("Business",        164,    300000,  None),
+            ("Ent. Basic",      493,    1000000, None),
+            ("Ent. Premium",    877,    2500000, 0.001),
+        ],
+    },
+    "RapidAPI — Redfin": {
+        "calls_per_search": 2,
+        "tiers": [
+            ("Basic",           0,      100,     None),
+            ("Pro",             15,     1000,    None),
+            ("Ultra",           50,     5000,    None),
+            ("Mega",            100,    10000,   None),
+            ("Custom",          250,    50000,   0.01),
+        ],
+    },
+    "RapidAPI — Realtor": {
+        "calls_per_search": 2,
+        "tiers": [
+            ("Basic",           0,      100,     None),
+            ("Pro",             15,     1000,    None),
+            ("Ultra",           50,     5000,    None),
+            ("Mega",            100,    10000,   None),
+            ("Custom",          250,    50000,   0.01),
+        ],
+    },
+}
+
+# Infrastructure: scales by total paid subscribers (stepped tiers)
+# Tier: (name, monthly_cost, max_paid_subs)
+INFRA_SERVICES = {
+    "Railway": [
+        ("Pro",         20,     200),
+        ("Pro (scaled)", 50,    500),
+        ("Pro (heavy)",  100,   1500),
+        ("Pro (high)",   200,   5000),
+    ],
+    "Vercel": [
+        ("Pro",          20,    500),
+        ("Pro (scaled)", 40,    2000),
+        ("Enterprise",   100,   10000),
+    ],
+    "Expo (EAS)": [
+        ("Starter",      19,    150),
+        ("Production",   199,   2500),
+        ("Custom",       499,   10000),
+    ],
+}
+
+# Fixed overhead — does not scale
+FIXED_OVERHEAD = {
+    "Apple Developer":   8.25,
+    "Google Play Dev":   2.08,
+    "Domain":            1.50,
+    "Sentry":            0.00,
+    "Resend":            0.00,
+}
+
+# Model constants
+BLENDED_NET_ARPU = 34.12
+BLENDED_GROSS_PRICE = 36.99
+ACTIVITY_RATE = 0.60
+SEARCHES_PER_ACTIVE = 15
+CACHE_HIT_RATE = 0.30
+ANTHROPIC_PER_CALL = 0.01
+MOBILE_REVENUE_PCT = 0.20
+REVENUECAT_MTR_THRESHOLD = 2500
+MAPS_FREE_CREDIT = 200
+MAPS_COST_PER_REQ = 0.003
+MAPS_REQS_PER_SEARCH = 3
+
+
+def find_optimal_plan(calls_needed, tiers):
+    """Pick cheapest plan for a given call volume. Returns (name, total_cost)."""
+    best_plan = tiers[-1][0]
+    best_cost = float("inf")
+
+    for name, fee, quota, overage_rate in tiers:
+        if overage_rate is not None:
+            excess = max(0, calls_needed - quota)
+            total = fee + excess * overage_rate
+        else:
+            if calls_needed <= quota:
+                total = fee
+            else:
+                continue
+        if total < best_cost:
+            best_cost = total
+            best_plan = name
+
+    return best_plan, round(best_cost, 2)
+
+
+def find_infra_tier(paid_subs, tiers):
+    """Pick infrastructure tier by subscriber count. Returns (name, cost)."""
+    for name, cost, max_subs in tiers:
+        if paid_subs <= max_subs:
+            return name, cost
+    return tiers[-1][0], tiers[-1][1]
+
+
+def compute_all_costs(paid_subs):
+    """
+    Central cost engine.  Returns dict of category → {provider → (plan, cost)}
+    and a grand total.
+    """
+    active = max(1, math.ceil(paid_subs * ACTIVITY_RATE)) if paid_subs > 0 else 0
+    cold_searches = active * SEARCHES_PER_ACTIVE * (1 - CACHE_HIT_RATE)
+
+    result = {
+        "api": {},
+        "infra": {},
+        "variable": {},
+        "fixed": {},
+    }
+
+    # ── API providers ──
+    for prov, cfg in API_PROVIDERS.items():
+        calls = cold_searches * cfg["calls_per_search"]
+        plan, cost = find_optimal_plan(calls, cfg["tiers"])
+        result["api"][prov] = (plan, cost, calls)
+
+    # ── Infrastructure ──
+    for svc, tiers in INFRA_SERVICES.items():
+        plan, cost = find_infra_tier(paid_subs, tiers)
+        result["infra"][svc] = (plan, cost)
+
+    # ── Variable / usage-based ──
+    anthropic = active * SEARCHES_PER_ACTIVE * ANTHROPIC_PER_CALL
+    result["variable"]["Anthropic (Claude)"] = ("Pay-per-use", round(anthropic, 2))
+
+    maps_raw = cold_searches * MAPS_REQS_PER_SEARCH * MAPS_COST_PER_REQ
+    maps_cost = max(0, maps_raw - MAPS_FREE_CREDIT)
+    result["variable"]["Google Maps"] = ("Pay-as-you-go", round(maps_cost, 2))
+
+    mobile_mtr = paid_subs * BLENDED_GROSS_PRICE * MOBILE_REVENUE_PCT
+    rc_fee = max(0, (mobile_mtr - REVENUECAT_MTR_THRESHOLD) * 0.01)
+    result["variable"]["RevenueCat"] = (
+        "Free" if rc_fee == 0 else "1% MTR", round(rc_fee, 2)
+    )
+
+    # ── Fixed overhead ──
+    for svc, cost in FIXED_OVERHEAD.items():
+        result["fixed"][svc] = ("Fixed", cost)
+
+    # ── Totals ──
+    api_total = sum(c for _, c, *_ in result["api"].values())
+    infra_total = sum(c for _, c in result["infra"].values())
+    var_total = sum(c for _, c in result["variable"].values())
+    fixed_total = sum(c for _, c in result["fixed"].values())
+    grand_total = api_total + infra_total + var_total + fixed_total
+
+    result["_totals"] = {
+        "api": round(api_total, 2),
+        "infra": round(infra_total, 2),
+        "variable": round(var_total, 2),
+        "fixed": round(fixed_total, 2),
+        "grand": round(grand_total, 2),
+    }
+
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STYLING
+# ═══════════════════════════════════════════════════════════════════════════════
 HEADER_BG = "1A2332"
 ACCENT_BLUE = "3B82F6"
 ACCENT_GREEN = "22C55E"
@@ -24,15 +209,14 @@ LIGHT_GRAY = "F1F5F9"
 MED_GRAY = "94A3B8"
 ROW_ALT = "F8FAFC"
 BORDER_COLOR = "CBD5E1"
+WHITE = "FFFFFF"
 
-# ─── Reusable styles ──────────────────────────────────────────────────────────
 thin_border = Border(
     left=Side(style="thin", color=BORDER_COLOR),
     right=Side(style="thin", color=BORDER_COLOR),
     top=Side(style="thin", color=BORDER_COLOR),
     bottom=Side(style="thin", color=BORDER_COLOR),
 )
-
 header_font = Font(name="Calibri", bold=True, size=11, color=WHITE)
 header_fill = PatternFill(start_color=HEADER_BG, end_color=HEADER_BG, fill_type="solid")
 title_font = Font(name="Calibri", bold=True, size=14, color=ACCENT_BLUE)
@@ -40,12 +224,6 @@ section_font = Font(name="Calibri", bold=True, size=12, color=HEADER_BG)
 bold_font = Font(name="Calibri", bold=True, size=11)
 normal_font = Font(name="Calibri", size=11)
 small_font = Font(name="Calibri", size=10, color=MED_GRAY)
-money_fmt = '#,##0.00'
-pct_fmt = '0.0%'
-int_fmt = '#,##0'
-acct_fmt = '$#,##0.00'
-acct_fmt_neg = '$#,##0.00;[Red]($#,##0.00)'
-
 green_font = Font(name="Calibri", bold=True, size=11, color=ACCENT_GREEN)
 red_font = Font(name="Calibri", bold=True, size=11, color=ACCENT_RED)
 green_fill = PatternFill(start_color="DCFCE7", end_color="DCFCE7", fill_type="solid")
@@ -54,6 +232,11 @@ yellow_fill = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="s
 alt_fill = PatternFill(start_color=ROW_ALT, end_color=ROW_ALT, fill_type="solid")
 light_fill = PatternFill(start_color=LIGHT_GRAY, end_color=LIGHT_GRAY, fill_type="solid")
 blue_fill = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
+
+pct_fmt = "0.0%"
+int_fmt = "#,##0"
+acct_fmt = '$#,##0.00'
+acct_fmt_neg = '$#,##0.00;[Red]($#,##0.00)'
 
 
 def style_header_row(ws, row, max_col):
@@ -90,16 +273,23 @@ def style_total_row(ws, row, max_col):
 def auto_width(ws, min_width=10, max_width=28):
     for col_cells in ws.columns:
         col_letter = get_column_letter(col_cells[0].column)
-        max_len = min_width
+        length = min_width
         for cell in col_cells:
             if cell.value is not None:
-                max_len = max(max_len, min(len(str(cell.value)) + 3, max_width))
-        ws.column_dimensions[col_letter].width = max_len
+                length = max(length, min(len(str(cell.value)) + 3, max_width))
+        ws.column_dimensions[col_letter].width = length
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 1 — Dashboard / Summary
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SUB LEVELS used across multiple sheets
+# ═══════════════════════════════════════════════════════════════════════════════
+SUB_LEVELS = [0, 1, 5, 10, 12, 15, 25, 50, 75, 100, 150, 200, 250, 300,
+              400, 500, 750, 1000, 1500, 2000, 3000, 5000]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 1 — Dashboard
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_dashboard(wb):
     ws = wb.active
     ws.title = "Dashboard"
@@ -114,15 +304,22 @@ def build_dashboard(wb):
     ws["A2"] = "Breakeven & Profitability Analysis  |  April 2026"
     ws["A2"].font = Font(name="Calibri", size=12, color=MED_GRAY)
 
-    # ── KPI Cards ──
+    costs_0 = compute_all_costs(0)
+    base_burn = costs_0["_totals"]["grand"]
+    breakeven = math.ceil(base_burn / BLENDED_NET_ARPU)
+
+    costs_100 = compute_all_costs(100)
+    net_rev_100 = 100 * BLENDED_NET_ARPU
+    margin_100 = (net_rev_100 - costs_100["_totals"]["grand"]) / net_rev_100
+
     r = 4
     kpis = [
-        ("Monthly Burn (0 subs)", "$386.83", ACCENT_RED),
-        ("Breakeven Subscribers", "12 Pro", ACCENT_BLUE),
-        ("Blended Net ARPU", "$34.12/mo", ACCENT_GREEN),
-        ("Margin @ 100 Subs", "88%", ACCENT_GREEN),
+        ("Monthly Burn (0 subs)", f"${base_burn:,.2f}", ACCENT_RED),
+        ("Breakeven Subscribers", f"{breakeven} Pro", ACCENT_BLUE),
+        ("Blended Net ARPU", f"${BLENDED_NET_ARPU}/mo", ACCENT_GREEN),
+        (f"Margin @ 100 Subs", f"{margin_100:.0%}", ACCENT_GREEN),
         ("Primary Cost Driver", "RentCast (51%)", ACCENT_YELLOW),
-        ("First Scale Trigger", "~80–200 subs", ACCENT_YELLOW),
+        ("First Scale Trigger", "~48–80 subs", ACCENT_YELLOW),
     ]
     for i, (label, value, color) in enumerate(kpis):
         col = (i % 3) * 2 + 1
@@ -143,56 +340,49 @@ def build_dashboard(wb):
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
-    r += 1
-    for row_data in [
-        ("Starter (Free)", 0, 0, 0),
-        ("Pro", 39.99, 349.99, 29.17),
-    ]:
+    for row_data in [("Starter (Free)", 0, 0, 0), ("Pro", 39.99, 349.99, 29.17)]:
+        r += 1
         for c, v in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=c, value=v)
             if c > 1:
                 cell.number_format = acct_fmt
         style_data_row(ws, r, len(headers), r % 2 == 0)
-        r += 1
 
     # ── Net Revenue ──
-    r += 1
+    r += 2
     ws.cell(row=r, column=1, value="NET REVENUE AFTER PROCESSING FEES").font = section_font
     r += 1
     headers = ["Channel", "Fee Structure", "Monthly Net", "Annual Net (/mo)"]
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
-    r += 1
-    net_data = [
+    for row_data in [
         ("Stripe (Web)", "2.9% + $0.30/txn", 38.53, 28.30),
         ("Apple IAP (15% SBP)", "15% commission", 33.99, 24.79),
         ("Google Play (15%)", "15% commission", 33.99, 24.79),
-    ]
-    for row_data in net_data:
+    ]:
+        r += 1
         for c, v in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=c, value=v)
             if c >= 3:
                 cell.number_format = acct_fmt
         style_data_row(ws, r, len(headers), r % 2 == 0)
-        r += 1
 
     # ── Blended ARPU ──
-    r += 1
+    r += 2
     ws.cell(row=r, column=1, value="BLENDED NET ARPU").font = section_font
     r += 1
     headers = ["Segment", "Mix %", "Net $/mo", "Contribution"]
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
-    r += 1
-    arpu_data = [
+    for row_data in [
         ("Web — Monthly", 0.52, 38.53, 20.04),
         ("Web — Annual", 0.28, 28.30, 7.92),
         ("iOS — Monthly", 0.13, 33.99, 4.42),
         ("iOS — Annual", 0.07, 24.79, 1.74),
-    ]
-    for row_data in arpu_data:
+    ]:
+        r += 1
         for c, v in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=c, value=v)
             if c == 2:
@@ -200,9 +390,8 @@ def build_dashboard(wb):
             elif c >= 3:
                 cell.number_format = acct_fmt
         style_data_row(ws, r, len(headers), r % 2 == 0)
-        r += 1
-    # Total row
-    for c, v in enumerate(["Blended ARPU (net)", 1.0, "", 34.12], 1):
+    r += 1
+    for c, v in enumerate(["Blended ARPU (net)", 1.0, "", BLENDED_NET_ARPU], 1):
         cell = ws.cell(row=r, column=c, value=v)
         if c == 2:
             cell.number_format = pct_fmt
@@ -214,71 +403,67 @@ def build_dashboard(wb):
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 2 — Fixed Costs
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 2 — Fixed Costs (baseline at 0 subs)
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_fixed_costs(wb):
     ws = wb.create_sheet("Fixed Costs")
     ws.sheet_properties.tabColor = ACCENT_RED
 
     ws.merge_cells("A1:G1")
-    ws["A1"] = "Fixed Monthly Costs — Current Plans"
+    ws["A1"] = "Baseline Monthly Costs — Current Plans (0 Subscribers)"
     ws["A1"].font = title_font
 
+    baseline = compute_all_costs(0)
+
     r = 3
-    headers = ["#", "Service", "Plan", "Monthly Cost", "Included Quota", "Overage Rate", "Notes"]
+    headers = ["#", "Service", "Category", "Plan", "Monthly Cost", "Included Quota", "Notes"]
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
 
-    costs = [
-        (1, "RentCast API", "Growth", 199.00, "5,000 req/mo", "$0.03/req", "Primary data provider"),
-        (2, "Zillow / AXESSO API", "Production", 82.00, "100,000 req/mo", "n/a", "€75 ≈ $82 USD"),
-        (3, "RapidAPI — Redfin", "Pro", 15.00, "~1,000+ req/mo", "n/a", "Verify quota in dashboard"),
-        (4, "RapidAPI — Realtor", "Pro", 15.00, "~1,000+ req/mo", "n/a", "Verify quota in dashboard"),
-        (5, "Railway", "Pro", 20.00, "$20 usage credit", "Usage-based", "Backend hosting"),
-        (6, "Vercel", "Pro", 20.00, "Standard limits", "Usage-based", "Frontend hosting"),
-        (7, "Expo (EAS)", "Starter", 19.00, "3K MAUs", "n/a", "$45 build credit"),
-        (8, "Apple Developer", "Annual", 8.25, "—", "—", "$99/yr amortized"),
-        (9, "Google Play Developer", "One-time", 2.08, "—", "—", "$25 amortized 12 mo"),
-        (10, "Domain (dealgapiq.com)", "Annual", 1.50, "—", "—", "~$18/yr amortized"),
-        (11, "Anthropic (Claude)", "Pay-per-use", 5.00, "—", "~$0.01/call", "Appraisal narratives"),
-        (12, "Google Maps Platform", "Pay-as-you-go", 0.00, "$200/mo free credit", "Pay-as-you-go", "Autocomplete + Geocoding"),
-        (13, "Sentry", "Free", 0.00, "5K errors/mo", "n/a", "Error monitoring"),
-        (14, "Resend", "Free", 0.00, "3,000 emails/mo", "n/a", "Transactional email"),
-        (15, "RevenueCat", "Free", 0.00, "< $2,500 MTR", "1% above", "Mobile IAP management"),
+    rows = [
+        (1,  "RentCast API",        "Data API",  baseline["api"]["RentCast"][0],             baseline["api"]["RentCast"][1],             "5,000 req/mo",  "$0.03/req overage"),
+        (2,  "Zillow / AXESSO",     "Data API",  baseline["api"]["Zillow / AXESSO"][0],      baseline["api"]["Zillow / AXESSO"][1],      "100,000 req/mo", "€75 ≈ $82 USD"),
+        (3,  "RapidAPI — Redfin",   "Data API",  baseline["api"]["RapidAPI — Redfin"][0],    baseline["api"]["RapidAPI — Redfin"][1],    "~1,000 req/mo", "Verify quota"),
+        (4,  "RapidAPI — Realtor",  "Data API",  baseline["api"]["RapidAPI — Realtor"][0],   baseline["api"]["RapidAPI — Realtor"][1],   "~1,000 req/mo", "Verify quota"),
+        (5,  "Railway",             "Infra",     baseline["infra"]["Railway"][0],             baseline["infra"]["Railway"][1],             "$20 usage credit", "Backend hosting"),
+        (6,  "Vercel",              "Infra",     baseline["infra"]["Vercel"][0],              baseline["infra"]["Vercel"][1],              "Standard limits",  "Frontend hosting"),
+        (7,  "Expo (EAS)",          "Infra",     baseline["infra"]["Expo (EAS)"][0],          baseline["infra"]["Expo (EAS)"][1],          "3K MAUs",          "$45 build credit"),
+        (8,  "Apple Developer",     "Fixed",     "Annual",  8.25,  "—", "$99/yr amortized"),
+        (9,  "Google Play Dev",     "Fixed",     "One-time", 2.08, "—", "$25 amortized 12 mo"),
+        (10, "Domain",              "Fixed",     "Annual",  1.50,  "—", "~$18/yr amortized"),
+        (11, "Anthropic (Claude)",  "Variable",  "Pay-per-use", 0.00, "—", "~$0.01/narrative"),
+        (12, "Google Maps",         "Variable",  "Pay-as-you-go", 0.00, "$200/mo free", "Autocomplete + Geo"),
+        (13, "Sentry",              "Fixed",     "Free",    0.00,  "5K errors/mo", "Error monitoring"),
+        (14, "Resend",              "Fixed",     "Free",    0.00,  "3,000 emails/mo", "Transactional email"),
+        (15, "RevenueCat",          "Variable",  "Free",    0.00,  "< $2,500 MTR", "1% above threshold"),
     ]
 
-    for i, row_data in enumerate(costs):
+    for i, row_data in enumerate(rows):
         r += 1
         for c, v in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=c, value=v)
-            if c == 4:
+            if c == 5 and isinstance(v, (int, float)):
                 cell.number_format = acct_fmt
         style_data_row(ws, r, len(headers), i % 2 == 1)
 
-    # Total
     r += 1
-    ws.cell(row=r, column=1, value="")
-    ws.cell(row=r, column=2, value="TOTAL FIXED COSTS")
-    ws.cell(row=r, column=3, value="")
-    total_cell = ws.cell(row=r, column=4)
-    total_cell.value = f"=SUM(D4:D{r-1})"
+    ws.cell(row=r, column=2, value="TOTAL BASELINE")
+    total_cell = ws.cell(row=r, column=5, value=f"=SUM(E4:E{r-1})")
     total_cell.number_format = acct_fmt
     style_total_row(ws, r, len(headers))
-    total_row = r
 
-    # ── Additional / Verify Costs ──
+    # ── Additional Costs ──
     r += 2
     ws.merge_cells(f"A{r}:G{r}")
-    ws.cell(row=r, column=1, value="Additional Costs to Consider (Not in Total)").font = section_font
+    ws.cell(row=r, column=1, value="Additional Costs to Consider (Not in Baseline)").font = section_font
     r += 1
-    headers2 = ["", "Item", "", "Est. Monthly Cost", "", "", "Notes"]
-    for c, h in enumerate(headers2, 1):
+    h2 = ["", "Item", "", "Est. Monthly", "", "", "Notes"]
+    for c, h in enumerate(h2, 1):
         ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers2))
-
-    addl = [
+    style_header_row(ws, r, len(h2))
+    for i, row_data in enumerate([
         ("", "GitHub (private repos)", "", "0–4", "", "", "Free for individual; Team $4/user/mo"),
         ("", "Cursor IDE", "", "20", "", "", "Development tool subscription"),
         ("", "Accounting / Bookkeeping", "", "0–50", "", "", "Manual or service"),
@@ -286,138 +471,73 @@ def build_fixed_costs(wb):
         ("", "Legal (entity, ToS)", "", "~50", "", "", "$600/yr amortized"),
         ("", "Marketing / Ads", "", "0+", "", "", "Variable; CAC dependent"),
         ("", "Founder Salary", "", "0+", "", "", "Critical at scale"),
-    ]
-    for i, row_data in enumerate(addl):
+    ]):
         r += 1
         for c, v in enumerate(row_data, 1):
             ws.cell(row=r, column=c, value=v)
-        style_data_row(ws, r, len(headers2), i % 2 == 1)
+        style_data_row(ws, r, len(h2), i % 2 == 1)
 
     auto_width(ws, min_width=10, max_width=32)
     ws.sheet_view.showGridLines = False
-    return total_row
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 3 — Profitability Model
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 3 — Profitability (uses cost engine)
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_profitability(wb):
     ws = wb.create_sheet("Profitability")
     ws.sheet_properties.tabColor = ACCENT_GREEN
 
-    ws.merge_cells("A1:I1")
-    ws["A1"] = "Profitability by Subscriber Count"
+    ws.merge_cells("A1:K1")
+    ws["A1"] = "Profitability by Subscriber Count (Auto-Scaled Costs)"
     ws["A1"].font = title_font
 
-    # ── Assumptions box ──
-    ws.merge_cells("A3:D3")
-    ws["A3"] = "MODEL ASSUMPTIONS"
-    ws["A3"].font = section_font
+    ws["A3"] = "All costs computed by the centralized cost engine. Provider plans"
+    ws["A3"].font = small_font
+    ws["A4"] = "auto-upgrade when volume exceeds quota. See 'Scaling Detail' sheet."
+    ws["A4"].font = small_font
 
-    assumptions = [
-        ("Blended Net ARPU", 34.12, acct_fmt),
-        ("Activity Rate", 0.60, pct_fmt),
-        ("Searches/Active Sub/Mo", 15, int_fmt),
-        ("Cache Hit Rate", 0.30, pct_fmt),
-        ("Cold Searches/Active Sub", 10.5, "0.0"),
-        ("RentCast Calls/Search", 4, int_fmt),
-        ("RentCast Calls/Active Sub/Mo", 42, int_fmt),
-        ("Fixed Costs/Month", 386.83, acct_fmt),
-        ("Anthropic $/Narrative", 0.01, "$0.000"),
-    ]
-    r = 4
-    for label, val, fmt in assumptions:
-        ws.cell(row=r, column=1, value=label).font = Font(name="Calibri", size=10, color=MED_GRAY)
-        cell = ws.cell(row=r, column=2, value=val)
-        cell.number_format = fmt
-        cell.font = bold_font
-        r += 1
-
-    arpu_row = 4      # B4
-    activity_row = 5   # B5
-    fixed_row = 11     # B11
-    anthro_row = 12    # B12
-
-    # ── Main profitability table ──
-    r = 15
+    r = 6
     headers = [
-        "Paid Subs", "Active (60%)", "Gross Revenue",
-        "Net Revenue", "Fixed Costs", "RentCast Overage",
-        "Anthropic", "Total Costs", "Monthly Profit/Loss", "Operating Margin"
+        "Paid Subs", "Active (60%)", "Net Revenue",
+        "Data APIs", "Infrastructure", "AI & Variable",
+        "Fixed Overhead", "Total Costs", "Profit/Loss", "Margin"
     ]
+    ncols = len(headers)
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers))
+    style_header_row(ws, r, ncols)
 
-    sub_levels = [1, 5, 10, 12, 15, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000]
-
-    for i, subs in enumerate(sub_levels):
+    for i, subs in enumerate(SUB_LEVELS):
         r += 1
-        row = r
+        costs = compute_all_costs(subs)
+        t = costs["_totals"]
+        net_rev = subs * BLENDED_NET_ARPU
+        profit = net_rev - t["grand"]
+        margin = profit / net_rev if net_rev > 0 else 0
+        active = max(1, math.ceil(subs * ACTIVITY_RATE)) if subs > 0 else 0
 
-        # A: Paid Subs
-        ws.cell(row=row, column=1, value=subs)
+        vals = [
+            subs, active, net_rev,
+            t["api"], t["infra"], t["variable"],
+            t["fixed"], t["grand"], profit, margin,
+        ]
+        for c, v in enumerate(vals, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            if c <= 2:
+                cell.number_format = int_fmt
+            elif c == ncols:
+                cell.number_format = pct_fmt
+            elif c == ncols - 1:
+                cell.number_format = acct_fmt_neg
+            else:
+                cell.number_format = acct_fmt
+        style_data_row(ws, r, ncols, i % 2 == 1)
 
-        # B: Active subs = A * activity rate
-        ws.cell(row=row, column=2).value = f"=A{row}*$B$5"
-        ws.cell(row=row, column=2).number_format = int_fmt
+        pnl_cell = ws.cell(row=r, column=ncols - 1)
+        pnl_cell.font = green_font if profit >= 0 else red_font
 
-        # C: Gross Revenue = subs * $39.99 weighted
-        gross_price = 36.99  # blended gross (accounts for annual mix)
-        ws.cell(row=row, column=3).value = f"=A{row}*36.99"
-        ws.cell(row=row, column=3).number_format = acct_fmt
-
-        # D: Net Revenue = subs * blended ARPU
-        ws.cell(row=row, column=4).value = f"=A{row}*$B$4"
-        ws.cell(row=row, column=4).number_format = acct_fmt
-
-        # E: Fixed Costs
-        # At 300+ subs, RentCast upgrades to Scale ($449 vs $199 = +$250)
-        # At 500+ subs, Expo upgrades (+$180), Railway increases (+$40)
-        if subs >= 500:
-            ws.cell(row=row, column=5).value = f"=$B$11+250+180+40"
-        elif subs >= 300:
-            ws.cell(row=row, column=5).value = f"=$B$11+250"
-        else:
-            ws.cell(row=row, column=5).value = f"=$B$11"
-        ws.cell(row=row, column=5).number_format = acct_fmt
-
-        # F: RentCast Overage
-        # = MAX(0, active_subs * 42 - plan_included) * overage_rate
-        if subs >= 300:
-            # Scale plan: 25,000 included, $0.015 overage
-            ws.cell(row=row, column=6).value = f"=MAX(0, B{row}*42 - 25000)*0.015"
-        else:
-            # Growth plan: 5,000 included, $0.03 overage
-            ws.cell(row=row, column=6).value = f"=MAX(0, B{row}*42 - 5000)*0.03"
-        ws.cell(row=row, column=6).number_format = acct_fmt
-
-        # G: Anthropic = active * 15 searches * $0.01
-        ws.cell(row=row, column=7).value = f"=B{row}*15*$B$12"
-        ws.cell(row=row, column=7).number_format = acct_fmt
-
-        # H: Total Costs = Fixed + RentCast Overage + Anthropic
-        ws.cell(row=row, column=8).value = f"=E{row}+F{row}+G{row}"
-        ws.cell(row=row, column=8).number_format = acct_fmt
-
-        # I: Profit/Loss = Net Revenue - Total Costs
-        ws.cell(row=row, column=9).value = f"=D{row}-H{row}"
-        ws.cell(row=row, column=9).number_format = acct_fmt_neg
-
-        # J: Operating Margin = Profit / Net Revenue
-        ws.cell(row=row, column=10).value = f"=IF(D{row}>0, I{row}/D{row}, 0)"
-        ws.cell(row=row, column=10).number_format = pct_fmt
-
-        style_data_row(ws, row, len(headers), i % 2 == 1)
-
-        # Color the profit/loss cell
-        profit_cell = ws.cell(row=row, column=9)
-        if subs < 12:
-            profit_cell.font = red_font
-        else:
-            profit_cell.font = green_font
-
-    last_data_row = r
+    last_row = r
 
     # ── Profit/Loss chart ──
     chart = BarChart()
@@ -428,248 +548,322 @@ def build_profitability(wb):
     chart.style = 10
     chart.width = 28
     chart.height = 14
-
-    cats = Reference(ws, min_col=1, min_row=16, max_row=last_data_row)
-    data = Reference(ws, min_col=9, min_row=15, max_row=last_data_row)
+    cats = Reference(ws, min_col=1, min_row=8, max_row=last_row)
+    data = Reference(ws, min_col=ncols - 1, min_row=6, max_row=last_row)
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
     chart.shape = 4
-    ws.add_chart(chart, f"A{last_data_row + 3}")
+    ws.add_chart(chart, f"A{last_row + 3}")
 
-    # ── Margin chart ──
-    chart2 = LineChart()
-    chart2.title = "Operating Margin %"
-    chart2.y_axis.title = "Margin"
-    chart2.y_axis.numFmt = '0%'
+    # ── Total cost stacked chart ──
+    chart2 = BarChart()
+    chart2.type = "col"
+    chart2.grouping = "stacked"
+    chart2.title = "Cost Composition by Subscriber Count"
+    chart2.y_axis.title = "$ / Month"
     chart2.x_axis.title = "Paid Subscribers"
     chart2.style = 10
     chart2.width = 28
     chart2.height = 14
-
-    data2 = Reference(ws, min_col=10, min_row=15, max_row=last_data_row)
-    chart2.add_data(data2, titles_from_data=True)
+    for col_idx in [4, 5, 6, 7]:  # Data APIs, Infra, Variable, Fixed
+        d = Reference(ws, min_col=col_idx, min_row=6, max_row=last_row)
+        chart2.add_data(d, titles_from_data=True)
     chart2.set_categories(cats)
-    ws.add_chart(chart2, f"A{last_data_row + 20}")
+    ws.add_chart(chart2, f"A{last_row + 20}")
 
     auto_width(ws, min_width=12, max_width=22)
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 4 — API Capacity
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 4 — Scaling Detail (per-provider cost & plan at each sub level)
+# ═══════════════════════════════════════════════════════════════════════════════
+def build_scaling_detail(wb):
+    ws = wb.create_sheet("Scaling Detail")
+    ws.sheet_properties.tabColor = ACCENT_YELLOW
+
+    ws.merge_cells("A1:P1")
+    ws["A1"] = "Per-Provider Cost & Plan at Each Subscriber Level"
+    ws["A1"].font = title_font
+    ws["A2"] = "Plans auto-upgrade when call volume exceeds quota. Yellow = upgraded from baseline."
+    ws["A2"].font = small_font
+
+    providers_api = list(API_PROVIDERS.keys())
+    providers_infra = list(INFRA_SERVICES.keys())
+    variable_items = ["Anthropic (Claude)", "Google Maps", "RevenueCat"]
+
+    # Build headers: Subs | Active | then pairs of (Plan, Cost) for each provider
+    all_providers = providers_api + providers_infra + variable_items
+    r = 4
+    headers = ["Paid Subs", "Active"]
+    for p in all_providers:
+        headers.append(f"{p} Plan")
+        headers.append(f"{p} $")
+    headers.append("TOTAL COST")
+    ncols = len(headers)
+
+    for c, h in enumerate(headers, 1):
+        ws.cell(row=r, column=c, value=h)
+    style_header_row(ws, r, ncols)
+
+    # Get baseline plans for highlighting upgrades
+    baseline = compute_all_costs(0)
+    baseline_plans = {}
+    for p in providers_api:
+        baseline_plans[p] = baseline["api"][p][0]
+    for p in providers_infra:
+        baseline_plans[p] = baseline["infra"][p][0]
+
+    for i, subs in enumerate(SUB_LEVELS):
+        r += 1
+        costs = compute_all_costs(subs)
+        active = max(1, math.ceil(subs * ACTIVITY_RATE)) if subs > 0 else 0
+
+        ws.cell(row=r, column=1, value=subs).number_format = int_fmt
+        ws.cell(row=r, column=2, value=active).number_format = int_fmt
+
+        col = 3
+        for p in providers_api:
+            plan, cost, _calls = costs["api"][p]
+            plan_cell = ws.cell(row=r, column=col, value=plan)
+            cost_cell = ws.cell(row=r, column=col + 1, value=cost)
+            cost_cell.number_format = acct_fmt
+            if plan != baseline_plans.get(p):
+                plan_cell.fill = yellow_fill
+                plan_cell.font = bold_font
+            col += 2
+
+        for p in providers_infra:
+            plan, cost = costs["infra"][p]
+            plan_cell = ws.cell(row=r, column=col, value=plan)
+            cost_cell = ws.cell(row=r, column=col + 1, value=cost)
+            cost_cell.number_format = acct_fmt
+            if plan != baseline_plans.get(p):
+                plan_cell.fill = yellow_fill
+                plan_cell.font = bold_font
+            col += 2
+
+        for p in variable_items:
+            plan, cost = costs["variable"][p]
+            ws.cell(row=r, column=col, value=plan)
+            ws.cell(row=r, column=col + 1, value=cost).number_format = acct_fmt
+            col += 2
+
+        ws.cell(row=r, column=col, value=costs["_totals"]["grand"]).number_format = acct_fmt
+        style_data_row(ws, r, ncols, i % 2 == 1)
+
+    auto_width(ws, min_width=8, max_width=18)
+    ws.column_dimensions["A"].width = 10
+    ws.sheet_view.showGridLines = False
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 5 — API Capacity
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_api_capacity(wb):
     ws = wb.create_sheet("API Capacity")
     ws.sheet_properties.tabColor = ACCENT_YELLOW
 
     ws.merge_cells("A1:H1")
-    ws["A1"] = "API Capacity & Scaling Triggers"
+    ws["A1"] = "API Capacity & Plan Transitions"
     ws["A1"].font = title_font
 
-    # ── Calls per search ──
-    ws["A3"] = "API CALLS PER COLD PROPERTY SEARCH"
-    ws["A3"].font = section_font
-    r = 4
-    headers = ["Provider", "Calls/Search", "Calls/Active Sub/Mo", "Included Quota", "Max Active Subs", "Max Paid Subs (60%)"]
-    for c, h in enumerate(headers, 1):
-        ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers))
-
-    providers = [
-        ("RentCast", 4, 42, 5000, 119, 198),
-        ("Zillow / AXESSO", 1.5, 16, 100000, 6250, 10417),
-        ("Redfin (RapidAPI)", 2, 21, "~1,000+", "~48+", "~80+"),
-        ("Realtor (RapidAPI)", 2, 21, "~1,000+", "~48+", "~80+"),
-    ]
-    for i, row_data in enumerate(providers):
+    # ── Per-provider plan tiers ──
+    for prov_name, cfg in API_PROVIDERS.items():
+        r = ws.max_row + 2
+        ws.cell(row=r, column=1, value=f"{prov_name} — PLAN TIERS").font = section_font
+        ws.cell(row=r, column=1).alignment = Alignment(horizontal="left")
         r += 1
-        for c, v in enumerate(row_data, 1):
-            cell = ws.cell(row=r, column=c, value=v)
-            if isinstance(v, (int, float)) and c >= 4:
-                cell.number_format = int_fmt
-        style_data_row(ws, r, len(headers), i % 2 == 1)
+        h = ["Plan", "Monthly Fee", "Included Quota", "Overage Rate",
+             "Max Active Subs", "Max Paid Subs (60%)", "Calls/Search"]
+        for c, val in enumerate(h, 1):
+            ws.cell(row=r, column=c, value=val)
+        style_header_row(ws, r, len(h))
+
+        cps = cfg["calls_per_search"]
+        for i, (name, fee, quota, ovg) in enumerate(cfg["tiers"]):
+            r += 1
+            searches_at_cap = quota / cps if cps > 0 else 0
+            active_at_cap = searches_at_cap / (SEARCHES_PER_ACTIVE * (1 - CACHE_HIT_RATE))
+            paid_at_cap = active_at_cap / ACTIVITY_RATE
+
+            ws.cell(row=r, column=1, value=name)
+            ws.cell(row=r, column=2, value=fee).number_format = acct_fmt
+            ws.cell(row=r, column=3, value=quota).number_format = int_fmt
+            ws.cell(row=r, column=4, value=f"${ovg}/req" if ovg else "n/a (must upgrade)")
+            ws.cell(row=r, column=5, value=round(active_at_cap)).number_format = int_fmt
+            ws.cell(row=r, column=6, value=round(paid_at_cap)).number_format = int_fmt
+            ws.cell(row=r, column=7, value=cps)
+            style_data_row(ws, r, len(h), i % 2 == 1)
+
+    # ── Infrastructure tiers ──
+    r = ws.max_row + 2
+    ws.cell(row=r, column=1, value="INFRASTRUCTURE SCALING TIERS").font = section_font
     r += 1
-    ws.cell(row=r, column=1, value="TOTAL")
-    ws.cell(row=r, column=2, value=9.5)
-    ws.cell(row=r, column=3, value=100)
-    style_total_row(ws, r, len(headers))
+    h2 = ["Service", "Plan", "Monthly Cost", "Max Paid Subs"]
+    for c, val in enumerate(h2, 1):
+        ws.cell(row=r, column=c, value=val)
+    style_header_row(ws, r, len(h2))
 
-    # ── RentCast scaling detail ──
-    r += 2
-    ws.cell(row=r, column=1, value="RENTCAST SCALING ANALYSIS").font = section_font
+    for svc, tiers in INFRA_SERVICES.items():
+        for i, (name, cost, max_s) in enumerate(tiers):
+            r += 1
+            ws.cell(row=r, column=1, value=svc)
+            ws.cell(row=r, column=2, value=name)
+            ws.cell(row=r, column=3, value=cost).number_format = acct_fmt
+            ws.cell(row=r, column=4, value=max_s).number_format = int_fmt
+            style_data_row(ws, r, len(h2), i % 2 == 1)
+
+    # ── Plan transition summary ──
+    r = ws.max_row + 2
+    ws.cell(row=r, column=1, value="PLAN UPGRADE TRIGGER POINTS").font = section_font
     r += 1
-    headers2 = ["Paid Subs", "Active Subs", "RentCast Calls/Mo", "Within Growth (5K)?",
-                 "Growth Overage Cost", "Scale Plan Cost", "Optimal Plan", "Monthly API Cost"]
-    for c, h in enumerate(headers2, 1):
-        ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers2))
+    h3 = ["Provider", "Current Plan", "Upgrade To", "Trigger (Paid Subs)", "Cost Change"]
+    for c, val in enumerate(h3, 1):
+        ws.cell(row=r, column=c, value=val)
+    style_header_row(ws, r, len(h3))
 
-    rc_scenarios = [
-        (12, 7, 294, "Yes", 0, 449, "Growth ($199)", 199),
-        (25, 15, 630, "Yes", 0, 449, "Growth ($199)", 199),
-        (50, 30, 1260, "Yes", 0, 449, "Growth ($199)", 199),
-        (100, 60, 2520, "Yes", 0, 449, "Growth ($199)", 199),
-        (119, 71, 4982, "At limit", 0, 449, "Growth ($199)", 199),
-        (200, 120, 5040, "NO", 1.20, 449, "Growth ($199 + ovg)", 200.20),
-        (300, 180, 7560, "NO", 76.80, 449, "Scale ($449)", 449),
-        (500, 300, 12600, "NO", 228.00, 449, "Scale ($449)", 449),
-        (750, 450, 18900, "NO", 417.00, 449, "Scale ($449)", 449),
-        (1000, 600, 25200, "NO", 606.00, 452.00, "Scale ($449 + ovg)", 452),
-    ]
+    prev_plans = {}
+    for subs in SUB_LEVELS:
+        costs = compute_all_costs(subs)
+        for prov in API_PROVIDERS:
+            plan = costs["api"][prov][0]
+            if prov not in prev_plans:
+                prev_plans[prov] = plan
+                continue
+            if plan != prev_plans[prov]:
+                r += 1
+                old_cost = compute_all_costs(subs - 1)["api"][prov][1]
+                new_cost = costs["api"][prov][1]
+                ws.cell(row=r, column=1, value=prov)
+                ws.cell(row=r, column=2, value=prev_plans[prov])
+                ws.cell(row=r, column=3, value=plan)
+                ws.cell(row=r, column=4, value=f"~{subs} subs")
+                ws.cell(row=r, column=5, value=new_cost - old_cost).number_format = acct_fmt_neg
+                style_data_row(ws, r, len(h3))
+                ws.cell(row=r, column=5).fill = yellow_fill
+                prev_plans[prov] = plan
 
-    for i, row_data in enumerate(rc_scenarios):
-        r += 1
-        for c, v in enumerate(row_data, 1):
-            cell = ws.cell(row=r, column=c, value=v)
-            if c in (3,):
-                cell.number_format = int_fmt
-            elif c in (5, 6, 8):
-                cell.number_format = acct_fmt
-        style_data_row(ws, r, len(headers2), i % 2 == 1)
+        for svc in INFRA_SERVICES:
+            plan = costs["infra"][svc][0]
+            if svc not in prev_plans:
+                prev_plans[svc] = plan
+                continue
+            if plan != prev_plans[svc]:
+                r += 1
+                old_cost = compute_all_costs(subs - 1)["infra"][svc][1]
+                new_cost = costs["infra"][svc][1]
+                ws.cell(row=r, column=1, value=svc)
+                ws.cell(row=r, column=2, value=prev_plans[svc])
+                ws.cell(row=r, column=3, value=plan)
+                ws.cell(row=r, column=4, value=f"~{subs} subs")
+                ws.cell(row=r, column=5, value=new_cost - old_cost).number_format = acct_fmt_neg
+                style_data_row(ws, r, len(h3))
+                ws.cell(row=r, column=5).fill = yellow_fill
+                prev_plans[svc] = plan
 
-        status_cell = ws.cell(row=r, column=4)
-        if status_cell.value == "NO":
-            status_cell.fill = red_fill
-            status_cell.font = Font(name="Calibri", bold=True, size=11, color=ACCENT_RED)
-        elif status_cell.value == "At limit":
-            status_cell.fill = yellow_fill
-        elif status_cell.value == "Yes":
-            status_cell.fill = green_fill
-
-    # ── Scaling triggers ──
-    r += 2
-    ws.cell(row=r, column=1, value="INFRASTRUCTURE SCALING TRIGGERS").font = section_font
-    r += 1
-    headers3 = ["Subscriber Threshold", "Trigger", "Action Required", "Monthly Cost Impact"]
-    for c, h in enumerate(headers3, 1):
-        ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers3))
-
-    triggers = [
-        ("~80 subs", "RapidAPI quotas (verify)", "Upgrade Redfin + Realtor plans", "+$20–50/mo each"),
-        ("~200 subs", "RentCast 5K limit", "Pay overage or evaluate Scale", "+$0–250/mo"),
-        ("~300 subs", "RentCast overage > Scale cost", "Upgrade to Scale ($449)", "+$250/mo"),
-        ("~500 subs", "Railway compute scaling", "Higher resource consumption", "+$20–80/mo"),
-        ("~500 subs", "Expo 3K MAU limit", "Upgrade to Production ($199)", "+$180/mo"),
-        ("~1,000 subs", "Vercel bandwidth/functions", "Team or Enterprise plan", "+$20–100/mo"),
-        ("~2,500 subs", "RevenueCat $2,500 MTR", "1% of mobile MTR", "~$25–100/mo"),
-        ("~5,000 subs", "Zillow 100K limit", "Upgrade to Business (€150)", "+$82/mo"),
-    ]
-    for i, row_data in enumerate(triggers):
-        r += 1
-        for c, v in enumerate(row_data, 1):
-            ws.cell(row=r, column=c, value=v)
-        style_data_row(ws, r, len(headers3), i % 2 == 1)
-
-    auto_width(ws, min_width=12, max_width=35)
+    auto_width(ws, min_width=12, max_width=30)
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 5 — Sensitivity Analysis
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 6 — Sensitivity Analysis
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_sensitivity(wb):
     ws = wb.create_sheet("Sensitivity")
     ws.sheet_properties.tabColor = "8B5CF6"
+
+    base_costs = compute_all_costs(0)
+    base_fixed = base_costs["_totals"]["grand"]
 
     ws.merge_cells("A1:G1")
     ws["A1"] = "Breakeven Sensitivity Analysis"
     ws["A1"].font = title_font
 
-    # ── By Channel Mix ──
     ws["A3"] = "BREAKEVEN BY CHANNEL MIX"
     ws["A3"].font = section_font
     r = 4
-    headers = ["Scenario", "Blended Net ARPU", "Fixed Costs", "Breakeven Subs"]
+    headers = ["Scenario", "Blended Net ARPU", "Base Fixed Costs", "Breakeven Subs"]
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
 
     scenarios = [
-        ("100% Web Monthly (best case)", 38.53, 386.83),
-        ("100% Web Annual", 28.30, 386.83),
-        ("Blended (base case)", 34.12, 386.83),
-        ("100% iOS Monthly", 33.99, 386.83),
-        ("100% iOS Annual (worst case)", 24.79, 386.83),
-        ("Heavy mobile (40% mobile)", 31.95, 386.83),
-        ("Heavy annual (70% annual)", 30.24, 386.83),
+        ("100% Web Monthly (best)", 38.53),
+        ("100% Web Annual", 28.30),
+        ("Blended (base case)", 34.12),
+        ("100% iOS Monthly", 33.99),
+        ("100% iOS Annual (worst)", 24.79),
+        ("Heavy mobile (40%)", 31.95),
+        ("Heavy annual (70%)", 30.24),
     ]
-    for i, (scenario, arpu, fixed) in enumerate(scenarios):
+    for i, (scenario, arpu) in enumerate(scenarios):
         r += 1
         ws.cell(row=r, column=1, value=scenario)
         ws.cell(row=r, column=2, value=arpu).number_format = acct_fmt
-        ws.cell(row=r, column=3, value=fixed).number_format = acct_fmt
-        import math
-        be = math.ceil(fixed / arpu)
-        ws.cell(row=r, column=4, value=be)
+        ws.cell(row=r, column=3, value=base_fixed).number_format = acct_fmt
+        ws.cell(row=r, column=4, value=math.ceil(base_fixed / arpu))
         style_data_row(ws, r, len(headers), i % 2 == 1)
 
     # ── By Price Point ──
     r += 2
     ws.cell(row=r, column=1, value="BREAKEVEN BY PRICE POINT (Web Monthly Only)").font = section_font
     r += 1
-    headers2 = ["Monthly Price", "Stripe Net", "Breakeven Subs", "Monthly Rev @ 50 Subs", "Annual Rev @ 50 Subs"]
-    for c, h in enumerate(headers2, 1):
+    h2 = ["Monthly Price", "Stripe Net", "Breakeven Subs", "Monthly Rev @ 50", "Annual Rev @ 50"]
+    for c, h in enumerate(h2, 1):
         ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers2))
+    style_header_row(ws, r, len(h2))
 
-    prices = [19.99, 24.99, 29.99, 34.99, 39.99, 44.99, 49.99, 59.99, 79.99]
-    for i, price in enumerate(prices):
+    for i, price in enumerate([19.99, 24.99, 29.99, 34.99, 39.99, 44.99, 49.99, 59.99, 79.99]):
         r += 1
-        stripe_net = price * (1 - 0.029) - 0.30
-        be = math.ceil(386.83 / stripe_net)
-        rev_50 = stripe_net * 50
-        rev_annual = rev_50 * 12
-
+        snet = price * 0.971 - 0.30
+        be = math.ceil(base_fixed / snet)
         ws.cell(row=r, column=1, value=price).number_format = acct_fmt
-        ws.cell(row=r, column=2, value=stripe_net).number_format = acct_fmt
+        ws.cell(row=r, column=2, value=snet).number_format = acct_fmt
         ws.cell(row=r, column=3, value=be)
-        ws.cell(row=r, column=4, value=rev_50).number_format = acct_fmt
-        ws.cell(row=r, column=5, value=rev_annual).number_format = acct_fmt
-        style_data_row(ws, r, len(headers2), i % 2 == 1)
-
+        ws.cell(row=r, column=4, value=snet * 50).number_format = acct_fmt
+        ws.cell(row=r, column=5, value=snet * 50 * 12).number_format = acct_fmt
+        style_data_row(ws, r, len(h2), i % 2 == 1)
         if price == 39.99:
-            for c in range(1, len(headers2) + 1):
+            for c in range(1, len(h2) + 1):
                 ws.cell(row=r, column=c).fill = blue_fill
                 ws.cell(row=r, column=c).font = bold_font
 
-    # ── By Churn Rate ──
+    # ── Churn ──
     r += 2
     ws.cell(row=r, column=1, value="SUBSCRIBER RETENTION IMPACT (Starting: 50 subs)").font = section_font
     r += 1
-    headers3 = ["Monthly Churn", "Avg Lifetime (mo)", "LTV (Net)", "12-Mo Retained Subs", "12-Mo Cumulative Revenue"]
-    for c, h in enumerate(headers3, 1):
+    h3 = ["Monthly Churn", "Avg Lifetime (mo)", "LTV (Net)", "12-Mo Retained", "12-Mo Cumulative Rev"]
+    for c, h in enumerate(h3, 1):
         ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers3))
+    style_header_row(ws, r, len(h3))
 
-    churns = [0.03, 0.05, 0.07, 0.10, 0.12, 0.15, 0.20]
-    for i, churn in enumerate(churns):
+    for i, churn in enumerate([0.03, 0.05, 0.07, 0.10, 0.12, 0.15, 0.20]):
         r += 1
-        lifetime = 1 / churn
-        ltv = lifetime * 34.12
+        lt = 1 / churn
+        ltv = lt * BLENDED_NET_ARPU
         retained = 50 * ((1 - churn) ** 12)
-        cumulative_rev = sum(50 * ((1 - churn) ** m) * 34.12 for m in range(12))
-
+        cum_rev = sum(50 * ((1 - churn) ** m) * BLENDED_NET_ARPU for m in range(12))
         ws.cell(row=r, column=1, value=churn).number_format = pct_fmt
-        ws.cell(row=r, column=2, value=round(lifetime, 1)).number_format = "0.0"
+        ws.cell(row=r, column=2, value=round(lt, 1)).number_format = "0.0"
         ws.cell(row=r, column=3, value=round(ltv, 2)).number_format = acct_fmt
-        ws.cell(row=r, column=4, value=round(retained, 0)).number_format = int_fmt
-        ws.cell(row=r, column=5, value=round(cumulative_rev, 0)).number_format = acct_fmt
-        style_data_row(ws, r, len(headers3), i % 2 == 1)
+        ws.cell(row=r, column=4, value=round(retained)).number_format = int_fmt
+        ws.cell(row=r, column=5, value=round(cum_rev)).number_format = acct_fmt
+        style_data_row(ws, r, len(h3), i % 2 == 1)
 
     auto_width(ws, min_width=12, max_width=35)
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 6 — 12-Month Projection
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 7 — 12-Month Projection (uses cost engine)
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_12mo_projection(wb):
     ws = wb.create_sheet("12-Month Projection")
     ws.sheet_properties.tabColor = ACCENT_GREEN
 
     ws.merge_cells("A1:N1")
-    ws["A1"] = "12-Month Financial Projection"
+    ws["A1"] = "12-Month Financial Projection (Auto-Scaled Costs)"
     ws["A1"].font = title_font
 
     ws["A3"] = "GROWTH ASSUMPTIONS"
@@ -690,32 +884,23 @@ def build_12mo_projection(wb):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(months))
 
-    # Growth model: net_subs = prev * (1 + growth - churn)
-    import math
     start_subs = 5
     growth = 0.25
     churn = 0.07
-    arpu = 34.12
-    fixed = 386.83
-
-    rows_data = {
-        "New Subscribers": [],
-        "Churned Subscribers": [],
-        "Ending Subscribers": [],
-        "": [],
-        "Gross Revenue": [],
-        "Net Revenue": [],
-        "Fixed Costs": [],
-        "Variable Costs": [],
-        "Total Costs": [],
-        " ": [],
-        "Net Profit/Loss": [],
-        "Cumulative P/L": [],
-        "Operating Margin": [],
-    }
-
-    cumulative = 0
     prev_subs = 0
+    cumulative = 0
+
+    row_labels = [
+        "New Subscribers", "Churned Subscribers", "Ending Subscribers",
+        "",
+        "Gross Revenue", "Net Revenue",
+        "",
+        "Data API Costs", "Infrastructure", "AI & Variable", "Fixed Overhead",
+        "Total Costs",
+        "",
+        "Net Profit/Loss", "Cumulative P/L", "Operating Margin",
+    ]
+    row_values = {label: [] for label in row_labels}
 
     for m in range(12):
         if m == 0:
@@ -728,74 +913,69 @@ def build_12mo_projection(wb):
             ending = prev_subs + new - churned
 
         prev_subs = ending
-        net_rev = ending * arpu
-        gross_rev = ending * 36.99
+        gross_rev = round(ending * BLENDED_GROSS_PRICE, 2)
+        net_rev = round(ending * BLENDED_NET_ARPU, 2)
 
-        active = math.ceil(ending * 0.6)
-        rc_calls = active * 42
-        rc_overage = max(0, rc_calls - 5000) * 0.03
-        anthropic = active * 15 * 0.01
-        variable = rc_overage + anthropic
-
-        if ending >= 500:
-            fixed_m = fixed + 250 + 180 + 40
-        elif ending >= 300:
-            fixed_m = fixed + 250
-        else:
-            fixed_m = fixed
-
-        total_costs = fixed_m + variable
-        profit = net_rev - total_costs
+        costs = compute_all_costs(ending)
+        t = costs["_totals"]
+        total = t["grand"]
+        profit = round(net_rev - total, 2)
         cumulative += profit
         margin = profit / net_rev if net_rev > 0 else 0
 
-        rows_data["New Subscribers"].append(new)
-        rows_data["Churned Subscribers"].append(churned)
-        rows_data["Ending Subscribers"].append(ending)
-        rows_data[""].append("")
-        rows_data["Gross Revenue"].append(round(gross_rev, 2))
-        rows_data["Net Revenue"].append(round(net_rev, 2))
-        rows_data["Fixed Costs"].append(round(fixed_m, 2))
-        rows_data["Variable Costs"].append(round(variable, 2))
-        rows_data["Total Costs"].append(round(total_costs, 2))
-        rows_data[" "].append("")
-        rows_data["Net Profit/Loss"].append(round(profit, 2))
-        rows_data["Cumulative P/L"].append(round(cumulative, 2))
-        rows_data["Operating Margin"].append(margin)
+        row_values["New Subscribers"].append(new)
+        row_values["Churned Subscribers"].append(churned)
+        row_values["Ending Subscribers"].append(ending)
+        row_values[""].append("")
+        row_values["Gross Revenue"].append(gross_rev)
+        row_values["Net Revenue"].append(net_rev)
+        row_values["Data API Costs"].append(t["api"])
+        row_values["Infrastructure"].append(t["infra"])
+        row_values["AI & Variable"].append(t["variable"])
+        row_values["Fixed Overhead"].append(t["fixed"])
+        row_values["Total Costs"].append(round(total, 2))
+        row_values["Net Profit/Loss"].append(profit)
+        row_values["Cumulative P/L"].append(round(cumulative, 2))
+        row_values["Operating Margin"].append(margin)
 
-    for label, values in rows_data.items():
+    separator_labels = {"", " "}
+    bold_labels = {"Ending Subscribers", "Net Revenue", "Total Costs",
+                   "Net Profit/Loss", "Cumulative P/L"}
+    count_labels = {"New Subscribers", "Churned Subscribers", "Ending Subscribers"}
+    pct_labels = {"Operating Margin"}
+
+    for label in row_labels:
         r += 1
         ws.cell(row=r, column=1, value=label)
 
-        if label in ("", " "):
+        if label == "":
             continue
 
-        is_money = label not in ("New Subscribers", "Churned Subscribers", "Ending Subscribers", "Operating Margin")
+        values = row_values[label]
+        is_money = label not in count_labels and label not in pct_labels
 
         for c, v in enumerate(values, 2):
             cell = ws.cell(row=r, column=c, value=v)
-            if label == "Operating Margin":
+            if label in pct_labels:
                 cell.number_format = pct_fmt
             elif is_money:
-                cell.number_format = acct_fmt_neg if label in ("Net Profit/Loss", "Cumulative P/L") else acct_fmt
+                cell.number_format = acct_fmt_neg if "Profit" in label or "Cumulative" in label else acct_fmt
             else:
                 cell.number_format = int_fmt
 
-        # Total column (col 14)
-        if label in ("New Subscribers", "Churned Subscribers"):
-            ws.cell(row=r, column=14, value=sum(values)).number_format = int_fmt
-        elif label == "Ending Subscribers":
-            ws.cell(row=r, column=14, value=values[-1]).number_format = int_fmt
-        elif label == "Operating Margin":
-            total_rev = sum(rows_data["Net Revenue"])
-            total_profit = sum(rows_data["Net Profit/Loss"])
-            ws.cell(row=r, column=14, value=total_profit / total_rev if total_rev else 0).number_format = pct_fmt
+        # Total column
+        if label in count_labels:
+            val = values[-1] if label == "Ending Subscribers" else sum(values)
+            ws.cell(row=r, column=14, value=val).number_format = int_fmt
+        elif label in pct_labels:
+            tr = sum(row_values["Net Revenue"])
+            tp = sum(row_values["Net Profit/Loss"])
+            ws.cell(row=r, column=14, value=tp / tr if tr else 0).number_format = pct_fmt
         elif is_money:
-            ws.cell(row=r, column=14, value=round(sum(values), 2)).number_format = acct_fmt_neg if "Profit" in label or "Cumulative" in label else acct_fmt
+            fmt = acct_fmt_neg if "Profit" in label or "Cumulative" in label else acct_fmt
+            ws.cell(row=r, column=14, value=round(sum(values), 2)).number_format = fmt
 
-        # Style
-        if label in ("Ending Subscribers", "Net Revenue", "Total Costs", "Net Profit/Loss", "Cumulative P/L"):
-            ws.cell(row=r, column=1).font = bold_font
+        if label in bold_labels:
             for c in range(1, 15):
                 ws.cell(row=r, column=c).font = bold_font
                 ws.cell(row=r, column=c).border = thin_border
@@ -803,18 +983,13 @@ def build_12mo_projection(wb):
                 for c in range(2, 15):
                     cell = ws.cell(row=r, column=c)
                     if isinstance(cell.value, (int, float)):
-                        if cell.value >= 0:
-                            cell.font = green_font
-                        else:
-                            cell.font = red_font
+                        cell.font = green_font if cell.value >= 0 else red_font
         else:
-            ws.cell(row=r, column=1).font = normal_font
             for c in range(1, 15):
                 ws.cell(row=r, column=c).border = thin_border
 
     last_row = r
 
-    # ── Subscriber growth chart ──
     chart = LineChart()
     chart.title = "Subscriber Growth & Profitability"
     chart.y_axis.title = "Count / $"
@@ -822,7 +997,6 @@ def build_12mo_projection(wb):
     chart.width = 28
     chart.height = 14
 
-    # Find the rows for Ending Subscribers and Net Profit/Loss
     sub_row = None
     profit_row = None
     for check_r in range(9, last_row + 1):
@@ -841,82 +1015,159 @@ def build_12mo_projection(wb):
         chart.set_categories(cats)
     ws.add_chart(chart, f"A{last_row + 3}")
 
+    # ── Cost composition chart ──
+    chart2 = BarChart()
+    chart2.type = "col"
+    chart2.grouping = "stacked"
+    chart2.title = "Monthly Cost Composition"
+    chart2.y_axis.title = "$ / Month"
+    chart2.style = 10
+    chart2.width = 28
+    chart2.height = 14
+
+    api_row = infra_row = var_row = fixed_row = None
+    for check_r in range(9, last_row + 1):
+        val = ws.cell(row=check_r, column=1).value
+        if val == "Data API Costs":
+            api_row = check_r
+        elif val == "Infrastructure":
+            infra_row = check_r
+        elif val == "AI & Variable":
+            var_row = check_r
+        elif val == "Fixed Overhead":
+            fixed_row = check_r
+
+    if api_row:
+        for src_row in [api_row, infra_row, var_row, fixed_row]:
+            if src_row:
+                d = Reference(ws, min_col=1, max_col=13, min_row=src_row)
+                chart2.add_data(d, from_rows=True, titles_from_data=True)
+        chart2.set_categories(cats)
+    ws.add_chart(chart2, f"A{last_row + 20}")
+
     auto_width(ws, min_width=10, max_width=16)
     ws.column_dimensions["A"].width = 22
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 7 — 3-Year Projection
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 8 — 3-Year Projection (computed from cost engine)
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_3yr_projection(wb):
     ws = wb.create_sheet("3-Year Projection")
     ws.sheet_properties.tabColor = "8B5CF6"
 
     ws.merge_cells("A1:E1")
-    ws["A1"] = "3-Year Annual Projection"
+    ws["A1"] = "3-Year Annual Projection (Computed)"
     ws["A1"].font = title_font
 
+    year_profiles = [
+        ("Year 1", 5, 50, 0.25, 0.07),
+        ("Year 2", 50, 250, 0.15, 0.06),
+        ("Year 3", 250, 800, 0.10, 0.05),
+    ]
+
     r = 3
-    headers = ["Metric", "Year 1 (avg 30 subs)", "Year 2 (avg 150 subs)", "Year 3 (avg 500 subs)"]
+    headers = ["Metric", "Year 1 (5→50)", "Year 2 (50→250)", "Year 3 (250→800)"]
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
 
-    data = [
-        ("Avg Paid Subscribers", 30, 150, 500),
-        ("", "", "", ""),
-        ("Annual Gross Revenue", 13320, 66600, 222000),
-        ("Payment Processing Fees", -1037, -5184, -17280),
-        ("Annual Net Revenue", 12283, 61416, 204720),
-        ("", "", "", ""),
-        ("Infrastructure (fixed)", -4642, -6444, -12204),
-        ("Variable API Costs", -60, -1140, -10080),
-        ("Anthropic AI", -54, -270, -900),
-        ("RevenueCat (1% mobile MTR)", 0, -184, -614),
-        ("Total Operating Costs", -4756, -8038, -23798),
-        ("", "", "", ""),
-        ("Annual Operating Profit", 7527, 53378, 180922),
-        ("Operating Margin", 0.613, 0.869, 0.884),
-        ("", "", "", ""),
-        ("Monthly Avg Profit", 627, 4448, 15077),
+    yearly_data = []
+    for label, start, end, growth, churn_rate in year_profiles:
+        subs = start
+        annual_gross = 0
+        annual_net = 0
+        annual_api = 0
+        annual_infra = 0
+        annual_var = 0
+        annual_fixed = 0
+
+        for m in range(12):
+            if m > 0:
+                new = math.ceil(subs * growth)
+                churned = math.ceil(subs * churn_rate)
+                subs = subs + new - churned
+            subs = min(subs, end)
+
+            gross = subs * BLENDED_GROSS_PRICE
+            net = subs * BLENDED_NET_ARPU
+            costs = compute_all_costs(subs)
+            t = costs["_totals"]
+
+            annual_gross += gross
+            annual_net += net
+            annual_api += t["api"]
+            annual_infra += t["infra"]
+            annual_var += t["variable"]
+            annual_fixed += t["fixed"]
+
+        annual_total_cost = annual_api + annual_infra + annual_var + annual_fixed
+        annual_profit = annual_net - annual_total_cost
+        margin = annual_profit / annual_net if annual_net > 0 else 0
+
+        yearly_data.append({
+            "end_subs": subs,
+            "gross": round(annual_gross),
+            "processing": round(annual_gross - annual_net),
+            "net": round(annual_net),
+            "api": round(annual_api),
+            "infra": round(annual_infra),
+            "var": round(annual_var),
+            "fixed": round(annual_fixed),
+            "total_cost": round(annual_total_cost),
+            "profit": round(annual_profit),
+            "margin": margin,
+            "monthly_profit": round(annual_profit / 12),
+        })
+
+    rows = [
+        ("Ending Paid Subscribers", [d["end_subs"] for d in yearly_data], int_fmt),
+        ("", None, None),
+        ("Annual Gross Revenue", [d["gross"] for d in yearly_data], acct_fmt),
+        ("Payment Processing Fees", [-d["processing"] for d in yearly_data], acct_fmt_neg),
+        ("Annual Net Revenue", [d["net"] for d in yearly_data], acct_fmt),
+        ("", None, None),
+        ("Data API Costs", [-d["api"] for d in yearly_data], acct_fmt_neg),
+        ("Infrastructure", [-d["infra"] for d in yearly_data], acct_fmt_neg),
+        ("AI & Variable", [-d["var"] for d in yearly_data], acct_fmt_neg),
+        ("Fixed Overhead", [-d["fixed"] for d in yearly_data], acct_fmt_neg),
+        ("Total Operating Costs", [-d["total_cost"] for d in yearly_data], acct_fmt_neg),
+        ("", None, None),
+        ("Annual Operating Profit", [d["profit"] for d in yearly_data], acct_fmt_neg),
+        ("Operating Margin", [d["margin"] for d in yearly_data], pct_fmt),
+        ("", None, None),
+        ("Monthly Avg Profit", [d["monthly_profit"] for d in yearly_data], acct_fmt_neg),
     ]
 
-    for i, row_data in enumerate(data):
+    key_labels = {"Annual Net Revenue", "Total Operating Costs",
+                  "Annual Operating Profit", "Monthly Avg Profit"}
+
+    for i, (label, values, fmt) in enumerate(rows):
         r += 1
-        label = row_data[0]
         ws.cell(row=r, column=1, value=label)
-
-        if label == "":
+        if values is None:
             continue
+        for c, v in enumerate(values, 2):
+            ws.cell(row=r, column=c, value=v).number_format = fmt
 
-        for c, v in enumerate(row_data[1:], 2):
-            cell = ws.cell(row=r, column=c, value=v)
-            if label == "Operating Margin":
-                cell.number_format = pct_fmt
-            elif label == "Avg Paid Subscribers":
-                cell.number_format = int_fmt
-            elif isinstance(v, (int, float)):
-                cell.number_format = acct_fmt_neg
-
-        is_key = label in ("Annual Net Revenue", "Total Operating Costs", "Annual Operating Profit", "Monthly Avg Profit")
-        if is_key:
+        if label in key_labels:
             style_total_row(ws, r, len(headers))
         else:
             style_data_row(ws, r, len(headers), i % 2 == 1)
 
         if label == "Annual Operating Profit":
-            for c in range(2, 5):
+            for c in range(2, len(headers) + 1):
                 ws.cell(row=r, column=c).font = green_font
 
     auto_width(ws, min_width=14, max_width=28)
-    ws.column_dimensions["A"].width = 30
+    ws.column_dimensions["A"].width = 28
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SHEET 8 — Risks & Optimization
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHEET 9 — Risks & Optimization
+# ═══════════════════════════════════════════════════════════════════════════════
 def build_risks(wb):
     ws = wb.create_sheet("Risks & Optimization")
     ws.sheet_properties.tabColor = ACCENT_RED
@@ -928,17 +1179,17 @@ def build_risks(wb):
     ws["A3"] = "KEY RISKS"
     ws["A3"].font = section_font
     r = 4
-    headers = ["Risk", "Impact", "Probability", "Mitigation"]
-    for c, h in enumerate(headers, 1):
-        ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers))
+    h = ["Risk", "Impact", "Probability", "Mitigation"]
+    for c, val in enumerate(h, 1):
+        ws.cell(row=r, column=c, value=val)
+    style_header_row(ws, r, len(h))
 
     risks = [
-        ("RentCast price increase", "High — 51% of costs", "Medium", "Optimize caching; negotiate volume pricing"),
+        ("RentCast price increase", "High — 51% of base costs", "Medium", "Optimize caching; negotiate volume"),
         ("AXESSO/Zillow API discontinued", "Critical — lose Zestimate", "Low", "Build fallback to direct Zillow API"),
         ("RapidAPI plan changes", "Medium — lose Redfin/Realtor", "Low", "Evaluate direct API access"),
         ("Apple rejects SBP (15%→30%)", "Medium — mobile margin drops", "Low", "Web-first acquisition strategy"),
-        ("Low annual conversion rate", "Medium — lower blended ARPU", "Medium", "Incentivize annual with deeper discount"),
+        ("Low annual conversion rate", "Medium — lower blended ARPU", "Medium", "Incentivize annual w/ deeper discount"),
         ("High churn (>10%/mo)", "High — never reach scale", "Medium", "Focus on retention, feature value"),
         ("Free tier API abuse", "Medium — consumes paid quota", "Medium", "Enforce rate limits; reduce free cap"),
         ("Competitor with free tier", "High — pricing pressure", "Medium", "Differentiate on IQ Estimate quality"),
@@ -947,8 +1198,7 @@ def build_risks(wb):
         r += 1
         for c, v in enumerate(row_data, 1):
             ws.cell(row=r, column=c, value=v)
-        style_data_row(ws, r, len(headers), i % 2 == 1)
-
+        style_data_row(ws, r, len(h), i % 2 == 1)
         impact_cell = ws.cell(row=r, column=2)
         if "Critical" in str(impact_cell.value) or "High" in str(impact_cell.value):
             impact_cell.fill = red_fill
@@ -956,15 +1206,14 @@ def build_risks(wb):
             impact_cell.fill = yellow_fill
 
     r += 2
-    ws["A" + str(r)] = "COST OPTIMIZATION LEVERS"
-    ws["A" + str(r)].font = section_font
+    ws.cell(row=r, column=1, value="COST OPTIMIZATION LEVERS").font = section_font
     r += 1
-    headers2 = ["Optimization", "Est. Savings", "Effort", "Priority"]
-    for c, h in enumerate(headers2, 1):
-        ws.cell(row=r, column=c, value=h)
-    style_header_row(ws, r, len(headers2))
+    h2 = ["Optimization", "Est. Savings", "Effort", "Priority"]
+    for c, val in enumerate(h2, 1):
+        ws.cell(row=r, column=c, value=val)
+    style_header_row(ws, r, len(h2))
 
-    optimizations = [
+    opts = [
         ("Extend cache TTL 24h → 48-72h", "30–50% fewer API calls", "Low", "P0 — Immediate"),
         ("Lazy-load Redfin/Realtor on drill-down", "~40% fewer RapidAPI calls", "Medium", "P1 — Next sprint"),
         ("Annual billing incentives", "Better cash flow, lower churn", "Low", "P1"),
@@ -972,43 +1221,57 @@ def build_risks(wb):
         ("Negotiate enterprise pricing @ 500 subs", "10–30% cost reduction", "Low", "P2 — When applicable"),
         ("Reduce free tier from 3 to 2 analyses", "~33% fewer free API calls", "Low", "P3 — If needed"),
     ]
-    for i, row_data in enumerate(optimizations):
+    for i, row_data in enumerate(opts):
         r += 1
         for c, v in enumerate(row_data, 1):
             ws.cell(row=r, column=c, value=v)
-        style_data_row(ws, r, len(headers2), i % 2 == 1)
-
-        priority_cell = ws.cell(row=r, column=4)
-        if "P0" in str(priority_cell.value):
-            priority_cell.fill = red_fill
-        elif "P1" in str(priority_cell.value):
-            priority_cell.fill = yellow_fill
-        elif "P2" in str(priority_cell.value):
-            priority_cell.fill = green_fill
+        style_data_row(ws, r, len(h2), i % 2 == 1)
+        pc = ws.cell(row=r, column=4)
+        if "P0" in str(pc.value):
+            pc.fill = red_fill
+        elif "P1" in str(pc.value):
+            pc.fill = yellow_fill
+        elif "P2" in str(pc.value):
+            pc.fill = green_fill
 
     auto_width(ws, min_width=14, max_width=40)
     ws.sheet_view.showGridLines = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 def main():
     wb = openpyxl.Workbook()
 
     build_dashboard(wb)
     build_fixed_costs(wb)
     build_profitability(wb)
+    build_scaling_detail(wb)
     build_api_capacity(wb)
     build_sensitivity(wb)
     build_12mo_projection(wb)
     build_3yr_projection(wb)
     build_risks(wb)
 
-    output_path = "/Users/bradgeisen/IQ-Data/dealscope/docs/DealGapIQ_Financial_Proforma.xlsx"
-    wb.save(output_path)
-    print(f"Proforma saved to: {output_path}")
+    output = "/Users/bradgeisen/IQ-Data/dealscope/docs/DealGapIQ_Financial_Proforma.xlsx"
+    wb.save(output)
+    print(f"Proforma saved to: {output}")
     print(f"Sheets: {wb.sheetnames}")
+
+    # Print a quick cost engine verification
+    print("\n── Cost Engine Verification ──")
+    for subs in [0, 12, 50, 100, 200, 500, 1000, 3000, 5000]:
+        c = compute_all_costs(subs)
+        net = subs * BLENDED_NET_ARPU
+        profit = net - c["_totals"]["grand"]
+        plans = []
+        for p in API_PROVIDERS:
+            plans.append(f"{p}: {c['api'][p][0]}")
+        for s in INFRA_SERVICES:
+            plans.append(f"{s}: {c['infra'][s][0]}")
+        print(f"  {subs:>5} subs → ${c['_totals']['grand']:>9,.2f} total cost"
+              f"  |  profit ${profit:>10,.2f}  |  {', '.join(plans)}")
 
 
 if __name__ == "__main__":
