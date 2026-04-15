@@ -133,17 +133,13 @@ function LoginInner() {
             <button
               type="button"
               onClick={async () => {
-                const base =
-                  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
-                    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
-                    : ''
-                const endpoint = base ? `${base}/api/v1/auth/apple` : '/api/v1/auth/apple'
                 if (IS_CAPACITOR) {
+                  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
                   const { Browser } = await import('@capacitor/browser')
                   const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                  await Browser.open({ url: `${endpoint}?mobile_redirect=${mobileRedirect}` })
+                  await Browser.open({ url: `${base}/api/v1/auth/apple?mobile_redirect=${mobileRedirect}` })
                 } else {
-                  window.location.href = endpoint
+                  window.location.href = '/api/v1/auth/apple'
                 }
               }}
               style={{
@@ -175,17 +171,13 @@ function LoginInner() {
             <button
               type="button"
               onClick={async () => {
-                const base =
-                  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL
-                    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
-                    : ''
-                const endpoint = base ? `${base}/api/v1/auth/google` : '/api/v1/auth/google'
                 if (IS_CAPACITOR) {
+                  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
                   const { Browser } = await import('@capacitor/browser')
                   const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                  await Browser.open({ url: `${endpoint}?mobile_redirect=${mobileRedirect}` })
+                  await Browser.open({ url: `${base}/api/v1/auth/google?mobile_redirect=${mobileRedirect}` })
                 } else {
-                  window.location.href = endpoint
+                  window.location.href = '/api/v1/auth/google'
                 }
               }}
               style={{
