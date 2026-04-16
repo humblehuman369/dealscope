@@ -9,26 +9,56 @@ connected between App Store Connect and RevenueCat.
 
 ---
 
-## Current State
+## Production State (as of v3.3 submission)
+
+Authoritative reference — if a future code-review bot flags a mismatch between
+code and this file, **the App Store Connect UI is ground truth**, not this doc.
 
 - **App Bundle ID:** `com.dealgapiq.mobile`
 - **RevenueCat Project ID:** `projd3d13e41`
-- **RevenueCat Entitlement:** `DealGapIQ Pro` (already exists, has 3 products from Test Store)
-- **RevenueCat Offering:** `default` (already exists, has 3 packages)
+- **RevenueCat Entitlement:** `DealGapIQ Pro`
+- **RevenueCat Offering:** `default`
 - **Stripe Pricing (must match):** $39.99/month, $349.99/year ($29.17/mo billed annually)
 
-### What already exists
+### Live subscription products (App Store Connect)
 
-**In App Store Connect:**
-- A subscription group named `DealGapIQ Pro` (just created)
-- A yearly subscription inside that group (just created, may have incomplete metadata)
-- The monthly product ID `com.dealgapiq.mobile.pro.monthly` is PERMANENTLY RESERVED and cannot be reused (Apple does not allow reusing deleted product IDs)
+| Reference Name | Product ID | Duration | Price |
+|----------------|-----------|----------|-------|
+| DealGapIQ Monthly | `com.monthly.dealgapiq` | 1 Month | $39.99 |
+| DealGapIQ Yearly  | `com.yearly.dealgapiq`  | 1 Year  | $349.99 |
 
-**In RevenueCat:**
-- Three products under "DealGapIQ (App Store)" — all show "Could not check" status
-- Three products under "Test Store" (test environment, ignore these)
-- One entitlement: `DealGapIQ Pro`
-- One offering: `default` with 3 packages
+These match the `IOS_MONTHLY_PRODUCT_ID` / `IOS_YEARLY_PRODUCT_ID` constants in
+`frontend/src/constants/subscriptions.ts`. Do not change either without updating
+both.
+
+### Live RevenueCat offering (`default`)
+
+| Package | App Store Product | Play Store Product |
+|---------|-------------------|--------------------|
+| `$rc_monthly` | `com.monthly.dealgapiq` | `com.monthly.dealgapiq` |
+| `$rc_annual`  | `com.yearly.dealgapiq`  | `com.yearly.dealgapiq`  |
+
+### Lifetime product — NOT SHIPPED
+
+An earlier plan included a non-consumable `com.dealgapiq.mobile.pro.lifetime`
+product. It was never created in App Store Connect and is not referenced by the
+app or backend. If you want to add it later, follow the *original* guidance in
+section 1C below, then (only then) add a corresponding constant to
+`subscriptions.ts`.
+
+### Historical naming context
+
+The product IDs `com.dealgapiq.mobile.pro.monthly` and
+`com.dealgapiq.mobile.monthly` are PERMANENTLY RESERVED by Apple — deleted
+product IDs cannot be reused. During the v3.3 setup we briefly planned to use
+`com.dealgapiq.mobile.monthly2` / `com.dealgapiq.mobile.pro.yearly` (you'll see
+those names in the original setup instructions below). Those IDs were never
+actually created in App Store Connect. The final shipped IDs are
+`com.monthly.dealgapiq` / `com.yearly.dealgapiq`.
+
+The sections below preserve the original setup walkthrough for historical
+reference. Product IDs in those sections may not match production — consult the
+tables above for current truth.
 
 ---
 
@@ -89,9 +119,9 @@ IMPORTANT: Use this product ID since `com.dealgapiq.mobile.pro.monthly` and
 - Same screenshot as yearly
 - Same review notes as yearly
 
-### 1C. Create Lifetime (Non-Consumable In-App Purchase)
+### 1C. Create Lifetime (Non-Consumable In-App Purchase) — NOT SHIPPED
 
-This is optional for initial submission. If you want to include it:
+Skipped in v3.3. Kept here as a reference for anyone adding it later. If you want to include it:
 
 Navigate to: **App Store Connect → DealGapIQ → Distribution → In-App Purchases → click +**
 
@@ -137,25 +167,26 @@ This should resolve the "Could not check" status on all products.
 The current App Store products in RevenueCat may have incorrect product IDs. Delete them and recreate to match what's in App Store Connect:
 
 1. Go to **Product catalog → Products**
-2. Under "DealGapIQ (App Store)", delete all three existing products (they show "Could not check")
+2. Under "DealGapIQ (App Store)", delete any existing products that show "Could not check"
 3. Recreate them with the EXACT product IDs from App Store Connect:
 
 | Display Name | Identifier | Type |
 |-------------|-----------|------|
-| Monthly Subscription | `com.dealgapiq.mobile.monthly2` | Subscription |
-| Yearly Subscription | `com.dealgapiq.mobile.pro.yearly` | Subscription |
-| Lifetime | `com.dealgapiq.mobile.pro.lifetime` | Non-consumable |
+| DealGapIQ Pro Monthly | `com.monthly.dealgapiq` | Subscription |
+| DealGapIQ Pro Yearly | `com.yearly.dealgapiq` | Subscription |
+
+(Lifetime is not shipped — skip unless you've created it in App Store Connect per 1C above.)
 
 After creating each product, the status should show a green checkmark (not "Could not check") if the shared secret is configured correctly.
 
 ### 2C. Attach Entitlements
 
-For EACH of the three App Store products:
+For EACH App Store product:
 1. Click **Attach** in the Entitlements column
 2. Select **DealGapIQ Pro**
 3. Save
 
-All three should show "1 Entitlement" after this step.
+Each should show "1 Entitlement" after this step.
 
 ### 2D. Configure the Offering Packages
 
@@ -163,13 +194,17 @@ Navigate to: **Product catalog → Offerings → default**
 
 The offering should have these packages mapped to the App Store products:
 
-| Package Identifier | Product |
-|-------------------|---------|
-| `$rc_monthly` | `com.dealgapiq.mobile.monthly2` (App Store) |
-| `$rc_annual` | `com.dealgapiq.mobile.pro.yearly` (App Store) |
-| `$rc_lifetime` | `com.dealgapiq.mobile.pro.lifetime` (App Store) |
+| Package Identifier | App Store Product | Play Store Product |
+|-------------------|-------------------|--------------------|
+| `$rc_monthly` | `com.monthly.dealgapiq` | `com.monthly.dealgapiq` |
+| `$rc_annual`  | `com.yearly.dealgapiq`  | `com.yearly.dealgapiq`  |
 
 If the packages currently point to Test Store products, update them to point to the App Store products instead. Each package should reference the App Store product, not the Test Store product.
+
+> **Known pitfall:** During the v3.3 rollout we briefly had `$rc_annual` mapped to
+> the *Monthly* product on the Play Store side — that causes Android subscribers to
+> be billed monthly while thinking they subscribed annually. Double-check this
+> mapping on both stores.
 
 ---
 
