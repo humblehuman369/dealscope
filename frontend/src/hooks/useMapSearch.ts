@@ -1,8 +1,16 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import type { MapListing, MapSearchRequest, MapSearchResponse } from '@/lib/api'
+import {
+  scoreDealSignals,
+  sortListings,
+  filterByListingStatus,
+  filterByMinDom,
+  type DealSignalResult,
+  type SortOption,
+} from '@/lib/dealSignal'
 
 export interface MapSearchFilters {
   listing_type: 'sale' | 'rental' | 'both'
@@ -11,6 +19,9 @@ export interface MapSearchFilters {
   max_price?: number
   bedrooms?: number
   bathrooms?: number
+  listing_statuses: string[]
+  min_dom?: number
+  sort_by: SortOption
 }
 
 export interface MapBounds {
@@ -22,10 +33,12 @@ export interface MapBounds {
 
 const DEFAULT_FILTERS: MapSearchFilters = {
   listing_type: 'sale',
+  listing_statuses: [],
+  sort_by: 'deal_signal',
 }
 
 export function useMapSearch() {
-  const [listings, setListings] = useState<MapListing[]>([])
+  const [rawListings, setRawListings] = useState<MapListing[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
@@ -35,7 +48,6 @@ export function useMapSearch() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBoundsRef = useRef<MapBounds | null>(null)
-
   const filtersRef = useRef<MapSearchFilters>(DEFAULT_FILTERS)
 
   const fetchListings = useCallback(
@@ -64,13 +76,13 @@ export function useMapSearch() {
 
       try {
         const response: MapSearchResponse = await api.mapSearch.searchArea(request)
-        setListings(response.listings)
+        setRawListings(response.listings)
         setTotalCount(response.total_count)
         setEstimatedTotal(response.estimated_total ?? null)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Search failed'
         setError(msg)
-        setListings([])
+        setRawListings([])
         setTotalCount(0)
         setEstimatedTotal(null)
       } finally {
@@ -116,10 +128,19 @@ export function useMapSearch() {
 
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
+      const needsRefetch = (
+        'listing_type' in next ||
+        'property_type' in next ||
+        'min_price' in next ||
+        'max_price' in next ||
+        'bedrooms' in next ||
+        'bathrooms' in next
+      )
+
       setFilters((prev) => {
         const merged = { ...prev, ...next }
         filtersRef.current = merged
-        if (lastBoundsRef.current) {
+        if (needsRefetch && lastBoundsRef.current) {
           fetchListings(lastBoundsRef.current, polygonRef.current, merged)
         }
         return merged
@@ -128,14 +149,26 @@ export function useMapSearch() {
     [fetchListings],
   )
 
+  const dealSignals = useMemo(() => scoreDealSignals(rawListings), [rawListings])
+
+  const filteredAndSortedListings = useMemo(() => {
+    let result = rawListings
+    result = filterByListingStatus(result, filters.listing_statuses)
+    result = filterByMinDom(result, filters.min_dom)
+    result = sortListings(result, dealSignals, filters.sort_by)
+    return result
+  }, [rawListings, filters.listing_statuses, filters.min_dom, filters.sort_by, dealSignals])
+
   return {
-    listings,
+    listings: filteredAndSortedListings,
+    rawListings,
     isLoading,
     error,
     totalCount,
     estimatedTotal,
     filters,
     polygon,
+    dealSignals,
     onBoundsChanged,
     onPolygonComplete,
     clearPolygon,

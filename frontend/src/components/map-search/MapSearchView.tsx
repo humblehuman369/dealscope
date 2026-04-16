@@ -10,12 +10,14 @@ import {
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
 import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer'
-import { Eraser, Pentagon, Loader2, Home, MousePointerClick } from 'lucide-react'
+import { Eraser, Pentagon, Loader2, Home, MousePointerClick, List, MapIcon } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
+import { markerColorFromGrade, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
+import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
@@ -166,6 +168,7 @@ const clusterRenderer: Renderer = {
 
 interface MapContentProps {
   listings: MapListing[]
+  dealSignals: Map<string, DealSignalResult>
   selectedListing: MapListing | null
   onSelectListing: (listing: MapListing | null) => void
   onBoundsChanged: (bounds: { north: number; south: number; east: number; west: number }) => void
@@ -173,10 +176,12 @@ interface MapContentProps {
   onPolygonComplete: (vertices: number[][]) => void
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
+  panToRef: React.MutableRefObject<((lat: number, lng: number) => void) | null>
 }
 
 function MapContent({
   listings,
+  dealSignals,
   selectedListing,
   onSelectListing,
   onBoundsChanged,
@@ -184,13 +189,21 @@ function MapContent({
   onPolygonComplete,
   drawingPolygon,
   setDrawingPolygon,
+  panToRef,
 }: MapContentProps) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
-  // Pan map to center the selected listing
+  useEffect(() => {
+    if (!map) return
+    panToRef.current = (lat: number, lng: number) => {
+      map.panTo({ lat, lng })
+    }
+    return () => { panToRef.current = null }
+  }, [map, panToRef])
+
   useEffect(() => {
     if (!map || !selectedListing) return
     map.panTo({
@@ -199,7 +212,6 @@ function MapContent({
     })
   }, [map, selectedListing])
 
-  // Viewport change handler
   useEffect(() => {
     if (!map) return
     const listener = map.addListener('idle', () => {
@@ -217,7 +229,6 @@ function MapContent({
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
 
-  // Initialize marker clusterer with custom renderer
   useEffect(() => {
     if (!map) return
     if (!clustererRef.current) {
@@ -233,7 +244,6 @@ function MapContent({
     }
   }, [map])
 
-  // Sync markers with clusterer
   useEffect(() => {
     if (!clustererRef.current) return
     const allMarkers = Array.from(markersRef.current.values())
@@ -241,7 +251,6 @@ function MapContent({
     clustererRef.current.addMarkers(allMarkers)
   }, [listings])
 
-  // Drawing manager
   useEffect(() => {
     if (!map || !isDrawing) {
       if (drawingManagerRef.current) {
@@ -303,28 +312,39 @@ function MapContent({
 
   return (
     <>
-      {listings.map((listing) => (
-        <AdvancedMarker
-          key={listing.id}
-          position={{ lat: listing.latitude, lng: listing.longitude }}
-          onClick={() => onSelectListing(listing)}
-          ref={(marker) => {
-            if (marker) setMarkerRef(marker, listing.id)
-          }}
-        >
-          <div
-            className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
-            style={{
-              backgroundColor:
-                selectedListing?.id === listing.id ? 'var(--accent-sky)' : 'var(--surface-card)',
-              color: selectedListing?.id === listing.id ? '#fff' : 'var(--text-heading)',
-              border: `1.5px solid ${selectedListing?.id === listing.id ? 'var(--accent-sky)' : 'var(--border-default)'}`,
+      {listings.map((listing) => {
+        const signal = dealSignals.get(listing.id)
+        const isSelected = selectedListing?.id === listing.id
+        const markerBg = signal
+          ? markerColorFromGrade(signal.grade)
+          : 'var(--surface-card)'
+        const markerText = signal ? '#fff' : 'var(--text-heading)'
+        const markerBorder = isSelected
+          ? 'var(--accent-sky)'
+          : signal ? 'rgba(255,255,255,0.7)' : 'var(--border-default)'
+
+        return (
+          <AdvancedMarker
+            key={listing.id}
+            position={{ lat: listing.latitude, lng: listing.longitude }}
+            onClick={() => onSelectListing(listing)}
+            ref={(marker) => {
+              if (marker) setMarkerRef(marker, listing.id)
             }}
           >
-            {formatCompactPrice(listing.price)}
-          </div>
-        </AdvancedMarker>
-      ))}
+            <div
+              className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
+              style={{
+                backgroundColor: isSelected ? 'var(--accent-sky)' : markerBg,
+                color: isSelected ? '#fff' : markerText,
+                border: `1.5px solid ${markerBorder}`,
+              }}
+            >
+              {formatCompactPrice(listing.price)}
+            </div>
+          </AdvancedMarker>
+        )
+      })}
     </>
   )
 }
@@ -354,11 +374,13 @@ export function MapSearchView() {
 
   const {
     listings,
+    rawListings,
     isLoading,
     error,
     totalCount,
     estimatedTotal,
     filters,
+    dealSignals,
     onBoundsChanged,
     onPolygonComplete,
     clearPolygon,
@@ -370,6 +392,9 @@ export function MapSearchView() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
+  const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
+
+  const panToRef = useRef<((lat: number, lng: number) => void) | null>(null)
 
   const { fetchProperty } = usePropertyData()
 
@@ -379,7 +404,6 @@ export function MapSearchView() {
     return () => clearTimeout(t)
   }, [showLabel])
 
-  // Click-to-geocode state
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [dropPin, setDropPin] = useState<{ lat: number; lng: number } | null>(null)
@@ -388,11 +412,9 @@ export function MapSearchView() {
   const currentZoomRef = useRef(initialZoom)
   const zoomHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Off-market property preview
   const [propertyPreview, setPropertyPreview] = useState<OffMarketPreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
-  // "Click any home" hint — shown once per user at street-level zoom
   const [showClickHint, setShowClickHint] = useState(false)
   const hintShownRef = useRef(false)
 
@@ -456,7 +478,6 @@ export function MapSearchView() {
     setIsLoadingPreview(false)
   }, [])
 
-  // Fetch property details when a geocoded address is resolved
   useEffect(() => {
     if (!geocodeResult) return
     let cancelled = false
@@ -511,6 +532,20 @@ export function MapSearchView() {
     }
   }, [isDrawing, handleClearPolygon])
 
+  const handleCardSelect = useCallback((listing: MapListing) => {
+    setSelectedListing(listing)
+    clearGeocode()
+    if (panToRef.current) {
+      panToRef.current(listing.latitude, listing.longitude)
+    }
+    setMobileView('map')
+  }, [clearGeocode])
+
+  const handleMarkerSelect = useCallback((listing: MapListing | null) => {
+    clearGeocode()
+    setSelectedListing(listing)
+  }, [clearGeocode])
+
   if (!apiKey) {
     return (
       <div
@@ -522,8 +557,8 @@ export function MapSearchView() {
     )
   }
 
-  return (
-    <div className="relative w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
+  const mapSection = (
+    <div className="relative w-full h-full">
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
           defaultCenter={initialCenter}
@@ -552,17 +587,16 @@ export function MapSearchView() {
           }}
         >
           <MapContent
-            listings={listings}
+            listings={rawListings}
+            dealSignals={dealSignals}
             selectedListing={selectedListing}
-            onSelectListing={(listing) => {
-              clearGeocode()
-              setSelectedListing(listing)
-            }}
+            onSelectListing={handleMarkerSelect}
             onBoundsChanged={onBoundsChanged}
             isDrawing={isDrawing}
             onPolygonComplete={onPolygonComplete}
             drawingPolygon={drawingPolygon}
             setDrawingPolygon={setDrawingPolygon}
+            panToRef={panToRef}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
@@ -581,16 +615,12 @@ export function MapSearchView() {
           {needsGeocode && apiKey && (
             <LabelGeocoder label={locationLabel!} apiKey={apiKey} />
           )}
-
-          {/* Click-to-geocode popup rendered as centered overlay below */}
         </Map>
       </APIProvider>
 
-      {/* Selected listing popup — centered on screen */}
+      {/* Selected listing popup */}
       {selectedListing && (
-        <div
-          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
-        >
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             className="pointer-events-auto"
@@ -603,11 +633,9 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Off-market geocoded property popup — centered on screen */}
+      {/* Off-market geocoded property popup */}
       {!selectedListing && (dropPin || isGeocoding) && dropPin && (
-        <div
-          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
-        >
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             className="pointer-events-auto"
@@ -732,7 +760,7 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Listing count badge — Zillow-style, top-left below filters */}
+      {/* Listing count badge */}
       {totalCount > 0 && !isLoading && (
         <div className="absolute top-16 left-3 z-10">
           <div
@@ -750,7 +778,7 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Click-any-home hint — shown once when user first zooms to street level */}
+      {/* Click-any-home hint */}
       {showClickHint && !selectedListing && !dropPin && !isGeocoding && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
           <div
@@ -766,7 +794,63 @@ export function MapSearchView() {
           </div>
         </div>
       )}
+    </div>
+  )
 
+  const listSection = (
+    <div
+      className="h-full"
+      style={{
+        backgroundColor: 'var(--surface-base)',
+        borderLeft: '1px solid var(--border-subtle)',
+      }}
+    >
+      <PropertyCardList
+        listings={listings}
+        dealSignals={dealSignals}
+        selectedId={selectedListing?.id ?? null}
+        onSelectListing={handleCardSelect}
+        isLoading={isLoading}
+      />
+    </div>
+  )
+
+  return (
+    <div className="w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
+      {/* Desktop: split panel */}
+      <div className="hidden md:flex w-full h-full">
+        <div className="w-[60%] h-full">{mapSection}</div>
+        <div className="w-[40%] h-full">{listSection}</div>
+      </div>
+
+      {/* Mobile: toggle between map and list */}
+      <div className="md:hidden w-full h-full relative">
+        {mobileView === 'map' ? mapSection : listSection}
+
+        {/* Mobile view toggle */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
+          <button
+            onClick={() => setMobileView(mobileView === 'map' ? 'list' : 'map')}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold shadow-xl transition-colors"
+            style={{
+              backgroundColor: 'var(--accent-sky)',
+              color: '#fff',
+            }}
+          >
+            {mobileView === 'map' ? (
+              <>
+                <List size={16} />
+                View List ({listings.length})
+              </>
+            ) : (
+              <>
+                <MapIcon size={16} />
+                View Map
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
