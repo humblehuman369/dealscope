@@ -40,7 +40,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
           const params = new URLSearchParams({
             lat: String(pos.coords.latitude),
             lng: String(pos.coords.longitude),
-            zoom: '13',
+            zoom: '9',
           });
           router.push(`/map-search?${params.toString()}`);
         },

@@ -22,6 +22,7 @@ import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
+const GEOLOCATION_ZOOM = 9
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -177,6 +178,7 @@ interface MapContentProps {
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number) => void) | null>
+  autoGeolocate: boolean
 }
 
 function MapContent({
@@ -190,11 +192,13 @@ function MapContent({
   drawingPolygon,
   setDrawingPolygon,
   panToRef,
+  autoGeolocate,
 }: MapContentProps) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
+  const geolocatedRef = useRef(false)
 
   useEffect(() => {
     if (!map) return
@@ -203,6 +207,21 @@ function MapContent({
     }
     return () => { panToRef.current = null }
   }, [map, panToRef])
+
+  useEffect(() => {
+    if (!map || !autoGeolocate || geolocatedRef.current) return
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) return
+    geolocatedRef.current = true
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        map.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        map.setZoom(GEOLOCATION_ZOOM)
+      },
+      () => { /* permission denied or unavailable — stay at default */ },
+      { timeout: 5000 },
+    )
+  }, [map, autoGeolocate])
 
   useEffect(() => {
     if (!map || !selectedListing) return
@@ -371,6 +390,7 @@ export function MapSearchView() {
 
   const locationLabel = searchParams.get('label') ?? null
   const needsGeocode = !!locationLabel && initialCenter === DEFAULT_CENTER
+  const hasExplicitLocation = initialCenter !== DEFAULT_CENTER || needsGeocode
 
   const {
     listings,
@@ -597,6 +617,7 @@ export function MapSearchView() {
             drawingPolygon={drawingPolygon}
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
+            autoGeolocate={!hasExplicitLocation}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
