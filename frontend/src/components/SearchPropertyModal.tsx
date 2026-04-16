@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle, MapIcon } from 'lucide-react';
 import { AddressAutocomplete, type AddressComponents, type PlaceMetadata } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
 import { trackEvent } from '@/lib/eventTracking';
@@ -29,6 +29,30 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
   const [placeComponents, setPlaceComponents] = useState<AddressComponents | null>(null);
 
   if (!isOpen) return null;
+
+  const handleMapSearch = () => {
+    trackEvent('property_searched', { source: 'search_modal', type: 'map_search' });
+    handleClose();
+
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const params = new URLSearchParams({
+            lat: String(pos.coords.latitude),
+            lng: String(pos.coords.longitude),
+            zoom: '13',
+          });
+          router.push(`/map-search?${params.toString()}`);
+        },
+        () => {
+          router.push('/map-search');
+        },
+        { timeout: 3000 },
+      );
+    } else {
+      router.push('/map-search');
+    }
+  };
 
   const handleScanProperty = () => {
     if (onScanProperty) {
@@ -293,6 +317,39 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address or search</h3>
                   <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Type or paste any residential address, city, state or zipcode
+                  </p>
+                </div>
+              </button>
+
+              {/* Map Search Option */}
+              <button 
+                onClick={handleMapSearch}
+                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
+                style={{
+                  background: 'var(--surface-base)',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: 'var(--shadow-card)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.border = '1px solid var(--border-focus)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+                }}
+              >
+                <div 
+                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'var(--accent-sky)' }}
+                >
+                  <MapIcon size={22} className="text-[var(--text-inverse)] sm:hidden" />
+                  <MapIcon size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Map Search</h3>
+                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
+                    Browse an area on the map with filters to find the best deals
                   </p>
                 </div>
               </button>

@@ -3,6 +3,7 @@
 import { useCallback } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
+import type { SortOption } from '@/lib/dealSignal'
 
 interface FilterPanelProps {
   filters: MapSearchFilters
@@ -35,6 +36,53 @@ const BEDROOM_OPTIONS = [
   { value: 4, label: '4+' },
 ]
 
+const LISTING_STATUS_OPTIONS = [
+  { value: 'active', label: 'Active' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'foreclosure', label: 'Foreclosure' },
+  { value: 'auction', label: 'Auction' },
+  { value: 'pre-foreclosure', label: 'Pre-Foreclosure' },
+]
+
+const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
+  { value: undefined, label: 'Any' },
+  { value: 30, label: '30+' },
+  { value: 60, label: '60+' },
+  { value: 90, label: '90+' },
+  { value: 120, label: '120+' },
+]
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'deal_signal', label: 'Deal Signal' },
+  { value: 'price_asc', label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'dom_desc', label: 'Days on Market' },
+  { value: 'newest', label: 'Newest' },
+]
+
+function PillButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-2 py-1.5 rounded-md text-xs font-medium transition-colors"
+      style={{
+        backgroundColor: active ? 'var(--accent-sky)' : 'var(--surface-elevated)',
+        color: active ? '#fff' : 'var(--text-body)',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, onToggle }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -43,6 +91,27 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
     },
     [onChange],
   )
+
+  const toggleListingStatus = useCallback(
+    (status: string) => {
+      const current = filters.listing_statuses
+      const next = current.includes(status)
+        ? current.filter((s) => s !== status)
+        : [...current, status]
+      onChange({ listing_statuses: next })
+    },
+    [filters.listing_statuses, onChange],
+  )
+
+  const activeFilterCount = [
+    filters.property_type,
+    filters.min_price,
+    filters.max_price,
+    filters.bedrooms,
+    filters.bathrooms,
+    filters.listing_statuses.length > 0 ? true : undefined,
+    filters.min_dom,
+  ].filter(Boolean).length
 
   if (!isOpen) {
     return (
@@ -57,12 +126,12 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
       >
         <SlidersHorizontal size={16} />
         Filters
-        {totalCount > 0 && (
+        {activeFilterCount > 0 && (
           <span
             className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold"
             style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
           >
-            {totalCount}
+            {activeFilterCount}
           </span>
         )}
       </button>
@@ -97,6 +166,29 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
       </div>
 
       <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        {/* Sort By */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Sort By
+          </label>
+          <select
+            value={filters.sort_by}
+            onChange={(e) => onChange({ sort_by: e.target.value as SortOption })}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+            style={{
+              backgroundColor: 'var(--surface-elevated)',
+              color: 'var(--text-body)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Listing Type */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -104,17 +196,49 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
           </label>
           <div className="flex gap-1">
             {LISTING_TYPES.map((opt) => (
-              <button
+              <PillButton
                 key={opt.value}
+                active={filters.listing_type === opt.value}
                 onClick={() => onChange({ listing_type: opt.value })}
-                className="flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{
-                  backgroundColor: filters.listing_type === opt.value ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-                  color: filters.listing_type === opt.value ? '#fff' : 'var(--text-body)',
-                }}
               >
                 {opt.label}
-              </button>
+              </PillButton>
+            ))}
+          </div>
+        </div>
+
+        {/* Listing Status */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Listing Status
+          </label>
+          <div className="flex flex-wrap gap-1">
+            {LISTING_STATUS_OPTIONS.map((opt) => (
+              <PillButton
+                key={opt.value}
+                active={filters.listing_statuses.includes(opt.value)}
+                onClick={() => toggleListingStatus(opt.value)}
+              >
+                {opt.label}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+
+        {/* Days on Market */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Days on Market
+          </label>
+          <div className="flex gap-1">
+            {DOM_OPTIONS.map((opt) => (
+              <PillButton
+                key={opt.label}
+                active={filters.min_dom === opt.value}
+                onClick={() => onChange({ min_dom: opt.value })}
+              >
+                {opt.label}
+              </PillButton>
             ))}
           </div>
         </div>
@@ -183,17 +307,13 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
           </label>
           <div className="flex gap-1">
             {BEDROOM_OPTIONS.map((opt) => (
-              <button
+              <PillButton
                 key={opt.label}
+                active={filters.bedrooms === opt.value}
                 onClick={() => onChange({ bedrooms: opt.value })}
-                className="flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{
-                  backgroundColor: filters.bedrooms === opt.value ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-                  color: filters.bedrooms === opt.value ? '#fff' : 'var(--text-body)',
-                }}
               >
                 {opt.label}
-              </button>
+              </PillButton>
             ))}
           </div>
         </div>
@@ -210,17 +330,13 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
               { value: 2, label: '2+' },
               { value: 3, label: '3+' },
             ].map((opt) => (
-              <button
+              <PillButton
                 key={opt.label}
+                active={filters.bathrooms === opt.value}
                 onClick={() => onChange({ bathrooms: opt.value })}
-                className="flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{
-                  backgroundColor: filters.bathrooms === opt.value ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-                  color: filters.bathrooms === opt.value ? '#fff' : 'var(--text-body)',
-                }}
               >
                 {opt.label}
-              </button>
+              </PillButton>
             ))}
           </div>
         </div>
