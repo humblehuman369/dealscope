@@ -7,7 +7,17 @@ import { formatCurrency } from '@/utils/formatters'
 
 // Listing status types
 type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
-type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+type SellerType =
+  | 'FSBA'
+  | 'FSBO'
+  | 'Foreclosure'
+  | 'BankOwned'
+  | 'Auction'
+  | 'NewHome'
+  | 'ComingSoon'
+  | 'Agent'
+  | 'NewConstruction'
+  | 'Unknown'
 
 /**
  * DesktopPropertyMiniCard Component
