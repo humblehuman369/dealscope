@@ -18,21 +18,27 @@ import {
 
 interface PropertyDetailsClientProps {
   property: PropertyData
-  /** Optional initial strategy to highlight or auto-navigate to */
   initialStrategy?: string
 }
 
 /**
- * PropertyDetailsClient Component
- * 
- * Client component wrapper for property details with interactive features
- * like saving, sharing, and navigation to analysis.
- * 
- * Dark fintech theme — true black base, deep navy cards, four-tier Slate text hierarchy.
+ * PropertyDetailsClient — Full property profile page.
+ *
+ * Core details (facts, description, features, listing) use the same compact
+ * layout as the address-bar detail panel. Additional data (gallery, schools,
+ * map, price/tax history) renders below in a responsive grid.
  */
 export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
+
+  const hasFeatures =
+    (property.interiorFeatures?.length ?? 0) > 0 ||
+    (property.exteriorFeatures?.length ?? 0) > 0 ||
+    (property.appliances?.length ?? 0) > 0 ||
+    (property.construction?.length ?? 0) > 0 ||
+    !!property.roof ||
+    !!property.foundation
 
   return (
     <div
@@ -45,7 +51,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Back Button and Breadcrumb */}
+        {/* Breadcrumb */}
         <nav className="flex items-center gap-3 mb-6" aria-label="Breadcrumb">
           <button
             onClick={() => router.back()}
@@ -70,7 +76,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           </span>
         </nav>
 
-        {/* Full Width Image Gallery — photos loaded client-side (non-blocking) */}
+        {/* Photo Gallery */}
         <PropertyPhotoGallery
           zpid={String(property.zpid)}
           initialImages={property.images}
@@ -80,53 +86,64 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           longitude={property.longitude}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-8 space-y-6">
-            <PropertyHeader property={property} />
+        {/* Property Header */}
+        <div className="mt-6">
+          <PropertyHeader property={property} />
+        </div>
+
+        {/* Core Details — matches address-bar detail panel design */}
+        <div
+          className="mt-6 rounded-lg overflow-hidden"
+          style={{
+            background: 'var(--surface-base)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
+          <div className="px-6 sm:px-10 py-5 space-y-5">
             <KeyFactsGrid property={property} />
-            
+
             {property.description && (
               <PropertyDescription description={property.description} />
             )}
-            
-            <PropertyFeatures
-              interiorFeatures={property.interiorFeatures || []}
-              exteriorFeatures={property.exteriorFeatures || []}
-              appliances={property.appliances || []}
-              construction={property.construction || []}
-              roof={property.roof}
-              foundation={property.foundation}
-              isWaterfront={property.isWaterfront}
-              waterfrontFeatures={property.waterfrontFeatures}
-            />
-            
-            {property.taxHistory && property.taxHistory.length > 0 && (
-              <TaxHistory history={property.taxHistory} />
-            )}
-          </div>
 
-          {/* Right Column - Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            {property.schools && property.schools.length > 0 && (
-              <NearbySchools schools={property.schools} />
+            {hasFeatures && (
+              <PropertyFeatures
+                interiorFeatures={property.interiorFeatures || []}
+                exteriorFeatures={property.exteriorFeatures || []}
+                appliances={property.appliances || []}
+                construction={property.construction || []}
+                roof={property.roof}
+                foundation={property.foundation}
+                isWaterfront={property.isWaterfront}
+                waterfrontFeatures={property.waterfrontFeatures}
+              />
             )}
-            
+
             <ListingInfo property={property} />
-            
-            <LocationMap 
-              latitude={property.latitude}
-              longitude={property.longitude}
-              address={fullAddress}
-            />
-            
-            {property.priceHistory && property.priceHistory.length > 0 && (
-              <PriceHistory history={property.priceHistory} />
-            )}
           </div>
         </div>
-      </div>
 
+        {/* Additional Data — schools, map, price & tax history */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {property.schools && property.schools.length > 0 && (
+            <NearbySchools schools={property.schools} />
+          )}
+
+          <LocationMap
+            latitude={property.latitude}
+            longitude={property.longitude}
+            address={fullAddress}
+          />
+
+          {property.taxHistory && property.taxHistory.length > 0 && (
+            <TaxHistory history={property.taxHistory} />
+          )}
+
+          {property.priceHistory && property.priceHistory.length > 0 && (
+            <PriceHistory history={property.priceHistory} />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

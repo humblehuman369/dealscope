@@ -36,23 +36,27 @@ export function PropertyDetailsSkeleton() {
         {/* Full Width Image Gallery */}
         <ImageGallerySkeleton />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-          {/* Left Column */}
-          <div className="lg:col-span-8 space-y-6">
-            <PropertyHeaderSkeleton />
+        <div className="mt-6">
+          <PropertyHeaderSkeleton />
+        </div>
+
+        <div
+          className="mt-6 rounded-lg overflow-hidden"
+          style={{ background: 'var(--surface-base)', border: '1px solid var(--border-subtle)' }}
+        >
+          <div className="px-6 sm:px-10 py-5 space-y-5">
             <KeyFactsGridSkeleton />
             <PropertyDescriptionSkeleton />
             <PropertyFeaturesSkeleton />
-            <TaxHistorySkeleton />
-          </div>
-
-          {/* Right Column */}
-          <div className="lg:col-span-4 space-y-6">
-            <NearbySchoolsSkeleton />
             <ListingInfoSkeleton />
-            <LocationMapSkeleton />
-            <PriceHistorySkeleton />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <NearbySchoolsSkeleton />
+          <LocationMapSkeleton />
+          <TaxHistorySkeleton />
+          <PriceHistorySkeleton />
         </div>
       </div>
 
