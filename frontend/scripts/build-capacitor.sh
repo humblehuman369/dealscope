@@ -27,11 +27,26 @@ restore_routes() {
 trap restore_routes EXIT
 
 # Build static export
+# NOTE: NEXT_PUBLIC_REVENUECAT_IOS_KEY and NEXT_PUBLIC_REVENUECAT_ANDROID_KEY
+# MUST be inherited from the calling shell (export them before running this
+# script or set them in CI). Without these, the in-app purchase sheet will
+# render empty prices and a disabled button — the exact failure mode that
+# caused Apple App Store rejection 2.1(b) in April 2026.
 echo "Building static export..."
 cd "$FRONTEND_DIR"
+
+if [ -z "${NEXT_PUBLIC_REVENUECAT_IOS_KEY:-}" ]; then
+  echo "WARNING: NEXT_PUBLIC_REVENUECAT_IOS_KEY is not set. iOS in-app purchases will not load." >&2
+fi
+if [ -z "${NEXT_PUBLIC_REVENUECAT_ANDROID_KEY:-}" ]; then
+  echo "WARNING: NEXT_PUBLIC_REVENUECAT_ANDROID_KEY is not set. Android in-app purchases will not load." >&2
+fi
+
 BUILD_TARGET=capacitor \
   NEXT_PUBLIC_API_URL=https://api.dealgapiq.com \
   NEXT_PUBLIC_APP_URL=https://dealgapiq.com \
+  NEXT_PUBLIC_REVENUECAT_IOS_KEY="${NEXT_PUBLIC_REVENUECAT_IOS_KEY:-}" \
+  NEXT_PUBLIC_REVENUECAT_ANDROID_KEY="${NEXT_PUBLIC_REVENUECAT_ANDROID_KEY:-}" \
   npx next build
 
 echo "Static export complete: $FRONTEND_DIR/out/"
