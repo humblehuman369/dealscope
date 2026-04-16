@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Eye, Camera, ImageOff, Images } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Camera, ImageOff, GalleryHorizontalEnd } from 'lucide-react'
 import { formatNumber } from './utils'
 
 interface ImageGalleryProps {
@@ -277,7 +277,7 @@ function DesktopMosaic({
           >
             {isLastVisible && (
               <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 z-10">
-                <Images size={20} style={{ color: 'var(--text-heading)' }} />
+                <GalleryHorizontalEnd size={20} style={{ color: 'var(--text-heading)' }} />
                 <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
                   +{remaining} more
                 </span>
