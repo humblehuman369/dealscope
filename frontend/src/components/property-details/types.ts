@@ -8,8 +8,18 @@
 // Listing Status Types - determines price label display
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
 
-// Seller Type - identifies listing source
-export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+// Listing sub-type — derived from Zillow listingSubType flags
+export type SellerType =
+  | 'FSBA'
+  | 'FSBO'
+  | 'Foreclosure'
+  | 'BankOwned'
+  | 'Auction'
+  | 'NewHome'
+  | 'ComingSoon'
+  | 'Agent'           // legacy alias for FSBA
+  | 'NewConstruction' // legacy alias for NewHome
+  | 'Unknown'
 
 // Market Temperature - buyer/seller market indicator
 export type MarketTemperature = 'hot' | 'warm' | 'cold'
@@ -185,6 +195,7 @@ export interface PropertyData {
   isFsbo?: boolean
   isAuction?: boolean
   isNewConstruction?: boolean
+  isComingSoon?: boolean
   
   // Timing
   daysOnMarket?: number

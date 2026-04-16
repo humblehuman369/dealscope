@@ -63,10 +63,11 @@ export function PropertyStatusPills({
     if (isBankOwned || sellerType === 'BankOwned') return 'Bank Owned'
     if (isForeclosure || sellerType === 'Foreclosure') return 'Foreclosure'
     if (isAuction || sellerType === 'Auction') return 'Auction'
-    if (isNewConstruction || sellerType === 'NewConstruction') return 'New Construction'
+    if (isNewConstruction || sellerType === 'NewConstruction' || sellerType === 'NewHome') return 'New Home'
+    if (sellerType === 'ComingSoon') return 'Coming Soon'
     if (sellerType === 'FSBO') return 'FSBO'
-    if (sellerType === 'Agent') return 'Individual'
-    return 'Individual'
+    if (sellerType === 'Agent' || sellerType === 'FSBA') return 'FSBA'
+    return 'FSBA'
   }
 
   // Determine if seller type is a warning (bank owned, foreclosure, auction)

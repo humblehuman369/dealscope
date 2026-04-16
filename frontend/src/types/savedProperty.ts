@@ -20,7 +20,17 @@ export type PropertyStatus =
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
 
 // Seller type classification
-export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+export type SellerType =
+  | 'FSBA'
+  | 'FSBO'
+  | 'Foreclosure'
+  | 'BankOwned'
+  | 'Auction'
+  | 'NewHome'
+  | 'ComingSoon'
+  | 'Agent'           // legacy alias for FSBA
+  | 'NewConstruction' // legacy alias for NewHome
+  | 'Unknown'
 
 /** Light-weight summary returned by GET /api/v1/properties/saved (list endpoint). */
 export interface SavedPropertySummary {

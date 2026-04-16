@@ -30,6 +30,26 @@ export function formatPropertyType(type: string | null | undefined): string {
   return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+const LISTING_TYPE_LABELS: Record<string, string> = {
+  FSBA: 'FSBA',
+  Agent: 'FSBA',
+  FSBO: 'FSBO',
+  BankOwned: 'Bank Owned',
+  Foreclosure: 'Foreclosure',
+  NewHome: 'New Home',
+  NewConstruction: 'New Home',
+  ComingSoon: 'Coming Soon',
+  Auction: 'Auction',
+}
+
+/**
+ * Format seller/listing type for display in the Property Facts grid.
+ */
+export function formatListingType(sellerType: string | null | undefined): string {
+  if (!sellerType) return 'N/A'
+  return LISTING_TYPE_LABELS[sellerType] ?? sellerType
+}
+
 /**
  * Get rating color based on school rating
  */

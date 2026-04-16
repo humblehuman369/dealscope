@@ -116,9 +116,9 @@ export function ListingStatusBadge({
     })
   }
   
-  if (isNewConstruction || sellerType === 'NewConstruction') {
+  if (isNewConstruction || sellerType === 'NewConstruction' || sellerType === 'NewHome') {
     specialBadges.push({
-      label: 'New Construction',
+      label: 'New Home',
       bgColor: 'bg-cyan-500',
       textColor: 'text-white',
       icon: Sparkles

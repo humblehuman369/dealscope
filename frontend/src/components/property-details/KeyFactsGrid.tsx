@@ -1,7 +1,7 @@
 'use client'
 
 import { PropertyData } from './types'
-import { formatCurrency, formatNumber, formatPropertyType } from './utils'
+import { formatCurrency, formatNumber, formatPropertyType, formatListingType } from './utils'
 
 interface KeyFactsGridProps {
   property: PropertyData
@@ -49,8 +49,11 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
       label: 'Parking',
       value: property.parkingSpaces ? `${property.parkingSpaces} Car Garage` : 'N/A',
     },
-    { label: 'Heating', value: property.heating?.join(', ') || 'N/A' },
-    { label: 'Cooling', value: property.cooling?.join(', ') || 'N/A' },
+    {
+      label: 'Sq. Ft.',
+      value: property.livingArea ? `${formatNumber(property.livingArea)} sqft` : 'N/A',
+    },
+    { label: 'Listing Type', value: formatListingType(property.sellerType) },
     { label: 'MLS #', value: property.mlsId || 'N/A' },
   ]
 
