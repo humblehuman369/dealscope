@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Home } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
+import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
 
 type GalleryState = 'loading' | 'loaded' | 'unavailable'
@@ -22,6 +23,8 @@ interface PropertyPhotoGalleryProps {
 /**
  * Non-blocking photo gallery: shows skeleton first, fetches photos in background,
  * then shows gallery or a clean fallback. Never blocks the page or shows technical errors.
+ *
+ * On desktop, clicking any image opens a full-screen PhotoLightbox for browsing.
  */
 export function PropertyPhotoGallery({
   zpid,
@@ -37,6 +40,7 @@ export function PropertyPhotoGallery({
   )
   const [photos, setPhotos] = useState<string[]>(initialImages)
   const [streetViewFailed, setStreetViewFailed] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   useEffect(() => {
     setStreetViewFailed(false)
@@ -70,6 +74,14 @@ export function PropertyPhotoGallery({
       cancelled = true
     }
   }, [zpid, initialImages.length])
+
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIndex(index)
+  }, [])
+
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null)
+  }, [])
 
   if (state === 'loading') {
     return <ImageGallerySkeleton />
@@ -131,11 +143,21 @@ export function PropertyPhotoGallery({
   }
 
   return (
-    <ImageGallery
-      images={photos}
-      totalPhotos={photos.length}
-      views={views}
-      hideThumbnails={hideThumbnails}
-    />
+    <>
+      <ImageGallery
+        images={photos}
+        totalPhotos={photos.length}
+        views={views}
+        hideThumbnails={hideThumbnails}
+        onImageClick={openLightbox}
+      />
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          images={photos}
+          initialIndex={lightboxIndex}
+          onClose={closeLightbox}
+        />
+      )}
+    </>
   )
 }
