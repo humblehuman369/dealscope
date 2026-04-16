@@ -15,8 +15,8 @@ interface ImageGalleryProps {
 /**
  * Responsive image gallery.
  *
- * - Mobile (< lg): single-image carousel with prev/next + thumbnail strip
- * - Desktop (lg+): compact mosaic grid (1 hero + up to 4 smaller images)
+ * - Mobile (< md): single-image carousel with prev/next + thumbnail strip
+ * - Desktop (md+, 768px): compact mosaic grid (1 hero + up to 4 smaller images)
  *   that opens a lightbox on click
  *
  * Uses referrerPolicy="no-referrer" on all <img> tags to bypass
@@ -34,7 +34,7 @@ export function ImageGallery({
   const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
+    const mq = window.matchMedia('(min-width: 768px)')
     setIsDesktop(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
@@ -358,8 +358,8 @@ function MosaicCell({ image, index, failed, onError, onClick, className = '', ch
 export function ImageGallerySkeleton() {
   return (
     <>
-      {/* Mobile skeleton (hidden on lg+) */}
-      <div className="space-y-3 lg:hidden">
+      {/* Mobile skeleton (hidden on md+) */}
+      <div className="space-y-3 md:hidden">
         <div
           className="relative rounded-[14px] overflow-hidden animate-pulse"
           style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
@@ -382,9 +382,9 @@ export function ImageGallerySkeleton() {
         </div>
       </div>
 
-      {/* Desktop skeleton (hidden below lg) */}
+      {/* Desktop skeleton (hidden below md) */}
       <div
-        className="hidden lg:grid grid-cols-4 grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden animate-pulse"
+        className="hidden md:grid grid-cols-4 grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden animate-pulse"
         style={{ height: 400, backgroundColor: 'var(--surface-elevated)' }}
       >
         <div className="col-span-3 row-span-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
