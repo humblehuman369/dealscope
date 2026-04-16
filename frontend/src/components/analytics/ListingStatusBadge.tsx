@@ -5,7 +5,17 @@ import { Home, Key, Clock, AlertTriangle, Gavel, Building2, User, Sparkles } fro
 
 // Types
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
-export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+export type SellerType =
+  | 'FSBA'
+  | 'FSBO'
+  | 'Foreclosure'
+  | 'BankOwned'
+  | 'Auction'
+  | 'NewHome'
+  | 'ComingSoon'
+  | 'Agent'
+  | 'NewConstruction'
+  | 'Unknown'
 
 interface ListingStatusBadgeProps {
   listingStatus?: ListingStatus

@@ -62,7 +62,17 @@ import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 // Listing status types for price display
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
-export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+export type SellerType =
+  | 'FSBA'
+  | 'FSBO'
+  | 'Foreclosure'
+  | 'BankOwned'
+  | 'Auction'
+  | 'NewHome'
+  | 'ComingSoon'
+  | 'Agent'
+  | 'NewConstruction'
+  | 'Unknown'
 
 export interface PropertyData {
   address: string
