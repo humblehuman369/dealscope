@@ -178,7 +178,6 @@ interface MapContentProps {
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number) => void) | null>
-  autoGeolocate: boolean
 }
 
 function MapContent({
@@ -192,13 +191,11 @@ function MapContent({
   drawingPolygon,
   setDrawingPolygon,
   panToRef,
-  autoGeolocate,
 }: MapContentProps) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
-  const geolocatedRef = useRef(false)
 
   useEffect(() => {
     if (!map) return
@@ -207,21 +204,6 @@ function MapContent({
     }
     return () => { panToRef.current = null }
   }, [map, panToRef])
-
-  useEffect(() => {
-    if (!map || !autoGeolocate || geolocatedRef.current) return
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) return
-    geolocatedRef.current = true
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        map.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        map.setZoom(GEOLOCATION_ZOOM)
-      },
-      () => { /* permission denied or unavailable — stay at default */ },
-      { timeout: 5000 },
-    )
-  }, [map, autoGeolocate])
 
   useEffect(() => {
     if (!map || !selectedListing) return
@@ -376,21 +358,43 @@ export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const searchParams = useSearchParams()
 
-  const initialCenter = useMemo(() => {
+  const paramCenter = useMemo(() => {
     const lat = parseFloat(searchParams.get('lat') ?? '')
     const lng = parseFloat(searchParams.get('lng') ?? '')
     if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng }
-    return DEFAULT_CENTER
+    return null
   }, [searchParams])
 
-  const initialZoom = useMemo(() => {
+  const paramZoom = useMemo(() => {
     const z = parseInt(searchParams.get('zoom') ?? '', 10)
-    return Number.isFinite(z) ? z : DEFAULT_ZOOM
+    return Number.isFinite(z) ? z : null
   }, [searchParams])
 
   const locationLabel = searchParams.get('label') ?? null
-  const needsGeocode = !!locationLabel && initialCenter === DEFAULT_CENTER
-  const hasExplicitLocation = initialCenter !== DEFAULT_CENTER || needsGeocode
+  const needsGeocode = !!locationLabel && !paramCenter
+  const hasExplicitLocation = !!paramCenter || needsGeocode
+
+  const [geoCenter, setGeoCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [geoResolved, setGeoResolved] = useState(hasExplicitLocation)
+
+  useEffect(() => {
+    if (hasExplicitLocation) return
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      setGeoResolved(true)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setGeoResolved(true)
+      },
+      () => { setGeoResolved(true) },
+      { timeout: 5000, maximumAge: 300000 },
+    )
+  }, [hasExplicitLocation])
+
+  const initialCenter = paramCenter ?? geoCenter ?? DEFAULT_CENTER
+  const initialZoom = paramZoom ?? (geoCenter ? GEOLOCATION_ZOOM : DEFAULT_ZOOM)
 
   const {
     listings,
@@ -577,6 +581,22 @@ export function MapSearchView() {
     )
   }
 
+  if (!geoResolved) {
+    return (
+      <div
+        className="flex items-center justify-center h-full"
+        style={{ backgroundColor: 'var(--surface-base)' }}
+      >
+        <div className="flex items-center gap-3">
+          <Loader2 size={20} className="animate-spin" style={{ color: 'var(--accent-sky)' }} />
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Finding your location...
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   const mapSection = (
     <div className="relative w-full h-full">
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
@@ -617,7 +637,6 @@ export function MapSearchView() {
             drawingPolygon={drawingPolygon}
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
-            autoGeolocate={!hasExplicitLocation}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>

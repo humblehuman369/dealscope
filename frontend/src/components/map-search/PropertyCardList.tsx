@@ -1,11 +1,18 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bed, Bath, Ruler, Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
 import type { DealSignalResult } from '@/lib/dealSignal'
 import { normalizeListingStatus, displayListingStatus } from '@/lib/dealSignal'
+
+function getPhotoSrc(listing: MapListing): string | null {
+  if (listing.photo_url) return listing.photo_url
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  if (!apiKey) return null
+  return `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${listing.latitude},${listing.longitude}&key=${apiKey}`
+}
 
 interface PropertyCardListProps {
   listings: MapListing[]
@@ -65,6 +72,8 @@ function PropertyCard({
 }) {
   const router = useRouter()
   const ppsqft = formatPricePerSqft(listing.price, listing.sqft)
+  const [imgFailed, setImgFailed] = useState(false)
+  const photoSrc = imgFailed ? null : getPhotoSrc(listing)
 
   const handleAnalyze = useCallback(
     (e: React.MouseEvent) => {
@@ -91,13 +100,14 @@ function PropertyCard({
     >
       {/* Photo row with deal signal badge */}
       <div className="relative h-28 overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
-        {listing.photo_url ? (
+        {photoSrc ? (
           <img
-            src={listing.photo_url}
+            src={photoSrc}
             alt={listing.address}
             className="w-full h-full object-cover"
             loading="lazy"
             referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
