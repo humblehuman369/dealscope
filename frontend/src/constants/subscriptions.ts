@@ -19,8 +19,12 @@
 
 export const PRO_ENTITLEMENT_ID = 'DealGapIQ Pro'
 
-export const IOS_MONTHLY_PRODUCT_ID = 'com.dealgapiq.mobile.monthly2'
-export const IOS_YEARLY_PRODUCT_ID = 'com.dealgapiq.mobile.pro.yearly'
-export const IOS_LIFETIME_PRODUCT_ID = 'com.dealgapiq.mobile.pro.lifetime'
+/**
+ * App Store Connect product IDs — must exactly match what's configured
+ * in App Store Connect → DealGapIQ → Monetization → Subscriptions AND
+ * what RevenueCat references in its Product Catalog. Mismatch = broken IAP.
+ */
+export const IOS_MONTHLY_PRODUCT_ID = 'com.monthly.dealgapiq'
+export const IOS_YEARLY_PRODUCT_ID = 'com.yearly.dealgapiq'
 
 export const FREE_ANALYSES_PER_MONTH = 3
