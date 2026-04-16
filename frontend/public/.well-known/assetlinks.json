@@ -1,14 +1,11 @@
 [
   {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
+    "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
       "package_name": "com.dealgapiq.mobile",
-      "sha256_cert_fingerprints": [
-        "REPLACE_WITH_YOUR_SHA256_FINGERPRINT"
-      ]
+      "sha256_cert_fingerprints":
+        ["05:46:8F:50:12:84:03:86:EA:E0:FA:82:00:97:1F:D1:93:78:05:D1:A0:65:64:2D:26:32:37:1B:F2:41:41:A9"]
     }
   }
 ]
