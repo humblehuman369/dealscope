@@ -8,13 +8,16 @@
  */
 
 import React, { useState, useCallback } from 'react'
-import { X, Loader2, Check, RotateCcw } from 'lucide-react'
+import { X, Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
 import { IS_CAPACITOR } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
+
+const FALLBACK_PRICE_MONTHLY = '$39.99'
+const FALLBACK_PRICE_ANNUAL = '$349.99'
 
 interface PricingPlan {
   id: string
@@ -64,17 +67,24 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
   }, [isOpen])
 
   // --- Pricing from RevenueCat or Stripe ---
-  const rcPkg = IS_CAPACITOR ? pickRCPackage(rc.packages, annual) : undefined
+  const rcPkgMonthly = IS_CAPACITOR ? pickRCPackage(rc.packages, false) : undefined
   const rcPkgAnnual = IS_CAPACITOR ? pickRCPackage(rc.packages, true) : undefined
+  const rcPkg = annual ? rcPkgAnnual : rcPkgMonthly
   const proPlan = plans.find((p) => p.id === 'pro')
 
   const rcLoading = IS_CAPACITOR && !rc.ready
 
+  // IAP failed to initialize: no package for the selected plan AND an error
+  // was surfaced. Swap the purchase CTA for a retry affordance so reviewers
+  // and real users never see a dead button. We intentionally ignore
+  // `rc.ready` here so the retry UI stays in place during an in-flight retry.
+  const iapUnavailable = IS_CAPACITOR && !rcPkg && !!rc.error
+
   const displayPriceMonthly = IS_CAPACITOR
-    ? (rcPkg?.product.priceString ?? '$39.99')
+    ? (rcPkgMonthly?.product.priceString ?? FALLBACK_PRICE_MONTHLY)
     : `$${proPlan ? proPlan.price_monthly / 100 : 39.99}`
   const displayPriceAnnual = IS_CAPACITOR
-    ? (rcPkgAnnual?.product.priceString ?? '$349.99')
+    ? (rcPkgAnnual?.product.priceString ?? FALLBACK_PRICE_ANNUAL)
     : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
 
   const startCheckout = useCallback(async () => {
@@ -230,31 +240,70 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
           </div>
         </div>
 
-        {(error || rc.error) && (
+        {error && !iapUnavailable && (
           <p className="px-6 pb-2 text-sm text-red-400" role="alert">
-            {error || rc.error}
+            {error}
           </p>
         )}
 
-        <div className="px-6 pb-6 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={startCheckout}
-            disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
+        {iapUnavailable && (
+          <div
+            className="mx-6 mb-4 rounded-lg px-4 py-3 flex items-start gap-2"
+            role="alert"
             style={{
-              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.3)',
             }}
           >
-            {loading || rc.isPurchasing ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <>
-                <Check size={18} />
-                Start 7-day free trial
-              </>
-            )}
-          </button>
+            <AlertCircle size={16} style={{ color: '#f87171', flexShrink: 0, marginTop: 2 }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium" style={{ color: '#fecaca' }}>
+                {rc.error}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="px-6 pb-6 flex flex-col gap-2">
+          {iapUnavailable ? (
+            <button
+              type="button"
+              onClick={() => rc.retry()}
+              disabled={rcLoading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-60 transition-opacity"
+              style={{
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              }}
+            >
+              {rcLoading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  <RotateCcw size={16} />
+                  Try again
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={startCheckout}
+              disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
+              style={{
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              }}
+            >
+              {loading || rc.isPurchasing ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  <Check size={18} />
+                  Start 7-day free trial
+                </>
+              )}
+            </button>
+          )}
           {IS_CAPACITOR && (
             <button
               type="button"
