@@ -47,7 +47,7 @@ export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardPro
       {/* Photo / placeholder */}
       <div className="relative h-36 overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
         {listing.photo_url ? (
-          <img src={listing.photo_url} alt={listing.address} className="w-full h-full object-cover" />
+          <img src={listing.photo_url} alt={listing.address} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-2xl" style={{ color: 'var(--text-secondary)' }}>
