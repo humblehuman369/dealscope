@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Check, Waves } from 'lucide-react'
 
 interface PropertyFeaturesProps {
@@ -14,14 +13,10 @@ interface PropertyFeaturesProps {
   waterfrontFeatures?: string[]
 }
 
-type TabId = 'interior' | 'exterior' | 'appliances'
-
 /**
- * PropertyFeatures Component
- * 
- * Tabbed display of interior/exterior features, appliances,
- * construction details, and waterfront information.
- * Active tab uses deep sky CTA color; checkmarks use teal (positive/success).
+ * PropertyFeatures — Flat feature grid with checkmarks, matching the address-bar
+ * detail panel. All feature categories are combined into one list (no tabs).
+ * Construction / Roof / Foundation render as inline label-value pairs below.
  */
 export function PropertyFeatures({
   interiorFeatures,
@@ -33,132 +28,107 @@ export function PropertyFeatures({
   isWaterfront,
   waterfrontFeatures,
 }: PropertyFeaturesProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('interior')
-
-  const tabs: { id: TabId; label: string; features: string[] }[] = [
-    { id: 'interior', label: 'Interior', features: interiorFeatures },
-    { id: 'exterior', label: 'Exterior', features: exteriorFeatures },
-    { id: 'appliances', label: 'Appliances', features: appliances },
+  const allFeatures = [
+    ...interiorFeatures,
+    ...exteriorFeatures,
+    ...appliances,
   ]
+  const uniqueFeatures = [...new Set(allFeatures)]
 
-  const currentFeatures = tabs.find(t => t.id === activeTab)?.features || []
+  const hasConstruction =
+    (construction && construction.length > 0) || roof || foundation
+
+  if (uniqueFeatures.length === 0 && !hasConstruction) return null
 
   return (
-    <div
-      className="rounded-[14px] p-6"
-      style={{
-        backgroundColor: 'var(--surface-base)',
-        border: `1px solid var(--border-subtle)`,
-        boxShadow: 'var(--shadow-card)',
-      }}
-    >
+    <div>
       <div
-        className="text-xs font-bold uppercase tracking-[0.12em] mb-5"
+        className="text-[10px] font-bold uppercase tracking-[0.12em] mb-2"
         style={{ color: 'var(--accent-sky)' }}
       >
         Features & Amenities
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-5">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
-            style={{
-              backgroundColor: activeTab === tab.id ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-              color: activeTab === tab.id ? 'var(--text-inverse)' : 'var(--text-body)',
-              border: activeTab === tab.id ? 'none' : `1px solid var(--border-subtle)`,
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Features Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {currentFeatures.map((feature, i) => (
-          <div key={i} className="flex items-center gap-2.5 py-2.5">
-            <Check size={16} className="flex-shrink-0" style={{ color: 'var(--status-positive)' }} />
-            <span className="text-[15px]" style={{ color: 'var(--text-body)', fontWeight: 400 }}>{feature}</span>
-          </div>
-        ))}
-      </div>
-
-      {currentFeatures.length === 0 && (
-        <p className="text-base text-center py-6" style={{ color: 'var(--text-secondary)' }}>
-          No {activeTab} features listed
-        </p>
-      )}
-
-      {/* Waterfront Badge */}
-      {isWaterfront && waterfrontFeatures && waterfrontFeatures.length > 0 && (
-        <div className="mt-4 pt-4" style={{ borderTop: `1px solid var(--border-subtle)` }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Waves size={16} style={{ color: 'var(--accent-sky)' }} />
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
-              Waterfront Property
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {waterfrontFeatures.map((feature, i) => (
-              <span 
-                key={i} 
-                className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{ backgroundColor: 'var(--color-sky-dim)', color: 'var(--accent-sky)' }}
-              >
+      {uniqueFeatures.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1">
+          {uniqueFeatures.map((feature, i) => (
+            <div key={i} className="flex items-center gap-2 py-1">
+              <Check
+                size={13}
+                className="flex-shrink-0"
+                style={{ color: 'var(--status-positive)' }}
+              />
+              <span className="text-[13px]" style={{ color: 'var(--text-body)' }}>
                 {feature}
               </span>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Construction */}
-      {(construction?.length > 0 || roof || foundation) && (
+      {isWaterfront && waterfrontFeatures && waterfrontFeatures.length > 0 && (
+        <div className="flex items-center gap-2 mt-2">
+          <Waves size={14} style={{ color: 'var(--accent-sky)' }} />
+          <span
+            className="text-xs font-semibold"
+            style={{ color: 'var(--accent-sky)' }}
+          >
+            Waterfront: {waterfrontFeatures.join(', ')}
+          </span>
+        </div>
+      )}
+
+      {hasConstruction && (
         <div
-          className="mt-5 pt-5 grid grid-cols-1 sm:grid-cols-3 gap-5"
-          style={{ borderTop: `1px solid var(--border-subtle)` }}
+          className="flex flex-wrap gap-x-8 gap-y-1 mt-3 pt-3"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
         >
-          {construction?.length > 0 && (
-            <div>
-              <div
-                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+          {construction && construction.length > 0 && (
+            <div className="flex items-baseline gap-2">
+              <span
+                className="text-[10px] font-bold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--text-label)' }}
               >
                 Construction
-              </div>
-              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
+              </span>
+              <span
+                className="text-sm font-medium"
+                style={{ color: 'var(--text-body)' }}
+              >
                 {construction.join(', ')}
-              </div>
+              </span>
             </div>
           )}
           {roof && (
-            <div>
-              <div
-                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+            <div className="flex items-baseline gap-2">
+              <span
+                className="text-[10px] font-bold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--text-label)' }}
               >
                 Roof
-              </div>
-              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
+              </span>
+              <span
+                className="text-sm font-medium"
+                style={{ color: 'var(--text-body)' }}
+              >
                 {roof}
-              </div>
+              </span>
             </div>
           )}
           {foundation && (
-            <div>
-              <div
-                className="text-[11px] font-bold uppercase tracking-[0.04em] mb-2"
+            <div className="flex items-baseline gap-2">
+              <span
+                className="text-[10px] font-bold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--text-label)' }}
               >
                 Foundation
-              </div>
-              <div className="text-base font-medium" style={{ color: 'var(--text-body)' }}>
+              </span>
+              <span
+                className="text-sm font-medium"
+                style={{ color: 'var(--text-body)' }}
+              >
                 {foundation}
-              </div>
+              </span>
             </div>
           )}
         </div>
@@ -167,25 +137,20 @@ export function PropertyFeatures({
   )
 }
 
-/**
- * PropertyFeaturesSkeleton
- * Loading state for the property features
- */
 export function PropertyFeaturesSkeleton() {
   return (
-    <div
-      className="rounded-[14px] p-5"
-      style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
-    >
-      <div className="h-3 w-32 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-      <div className="flex gap-2 mb-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-9 w-20 rounded-full animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="h-6 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+    <div>
+      <div
+        className="h-3 w-32 rounded animate-pulse mb-3"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-5 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
         ))}
       </div>
     </div>

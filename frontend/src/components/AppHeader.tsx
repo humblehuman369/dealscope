@@ -25,10 +25,6 @@ import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { PropertyDetailsDropdown, PropertyDetailsDropdownSkeleton } from '@/components/iq-verdict/PropertyDetailsDropdown'
-import { usePropertyData } from '@/hooks/usePropertyData'
-import { normalizePropertyData } from '@/utils/normalizePropertyData'
-import type { PropertyData } from '@/components/property-details/types'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -377,59 +373,8 @@ export function AppHeader({
     propertySnapshot: savePropertySnapshot,
   })
 
-  // Property details dropdown state
-  const [detailsDropdownOpen, setDetailsDropdownOpen] = useState(false)
-  const [dropdownPropertyData, setDropdownPropertyData] = useState<PropertyData | null>(null)
-  const [dropdownLoading, setDropdownLoading] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const { fetchProperty } = usePropertyData()
-
-  const handleToggleDetailsDropdown = useCallback(() => {
-    setDetailsDropdownOpen((prev) => {
-      const opening = !prev
-      if (opening && !dropdownPropertyData && displayAddress) {
-        setDropdownLoading(true)
-        fetchProperty(displayAddress)
-          .then((raw) => {
-            const zpid = resolvedProperty?.zpid || String((raw as any)?.zpid || '')
-            const normalized = normalizePropertyData(raw as Record<string, unknown>, zpid)
-            setDropdownPropertyData(normalized)
-          })
-          .catch((err) => {
-            console.error('Failed to load property details for dropdown:', err)
-          })
-          .finally(() => setDropdownLoading(false))
-      }
-      return opening
-    })
-  }, [dropdownPropertyData, displayAddress, fetchProperty, resolvedProperty?.zpid])
-
-  // Close dropdown on outside click
+  // Close mobile nav on navigation
   useEffect(() => {
-    if (!detailsDropdownOpen) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDetailsDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [detailsDropdownOpen])
-
-  // Close dropdown on Escape
-  useEffect(() => {
-    if (!detailsDropdownOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDetailsDropdownOpen(false)
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [detailsDropdownOpen])
-
-  // Close dropdowns on navigation
-  useEffect(() => {
-    setDetailsDropdownOpen(false)
-    setDropdownPropertyData(null)
     setMobileNavOpen(false)
   }, [pathname])
 
@@ -943,7 +888,6 @@ export function AppHeader({
         const p = resolvedProperty
         return (
           <div
-            ref={dropdownRef}
             className="sticky z-40"
             style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--surface-base)' }}
           >
@@ -962,16 +906,9 @@ export function AppHeader({
               onBookmarkClick={isAuthenticated
                 ? () => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
                 : () => router.push(signInUrl)}
-              isDropdownOpen={detailsDropdownOpen}
-              onToggleDropdown={handleToggleDetailsDropdown}
               detailsCollapsed={scrolledPast}
               loading={!p}
             />
-            {detailsDropdownOpen && (
-              dropdownLoading
-                ? <PropertyDetailsDropdownSkeleton />
-                : dropdownPropertyData && <PropertyDetailsDropdown property={dropdownPropertyData} />
-            )}
           </div>
         )
       })()}

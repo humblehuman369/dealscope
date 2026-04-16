@@ -4,7 +4,7 @@
  * PropertyAddressBar — Single-line, always-visible address bar for analysis pages.
  *
  * Shows address + property details (Beds · Baths · Sqft · Price · Status) inline.
- * Includes a chevron toggle to expand/collapse a property details dropdown.
+ * Includes a visible "Property Details" link so users can navigate to the full profile.
  */
 
 import React, { useState } from 'react'
@@ -37,18 +37,10 @@ interface PropertyAddressBarProps {
   /** Optional controlled bookmark (e.g. from AppHeader save-property) */
   bookmarked?: boolean
   onBookmarkClick?: () => void
-  /** Whether the details dropdown is currently open */
-  isDropdownOpen?: boolean
-  /** Toggle the details dropdown */
-  onToggleDropdown?: () => void
   /** When true, collapse the details row on mobile (address stays visible) */
   detailsCollapsed?: boolean
   /** When true, hide the detail chips (beds/baths/sqft/status) — shown during initial data fetch */
   loading?: boolean
-}
-
-function formatShortPrice(price: number): string {
-  return `$${Math.round(price).toLocaleString()}`
 }
 
 /** Safely decode a string that might be URL-encoded (single or double). */
@@ -151,8 +143,6 @@ export function PropertyAddressBar({
   zpid,
   bookmarked: bookmarkedProp,
   onBookmarkClick,
-  isDropdownOpen,
-  onToggleDropdown,
   detailsCollapsed,
   loading,
 }: PropertyAddressBarProps) {
@@ -253,7 +243,29 @@ export function PropertyAddressBar({
           </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {/* Property Details link */}
+          <Link
+            href={profileHref}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
+            style={{
+              color: 'var(--accent-sky)',
+              background: 'rgba(14,165,233,0.08)',
+              border: '1px solid rgba(14,165,233,0.2)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 4H14M2 8H10M2 12H12"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+            </svg>
+            Details
+          </Link>
+
           <button
             type="button"
             onClick={handleBookmarkClick}
@@ -287,52 +299,6 @@ export function PropertyAddressBar({
               />
             </svg>
           </button>
-
-          {onToggleDropdown && (
-            <button
-              type="button"
-              onClick={onToggleDropdown}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 6,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 6,
-                transition: 'background 0.2s ease, transform 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = barTokens.hoverAccent
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'none'
-              }}
-              title={isDropdownOpen ? 'Hide property details' : 'Show property details'}
-              aria-label={isDropdownOpen ? 'Hide property details' : 'Show property details'}
-              aria-expanded={isDropdownOpen}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                style={{
-                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease',
-                }}
-              >
-                <path
-                  d="M4 6L8 10L12 6"
-                  stroke={barTokens.accent}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
           </div>
         </div>
       </div>
