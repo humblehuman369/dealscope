@@ -12,6 +12,7 @@ export * from './utils'
 
 // Components
 export { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
+export { PhotoLightbox } from './PhotoLightbox'
 export { PropertyPhotoGallery } from './PropertyPhotoGallery'
 export { PropertyHeader, PropertyHeaderSkeleton } from './PropertyHeader'
 export { KeyFactsGrid, KeyFactsGridSkeleton } from './KeyFactsGrid'
