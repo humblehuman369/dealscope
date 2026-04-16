@@ -213,17 +213,21 @@ function DesktopMosaic({
 
   return (
     <div
-      className="grid grid-cols-4 grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden"
-      style={{ height: 400, backgroundColor: 'var(--surface-elevated)' }}
+      className="grid grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden"
+      style={{
+        height: 400,
+        backgroundColor: 'var(--surface-elevated)',
+        gridTemplateColumns: '3fr 1fr 1fr',
+      }}
     >
-      {/* Hero — spans left 60% (3 cols) and full height (2 rows) */}
+      {/* Hero — left 60% (first column), full height (2 rows) */}
       <MosaicCell
         image={images[0]}
         index={0}
         failed={imageError[0]}
         onError={onImageError}
         onClick={onImageClick}
-        className="col-span-3 row-span-2"
+        className="row-span-2"
       >
         {/* Views badge */}
         {views !== undefined && (
@@ -288,18 +292,15 @@ function DesktopMosaic({
       })}
 
       {/* Fill empty right-side cells when fewer than 5 images */}
-      {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => {
-        if (images.length + i > 4) return null
-        return (
-          <div
-            key={`empty-${i}`}
-            className="flex items-center justify-center"
-            style={{ backgroundColor: 'var(--surface-elevated)' }}
-          >
-            <ImageOff size={20} style={{ color: 'var(--text-secondary)', opacity: 0.4 }} />
-          </div>
-        )
-      })}
+      {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => (
+        <div
+          key={`empty-${i}`}
+          className="flex items-center justify-center"
+          style={{ backgroundColor: 'var(--surface-elevated)' }}
+        >
+          <ImageOff size={20} style={{ color: 'var(--text-secondary)', opacity: 0.4 }} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -384,10 +385,10 @@ export function ImageGallerySkeleton() {
 
       {/* Desktop skeleton (hidden below md) */}
       <div
-        className="hidden md:grid grid-cols-4 grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden animate-pulse"
-        style={{ height: 400, backgroundColor: 'var(--surface-elevated)' }}
+        className="hidden md:grid grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden animate-pulse"
+        style={{ height: 400, backgroundColor: 'var(--surface-elevated)', gridTemplateColumns: '3fr 1fr 1fr' }}
       >
-        <div className="col-span-3 row-span-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+        <div className="row-span-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
             <ImageOff size={48} style={{ color: 'var(--text-secondary)' }} />
             <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
