@@ -696,14 +696,14 @@ class ZillowDataExtractor:
         is_fsbo = listing_sub_type.get("isFSBO", False)
         is_fsba = listing_sub_type.get("isFSBA", False)
         is_auction = listing_sub_type.get("isForAuction", False)
-        listing_sub_type.get("isComingSoon", False)
+        is_coming_soon = listing_sub_type.get("isComingSoon", False)
 
         # Also check resoFacts for new construction
         reso_facts = data.get("resoFacts", {}) or {}
         is_new_construction = reso_facts.get("isNewConstruction", False)
 
-        # Determine seller type based on flags
-        seller_type = "Agent"  # Default
+        # Determine seller type using Zillow listingSubType classifications
+        seller_type = "FSBA"  # Default — For Sale By Agent
         if is_foreclosure:
             seller_type = "Foreclosure"
         elif is_bank_owned:
@@ -713,9 +713,9 @@ class ZillowDataExtractor:
         elif is_auction:
             seller_type = "Auction"
         elif is_new_construction:
-            seller_type = "NewConstruction"
-        elif is_fsba:
-            seller_type = "Agent"
+            seller_type = "NewHome"
+        elif is_coming_soon:
+            seller_type = "ComingSoon"
 
         # Determine if property is off-market
         # A property is off-market if:
@@ -774,6 +774,7 @@ class ZillowDataExtractor:
             "is_fsbo": is_fsbo,
             "is_auction": is_auction,
             "is_new_construction": is_new_construction,
+            "is_coming_soon": is_coming_soon,
             "list_price": list_price,
             "days_on_market": days_on_zillow,
             "time_on_market": time_on_zillow,

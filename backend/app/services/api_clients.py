@@ -1131,6 +1131,7 @@ class DataNormalizer:
         is_bank_owned = listing_sub_type.get("isBankOwned") or listing_sub_type.get("is_bankOwned", False)
         is_fsbo = listing_sub_type.get("isFSBO") or listing_sub_type.get("is_FSBO", False)
         is_auction = listing_sub_type.get("isForAuction") or listing_sub_type.get("is_forAuction", False)
+        is_coming_soon = listing_sub_type.get("isComingSoon") or listing_sub_type.get("is_comingSoon", False)
 
         # Check for new construction
         reso_facts = axesso_data.get("resoFacts", {}) or {}
@@ -1142,9 +1143,10 @@ class DataNormalizer:
         normalized["is_fsbo"] = is_fsbo
         normalized["is_auction"] = is_auction
         normalized["is_new_construction"] = is_new_construction
+        normalized["is_coming_soon"] = is_coming_soon
 
-        # Determine seller type string
-        seller_type = "Agent"  # Default
+        # Determine seller type using Zillow listingSubType classifications
+        seller_type = "FSBA"  # Default — For Sale By Agent
         if is_foreclosure:
             seller_type = "Foreclosure"
         elif is_bank_owned:
@@ -1154,7 +1156,9 @@ class DataNormalizer:
         elif is_auction:
             seller_type = "Auction"
         elif is_new_construction:
-            seller_type = "NewConstruction"
+            seller_type = "NewHome"
+        elif is_coming_soon:
+            seller_type = "ComingSoon"
 
         normalized["seller_type"] = seller_type
 

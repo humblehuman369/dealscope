@@ -75,12 +75,15 @@ class ListingStatus(StrEnum):
 class SellerType(StrEnum):
     """Type of seller/listing source derived from listingSubType fields."""
 
-    AGENT = "Agent"  # Listed by agent (isFSBA = true or default)
+    FSBA = "FSBA"  # For Sale By Agent (isFSBA = true or default)
+    AGENT = "Agent"  # Legacy alias — same as FSBA
     FSBO = "FSBO"  # For Sale By Owner (isFSBO = true)
     FORECLOSURE = "Foreclosure"  # Bank foreclosure (isForeclosure = true)
     BANK_OWNED = "BankOwned"  # REO/Bank owned (isBankOwned = true)
     AUCTION = "Auction"  # Auction listing (isForAuction = true)
-    NEW_CONSTRUCTION = "NewConstruction"  # New construction
+    NEW_HOME = "NewHome"  # New construction / new home
+    NEW_CONSTRUCTION = "NewConstruction"  # Legacy alias — same as NewHome
+    COMING_SOON = "ComingSoon"  # Coming soon listing (isComingSoon = true)
     UNKNOWN = "Unknown"  # Unknown or not specified
 
 
@@ -347,6 +350,7 @@ class ListingInfo(BaseModel):
     is_fsbo: bool | None = False
     is_auction: bool | None = False
     is_new_construction: bool | None = False
+    is_coming_soon: bool | None = False
 
     # Pricing - only set if property is actively listed
     list_price: float | None = None  # Actual asking price if listed

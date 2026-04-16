@@ -90,6 +90,8 @@ export function normalizePropertyData(
     isBankOwned: p.listing?.is_bank_owned,
     isFsbo: p.listing?.is_fsbo,
     isAuction: p.listing?.is_auction,
+    isNewConstruction: p.listing?.is_new_construction,
+    isComingSoon: p.listing?.is_coming_soon,
     daysOnMarket: p.listing?.days_on_market,
     timeOnMarket: p.listing?.time_on_market,
     brokerageName: p.listing?.brokerage_name,
