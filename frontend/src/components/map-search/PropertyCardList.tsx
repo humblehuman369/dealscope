@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Bed, Bath, Ruler, Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
 import type { DealSignalResult } from '@/lib/dealSignal'
+import { normalizeListingStatus, displayListingStatus } from '@/lib/dealSignal'
 
 interface PropertyCardListProps {
   listings: MapListing[]
@@ -39,11 +40,11 @@ function domColor(dom: number): string {
   return 'var(--status-negative)'
 }
 
-function statusColor(status: string): string {
-  const s = status.toLowerCase().trim()
-  if (s === 'active') return 'var(--status-positive)'
-  if (s === 'pending' || s === 'contingent') return 'var(--status-warning)'
-  if (['foreclosure', 'auction', 'pre-foreclosure', 'pre_foreclosure', 'bank owned', 'reo', 'short sale'].includes(s)) {
+function statusColor(raw: string | null): string {
+  const canonical = normalizeListingStatus(raw)
+  if (canonical === 'active') return 'var(--status-positive)'
+  if (canonical === 'pending') return 'var(--status-warning)'
+  if (canonical === 'foreclosure' || canonical === 'pre-foreclosure' || canonical === 'auction') {
     return 'var(--status-negative)'
   }
   return 'var(--text-secondary)'
@@ -185,7 +186,7 @@ function PropertyCard({
                   color: statusColor(listing.listing_status),
                 }}
               >
-                {listing.listing_status}
+                {displayListingStatus(listing.listing_status)}
               </span>
             )}
             {listing.days_on_market != null && (
