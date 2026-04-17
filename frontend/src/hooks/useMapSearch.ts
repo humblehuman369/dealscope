@@ -22,6 +22,9 @@ export interface MapSearchFilters {
   listing_statuses: string[]
   min_dom?: number
   sort_by: SortOption
+  include_str_listings?: boolean
+  str_state?: string
+  str_city?: string
 }
 
 export interface MapBounds {
@@ -69,6 +72,9 @@ export function useMapSearch() {
         bathrooms: activeFilters.bathrooms,
         listing_statuses:
           activeFilters.listing_statuses.length > 0 ? activeFilters.listing_statuses : undefined,
+        include_str_listings: activeFilters.include_str_listings,
+        str_state: activeFilters.str_state,
+        str_city: activeFilters.str_city,
         limit: 500,
       }
 
@@ -137,7 +143,8 @@ export function useMapSearch() {
         'max_price' in next ||
         'bedrooms' in next ||
         'bathrooms' in next ||
-        'listing_statuses' in next
+        'listing_statuses' in next ||
+        'include_str_listings' in next
       )
 
       setFilters((prev) => {
