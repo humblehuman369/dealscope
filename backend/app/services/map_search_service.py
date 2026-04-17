@@ -17,7 +17,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
-from app.services.api_clients import RentCastClient, create_api_clients
+from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
 from app.services.cache_service import get_cache_service
 from app.services.zillow_client import ZillowClient, create_zillow_client
 
@@ -155,12 +155,13 @@ class MapSearchService:
     def __init__(self) -> None:
         self.rentcast: RentCastClient
         self.zillow: ZillowClient | None = None
+        self.mashvisor: MashvisorClient | None = None
         self._initialized = False
 
     def _ensure_clients(self) -> None:
         if self._initialized:
             return
-        rc, _, _, _, _ = create_api_clients(
+        rc, _, _, _, _, _ = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
@@ -173,6 +174,12 @@ class MapSearchService:
                 api_key=settings.AXESSO_API_KEY,
                 base_url=settings.AXESSO_URL,
                 fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
+            )
+
+        if settings.MASHVISOR_RAPIDAPI_KEY:
+            self.mashvisor = MashvisorClient(
+                api_key=settings.MASHVISOR_RAPIDAPI_KEY,
+                rapidapi_host=settings.MASHVISOR_RAPIDAPI_HOST,
             )
 
         self._initialized = True
@@ -228,30 +235,53 @@ class MapSearchService:
         # Fetch from all sources at all grid points in parallel
         tasks: list[asyncio.Task] = []
 
+        # Build the Zillow query extras up-front (per-request, not per-grid-point)
+        # so dispatch shape stays predictable: 1 vanilla forSale + at most 1
+        # distressed forSale query per grid point. This is the dispatch shape
+        # that fixed the rate-limit/circuit-breaker storm caused by the previous
+        # one-flag-per-query design.
+        zillow_distressed_extras = self._zillow_distressed_extras(requested_statuses)
+
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                # RentCast only serves active sale listings. If the caller
-                # wants only distressed inventory, skip RentCast entirely
-                # to save API quota.
-                if "active" in requested_statuses or "pending" in requested_statuses:
-                    tasks.append(
-                        asyncio.create_task(
-                            self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
-                        )
+                # Always run RentCast for sale: its per-listing `listingType`
+                # field surfaces "Foreclosure" / "Short Sale" which the
+                # normalizer folds into the canonical status. Cheap insurance.
+                tasks.append(
+                    asyncio.create_task(
+                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
                     )
+                )
                 if self.zillow:
-                    for distress_flag in self._zillow_sale_flag_set(requested_statuses):
+                    # Vanilla forSale query — covers Active, Pending (via
+                    # homeStatus), and any distressed listings AXESSO
+                    # surfaces by default. Always issued so the user always
+                    # sees something even when the distressed query fails.
+                    if self._wants_active_or_pending(requested_statuses):
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_zillow(
-                                    pt_lat, pt_lng, sub_radius, "forSale", req, distress_flag
+                                    pt_lat, pt_lng, sub_radius, "forSale", req, None
+                                ),
+                            )
+                        )
+                    # One consolidated distressed query (if any distressed
+                    # statuses requested). Uses Zillow's documented
+                    # `listing_type` and `property_status` params per
+                    # propertydata.dev's Zillow API reference.
+                    if zillow_distressed_extras:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forSale",
+                                    req, zillow_distressed_extras,
                                 ),
                             )
                         )
 
             if req.listing_type in ("rental", "both"):
-                # Distressed/pending semantics don't apply to rentals;
-                # only fetch when the caller wants active inventory (or no
+                # Distressed/pending semantics don't apply to rentals; only
+                # fetch when the caller wants active inventory (or no
                 # explicit status filter, which defaults to active).
                 if "active" in requested_statuses:
                     tasks.append(
@@ -280,6 +310,18 @@ class MapSearchService:
                 if addr_key and addr_key not in seen_addresses:
                     seen_addresses.add(addr_key)
                     listings.append(item)
+
+        # Merge Mashvisor Airbnb listings when requested
+        if req.include_str_listings and self.mashvisor:
+            str_listings = await self._fetch_mashvisor_str_listings(
+                req, center_lat, center_lng
+            )
+            for item in str_listings:
+                addr_key = item.address.lower().strip()
+                if addr_key and addr_key not in seen_addresses:
+                    seen_addresses.add(addr_key)
+                    listings.append(item)
+            raw_source_totals += len(str_listings)
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -334,32 +376,59 @@ class MapSearchService:
         return response
 
     @staticmethod
-    def _zillow_sale_flag_set(requested_statuses: set[str]) -> list[str | None]:
-        """Return the set of Zillow distress flags to issue queries for.
+    def _wants_active_or_pending(requested_statuses: set[str]) -> bool:
+        """True when the vanilla forSale Zillow query should fire.
 
-        Each entry produces one Zillow `search-by-coordinates` call:
-        - ``None`` → vanilla forSale query (covers active + most pending)
-        - ``"isForeclosure"`` → forSale + isForeclosure=true
-        - ``"isPreforeclosure"`` → forSale + isPreforeclosure=true
-        - ``"isAuction"`` → forSale + isAuction=true
-
-        We deliberately keep distressed queries separate from the base
-        forSale query so a single mis-named AXESSO flag only breaks one
-        slice of results, not the whole map. The exact AXESSO param names
-        are inferred from Zillow's data model and the existing
-        ``isSingleFamily`` / ``isCondo`` convention used elsewhere in this
-        client; verify against live results post-deploy.
+        The vanilla query covers Active and surfaces Pending listings via
+        Zillow's ``homeStatus="PENDING"`` field. If neither is requested,
+        skip it to save quota.
         """
-        flags: list[str | None] = []
-        if "active" in requested_statuses or "pending" in requested_statuses:
-            flags.append(None)
+        return "active" in requested_statuses or "pending" in requested_statuses
+
+    @staticmethod
+    def _zillow_distressed_extras(requested_statuses: set[str]) -> dict[str, Any] | None:
+        """Build the params dict for one consolidated distressed query.
+
+        Uses Zillow's documented filter conventions per propertydata.dev's
+        Zillow API reference (which mirrors the Zillow web UI's filter
+        codes):
+
+        - ``listing_type`` accepts comma-separated values: ``foreclosures``
+          (REO/bank-owned), ``foreclosed`` (lender-owned, not yet listed),
+          ``pre_foreclosures``, ``auctions``.
+        - ``property_status`` accepts ``pending_and_under_contract`` for
+          pending inventory.
+
+        The previous implementation passed ``isForeclosure=true``, etc.,
+        which AXESSO silently ignored — confirmed via prod logs showing
+        identical 41-listing payloads with and without the flag. These
+        snake_case plural names align with Zillow's underlying URL filter
+        codes and the param name (``listing_type``) used by the existing
+        ``ZillowClient.search_properties()`` method.
+
+        Returns None when no distressed statuses are requested (so caller
+        can skip dispatching entirely).
+        """
+        listing_types: list[str] = []
         if "foreclosure" in requested_statuses:
-            flags.append("isForeclosure")
+            # `foreclosures` = currently listed REO / bank-owned
+            # `foreclosed` = lender-owned, may soon be listed
+            listing_types.extend(["foreclosures", "foreclosed"])
         if "pre-foreclosure" in requested_statuses:
-            flags.append("isPreforeclosure")
+            listing_types.append("pre_foreclosures")
         if "auction" in requested_statuses:
-            flags.append("isAuction")
-        return flags
+            listing_types.append("auctions")
+
+        extras: dict[str, Any] = {}
+        if listing_types:
+            extras["listing_type"] = ",".join(listing_types)
+        # Pending isn't strictly distressed, but Zillow exposes it via the
+        # property_status filter. Including it here folds it into the same
+        # query as distressed when both are requested.
+        if "pending" in requested_statuses:
+            extras["property_status"] = "pending_and_under_contract"
+
+        return extras or None
 
     # ─── RentCast ───────────────────────────────────
 
@@ -409,7 +478,7 @@ class MapSearchService:
         radius_miles: float,
         status: str,
         req: MapSearchRequest,
-        distress_flag: str | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> list[MapListing]:
         if not self.zillow:
             return []
@@ -426,8 +495,8 @@ class MapSearchService:
                 elif "multi" in pt:
                     kwargs["isMultiFamily"] = True
 
-            if distress_flag:
-                kwargs[distress_flag] = True
+            if extra_params:
+                kwargs.update(extra_params)
 
             resp = await self.zillow.search_by_coordinates(
                 lat=center_lat,
@@ -437,7 +506,12 @@ class MapSearchService:
                 **kwargs,
             )
 
-            label = f"{status}+{distress_flag}" if distress_flag else status
+            # Compact label so logs stay greppable when params change
+            label = (
+                f"{status}+{','.join(f'{k}={v}' for k, v in extra_params.items())}"
+                if extra_params
+                else status
+            )
 
             if not resp.success or not resp.data:
                 logger.info("Zillow %s returned no data", label)
@@ -450,17 +524,153 @@ class MapSearchService:
                         raw_props = val
                         break
 
+            # Diagnostic: when we fired a distressed query, log the
+            # distress-bearing fields from the first listing so we can
+            # verify in prod logs whether AXESSO actually honored the
+            # filter. Trims response to a few keys to keep log size sane.
+            if extra_params and raw_props:
+                first = raw_props[0] if isinstance(raw_props[0], dict) else {}
+                logger.info(
+                    "Zillow %s sample fields: homeStatus=%r listingSubType=%r foreclosureTypes=%r",
+                    label,
+                    first.get("homeStatus"),
+                    first.get("listingSubType"),
+                    first.get("foreclosureTypes"),
+                )
+
             results = [self._normalize_zillow_listing(item) for item in raw_props if self._zillow_has_coords(item)]
             logger.info("Zillow %s: %d listings", label, len(results))
             return results
         except Exception:
             logger.exception(
                 "Zillow %s listing fetch failed",
-                f"{status}+{distress_flag}" if distress_flag else status,
+                f"{status}+{extra_params}" if extra_params else status,
             )
             return []
 
     # ─── Normalization helpers ─────────────────────
+
+    async def _fetch_mashvisor_str_listings(
+        self,
+        req: MapSearchRequest,
+        center_lat: float,
+        center_lng: float,
+    ) -> list[MapListing]:
+        """Fetch Airbnb listings from Mashvisor for neighborhoods in the viewport."""
+        if not self.mashvisor:
+            return []
+
+        try:
+            # Reverse-geocode the viewport center to a state. Use a rough
+            # lookup — Mashvisor needs the state as a 2-letter code.
+            state = self._estimate_state_from_viewport(req)
+            if not state:
+                return []
+
+            # Try to identify the city from the viewport center
+            city = self._estimate_city_from_viewport(req)
+            if not city:
+                return []
+
+            # Fetch neighborhood list for the city
+            nb_resp = await self.mashvisor.city_neighborhoods(state=state, city=city)
+            if not nb_resp.success or not nb_resp.data:
+                return []
+
+            content = nb_resp.data.get("content", {})
+            raw_neighborhoods = content.get("results", []) if isinstance(content, dict) else content
+            if not isinstance(raw_neighborhoods, list):
+                return []
+
+            # Filter neighborhoods that fall within the viewport
+            in_viewport = []
+            for nb in raw_neighborhoods:
+                if not isinstance(nb, dict):
+                    continue
+                nb_lat = nb.get("latitude")
+                nb_lng = nb.get("longitude")
+                if nb_lat is None or nb_lng is None:
+                    continue
+                if req.south <= nb_lat <= req.north and req.west <= nb_lng <= req.east:
+                    in_viewport.append(nb)
+
+            # Cap at 5 neighborhoods to control API costs
+            in_viewport = in_viewport[:5]
+
+            if not in_viewport:
+                return []
+
+            # Fetch Airbnb listings for each in-viewport neighborhood in parallel
+            airbnb_tasks = [
+                asyncio.create_task(
+                    self.mashvisor.neighborhood_airbnb_listings(
+                        neighborhood_id=nb["id"], state=state, items=20
+                    )
+                )
+                for nb in in_viewport
+                if nb.get("id")
+            ]
+
+            airbnb_results = await asyncio.gather(*airbnb_tasks, return_exceptions=True)
+
+            listings: list[MapListing] = []
+            for resp in airbnb_results:
+                if isinstance(resp, Exception):
+                    logger.warning("Mashvisor Airbnb fetch failed: %s", resp)
+                    continue
+                if not resp.success or not resp.data:
+                    continue
+                content = resp.data.get("content", {})
+                properties = content.get("properties", []) if isinstance(content, dict) else []
+                if not isinstance(properties, list):
+                    continue
+                for prop in properties:
+                    if not isinstance(prop, dict):
+                        continue
+                    lat = prop.get("lat")
+                    lon = prop.get("lon")
+                    if lat is None or lon is None:
+                        continue
+                    # Check the listing is within the viewport bounds
+                    if not (req.south <= lat <= req.north and req.west <= lon <= req.east):
+                        continue
+                    listings.append(MapListing(
+                        id=f"mashvisor_airbnb_{prop.get('id', '')}",
+                        address=prop.get("address") or prop.get("name", "Airbnb Listing"),
+                        city=prop.get("airbnbCity"),
+                        state=prop.get("state"),
+                        zip_code=prop.get("zip"),
+                        latitude=lat,
+                        longitude=lon,
+                        price=None,
+                        bedrooms=prop.get("numOfRooms"),
+                        bathrooms=prop.get("numOfBaths"),
+                        property_type=prop.get("propertyType"),
+                        listing_status="active",
+                        photo_url=prop.get("image"),
+                        source="mashvisor_airbnb",
+                        night_price=prop.get("nightPrice"),
+                        occupancy=prop.get("occupancy"),
+                        star_rating=prop.get("startRating") or prop.get("starRating"),
+                        reviews_count=prop.get("reviewsCount"),
+                    ))
+
+            logger.info("Mashvisor STR: %d Airbnb listings from %d neighborhoods", len(listings), len(in_viewport))
+            return listings
+
+        except Exception as e:
+            logger.error("Mashvisor STR listing fetch failed: %s", e)
+            return []
+
+    @staticmethod
+    def _estimate_state_from_viewport(req: MapSearchRequest) -> str | None:
+        """Get state from request params (frontend passes from geocoding context)."""
+        return req.str_state or None
+
+    @staticmethod
+    def _estimate_city_from_viewport(req: MapSearchRequest) -> str | None:
+        """Get city from request params (frontend passes from geocoding context)."""
+        return req.str_city or None
 
     @staticmethod
     def _has_coords(item: dict) -> bool:
