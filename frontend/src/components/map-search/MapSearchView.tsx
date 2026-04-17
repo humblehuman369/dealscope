@@ -170,6 +170,56 @@ const clusterRenderer: Renderer = {
 // Inner map content — must be a child of <Map>
 // ──────────────────────────────────────────────
 
+function estimateStateFromCoords(lat: number, lng: number): string | null {
+  // Rough US state estimation from center coordinates for Mashvisor heatmap queries.
+  // Mashvisor requires a state param; this covers major metros. For edge cases
+  // near state borders the heatmap may show partial data — acceptable tradeoff.
+  const states: [number, number, number, number, string][] = [
+    // [minLat, maxLat, minLng, maxLng, state]
+    [24.5, 31.0, -87.6, -80.0, 'FL'],
+    [30.2, 35.0, -88.5, -75.5, 'GA'],
+    [33.0, 37.0, -84.3, -75.5, 'NC'],
+    [32.0, 35.0, -90.3, -84.9, 'AL'],
+    [25.8, 36.5, -106.6, -93.5, 'TX'],
+    [31.3, 37.0, -114.8, -109.0, 'AZ'],
+    [35.0, 42.5, -114.0, -109.0, 'UT'],
+    [32.5, 42.0, -124.4, -114.1, 'CA'],
+    [36.0, 49.0, -124.8, -116.5, 'OR'],
+    [45.5, 49.0, -124.8, -116.9, 'WA'],
+    [37.0, 41.0, -109.1, -102.0, 'CO'],
+    [35.0, 43.0, -120.0, -111.0, 'NV'],
+    [36.0, 42.5, -91.5, -87.5, 'IL'],
+    [39.7, 45.0, -87.5, -82.4, 'MI'],
+    [40.5, 45.0, -80.5, -71.8, 'NY'],
+    [39.7, 42.5, -80.5, -74.7, 'PA'],
+    [38.8, 42.5, -73.7, -69.9, 'MA'],
+    [29.0, 33.0, -94.0, -89.0, 'LA'],
+    [34.9, 36.7, -90.3, -81.6, 'TN'],
+    [36.5, 39.5, -83.7, -75.2, 'VA'],
+    [33.0, 35.2, -103.0, -96.0, 'OK'],
+    [37.0, 40.6, -102.1, -94.6, 'KS'],
+    [36.0, 40.0, -94.6, -89.1, 'MO'],
+    [38.0, 42.0, -91.7, -87.5, 'IN'],
+    [38.4, 42.3, -84.8, -80.5, 'OH'],
+  ]
+
+  for (const [minLat, maxLat, minLng, maxLng, state] of states) {
+    if (lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng) {
+      return state
+    }
+  }
+  return null
+}
+
+function parseWktPolygon(wkt: string): { lat: number; lng: number }[] {
+  const match = wkt.match(/POLYGON\(\((.*)\)\)/)
+  if (!match) return []
+  return match[1].split(',').map((pair) => {
+    const [lng, lat] = pair.trim().split(/\s+/).map(Number)
+    return { lat, lng }
+  })
+}
+
 interface MapContentProps {
   listings: MapListing[]
   dealSignals: Map<string, DealSignalResult>
@@ -181,6 +231,8 @@ interface MapContentProps {
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number) => void) | null>
+  heatmapActive: boolean
+  heatmapMetric: string
 }
 
 function MapContent({
@@ -194,9 +246,13 @@ function MapContent({
   drawingPolygon,
   setDrawingPolygon,
   panToRef,
+  heatmapActive,
+  heatmapMetric,
 }: MapContentProps) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
+  const heatmapPolygonsRef = useRef<google.maps.Polygon[]>([])
+  const heatmapBoundsRef = useRef<string>('')
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
@@ -232,6 +288,83 @@ function MapContent({
     })
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
+
+  // Heatmap polygon rendering
+  useEffect(() => {
+    if (!map) return
+
+    // Clear existing polygons when heatmap is turned off
+    if (!heatmapActive) {
+      heatmapPolygonsRef.current.forEach((p) => p.setMap(null))
+      heatmapPolygonsRef.current = []
+      heatmapBoundsRef.current = ''
+      return
+    }
+
+    const fetchAndRender = async () => {
+      const bounds = map.getBounds()
+      if (!bounds) return
+      const ne = bounds.getNorthEast()
+      const sw = bounds.getSouthWest()
+
+      // Deduplicate: skip if bounds+metric haven't changed
+      const boundsKey = `${sw.lat().toFixed(2)}:${sw.lng().toFixed(2)}:${ne.lat().toFixed(2)}:${ne.lng().toFixed(2)}:${heatmapMetric}`
+      if (boundsKey === heatmapBoundsRef.current) return
+      heatmapBoundsRef.current = boundsKey
+
+      // Estimate state from center longitude (rough US heuristic)
+      const centerLat = (ne.lat() + sw.lat()) / 2
+      const centerLng = (ne.lng() + sw.lng()) / 2
+      const state = estimateStateFromCoords(centerLat, centerLng)
+      if (!state) return
+
+      try {
+        const resp = await api.mapSearch.heatmap({
+          state,
+          sw_lat: sw.lat(),
+          sw_lng: sw.lng(),
+          ne_lat: ne.lat(),
+          ne_lng: ne.lng(),
+          metric_type: heatmapMetric,
+        })
+
+        // Clear old polygons
+        heatmapPolygonsRef.current.forEach((p) => p.setMap(null))
+        heatmapPolygonsRef.current = []
+
+        // Draw new polygons
+        for (const poly of resp.polygons) {
+          if (!poly.boundary) continue
+          const path = parseWktPolygon(poly.boundary)
+          if (path.length < 3) continue
+
+          const fillColor = poly.color ? `#${poly.color}` : '#F06B50'
+          const strokeColor = poly.border_color ? `#${poly.border_color}` : fillColor
+
+          const gPoly = new google.maps.Polygon({
+            paths: path,
+            fillColor,
+            fillOpacity: 0.35,
+            strokeColor,
+            strokeOpacity: 0.6,
+            strokeWeight: 1,
+            clickable: false,
+            map,
+          })
+          heatmapPolygonsRef.current.push(gPoly)
+        }
+      } catch (err) {
+        console.warn('Heatmap fetch failed:', err)
+      }
+    }
+
+    // Fetch on activation and on map idle (debounced via the bounds key)
+    fetchAndRender()
+    const listener = map.addListener('idle', fetchAndRender)
+    return () => {
+      google.maps.event.removeListener(listener)
+    }
+  }, [map, heatmapActive, heatmapMetric])
 
   useEffect(() => {
     if (!map) return
@@ -657,6 +790,8 @@ export function MapSearchView() {
             isDrawing={isDrawing}
             onPolygonComplete={onPolygonComplete}
             drawingPolygon={drawingPolygon}
+            heatmapActive={heatmapActive}
+            heatmapMetric={heatmapMetric}
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
           />
