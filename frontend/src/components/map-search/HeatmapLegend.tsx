@@ -65,12 +65,12 @@ export function HeatmapLegend({
       >
         <div className="flex items-center gap-1.5">
           <Map size={14} style={{ color: 'var(--accent-sky)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>
+          <span className="text-xs font-semibold" style={{ color: '#ffffff' }}>
             Investment Heatmap
           </span>
         </div>
         <button onClick={onToggle} className="p-0.5 rounded hover:opacity-70">
-          <X size={14} style={{ color: 'var(--text-secondary)' }} />
+          <X size={14} style={{ color: '#ffffff' }} />
         </button>
       </div>
 
@@ -81,7 +81,7 @@ export function HeatmapLegend({
           className="w-full px-2 py-1.5 rounded-lg text-xs"
           style={{
             backgroundColor: 'var(--surface-elevated)',
-            color: 'var(--text-body)',
+            color: '#ffffff',
             border: '1px solid var(--border-subtle)',
           }}
         >
@@ -99,7 +99,7 @@ export function HeatmapLegend({
                 className="h-3 rounded-sm"
                 style={{ backgroundColor: `#${item.color.replace('#', '')}` }}
               />
-              <span className="text-[9px] mt-0.5 block" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-[9px] mt-0.5 block" style={{ color: '#ffffff' }}>
                 {item.label}
               </span>
             </div>
