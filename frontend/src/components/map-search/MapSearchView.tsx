@@ -838,8 +838,8 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Listing count badge */}
-      {totalCount > 0 && !isLoading && (
+      {/* Listing count badge — hidden when filter panel is open to avoid overlap */}
+      {totalCount > 0 && !isLoading && !filtersOpen && (
         <div className="absolute top-16 left-3 z-10">
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold shadow-lg"

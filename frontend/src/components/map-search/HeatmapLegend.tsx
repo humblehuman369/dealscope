@@ -38,7 +38,7 @@ export function HeatmapLegend({
     return (
       <button
         onClick={onToggle}
-        className="absolute bottom-4 left-4 z-10 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium shadow-lg transition-colors"
+        className="absolute bottom-20 right-4 z-10 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium shadow-lg transition-colors"
         style={{
           backgroundColor: 'var(--surface-card)',
           color: 'var(--text-body)',
@@ -53,7 +53,7 @@ export function HeatmapLegend({
 
   return (
     <div
-      className="absolute bottom-4 left-4 z-10 w-56 rounded-xl shadow-xl overflow-hidden"
+      className="absolute bottom-20 right-4 z-10 w-56 rounded-xl shadow-xl overflow-hidden"
       style={{
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
