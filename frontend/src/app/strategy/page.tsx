@@ -48,7 +48,6 @@ import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
 import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
 import { STRConfidenceLabel } from '@/components/analytics/STRConfidenceLabel'
-import { StrategyTabs } from '@/components/strategy/StrategyTabs'
 import type {
   StrategyType,
   AnyStrategyState,
@@ -1441,13 +1440,45 @@ function StrategyContent() {
         <section className="px-[1px] sm:px-5 pt-2 pb-6">
 
           {/* Strategy Tabs — outside card container */}
-          {sortedStrategies.length > 1 && (
-            <StrategyTabs
-              strategies={sortedStrategies}
-              activeStrategyId={activeStrategyId}
-              onStrategyChange={handleStrategyChange}
-            />
-          )}
+          {sortedStrategies.length > 1 && (() => {
+            const STRATEGY_DISPLAY = [
+              { id: 'long-term-rental', label: 'Long\nRental', color: '#0465f2' },
+              { id: 'short-term-rental', label: 'Short\nRental', color: '#8b5cf6' },
+              { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
+              { id: 'fix-and-flip', label: 'Fix &\nFlip', color: '#ec4899' },
+              { id: 'house-hack', label: 'House\nHack', color: '#0EA5E9' },
+              { id: 'wholesale', label: 'Whole\nSale', color: '#84cc16' },
+            ]
+            const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
+            return (
+              <div className="mb-4 grid grid-cols-6 gap-2">
+                {available.map((s) => {
+                  const isActive = s.id === activeStrategyId
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleStrategyChange(s.id)}
+                      className="aspect-square rounded-xl text-[9.5px] sm:text-sm font-bold leading-tight transition-all duration-200 flex items-center justify-center whitespace-pre-line text-center"
+                      style={{
+                        background: isActive
+                          ? `linear-gradient(135deg, ${s.color}, ${s.color}CC)`
+                          : `${s.color}12`,
+                        color: isActive ? '#fff' : s.color,
+                        border: `1.5px solid ${isActive ? s.color : `${s.color}60`}`,
+                        boxShadow: isActive
+                          ? `0 0 16px ${s.color}45, 0 2px 8px rgba(0,0,0,0.3)`
+                          : `0 1px 4px rgba(0,0,0,0.15)`,
+                        transform: isActive ? 'scale(1.03)' : 'scale(1)',
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
 
           {/* Key Metrics Bar — own container */}
           <div
