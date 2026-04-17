@@ -170,43 +170,20 @@ const clusterRenderer: Renderer = {
 // Inner map content — must be a child of <Map>
 // ──────────────────────────────────────────────
 
-function estimateStateFromCoords(lat: number, lng: number): string | null {
-  // Rough US state estimation from center coordinates for Mashvisor heatmap queries.
-  // Mashvisor requires a state param; this covers major metros. For edge cases
-  // near state borders the heatmap may show partial data — acceptable tradeoff.
-  const states: [number, number, number, number, string][] = [
-    // [minLat, maxLat, minLng, maxLng, state]
-    [24.5, 31.0, -87.6, -80.0, 'FL'],
-    [30.2, 35.0, -88.5, -75.5, 'GA'],
-    [33.0, 37.0, -84.3, -75.5, 'NC'],
-    [32.0, 35.0, -90.3, -84.9, 'AL'],
-    [25.8, 36.5, -106.6, -93.5, 'TX'],
-    [31.3, 37.0, -114.8, -109.0, 'AZ'],
-    [35.0, 42.5, -114.0, -109.0, 'UT'],
-    [32.5, 42.0, -124.4, -114.1, 'CA'],
-    [36.0, 49.0, -124.8, -116.5, 'OR'],
-    [45.5, 49.0, -124.8, -116.9, 'WA'],
-    [37.0, 41.0, -109.1, -102.0, 'CO'],
-    [35.0, 43.0, -120.0, -111.0, 'NV'],
-    [36.0, 42.5, -91.5, -87.5, 'IL'],
-    [39.7, 45.0, -87.5, -82.4, 'MI'],
-    [40.5, 45.0, -80.5, -71.8, 'NY'],
-    [39.7, 42.5, -80.5, -74.7, 'PA'],
-    [38.8, 42.5, -73.7, -69.9, 'MA'],
-    [29.0, 33.0, -94.0, -89.0, 'LA'],
-    [34.9, 36.7, -90.3, -81.6, 'TN'],
-    [36.5, 39.5, -83.7, -75.2, 'VA'],
-    [33.0, 35.2, -103.0, -96.0, 'OK'],
-    [37.0, 40.6, -102.1, -94.6, 'KS'],
-    [36.0, 40.0, -94.6, -89.1, 'MO'],
-    [38.0, 42.0, -91.7, -87.5, 'IN'],
-    [38.4, 42.3, -84.8, -80.5, 'OH'],
-  ]
-
-  for (const [minLat, maxLat, minLng, maxLng, state] of states) {
-    if (lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng) {
-      return state
+async function resolveStateFromCoords(lat: number, lng: number, apiKey: string | undefined): Promise<string | null> {
+  if (!apiKey) return null
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(4)},${lng.toFixed(4)}&result_type=administrative_area_level_1&key=${apiKey}`
+    const resp = await fetch(url)
+    const data = await resp.json()
+    if (data.status === 'OK' && data.results?.[0]) {
+      const stateComp = data.results[0].address_components?.find(
+        (c: { types: string[] }) => c.types.includes('administrative_area_level_1')
+      )
+      return stateComp?.short_name || null
     }
+  } catch {
+    // Geocode failed — fall through
   }
   return null
 }
@@ -290,6 +267,8 @@ function MapContent({
   }, [map, onBoundsChanged])
 
   // Heatmap polygon rendering
+  const apiKeyForGeocode = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY : undefined
+
   useEffect(() => {
     if (!map) return
 
@@ -301,22 +280,22 @@ function MapContent({
       return
     }
 
+    let cancelled = false
+
     const fetchAndRender = async () => {
       const bounds = map.getBounds()
       if (!bounds) return
       const ne = bounds.getNorthEast()
       const sw = bounds.getSouthWest()
 
-      // Deduplicate: skip if bounds+metric haven't changed
       const boundsKey = `${sw.lat().toFixed(2)}:${sw.lng().toFixed(2)}:${ne.lat().toFixed(2)}:${ne.lng().toFixed(2)}:${heatmapMetric}`
       if (boundsKey === heatmapBoundsRef.current) return
       heatmapBoundsRef.current = boundsKey
 
-      // Estimate state from center longitude (rough US heuristic)
       const centerLat = (ne.lat() + sw.lat()) / 2
       const centerLng = (ne.lng() + sw.lng()) / 2
-      const state = estimateStateFromCoords(centerLat, centerLng)
-      if (!state) return
+      const state = await resolveStateFromCoords(centerLat, centerLng, apiKeyForGeocode)
+      if (!state || cancelled) return
 
       try {
         const resp = await api.mapSearch.heatmap({
@@ -328,11 +307,12 @@ function MapContent({
           metric_type: heatmapMetric,
         })
 
+        if (cancelled) return
+
         // Clear old polygons
         heatmapPolygonsRef.current.forEach((p) => p.setMap(null))
         heatmapPolygonsRef.current = []
 
-        // Draw new polygons
         for (const poly of resp.polygons) {
           if (!poly.boundary) continue
           const path = parseWktPolygon(poly.boundary)
@@ -358,13 +338,13 @@ function MapContent({
       }
     }
 
-    // Fetch on activation and on map idle (debounced via the bounds key)
     fetchAndRender()
     const listener = map.addListener('idle', fetchAndRender)
     return () => {
+      cancelled = true
       google.maps.event.removeListener(listener)
     }
-  }, [map, heatmapActive, heatmapMetric])
+  }, [map, heatmapActive, heatmapMetric, apiKeyForGeocode])
 
   useEffect(() => {
     if (!map) return
