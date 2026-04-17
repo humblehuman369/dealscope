@@ -10,7 +10,7 @@ import {
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
 import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer'
-import { Eraser, Pentagon, Loader2, Home, MousePointerClick, List, MapIcon } from 'lucide-react'
+import { Loader2, Home, MousePointerClick, List, MapIcon } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
@@ -857,13 +857,15 @@ export function MapSearchView() {
         onToggle={() => setFiltersOpen((p) => !p)}
       />
 
-      {/* Investment Heatmap Legend */}
-      <HeatmapLegend
-        isActive={heatmapActive}
-        metricType={heatmapMetric}
-        onToggle={() => setHeatmapActive((p) => !p)}
-        onMetricChange={setHeatmapMetric}
-      />
+      {/* Investment Heatmap Legend (metric selector + color scale) */}
+      {heatmapActive && (
+        <HeatmapLegend
+          isActive={heatmapActive}
+          metricType={heatmapMetric}
+          onToggle={() => setHeatmapActive(false)}
+          onMetricChange={setHeatmapMetric}
+        />
+      )}
 
       {/* Neighborhood Intelligence Card */}
       {selectedNeighborhood && (
@@ -873,34 +875,20 @@ export function MapSearchView() {
         />
       )}
 
-      {/* Drawing controls */}
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
+      {/* Heatmap toggle (top-right) */}
+      <div className="absolute top-4 right-4 z-10">
         <button
-          onClick={toggleDrawing}
+          onClick={() => setHeatmapActive((p) => !p)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
           style={{
-            backgroundColor: isDrawing ? 'var(--accent-sky)' : 'var(--surface-card)',
-            color: isDrawing ? '#fff' : 'var(--text-body)',
-            border: `1px solid ${isDrawing ? 'var(--accent-sky)' : 'var(--border-default)'}`,
+            backgroundColor: heatmapActive ? 'var(--accent-sky)' : 'var(--surface-card)',
+            color: heatmapActive ? '#fff' : 'var(--text-body)',
+            border: `1px solid ${heatmapActive ? 'var(--accent-sky)' : 'var(--border-default)'}`,
           }}
         >
-          <Pentagon size={16} />
-          {isDrawing ? 'Drawing...' : 'Draw Area'}
+          <MapIcon size={16} />
+          Heatmap
         </button>
-        {drawingPolygon && (
-          <button
-            onClick={handleClearPolygon}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
-            style={{
-              backgroundColor: 'var(--surface-card)',
-              color: 'var(--text-body)',
-              border: '1px solid var(--border-default)',
-            }}
-          >
-            <Eraser size={16} />
-            Clear
-          </button>
-        )}
       </div>
 
       {/* Loading spinner */}
