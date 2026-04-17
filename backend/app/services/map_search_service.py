@@ -160,7 +160,7 @@ class MapSearchService:
     def _ensure_clients(self) -> None:
         if self._initialized:
             return
-        rc, _, _, _, _ = create_api_clients(
+        rc, _, _, _, _, _ = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
