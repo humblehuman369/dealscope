@@ -44,6 +44,8 @@ export type {
   PropertyDetails,
   ValuationData,
   RentalMarketStatistics,
+  STRMarketStats,
+  STRRegulatory,
   RentalData,
   MarketStatistics,
   MarketData,

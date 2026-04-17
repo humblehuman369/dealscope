@@ -46,6 +46,8 @@ import {
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
+import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
+import { STRConfidenceLabel } from '@/components/analytics/STRConfidenceLabel'
 import type {
   StrategyType,
   AnyStrategyState,
@@ -1514,6 +1516,18 @@ function StrategyContent() {
               ))}
             </div>
           </div>
+
+          {/* STR Market Intelligence (Mashvisor) */}
+          {currentStrategyType === 'str' && (propertyInfo?.rentals?.str_market_stats || propertyInfo?.rentals?.str_regulatory) && (
+            <div className="mx-4 sm:mx-6 mb-4 flex flex-wrap items-start gap-3">
+              {propertyInfo.rentals.str_regulatory?.rating && (
+                <STRRegulatoryBadge regulatory={propertyInfo.rentals.str_regulatory} />
+              )}
+              {propertyInfo.rentals.str_market_stats?.median_occupancy != null && (
+                <STRConfidenceLabel stats={propertyInfo.rentals.str_market_stats} />
+              )}
+            </div>
+          )}
 
           {/* Financial Breakdown — DealMaker Worksheet */}
           <DealMakerWorksheet
