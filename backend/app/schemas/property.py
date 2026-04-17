@@ -250,6 +250,32 @@ class RentalMarketStatistics(BaseModel):
     trend_pct_change: float | None = None  # Year-over-year % change
 
 
+class STRRegulatory(BaseModel):
+    """Short-term rental regulatory status from Mashvisor."""
+
+    rating: str | None = None  # Positive, Negative, Neutral, Restricted
+    day_limit: int | None = None
+    permit_fee: str | None = None
+    rules_summary: str | None = None
+    rules_source: str | None = None
+    legal_for_occupied: str | None = None
+
+
+class STRMarketStats(BaseModel):
+    """Short-term rental market statistics from Mashvisor."""
+
+    median_occupancy: float | None = None
+    median_adr: float | None = None
+    median_revenue_annual: float | None = None
+    sample_size: int | None = None
+    city_insights_fallback: bool | None = None
+    confidence: Confidence | None = None
+    yoy_occupancy_change: float | None = None
+    yoy_income_change: float | None = None
+    revpar: float | None = None
+    tax_rate: float | None = None
+
+
 class RentalData(BaseModel):
     """Rental income data for LTR and STR."""
 
@@ -264,6 +290,10 @@ class RentalData(BaseModel):
     average_rent: float | None = None
     # Comprehensive rental market statistics
     rental_stats: RentalMarketStatistics | None = None
+    # STR market stats from Mashvisor
+    str_market_stats: STRMarketStats | None = None
+    # STR regulatory status from Mashvisor
+    str_regulatory: STRRegulatory | None = None
 
 
 class MarketTemperature(StrEnum):

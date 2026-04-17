@@ -25,6 +25,7 @@ class APIProvider(StrEnum):
     AXESSO = "axesso"
     REDFIN = "redfin"
     REALTOR = "realtor"
+    MASHVISOR = "mashvisor"
 
 
 @dataclass
@@ -750,6 +751,205 @@ class RealtorClient(BaseAPIClient[APIResponse]):
         return parsed if parsed.get("realtor_estimate") else None
 
 
+class MashvisorClient(BaseAPIClient[APIResponse]):
+    """
+    Client for Mashvisor API via RapidAPI.
+
+    Provides STR analytics (ADR, occupancy, seasonality, comps) and
+    regulatory data that replace DealGapIQ's hardcoded STR defaults.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        rapidapi_host: str = "mashvisor-api.p.rapidapi.com",
+    ):
+        base_url = f"https://{rapidapi_host.rstrip('/')}"
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=15.0,
+            connect_timeout=5.0,
+            max_retries=2,
+            enable_circuit_breaker=True,
+        )
+        self.rapidapi_host = rapidapi_host
+
+    def _get_headers(self) -> dict[str, str]:
+        return {
+            "x-rapidapi-key": self.api_key,
+            "x-rapidapi-host": self.rapidapi_host,
+            "Accept": "application/json",
+        }
+
+    def _create_response(
+        self,
+        success: bool,
+        data: dict[str, Any] | None,
+        error: str | None,
+        status_code: int | None,
+        raw_response: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> APIResponse:
+        return APIResponse(
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
+            provider=APIProvider.MASHVISOR,
+            raw_response=raw_response,
+        )
+
+    def _get_provider_name(self) -> str:
+        return "MASHVISOR"
+
+    async def str_lookup(
+        self,
+        state: str,
+        city: str,
+        zip_code: str,
+        beds: int = 3,
+        address: str | None = None,
+    ) -> APIResponse:
+        """GET /rento-calculator/lookup — STR pro forma for a location."""
+        params: dict[str, Any] = {
+            "state": state,
+            "city": city,
+            "zip_code": zip_code,
+            "resource": "airbnb",
+            "beds": beds,
+        }
+        if address:
+            params["address"] = address
+        return await self._make_request("rento-calculator/lookup", params)
+
+    async def str_historical(
+        self,
+        state: str,
+        city: str,
+        zip_code: str,
+        beds: int = 3,
+    ) -> APIResponse:
+        """GET /rento-calculator/historical-performance — 12-36 months of monthly STR data."""
+        return await self._make_request(
+            "rento-calculator/historical-performance",
+            {
+                "state": state,
+                "city": city,
+                "zip_code": zip_code,
+                "resource": "airbnb",
+                "beds": beds,
+                "limit_recent_months": "false",
+            },
+        )
+
+    async def str_regulatory(self, state: str, city: str) -> APIResponse:
+        """GET /airbnb-property/short-term-regulatory — STR legality for a city."""
+        return await self._make_request(
+            "airbnb-property/short-term-regulatory",
+            {"state": state, "city": city},
+        )
+
+    def parse_str_lookup(self, data: Any) -> dict[str, Any]:
+        """Extract STR metrics from rento-calculator/lookup response."""
+        result: dict[str, Any] = {}
+        if not isinstance(data, dict):
+            return result
+        content = data.get("content")
+        if not isinstance(content, dict):
+            return result
+
+        def _safe_float(v: Any) -> float | None:
+            if v is None:
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        def _safe_int(v: Any) -> int | None:
+            if v is None:
+                return None
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                return None
+
+        result["str_occupancy_mashvisor"] = _safe_float(content.get("median_occupancy_rate"))
+        result["str_adr_mashvisor"] = _safe_float(content.get("median_night_rate"))
+        result["str_revenue_annual"] = _safe_float(content.get("median_annual_revenue"))
+        result["str_sample_size"] = _safe_int(content.get("sample_size"))
+        result["str_city_fallback"] = bool(content.get("city_insights_fallback", False))
+        result["str_cash_flow"] = _safe_float(content.get("cash_flow"))
+        result["str_cap_rate"] = _safe_float(content.get("cap_rate"))
+        result["str_revpar"] = _safe_float(content.get("revpar"))
+        result["str_tax_rate"] = _safe_float(content.get("tax_rate"))
+        result["str_median_home_value"] = _safe_float(content.get("median_home_value"))
+
+        # Determine confidence based on sample size and fallback status
+        sample = result.get("str_sample_size")
+        fallback = result.get("str_city_fallback", False)
+        if fallback or (sample is not None and sample < 10):
+            result["str_confidence"] = "low"
+        elif sample is not None and sample < 30:
+            result["str_confidence"] = "medium"
+        else:
+            result["str_confidence"] = "high"
+
+        return result
+
+    def parse_str_historical(self, data: Any) -> dict[str, Any]:
+        """Extract YoY changes from historical-performance response."""
+        result: dict[str, Any] = {}
+        if not isinstance(data, dict):
+            return result
+        content = data.get("content")
+        if not isinstance(content, dict):
+            return result
+
+        def _safe_float(v: Any) -> float | None:
+            if v is None:
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        result["str_yoy_occupancy"] = _safe_float(content.get("occupancy_yoy_changes"))
+        result["str_yoy_income"] = _safe_float(content.get("rental_income_yoy_changes"))
+        result["str_yoy_adr"] = _safe_float(content.get("night_price_yoy_changes"))
+        return result
+
+    def parse_str_regulatory(self, data: Any) -> dict[str, Any]:
+        """Extract regulatory info from short-term-regulatory response."""
+        result: dict[str, Any] = {}
+        if not isinstance(data, dict):
+            return result
+
+        if data.get("status") != "success":
+            return result
+
+        content = data.get("content", {})
+        reg_list = content.get("list", [])
+        if not isinstance(reg_list, list) or not reg_list:
+            return result
+
+        reg = reg_list[0] if isinstance(reg_list[0], dict) else {}
+        result["str_reg_rating"] = reg.get("rating")
+        result["str_reg_day_limit"] = None
+        day_limit = reg.get("occupied_days_limit")
+        if day_limit is not None:
+            try:
+                result["str_reg_day_limit"] = int(day_limit)
+            except (TypeError, ValueError):
+                pass
+        result["str_reg_permit_fee"] = reg.get("permit_fee")
+        result["str_reg_rules_summary"] = reg.get("rules_summary")
+        result["str_reg_rules_source"] = reg.get("rules_source")
+        result["str_reg_legal_for_occupied"] = reg.get("Legal_for_occupied")
+        return result
+
+
 class DataNormalizer:
     """
     Normalizes and merges data from multiple API providers
@@ -818,6 +1018,7 @@ class DataNormalizer:
         timestamp: datetime,
         redfin_data: dict[str, Any] | None = None,
         realtor_data: dict[str, Any] | None = None,
+        mashvisor_data: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Normalize and merge data from all providers.
@@ -897,6 +1098,9 @@ class DataNormalizer:
         # Inject Realtor.com estimate as a standalone source (bypasses FIELD_MAPPING)
         self._inject_realtor_data(normalized, provenance, realtor_data, timestamp)
 
+        # Inject Mashvisor STR data (bypasses FIELD_MAPPING — separate data surface)
+        self._inject_mashvisor_data(normalized, provenance, mashvisor_data, timestamp)
+
         # Extract property features from RentCast features dict and AXESSO resoFacts
         self._extract_property_features(normalized, rentcast_data, axesso_data)
 
@@ -964,6 +1168,73 @@ class DataNormalizer:
             "raw_values": {"realtor": val} if val is not None else None,
             "conflict_flag": False,
         }
+
+    def _inject_mashvisor_data(
+        self,
+        normalized: dict[str, Any],
+        provenance: dict[str, Any],
+        mashvisor_data: dict[str, Any] | None,
+        timestamp: datetime,
+    ):
+        """Inject Mashvisor STR analytics and regulatory data into normalized output.
+
+        When Mashvisor provides high/medium confidence STR data, it overrides
+        AXESSO-sourced ADR/occupancy (or fills in when AXESSO is missing).
+        """
+        ts = timestamp.isoformat()
+        mashvisor_fields = [
+            "str_occupancy_mashvisor", "str_adr_mashvisor", "str_revenue_annual",
+            "str_sample_size", "str_city_fallback", "str_confidence",
+            "str_cash_flow", "str_cap_rate", "str_revpar", "str_tax_rate",
+            "str_yoy_occupancy", "str_yoy_income", "str_yoy_adr",
+            "str_reg_rating", "str_reg_day_limit", "str_reg_permit_fee",
+            "str_reg_rules_summary", "str_reg_rules_source",
+            "str_reg_legal_for_occupied",
+        ]
+
+        if not mashvisor_data:
+            for field in mashvisor_fields:
+                normalized[field] = None
+                provenance[field] = {
+                    "source": "missing", "fetched_at": ts,
+                    "confidence": "low", "raw_values": None, "conflict_flag": False,
+                }
+            return
+
+        confidence = mashvisor_data.get("str_confidence", "low")
+        prov_confidence = confidence if confidence in ("high", "medium", "low") else "low"
+
+        for field in mashvisor_fields:
+            val = mashvisor_data.get(field)
+            normalized[field] = val
+            provenance[field] = {
+                "source": "mashvisor" if val is not None else "missing",
+                "fetched_at": ts,
+                "confidence": prov_confidence if val is not None else "low",
+                "raw_values": {"mashvisor": val} if val is not None else None,
+                "conflict_flag": False,
+            }
+
+        # Override AXESSO STR fields when Mashvisor has med/high confidence data
+        m_occ = mashvisor_data.get("str_occupancy_mashvisor")
+        m_adr = mashvisor_data.get("str_adr_mashvisor")
+        if confidence in ("high", "medium"):
+            if m_occ is not None:
+                normalized["occupancy_rate"] = m_occ / 100.0  # Mashvisor is 0-100, we store 0-1
+                provenance["occupancy_rate"] = {
+                    "source": "mashvisor", "fetched_at": ts,
+                    "confidence": prov_confidence,
+                    "raw_values": {"mashvisor": m_occ, "axesso": provenance.get("occupancy_rate", {}).get("raw_values", {}).get("axesso")},
+                    "conflict_flag": False,
+                }
+            if m_adr is not None:
+                normalized["average_daily_rate"] = m_adr
+                provenance["average_daily_rate"] = {
+                    "source": "mashvisor", "fetched_at": ts,
+                    "confidence": prov_confidence,
+                    "raw_values": {"mashvisor": m_adr, "axesso": provenance.get("average_daily_rate", {}).get("raw_values", {}).get("axesso")},
+                    "conflict_flag": False,
+                }
 
     def _extract_property_features(
         self,
@@ -1365,7 +1636,9 @@ def create_api_clients(
     redfin_rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
     realtor_api_key: str = "",
     realtor_rapidapi_host: str = "realtor-search.p.rapidapi.com",
-) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None]:
+    mashvisor_api_key: str = "",
+    mashvisor_rapidapi_host: str = "mashvisor-api.p.rapidapi.com",
+) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None, MashvisorClient | None]:
     """Create configured API clients and normalizer."""
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
@@ -1374,5 +1647,8 @@ def create_api_clients(
     realtor = (
         RealtorClient(realtor_api_key, realtor_rapidapi_host) if realtor_api_key and realtor_rapidapi_host else None
     )
+    mashvisor = (
+        MashvisorClient(mashvisor_api_key, mashvisor_rapidapi_host) if mashvisor_api_key else None
+    )
 
-    return rentcast, axesso, normalizer, redfin, realtor
+    return rentcast, axesso, normalizer, redfin, realtor, mashvisor
