@@ -517,7 +517,18 @@ export function MapSearchView() {
         setGeoCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setGeoResolved(true)
       },
-      () => { setGeoResolved(true) },
+      () => {
+        // Geolocation denied or unavailable — use IP-based location fallback
+        fetch('https://ipapi.co/json/')
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.latitude && data.longitude) {
+              setGeoCenter({ lat: data.latitude, lng: data.longitude })
+            }
+          })
+          .catch(() => {})
+          .finally(() => setGeoResolved(true))
+      },
       { timeout: 5000, maximumAge: 300000 },
     )
   }, [hasExplicitLocation])
