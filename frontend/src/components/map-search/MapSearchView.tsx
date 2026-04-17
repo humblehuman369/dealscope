@@ -851,6 +851,8 @@ export function MapSearchView() {
         selectedId={selectedListing?.id ?? null}
         onSelectListing={handleCardSelect}
         isLoading={isLoading}
+        activeStatuses={filters.listing_statuses}
+        onResetStatuses={() => updateFilters({ listing_statuses: [] })}
       />
     </div>
   )

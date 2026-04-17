@@ -236,6 +236,7 @@ export interface MapSearchRequest {
   max_price?: number
   bedrooms?: number
   bathrooms?: number
+  listing_statuses?: string[]
   limit?: number
   offset?: number
 }

@@ -20,6 +20,16 @@ interface PropertyCardListProps {
   selectedId: string | null
   onSelectListing: (listing: MapListing) => void
   isLoading: boolean
+  activeStatuses?: string[]
+  onResetStatuses?: () => void
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Active',
+  pending: 'Pending',
+  foreclosure: 'Foreclosure',
+  'pre-foreclosure': 'Pre-Foreclosure',
+  auction: 'Auction',
 }
 
 function formatPrice(price: number | null): string {
@@ -228,6 +238,8 @@ export function PropertyCardList({
   selectedId,
   onSelectListing,
   isLoading,
+  activeStatuses,
+  onResetStatuses,
 }: PropertyCardListProps) {
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new globalThis.Map())
 
@@ -264,15 +276,42 @@ export function PropertyCardList({
   }
 
   if (listings.length === 0) {
+    const hasStatusFilter = (activeStatuses?.length ?? 0) > 0
+    const onlyDistressed =
+      hasStatusFilter && (activeStatuses ?? []).every((s) => s !== 'active')
+    const statusList = (activeStatuses ?? [])
+      .map((s) => STATUS_LABELS[s] ?? s)
+      .join(', ')
+
     return (
       <div className="flex items-center justify-center h-full p-8">
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-2 max-w-xs">
           <p className="text-sm font-medium" style={{ color: 'var(--text-heading)' }}>
             No properties found
           </p>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            Try adjusting filters or zooming to a different area
-          </p>
+          {hasStatusFilter ? (
+            <>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {onlyDistressed
+                  ? `No ${statusList} listings in this area right now. Distressed inventory is sparse — try a wider view or a different market.`
+                  : `No ${statusList} listings in this area. Try widening filters or panning the map.`}
+              </p>
+              {onResetStatuses && (
+                <button
+                  type="button"
+                  onClick={onResetStatuses}
+                  className="text-xs font-semibold underline-offset-2 hover:underline"
+                  style={{ color: 'var(--accent-sky)' }}
+                >
+                  Reset to Active listings
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Try adjusting filters or zooming to a different area
+            </p>
+          )}
         </div>
       </div>
     )

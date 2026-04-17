@@ -25,6 +25,52 @@ logger = logging.getLogger(__name__)
 
 MAP_CACHE_TTL = 600  # 10 minutes
 
+# ─── Listing status canonicalization ─────────────────────────────────────
+# Mirrors frontend/src/lib/dealSignal.ts :: STATUS_MAP. Keep in sync; if these
+# drift the user-visible filter and the server-side filter will disagree.
+
+CANONICAL_STATUSES: set[str] = {
+    "active",
+    "pending",
+    "foreclosure",
+    "pre-foreclosure",
+    "auction",
+}
+
+_STATUS_MAP: dict[str, str] = {
+    # Zillow homeStatus values
+    "for_sale": "active",
+    "for_rent": "active",
+    "pending": "pending",
+    "pre_foreclosure": "pre-foreclosure",
+    "pre-foreclosure": "pre-foreclosure",
+    "preforeclosure": "pre-foreclosure",
+    # RentCast status values
+    "active": "active",
+    # Distressed / special
+    "foreclosure": "foreclosure",
+    "foreclosed": "foreclosure",
+    "auction": "auction",
+    "bank owned": "foreclosure",
+    "bank_owned": "foreclosure",
+    "bankowned": "foreclosure",
+    "reo": "foreclosure",
+    "short sale": "pre-foreclosure",
+    "short_sale": "pre-foreclosure",
+    "shortsale": "pre-foreclosure",
+    # Motivation indicators
+    "contingent": "pending",
+    "under contract": "pending",
+    "under_contract": "pending",
+}
+
+
+def normalize_listing_status(raw: str | None) -> str | None:
+    """Map a raw provider status to a canonical status, or None if unknown."""
+    if not raw:
+        return None
+    return _STATUS_MAP.get(raw.lower().strip())
+
 
 def _round_coord(val: float, precision: int = 3) -> float:
     """Round a coordinate for cache key stability (~111 m at the equator)."""
@@ -45,6 +91,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "maxp": req.max_price,
             "bed": req.bedrooms,
             "bath": req.bathrooms,
+            "ls": sorted(req.listing_statuses) if req.listing_statuses else None,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -166,6 +213,14 @@ class MapSearchService:
         )
         sub_radius = min(cell_diag / 2, 100.0) if grid_size > 1 else min(radius, 25.0)
 
+        # Resolve which canonical statuses the caller wants. None/empty
+        # preserves today's behavior (active-only). Unknown values are
+        # silently dropped so the API stays forgiving for clients on older
+        # builds.
+        requested_statuses = {
+            s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES
+        } or {"active"}
+
         listings: list[MapListing] = []
         seen_addresses: set[str] = set()
         raw_source_totals: int = 0
@@ -175,30 +230,43 @@ class MapSearchService:
 
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                tasks.append(
-                    asyncio.create_task(
-                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
-                    )
-                )
-                if self.zillow:
+                # RentCast only serves active sale listings. If the caller
+                # wants only distressed inventory, skip RentCast entirely
+                # to save API quota.
+                if "active" in requested_statuses or "pending" in requested_statuses:
                     tasks.append(
                         asyncio.create_task(
-                            self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req),
+                            self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
                         )
                     )
+                if self.zillow:
+                    for distress_flag in self._zillow_sale_flag_set(requested_statuses):
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forSale", req, distress_flag
+                                ),
+                            )
+                        )
 
             if req.listing_type in ("rental", "both"):
-                tasks.append(
-                    asyncio.create_task(
-                        self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
-                    )
-                )
-                if self.zillow:
+                # Distressed/pending semantics don't apply to rentals;
+                # only fetch when the caller wants active inventory (or no
+                # explicit status filter, which defaults to active).
+                if "active" in requested_statuses:
                     tasks.append(
                         asyncio.create_task(
-                            self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req),
+                            self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
                         )
                     )
+                    if self.zillow:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forRent", req, None
+                                ),
+                            )
+                        )
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -225,6 +293,16 @@ class MapSearchService:
         if req.bathrooms is not None:
             listings = [item for item in listings if item.bathrooms is not None and item.bathrooms >= req.bathrooms]
 
+        # Authoritative status filter — guarantees the response only
+        # contains the statuses the caller asked for, regardless of how
+        # generous each upstream provider was. Unrecognized statuses are
+        # also dropped here.
+        listings = [
+            item
+            for item in listings
+            if normalize_listing_status(item.listing_status) in requested_statuses
+        ]
+
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
         estimated_total: int | None = None
@@ -236,8 +314,9 @@ class MapSearchService:
                 estimated_total = int(avg_per_query * area_multiplier * 1.5)
 
         logger.info(
-            "Map search returned %d listings from %d grid points (radius=%.1fmi, grid=%dx%d)",
+            "Map search returned %d listings (statuses=%s, %d grid points, radius=%.1fmi, grid=%dx%d)",
             len(listings),
+            sorted(requested_statuses),
             len(query_points),
             radius,
             grid_size,
@@ -253,6 +332,34 @@ class MapSearchService:
 
         await cache.set(cache_key, response.model_dump(mode="json"), ttl_seconds=MAP_CACHE_TTL)
         return response
+
+    @staticmethod
+    def _zillow_sale_flag_set(requested_statuses: set[str]) -> list[str | None]:
+        """Return the set of Zillow distress flags to issue queries for.
+
+        Each entry produces one Zillow `search-by-coordinates` call:
+        - ``None`` → vanilla forSale query (covers active + most pending)
+        - ``"isForeclosure"`` → forSale + isForeclosure=true
+        - ``"isPreforeclosure"`` → forSale + isPreforeclosure=true
+        - ``"isAuction"`` → forSale + isAuction=true
+
+        We deliberately keep distressed queries separate from the base
+        forSale query so a single mis-named AXESSO flag only breaks one
+        slice of results, not the whole map. The exact AXESSO param names
+        are inferred from Zillow's data model and the existing
+        ``isSingleFamily`` / ``isCondo`` convention used elsewhere in this
+        client; verify against live results post-deploy.
+        """
+        flags: list[str | None] = []
+        if "active" in requested_statuses or "pending" in requested_statuses:
+            flags.append(None)
+        if "foreclosure" in requested_statuses:
+            flags.append("isForeclosure")
+        if "pre-foreclosure" in requested_statuses:
+            flags.append("isPreforeclosure")
+        if "auction" in requested_statuses:
+            flags.append("isAuction")
+        return flags
 
     # ─── RentCast ───────────────────────────────────
 
@@ -302,6 +409,7 @@ class MapSearchService:
         radius_miles: float,
         status: str,
         req: MapSearchRequest,
+        distress_flag: str | None = None,
     ) -> list[MapListing]:
         if not self.zillow:
             return []
@@ -318,6 +426,9 @@ class MapSearchService:
                 elif "multi" in pt:
                     kwargs["isMultiFamily"] = True
 
+            if distress_flag:
+                kwargs[distress_flag] = True
+
             resp = await self.zillow.search_by_coordinates(
                 lat=center_lat,
                 lng=center_lng,
@@ -326,8 +437,10 @@ class MapSearchService:
                 **kwargs,
             )
 
+            label = f"{status}+{distress_flag}" if distress_flag else status
+
             if not resp.success or not resp.data:
-                logger.info("Zillow %s returned no data", status)
+                logger.info("Zillow %s returned no data", label)
                 return []
 
             raw_props = resp.data.get("props") or resp.data.get("searchResults") or resp.data.get("results") or []
@@ -338,10 +451,13 @@ class MapSearchService:
                         break
 
             results = [self._normalize_zillow_listing(item) for item in raw_props if self._zillow_has_coords(item)]
-            logger.info("Zillow %s: %d listings", status, len(results))
+            logger.info("Zillow %s: %d listings", label, len(results))
             return results
         except Exception:
-            logger.exception("Zillow %s listing fetch failed", status)
+            logger.exception(
+                "Zillow %s listing fetch failed",
+                f"{status}+{distress_flag}" if distress_flag else status,
+            )
             return []
 
     # ─── Normalization helpers ─────────────────────
@@ -374,6 +490,15 @@ class MapSearchService:
                 parts.append(f"{state} {zipcode}".strip())
             address = ", ".join(p for p in parts if p)
 
+        # Prefer RentCast's listingType when it surfaces distress
+        # ("Foreclosure" / "Short Sale") so the canonical status filter
+        # routes the listing correctly. Otherwise fall back to status
+        # ("Active" / "Inactive").
+        listing_type = (item.get("listingType") or "").strip()
+        raw_status = item.get("status")
+        if listing_type and listing_type.lower() in {"foreclosure", "short sale"}:
+            raw_status = listing_type
+
         return MapListing(
             id=item.get("id") or f"rc-{item.get('latitude')}-{item.get('longitude')}",
             address=address,
@@ -387,7 +512,7 @@ class MapSearchService:
             bathrooms=item.get("bathrooms"),
             sqft=item.get("squareFootage"),
             property_type=item.get("propertyType"),
-            listing_status=item.get("status"),
+            listing_status=raw_status,
             photo_url=item.get("photoUrl") or item.get("imgSrc"),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
@@ -433,6 +558,13 @@ class MapSearchService:
         if not photo_url and isinstance(item.get("miniCardPhotos"), list) and item["miniCardPhotos"]:
             photo_url = item["miniCardPhotos"][0].get("url")
 
+        # Derive an effective status that includes distress signals.
+        # Zillow returns homeStatus="FOR_SALE" even for foreclosure /
+        # auction listings — the distinction lives in listingSubType
+        # and foreclosureTypes. Without this, distressed listings would
+        # canonicalize to "active" and get dropped by the status filter.
+        listing_status = MapSearchService._derive_zillow_status(item)
+
         return MapListing(
             id=str(item.get("zpid") or item.get("id") or f"zl-{lat}-{lng}"),
             address=address,
@@ -446,12 +578,39 @@ class MapSearchService:
             bathrooms=item.get("bathrooms") or item.get("baths"),
             sqft=item.get("livingArea") or item.get("squareFootage") or item.get("area"),
             property_type=item.get("propertyType") or item.get("homeType"),
-            listing_status=item.get("homeStatus") or item.get("listingStatus"),
+            listing_status=listing_status,
             photo_url=photo_url,
             source="zillow",
             days_on_market=item.get("daysOnZillow"),
             year_built=item.get("yearBuilt"),
         )
+
+    @staticmethod
+    def _derive_zillow_status(item: dict) -> str | None:
+        """Pick the most informative status label from a Zillow record.
+
+        Distress flags win over generic homeStatus. Order matters:
+        pre-foreclosure beats foreclosure beats auction beats bank-owned
+        beats whatever homeStatus says — because the more specific signal
+        is the one investors actually filter on.
+        """
+        sub = item.get("listingSubType") or {}
+        fore_types = item.get("foreclosureTypes") or {}
+
+        if fore_types.get("isPreforeclosure") or fore_types.get("isPreForeclosure"):
+            return "Pre-Foreclosure"
+        if (
+            fore_types.get("isAnyForeclosure")
+            or fore_types.get("wasForeclosed")
+            or sub.get("isForeclosure")
+        ):
+            return "Foreclosure"
+        if sub.get("isForAuction") or fore_types.get("wasNonRetailAuction"):
+            return "Auction"
+        if sub.get("isBankOwned") or fore_types.get("isBankOwned"):
+            return "Foreclosure"
+
+        return item.get("homeStatus") or item.get("listingStatus")
 
 
 map_search_service = MapSearchService()

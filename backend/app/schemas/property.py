@@ -1055,6 +1055,14 @@ class MapSearchRequest(BaseModel):
     max_price: float | None = None
     bedrooms: int | None = None
     bathrooms: float | None = None
+    listing_statuses: list[str] | None = Field(
+        default=None,
+        description=(
+            "Canonical listing status filter. Values: 'active', 'pending', "
+            "'foreclosure', 'pre-foreclosure', 'auction'. None or empty list "
+            "means active-only (current default behavior)."
+        ),
+    )
     limit: int = Field(default=500, le=500)
     offset: int = 0
 
