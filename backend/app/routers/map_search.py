@@ -85,18 +85,25 @@ async def get_heatmap(
 
     cache = get_cache_service()
     cache_key = f"mashvisor:heatmap:{request.state}:{request.metric_type}:{request.sw_lat:.2f}:{request.sw_lng:.2f}:{request.ne_lat:.2f}:{request.ne_lng:.2f}"
-    cached = await cache.get(cache_key)
-    if cached:
-        return HeatmapResponse(**cached)
+    try:
+        cached = await cache.get(cache_key)
+        if cached:
+            return HeatmapResponse(**cached)
+    except Exception:
+        pass
 
-    resp = await client.heatmap(
-        state=request.state,
-        sw_lat=request.sw_lat,
-        sw_lng=request.sw_lng,
-        ne_lat=request.ne_lat,
-        ne_lng=request.ne_lng,
-        metric_type=request.metric_type,
-    )
+    try:
+        resp = await client.heatmap(
+            state=request.state,
+            sw_lat=request.sw_lat,
+            sw_lng=request.sw_lng,
+            ne_lat=request.ne_lat,
+            ne_lng=request.ne_lng,
+            metric_type=request.metric_type,
+        )
+    except Exception as e:
+        logger.exception("Heatmap Mashvisor API call failed")
+        raise HTTPException(status_code=503, detail=f"Heatmap unavailable: {e!s}")
 
     if not resp.success or not resp.data:
         raise HTTPException(status_code=503, detail="Heatmap data unavailable")
@@ -110,13 +117,22 @@ async def get_heatmap(
     for p in raw_polygons:
         if not isinstance(p, dict):
             continue
+        # The metric value field name varies by metric_type (e.g. airbnb_coc,
+        # airbnb_rental, traditional_coc, occupancy_rate, etc.)
+        metric_value = p.get("value")
+        if metric_value is None:
+            for k in ("airbnb_coc", "airbnb_rental", "traditional_coc",
+                       "traditional_rental", "occupancy_rate", "listing_price"):
+                if p.get(k) is not None:
+                    metric_value = p[k]
+                    break
         polygons.append(HeatmapPolygon(
             id=p.get("id", 0),
             boundary=p.get("boundary", ""),
             color=p.get("color"),
             border_color=p.get("border_color"),
             color_level=p.get("color_level"),
-            value=p.get("value"),
+            value=metric_value,
             airbnb_coc=p.get("airbnb_coc"),
         ))
 
@@ -125,7 +141,10 @@ async def get_heatmap(
         metric_type=request.metric_type,
         total_count=len(polygons),
     )
-    await cache.set(cache_key, result.model_dump(), ttl=HEATMAP_CACHE_TTL)
+    try:
+        await cache.set(cache_key, result.model_dump(), ttl=HEATMAP_CACHE_TTL)
+    except Exception:
+        logger.warning("Failed to cache heatmap result")
     return result
 
 
