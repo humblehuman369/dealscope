@@ -67,6 +67,8 @@ export function useMapSearch() {
         max_price: activeFilters.max_price,
         bedrooms: activeFilters.bedrooms,
         bathrooms: activeFilters.bathrooms,
+        listing_statuses:
+          activeFilters.listing_statuses.length > 0 ? activeFilters.listing_statuses : undefined,
         limit: 500,
       }
 
@@ -134,7 +136,8 @@ export function useMapSearch() {
         'min_price' in next ||
         'max_price' in next ||
         'bedrooms' in next ||
-        'bathrooms' in next
+        'bathrooms' in next ||
+        'listing_statuses' in next
       )
 
       setFilters((prev) => {
