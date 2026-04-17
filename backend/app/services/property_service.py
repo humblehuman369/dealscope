@@ -35,6 +35,8 @@ from app.schemas.property import (
     ProvenanceMap,
     RentalData,
     RentalMarketStatistics,
+    STRMarketStats,
+    STRRegulatory,
     StrategyType,
     STRResults,
     ValuationData,
@@ -63,7 +65,7 @@ class PropertyService:
     """
 
     def __init__(self):
-        self.rentcast, self.axesso, self.normalizer, self.redfin, self.realtor = create_api_clients(
+        self.rentcast, self.axesso, self.normalizer, self.redfin, self.realtor, self.mashvisor = create_api_clients(
             rentcast_api_key=settings.RENTCAST_API_KEY,
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
@@ -72,6 +74,8 @@ class PropertyService:
             redfin_rapidapi_host=settings.RAPIDAPI_HOST,
             realtor_api_key=settings.REALTOR_API_KEY or settings.REDFIN_API_KEY,
             realtor_rapidapi_host=settings.REALTOR_RAPIDAPI_HOST,
+            mashvisor_api_key=settings.MASHVISOR_RAPIDAPI_KEY,
+            mashvisor_rapidapi_host=settings.MASHVISOR_RAPIDAPI_HOST,
         )
 
         # Use the comprehensive ZillowClient for Zillow data
@@ -286,6 +290,90 @@ class PropertyService:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return data, elapsed_ms
 
+    def _parse_address_parts(self, address: str) -> dict[str, str]:
+        """Parse 'street, city, ST ZIP' into components for Mashvisor."""
+        parts = [p.strip() for p in address.split(",")]
+        result = {"street": "", "city": "", "state": "", "zip": ""}
+        if len(parts) >= 3:
+            result["street"] = parts[0]
+            result["city"] = parts[1]
+            state_zip = parts[2].strip().split()
+            if state_zip:
+                result["state"] = state_zip[0]
+            if len(state_zip) > 1:
+                result["zip"] = state_zip[-1]
+        elif len(parts) == 2:
+            result["street"] = parts[0]
+            state_zip = parts[1].strip().split()
+            if state_zip:
+                result["city"] = state_zip[0] if len(state_zip) > 2 else ""
+                result["state"] = state_zip[-2] if len(state_zip) >= 2 else ""
+                result["zip"] = state_zip[-1] if len(state_zip) >= 1 else ""
+        return result
+
+    async def _fetch_mashvisor_provider(
+        self, address: str, bedrooms: int | None = None
+    ) -> tuple[dict[str, Any] | None, float]:
+        """Fetch Mashvisor STR analytics and regulatory data."""
+        if not self.mashvisor or not settings.MASHVISOR_STR_ENABLED:
+            return None, 0.0
+
+        t0 = time.perf_counter()
+        merged: dict[str, Any] = {}
+        try:
+            parts = self._parse_address_parts(address)
+            if not parts["state"] or not parts["zip"]:
+                logger.warning("Mashvisor: cannot parse address for API: %s", address)
+                return None, (time.perf_counter() - t0) * 1000
+
+            beds = bedrooms or 3
+
+            import asyncio as _aio
+            lookup_task = self.mashvisor.str_lookup(
+                state=parts["state"], city=parts["city"],
+                zip_code=parts["zip"], beds=beds, address=parts["street"],
+            )
+            hist_task = self.mashvisor.str_historical(
+                state=parts["state"], city=parts["city"],
+                zip_code=parts["zip"], beds=beds,
+            )
+            reg_task = self.mashvisor.str_regulatory(
+                state=parts["state"], city=parts["city"],
+            )
+
+            lookup_resp, hist_resp, reg_resp = await _aio.gather(
+                lookup_task, hist_task, reg_task, return_exceptions=True
+            )
+
+            if isinstance(lookup_resp, Exception):
+                logger.error("Mashvisor lookup failed: %s", lookup_resp)
+            elif lookup_resp.success and lookup_resp.data:
+                parsed = self.mashvisor.parse_str_lookup(lookup_resp.data)
+                merged.update(parsed)
+                logger.info(
+                    "Mashvisor STR: occupancy=%s%%, ADR=$%s, sample=%s, confidence=%s",
+                    parsed.get("str_occupancy_mashvisor"),
+                    parsed.get("str_adr_mashvisor"),
+                    parsed.get("str_sample_size"),
+                    parsed.get("str_confidence"),
+                )
+
+            if isinstance(hist_resp, Exception):
+                logger.error("Mashvisor historical failed: %s", hist_resp)
+            elif hist_resp.success and hist_resp.data:
+                merged.update(self.mashvisor.parse_str_historical(hist_resp.data))
+
+            if isinstance(reg_resp, Exception):
+                logger.error("Mashvisor regulatory failed: %s", reg_resp)
+            elif reg_resp.success and reg_resp.data:
+                merged.update(self.mashvisor.parse_str_regulatory(reg_resp.data))
+
+        except Exception as e:
+            logger.error("Error fetching Mashvisor data: %s", e)
+
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return merged if merged else None, elapsed_ms
+
     async def search_property(
         self,
         address: str,
@@ -310,6 +398,7 @@ class PropertyService:
         zillow_zpid = None
         redfin_data: dict[str, Any] | None = None
         realtor_data: dict[str, Any] | None = None
+        mashvisor_data: dict[str, Any] | None = None
         if pre_fetched is not None:
             rentcast_merged, (axesso_unwrapped, axesso_export) = pre_fetched
             rentcast_data = rentcast_merged
@@ -411,17 +500,19 @@ class PropertyService:
                     except Exception as e:
                         logger.warning(f"Failed to deserialize cached property: {e}")
 
-            # Fetch from all providers in parallel (RentCast, Zillow, Redfin, Realtor)
+            # Fetch from all providers in parallel (RentCast, Zillow, Redfin, Realtor, Mashvisor)
             (
                 (rentcast_data, rentcast_ms),
                 (axesso_data, zillow_zpid, zillow_ms),
                 (redfin_data, redfin_ms),
                 (realtor_data, realtor_ms),
+                (mashvisor_data, mashvisor_ms),
             ) = await asyncio.gather(
                 self._fetch_rentcast_provider(address),
                 self._fetch_zillow_provider(address),
                 self._fetch_redfin_provider(address),
                 self._fetch_realtor_provider(address),
+                self._fetch_mashvisor_provider(address),
             )
             timings["rentcast_ms"] = rentcast_ms
             timings["zillow_ms"] = zillow_ms
@@ -429,6 +520,8 @@ class PropertyService:
                 timings["redfin_ms"] = redfin_ms
             if realtor_ms > 0:
                 timings["realtor_ms"] = realtor_ms
+            if mashvisor_ms > 0:
+                timings["mashvisor_ms"] = mashvisor_ms
 
         # Normalize and merge data
         t_norm = time.perf_counter()
@@ -438,6 +531,7 @@ class PropertyService:
             timestamp,
             redfin_data=redfin_data,
             realtor_data=realtor_data,
+            mashvisor_data=mashvisor_data,
         )
 
         # Calculate data quality
@@ -525,6 +619,32 @@ class PropertyService:
                         normalized.get("rent_trend") is not None,
                     ]
                 )
+                else None,
+                # Mashvisor STR market stats
+                str_market_stats=STRMarketStats(
+                    median_occupancy=normalized.get("str_occupancy_mashvisor"),
+                    median_adr=normalized.get("str_adr_mashvisor"),
+                    median_revenue_annual=normalized.get("str_revenue_annual"),
+                    sample_size=normalized.get("str_sample_size"),
+                    city_insights_fallback=normalized.get("str_city_fallback"),
+                    confidence=normalized.get("str_confidence"),
+                    yoy_occupancy_change=normalized.get("str_yoy_occupancy"),
+                    yoy_income_change=normalized.get("str_yoy_income"),
+                    revpar=normalized.get("str_revpar"),
+                    tax_rate=normalized.get("str_tax_rate"),
+                )
+                if normalized.get("str_occupancy_mashvisor") is not None
+                else None,
+                # Mashvisor STR regulatory status
+                str_regulatory=STRRegulatory(
+                    rating=normalized.get("str_reg_rating"),
+                    day_limit=normalized.get("str_reg_day_limit"),
+                    permit_fee=normalized.get("str_reg_permit_fee"),
+                    rules_summary=normalized.get("str_reg_rules_summary"),
+                    rules_source=normalized.get("str_reg_rules_source"),
+                    legal_for_occupied=normalized.get("str_reg_legal_for_occupied"),
+                )
+                if normalized.get("str_reg_rating") is not None
                 else None,
             ),
             market=MarketData(
