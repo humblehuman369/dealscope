@@ -1093,6 +1093,18 @@ class MapSearchRequest(BaseModel):
             "means active-only (current default behavior)."
         ),
     )
+    include_str_listings: bool = Field(
+        default=False,
+        description="Include Airbnb/STR listings from Mashvisor alongside sale/rental listings.",
+    )
+    str_state: str | None = Field(
+        default=None,
+        description="Two-letter state code for Mashvisor STR queries (required when include_str_listings=true).",
+    )
+    str_city: str | None = Field(
+        default=None,
+        description="City name for Mashvisor STR queries (required when include_str_listings=true).",
+    )
     limit: int = Field(default=500, le=500)
     offset: int = 0
 
@@ -1117,6 +1129,10 @@ class MapListing(BaseModel):
     source: str
     days_on_market: int | None = None
     year_built: int | None = None
+    night_price: float | None = None
+    occupancy: int | None = None
+    star_rating: float | None = None
+    reviews_count: int | None = None
 
 
 class MapSearchResponse(BaseModel):
@@ -1128,3 +1144,94 @@ class MapSearchResponse(BaseModel):
         default=None, description="Estimated total listings in the area (for large viewport extrapolation)"
     )
     viewport_center: list[float] = Field(description="[lat, lng] center of the searched area")
+
+
+# ============================================
+# HEATMAP & NEIGHBORHOOD (Mashvisor)
+# ============================================
+
+
+class HeatmapRequest(BaseModel):
+    """Request for investment heatmap polygons."""
+
+    state: str = Field(..., description="Two-letter state code, e.g. CA")
+    sw_lat: float = Field(..., description="Southwest latitude")
+    sw_lng: float = Field(..., description="Southwest longitude")
+    ne_lat: float = Field(..., description="Northeast latitude")
+    ne_lng: float = Field(..., description="Northeast longitude")
+    metric_type: str = Field(
+        default="AirbnbCoc",
+        description="Heatmap metric: AirbnbCoc, TraditionalCoc, OccupancyRate, AirbnbRental, TraditionalRental, listingPrice",
+    )
+
+
+class HeatmapPolygon(BaseModel):
+    """Single heatmap polygon with investment data."""
+
+    id: int
+    boundary: str
+    color: str | None = None
+    border_color: str | None = None
+    color_level: int | None = None
+    value: float | None = None
+    airbnb_coc: float | None = None
+
+
+class HeatmapResponse(BaseModel):
+    """Investment heatmap response."""
+
+    polygons: list[HeatmapPolygon]
+    metric_type: str
+    total_count: int
+
+
+class NeighborhoodSummary(BaseModel):
+    """Lightweight neighborhood for map labels."""
+
+    id: int
+    name: str
+    city: str | None = None
+    state: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+
+
+class NeighborhoodOverview(BaseModel):
+    """Full neighborhood investment scorecard."""
+
+    id: str | int | None = None
+    name: str | None = None
+    city: str | None = None
+    state: str | None = None
+    walkscore: int | None = None
+    transitscore: int | None = None
+    bikescore: int | None = None
+    mashmeter: float | None = None
+    mashmeter_stars: float | None = None
+    median_price: float | None = None
+    price_per_sqft: float | None = None
+    num_of_properties: int | None = None
+    num_of_airbnb_properties: int | None = None
+    avg_occupancy: float | None = None
+    avg_days_on_market: float | None = None
+    recommended_strategy: str | None = None
+    airbnb_cap_rate: float | None = None
+    airbnb_rental_income: float | None = None
+    airbnb_coc: float | None = None
+    traditional_cap_rate: float | None = None
+    traditional_rental_income: float | None = None
+    traditional_coc: float | None = None
+    sale_price_trend_1yr: float | None = None
+    sale_price_trend_3yr: float | None = None
+    sale_price_trend_5yr: float | None = None
+    sold_last_month: int | None = None
+    sold_last_year: int | None = None
+
+
+class NeighborhoodListResponse(BaseModel):
+    """List of neighborhoods for a city."""
+
+    neighborhoods: list[NeighborhoodSummary]
+    city: str
+    state: str
+    total_count: int

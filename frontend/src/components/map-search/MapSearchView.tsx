@@ -19,6 +19,9 @@ import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
+import { HeatmapLegend } from './HeatmapLegend'
+import { NeighborhoodCard } from './NeighborhoodCard'
+import { api, type NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -314,15 +317,28 @@ function MapContent({
   return (
     <>
       {listings.map((listing) => {
+        const isAirbnb = listing.source === 'mashvisor_airbnb'
         const signal = dealSignals.get(listing.id)
         const isSelected = selectedListing?.id === listing.id
-        const markerBg = signal
-          ? markerColorFromGrade(signal.grade)
-          : 'var(--surface-card)'
-        const markerText = signal ? '#fff' : 'var(--text-heading)'
-        const markerBorder = isSelected
-          ? 'var(--accent-sky)'
-          : signal ? 'rgba(255,255,255,0.7)' : 'var(--border-default)'
+
+        let markerBg: string
+        let markerText: string
+        let markerBorder: string
+        let displayLabel: string
+
+        if (isAirbnb) {
+          markerBg = '#FB7185'
+          markerText = '#fff'
+          markerBorder = isSelected ? 'var(--accent-sky)' : 'rgba(255,255,255,0.7)'
+          displayLabel = listing.night_price != null ? `$${listing.night_price}/n` : 'Airbnb'
+        } else {
+          markerBg = signal ? markerColorFromGrade(signal.grade) : 'var(--surface-card)'
+          markerText = signal ? '#fff' : 'var(--text-heading)'
+          markerBorder = isSelected
+            ? 'var(--accent-sky)'
+            : signal ? 'rgba(255,255,255,0.7)' : 'var(--border-default)'
+          displayLabel = formatCompactPrice(listing.price)
+        }
 
         return (
           <AdvancedMarker
@@ -341,7 +357,7 @@ function MapContent({
                 border: `1.5px solid ${markerBorder}`,
               }}
             >
-              {formatCompactPrice(listing.price)}
+              {displayLabel}
             </div>
           </AdvancedMarker>
         )
@@ -441,6 +457,12 @@ export function MapSearchView() {
 
   const [showClickHint, setShowClickHint] = useState(false)
   const hintShownRef = useRef(false)
+
+  // Heatmap and neighborhood intelligence (Mashvisor)
+  const [heatmapActive, setHeatmapActive] = useState(false)
+  const [heatmapMetric, setHeatmapMetric] = useState('AirbnbCoc')
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodOverview | null>(null)
+  const [isLoadingNeighborhood, setIsLoadingNeighborhood] = useState(false)
 
   const dismissClickHint = useCallback(() => {
     setShowClickHint(false)
@@ -708,6 +730,22 @@ export function MapSearchView() {
         isOpen={filtersOpen}
         onToggle={() => setFiltersOpen((p) => !p)}
       />
+
+      {/* Investment Heatmap Legend */}
+      <HeatmapLegend
+        isActive={heatmapActive}
+        metricType={heatmapMetric}
+        onToggle={() => setHeatmapActive((p) => !p)}
+        onMetricChange={setHeatmapMetric}
+      />
+
+      {/* Neighborhood Intelligence Card */}
+      {selectedNeighborhood && (
+        <NeighborhoodCard
+          neighborhood={selectedNeighborhood}
+          onClose={() => setSelectedNeighborhood(null)}
+        />
+      )}
 
       {/* Drawing controls */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">

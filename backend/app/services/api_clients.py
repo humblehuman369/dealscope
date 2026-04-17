@@ -949,6 +949,54 @@ class MashvisorClient(BaseAPIClient[APIResponse]):
         result["str_reg_legal_for_occupied"] = reg.get("Legal_for_occupied")
         return result
 
+    # --- Map search endpoints --------------------------------------------------
+
+    async def heatmap(
+        self,
+        state: str,
+        sw_lat: float,
+        sw_lng: float,
+        ne_lat: float,
+        ne_lng: float,
+        metric_type: str = "AirbnbCoc",
+    ) -> APIResponse:
+        """GET /search/heatmap — investment heatmap polygons for a bounding box."""
+        return await self._make_request(
+            "search/heatmap",
+            {
+                "state": state,
+                "sw_lat": sw_lat,
+                "sw_lng": sw_lng,
+                "ne_lat": ne_lat,
+                "ne_lng": ne_lng,
+                "type": metric_type,
+            },
+        )
+
+    async def city_neighborhoods(self, state: str, city: str) -> APIResponse:
+        """GET /city/neighborhoods/{state}/{city} — list neighborhoods with lat/lng."""
+        return await self._make_request(f"city/neighborhoods/{state}/{city}")
+
+    async def neighborhood_overview(self, neighborhood_id: int, state: str) -> APIResponse:
+        """GET /neighborhood/{id}/bar — investment scorecard for a neighborhood."""
+        return await self._make_request(
+            f"neighborhood/{neighborhood_id}/bar",
+            {"state": state},
+        )
+
+    async def neighborhood_airbnb_listings(
+        self, neighborhood_id: int, state: str, page: int = 1, items: int = 50
+    ) -> APIResponse:
+        """GET /neighborhood/{id}/airbnb/details — active Airbnb listings in a neighborhood."""
+        return await self._make_request(
+            f"neighborhood/{neighborhood_id}/airbnb/details",
+            {"state": state, "page": page, "items": items},
+        )
+
+    async def city_investment(self, state: str, city: str) -> APIResponse:
+        """GET /city/investment/{state}/{city} — city-level investment overview."""
+        return await self._make_request(f"city/investment/{state}/{city}")
+
 
 class DataNormalizer:
     """

@@ -17,7 +17,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
-from app.services.api_clients import RentCastClient, create_api_clients
+from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
 from app.services.cache_service import get_cache_service
 from app.services.zillow_client import ZillowClient, create_zillow_client
 
@@ -155,6 +155,7 @@ class MapSearchService:
     def __init__(self) -> None:
         self.rentcast: RentCastClient
         self.zillow: ZillowClient | None = None
+        self.mashvisor: MashvisorClient | None = None
         self._initialized = False
 
     def _ensure_clients(self) -> None:
@@ -173,6 +174,12 @@ class MapSearchService:
                 api_key=settings.AXESSO_API_KEY,
                 base_url=settings.AXESSO_URL,
                 fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
+            )
+
+        if settings.MASHVISOR_RAPIDAPI_KEY:
+            self.mashvisor = MashvisorClient(
+                api_key=settings.MASHVISOR_RAPIDAPI_KEY,
+                rapidapi_host=settings.MASHVISOR_RAPIDAPI_HOST,
             )
 
         self._initialized = True
@@ -303,6 +310,18 @@ class MapSearchService:
                 if addr_key and addr_key not in seen_addresses:
                     seen_addresses.add(addr_key)
                     listings.append(item)
+
+        # Merge Mashvisor Airbnb listings when requested
+        if req.include_str_listings and self.mashvisor:
+            str_listings = await self._fetch_mashvisor_str_listings(
+                req, center_lat, center_lng
+            )
+            for item in str_listings:
+                addr_key = item.address.lower().strip()
+                if addr_key and addr_key not in seen_addresses:
+                    seen_addresses.add(addr_key)
+                    listings.append(item)
+            raw_source_totals += len(str_listings)
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -530,6 +549,128 @@ class MapSearchService:
             return []
 
     # ─── Normalization helpers ─────────────────────
+
+    async def _fetch_mashvisor_str_listings(
+        self,
+        req: MapSearchRequest,
+        center_lat: float,
+        center_lng: float,
+    ) -> list[MapListing]:
+        """Fetch Airbnb listings from Mashvisor for neighborhoods in the viewport."""
+        if not self.mashvisor:
+            return []
+
+        try:
+            # Reverse-geocode the viewport center to a state. Use a rough
+            # lookup — Mashvisor needs the state as a 2-letter code.
+            state = self._estimate_state_from_viewport(req)
+            if not state:
+                return []
+
+            # Try to identify the city from the viewport center
+            city = self._estimate_city_from_viewport(req)
+            if not city:
+                return []
+
+            # Fetch neighborhood list for the city
+            nb_resp = await self.mashvisor.city_neighborhoods(state=state, city=city)
+            if not nb_resp.success or not nb_resp.data:
+                return []
+
+            content = nb_resp.data.get("content", {})
+            raw_neighborhoods = content.get("results", []) if isinstance(content, dict) else content
+            if not isinstance(raw_neighborhoods, list):
+                return []
+
+            # Filter neighborhoods that fall within the viewport
+            in_viewport = []
+            for nb in raw_neighborhoods:
+                if not isinstance(nb, dict):
+                    continue
+                nb_lat = nb.get("latitude")
+                nb_lng = nb.get("longitude")
+                if nb_lat is None or nb_lng is None:
+                    continue
+                if req.south <= nb_lat <= req.north and req.west <= nb_lng <= req.east:
+                    in_viewport.append(nb)
+
+            # Cap at 5 neighborhoods to control API costs
+            in_viewport = in_viewport[:5]
+
+            if not in_viewport:
+                return []
+
+            # Fetch Airbnb listings for each in-viewport neighborhood in parallel
+            airbnb_tasks = [
+                asyncio.create_task(
+                    self.mashvisor.neighborhood_airbnb_listings(
+                        neighborhood_id=nb["id"], state=state, items=20
+                    )
+                )
+                for nb in in_viewport
+                if nb.get("id")
+            ]
+
+            airbnb_results = await asyncio.gather(*airbnb_tasks, return_exceptions=True)
+
+            listings: list[MapListing] = []
+            for resp in airbnb_results:
+                if isinstance(resp, Exception):
+                    logger.warning("Mashvisor Airbnb fetch failed: %s", resp)
+                    continue
+                if not resp.success or not resp.data:
+                    continue
+                content = resp.data.get("content", {})
+                properties = content.get("properties", []) if isinstance(content, dict) else []
+                if not isinstance(properties, list):
+                    continue
+                for prop in properties:
+                    if not isinstance(prop, dict):
+                        continue
+                    lat = prop.get("lat")
+                    lon = prop.get("lon")
+                    if lat is None or lon is None:
+                        continue
+                    # Check the listing is within the viewport bounds
+                    if not (req.south <= lat <= req.north and req.west <= lon <= req.east):
+                        continue
+                    listings.append(MapListing(
+                        id=f"mashvisor_airbnb_{prop.get('id', '')}",
+                        address=prop.get("address") or prop.get("name", "Airbnb Listing"),
+                        city=prop.get("airbnbCity"),
+                        state=prop.get("state"),
+                        zip_code=prop.get("zip"),
+                        latitude=lat,
+                        longitude=lon,
+                        price=None,
+                        bedrooms=prop.get("numOfRooms"),
+                        bathrooms=prop.get("numOfBaths"),
+                        property_type=prop.get("propertyType"),
+                        listing_status="active",
+                        photo_url=prop.get("image"),
+                        source="mashvisor_airbnb",
+                        night_price=prop.get("nightPrice"),
+                        occupancy=prop.get("occupancy"),
+                        star_rating=prop.get("startRating") or prop.get("starRating"),
+                        reviews_count=prop.get("reviewsCount"),
+                    ))
+
+            logger.info("Mashvisor STR: %d Airbnb listings from %d neighborhoods", len(listings), len(in_viewport))
+            return listings
+
+        except Exception as e:
+            logger.error("Mashvisor STR listing fetch failed: %s", e)
+            return []
+
+    @staticmethod
+    def _estimate_state_from_viewport(req: MapSearchRequest) -> str | None:
+        """Get state from request params (frontend passes from geocoding context)."""
+        return req.str_state or None
+
+    @staticmethod
+    def _estimate_city_from_viewport(req: MapSearchRequest) -> str | None:
+        """Get city from request params (frontend passes from geocoding context)."""
+        return req.str_city or None
 
     @staticmethod
     def _has_coords(item: dict) -> bool:

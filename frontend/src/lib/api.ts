@@ -237,6 +237,9 @@ export interface MapSearchRequest {
   bedrooms?: number
   bathrooms?: number
   listing_statuses?: string[]
+  include_str_listings?: boolean
+  str_state?: string
+  str_city?: string
   limit?: number
   offset?: number
 }
@@ -259,6 +262,10 @@ export interface MapListing {
   source: string
   days_on_market: number | null
   year_built: number | null
+  night_price?: number | null
+  occupancy?: number | null
+  star_rating?: number | null
+  reviews_count?: number | null
 }
 
 export interface MapSearchResponse {
@@ -266,6 +273,77 @@ export interface MapSearchResponse {
   total_count: number
   estimated_total?: number | null
   viewport_center: number[]
+}
+
+export interface HeatmapRequest {
+  state: string
+  sw_lat: number
+  sw_lng: number
+  ne_lat: number
+  ne_lng: number
+  metric_type?: string
+}
+
+export interface HeatmapPolygon {
+  id: number
+  boundary: string
+  color?: string | null
+  border_color?: string | null
+  color_level?: number | null
+  value?: number | null
+  airbnb_coc?: number | null
+}
+
+export interface HeatmapResponse {
+  polygons: HeatmapPolygon[]
+  metric_type: string
+  total_count: number
+}
+
+export interface NeighborhoodSummary {
+  id: number
+  name: string
+  city?: string | null
+  state?: string | null
+  latitude?: number | null
+  longitude?: number | null
+}
+
+export interface NeighborhoodOverview {
+  id?: string | number | null
+  name?: string | null
+  city?: string | null
+  state?: string | null
+  walkscore?: number | null
+  transitscore?: number | null
+  bikescore?: number | null
+  mashmeter?: number | null
+  mashmeter_stars?: number | null
+  median_price?: number | null
+  price_per_sqft?: number | null
+  num_of_properties?: number | null
+  num_of_airbnb_properties?: number | null
+  avg_occupancy?: number | null
+  avg_days_on_market?: number | null
+  recommended_strategy?: string | null
+  airbnb_cap_rate?: number | null
+  airbnb_rental_income?: number | null
+  airbnb_coc?: number | null
+  traditional_cap_rate?: number | null
+  traditional_rental_income?: number | null
+  traditional_coc?: number | null
+  sale_price_trend_1yr?: number | null
+  sale_price_trend_3yr?: number | null
+  sale_price_trend_5yr?: number | null
+  sold_last_month?: number | null
+  sold_last_year?: number | null
+}
+
+export interface NeighborhoodListResponse {
+  neighborhoods: NeighborhoodSummary[]
+  city: string
+  state: string
+  total_count: number
 }
 
 // ------------------------------------------------------------------
@@ -368,6 +446,15 @@ export const api = {
         method: 'POST',
         body: data,
       }),
+    heatmap: (data: HeatmapRequest) =>
+      apiRequest<HeatmapResponse>('/api/v1/map/heatmap', {
+        method: 'POST',
+        body: data,
+      }),
+    neighborhoods: (state: string, city: string) =>
+      apiRequest<NeighborhoodListResponse>(`/api/v1/map/neighborhoods/${state}/${encodeURIComponent(city)}`),
+    neighborhoodOverview: (id: number, state: string) =>
+      apiRequest<NeighborhoodOverview>(`/api/v1/map/neighborhood/${id}?state=${state}`),
   },
 
   // Comparison
