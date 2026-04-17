@@ -228,30 +228,53 @@ class MapSearchService:
         # Fetch from all sources at all grid points in parallel
         tasks: list[asyncio.Task] = []
 
+        # Build the Zillow query extras up-front (per-request, not per-grid-point)
+        # so dispatch shape stays predictable: 1 vanilla forSale + at most 1
+        # distressed forSale query per grid point. This is the dispatch shape
+        # that fixed the rate-limit/circuit-breaker storm caused by the previous
+        # one-flag-per-query design.
+        zillow_distressed_extras = self._zillow_distressed_extras(requested_statuses)
+
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                # RentCast only serves active sale listings. If the caller
-                # wants only distressed inventory, skip RentCast entirely
-                # to save API quota.
-                if "active" in requested_statuses or "pending" in requested_statuses:
-                    tasks.append(
-                        asyncio.create_task(
-                            self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
-                        )
+                # Always run RentCast for sale: its per-listing `listingType`
+                # field surfaces "Foreclosure" / "Short Sale" which the
+                # normalizer folds into the canonical status. Cheap insurance.
+                tasks.append(
+                    asyncio.create_task(
+                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
                     )
+                )
                 if self.zillow:
-                    for distress_flag in self._zillow_sale_flag_set(requested_statuses):
+                    # Vanilla forSale query — covers Active, Pending (via
+                    # homeStatus), and any distressed listings AXESSO
+                    # surfaces by default. Always issued so the user always
+                    # sees something even when the distressed query fails.
+                    if self._wants_active_or_pending(requested_statuses):
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_zillow(
-                                    pt_lat, pt_lng, sub_radius, "forSale", req, distress_flag
+                                    pt_lat, pt_lng, sub_radius, "forSale", req, None
+                                ),
+                            )
+                        )
+                    # One consolidated distressed query (if any distressed
+                    # statuses requested). Uses Zillow's documented
+                    # `listing_type` and `property_status` params per
+                    # propertydata.dev's Zillow API reference.
+                    if zillow_distressed_extras:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forSale",
+                                    req, zillow_distressed_extras,
                                 ),
                             )
                         )
 
             if req.listing_type in ("rental", "both"):
-                # Distressed/pending semantics don't apply to rentals;
-                # only fetch when the caller wants active inventory (or no
+                # Distressed/pending semantics don't apply to rentals; only
+                # fetch when the caller wants active inventory (or no
                 # explicit status filter, which defaults to active).
                 if "active" in requested_statuses:
                     tasks.append(
@@ -334,32 +357,59 @@ class MapSearchService:
         return response
 
     @staticmethod
-    def _zillow_sale_flag_set(requested_statuses: set[str]) -> list[str | None]:
-        """Return the set of Zillow distress flags to issue queries for.
+    def _wants_active_or_pending(requested_statuses: set[str]) -> bool:
+        """True when the vanilla forSale Zillow query should fire.
 
-        Each entry produces one Zillow `search-by-coordinates` call:
-        - ``None`` → vanilla forSale query (covers active + most pending)
-        - ``"isForeclosure"`` → forSale + isForeclosure=true
-        - ``"isPreforeclosure"`` → forSale + isPreforeclosure=true
-        - ``"isAuction"`` → forSale + isAuction=true
-
-        We deliberately keep distressed queries separate from the base
-        forSale query so a single mis-named AXESSO flag only breaks one
-        slice of results, not the whole map. The exact AXESSO param names
-        are inferred from Zillow's data model and the existing
-        ``isSingleFamily`` / ``isCondo`` convention used elsewhere in this
-        client; verify against live results post-deploy.
+        The vanilla query covers Active and surfaces Pending listings via
+        Zillow's ``homeStatus="PENDING"`` field. If neither is requested,
+        skip it to save quota.
         """
-        flags: list[str | None] = []
-        if "active" in requested_statuses or "pending" in requested_statuses:
-            flags.append(None)
+        return "active" in requested_statuses or "pending" in requested_statuses
+
+    @staticmethod
+    def _zillow_distressed_extras(requested_statuses: set[str]) -> dict[str, Any] | None:
+        """Build the params dict for one consolidated distressed query.
+
+        Uses Zillow's documented filter conventions per propertydata.dev's
+        Zillow API reference (which mirrors the Zillow web UI's filter
+        codes):
+
+        - ``listing_type`` accepts comma-separated values: ``foreclosures``
+          (REO/bank-owned), ``foreclosed`` (lender-owned, not yet listed),
+          ``pre_foreclosures``, ``auctions``.
+        - ``property_status`` accepts ``pending_and_under_contract`` for
+          pending inventory.
+
+        The previous implementation passed ``isForeclosure=true``, etc.,
+        which AXESSO silently ignored — confirmed via prod logs showing
+        identical 41-listing payloads with and without the flag. These
+        snake_case plural names align with Zillow's underlying URL filter
+        codes and the param name (``listing_type``) used by the existing
+        ``ZillowClient.search_properties()`` method.
+
+        Returns None when no distressed statuses are requested (so caller
+        can skip dispatching entirely).
+        """
+        listing_types: list[str] = []
         if "foreclosure" in requested_statuses:
-            flags.append("isForeclosure")
+            # `foreclosures` = currently listed REO / bank-owned
+            # `foreclosed` = lender-owned, may soon be listed
+            listing_types.extend(["foreclosures", "foreclosed"])
         if "pre-foreclosure" in requested_statuses:
-            flags.append("isPreforeclosure")
+            listing_types.append("pre_foreclosures")
         if "auction" in requested_statuses:
-            flags.append("isAuction")
-        return flags
+            listing_types.append("auctions")
+
+        extras: dict[str, Any] = {}
+        if listing_types:
+            extras["listing_type"] = ",".join(listing_types)
+        # Pending isn't strictly distressed, but Zillow exposes it via the
+        # property_status filter. Including it here folds it into the same
+        # query as distressed when both are requested.
+        if "pending" in requested_statuses:
+            extras["property_status"] = "pending_and_under_contract"
+
+        return extras or None
 
     # ─── RentCast ───────────────────────────────────
 
@@ -409,7 +459,7 @@ class MapSearchService:
         radius_miles: float,
         status: str,
         req: MapSearchRequest,
-        distress_flag: str | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> list[MapListing]:
         if not self.zillow:
             return []
@@ -426,8 +476,8 @@ class MapSearchService:
                 elif "multi" in pt:
                     kwargs["isMultiFamily"] = True
 
-            if distress_flag:
-                kwargs[distress_flag] = True
+            if extra_params:
+                kwargs.update(extra_params)
 
             resp = await self.zillow.search_by_coordinates(
                 lat=center_lat,
@@ -437,7 +487,12 @@ class MapSearchService:
                 **kwargs,
             )
 
-            label = f"{status}+{distress_flag}" if distress_flag else status
+            # Compact label so logs stay greppable when params change
+            label = (
+                f"{status}+{','.join(f'{k}={v}' for k, v in extra_params.items())}"
+                if extra_params
+                else status
+            )
 
             if not resp.success or not resp.data:
                 logger.info("Zillow %s returned no data", label)
@@ -450,13 +505,27 @@ class MapSearchService:
                         raw_props = val
                         break
 
+            # Diagnostic: when we fired a distressed query, log the
+            # distress-bearing fields from the first listing so we can
+            # verify in prod logs whether AXESSO actually honored the
+            # filter. Trims response to a few keys to keep log size sane.
+            if extra_params and raw_props:
+                first = raw_props[0] if isinstance(raw_props[0], dict) else {}
+                logger.info(
+                    "Zillow %s sample fields: homeStatus=%r listingSubType=%r foreclosureTypes=%r",
+                    label,
+                    first.get("homeStatus"),
+                    first.get("listingSubType"),
+                    first.get("foreclosureTypes"),
+                )
+
             results = [self._normalize_zillow_listing(item) for item in raw_props if self._zillow_has_coords(item)]
             logger.info("Zillow %s: %d listings", label, len(results))
             return results
         except Exception:
             logger.exception(
                 "Zillow %s listing fetch failed",
-                f"{status}+{distress_flag}" if distress_flag else status,
+                f"{status}+{extra_params}" if extra_params else status,
             )
             return []
 
