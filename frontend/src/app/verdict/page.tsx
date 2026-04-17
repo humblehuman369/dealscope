@@ -221,6 +221,7 @@ function VerdictContent() {
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
+  const [strMarketData, setStrMarketData] = useState<{ str_market_stats?: any; str_regulatory?: any } | null>(null)
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
@@ -426,6 +427,10 @@ function VerdictContent() {
         }
 
         setProperty(propertyData)
+        setStrMarketData({
+          str_market_stats: data.rentals?.str_market_stats ?? null,
+          str_regulatory: data.rentals?.str_regulatory ?? null,
+        })
 
         // Populate IQ Estimate 3-value sources from API response
         const rentalStats = data.rentals?.rental_stats
@@ -1781,6 +1786,33 @@ function VerdictContent() {
                         }
                         detail="Edit financing terms in DealMaker to match your actual loan scenario."
                       />
+                      {strMarketData?.str_regulatory?.rating && (strMarketData.str_regulatory.rating === 'Negative' || strMarketData.str_regulatory.rating === 'Restricted') && (
+                        <InsightItem
+                          num="6"
+                          delay={0}
+                          title={
+                            <span>
+                              STR regulations: <strong style={{ color: '#F59E0B' }}>{strMarketData.str_regulatory.rating}</strong>
+                              {strMarketData.str_regulatory.day_limit && (
+                                <> — {strMarketData.str_regulatory.day_limit} day limit</>
+                              )}
+                            </span>
+                          }
+                          detail={strMarketData.str_regulatory.rules_summary || 'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.'}
+                        />
+                      )}
+                      {strMarketData?.str_market_stats?.yoy_occupancy_change != null && strMarketData.str_market_stats.yoy_occupancy_change < -20 && (
+                        <InsightItem
+                          num={strMarketData?.str_regulatory?.rating && (strMarketData.str_regulatory.rating === 'Negative' || strMarketData.str_regulatory.rating === 'Restricted') ? '7' : '6'}
+                          delay={0}
+                          title={
+                            <span>
+                              STR occupancy <strong style={{ color: '#EF4444' }}>down {Math.abs(strMarketData.str_market_stats.yoy_occupancy_change).toFixed(0)}%</strong> year-over-year
+                            </span>
+                          }
+                          detail="Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections."
+                        />
+                      )}
                     </>
                   )}
                 </div>

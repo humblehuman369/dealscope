@@ -108,6 +108,28 @@ export interface RentalMarketStatistics {
 // RENTAL DATA
 // =============================================================================
 
+export interface STRMarketStats {
+  median_occupancy?: number | null;
+  median_adr?: number | null;
+  median_revenue_annual?: number | null;
+  sample_size?: number | null;
+  city_insights_fallback?: boolean | null;
+  confidence?: 'high' | 'medium' | 'low' | null;
+  yoy_occupancy_change?: number | null;
+  yoy_income_change?: number | null;
+  revpar?: number | null;
+  tax_rate?: number | null;
+}
+
+export interface STRRegulatory {
+  rating?: 'Positive' | 'Negative' | 'Neutral' | 'Restricted' | string | null;
+  day_limit?: number | null;
+  permit_fee?: string | null;
+  rules_summary?: string | null;
+  rules_source?: string | null;
+  legal_for_occupied?: string | null;
+}
+
 export interface RentalData {
   monthly_rent_ltr?: number | null;
   rent_range_low?: number | null;
@@ -118,6 +140,8 @@ export interface RentalData {
   rent_per_sqft?: number | null;
   average_rent?: number | null;
   rental_stats?: RentalMarketStatistics | null;
+  str_market_stats?: STRMarketStats | null;
+  str_regulatory?: STRRegulatory | null;
 }
 
 // =============================================================================
