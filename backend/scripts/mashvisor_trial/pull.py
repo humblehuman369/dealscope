@@ -64,7 +64,7 @@ def _load_env():
 
     RAPIDAPI_KEY = os.environ.get("MASHVISOR_RAPIDAPI_KEY", "")
     RAPIDAPI_HOST = os.environ.get("MASHVISOR_RAPIDAPI_HOST", "mashvisor-api.p.rapidapi.com")
-    BASE_URL = f"https://{RAPIDAPI_HOST}/v1.1/client"
+    BASE_URL = f"https://{RAPIDAPI_HOST}"
 
     if not RAPIDAPI_KEY:
         print("ERROR: MASHVISOR_RAPIDAPI_KEY not set.")
@@ -429,32 +429,10 @@ async def main():
         print("\n[Test] Checking Mashvisor API connectivity...")
         test = await _get(client, "/city/list", {"state": "FL"})
         if test.get("_status") != 200:
-            print(f"  FAILED: {test}")
-            print("\n  Possible issues:")
-            print("  1. Wrong host — try mashvisor-api.p.rapidapi.com")
-            print("  2. API key invalid or trial expired")
-            print("  3. Path structure different on RapidAPI")
-            print("\n  Trying without /v1.1/client prefix...")
-            global BASE_URL
-            old_base = BASE_URL
-            BASE_URL = f"https://{RAPIDAPI_HOST}"
-            test2 = await _get(client, "/v1.1/client/city/list", {"state": "FL"})
-            if test2.get("_status") == 200:
-                print("  SUCCESS with /v1.1/client in path — adjusting base URL")
-                BASE_URL = f"https://{RAPIDAPI_HOST}"
-                _save("_meta", "connectivity_test", test2)
-            else:
-                test3 = await _get(client, "/city/list", {"state": "FL"})
-                if test3.get("_status") == 200:
-                    print("  SUCCESS without prefix — adjusting base URL")
-                    _save("_meta", "connectivity_test", test3)
-                else:
-                    BASE_URL = old_base
-                    print(f"  All attempts failed. Last response: {test3}")
-                    print("  Saving test responses and continuing anyway...")
-                    _save("_meta", "connectivity_test_v1", test)
-                    _save("_meta", "connectivity_test_v2", test2)
-                    _save("_meta", "connectivity_test_v3", test3)
+            print(f"  FAILED (status {test.get('_status')}): {test.get('_error', '')[:200]}")
+            print("\n  Check: API key valid? Trial active? Host correct?")
+            _save("_meta", "connectivity_FAILED", test)
+            sys.exit(1)
         else:
             print("  OK — API is reachable")
             _save("_meta", "connectivity_test", test)
