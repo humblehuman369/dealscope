@@ -219,7 +219,7 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
           <span className="font-semibold">Unavailable:</span>{' '}
           {unavailableSources
             .map((id) => {
-              const labels: Record<string, string> = { iq: 'IQ Estimate', zillow: 'Zillow', rentcast: 'RentCast', redfin: 'Redfin', realtor: 'Realtor' }
+              const labels: Record<string, string> = { iq: 'IQ Estimate', zillow: 'Zillow', rentcast: 'RentCast', redfin: 'Redfin', realtor: 'Realtor', mashvisor: 'Mashvisor' }
               return labels[id]
             })
             .join(', ')}

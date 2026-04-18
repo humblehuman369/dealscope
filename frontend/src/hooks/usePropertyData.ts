@@ -46,7 +46,10 @@ function validatePropertyResponse(data: PropertyResponseCompat): PropertyRespons
     if (r.monthly_rent_ltr != null) r.monthly_rent_ltr = finiteOrNull(r.monthly_rent_ltr)
     const rs = r.rental_stats as Record<string, any> | undefined
     if (rs) {
-      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate', 'realtor_estimate']) {
+      // realtor_estimate dropped from rental_stats — Realtor.com has no rent
+      // API. mashvisor_estimate replaces it (per-bedroom Mashvisor traditional
+      // monthly rent).
+      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate', 'mashvisor_estimate']) {
         if (rs[k] != null) rs[k] = finiteOrNull(rs[k])
       }
     }

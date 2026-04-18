@@ -36,6 +36,10 @@ export interface CalculationInputs {
   // STR-specific
   averageDailyRate?: number
   occupancyRate?: number
+  // Mashvisor /rental-rates per-bed monthly STR revenue. When set, replaces
+  // the legacy ADR×nights formula in calculateSTRMetrics. Optional so older
+  // callers continue to work with ADR/occupancy fallbacks.
+  mashvisorMonthlyStrRevenue?: number
   cleaningFeeRevenue?: number
   platformFeeRate?: number
   strManagementRate?: number
@@ -197,9 +201,15 @@ function calculateSTRMetrics(
 ): Record<MetricId, number | string | null> {
   const adr = inputs.averageDailyRate ?? 200
   const occupancy = inputs.occupancyRate ?? 0.65
-  
+
   const nightsOccupied = Math.round(365 * occupancy)
-  const annualRevenue = adr * nightsOccupied
+  // Mashvisor monthly STR revenue takes precedence over ADR×nights when
+  // available. Cleaning fee revenue still uses nights/3 because Mashvisor's
+  // monthly figure already nets cleaning fees in.
+  const annualRevenue =
+    inputs.mashvisorMonthlyStrRevenue && inputs.mashvisorMonthlyStrRevenue > 0
+      ? inputs.mashvisorMonthlyStrRevenue * 12
+      : adr * nightsOccupied
   const cleaningRevenue = (inputs.cleaningFeeRevenue ?? 0) * (nightsOccupied / 3)
   const totalRevenue = annualRevenue + cleaningRevenue
   

@@ -158,6 +158,7 @@ def _calculate_str_strategy(
     insurance: float,
     rehab_cost: float,
     a: AllAssumptions,
+    monthly_revenue_override: float | None = None,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -168,7 +169,14 @@ def _calculate_str_strategy(
     loan_amount = price - down_payment
     monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
     annual_debt = monthly_pi * 12
-    annual_revenue = adr * 365 * occupancy
+    # Mashvisor monthly STR revenue (per-bed) bypasses ADR×365×occupancy
+    # when supplied. All percentage-based opex (mgmt, platform, maintenance,
+    # capex) continue to scale off the resulting annual revenue, so the
+    # downstream economics remain coherent.
+    if monthly_revenue_override is not None and monthly_revenue_override > 0:
+        annual_revenue = monthly_revenue_override * 12
+    else:
+        annual_revenue = adr * 365 * occupancy
     mgmt_fee = annual_revenue * s.str_management_pct
     platform_fees = annual_revenue * s.platform_fees_pct
     utilities = o.utilities_monthly * 12
@@ -829,7 +837,20 @@ def compute_iq_verdict(
     insurance = input_data.insurance or 0
     arv = input_data.arv or (list_price * 1.15)
     rehab_cost = input_data.rehab_cost if input_data.rehab_cost is not None else arv * a.rehab.renovation_budget_pct
-    adr = input_data.average_daily_rate or (((monthly_rent / 30) * 1.5) if monthly_rent > 0 else 0)
+    # Mashvisor /rental-rates per-bed monthly revenue takes precedence over
+    # the formula-derived ADR fallback when present. occupancy still falls
+    # back to 0.65 for break-even / cleaning math that needs per-night
+    # structure even when monthly revenue is overridden.
+    mashvisor_monthly = input_data.mashvisor_monthly_str_revenue
+    if input_data.average_daily_rate:
+        adr = input_data.average_daily_rate
+    elif mashvisor_monthly and (input_data.occupancy_rate or 0.65) > 0:
+        # Reverse-derive ADR from monthly revenue + occupancy
+        adr = mashvisor_monthly / 30 / (input_data.occupancy_rate or 0.65)
+    elif monthly_rent > 0:
+        adr = (monthly_rent / 30) * 1.5
+    else:
+        adr = 0
     occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
@@ -901,7 +922,10 @@ def compute_iq_verdict(
 
     strategies = [
         _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a),
-        _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance, rehab_cost, a),
+        _calculate_str_strategy(
+            buy_price, adr, occupancy, property_taxes, insurance, rehab_cost, a,
+            monthly_revenue_override=mashvisor_monthly,
+        ),
         _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a),
         _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance, a),
         _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance, a),

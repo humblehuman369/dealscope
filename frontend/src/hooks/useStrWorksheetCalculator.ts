@@ -139,7 +139,13 @@ const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult>
     const insurance = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
     const adr = data.averageDailyRate ?? defaults.average_daily_rate
     const occupancy = data.occupancyRate ?? defaults.occupancy_rate
-    const estimatedMonthlyRent = adr * occupancy * 30
+    // Mashvisor /rental-rates per-bed monthly STR revenue (when present)
+    // is the canonical fallback for "estimated monthly STR rent" — replaces
+    // the derived `adr × occupancy × 30` formula. Snapshot field is
+    // `monthlyStrRevenuePerBed` (camelCase) carried from
+    // STRMarketStats.monthly_revenue_per_bed.
+    const mashvisorMonthlyStrRevenue = data.monthlyStrRevenuePerBed
+    const estimatedMonthlyRent = mashvisorMonthlyStrRevenue ?? adr * occupancy * 30
 
     const initialPurchasePrice = calculateInitialPurchasePrice({
       monthlyRent: estimatedMonthlyRent,

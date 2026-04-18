@@ -172,8 +172,13 @@ export function StrWorksheet({
   // DEAL OPPORTUNITY SCORE FROM BACKEND API
   // ============================================
   // Measures: How obtainable is this deal? (discount from list to breakeven)
-  // For STR, we estimate monthly rent equivalent from ADR × 30 × occupancy
-  const estimatedMonthlyRent = (inputs.average_daily_rate || 200) * 30 * (inputs.occupancy_rate || 0.65)
+  // Mashvisor /rental-rates per-bed monthly STR revenue (when present in
+  // the property snapshot) replaces the formula-derived ADR×30×occupancy.
+  // The hardcoded 200/0.65 magic numbers stay only as a third-tier fallback.
+  const mashvisorMonthlyStrRevenue = propertyData.monthlyStrRevenuePerBed
+  const estimatedMonthlyRent =
+    mashvisorMonthlyStrRevenue ??
+    (inputs.average_daily_rate || 200) * 30 * (inputs.occupancy_rate || 0.65)
   
   const { result: dealScoreResult, isLoading: isDealScoreLoading } = useDealScore({
     listPrice: originalPrice,

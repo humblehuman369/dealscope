@@ -29,6 +29,18 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
         if not property_data:
             raise HTTPException(status_code=404, detail="Property not found")
 
+        # Mashvisor's per-bed monthly STR revenue, when present, lets us
+        # derive a more accurate ADR fallback than the legacy $200 magic
+        # number. occupancy still falls back to 0.75 for pure-percentage
+        # math when no source provides a real number.
+        str_stats = property_data.rentals.str_market_stats
+        mash_monthly = str_stats.monthly_revenue_per_bed if str_stats else None
+        mash_occupancy = property_data.rentals.occupancy_rate or 0.65
+        mash_adr_estimate = (
+            mash_monthly / 30 / mash_occupancy
+            if (mash_monthly and mash_occupancy > 0)
+            else None
+        )
         variable_mapping = {
             "purchase_price": request.assumptions.financing.purchase_price
             or property_data.valuations.current_value_avm
@@ -37,7 +49,11 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
             "down_payment_pct": request.assumptions.financing.down_payment_pct,
             "monthly_rent": property_data.rentals.monthly_rent_ltr or 2100,
             "occupancy_rate": property_data.rentals.occupancy_rate or 0.75,
-            "average_daily_rate": property_data.rentals.average_daily_rate or 200,
+            "average_daily_rate": (
+                property_data.rentals.average_daily_rate
+                or mash_adr_estimate
+                or 200
+            ),
         }
 
         base_value = variable_mapping.get(request.variable)

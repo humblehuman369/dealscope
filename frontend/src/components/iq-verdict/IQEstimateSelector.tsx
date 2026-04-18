@@ -11,28 +11,21 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin' | 'realtor'
+export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin' | 'realtor' | 'mashvisor'
 
 interface SourceValue {
   value: number | null
   label: string
 }
 
+// Value and rent columns can have different source lists. Realtor.com is
+// only present in the value column (their API doesn't expose rent estimates);
+// Mashvisor is only present in the rent column (sourced from the per-bedroom
+// /rental-rates traditional endpoint). `Partial<Record<...>>` lets each
+// column declare just the IDs it actually carries.
 export interface IQEstimateSources {
-  value: {
-    iq: number | null
-    zillow: number | null
-    rentcast: number | null
-    redfin: number | null
-    realtor: number | null
-  }
-  rent: {
-    iq: number | null
-    zillow: number | null
-    rentcast: number | null
-    redfin: number | null
-    realtor: number | null
-  }
+  value: Partial<Record<DataSourceId, number | null>>
+  rent: Partial<Record<DataSourceId, number | null>>
 }
 
 export interface IQEstimateSelectorProps {
@@ -53,6 +46,7 @@ const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   rentcast: { label: 'RentCast', color: '#F59E0B' },
   redfin: { label: 'Redfin', color: '#A02B2D' },
   realtor: { label: 'Realtor.com', color: '#D92228' },
+  mashvisor: { label: 'Mashvisor', color: '#06B6D4' },
 }
 
 function getStoredSelections(sessionKey: string): { value: DataSourceId; rent: DataSourceId } {
@@ -180,7 +174,11 @@ function resolveDefaults(
     if (group.zillow != null) return 'zillow'
     if (group.rentcast != null) return 'rentcast'
     if (group.redfin != null) return 'redfin'
-    if (group.realtor != null) return 'realtor'
+    // Mashvisor replaced Realtor.com on the rent side; older sessionStorage
+    // entries with `'realtor'` for rent are filtered upstream by the column-
+    // specific source-id list, so this fallthrough order intentionally
+    // mirrors the new rent column composition.
+    if (group.mashvisor != null) return 'mashvisor'
     return 'iq'
   }
   return {
@@ -216,7 +214,7 @@ export function IQEstimateSelector({
 
   const handleSelect = useCallback(
     (type: 'value' | 'rent', sourceId: DataSourceId) => {
-      const sourceGroup = sources[type] as Record<string, number | null>
+      const sourceGroup = sources[type]
       const newValue = sourceGroup[sourceId] ?? null
       setSelections((prev) => {
         const next = { ...prev, [type]: sourceId }
@@ -233,7 +231,9 @@ export function IQEstimateSelector({
   )
 
   const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
-  const rentSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
+  // Rent column swap: Realtor.com (no rent API) replaced by Mashvisor
+  // /rental-rates traditional (per-bedroom monthly rent benchmark).
+  const rentSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'mashvisor']
 
   return (
     <div
@@ -268,7 +268,7 @@ export function IQEstimateSelector({
                 key={`value-${id}`}
                 sourceId={id}
                 meta={SOURCE_META[id]}
-                sourceValue={sources.value[id]}
+                sourceValue={sources.value[id] ?? null}
                 isSelected={selections.value === id}
                 onSelect={() => handleSelect('value', id)}
                 compact={compact}
@@ -277,7 +277,7 @@ export function IQEstimateSelector({
           </div>
         </div>
 
-        {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
+        {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Mashvisor) */}
         <div>
           <p className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
             Monthly Rent
@@ -288,7 +288,7 @@ export function IQEstimateSelector({
                 key={`rent-${id}`}
                 sourceId={id}
                 meta={SOURCE_META[id]}
-                sourceValue={sources.rent[id]}
+                sourceValue={sources.rent[id] ?? null}
                 isSelected={selections.rent === id}
                 onSelect={() => handleSelect('rent', id)}
                 compact={compact}
@@ -318,7 +318,7 @@ export function useIQSourceSelection(
   return {
     valueSource: stored.value,
     rentSource: stored.rent,
-    selectedValue: sources.value[stored.value],
-    selectedRent: sources.rent[stored.rent],
+    selectedValue: sources.value[stored.value] ?? null,
+    selectedRent: sources.rent[stored.rent] ?? null,
   }
 }

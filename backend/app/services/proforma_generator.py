@@ -105,8 +105,16 @@ def _run_strategy_calculator(
     insurance: float,
     arv: float = 0,
     bedrooms: int = 3,
+    mashvisor_monthly_str_revenue: float | None = None,
 ) -> dict:
-    """Run the full strategy calculator and return results as a dict."""
+    """Run the full strategy calculator and return results as a dict.
+
+    ``mashvisor_monthly_str_revenue`` (optional) — Mashvisor /rental-rates
+    per-bed monthly STR revenue. When supplied, the STR branch passes this
+    through ``calculate_str(monthly_revenue_override=...)`` so the formula
+    ``adr = monthly_rent * 12 / 365 * 1.8`` is bypassed for the revenue
+    calculation. ADR is still computed for break-even / cleaning math.
+    """
     try:
         if strategy == "ltr":
             return calculate_ltr(
@@ -116,13 +124,21 @@ def _run_strategy_calculator(
                 hoa_monthly=0,
             )
         elif strategy == "str":
-            adr = monthly_rent * 12 / 365 * 1.8  # Approximate ADR from monthly rent
+            # Prefer Mashvisor monthly revenue for the override path, then
+            # back into ADR from it; otherwise fall through to the legacy
+            # heuristic. Occupancy stays at 0.65 since this stub doesn't
+            # have access to Mashvisor occupancy.
+            if mashvisor_monthly_str_revenue and mashvisor_monthly_str_revenue > 0:
+                adr = mashvisor_monthly_str_revenue / 30 / 0.65
+            else:
+                adr = monthly_rent * 12 / 365 * 1.8
             return calculate_str(
                 purchase_price=purchase_price,
                 average_daily_rate=adr,
                 occupancy_rate=0.65,
                 property_taxes_annual=property_taxes,
                 hoa_monthly=0,
+                monthly_revenue_override=mashvisor_monthly_str_revenue,
             )
         elif strategy == "brrrr":
             rehab_cost = purchase_price * 0.15

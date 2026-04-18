@@ -226,7 +226,10 @@ class RentalMarketStatistics(BaseModel):
     rentcast_estimate: float | None = None  # RentCast rent estimate
     zillow_estimate: float | None = None  # Zillow rentZestimate
     redfin_estimate: float | None = None  # Redfin rental estimate
-    realtor_estimate: float | None = None  # Realtor.com rental estimate
+    # Mashvisor /rental-rates traditional, bedroom-matched. Replaces the
+    # former realtor_estimate slot (Realtor.com does not expose a rent
+    # estimate; it remains in ValuationData on the Property Value column).
+    mashvisor_estimate: float | None = None  # Mashvisor traditional monthly rent
     iq_estimate: float | None = None  # DealGapIQ: avg of available sources
 
     # Estimate range (from RentCast)
@@ -274,6 +277,14 @@ class STRMarketStats(BaseModel):
     yoy_income_change: float | None = None
     revpar: float | None = None
     tax_rate: float | None = None
+    # Bedroom-matched monthly Airbnb revenue from /rental-rates?source=airbnb.
+    # Canonical fallback for STR worksheet/score formulas: when present, this
+    # replaces ADR×30×occupancy and ADR-derivation defaults throughout the
+    # codebase (see worksheet, iqTarget, str_calc, iq_verdict_service).
+    monthly_revenue_per_bed: float | None = None
+    monthly_revenue_sample_size: int | None = None
+    monthly_revenue_bedrooms: int | None = None
+    monthly_revenue_confidence: Confidence | None = None
 
 
 class RentalData(BaseModel):

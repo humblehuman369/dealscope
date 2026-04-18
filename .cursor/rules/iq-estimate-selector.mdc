@@ -8,7 +8,11 @@ alwaysApply: false
 
 ## Multi-Source Model
 
-Both **Property Value** and **Monthly Rent** have 4 selectable sources:
+Both **Property Value** and **Monthly Rent** display **5 selectable sources** each.
+The two columns share IQ + Zillow + RentCast + Redfin, but the 5th source differs:
+
+- **Value column** uses `Realtor.com` (their API exposes a home-value estimate but no rent).
+- **Rent column** uses `Mashvisor` (per-bedroom monthly rent from `/rental-rates?source=traditional`).
 
 | Source | Description | Backend Field (rent) | Backend Field (value) |
 |--------|-------------|---------------------|----------------------|
@@ -16,6 +20,8 @@ Both **Property Value** and **Monthly Rent** have 4 selectable sources:
 | Zillow | Raw Zillow value | `rental_stats.zillow_estimate` | `valuations.zestimate` |
 | RentCast | Raw RentCast value | `rental_stats.rentcast_estimate` | `valuations.rentcast_avm` |
 | Redfin | Redfin estimate | `rental_stats.redfin_estimate` | `valuations.redfin_estimate` |
+| Realtor.com | Realtor.com estimate (value only) | — (not provided by Realtor API) | `valuations.realtor_estimate` |
+| Mashvisor | Per-bedroom monthly rent (rent only) | `rental_stats.mashvisor_estimate` | — (not used in value column) |
 
 ## Selection Rules
 
@@ -23,6 +29,9 @@ Both **Property Value** and **Monthly Rent** have 4 selectable sources:
 2. User can click to select a different source — handled by `handleSelect`, bypasses `resolveDefaults`
 3. On page load or property change, selection resets to IQ Estimate
 4. Selection persists in `sessionStorage` (key: `iq_source_selection`) for within-session use
+5. Stale `sessionStorage` selections (e.g. `'realtor'` for rent from before the swap) are
+   silently ignored: `resolveRent` falls through to IQ when the stored ID isn't in the
+   rent column's source list
 
 ### `resolveDefaults` logic
 
@@ -31,9 +40,11 @@ Both **Property Value** and **Monthly Rent** have 4 selectable sources:
 if (group.iq != null) return 'iq'
 // Fall back to stored selection if that source has data
 if (group[sel] != null) return sel
-// Then any available source
+// Then any available source — column-specific fallthrough order
 if (group.zillow != null) return 'zillow'
 if (group.rentcast != null) return 'rentcast'
+if (group.redfin != null) return 'redfin'
+// rent column: mashvisor; value column: realtor
 return 'iq'
 ```
 

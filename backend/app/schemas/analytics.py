@@ -44,6 +44,13 @@ class IQVerdictInput(BaseModel):
     arv: float | None = Field(None, gt=0, le=100_000_000, description="After Repair Value")
     average_daily_rate: float | None = Field(None, ge=0, le=100_000, description="STR average daily rate")
     occupancy_rate: float | None = Field(None, ge=0.0, le=1.0, description="STR occupancy rate (0.0-1.0)")
+    # Mashvisor /rental-rates?source=airbnb per-bedroom monthly revenue.
+    # When supplied, the STR strategy bypasses ADR×365×occupancy and uses
+    # this value × 12 as the canonical annual revenue.
+    mashvisor_monthly_str_revenue: float | None = Field(
+        None, ge=0, le=1_000_000,
+        description="Mashvisor per-bedroom monthly STR revenue (replaces ADR×30×occupancy fallback)",
+    )
     listing_status: str | None = Field(None, max_length=50, description="Listing status")
     seller_type: str | None = Field(None, max_length=50, description="Seller type")
     is_foreclosure: bool | None = Field(False, description="Is foreclosure property")
