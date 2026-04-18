@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
             &larr; Back to DealGapIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Privacy Policy</h1>
-          <p className="text-sm text-slate-500">Last updated: April 9, 2026</p>
+          <p className="text-sm text-slate-500">Last updated: April 18, 2026</p>
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
@@ -56,6 +56,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
               <li><strong className="text-slate-300">RentCast</strong> — Rental estimates, property data, and market statistics</li>
               <li><strong className="text-slate-300">AXESSO</strong> — Property listings, valuations, and market data</li>
+              <li><strong className="text-slate-300">RapidAPI</strong> — Property listings, valuations, and market data</li>
               <li><strong className="text-slate-300">Google Maps</strong> — Mapping and geocoding services</li>
               <li><strong className="text-slate-300">RevenueCat</strong> — In-app purchase management and subscription processing on mobile platforms</li>
               <li><strong className="text-slate-300">Stripe</strong> — Payment processing for web subscriptions</li>
