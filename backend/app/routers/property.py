@@ -123,7 +123,9 @@ async def search_property(
                 )
             except Exception as rec_err:
                 logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
-        logger.error(f"Property search error: {e!s}")
+        # Always log the full traceback — `str(e)` alone strips the call site
+        # and the wrapping HTTPException prevents Starlette from logging it.
+        logger.exception("Property search error for %s: %s", full_address, e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     # Record successful search for authenticated users
