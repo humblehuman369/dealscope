@@ -26,6 +26,31 @@ export const IS_CAPACITOR: boolean = (() => {
 })()
 
 /**
+ * Native platform identifier inside Capacitor: 'ios' | 'android' | 'web'.
+ * Returns 'web' when running in a browser (also covers SSR via the
+ * `IS_CAPACITOR` short-circuit). Cached on first read so subsequent
+ * accesses are O(1) and stable across HMR.
+ */
+const detectPlatform = (): 'ios' | 'android' | 'web' => {
+  if (typeof window === 'undefined') return 'web'
+  const cap = (window as any).Capacitor
+  const platform = cap?.getPlatform?.() ?? cap?.platform
+  if (platform === 'ios' || platform === 'android') return platform
+  return 'web'
+}
+
+export const NATIVE_PLATFORM: 'ios' | 'android' | 'web' = detectPlatform()
+
+/**
+ * Convenience flags for store-specific UI/copy. Required for compliance:
+ * Apple and Google each mandate their own subscription disclosure language
+ * ("App Store account" vs "Google Play account," etc.). Mixing them up is
+ * a guaranteed review rejection on whichever store sees the wrong copy.
+ */
+export const IS_IOS: boolean = NATIVE_PLATFORM === 'ios'
+export const IS_ANDROID: boolean = NATIVE_PLATFORM === 'android'
+
+/**
  * Base URL prefix for client-side API calls.
  * - Default: empty string — relative paths go through the app origin and rewrites
  * - Optional direct mode: set NEXT_PUBLIC_USE_DIRECT_API=true to call

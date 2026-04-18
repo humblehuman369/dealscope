@@ -12,7 +12,7 @@ import { X, Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
-import { IS_CAPACITOR } from '@/lib/env'
+import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
 
@@ -342,15 +342,46 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               Terms of Use
             </a>
           </div>
-          {IS_CAPACITOR && (
-            <p className="text-[10px] leading-snug text-center mt-1" style={{ color: '#64748b' }}>
-              Payment will be charged to your Apple&nbsp;ID account at confirmation
-              of purchase. Subscription automatically renews unless canceled at
-              least 24&nbsp;hours before the end of the current period. Your account
-              will be charged for renewal within 24&nbsp;hours prior to the end of
-              the current period at the same price. You can manage and cancel your
-              subscriptions by going to your App&nbsp;Store account settings after
-              purchase.
+          {IS_CAPACITOR && (() => {
+            const accountName = IS_IOS ? 'Apple ID' : 'Google Play'
+            const settingsName = IS_IOS ? 'App Store' : 'Google Play'
+            const cancelWindow = IS_IOS
+              ? ' at least 24\u00a0hours before'
+              : ' before'
+            const period = annual ? 'year' : 'month'
+            const fullPrice = annual ? displayPriceAnnual : displayPriceMonthly
+            return (
+              <p className="text-[10px] leading-snug text-center mt-1" style={{ color: '#64748b' }}>
+                After your 7-day free trial, your {accountName} account will be
+                charged {fullPrice}/{period}. Subscription automatically renews
+                each {period} at the same price unless canceled{cancelWindow} the
+                end of the current period. Manage or cancel anytime in your{' '}
+                {settingsName} subscription settings.
+              </p>
+            )
+          })()}
+          {IS_ANDROID && (
+            <p className="text-[10px] leading-snug text-center" style={{ color: '#64748b' }}>
+              Subscriptions are billed through Google Play. By tapping &ldquo;Start
+              7-day free trial&rdquo; you agree to the{' '}
+              <a
+                href="https://dealgapiq.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-slate-400"
+              >
+                Terms of Use
+              </a>
+              {' '}and{' '}
+              <a
+                href="https://dealgapiq.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-slate-400"
+              >
+                Privacy Policy
+              </a>
+              .
             </p>
           )}
         </div>
