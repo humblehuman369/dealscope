@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
               <li><strong className="text-slate-300">RentCast</strong> — Rental estimates, property data, and market statistics</li>
               <li><strong className="text-slate-300">AXESSO</strong> — Property listings, valuations, and market data</li>
-              <li><strong className="text-slate-300">RapidAPI</strong> — Property listings, valuations, and market data</li>
+              <li><strong className="text-slate-300">RapidAPI</strong> — Marketplace gateway for property listings, valuations, and market data sourced from Redfin, Realtor.com, and Mashvisor</li>
               <li><strong className="text-slate-300">Google Maps</strong> — Mapping and geocoding services</li>
               <li><strong className="text-slate-300">RevenueCat</strong> — In-app purchase management and subscription processing on mobile platforms</li>
               <li><strong className="text-slate-300">Stripe</strong> — Payment processing for web subscriptions</li>
