@@ -306,3 +306,78 @@ def test_inject_mashvisor_data_handles_missing_bedrooms():
     assert normalized["rental_mashvisor_bedrooms"] == 3
     # Confidence floored at medium because bedrooms was unknown
     assert normalized["rental_mashvisor_confidence"] == "medium"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Regression: Mashvisor STR override must not crash when no AXESSO sample exists
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_mashvisor_str_override_handles_missing_axesso_provenance():
+    """Regression: high-confidence Mashvisor STR data on an off-market
+    property previously crashed with `'NoneType' object has no attribute
+    'get'` because the FIELD_MAPPING loop sets ``raw_values`` to None when
+    no provider supplied a value, and the override code chained .get()
+    through that None when preserving the prior AXESSO sample.
+
+    Triggered for any property where Mashvisor returned medium/high
+    confidence STR analytics but AXESSO had no occupancy/ADR (typical of
+    off-market listings in popular STR zips like Wellington FL 33414).
+    """
+    normalizer = DataNormalizer()
+    timestamp = datetime.now(UTC)
+
+    mashvisor_data = {
+        "str_occupancy_mashvisor": 65.5,  # 65.5% occupancy
+        "str_adr_mashvisor": 250.0,
+        "str_revenue_annual": 50000.0,
+        "str_sample_size": 100,
+        "str_confidence": "high",
+    }
+
+    normalized, provenance = normalizer.normalize(
+        rentcast_data=None,
+        axesso_data=None,
+        timestamp=timestamp,
+        mashvisor_data=mashvisor_data,
+    )
+
+    assert normalized["occupancy_rate"] == pytest.approx(0.655)
+    assert normalized["average_daily_rate"] == 250.0
+    assert provenance["occupancy_rate"]["source"] == "mashvisor"
+    # Prior AXESSO sample is None (no AXESSO data) — must not raise
+    assert provenance["occupancy_rate"]["raw_values"]["axesso"] is None
+
+
+def test_mashvisor_str_override_preserves_axesso_sample_when_present():
+    """When AXESSO has an occupancy/ADR sample, the override must keep
+    the prior value in raw_values for downstream debugging."""
+    normalizer = DataNormalizer()
+    timestamp = datetime.now(UTC)
+
+    axesso_data = {"occupancyRate": 0.7, "averageDailyRate": 200}
+    mashvisor_data = {
+        "str_occupancy_mashvisor": 65.5,
+        "str_adr_mashvisor": 250.0,
+        "str_confidence": "high",
+    }
+
+    normalized, provenance = normalizer.normalize(
+        rentcast_data=None,
+        axesso_data=axesso_data,
+        timestamp=timestamp,
+        mashvisor_data=mashvisor_data,
+    )
+
+    assert normalized["occupancy_rate"] == pytest.approx(0.655)
+    assert provenance["occupancy_rate"]["raw_values"]["mashvisor"] == 65.5
+    assert provenance["occupancy_rate"]["raw_values"]["axesso"] == 0.7
+    assert provenance["average_daily_rate"]["raw_values"]["axesso"] == 200
+
+
+def test_parse_str_regulatory_handles_null_content():
+    """Regression: ``data.get("content", {})`` returned None when the API
+    explicitly sent ``"content": null``, blowing up on the next .get()."""
+    client = MashvisorClient.__new__(MashvisorClient)
+    result = client.parse_str_regulatory({"status": "success", "content": None})
+    assert result == {}

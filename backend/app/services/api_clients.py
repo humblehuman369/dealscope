@@ -951,8 +951,10 @@ class MashvisorClient(BaseAPIClient[APIResponse]):
         if data.get("status") != "success":
             return result
 
-        content = data.get("content", {})
-        reg_list = content.get("list", [])
+        # Use `or {}` (not the default arg) so an explicit null content value
+        # is coerced to an empty dict instead of raising on .get().
+        content = data.get("content") or {}
+        reg_list = content.get("list") or []
         if not isinstance(reg_list, list) or not reg_list:
             return result
 
@@ -1480,12 +1482,20 @@ class DataNormalizer:
         m_occ = mashvisor_data.get("str_occupancy_mashvisor")
         m_adr = mashvisor_data.get("str_adr_mashvisor")
         if confidence in ("high", "medium"):
+            # Provenance entries set raw_values=None when no provider supplied
+            # a value, so coerce to {} before chained .get() to avoid NoneType
+            # attribute errors when preserving the prior AXESSO sample.
+            def _prior_axesso_value(field: str) -> Any:
+                prev = provenance.get(field) or {}
+                prev_raw = prev.get("raw_values") or {}
+                return prev_raw.get("axesso")
+
             if m_occ is not None:
                 normalized["occupancy_rate"] = m_occ / 100.0  # Mashvisor is 0-100, we store 0-1
                 provenance["occupancy_rate"] = {
                     "source": "mashvisor", "fetched_at": ts,
                     "confidence": prov_confidence,
-                    "raw_values": {"mashvisor": m_occ, "axesso": provenance.get("occupancy_rate", {}).get("raw_values", {}).get("axesso")},
+                    "raw_values": {"mashvisor": m_occ, "axesso": _prior_axesso_value("occupancy_rate")},
                     "conflict_flag": False,
                 }
             if m_adr is not None:
@@ -1493,7 +1503,7 @@ class DataNormalizer:
                 provenance["average_daily_rate"] = {
                     "source": "mashvisor", "fetched_at": ts,
                     "confidence": prov_confidence,
-                    "raw_values": {"mashvisor": m_adr, "axesso": provenance.get("average_daily_rate", {}).get("raw_values", {}).get("axesso")},
+                    "raw_values": {"mashvisor": m_adr, "axesso": _prior_axesso_value("average_daily_rate")},
                     "conflict_flag": False,
                 }
 
