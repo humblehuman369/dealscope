@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { UpgradeModal } from "@/components/billing/UpgradeModal";
-import { IS_CAPACITOR } from "@/lib/env";
+import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from "@/lib/env";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { PriceCents } from "@/components/ui/PriceCents";
 
@@ -1033,15 +1033,25 @@ export default function PricingContent() {
             Terms of Use
           </a>
         </div>
-        {IS_CAPACITOR && (
-          <p style={{ fontSize: "10px", color: "var(--text-label)", textAlign: "center", lineHeight: 1.5, maxWidth: "480px", margin: "16px auto 0" }}>
-            Payment will be charged to your Apple&nbsp;ID account at confirmation
-            of purchase. Subscription automatically renews unless canceled at
-            least 24&nbsp;hours before the end of the current period. Your account
-            will be charged for renewal within 24&nbsp;hours prior to the end of
-            the current period at the same price. You can manage and cancel your
-            subscriptions by going to your App&nbsp;Store account settings after
-            purchase.
+        {IS_CAPACITOR && (() => {
+          const accountName = IS_IOS ? "Apple\u00a0ID" : "Google\u00a0Play";
+          const settingsName = IS_IOS ? "App\u00a0Store" : "Google\u00a0Play";
+          const cancelWindow = IS_IOS
+            ? " at least 24\u00a0hours before"
+            : " before";
+          return (
+            <p style={{ fontSize: "10px", color: "var(--text-label)", textAlign: "center", lineHeight: 1.5, maxWidth: "480px", margin: "16px auto 0" }}>
+              After your 7-day free trial, your {accountName} account will be
+              charged at the rate shown above. Subscription automatically renews
+              at the same price unless canceled{cancelWindow} the end of the
+              current period. Manage or cancel anytime in your {settingsName}{" "}
+              subscription settings.
+            </p>
+          );
+        })()}
+        {IS_ANDROID && (
+          <p style={{ fontSize: "10px", color: "var(--text-label)", textAlign: "center", lineHeight: 1.5, maxWidth: "480px", margin: "8px auto 0" }}>
+            Subscriptions are billed through Google Play.
           </p>
         )}
       </div>
