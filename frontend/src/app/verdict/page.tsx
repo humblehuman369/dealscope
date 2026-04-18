@@ -239,7 +239,7 @@ function VerdictContent() {
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
   })
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
@@ -333,7 +333,7 @@ function VerdictContent() {
       setPropertyPhotos([])
       setIqSources({
         value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-        rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+        rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
       })
 
       try {
@@ -447,7 +447,7 @@ function VerdictContent() {
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
             redfin: rentalStats?.redfin_estimate ?? null,
-            realtor: rentalStats?.realtor_estimate ?? null,
+            mashvisor: rentalStats?.mashvisor_estimate ?? null,
           },
         })
 

@@ -326,6 +326,12 @@ class PropertyService:
                 logger.warning("Mashvisor: cannot parse address for API: %s", address)
                 return None, (time.perf_counter() - t0) * 1000
 
+            # Bedrooms drives the str_lookup/str_historical query but the
+            # /rental-rates endpoints return *all* bedroom buckets in a single
+            # call, so we resolve those bedroom-side downstream in
+            # _inject_mashvisor_data where the canonical bedroom count is known.
+            # Default to 3BR for the bedroom-parameterized lookups when caller
+            # hasn't passed a value.
             beds = bedrooms or 3
 
             import asyncio as _aio
@@ -340,9 +346,16 @@ class PropertyService:
             reg_task = self.mashvisor.str_regulatory(
                 state=parts["state"], city=parts["city"],
             )
+            trad_rates_task = self.mashvisor.traditional_rental_rates(
+                state=parts["state"], city=parts["city"], zip_code=parts["zip"],
+            )
+            airbnb_rates_task = self.mashvisor.airbnb_rental_rates(
+                state=parts["state"], city=parts["city"], zip_code=parts["zip"],
+            )
 
-            lookup_resp, hist_resp, reg_resp = await _aio.gather(
-                lookup_task, hist_task, reg_task, return_exceptions=True
+            lookup_resp, hist_resp, reg_resp, trad_resp, airbnb_resp = await _aio.gather(
+                lookup_task, hist_task, reg_task, trad_rates_task, airbnb_rates_task,
+                return_exceptions=True,
             )
 
             if isinstance(lookup_resp, Exception):
@@ -367,6 +380,18 @@ class PropertyService:
                 logger.error("Mashvisor regulatory failed: %s", reg_resp)
             elif reg_resp.success and reg_resp.data:
                 merged.update(self.mashvisor.parse_str_regulatory(reg_resp.data))
+
+            # Stash raw rental-rates responses for bedroom-matched parsing in
+            # _inject_mashvisor_data (where normalized["bedrooms"] is known).
+            if isinstance(trad_resp, Exception):
+                logger.error("Mashvisor traditional rental-rates failed: %s", trad_resp)
+            elif trad_resp.success and trad_resp.data:
+                merged["_rental_rates_traditional_raw"] = trad_resp.data
+
+            if isinstance(airbnb_resp, Exception):
+                logger.error("Mashvisor airbnb rental-rates failed: %s", airbnb_resp)
+            elif airbnb_resp.success and airbnb_resp.data:
+                merged["_rental_rates_airbnb_raw"] = airbnb_resp.data
 
         except Exception as e:
             logger.error("Error fetching Mashvisor data: %s", e)
@@ -591,7 +616,7 @@ class PropertyService:
                     rentcast_estimate=normalized.get("rental_rentcast_estimate"),
                     zillow_estimate=normalized.get("rental_zillow_estimate"),
                     redfin_estimate=normalized.get("redfin_rental_estimate"),
-                    realtor_estimate=None,
+                    mashvisor_estimate=normalized.get("rental_mashvisor_estimate"),
                     iq_estimate=normalized.get("rental_iq_estimate"),
                     estimate_low=normalized.get("rent_range_low"),
                     estimate_high=normalized.get("rent_range_high"),
@@ -611,6 +636,7 @@ class PropertyService:
                         normalized.get("rental_rentcast_estimate") is not None,
                         normalized.get("rental_zillow_estimate") is not None,
                         normalized.get("redfin_rental_estimate") is not None,
+                        normalized.get("rental_mashvisor_estimate") is not None,
                         normalized.get("rental_iq_estimate") is not None,
                         normalized.get("rental_market_avg") is not None,
                         normalized.get("rental_market_median") is not None,
@@ -632,8 +658,15 @@ class PropertyService:
                     yoy_income_change=normalized.get("str_yoy_income"),
                     revpar=normalized.get("str_revpar"),
                     tax_rate=normalized.get("str_tax_rate"),
+                    monthly_revenue_per_bed=normalized.get("str_monthly_revenue_mashvisor"),
+                    monthly_revenue_sample_size=normalized.get("str_monthly_revenue_sample_size"),
+                    monthly_revenue_bedrooms=normalized.get("str_monthly_revenue_bedrooms"),
+                    monthly_revenue_confidence=normalized.get("str_monthly_revenue_confidence"),
                 )
-                if normalized.get("str_occupancy_mashvisor") is not None
+                if (
+                    normalized.get("str_occupancy_mashvisor") is not None
+                    or normalized.get("str_monthly_revenue_mashvisor") is not None
+                )
                 else None,
                 # Mashvisor STR regulatory status
                 str_regulatory=STRRegulatory(
@@ -1047,13 +1080,26 @@ class PropertyService:
         return None
 
     def _estimate_adr(self, data: dict) -> float | None:
-        """Estimate ADR from LTR rent if STR data unavailable."""
+        """Estimate ADR from the best signal available, in priority order:
+
+        1. Mashvisor /rental-rates?source=airbnb (per-bedroom monthly STR
+           revenue, bedroom-matched) → ADR = monthly_revenue / 30 / occupancy.
+           This is the canonical fallback when Mashvisor str_lookup didn't
+           supply ``average_daily_rate`` directly (e.g. low sample size).
+        2. LTR-derived heuristic (existing behavior): 2.5× daily equivalent
+           of monthly LTR rent.
+        3. Hard $200 default — last resort.
+        """
+        mashvisor_monthly = data.get("str_monthly_revenue_mashvisor")
+        if mashvisor_monthly:
+            occ = data.get("occupancy_rate") or 0.65
+            if occ > 0:
+                return mashvisor_monthly / 30 / occ
         monthly_rent = data.get("monthly_rent_ltr")
         if monthly_rent:
-            # STR ADR is typically 2-3x daily equivalent of monthly rent
             daily_equivalent = monthly_rent / 30
             return daily_equivalent * 2.5
-        return 200  # Default fallback
+        return 200
 
     def _estimate_taxes(self, data: dict) -> float:
         """Estimate annual property taxes."""
@@ -1492,7 +1538,20 @@ class PropertyService:
         monthly_rent = property_data.rentals.monthly_rent_ltr or 0
         property_taxes = property_data.market.property_taxes_annual or 4500
         hoa = property_data.market.hoa_fees_monthly or 0
-        adr = property_data.rentals.average_daily_rate or 250
+        # Prefer Mashvisor STR data when available; fall back to legacy
+        # defaults (ADR $250, occupancy 75%) only when Mashvisor + AXESSO
+        # both miss. Note: average_daily_rate on rentals is already
+        # Mashvisor-aware (see DataNormalizer._inject_mashvisor_data); the
+        # str_market_stats access here lets us derive ADR from per-bed
+        # monthly revenue when ADR itself is missing.
+        str_stats_for_defaults = property_data.rentals.str_market_stats
+        mash_monthly_for_adr = str_stats_for_defaults.monthly_revenue_per_bed if str_stats_for_defaults else None
+        adr = (
+            property_data.rentals.average_daily_rate
+            or (mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
+                if mash_monthly_for_adr else None)
+            or 250
+        )
         occupancy = property_data.rentals.occupancy_rate or 0.75
         arv = property_data.valuations.arv or purchase_price * 1.10
         arv_flip = property_data.valuations.arv_flip or purchase_price * 1.06
@@ -1525,6 +1584,10 @@ class PropertyService:
             results.ltr = LTRResults(**ltr_result)
 
         if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc:
+            # Pull Mashvisor's per-bed monthly STR revenue when available so
+            # the calculator bypasses the ADR×365×occupancy formula.
+            str_stats = property_data.rentals.str_market_stats
+            mashvisor_monthly = str_stats.monthly_revenue_per_bed if str_stats else None
             str_result = calculate_str(
                 purchase_price=purchase_price,
                 average_daily_rate=adr,
@@ -1544,6 +1607,7 @@ class PropertyService:
                 supplies_monthly=assumptions.str_assumptions.supplies_monthly,
                 additional_utilities_monthly=assumptions.str_assumptions.additional_utilities_monthly,
                 insurance_annual=assumptions.str_assumptions.str_insurance_annual,
+                monthly_revenue_override=mashvisor_monthly,
             )
             results.str_results = STRResults(**str_result)
 

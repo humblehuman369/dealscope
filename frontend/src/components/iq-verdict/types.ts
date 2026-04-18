@@ -34,6 +34,10 @@ export interface IQProperty {
   hoa?: number;
   averageDailyRate?: number;
   occupancyRate?: number;
+  // Mashvisor /rental-rates per-bed monthly STR revenue (when available
+  // from STRMarketStats.monthly_revenue_per_bed). Drives the canonical STR
+  // revenue calculation; ADR×30×occupancy is now a fallback only.
+  mashvisorMonthlyStrRevenue?: number;
   arv?: number;
   latitude?: number;
   longitude?: number;
@@ -927,7 +931,10 @@ function calculateSTRStrategy(
   insurance: number,
   downPaymentPct: number = DEFAULT_ASSUMPTIONS.downPaymentPct,
   interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
-  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
+  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears,
+  // Mashvisor /rental-rates per-bed monthly STR revenue. When supplied,
+  // bypasses ADR×365×occupancy and uses this × 12 for annual gross revenue.
+  mashvisorMonthlyStrRevenue?: number
 ): StrategyCalculationResult {
   const downPayment = price * downPaymentPct;
   const closingCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
@@ -936,7 +943,10 @@ function calculateSTRStrategy(
   const totalCashRequired = downPayment + closingCosts + furnitureSetup;
   const monthlyPI = calculateMonthlyMortgage(loanAmount, interestRate, loanTermYears);
   const annualDebtService = monthlyPI * 12;
-  const annualGrossRevenue = averageDailyRate * 365 * occupancyRate;
+  const annualGrossRevenue =
+    mashvisorMonthlyStrRevenue && mashvisorMonthlyStrRevenue > 0
+      ? mashvisorMonthlyStrRevenue * 12
+      : averageDailyRate * 365 * occupancyRate;
   const managementFee = annualGrossRevenue * DEFAULT_ASSUMPTIONS.strManagementPct;
   const platformFees = annualGrossRevenue * DEFAULT_ASSUMPTIONS.platformFeesPct;
   const utilities = 1200;  // $100/mo (was $300/mo)
@@ -1163,19 +1173,30 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const insurance = property.insurance ?? listPrice * DEFAULT_ASSUMPTIONS.insurancePct; // 1% of price
   const arv = property.arv ?? listPrice * 1.15; // 15% above list
   const rehabCost = arv * DEFAULT_ASSUMPTIONS.rehabBudgetPct; // 5% of ARV
-  const averageDailyRate = property.averageDailyRate ?? (monthlyRent / 30) * 1.5;
+  // Mashvisor monthly STR revenue takes priority — drives both the
+  // canonical STR revenue calculation and the ADR back-derivation that
+  // remains needed for break-even / cleaning math elsewhere.
+  const mashvisorMonthlyStr = property.mashvisorMonthlyStrRevenue;
   const occupancyRate = property.occupancyRate ?? 0.65; // Properly handles 0% occupancy
+  const averageDailyRate =
+    property.averageDailyRate ??
+    (mashvisorMonthlyStr && occupancyRate > 0
+      ? mashvisorMonthlyStr / 30 / occupancyRate
+      : (monthlyRent / 30) * 1.5);
   const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
-  
+
   // Calculate target purchase price as 95% of Income Value (aligned with worksheets)
   const targetPrice = calculateTargetPurchasePrice(listPrice, monthlyRent, propertyTaxes, insurance);
-  
+
   // Calculate all strategies in fixed display order:
   // 1. Long-term Rental, 2. Short-term Rental, 3. BRRRR, 4. Fix & Flip, 5. House Hack, 6. Wholesale
   // Use targetPrice (95% of Income Value) instead of listPrice for consistent analysis
   const strategyResults: StrategyCalculationResult[] = [
     calculateLTRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance),
-    calculateSTRStrategy(targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance),
+    calculateSTRStrategy(
+      targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance,
+      undefined, undefined, undefined, mashvisorMonthlyStr,
+    ),
     calculateBRRRRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance, arv, rehabCost),
     calculateFlipStrategy(targetPrice, arv, rehabCost, propertyTaxes, insurance),
     calculateHouseHackStrategy(targetPrice, monthlyRent, beds, propertyTaxes, insurance),

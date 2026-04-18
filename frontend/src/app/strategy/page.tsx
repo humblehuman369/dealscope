@@ -178,7 +178,7 @@ function StrategyContent() {
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(strategyParam)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
   })
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>({})
   const [isRecalculating, setIsRecalculating] = useState(false)
@@ -239,6 +239,7 @@ function StrategyContent() {
   const savePropertySnapshot = useMemo(() => {
     if (!addressParam || !propertyInfo) return undefined
     const addr = propertyInfo.address || {}
+    const strStats = propertyInfo.rentals?.str_market_stats
     return {
       street: addr.street ?? (addressParam.split(',')[0]?.trim() || ''),
       city: addr.city ?? '',
@@ -249,6 +250,10 @@ function StrategyContent() {
       sqft: propertyInfo.details?.square_footage,
       listPrice: propertyInfo.price,
       zpid: propertyInfo.zpid,
+      // Persist Mashvisor /rental-rates data so the worksheet keeps using
+      // it after save/reload without re-fetching.
+      monthlyStrRevenuePerBed: strStats?.monthly_revenue_per_bed ?? undefined,
+      monthlyStrRevenueSampleSize: strStats?.monthly_revenue_sample_size ?? undefined,
     }
   }, [addressParam, propertyInfo])
 
@@ -401,7 +406,7 @@ function StrategyContent() {
             zillow: rentalStats?.zillow_estimate ?? null,
             rentcast: rentalStats?.rentcast_estimate ?? null,
             redfin: rentalStats?.redfin_estimate ?? null,
-            realtor: rentalStats?.realtor_estimate ?? null,
+            mashvisor: rentalStats?.mashvisor_estimate ?? null,
           },
         })
 

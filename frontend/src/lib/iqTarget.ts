@@ -66,6 +66,11 @@ export interface TargetAssumptions {
   averageDailyRate: number
   occupancyRate: number
   vacancyRate: number
+  // Mashvisor /rental-rates per-bed monthly STR revenue. When set, the STR
+  // strategy bypasses ADR×365×occupancy and uses this × 12 for annual gross
+  // rent. Optional so non-STR strategies and callers without Mashvisor data
+  // continue to work unchanged.
+  mashvisorMonthlyStrRevenue?: number
   // Expenses
   propertyTaxes: number
   insurance: number
@@ -843,7 +848,14 @@ function calculateSTRMetrics(purchasePrice: number, a: TargetAssumptions) {
   const totalCashRequired = downPayment + closingCosts
   const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
   const annualDebtService = monthlyPI * 12
-  const annualGrossRent = a.averageDailyRate * 365 * a.occupancyRate
+  // Mashvisor /rental-rates per-bed monthly revenue takes precedence over
+  // the formula-derived ADR×365×occupancy. Percentage-based opex (mgmt,
+  // platform, maintenance) continues to scale off whichever revenue value
+  // we end up using.
+  const annualGrossRent =
+    a.mashvisorMonthlyStrRevenue && a.mashvisorMonthlyStrRevenue > 0
+      ? a.mashvisorMonthlyStrRevenue * 12
+      : a.averageDailyRate * 365 * a.occupancyRate
   const managementFee = annualGrossRent * 0.20
   const platformFees = annualGrossRent * 0.03
   const utilities = 3600
@@ -855,7 +867,7 @@ function calculateSTRMetrics(purchasePrice: number, a: TargetAssumptions) {
   const capRate = purchasePrice > 0 ? noi / purchasePrice : 0
   const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0
   const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
-  
+
   return { monthlyCashFlow, annualCashFlow, capRate, cashOnCash, dscr, noi, annualGrossRent, totalCashRequired }
 }
 

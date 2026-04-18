@@ -18,6 +18,12 @@ export interface PropertySnapshot {
   listPrice?: number
   zpid?: string
   listingStatus?: string
+  // Mashvisor /rental-rates per-bed monthly STR revenue from
+  // STRMarketStats.monthly_revenue_per_bed. Persisted in the snapshot so
+  // the STR worksheet has Mashvisor data after save/reload without
+  // re-fetching the property API.
+  monthlyStrRevenuePerBed?: number
+  monthlyStrRevenueSampleSize?: number
 }
 
 export interface UseSavePropertyOptions {
@@ -88,6 +94,12 @@ export function useSaveProperty({
       if (propertySnapshot.sqft !== undefined) snapshot.sqft = propertySnapshot.sqft
       if (propertySnapshot.listPrice !== undefined) snapshot.listPrice = propertySnapshot.listPrice
       if (propertySnapshot.zpid !== undefined) snapshot.zpid = propertySnapshot.zpid
+      if (propertySnapshot.monthlyStrRevenuePerBed !== undefined) {
+        snapshot.monthlyStrRevenuePerBed = propertySnapshot.monthlyStrRevenuePerBed
+      }
+      if (propertySnapshot.monthlyStrRevenueSampleSize !== undefined) {
+        snapshot.monthlyStrRevenueSampleSize = propertySnapshot.monthlyStrRevenueSampleSize
+      }
     }
     setIsSaving(true)
     try {

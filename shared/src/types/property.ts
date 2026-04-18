@@ -84,7 +84,10 @@ export interface RentalMarketStatistics {
   rentcast_estimate?: number | null;
   zillow_estimate?: number | null;
   redfin_estimate?: number | null;
-  realtor_estimate?: number | null;
+  // Mashvisor /rental-rates traditional, bedroom-matched. Replaces the
+  // former realtor_estimate slot in the Monthly Rent column (Realtor.com
+  // does not expose a rent estimate; it stays in the Property Value column).
+  mashvisor_estimate?: number | null;
   iq_estimate?: number | null;
 
   estimate_low?: number | null;
@@ -119,6 +122,14 @@ export interface STRMarketStats {
   yoy_income_change?: number | null;
   revpar?: number | null;
   tax_rate?: number | null;
+  // Bedroom-matched monthly Airbnb revenue from /rental-rates?source=airbnb.
+  // Canonical fallback for STR worksheet/score formulas: when present, this
+  // replaces ADR×30×occupancy and ADR-derivation defaults throughout the
+  // codebase.
+  monthly_revenue_per_bed?: number | null;
+  monthly_revenue_sample_size?: number | null;
+  monthly_revenue_bedrooms?: number | null;
+  monthly_revenue_confidence?: 'high' | 'medium' | 'low' | null;
 }
 
 export interface STRRegulatory {
@@ -250,6 +261,11 @@ export interface PropertyDataSnapshot {
   estimatedValue?: number;
   averageDailyRate?: number;
   occupancyRate?: number;
+  // Mashvisor /rental-rates per-bed monthly STR revenue
+  // (STRMarketStats.monthly_revenue_per_bed). Persisted in the snapshot so
+  // STR worksheet/score formulas keep using Mashvisor data after save/reload.
+  monthlyStrRevenuePerBed?: number;
+  monthlyStrRevenueSampleSize?: number;
   photos?: string[];
   listingStatus?: string;
   isOffMarket?: boolean;

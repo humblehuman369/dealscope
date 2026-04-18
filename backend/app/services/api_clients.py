@@ -971,6 +971,149 @@ class MashvisorClient(BaseAPIClient[APIResponse]):
         result["str_reg_legal_for_occupied"] = reg.get("Legal_for_occupied")
         return result
 
+    # --- Rental rates endpoints (per-bedroom monthly rent benchmarks) ---------
+
+    async def traditional_rental_rates(
+        self,
+        state: str,
+        city: str,
+        zip_code: str,
+    ) -> APIResponse:
+        """GET /rental-rates?source=traditional — per-bedroom monthly LTR rent."""
+        return await self._make_request(
+            "rental-rates",
+            {
+                "state": state,
+                "city": city,
+                "zip_code": zip_code,
+                "source": "traditional",
+            },
+        )
+
+    async def airbnb_rental_rates(
+        self,
+        state: str,
+        city: str,
+        zip_code: str,
+    ) -> APIResponse:
+        """GET /rental-rates?source=airbnb — per-bedroom monthly Airbnb revenue."""
+        return await self._make_request(
+            "rental-rates",
+            {
+                "state": state,
+                "city": city,
+                "zip_code": zip_code,
+                "source": "airbnb",
+            },
+        )
+
+    @staticmethod
+    def parse_rental_rates(data: Any, bedrooms: int | None) -> dict[str, Any]:
+        """Extract bedroom-matched monthly rent from /rental-rates response.
+
+        Mashvisor returns flat per-bedroom buckets at
+        ``content.retnal_rates.{zero,one,two,three,four}_room_value`` (note the
+        misspelling in their schema) and a parallel ``detailed[]`` array with
+        per-bedroom sample counts and min/max/avg/median.
+
+        Bedroom matching:
+          - 0 → zero_room_value, 1 → one_room_value, ... 3 → three_room_value
+          - >= 4 → four_room_value (cap; do not extrapolate)
+          - None → three_room_value (median household), confidence = medium
+
+        Confidence (mirrors parse_str_lookup):
+          - sample_count >= 30 → high
+          - sample_count >= 10 → medium
+          - sample_count < 10 or missing → low
+        """
+        result: dict[str, Any] = {
+            "monthly_rate": None,
+            "sample_count": None,
+            "matched_bedrooms": None,
+            "confidence": "low",
+        }
+        if not isinstance(data, dict):
+            return result
+        content = data.get("content")
+        if not isinstance(content, dict):
+            return result
+
+        # Mashvisor's payload misspells "rental" as "retnal" — guard for both.
+        rates = content.get("retnal_rates") or content.get("rental_rates")
+        if not isinstance(rates, dict):
+            return result
+
+        bedroom_keys = {
+            0: "zero_room_value",
+            1: "one_room_value",
+            2: "two_room_value",
+            3: "three_room_value",
+            4: "four_room_value",
+        }
+
+        if bedrooms is None:
+            matched = 3
+            confidence_floor = "medium"
+        else:
+            matched = max(0, min(int(bedrooms), 4))
+            confidence_floor = None
+
+        key = bedroom_keys[matched]
+        raw_value = rates.get(key)
+        try:
+            monthly = float(raw_value) if raw_value is not None else None
+        except (TypeError, ValueError):
+            monthly = None
+
+        result["monthly_rate"] = monthly
+        result["matched_bedrooms"] = matched
+
+        # Pull sample count from detailed[] for the matched bedroom bucket.
+        detailed = content.get("detailed")
+        sample_count: int | None = None
+        if isinstance(detailed, list):
+            for row in detailed:
+                if not isinstance(row, dict):
+                    continue
+                try:
+                    row_beds = int(row.get("beds"))
+                except (TypeError, ValueError):
+                    continue
+                if row_beds == matched:
+                    raw_count = row.get("count")
+                    try:
+                        sample_count = int(raw_count) if raw_count is not None else None
+                    except (TypeError, ValueError):
+                        sample_count = None
+                    break
+        # Fall back to the response-level sample_count when a per-bedroom
+        # bucket wasn't returned (small markets often only have a single
+        # rolled-up count at the top level).
+        if sample_count is None:
+            top_count = content.get("sample_count")
+            try:
+                sample_count = int(top_count) if top_count is not None else None
+            except (TypeError, ValueError):
+                sample_count = None
+
+        result["sample_count"] = sample_count
+
+        if monthly is None:
+            result["confidence"] = "low"
+        elif sample_count is not None and sample_count >= 30:
+            result["confidence"] = "high"
+        elif sample_count is not None and sample_count >= 10:
+            result["confidence"] = "medium"
+        else:
+            result["confidence"] = "low"
+
+        # Floor confidence at "medium" when we defaulted bedrooms (so the
+        # caller can distinguish a 3BR-default match from a true 3BR match).
+        if confidence_floor == "medium" and result["confidence"] == "high":
+            result["confidence"] = "medium"
+
+        return result
+
     # --- Map search endpoints --------------------------------------------------
 
     async def heatmap(
@@ -1260,6 +1403,16 @@ class DataNormalizer:
             "str_reg_rating", "str_reg_day_limit", "str_reg_permit_fee",
             "str_reg_rules_summary", "str_reg_rules_source",
             "str_reg_legal_for_occupied",
+            # /rental-rates traditional → drives RentalMarketStatistics.mashvisor_estimate
+            "rental_mashvisor_estimate",
+            "rental_mashvisor_sample_count",
+            "rental_mashvisor_bedrooms",
+            "rental_mashvisor_confidence",
+            # /rental-rates airbnb → canonical STR monthly-revenue fallback
+            "str_monthly_revenue_mashvisor",
+            "str_monthly_revenue_sample_size",
+            "str_monthly_revenue_bedrooms",
+            "str_monthly_revenue_confidence",
         ]
 
         if not mashvisor_data:
@@ -1274,13 +1427,51 @@ class DataNormalizer:
         confidence = mashvisor_data.get("str_confidence", "low")
         prov_confidence = confidence if confidence in ("high", "medium", "low") else "low"
 
+        # Bedroom-matched parsing for /rental-rates responses. The fetcher
+        # stashes the raw Mashvisor responses under "_rental_rates_*_raw"; do
+        # the per-bedroom selection here, where the FIELD_MAPPING loop has
+        # already populated normalized["bedrooms"] from RentCast/AXESSO.
+        beds_raw = normalized.get("bedrooms")
+        try:
+            beds = int(beds_raw) if beds_raw is not None else None
+        except (TypeError, ValueError):
+            beds = None
+
+        trad_raw = mashvisor_data.get("_rental_rates_traditional_raw")
+        if trad_raw is not None:
+            parsed_trad = MashvisorClient.parse_rental_rates(trad_raw, beds)
+            mashvisor_data["rental_mashvisor_estimate"] = parsed_trad["monthly_rate"]
+            mashvisor_data["rental_mashvisor_sample_count"] = parsed_trad["sample_count"]
+            mashvisor_data["rental_mashvisor_bedrooms"] = parsed_trad["matched_bedrooms"]
+            mashvisor_data["rental_mashvisor_confidence"] = parsed_trad["confidence"]
+
+        airbnb_raw = mashvisor_data.get("_rental_rates_airbnb_raw")
+        if airbnb_raw is not None:
+            parsed_airbnb = MashvisorClient.parse_rental_rates(airbnb_raw, beds)
+            mashvisor_data["str_monthly_revenue_mashvisor"] = parsed_airbnb["monthly_rate"]
+            mashvisor_data["str_monthly_revenue_sample_size"] = parsed_airbnb["sample_count"]
+            mashvisor_data["str_monthly_revenue_bedrooms"] = parsed_airbnb["matched_bedrooms"]
+            mashvisor_data["str_monthly_revenue_confidence"] = parsed_airbnb["confidence"]
+
         for field in mashvisor_fields:
             val = mashvisor_data.get(field)
+            # Use field-specific confidence when present (rental-rates have
+            # their own sample-size-driven confidence, distinct from the
+            # str_lookup confidence). Otherwise default to the str_lookup tier.
+            field_conf: str
+            if field.startswith("rental_mashvisor_") and mashvisor_data.get("rental_mashvisor_confidence"):
+                rc = mashvisor_data.get("rental_mashvisor_confidence")
+                field_conf = rc if rc in ("high", "medium", "low") else "low"
+            elif field.startswith("str_monthly_revenue_") and mashvisor_data.get("str_monthly_revenue_confidence"):
+                rc = mashvisor_data.get("str_monthly_revenue_confidence")
+                field_conf = rc if rc in ("high", "medium", "low") else "low"
+            else:
+                field_conf = prov_confidence
             normalized[field] = val
             provenance[field] = {
                 "source": "mashvisor" if val is not None else "missing",
                 "fetched_at": ts,
-                "confidence": prov_confidence if val is not None else "low",
+                "confidence": field_conf if val is not None else "low",
                 "raw_values": {"mashvisor": val} if val is not None else None,
                 "conflict_flag": False,
             }
@@ -1628,6 +1819,7 @@ class DataNormalizer:
                 "rentcast": normalized.get("rental_rentcast_estimate"),
                 "axesso": normalized.get("rental_zillow_estimate"),
                 "redfin": normalized.get("redfin_rental_estimate"),
+                "mashvisor": normalized.get("rental_mashvisor_estimate"),
             },
             "rental_iq_estimate",
         )

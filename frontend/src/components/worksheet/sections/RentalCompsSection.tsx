@@ -576,7 +576,7 @@ export function RentalCompsSection() {
   const { fetchProperty } = usePropertyData()
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
   })
   const [activeUnderwriteMode, setActiveUnderwriteMode] = useState<UnderwritingMode | null>(null)
 

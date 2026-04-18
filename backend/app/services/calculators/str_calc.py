@@ -56,12 +56,20 @@ def calculate_str(
     pest_control_annual: float,
     hoa_monthly: float = 0,
     seasonality: list[dict[str, Any]] | None = None,
+    monthly_revenue_override: float | None = None,
 ) -> dict[str, Any]:
     """Calculate Short-Term Rental metrics.
 
     Every financial assumption is a required parameter — the caller
     (assumption_resolver) is responsible for merging user overrides
     with admin-dashboard defaults before invoking this function.
+
+    ``monthly_revenue_override`` (optional) — Mashvisor /rental-rates per-bed
+    monthly STR revenue. When provided, replaces the formula-derived
+    ``ADR × (365 × occupancy)`` rental revenue with ``override × 12``.
+    Cleaning fee revenue, break-even occupancy, and seasonality continue to
+    use ADR + occupancy because they need per-night structure that Mashvisor's
+    flat monthly figure doesn't expose.
     """
     validate_financial_inputs(
         purchase_price=purchase_price,
@@ -83,7 +91,10 @@ def calculate_str(
     # Revenue
     nights_occupied = 365 * occupancy_rate
     num_bookings = nights_occupied / avg_length_of_stay_days
-    rental_revenue = average_daily_rate * nights_occupied
+    if monthly_revenue_override is not None and monthly_revenue_override > 0:
+        rental_revenue = monthly_revenue_override * 12
+    else:
+        rental_revenue = average_daily_rate * nights_occupied
     cleaning_fee_revenue_total = cleaning_fee_revenue * num_bookings
     total_gross_revenue = rental_revenue + cleaning_fee_revenue_total
 
