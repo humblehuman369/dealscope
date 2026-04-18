@@ -249,7 +249,7 @@ class MapSearchService:
                 # normalizer folds into the canonical status. Cheap insurance.
                 tasks.append(
                     asyncio.create_task(
-                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng),
+                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
                     )
                 )
                 if self.zillow:
@@ -286,7 +286,7 @@ class MapSearchService:
                 if "active" in requested_statuses:
                     tasks.append(
                         asyncio.create_task(
-                            self._fetch_rentcast(req, "rental", pt_lat, pt_lng),
+                            self._fetch_rentcast(req, "rental", pt_lat, pt_lng, sub_radius),
                         )
                     )
                     if self.zillow:
@@ -322,6 +322,28 @@ class MapSearchService:
                     seen_addresses.add(addr_key)
                     listings.append(item)
             raw_source_totals += len(str_listings)
+
+        # Defense-in-depth viewport filter. Each upstream source is told to
+        # search around the viewport, but radius queries (RentCast 5–100mi
+        # circles, Zillow's loose bbox) routinely spill outside the
+        # caller's actual bounds. Without this clamp, the property card
+        # list can be dominated by listings far from what the user is
+        # looking at — most notoriously Texas listings appearing for
+        # Florida viewports when RentCast's lat/lng+radius pairing is
+        # mis-handled upstream.
+        pre_bounds_count = len(listings)
+        listings = [
+            item
+            for item in listings
+            if req.south <= item.latitude <= req.north
+            and req.west <= item.longitude <= req.east
+        ]
+        if pre_bounds_count != len(listings):
+            logger.info(
+                "Viewport filter dropped %d out-of-bounds listings (kept %d)",
+                pre_bounds_count - len(listings),
+                len(listings),
+            )
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -438,12 +460,20 @@ class MapSearchService:
         listing_type: str,
         center_lat: float,
         center_lng: float,
+        radius_miles: float,
     ) -> list[MapListing]:
+        # RentCast requires `radius` whenever lat/lng is supplied — without
+        # it the API silently falls back to its default city="Austin",
+        # state="TX" and returns Texas listings regardless of the
+        # coordinates. Always pass a positive radius. (See
+        # https://developers.rentcast.io/reference/sale-listings.)
+        radius = max(radius_miles, 0.5)
         try:
             if listing_type == "sale":
                 resp = await self.rentcast.get_sale_listings(
                     latitude=center_lat,
                     longitude=center_lng,
+                    radius=radius,
                     property_type=req.property_type,
                     limit=req.limit,
                     offset=req.offset,
@@ -452,6 +482,7 @@ class MapSearchService:
                 resp = await self.rentcast.get_rental_listings(
                     latitude=center_lat,
                     longitude=center_lng,
+                    radius=radius,
                     property_type=req.property_type,
                     limit=req.limit,
                     offset=req.offset,

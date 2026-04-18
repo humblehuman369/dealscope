@@ -145,6 +145,7 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         self,
         latitude: float | None = None,
         longitude: float | None = None,
+        radius: float | None = None,
         zip_code: str | None = None,
         city: str | None = None,
         state: str | None = None,
@@ -154,12 +155,23 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         limit: int = 500,
         offset: int = 0,
     ) -> APIResponse:
-        """Search for sale listings in a geographic area."""
+        """Search for sale listings in a geographic area.
+
+        ``latitude``/``longitude`` MUST be paired with ``radius`` for a
+        circular area search. Per RentCast's docs, providing lat/lng
+        alone causes the API to silently fall back to its default
+        ``city="Austin"``, ``state="TX"`` parameters and return Texas
+        listings instead of properties near the requested coordinates.
+        """
         params: dict[str, Any] = {"limit": limit, "offset": offset, "status": status}
         if latitude is not None:
             params["latitude"] = latitude
         if longitude is not None:
             params["longitude"] = longitude
+        if radius is not None:
+            # RentCast caps radius at 100 miles; clamp defensively so a
+            # caller-provided value never trips a 4xx response.
+            params["radius"] = max(0.5, min(radius, 100.0))
         if zip_code:
             params["zipCode"] = zip_code
         if city:
@@ -177,6 +189,7 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         self,
         latitude: float | None = None,
         longitude: float | None = None,
+        radius: float | None = None,
         zip_code: str | None = None,
         city: str | None = None,
         state: str | None = None,
@@ -186,12 +199,21 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         limit: int = 500,
         offset: int = 0,
     ) -> APIResponse:
-        """Search for long-term rental listings in a geographic area."""
+        """Search for long-term rental listings in a geographic area.
+
+        ``latitude``/``longitude`` MUST be paired with ``radius`` for a
+        circular area search. Per RentCast's docs, providing lat/lng
+        alone causes the API to silently fall back to its default
+        ``city="Austin"``, ``state="TX"`` parameters and return Texas
+        listings instead of properties near the requested coordinates.
+        """
         params: dict[str, Any] = {"limit": limit, "offset": offset, "status": status}
         if latitude is not None:
             params["latitude"] = latitude
         if longitude is not None:
             params["longitude"] = longitude
+        if radius is not None:
+            params["radius"] = max(0.5, min(radius, 100.0))
         if zip_code:
             params["zipCode"] = zip_code
         if city:
