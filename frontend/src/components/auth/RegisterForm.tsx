@@ -61,7 +61,16 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         setLastKnownUser(result.user)
         setLastTokenRefresh()
         queryClient.setQueryData(SESSION_QUERY_KEY, result.user)
-        router.replace('/billing')
+        // Defer navigation to the parent (AuthModal) so the
+        // `redirect` URL param is honored — e.g. user who registered
+        // from /strategy?address=… returns to that property page
+        // instead of being dropped on /billing. Fall back to /billing
+        // only when no parent handler is provided.
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          router.replace('/billing')
+        }
       } else {
         setRequiresVerification(result.requires_verification ?? true)
         setSuccess(true)
