@@ -23,7 +23,8 @@ import { HeatmapLegend } from './HeatmapLegend'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { api, type NeighborhoodOverview } from '@/lib/api'
-import { classifyPlaceTypes } from '@/utils/addressIdentity'
+import { classifyPlaceTypes, type PlaceCategory } from '@/utils/addressIdentity'
+import type { AddressComponents } from '@/components/AddressAutocomplete'
 import { trackEvent } from '@/lib/eventTracking'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
@@ -239,9 +240,14 @@ function MapContent({
   useEffect(() => {
     if (!map) return
     panToRef.current = (lat: number, lng: number, zoom?: number) => {
-      map.panTo({ lat, lng })
+      // setCenter + setZoom (instant, atomic) is more reliable than panTo + setZoom
+      // for big jumps (e.g., default US center → a city) and consistently triggers
+      // the `idle` event so the listings hook refetches for the new bounds.
       if (zoom != null) {
+        map.setCenter({ lat, lng })
         map.setZoom(zoom)
+      } else {
+        map.panTo({ lat, lng })
       }
     }
     return () => { panToRef.current = null }
@@ -560,6 +566,7 @@ export function MapSearchView() {
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [activeLabel, setActiveLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
@@ -572,7 +579,7 @@ export function MapSearchView() {
     if (!showLabel) return
     const t = setTimeout(() => setShowLabel(false), 4000)
     return () => clearTimeout(t)
-  }, [showLabel])
+  }, [showLabel, activeLabel])
 
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
@@ -722,18 +729,22 @@ export function MapSearchView() {
     setSelectedListing(listing)
   }, [clearGeocode])
 
-  const handleSearchSelect = useCallback(
-    ({ address, components, meta }: MapSearchSelection) => {
-      if (!meta?.location) return
-      const { lat, lng } = meta.location
-      const { category, zoom } = classifyPlaceTypes(meta.placeTypes ?? [])
-
+  const applySearchTarget = useCallback(
+    (
+      address: string,
+      lat: number,
+      lng: number,
+      zoom: number,
+      category: PlaceCategory,
+      components?: AddressComponents,
+    ) => {
       panToRef.current?.(lat, lng, zoom)
       currentZoomRef.current = zoom
       setIsZoomedIn(zoom >= MIN_ZOOM_FOR_GEOCODE)
       setSelectedListing(null)
-      setShowLabel(false)
       setZoomHint(false)
+      setActiveLabel(address)
+      setShowLabel(true)
 
       if (category === 'address') {
         setDropPin({ lat, lng })
@@ -747,31 +758,64 @@ export function MapSearchView() {
       } else {
         clearGeocode()
       }
-
-      trackEvent('map_search_bar_used', { category, has_components: !!components })
     },
     [clearGeocode],
+  )
+
+  const handleSearchSelect = useCallback(
+    async ({ address, components, meta }: MapSearchSelection) => {
+      const { category, zoom } = classifyPlaceTypes(meta?.placeTypes ?? [])
+
+      if (meta?.location) {
+        applySearchTarget(address, meta.location.lat, meta.location.lng, zoom, category, components)
+        trackEvent('map_search_bar_used', {
+          category,
+          has_components: !!components,
+          source: 'place_select',
+        })
+        return
+      }
+
+      // Fallback: Places didn't return geometry — forward-geocode the formatted address.
+      // This guards against rare cases where `place.geometry` is missing for some
+      // suggestion types (cities, postal codes, etc.) in some regions.
+      if (!apiKey) {
+        console.warn('[MapSearch] Place selected without location and no API key for fallback geocode')
+        return
+      }
+      const result = await forwardGeocode(address, apiKey)
+      if (!result) {
+        console.warn('[MapSearch] Could not resolve coordinates for selection:', address)
+        return
+      }
+      applySearchTarget(address, result.lat, result.lng, result.zoom, category, components)
+      trackEvent('map_search_bar_used', {
+        category,
+        has_components: !!components,
+        source: 'fallback_geocode',
+      })
+    },
+    [apiKey, applySearchTarget],
   )
 
   const handleSearchManualSubmit = useCallback(
     async (text: string) => {
       if (!apiKey) return
       const result = await forwardGeocode(text, apiKey)
-      if (!result) return
-      panToRef.current?.(result.lat, result.lng, result.zoom)
-      currentZoomRef.current = result.zoom
-      setIsZoomedIn(result.zoom >= MIN_ZOOM_FOR_GEOCODE)
-      setSelectedListing(null)
-      setShowLabel(false)
-      setZoomHint(false)
-      clearGeocode()
-      trackEvent('map_search_bar_used', { category: 'manual_text' })
+      if (!result) {
+        console.warn('[MapSearch] Manual text could not be geocoded:', text)
+        return
+      }
+      applySearchTarget(text, result.lat, result.lng, result.zoom, 'unknown')
+      trackEvent('map_search_bar_used', { category: 'manual_text', source: 'manual_submit' })
     },
-    [apiKey, clearGeocode],
+    [apiKey, applySearchTarget],
   )
 
   const handleSearchClear = useCallback(() => {
     clearGeocode()
+    setActiveLabel(null)
+    setShowLabel(false)
   }, [clearGeocode])
 
   if (!apiKey) {
@@ -1006,18 +1050,18 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Location label from search */}
-      {showLabel && locationLabel && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
+      {/* Location label confirmation toast (URL navigation OR search-bar selection) */}
+      {showLabel && activeLabel && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 max-w-[90vw]">
           <div
-            className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg"
+            className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg truncate"
             style={{
               backgroundColor: 'var(--surface-card)',
               color: 'var(--text-heading)',
               border: '1px solid var(--border-default)',
             }}
           >
-            {locationLabel}
+            Showing {activeLabel}
           </div>
         </div>
       )}
