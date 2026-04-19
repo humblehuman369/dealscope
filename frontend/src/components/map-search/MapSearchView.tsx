@@ -21,7 +21,10 @@ import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { HeatmapLegend } from './HeatmapLegend'
 import { NeighborhoodCard } from './NeighborhoodCard'
+import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { api, type NeighborhoodOverview } from '@/lib/api'
+import { classifyPlaceTypes } from '@/utils/addressIdentity'
+import { trackEvent } from '@/lib/eventTracking'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -207,7 +210,7 @@ interface MapContentProps {
   onPolygonComplete: (vertices: number[][]) => void
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
-  panToRef: React.MutableRefObject<((lat: number, lng: number) => void) | null>
+  panToRef: React.MutableRefObject<((lat: number, lng: number, zoom?: number) => void) | null>
   heatmapActive: boolean
   heatmapMetric: string
 }
@@ -235,8 +238,11 @@ function MapContent({
 
   useEffect(() => {
     if (!map) return
-    panToRef.current = (lat: number, lng: number) => {
+    panToRef.current = (lat: number, lng: number, zoom?: number) => {
       map.panTo({ lat, lng })
+      if (zoom != null) {
+        map.setZoom(zoom)
+      }
     }
     return () => { panToRef.current = null }
   }, [map, panToRef])
@@ -558,7 +564,7 @@ export function MapSearchView() {
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
 
-  const panToRef = useRef<((lat: number, lng: number) => void) | null>(null)
+  const panToRef = useRef<((lat: number, lng: number, zoom?: number) => void) | null>(null)
 
   const { fetchProperty } = usePropertyData()
 
@@ -716,6 +722,58 @@ export function MapSearchView() {
     setSelectedListing(listing)
   }, [clearGeocode])
 
+  const handleSearchSelect = useCallback(
+    ({ address, components, meta }: MapSearchSelection) => {
+      if (!meta?.location) return
+      const { lat, lng } = meta.location
+      const { category, zoom } = classifyPlaceTypes(meta.placeTypes ?? [])
+
+      panToRef.current?.(lat, lng, zoom)
+      currentZoomRef.current = zoom
+      setIsZoomedIn(zoom >= MIN_ZOOM_FOR_GEOCODE)
+      setSelectedListing(null)
+      setShowLabel(false)
+      setZoomHint(false)
+
+      if (category === 'address') {
+        setDropPin({ lat, lng })
+        setIsGeocoding(false)
+        setGeocodeResult({
+          formatted_address: address,
+          city: components?.city,
+          state: components?.state,
+          zip_code: components?.zipCode,
+        })
+      } else {
+        clearGeocode()
+      }
+
+      trackEvent('map_search_bar_used', { category, has_components: !!components })
+    },
+    [clearGeocode],
+  )
+
+  const handleSearchManualSubmit = useCallback(
+    async (text: string) => {
+      if (!apiKey) return
+      const result = await forwardGeocode(text, apiKey)
+      if (!result) return
+      panToRef.current?.(result.lat, result.lng, result.zoom)
+      currentZoomRef.current = result.zoom
+      setIsZoomedIn(result.zoom >= MIN_ZOOM_FOR_GEOCODE)
+      setSelectedListing(null)
+      setShowLabel(false)
+      setZoomHint(false)
+      clearGeocode()
+      trackEvent('map_search_bar_used', { category: 'manual_text' })
+    },
+    [apiKey, clearGeocode],
+  )
+
+  const handleSearchClear = useCallback(() => {
+    clearGeocode()
+  }, [clearGeocode])
+
   if (!apiKey) {
     return (
       <div
@@ -847,6 +905,18 @@ export function MapSearchView() {
         </div>
       )}
 
+      {/* Search bar — top: full-width on mobile, centered max-width on desktop */}
+      <div
+        className="absolute top-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-full md:max-w-md z-20"
+      >
+        <MapSearchBar
+          initialValue={locationLabel ?? ''}
+          onSelect={handleSearchSelect}
+          onManualSubmit={handleSearchManualSubmit}
+          onClear={handleSearchClear}
+        />
+      </div>
+
       {/* Filter Panel */}
       <FilterPanel
         filters={filters}
@@ -875,8 +945,8 @@ export function MapSearchView() {
         />
       )}
 
-      {/* Heatmap toggle (top-right) */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Heatmap toggle (top-right; drops below search bar on mobile) */}
+      <div className="absolute top-20 right-4 md:top-4 z-10">
         <button
           onClick={() => setHeatmapActive((p) => !p)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
@@ -893,7 +963,7 @@ export function MapSearchView() {
 
       {/* Loading spinner */}
       {isLoading && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
           <div
             className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg"
             style={{
@@ -910,7 +980,7 @@ export function MapSearchView() {
 
       {/* Error */}
       {error && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
           <div
             className="px-3 py-1.5 rounded-full text-xs font-medium shadow-lg"
             style={{ backgroundColor: '#EF4444', color: '#fff' }}
@@ -922,7 +992,7 @@ export function MapSearchView() {
 
       {/* Zoom hint */}
       {zoomHint && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 transition-opacity">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 transition-opacity">
           <div
             className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg"
             style={{
@@ -954,7 +1024,7 @@ export function MapSearchView() {
 
       {/* Listing count badge — hidden when filter panel is open to avoid overlap */}
       {totalCount > 0 && !isLoading && !filtersOpen && (
-        <div className="absolute top-16 left-3 z-10">
+        <div className="absolute top-32 left-4 md:top-16 md:left-3 z-10">
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold shadow-lg"
             style={{
