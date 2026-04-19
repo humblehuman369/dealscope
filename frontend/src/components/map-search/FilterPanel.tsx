@@ -117,7 +117,7 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
     return (
       <button
         onClick={onToggle}
-        className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
+        className="absolute top-20 left-4 md:top-4 z-10 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
         style={{
           backgroundColor: 'var(--surface-card)',
           color: 'var(--text-body)',
@@ -140,7 +140,7 @@ export function FilterPanel({ filters, onChange, totalCount, isLoading, isOpen, 
 
   return (
     <div
-      className="absolute top-4 left-4 z-10 w-72 rounded-xl shadow-xl overflow-hidden"
+      className="absolute top-20 left-4 md:top-4 z-10 w-72 rounded-xl shadow-xl overflow-hidden"
       style={{
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
