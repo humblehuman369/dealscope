@@ -4,9 +4,22 @@ Static marketing assets for the DealGapIQ Google Play listing.
 
 ## Feature graphic (1024 x 500)
 
-Four candidate versions are checked in across two strategic directions. **Pick one** for the Play Console upload.
+> **Recommended for upload: `feature-graphic-1024x500-v5-discover-deals.png`** — the unified-brand version. Built from the same visual system as the App Store hero, IAP promos, and OG image. Real iPhone screenshot inside the phone (showing actual property data: $411,336 / $432,985 / $580,164 / DEAL GAP -29.1%) instead of an AI-generated map mockup. See the top-level `app-store/README.md` for the full unified brand pack.
+>
+> Earlier versions (v1-v4) are kept below as historical A/B candidates — only use them if the v5 unified version underperforms in real Play Console conversion data.
 
-### Direction A — "Investor's Lens" (recommended, A/B candidates)
+### v5 — Unified brand (recommended)
+
+| File | Concept |
+|---|---|
+| `feature-graphic-1024x500-v5-discover-deals.png` | "Discover Deals · Like an Investor" headline left, real Strategy-tab screenshot inside a clean phone mockup right, DealGapIQ wordmark bottom-left. Coverage line ("MLS · Foreclosures · Auctions · Pre-Foreclosures") appears as a subhead — no separate off-MLS badge needed. |
+
+- **v5 headline:** Discover Deals · Like an Investor
+- **v5 subhead 1:** Every US Listing Analyzed for Profit
+- **v5 subhead 2:** MLS · Foreclosures · Auctions · Pre-Foreclosures
+- **Built by:** `../apply_brand_pack.py`
+
+### Direction A — "Investor's Lens" (prior A/B candidates, kept for reference)
 
 These lead with what makes DealGapIQ unique: every US listing already has a financial verdict applied to it. Both carry the brand-spec wordmark (top-left) and the off-MLS coverage badge (bottom-right) — two design elements that signal "not just another real estate search app" within the first second of viewing.
 

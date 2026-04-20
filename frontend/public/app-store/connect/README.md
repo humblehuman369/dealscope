@@ -84,7 +84,7 @@ Apple displays screenshots in the order you upload them. Users typically only se
 
 | # | Filename | Purpose | What stops the scroll |
 |---|---|---|---|
-| 1 | `01-hero-investors-lens.png` | **The pitch.** Real screenshot inside the phone — actual property data, real DEAL GAP -29.1%. Authenticity that AI mockups cannot match. | Bold headline + real product screenshot |
+| 1 | `01-hero-investors-lens.png` | **The pitch.** Real screenshot inside a programmatically-built phone mockup — actual property data, real DEAL GAP -29.1%. Carries the unified brand message ("Discover Deals · Like an Investor") shared across all five marketing surfaces (App Store hero, Play Store banner, IAP promos, OG image). | Bold headline + real product screenshot |
 | 2 | `02-search-color-coded.png` | **The Aha.** Shows that every property is pre-graded — answers "what does this app actually do?" | Dense color-coded map pins |
 | 3 | `03-verdict-three-cards.png` | **The depth.** Proves there's real financial analysis, not just a sticker. | Three-card verdict + Deal Gap bar |
 | 4 | `04-pills-deal-maybe-pass.png` | **The mechanic.** Names the verdict framework users will live in. | DEAL / MAYBE / PASS pills |
