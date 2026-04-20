@@ -59,10 +59,22 @@ export function MapSearchBar({
         placeholder="Address, city, or zip"
         aria-label="Search the map by address, city, state, or zip code"
         onPlaceSelect={(address, components, meta) => {
+          // eslint-disable-next-line no-console
+          console.log('[MapSearchBar] place selected', {
+            address,
+            placeTypes: meta?.placeTypes,
+            hasLocation: !!meta?.location,
+            location: meta?.location,
+            components,
+          })
           setValue(address)
           onSelect({ address, components, meta })
         }}
-        onManualSubmit={(text) => onManualSubmit?.(text)}
+        onManualSubmit={(text) => {
+          // eslint-disable-next-line no-console
+          console.log('[MapSearchBar] manual submit', { text })
+          onManualSubmit?.(text)
+        }}
         className="flex-1 min-w-0 bg-transparent outline-none text-sm font-medium placeholder:font-normal"
         style={{
           color: 'var(--text-heading)',

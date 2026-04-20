@@ -1444,19 +1444,19 @@ function StrategyContent() {
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-[1px] sm:px-5 pt-2 pb-6">
 
-          {/* Strategy Tabs — outside card container */}
+          {/* Strategy Tabs — matches DealMaker page styling */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY = [
-              { id: 'long-term-rental', label: 'Long Rental', color: '#0465f2' },
-              { id: 'short-term-rental', label: 'Short Rental', color: '#8b5cf6' },
-              { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
-              { id: 'fix-and-flip', label: 'Fix & Flip', color: '#ec4899' },
-              { id: 'house-hack', label: 'House Hack', color: '#0EA5E9' },
-              { id: 'wholesale', label: 'Wholesale', color: '#84cc16' },
+              { id: 'long-term-rental', label: 'Long-term' },
+              { id: 'short-term-rental', label: 'Short-term' },
+              { id: 'brrrr', label: 'BRRRR' },
+              { id: 'fix-and-flip', label: 'Fix & Flip' },
+              { id: 'house-hack', label: 'House Hack' },
+              { id: 'wholesale', label: 'Wholesale' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
-              <div className="mb-4 grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 mb-4 w-full">
                 {available.map((s) => {
                   const isActive = s.id === activeStrategyId
                   return (
@@ -1464,18 +1464,11 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className="aspect-[2/1] rounded-xl text-[9.5px] sm:text-sm font-bold leading-tight transition-all duration-200 flex items-center justify-center whitespace-pre-line text-center"
-                      style={{
-                        background: isActive
-                          ? `linear-gradient(135deg, ${s.color}, ${s.color}CC)`
-                          : `${s.color}12`,
-                        color: isActive ? '#fff' : s.color,
-                        border: `1.5px solid ${isActive ? s.color : `${s.color}60`}`,
-                        boxShadow: isActive
-                          ? `0 0 16px ${s.color}45, 0 2px 8px rgba(0,0,0,0.3)`
-                          : `0 1px 4px rgba(0,0,0,0.15)`,
-                        transform: isActive ? 'scale(1.03)' : 'scale(1)',
-                      }}
+                      className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                        isActive
+                          ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)] shadow-[var(--shadow-card)]'
+                          : 'bg-transparent text-[var(--accent-sky)] border-[0.5px] border-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] hover:border-[var(--accent-sky-light)]'
+                      }`}
                     >
                       {s.label}
                     </button>
