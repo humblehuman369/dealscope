@@ -29,14 +29,52 @@ interface MapSearchBarProps {
 const MIN_QUERY_LENGTH = 2
 const DEBOUNCE_MS = 200
 
+// Minimal types for the modern Places API (Places API New). We define these here
+// because @types/google.maps's coverage of the new API has been incomplete and
+// we want to keep this component self-contained.
+interface NewPlacesNamespace {
+  AutocompleteSuggestion?: {
+    fetchAutocompleteSuggestions: (request: {
+      input: string
+      includedRegionCodes?: string[]
+      includedPrimaryTypes?: string[]
+      sessionToken?: unknown
+    }) => Promise<{ suggestions: NewSuggestion[] }>
+  }
+  AutocompleteSessionToken?: new () => unknown
+  Place?: new (options: { id: string }) => NewPlace
+}
+
+interface NewSuggestion {
+  placePrediction?: {
+    placeId: string
+    text?: { text?: string }
+    mainText?: { text?: string }
+    secondaryText?: { text?: string }
+    types?: string[]
+    toPlace?: () => NewPlace
+  }
+}
+
+interface NewPlace {
+  id?: string
+  fetchFields: (options: { fields: string[] }) => Promise<{ place: NewPlace }>
+  formattedAddress?: string
+  location?: { lat: () => number; lng: () => number }
+  addressComponents?: Array<{ longText?: string; shortText?: string; types?: string[] }>
+  types?: string[]
+}
+
 /**
  * MapSearchBar
  *
- * Custom search overlay built on Google's `AutocompleteService` + `Geocoder`
- * (NOT the legacy `Autocomplete` widget). This gives us full control over:
- *   - the dropdown UI (theming, accessibility, click handling)
- *   - the selection event flow (no race against Google's internal listeners)
- *   - the geometry resolution (Geocoder with placeId, no REST endpoint required)
+ * Custom search overlay built on Google's modern `AutocompleteSuggestion`
+ * (Places API New) with a fallback to the legacy `AutocompleteService`. This
+ * gives us:
+ *   - support for both old + new Google Cloud accounts (the legacy widget +
+ *     `AutocompleteService` were closed to "new customers" in March 2025)
+ *   - full control over the dropdown UI (theming, accessibility, click handling)
+ *   - clean event flow with no race against Google's internal listeners
  *
  * Supports addresses, cities, states, and zip codes (US-restricted).
  */
@@ -52,7 +90,7 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
 
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null)
+  const sessionTokenRef = useRef<unknown>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const requestIdRef = useRef(0)
 
@@ -81,28 +119,88 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
       return
     }
 
-    debounceRef.current = setTimeout(() => {
-      const service = new google.maps.places.AutocompleteService()
-      if (!sessionTokenRef.current) {
-        sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken()
-      }
+    debounceRef.current = setTimeout(async () => {
       const myRequestId = ++requestIdRef.current
       setIsLoading(true)
+
+      const placesNs = (google.maps.places as unknown) as NewPlacesNamespace
+      const newApi = placesNs.AutocompleteSuggestion
+      const NewSessionToken = placesNs.AutocompleteSessionToken
+
+      // ── Primary: modern Places API (AutocompleteSuggestion) ─────────────
+      if (newApi?.fetchAutocompleteSuggestions) {
+        try {
+          if (!sessionTokenRef.current && NewSessionToken) {
+            sessionTokenRef.current = new NewSessionToken()
+          }
+          const { suggestions } = await newApi.fetchAutocompleteSuggestions({
+            input: trimmed,
+            includedRegionCodes: ['us'],
+            includedPrimaryTypes: ['geocode'],
+            sessionToken: sessionTokenRef.current ?? undefined,
+          })
+          if (myRequestId !== requestIdRef.current) return
+          setIsLoading(false)
+          const mapped: Prediction[] = suggestions
+            .map((s) => s.placePrediction)
+            .filter((p): p is NonNullable<typeof p> => !!p && !!p.placeId)
+            .map((p) => ({
+              placeId: p.placeId,
+              description: p.text?.text ?? '',
+              mainText: p.mainText?.text ?? p.text?.text ?? '',
+              secondaryText: p.secondaryText?.text ?? '',
+              types: p.types ?? [],
+            }))
+          if (mapped.length === 0) {
+            setPredictions([])
+            setIsOpen(false)
+            return
+          }
+          setPredictions(mapped)
+          setIsOpen(true)
+          setHighlightedIndex(-1)
+          return
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('[MapSearchBar] AutocompleteSuggestion failed, trying legacy:', err)
+          // fall through to legacy
+        }
+      }
+
+      // ── Fallback: legacy AutocompleteService ────────────────────────────
+      const LegacyService = google.maps.places.AutocompleteService
+      const LegacySessionToken = google.maps.places.AutocompleteSessionToken
+      if (!LegacyService) {
+        setIsLoading(false)
+        // eslint-disable-next-line no-console
+        console.error(
+          '[MapSearchBar] Neither AutocompleteSuggestion nor AutocompleteService is available. ' +
+            'Enable "Places API (New)" or "Places API" in Google Cloud Console for this key.',
+        )
+        return
+      }
+      const service = new LegacyService()
+      if (!sessionTokenRef.current && LegacySessionToken) {
+        sessionTokenRef.current = new LegacySessionToken()
+      }
       service.getPlacePredictions(
         {
           input: trimmed,
           componentRestrictions: { country: 'us' },
           types: ['geocode'],
-          sessionToken: sessionTokenRef.current,
+          sessionToken: sessionTokenRef.current as google.maps.places.AutocompleteSessionToken | undefined,
         },
         (results, status) => {
           if (myRequestId !== requestIdRef.current) return
           setIsLoading(false)
-          if (
-            status !== google.maps.places.PlacesServiceStatus.OK ||
-            !results ||
-            results.length === 0
-          ) {
+          if (status !== google.maps.places.PlacesServiceStatus.OK) {
+            // eslint-disable-next-line no-console
+            console.warn('[MapSearchBar] Legacy AutocompleteService returned status:', status)
+            setPredictions([])
+            setIsOpen(false)
+            return
+          }
+          if (!results || results.length === 0) {
             setPredictions([])
             setIsOpen(false)
             return
@@ -140,16 +238,62 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
   }, [isOpen])
 
   const resolveAndSelect = useCallback(
-    (prediction: Prediction) => {
+    async (prediction: Prediction) => {
       setValue(prediction.description)
       setIsOpen(false)
       setPredictions([])
 
-      const geocoder = new google.maps.Geocoder()
-      geocoder.geocode({ placeId: prediction.placeId }, (results, status) => {
-        if (status !== google.maps.GeocoderStatus.OK || !results || !results[0]) {
+      const placesNs = (google.maps.places as unknown) as NewPlacesNamespace
+      const PlaceCtor = placesNs.Place
+
+      // ── Primary: modern Place.fetchFields ───────────────────────────────
+      if (PlaceCtor) {
+        try {
+          const place = new PlaceCtor({ id: prediction.placeId })
+          await place.fetchFields({
+            fields: ['location', 'formattedAddress', 'addressComponents', 'types'],
+          })
+          if (place.location) {
+            const components = {
+              city: place.addressComponents?.find(
+                (c) => c.types?.includes('locality') || c.types?.includes('sublocality'),
+              )?.longText,
+              state: place.addressComponents?.find((c) =>
+                c.types?.includes('administrative_area_level_1'),
+              )?.shortText,
+              zipCode: place.addressComponents?.find((c) => c.types?.includes('postal_code'))
+                ?.longText,
+            }
+            onSelect({
+              address: place.formattedAddress ?? prediction.description,
+              components,
+              meta: {
+                placeTypes: place.types ?? prediction.types,
+                location: { lat: place.location.lat(), lng: place.location.lng() },
+              },
+            })
+            sessionTokenRef.current = null
+            return
+          }
+        } catch (err) {
           // eslint-disable-next-line no-console
-          console.warn('[MapSearchBar] Geocoder failed for', prediction.description, status)
+          console.warn('[MapSearchBar] Place.fetchFields failed, falling back to Geocoder:', err)
+        }
+      }
+
+      // ── Fallback: Geocoder with placeId (works on legacy keys) ─────────
+      const Geocoder = google.maps.Geocoder
+      if (!Geocoder) {
+        // eslint-disable-next-line no-console
+        console.error('[MapSearchBar] No Geocoder available to resolve selection')
+        return
+      }
+      const geocoder = new Geocoder()
+      try {
+        const { results } = await geocoder.geocode({ placeId: prediction.placeId })
+        if (!results || !results[0]) {
+          // eslint-disable-next-line no-console
+          console.warn('[MapSearchBar] Geocoder returned no results for', prediction.description)
           return
         }
         const result = results[0]
@@ -159,7 +303,6 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
           console.warn('[MapSearchBar] No geometry for', prediction.description)
           return
         }
-
         const components = {
           city: result.address_components?.find(
             (c) => c.types.includes('locality') || c.types.includes('sublocality'),
@@ -170,7 +313,6 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
           zipCode: result.address_components?.find((c) => c.types.includes('postal_code'))
             ?.long_name,
         }
-
         onSelect({
           address: prediction.description,
           components,
@@ -179,10 +321,11 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
             location: { lat: loc.lat(), lng: loc.lng() },
           },
         })
-
-        // Reset session token after a selection (per Google billing best practice).
         sessionTokenRef.current = null
-      })
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[MapSearchBar] Geocoder failed for', prediction.description, err)
+      }
     },
     [onSelect],
   )
@@ -285,8 +428,9 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
             <li key={p.placeId} role="option" aria-selected={highlightedIndex === idx}>
               <button
                 type="button"
-                // mousedown (not click) so it fires before the input's blur — keeps the dropdown
-                // from closing before the selection is processed in some browsers.
+                // mousedown (not click) fires before the input's blur, so the
+                // dropdown doesn't close out from under the selection in some
+                // browsers.
                 onMouseDown={(e) => {
                   e.preventDefault()
                   resolveAndSelect(p)
