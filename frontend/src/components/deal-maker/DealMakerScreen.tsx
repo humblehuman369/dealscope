@@ -1164,7 +1164,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             { label: 'Short-term', color: '#8b5cf6' },
             { label: 'BRRRR', color: '#f97316' },
             { label: 'Fix & Flip', color: '#ec4899' },
-            { label: 'House Hack', color: '#0EA5E9' },
+            { label: 'House Hack', color: '#14b8a6' },
             { label: 'Wholesale', color: '#84cc16' },
           ].map((s) => {
             const isActive = currentStrategy === s.label

@@ -26,7 +26,7 @@ const strategies = [
   { name: 'Short-Term Rental', roi: '28%', icon: '🏨', color: '#8b5cf6', bgColor: 'rgba(139,92,246,0.15)' },
   { name: 'Fix & Flip', roi: '22%', icon: '🔨', color: '#ec4899', bgColor: 'rgba(236,72,153,0.15)' },
   { name: 'BRRRR', roi: '25%', icon: '🔄', color: '#f97316', bgColor: 'rgba(249,115,22,0.15)' },
-  { name: 'House Hack', roi: '31%', icon: '🏡', color: '#0EA5E9', bgColor: 'rgba(14,165,233,0.15)' },
+  { name: 'House Hack', roi: '31%', icon: '🏡', color: '#14b8a6', bgColor: 'rgba(20,184,166,0.15)' },
   { name: 'Wholesale', roi: '$12K', icon: '📋', color: '#84cc16', bgColor: 'rgba(132,204,22,0.15)', isProfit: true },
 ];
 
