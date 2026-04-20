@@ -471,54 +471,53 @@ HERO_SCREENSHOT_PATH = THIS_DIR / "assets" / "hero-screenshot-strategy-tab.png"
 def build_hero_with_real_screenshot() -> None:
     """Hero screenshot using the real app screen captured on device.
 
-    Uses a custom layout (different from the generic template) because the
-    coverage line is now embedded in the second subhead instead of the
-    off-MLS badge below the wordmark — this gives the wordmark more breathing
-    room and a cleaner bottom edge.
+    Tighter v2 layout: bigger phone (1000px wide vs 900px), smaller top margin,
+    wordmark sized up for stronger bottom anchor, all dead space squeezed out
+    so the phone dominates the middle 60% of the canvas.
     """
     canvas = build_navy_canvas()
-    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
+    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 980, intensity=0.24)
 
     end_y = add_headline(
         canvas,
         ["Discover Deals", "Like an Investor"],
-        top_y=180,
-        font_size=130,
-        line_gap=12,
+        top_y=160,
+        font_size=126,
+        line_gap=8,
     )
 
     end_y = add_subhead(
         canvas,
         "Every US Listing Analyzed for Profit",
-        end_y + 38,
-        font_size=46,
+        end_y + 32,
+        font_size=44,
     )
     end_y = add_subhead(
         canvas,
         "MLS  \u00b7  Foreclosures  \u00b7  Auctions  \u00b7  Pre-Foreclosures",
-        end_y + 14,
-        font_size=42,
+        end_y + 10,
+        font_size=40,
     )
 
     phone = build_phone_with_screenshot(
         screenshot_path=HERO_SCREENSHOT_PATH,
         crop_box=(0, 0, 472, 855),
-        phone_width=900,
+        phone_width=1000,
         bezel_px=14,
         bezel_color=(20, 22, 28, 255),
         corner_radius_pct=0.10,
         add_dynamic_island=True,
         add_glow=True,
-        glow_pad=110,
-        glow_intensity=130,
+        glow_pad=90,
+        glow_intensity=140,
     )
-    composite_phone_mockup(canvas, phone, target_y=end_y + 60)
+    composite_phone_mockup(canvas, phone, target_y=end_y + 40)
 
-    add_wordmark(canvas, target_y=TARGET_H - 240, target_w=600)
+    add_wordmark(canvas, target_y=TARGET_H - 230, target_w=640)
 
     output_path = SCREENSHOTS_DIR / "01-hero-investors-lens.png"
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
-    print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})  [real screenshot]")
+    print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})  [real screenshot, v2]")
 
 
 SCREENSHOT_CONFIGS = [
