@@ -513,9 +513,7 @@ function MapContent({
             key={listing.id}
             position={{ lat: listing.latitude, lng: listing.longitude }}
             onClick={() => onSelectListing(listing)}
-            ref={(marker) => {
-              if (marker) setMarkerRef(marker, listing.id)
-            }}
+            ref={(marker) => setMarkerRef(marker, listing.id)}
           >
             <div
               className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
