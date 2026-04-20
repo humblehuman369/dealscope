@@ -955,10 +955,11 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Search bar — top row, centered, with side padding so it never overlaps
-          the Filters / Heatmap buttons on the row below. */}
+      {/* Search bar — top row, positioned to the right of Google's Map/Satellite
+          control (which sits at top-left, ~10px in, ~85px wide). On narrow
+          screens it shrinks to fit the available space. */}
       <div
-        className="absolute top-4 left-1/2 -translate-x-1/2 w-[min(calc(100%-32px),28rem)] z-20"
+        className="absolute top-4 left-28 w-[min(calc(100%-128px),20rem)] z-20"
       >
         <MapSearchBar
           initialValue={locationLabel ?? ''}
