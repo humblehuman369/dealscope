@@ -1447,12 +1447,12 @@ function StrategyContent() {
           {/* Strategy Tabs — outside card container */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY = [
-              { id: 'long-term-rental', label: 'Long\nRental', color: '#0465f2' },
-              { id: 'short-term-rental', label: 'Short\nRental', color: '#8b5cf6' },
+              { id: 'long-term-rental', label: 'Long Rental', color: '#0465f2' },
+              { id: 'short-term-rental', label: 'Short Rental', color: '#8b5cf6' },
               { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
-              { id: 'fix-and-flip', label: 'Fix &\nFlip', color: '#ec4899' },
-              { id: 'house-hack', label: 'House\nHack', color: '#0EA5E9' },
-              { id: 'wholesale', label: 'Whole\nSale', color: '#84cc16' },
+              { id: 'fix-and-flip', label: 'Fix & Flip', color: '#ec4899' },
+              { id: 'house-hack', label: 'House Hack', color: '#0EA5E9' },
+              { id: 'wholesale', label: 'Wholesale', color: '#84cc16' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
@@ -1464,7 +1464,7 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className="aspect-square rounded-xl text-[9.5px] sm:text-sm font-bold leading-tight transition-all duration-200 flex items-center justify-center whitespace-pre-line text-center"
+                      className="aspect-[2/1] rounded-xl text-[9.5px] sm:text-sm font-bold leading-tight transition-all duration-200 flex items-center justify-center whitespace-pre-line text-center"
                       style={{
                         background: isActive
                           ? `linear-gradient(135deg, ${s.color}, ${s.color}CC)`
