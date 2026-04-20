@@ -145,9 +145,9 @@ export const colors = {
       label: 'Fix & Flip',
     },
     houseHack: {
-      primary: '#0EA5E9',  // Sky blue (unified accent)
+      primary: '#14b8a6',  // Teal — distinct from accent-sky for wayfinding
       light: '#ccfbf1',
-      dark: '#0284c7',
+      dark: '#0f766e',
       icon: '🏡',
       label: 'House Hack',
     },

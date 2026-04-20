@@ -43,7 +43,7 @@ export const semanticTokens = {
     str: { dark: '#8b5cf6', light: '#6D28D9' },
     brrrr: { dark: '#f97316', light: '#C2410C' },
     fixAndFlip: { dark: '#ec4899', light: '#BE185D' },
-    houseHack: { dark: '#0EA5E9', light: '#0369A1' },
+    houseHack: { dark: '#14b8a6', light: '#0f766e' },
     wholesale: { dark: '#84cc16', light: '#4D7C0F' },
   },
   border: {

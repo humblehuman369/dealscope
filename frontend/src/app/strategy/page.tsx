@@ -1451,7 +1451,7 @@ function StrategyContent() {
               { id: 'short-term-rental', label: 'Short-term', color: '#8b5cf6' },
               { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
               { id: 'fix-and-flip', label: 'Fix & Flip', color: '#ec4899' },
-              { id: 'house-hack', label: 'House Hack', color: '#0EA5E9' },
+              { id: 'house-hack', label: 'House Hack', color: '#14b8a6' },
               { id: 'wholesale', label: 'Wholesale', color: '#84cc16' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
